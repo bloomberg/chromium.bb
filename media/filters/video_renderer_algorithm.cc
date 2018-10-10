@@ -337,9 +337,10 @@ void VideoRendererAlgorithm::EnqueueFrame(
   DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 
   ReadyFrame ready_frame(frame);
-  auto it = frame_queue_.empty() ? frame_queue_.end()
-                                 : std::lower_bound(frame_queue_.begin(),
-                                                    frame_queue_.end(), frame);
+  auto it = frame_queue_.empty()
+                ? frame_queue_.end()
+                : std::lower_bound(frame_queue_.begin(), frame_queue_.end(),
+                                   ready_frame);
   DCHECK_GE(it - frame_queue_.begin(), 0);
 
   // Drop any frames inserted before or at the last rendered frame if we've
