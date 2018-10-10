@@ -262,8 +262,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kNativeNotifications;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNetworkPrediction;
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNewNetErrorPageUI;
 COMPONENT_EXPORT(CHROME_FEATURES)

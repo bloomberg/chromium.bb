@@ -316,7 +316,6 @@ class HostedAppTest
     std::tie(app_type_, desktop_pwa_flag) = GetParam();
     std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features = {
-        features::kNetworkPrediction,
         predictors::kSpeculativePreconnectFeature};
     if (desktop_pwa_flag) {
       enabled_features.push_back(features::kDesktopPWAWindowing);
