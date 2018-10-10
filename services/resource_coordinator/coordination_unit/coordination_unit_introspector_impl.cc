@@ -35,12 +35,7 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     mojom::ProcessInfoPtr process_info(mojom::ProcessInfo::New());
     process_info->pid = base::checked_cast<base::ProcessId>(pid);
     DCHECK_NE(base::kNullProcessId, process_info->pid);
-
-    int64_t launch_time;
-    if (process_cu->GetProperty(mojom::PropertyType::kLaunchTime,
-                                &launch_time)) {
-      process_info->launch_time = base::Time::FromTimeT(launch_time);
-    }
+    process_info->launch_time = process_cu->launch_time();
 
     std::set<PageCoordinationUnitImpl*> page_cus =
         process_cu->GetAssociatedPageCoordinationUnits();
