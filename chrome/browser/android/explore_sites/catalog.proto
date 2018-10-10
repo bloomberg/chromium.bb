@@ -17,7 +17,9 @@ message Catalog {
 
 // A logical grouping of sites, with a title and an icon.
 message Category {
-  // The canonical types of category.
+  // The canonical types of category.  These must be kept in sync with
+  // CategoryType in ExploreSitesCatagory.java and ExploreSitesCategories in
+  // enums.xml.
   enum CategoryType {
     DEFAULT = 0;
     SOCIAL = 1;

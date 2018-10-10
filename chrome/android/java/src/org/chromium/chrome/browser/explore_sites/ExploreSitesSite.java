@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 public class ExploreSitesSite {
     static final PropertyModel.ReadableIntPropertyKey ID_KEY =
             new PropertyModel.ReadableIntPropertyKey();
+    static final PropertyModel.WritableIntPropertyKey TILE_INDEX_KEY =
+            new PropertyModel.WritableIntPropertyKey();
     static final PropertyModel.ReadableObjectPropertyKey<String> TITLE_KEY =
             new PropertyModel.ReadableObjectPropertyKey<>();
     static final PropertyModel.ReadableObjectPropertyKey<String> URL_KEY =
@@ -24,9 +26,10 @@ public class ExploreSitesSite {
 
     private PropertyModel mModel;
 
-    public ExploreSitesSite(int id, String title, String url) {
-        mModel = new PropertyModel.Builder(ID_KEY, TITLE_KEY, URL_KEY, ICON_KEY)
+    public ExploreSitesSite(int id, int tileIndex, String title, String url) {
+        mModel = new PropertyModel.Builder(ID_KEY, TILE_INDEX_KEY, TITLE_KEY, URL_KEY, ICON_KEY)
                          .with(ID_KEY, id)
+                         .with(TILE_INDEX_KEY, tileIndex)
                          .with(TITLE_KEY, title)
                          .with(URL_KEY, url)
                          .build();
@@ -39,7 +42,8 @@ public class ExploreSitesSite {
     @CalledByNative
     private static void createSiteInCategory(
             int siteId, String title, String url, ExploreSitesCategory category) {
-        ExploreSitesSite site = new ExploreSitesSite(siteId, title, url);
+        ExploreSitesSite site =
+                new ExploreSitesSite(siteId, category.getSites().size(), title, url);
         category.addSite(site);
     }
 }
