@@ -42,6 +42,10 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
 
   void RemoveDevice(scoped_refptr<FakeUsbDeviceInfo> device);
 
+  bool IsBound() { return !bindings_.empty(); }
+
+  void CloseAllBindings() { bindings_.CloseAllBindings(); }
+
  private:
   // mojom::UsbDeviceManager implementation:
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
