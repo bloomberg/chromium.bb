@@ -45,24 +45,24 @@ WindowGrid* GetWindowGrid(aura::Window* dragged_window) {
       dragged_window->GetRootWindow());
 }
 
-// Returns the new selector item in overview during drag.
-WindowSelectorItem* GetNewSelectorItem(aura::Window* dragged_window) {
+// Returns the drop target in overview during drag.
+WindowSelectorItem* GetDropTarget(aura::Window* dragged_window) {
   WindowGrid* window_grid = GetWindowGrid(dragged_window);
   if (!window_grid || window_grid->empty())
     return nullptr;
 
-  return window_grid->GetNewSelectorItem();
+  return window_grid->GetDropTarget();
 }
 
-// Gets the bounds of selected new selector item in overview grid that is
-// displaying in the same root window as |dragged_window|. Note that the
-// returned bounds is scaled-up.
-gfx::Rect GetBoundsOfSelectedNewSelectorItem(aura::Window* dragged_window) {
-  WindowSelectorItem* new_selector_item = GetNewSelectorItem(dragged_window);
-  if (!new_selector_item)
+// Gets the bounds of selected drop target in overview grid that is displaying
+// in the same root window as |dragged_window|. Note that the returned bounds is
+// scaled-up.
+gfx::Rect GetBoundsOfSelectedDropTarget(aura::Window* dragged_window) {
+  WindowSelectorItem* drop_target = GetDropTarget(dragged_window);
+  if (!drop_target)
     return gfx::Rect();
 
-  return new_selector_item->GetBoundsOfSelectedItem();
+  return drop_target->GetBoundsOfSelectedItem();
 }
 
 }  // namespace
@@ -112,8 +112,8 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
                                              /*animate=*/was_overview_open);
   }
 
-  bounds_of_selected_new_selector_item_ =
-      GetBoundsOfSelectedNewSelectorItem(dragged_window_);
+  bounds_of_selected_drop_target_ =
+      GetBoundsOfSelectedDropTarget(dragged_window_);
 
   // Update the dragged window's shadow. It should have the active window
   // shadow during dragging.
@@ -333,14 +333,12 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
 
   // Calculate the desired scale along the y-axis. The scale of the window
   // during drag is based on the distance from |y_location_in_screen| to the y
-  // position of |bounds_of_selected_new_selector_item_|. The dragged window
-  // will become smaller when it becomes nearer to the new selector item. And
-  // then keep the minimum scale if it has been dragged further than the new
-  // selector item.
-  float scale =
-      static_cast<float>(bounds_of_selected_new_selector_item_.height()) /
-      static_cast<float>(dragged_window_->bounds().height());
-  int y_full = bounds_of_selected_new_selector_item_.y();
+  // position of |bounds_of_selected_drop_target_|. The dragged windowt will
+  // become smaller when it becomes nearer to the drop target. And then keep the
+  // minimum scale if it has been dragged further than the drop target.
+  float scale = static_cast<float>(bounds_of_selected_drop_target_.height()) /
+                static_cast<float>(dragged_window_->bounds().height());
+  int y_full = bounds_of_selected_drop_target_.y();
   int y_diff = y_full - location_in_screen.y();
   if (y_diff >= 0)
     scale = (1.0f - scale) * y_diff / y_full + scale;
@@ -364,25 +362,24 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
   if (snap_position != SplitViewController::NONE && !is_split_view_active)
     return false;
 
-  WindowSelectorItem* new_selector_item = GetNewSelectorItem(dragged_window_);
-  if (!new_selector_item)
+  WindowSelectorItem* drop_target = GetDropTarget(dragged_window_);
+  if (!drop_target)
     return false;
 
   WindowGrid* window_grid = GetWindowGrid(dragged_window_);
   aura::Window* target_window =
       window_grid->GetTargetWindowOnLocation(location_in_screen);
-  const bool is_new_selector_item_selected =
-      target_window && window_grid->IsNewSelectorItemWindow(target_window);
+  const bool is_drop_target_selected =
+      target_window && window_grid->IsDropTargetWindow(target_window);
 
   // TODO(crbug.com/878294): Should also consider drag distance when splitview
   // is active.
   if (is_split_view_active)
-    return is_new_selector_item_selected;
+    return is_drop_target_selected;
 
-  return is_new_selector_item_selected ||
-         location_in_screen.y() >=
-             kDragPositionToOverviewRatio *
-                 new_selector_item->GetTransformedBounds().y();
+  return is_drop_target_selected ||
+         location_in_screen.y() >= kDragPositionToOverviewRatio *
+                                       drop_target->GetTransformedBounds().y();
 }
 
 bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(

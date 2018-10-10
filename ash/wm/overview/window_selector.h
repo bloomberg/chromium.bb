@@ -145,8 +145,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // returned to the window grid (e.g. split view divider dragged to either
   // edge, or a window is snapped to a postion that already has a snapped
   // window); 2) when a window (not from overview) is dragged while overview is
-  // open and the window is dropped on the new selector item, the dragged window
-  // is then added to the overview.
+  // open and the window is dropped on the drop target, the dragged window is
+  // then added to the overview.
   void AddItem(aura::Window* window, bool reposition, bool animate);
 
   // Removes the window selector item from the overview window grid. And if
@@ -154,8 +154,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // This may be called in two scenarioes: 1) when a user drags an overview item
   // to snap to one side of the screen, the item should be removed from the
   // overview grid; 2) when a window (not from overview) ends its dragging while
-  // overview is open, the new selector item should be removed. Note in both
-  // cases, the windows in the window grid do not need to be repositioned.
+  // overview is open, the drop target should be removed. Note in both cases,
+  // the windows in the window grid do not need to be repositioned.
   void RemoveWindowSelectorItem(WindowSelectorItem* item, bool reposition);
 
   void InitiateDrag(WindowSelectorItem* item,

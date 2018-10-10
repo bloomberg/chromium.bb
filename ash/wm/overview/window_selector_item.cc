@@ -651,10 +651,10 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // Shadow is normally set after an animation is finished. In the case of no
   // animations, manually set the shadow. Shadow relies on both the window
   // transform and |item_widget_|'s new bounds so set it after SetItemBounds
-  // and UpdateHeaderLayout. Do not apply the shadow for new selector item.
+  // and UpdateHeaderLayout. Do not apply the shadow for drop target.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
     SetShadowBounds(
-        window_grid_->IsNewSelectorItemWindow(GetWindow())
+        window_grid_->IsDropTargetWindow(GetWindow())
             ? base::nullopt
             : base::make_optional(transform_window_.GetTransformedBounds()));
   }
@@ -716,9 +716,9 @@ void WindowSelectorItem::OnMinimizedStateChanged() {
 
 void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
   // Windows which can snap will never show this warning. Or if the window is
-  // the new selector item window, also do not show this warning.
+  // the drop target window, also do not show this warning.
   if (Shell::Get()->split_view_controller()->CanSnap(GetWindow()) ||
-      window_grid_->IsNewSelectorItemWindow(GetWindow())) {
+      window_grid_->IsDropTargetWindow(GetWindow())) {
     caption_container_view_->SetCannotSnapLabelVisibility(false);
     return;
   }
@@ -1043,8 +1043,8 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   gfx::Rect selector_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, title_height);
-  // Do not set transform for new selector item, set bounds instead.
-  if (window_grid_->IsNewSelectorItemWindow(window)) {
+  // Do not set transform for drop target, set bounds instead.
+  if (window_grid_->IsDropTargetWindow(window)) {
     window->layer()->SetBounds(selector_item_bounds);
     transform_window_.GetOverviewWindow()->SetTransform(gfx::Transform());
     return;
