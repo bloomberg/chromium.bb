@@ -45,7 +45,7 @@ using StatusCallback = base::OnceCallback<void(blink::mojom::QuotaStatusCode)>;
 using GetOriginsCallback =
     base::OnceCallback<void(const std::set<url::Origin>& origins,
                             blink::mojom::StorageType type)>;
-using GetUsageInfoCallback = base::OnceCallback<void(const UsageInfoEntries&)>;
+using GetUsageInfoCallback = base::OnceCallback<void(UsageInfoEntries)>;
 using GetOriginCallback =
     base::OnceCallback<void(const base::Optional<url::Origin>&)>;
 

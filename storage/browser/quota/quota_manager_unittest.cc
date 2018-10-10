@@ -345,8 +345,8 @@ class QuotaManagerTest : public testing::Test {
         &QuotaManagerTest::DidDumpOriginInfoTable, weak_factory_.GetWeakPtr()));
   }
 
-  void DidGetUsageInfo(const UsageInfoEntries& entries) {
-    usage_info_.insert(usage_info_.begin(), entries.begin(), entries.end());
+  void DidGetUsageInfo(UsageInfoEntries entries) {
+    usage_info_ = std::move(entries);
   }
 
   void DidGetUsageAndQuota(QuotaStatusCode status,

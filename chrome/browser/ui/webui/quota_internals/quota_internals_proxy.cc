@@ -66,8 +66,7 @@ void QuotaInternalsProxy::RequestInfo(
       base::Bind(&QuotaInternalsProxy::DidDumpOriginInfoTable,
                  weak_factory_.GetWeakPtr()));
 
-  std::map<std::string, std::string> stats;
-  quota_manager_->GetStatistics(&stats);
+  std::map<std::string, std::string> stats = quota_manager_->GetStatistics();
   ReportStatistics(stats);
 }
 

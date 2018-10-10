@@ -63,16 +63,16 @@ void ImportantSitesUsageCounter::GetQuotaUsageOnIOThread() {
 }
 
 void ImportantSitesUsageCounter::ReceiveQuotaUsageOnIOThread(
-    const std::vector<storage::UsageInfo>& usage_infos) {
+    std::vector<storage::UsageInfo> usage_infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ImportantSitesUsageCounter::ReceiveQuotaUsage,
-                     base::Unretained(this), usage_infos));
+                     base::Unretained(this), std::move(usage_infos)));
 }
 
 void ImportantSitesUsageCounter::ReceiveQuotaUsage(
-    const std::vector<storage::UsageInfo>& usage_infos) {
+    std::vector<storage::UsageInfo> usage_infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   for (const storage::UsageInfo& info : usage_infos) {
     IncrementUsage(

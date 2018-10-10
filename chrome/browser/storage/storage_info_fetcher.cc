@@ -20,8 +20,7 @@ StorageInfoFetcher::StorageInfoFetcher(Profile* profile) {
       profile)->GetQuotaManager();
 }
 
-StorageInfoFetcher::~StorageInfoFetcher() {
-}
+StorageInfoFetcher::~StorageInfoFetcher() = default;
 
 void StorageInfoFetcher::FetchStorageInfo(const FetchCallback& fetch_callback) {
   // Balanced in OnFetchCompleted.
@@ -33,9 +32,9 @@ void StorageInfoFetcher::FetchStorageInfo(const FetchCallback& fetch_callback) {
   // called on the UI thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(
+      base::BindOnce(
           &StorageInfoFetcher::GetUsageInfo, this,
-          base::Bind(&StorageInfoFetcher::OnGetUsageInfoInternal, this)));
+          base::BindOnce(&StorageInfoFetcher::OnGetUsageInfoInternal, this)));
 }
 
 void StorageInfoFetcher::ClearStorage(const std::string& host,
@@ -49,10 +48,10 @@ void StorageInfoFetcher::ClearStorage(const std::string& host,
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(
+      base::BindOnce(
           &storage::QuotaManager::DeleteHostData, quota_manager_, host, type,
           storage::QuotaClient::kAllClientsMask,
-          base::Bind(&StorageInfoFetcher::OnUsageClearedInternal, this)));
+          base::BindOnce(&StorageInfoFetcher::OnUsageClearedInternal, this)));
 }
 
 void StorageInfoFetcher::GetUsageInfo(storage::GetUsageInfoCallback callback) {
@@ -61,13 +60,14 @@ void StorageInfoFetcher::GetUsageInfo(storage::GetUsageInfoCallback callback) {
 }
 
 void StorageInfoFetcher::OnGetUsageInfoInternal(
-    const storage::UsageInfoEntries& entries) {
+    storage::UsageInfoEntries entries) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  entries_.insert(entries_.begin(), entries.begin(), entries.end());
+  entries_ = std::move(entries);
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&StorageInfoFetcher::OnFetchCompleted, this));
+      base::BindOnce(&StorageInfoFetcher::OnFetchCompleted, this));
 }
 
 void StorageInfoFetcher::OnFetchCompleted() {
@@ -86,7 +86,7 @@ void StorageInfoFetcher::OnUsageClearedInternal(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&StorageInfoFetcher::OnClearCompleted, this, code));
+      base::BindOnce(&StorageInfoFetcher::OnClearCompleted, this, code));
 }
 
 void StorageInfoFetcher::OnClearCompleted(blink::mojom::QuotaStatusCode code) {
