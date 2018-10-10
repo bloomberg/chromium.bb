@@ -4,19 +4,17 @@
 
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 
-WaitForNetworkCallbackHelper::WaitForNetworkCallbackHelper(
-    network::NetworkConnectionTracker* network_connection_tracker)
-    : network_connection_tracker_(network_connection_tracker) {
-  network_connection_tracker_->AddNetworkConnectionObserver(this);
+WaitForNetworkCallbackHelper::WaitForNetworkCallbackHelper() {
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 WaitForNetworkCallbackHelper::~WaitForNetworkCallbackHelper() {
-  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void WaitForNetworkCallbackHelper::OnConnectionChanged(
-    network::mojom::ConnectionType type) {
-  if (network_connection_tracker_->IsOffline())
+void WaitForNetworkCallbackHelper::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (net::NetworkChangeNotifier::IsOffline())
     return;
 
   for (const base::Closure& callback : delayed_callbacks_)
@@ -27,7 +25,7 @@ void WaitForNetworkCallbackHelper::OnConnectionChanged(
 
 void WaitForNetworkCallbackHelper::HandleCallback(
     const base::Closure& callback) {
-  if (network_connection_tracker_->IsOffline()) {
+  if (net::NetworkChangeNotifier::IsOffline()) {
     delayed_callbacks_.push_back(callback);
   } else {
     callback.Run();
