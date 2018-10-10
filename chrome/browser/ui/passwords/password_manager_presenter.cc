@@ -30,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
@@ -47,28 +48,38 @@ using password_manager::PasswordStore;
 
 namespace {
 
-// Finds duplicates of |form| in |duplicates|, removes them from |store| and
-// from |duplicates|.
-void RemoveDuplicates(const autofill::PasswordForm& form,
-                      password_manager::DuplicatesMap* duplicates,
-                      PasswordStore* store) {
-  std::string key = password_manager::CreateSortKey(form);
-  std::pair<password_manager::DuplicatesMap::iterator,
-            password_manager::DuplicatesMap::iterator>
-      dups = duplicates->equal_range(key);
-  for (auto it = dups.first; it != dups.second; ++it)
-    store->RemoveLogin(*it->second);
-  duplicates->erase(key);
-}
+// Convenience typedef for the commonly used vector of PasswordForm pointers.
+using FormVector = std::vector<std::unique_ptr<autofill::PasswordForm>>;
 
 const autofill::PasswordForm* TryGetPasswordForm(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
+    const std::map<std::string, FormVector>& map,
     size_t index) {
   // |index| out of bounds might come from a compromised renderer
   // (http://crbug.com/362054), or the user removed a password while a request
   // to the store is in progress (i.e. |forms| is empty). Don't let it crash
   // the browser.
-  return index < forms.size() ? forms[index].get() : nullptr;
+  if (map.size() <= index)
+    return nullptr;
+
+  // Android tries to obtain a PasswordForm corresponding to a specific index,
+  // and does not know about sort keys. In order to efficiently obtain the n'th
+  // element in the map we make use of std::next() here.
+  const auto& forms = std::next(map.begin(), index)->second;
+  DCHECK(!forms.empty());
+  return forms[0].get();
+}
+
+// Processes |map| and returns a FormVector where each equivalence class in
+// |map| is represented by exactly one entry in the result.
+FormVector GetEntryList(const std::map<std::string, FormVector>& map) {
+  FormVector result;
+  result.reserve(map.size());
+  for (const auto& pair : map) {
+    DCHECK(!pair.second.empty());
+    result.push_back(std::make_unique<autofill::PasswordForm>(*pair.second[0]));
+  }
+
+  return result;
 }
 
 class RemovePasswordOperation : public UndoOperation {
@@ -166,16 +177,14 @@ void PasswordManagerPresenter::Initialize() {
 
 void PasswordManagerPresenter::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
-  // Entire list is updated for convenience.
+  // Entire maps are updated for convenience.
   UpdatePasswordLists();
 }
 
 void PasswordManagerPresenter::UpdatePasswordLists() {
-  // Reset the current lists.
-  password_list_.clear();
-  password_duplicates_.clear();
-  password_exception_list_.clear();
-  password_exception_duplicates_.clear();
+  // Reset the current maps.
+  password_map_.clear();
+  exception_map_.clear();
 
   PasswordStore* store = GetPasswordStore();
   if (!store)
@@ -187,15 +196,15 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
     size_t index) {
-  return TryGetPasswordForm(password_list_, index);
+  return TryGetPasswordForm(password_map_, index);
 }
 
-std::vector<std::unique_ptr<autofill::PasswordForm>>
-PasswordManagerPresenter::GetAllPasswords() {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
-
-  for (const auto& form : password_list_) {
-    ret_val.push_back(std::make_unique<autofill::PasswordForm>(*form));
+FormVector PasswordManagerPresenter::GetAllPasswords() {
+  FormVector ret_val;
+  for (const auto& pair : password_map_) {
+    for (const auto& form : pair.second) {
+      ret_val.push_back(std::make_unique<autofill::PasswordForm>(*form));
+    }
   }
 
   return ret_val;
@@ -203,7 +212,7 @@ PasswordManagerPresenter::GetAllPasswords() {
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
     size_t index) {
-  return TryGetPasswordForm(password_exception_list_, index);
+  return TryGetPasswordForm(exception_map_, index);
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
@@ -226,7 +235,7 @@ void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
 
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 #if !defined(OS_ANDROID)  // This is never called on Android.
-  const auto* form = TryGetPasswordForm(password_list_, index);
+  const auto* form = TryGetPasswordForm(password_map_, index);
   if (!form)
     return;
 
@@ -274,51 +283,53 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
 
 bool PasswordManagerPresenter::TryRemovePasswordEntry(EntryKind entry_kind,
                                                       size_t index) {
-  const auto& entries = entry_kind == EntryKind::kPassword
-                            ? password_list_
-                            : password_exception_list_;
-
-  const auto* form = TryGetPasswordForm(entries, index);
-  if (!form)
-    return false;
-
-  auto& duplicates = entry_kind == EntryKind::kPassword
-                         ? password_duplicates_
-                         : password_exception_duplicates_;
-
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return false;
 
-  RemoveDuplicates(*form, &duplicates, store);
-  RemoveLogin(*form);
+  PasswordFormMap& map =
+      entry_kind == EntryKind::kPassword ? password_map_ : exception_map_;
+  if (map.size() <= index)
+    return false;
+
+  // Android tries to obtain a PasswordForm corresponding to a specific index,
+  // and does not know about sort keys. In order to efficiently obtain the n'th
+  // element in the map we make use of std::next() here.
+  auto forms_iter = std::next(map.cbegin(), index);
+  const FormVector& forms = forms_iter->second;
+  DCHECK(!forms.empty());
+
+  undo_manager_.AddUndoOperation(
+      std::make_unique<RemovePasswordOperation>(this, *forms[0]));
+  for (const auto& form : forms)
+    store->RemoveLogin(*form);
+
+  map.erase(forms_iter);
   return true;
 }
 
-void PasswordManagerPresenter::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  std::partition_copy(std::make_move_iterator(results.begin()),
-                      std::make_move_iterator(results.end()),
-                      std::back_inserter(password_exception_list_),
-                      std::back_inserter(password_list_), [](const auto& form) {
-                        return form->blacklisted_by_user;
-                      });
-
-  password_manager::SortEntriesAndHideDuplicates(&password_list_,
-                                                 &password_duplicates_);
-  password_manager::SortEntriesAndHideDuplicates(
-      &password_exception_list_, &password_exception_duplicates_);
+void PasswordManagerPresenter::OnGetPasswordStoreResults(FormVector results) {
+  for (auto& form : results) {
+    auto& form_map = form->blacklisted_by_user ? exception_map_ : password_map_;
+    form_map[password_manager::CreateSortKey(*form)].push_back(std::move(form));
+  }
 
   SetPasswordList();
   SetPasswordExceptionList();
 }
 
 void PasswordManagerPresenter::SetPasswordList() {
-  password_view_->SetPasswordList(password_list_);
+  // TODO(https://crbug.com/892260): Creating a copy of the elements is
+  // wasteful. Consider updating PasswordUIView to take a PasswordFormMap
+  // instead.
+  password_view_->SetPasswordList(GetEntryList(password_map_));
 }
 
 void PasswordManagerPresenter::SetPasswordExceptionList() {
-  password_view_->SetPasswordExceptionList(password_exception_list_);
+  // TODO(https://crbug.com/892260): Creating a copy of the elements is
+  // wasteful. Consider updating PasswordUIView to take a PasswordFormMap
+  // instead.
+  password_view_->SetPasswordExceptionList(GetEntryList(exception_map_));
 }
 
 PasswordStore* PasswordManagerPresenter::GetPasswordStore() {
