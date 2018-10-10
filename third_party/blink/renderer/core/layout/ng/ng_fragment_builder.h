@@ -39,10 +39,27 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   ~NGFragmentBuilder() override;
 
-  NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
-  NGFragmentBuilder& SetBorders(const NGBoxStrut&);
-  NGFragmentBuilder& SetPadding(const NGBoxStrut&);
-  NGFragmentBuilder& SetPadding(const NGLineBoxStrut&);
+  NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
+    intrinsic_block_size_ = intrinsic_block_size;
+    return *this;
+  }
+  NGFragmentBuilder& SetBorders(const NGBoxStrut& border) {
+    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+    borders_ = border;
+    return *this;
+  }
+  NGFragmentBuilder& SetPadding(const NGBoxStrut& padding) {
+    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+    padding_ = padding;
+    return *this;
+  }
+  NGFragmentBuilder& SetPadding(const NGLineBoxStrut& padding) {
+    DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
+    // Convert to flow-relative, because ToInlineBoxFragment() will convert
+    // the padding to physical coordinates using flow-relative writing-mode.
+    padding_ = NGBoxStrut(padding, IsFlippedLinesWritingMode(GetWritingMode()));
+    return *this;
+  }
 
   using NGContainerFragmentBuilder::AddChild;
 
@@ -123,8 +140,17 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // do not provide a setter here.
 
   // Creates the fragment. Can only be called once.
-  scoped_refptr<NGLayoutResult> ToBoxFragment();
-  scoped_refptr<NGLayoutResult> ToInlineBoxFragment();
+  scoped_refptr<NGLayoutResult> ToBoxFragment() {
+    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+    return ToBoxFragment(GetWritingMode());
+  }
+  scoped_refptr<NGLayoutResult> ToInlineBoxFragment() {
+    // The logical coordinate for inline box uses line-relative writing-mode,
+    // not
+    // flow-relative.
+    DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
+    return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
+  }
 
   scoped_refptr<NGLayoutResult> Abort(NGLayoutResult::NGLayoutResultStatus);
 
@@ -133,12 +159,18 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   OffsetVector& MutableOffsets() { return offsets_; }
 
   NGPhysicalFragment::NGBoxType BoxType() const;
-  NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType);
+  NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
+    box_type_ = box_type;
+    return *this;
+  }
   NGFragmentBuilder& SetIsFieldsetContainer() {
     is_fieldset_container_ = true;
     return *this;
   }
-  NGFragmentBuilder& SetIsOldLayoutRoot();
+  NGFragmentBuilder& SetIsOldLayoutRoot() {
+    is_old_layout_root_ = true;
+    return *this;
+  }
 
   bool DidBreak() const { return did_break_; }
 

@@ -25,7 +25,10 @@ class CORE_EXPORT NGBaseFragmentBuilder {
     DCHECK(style_);
     return *style_;
   }
-  NGBaseFragmentBuilder& SetStyleVariant(NGStyleVariant);
+  NGBaseFragmentBuilder& SetStyleVariant(NGStyleVariant style_variant) {
+    style_variant_ = style_variant;
+    return *this;
+  }
   NGBaseFragmentBuilder& SetStyle(scoped_refptr<const ComputedStyle>,
                                   NGStyleVariant);
 

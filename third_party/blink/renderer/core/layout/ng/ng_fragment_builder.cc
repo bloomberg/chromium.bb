@@ -65,33 +65,6 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
 
 NGFragmentBuilder::~NGFragmentBuilder() = default;
 
-NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
-    LayoutUnit intrinsic_block_size) {
-  intrinsic_block_size_ = intrinsic_block_size;
-  return *this;
-}
-
-NGFragmentBuilder& NGFragmentBuilder::SetBorders(const NGBoxStrut& border) {
-  DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-  borders_ = border;
-  return *this;
-}
-
-NGFragmentBuilder& NGFragmentBuilder::SetPadding(const NGBoxStrut& padding) {
-  DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-  padding_ = padding;
-  return *this;
-}
-
-NGFragmentBuilder& NGFragmentBuilder::SetPadding(
-    const NGLineBoxStrut& padding) {
-  DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
-  // Convert to flow-relative, because ToInlineBoxFragment() will convert
-  // the padding to physical coordinates using flow-relative writing-mode.
-  padding_ = NGBoxStrut(padding, IsFlippedLinesWritingMode(GetWritingMode()));
-  return *this;
-}
-
 NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
     scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
@@ -244,17 +217,6 @@ NGPhysicalFragment::NGBoxType NGFragmentBuilder::BoxType() const {
   return BoxTypeFromLayoutObject(layout_object_);
 }
 
-NGFragmentBuilder& NGFragmentBuilder::SetBoxType(
-    NGPhysicalFragment::NGBoxType box_type) {
-  box_type_ = box_type;
-  return *this;
-}
-
-NGFragmentBuilder& NGFragmentBuilder::SetIsOldLayoutRoot() {
-  is_old_layout_root_ = true;
-  return *this;
-}
-
 void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
                                     LayoutUnit offset) {
 #if DCHECK_IS_ON()
@@ -267,18 +229,6 @@ void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
 EBreakBetween NGFragmentBuilder::JoinedBreakBetweenValue(
     EBreakBetween break_before) const {
   return JoinFragmentainerBreakValues(previous_break_after_, break_before);
-}
-
-scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
-  DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
-  return ToBoxFragment(GetWritingMode());
-}
-
-scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToInlineBoxFragment() {
-  // The logical coordinate for inline box uses line-relative writing-mode, not
-  // flow-relative.
-  DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
-  return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
 }
 
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(

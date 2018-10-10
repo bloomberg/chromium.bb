@@ -38,7 +38,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   LayoutUnit InlineSize() const { return size_.inline_size; }
   LayoutUnit BlockSize() const { return size_.block_size; }
   const NGLogicalSize& Size() const { return size_; }
-  NGContainerFragmentBuilder& SetInlineSize(LayoutUnit);
+  NGContainerFragmentBuilder& SetInlineSize(LayoutUnit inline_size) {
+    DCHECK_GE(inline_size, LayoutUnit());
+    size_.inline_size = inline_size;
+    return *this;
+  }
   void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
@@ -61,16 +65,27 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
     return *this;
   }
 
-  NGContainerFragmentBuilder& SetEndMarginStrut(const NGMarginStrut&);
+  NGContainerFragmentBuilder& SetEndMarginStrut(
+      const NGMarginStrut& end_margin_strut) {
+    end_margin_strut_ = end_margin_strut;
+    return *this;
+  }
 
   NGContainerFragmentBuilder& SetExclusionSpace(
-      NGExclusionSpace&& exclusion_space);
+      NGExclusionSpace&& exclusion_space) {
+    exclusion_space_ = std::move(exclusion_space);
+    return *this;
+  }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
     return unpositioned_list_marker_;
   }
   NGContainerFragmentBuilder& SetUnpositionedListMarker(
-      const NGUnpositionedListMarker&);
+      const NGUnpositionedListMarker& marker) {
+    DCHECK(!unpositioned_list_marker_ || !marker);
+    unpositioned_list_marker_ = marker;
+    return *this;
+  }
 
   virtual NGContainerFragmentBuilder& AddChild(const NGLayoutResult&,
                                                const NGLogicalOffset&);
@@ -123,7 +138,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
       LayoutObject* inline_container);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
-      NGOutOfFlowPositionedDescendant);
+      NGOutOfFlowPositionedDescendant descendant);
 
   void GetAndClearOutOfFlowDescendantCandidates(
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
