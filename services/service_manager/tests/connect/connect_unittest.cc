@@ -373,14 +373,14 @@ TEST_F(ConnectTest, MAYBE_ConnectWithoutExplicitClassBlocked) {
 }
 
 TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
-  test::mojom::UserIdTestPtr user_id_test;
-  connector()->BindInterface(kTestAppName, &user_id_test);
+  test::mojom::IdentityTestPtr identity_test;
+  connector()->BindInterface(kTestAppName, &identity_test);
   mojom::ConnectResult result;
   Identity target(kTestClassAppName, base::GenerateGUID());
   Identity result_identity;
   {
     base::RunLoop loop;
-    user_id_test->ConnectToClassAppAsDifferentUser(
+    identity_test->ConnectToClassAppWithIdentity(
         target,
         base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
     loop.Run();
@@ -390,18 +390,35 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
 }
 
 TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
-  test::mojom::UserIdTestPtr user_id_test;
-  connector()->BindInterface(kTestAppAName, &user_id_test);
+  test::mojom::IdentityTestPtr identity_test;
+  connector()->BindInterface(kTestAppAName, &identity_test);
   mojom::ConnectResult result;
   Identity target(kTestClassAppName, base::GenerateGUID());
   Identity result_identity;
   {
     base::RunLoop loop;
-    user_id_test->ConnectToClassAppAsDifferentUser(
+    identity_test->ConnectToClassAppWithIdentity(
         target,
         base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
     loop.Run();
   }
+  EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
+  EXPECT_FALSE(target == result_identity);
+}
+
+TEST_F(ConnectTest, ConnectWithDifferentInstanceName_Blocked) {
+  test::mojom::IdentityTestPtr identity_test;
+  connector()->BindInterface(kTestAppAName, &identity_test);
+
+  mojom::ConnectResult result;
+  Identity target(kTestClassAppName, mojom::kInheritUserID,
+                  base::GenerateGUID());
+  Identity result_identity;
+  base::RunLoop loop;
+  identity_test->ConnectToClassAppWithIdentity(
+      target, base::BindRepeating(&ReceiveConnectionResult, &result,
+                                  &result_identity, &loop));
+  loop.Run();
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
   EXPECT_FALSE(target == result_identity);
 }

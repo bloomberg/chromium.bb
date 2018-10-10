@@ -617,16 +617,16 @@ class ServiceManager::Instance
       LOG(ERROR) << "Instance: " << identity_.name()
                  << " running as: " << identity_.user_id()
                  << " attempting to connect to: " << target.name()
-                 << " as: " << target.user_id() << " without "
+                 << " as: " << target.user_id() << " without"
                  << " the 'can_connect_to_other_services_as_any_user' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
     if (!target.instance().empty() && target.instance() != target.name() &&
         !options_.can_connect_to_other_services_with_any_instance_name) {
       LOG(ERROR)
-          << "Instance: " << identity_.name() << " attempting to "
-          << "connect to " << target.name()
-          << " using Instance name: " << target.instance() << " without the "
+          << "Instance: " << identity_.name() << " attempting to"
+          << " connect to " << target.name()
+          << " using Instance name: " << target.instance() << " without the"
           << " 'can_connect_to_other_services_with_any_instance_name' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
