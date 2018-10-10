@@ -182,16 +182,16 @@ def main():
       args.ndjson_path, delta_size_info, all_symbols=True)
 
   is_roller = '-autoroll' in args.author
-
   # Useful for bot debugging to have these printed out:
+  print 'Is Roller:', is_roller
   for delta in sorted(size_deltas):
     print '{}\n\n'.format(delta.explanation)
 
   passing_deltas = set(m for m in size_deltas if m._IsAllowable())
   failing_deltas = size_deltas - passing_deltas
-  status_code = len(failing_deltas)
 
-  result = 'passed' if is_roller or status_code == 0 else 'failed'
+  status_code = 0 if is_roller else len(failing_deltas)
+  result = 'passed' if status_code == 0 else 'failed'
   message = """
 
 Binary size checks {}.
