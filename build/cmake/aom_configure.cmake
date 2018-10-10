@@ -271,7 +271,7 @@ else()
   add_compiler_flag_if_supported("-Wvla")
 
   add_c_flag_if_supported("-Wstack-usage=100000")
-  add_cxx_flag_if_supported("-Wstack-usage=360000")
+  add_cxx_flag_if_supported("-Wstack-usage=240000")
 
   # TODO(jzern): this could be added as a cxx flags for test/*.cc only, avoiding
   # third_party.

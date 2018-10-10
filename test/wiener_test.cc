@@ -120,20 +120,30 @@ typedef ::testing::tuple<const compute_stats_Func> WienerTestParam;
 
 class WienerTest : public ::testing::TestWithParam<WienerTestParam> {
  public:
-  virtual void SetUp() { target_func_ = GET_PARAM(0); }
+  virtual void SetUp() {
+    src_buf = (uint8_t *)aom_memalign(
+        32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(uint8_t));
+    dgd_buf = (uint8_t *)aom_memalign(
+        32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(uint8_t));
+    target_func_ = GET_PARAM(0);
+  }
+  virtual void TearDown() {
+    aom_free(src_buf);
+    aom_free(dgd_buf);
+  }
   void runWienerTest(const int32_t wiener_win, int32_t run_times);
   void runWienerTest_ExtremeValues(const int32_t wiener_win);
 
  private:
   compute_stats_Func target_func_;
   ACMRandom rng_;
+  uint8_t *src_buf;
+  uint8_t *dgd_buf;
 };
 
 void WienerTest::runWienerTest(const int32_t wiener_win, int32_t run_times) {
   const int32_t wiener_halfwin = wiener_win >> 1;
   const int32_t wiener_win2 = wiener_win * wiener_win;
-  DECLARE_ALIGNED(32, uint8_t, dgd_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
-  DECLARE_ALIGNED(32, uint8_t, src_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
   DECLARE_ALIGNED(32, int64_t, M_ref[WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, H_ref[WIENER_WIN2 * WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, M_test[WIENER_WIN2]);
@@ -200,8 +210,6 @@ void WienerTest::runWienerTest(const int32_t wiener_win, int32_t run_times) {
 void WienerTest::runWienerTest_ExtremeValues(const int32_t wiener_win) {
   const int32_t wiener_halfwin = wiener_win >> 1;
   const int32_t wiener_win2 = wiener_win * wiener_win;
-  DECLARE_ALIGNED(32, uint8_t, dgd_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
-  DECLARE_ALIGNED(32, uint8_t, src_buf[MAX_DATA_BLOCK * MAX_DATA_BLOCK]);
   DECLARE_ALIGNED(32, int64_t, M_ref[WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, H_ref[WIENER_WIN2 * WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, M_test[WIENER_WIN2]);
@@ -390,7 +398,17 @@ typedef ::testing::tuple<const compute_stats_Func> WienerTestParam;
 
 class WienerTestHighbd : public ::testing::TestWithParam<WienerTestParam> {
  public:
-  virtual void SetUp() { target_func_ = GET_PARAM(0); }
+  virtual void SetUp() {
+    src_buf = (uint16_t *)aom_memalign(
+        32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(uint16_t));
+    dgd_buf = (uint16_t *)aom_memalign(
+        32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(uint16_t));
+    target_func_ = GET_PARAM(0);
+  }
+  virtual void TearDown() {
+    aom_free(src_buf);
+    aom_free(dgd_buf);
+  }
   void runWienerTest(const int32_t wiener_win, int32_t run_times,
                      aom_bit_depth_t bit_depth);
   void runWienerTest_ExtremeValues(const int32_t wiener_win,
@@ -399,6 +417,8 @@ class WienerTestHighbd : public ::testing::TestWithParam<WienerTestParam> {
  private:
   compute_stats_Func target_func_;
   ACMRandom rng_;
+  uint16_t *src_buf;
+  uint16_t *dgd_buf;
 };
 
 void WienerTestHighbd::runWienerTest(const int32_t wiener_win,
@@ -406,12 +426,6 @@ void WienerTestHighbd::runWienerTest(const int32_t wiener_win,
                                      aom_bit_depth_t bit_depth) {
   const int32_t wiener_halfwin = wiener_win >> 1;
   const int32_t wiener_win2 = wiener_win * wiener_win;
-  uint16_t *dgd_buf = (uint16_t *)aom_memalign(
-      32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*dgd_buf));
-  uint16_t *src_buf = (uint16_t *)aom_memalign(
-      32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*src_buf));
-  ASSERT_TRUE(dgd_buf) << "Failed to allocate test buffer.";
-  ASSERT_TRUE(src_buf) << "Failed to allocate test buffer.";
   DECLARE_ALIGNED(32, int64_t, M_ref[WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, H_ref[WIENER_WIN2 * WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, M_test[WIENER_WIN2]);
@@ -474,26 +488,14 @@ void WienerTestHighbd::runWienerTest(const int32_t wiener_win,
         break;
       }
     }
-    if (failed != 0) {
-      aom_free(src_buf);
-      aom_free(dgd_buf);
-      ASSERT_EQ(failed, 0);
-    }
+    ASSERT_EQ(failed, 0);
   }
-  aom_free(src_buf);
-  aom_free(dgd_buf);
 }
 
 void WienerTestHighbd::runWienerTest_ExtremeValues(const int32_t wiener_win,
                                                    aom_bit_depth_t bit_depth) {
   const int32_t wiener_halfwin = wiener_win >> 1;
   const int32_t wiener_win2 = wiener_win * wiener_win;
-  uint16_t *dgd_buf = (uint16_t *)aom_memalign(
-      32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*dgd_buf));
-  uint16_t *src_buf = (uint16_t *)aom_memalign(
-      32, MAX_DATA_BLOCK * MAX_DATA_BLOCK * sizeof(*src_buf));
-  ASSERT_TRUE(dgd_buf) << "Failed to allocate test buffer.";
-  ASSERT_TRUE(src_buf) << "Failed to allocate test buffer.";
   DECLARE_ALIGNED(32, int64_t, M_ref[WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, H_ref[WIENER_WIN2 * WIENER_WIN2]);
   DECLARE_ALIGNED(32, int64_t, M_test[WIENER_WIN2]);
@@ -540,14 +542,8 @@ void WienerTestHighbd::runWienerTest_ExtremeValues(const int32_t wiener_win,
         break;
       }
     }
-    if (failed != 0) {
-      aom_free(src_buf);
-      aom_free(dgd_buf);
-      ASSERT_EQ(failed, 0);
-    }
+    ASSERT_EQ(failed, 0);
   }
-  aom_free(src_buf);
-  aom_free(dgd_buf);
 }
 
 TEST_P(WienerTestHighbd, RandomValues) {
