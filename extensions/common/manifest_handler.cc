@@ -141,8 +141,7 @@ bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
       handlers_by_priority[priority_map_[handler]] = handler;
     }
   }
-  for (std::map<int, ManifestHandler*>::iterator iter =
-           handlers_by_priority.begin();
+  for (auto iter = handlers_by_priority.begin();
        iter != handlers_by_priority.end(); ++iter) {
     if (!(iter->second)->Parse(extension, error))
       return false;
@@ -163,8 +162,7 @@ bool ManifestHandlerRegistry::ValidateExtension(
       handlers.insert(handler);
     }
   }
-  for (std::set<ManifestHandler*>::iterator iter = handlers.begin();
-       iter != handlers.end(); ++iter) {
+  for (auto iter = handlers.begin(); iter != handlers.end(); ++iter) {
     if (!(*iter)->Validate(extension, error, warnings))
       return false;
   }

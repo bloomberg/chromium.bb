@@ -403,8 +403,7 @@ bool ExtensionRegistrar::IsExtensionEnabled(
 
 void ExtensionRegistrar::DidCreateRenderViewForBackgroundPage(
     ExtensionHost* host) {
-  OrphanedDevTools::iterator iter =
-      orphaned_dev_tools_.find(host->extension_id());
+  auto iter = orphaned_dev_tools_.find(host->extension_id());
   if (iter == orphaned_dev_tools_.end())
     return;
   // Keepalive count is reset on extension reload. This re-establishes the

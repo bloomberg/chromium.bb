@@ -291,8 +291,7 @@ void ExtensionDownloader::DoStartAllPending() {
   ReportStats();
   url_stats_ = URLStats();
 
-  for (FetchMap::iterator it = fetches_preparing_.begin();
-       it != fetches_preparing_.end();
+  for (auto it = fetches_preparing_.begin(); it != fetches_preparing_.end();
        ++it) {
     std::vector<std::unique_ptr<ManifestFetchData>>& list = it->second;
     for (size_t i = 0; i < list.size(); ++i)
@@ -392,7 +391,7 @@ bool ExtensionDownloader::AddExtensionData(
 
   // Find or create a ManifestFetchData to add this extension to.
   bool added = false;
-  FetchMap::iterator existing_iter =
+  auto existing_iter =
       fetches_preparing_.find(std::make_pair(request_id, update_url));
   if (existing_iter != fetches_preparing_.end() &&
       !existing_iter->second.empty()) {
@@ -1043,9 +1042,7 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
     const std::set<std::string>& extension_ids,
     const std::set<int>& request_ids,
     ExtensionDownloaderDelegate::Error error) {
-  for (std::set<std::string>::const_iterator it = extension_ids.begin();
-       it != extension_ids.end();
-       ++it) {
+  for (auto it = extension_ids.cbegin(); it != extension_ids.cend(); ++it) {
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[*it];
     delegate_->OnExtensionDownloadFailed(*it, error, ping, request_ids);
     ping_results_.erase(*it);

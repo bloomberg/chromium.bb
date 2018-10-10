@@ -411,8 +411,7 @@ bool ValidateExtensionLocales(const base::FilePath& extension_path,
   if (!GetValidLocales(locale_path, &valid_locales, error))
     return false;
 
-  for (std::set<std::string>::const_iterator locale = valid_locales.begin();
-       locale != valid_locales.end();
+  for (auto locale = valid_locales.cbegin(); locale != valid_locales.cend();
        ++locale) {
     std::string locale_error;
     std::unique_ptr<base::DictionaryValue> catalog =

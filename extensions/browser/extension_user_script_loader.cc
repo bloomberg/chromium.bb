@@ -149,8 +149,7 @@ bool LoadScriptContent(const HostID& host_id,
 SubstitutionMap* GetLocalizationMessages(
     const ExtensionUserScriptLoader::HostsInfo& hosts_info,
     const HostID& host_id) {
-  ExtensionUserScriptLoader::HostsInfo::const_iterator iter =
-      hosts_info.find(host_id);
+  auto iter = hosts_info.find(host_id);
   if (iter == hosts_info.end())
     return nullptr;
   return file_util::LoadMessageBundleSubstitutionMap(

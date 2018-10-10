@@ -79,9 +79,7 @@ bool MediaGalleriesPermission::FromValue(
   bool has_read = false;
   bool has_copy_to = false;
   bool has_delete = false;
-  for (std::set<MediaGalleriesPermissionData>::const_iterator it =
-           data_set_.begin();
-       it != data_set_.end(); ++it) {
+  for (auto it = data_set_.cbegin(); it != data_set_.cend(); ++it) {
     if (it->permission() == kAllAutoDetectedPermission) {
       continue;
     }

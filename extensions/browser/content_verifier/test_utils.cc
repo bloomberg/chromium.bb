@@ -110,8 +110,7 @@ void TestContentVerifyJobObserver::JobFinished(
   Result result = failure_reason == ContentVerifyJob::NONE ? Result::SUCCESS
                                                            : Result::FAILURE;
   bool found = false;
-  for (std::list<ExpectedResult>::iterator i = expectations_.begin();
-       i != expectations_.end(); ++i) {
+  for (auto i = expectations_.begin(); i != expectations_.end(); ++i) {
     if (i->extension_id == extension_id && i->path == relative_path &&
         i->result == result) {
       found = true;

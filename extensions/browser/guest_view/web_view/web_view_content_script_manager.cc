@@ -61,7 +61,7 @@ void WebViewContentScriptManager::AddContentScripts(
   std::set<int> ids_to_add;
 
   GuestMapKey key = std::pair<int, int>(embedder_process_id, view_instance_id);
-  GuestContentScriptMap::iterator iter = guest_content_script_map_.find(key);
+  auto iter = guest_content_script_map_.find(key);
 
   // Step 1: finds the entry in guest_content_script_map_ by the given |key|.
   // If there isn't any content script added for the given guest yet, insert an
@@ -147,8 +147,7 @@ void WebViewContentScriptManager::RemoveContentScripts(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GuestMapKey key = std::pair<int, int>(embedder_process_id, view_instance_id);
-  GuestContentScriptMap::iterator script_map_iter =
-      guest_content_script_map_.find(key);
+  auto script_map_iter = guest_content_script_map_.find(key);
   if (script_map_iter == guest_content_script_map_.end())
     return;
 
@@ -176,7 +175,7 @@ void WebViewContentScriptManager::RemoveContentScripts(
     }
   } else {
     for (const std::string& name : script_name_list) {
-      ContentScriptMap::iterator iter = map.find(name);
+      auto iter = map.find(name);
       if (iter == map.end())
         continue;
       const UserScriptIDPair& id_pair = iter->second;

@@ -32,19 +32,19 @@ void PermissionsInfo::RegisterPermissions(
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByID(APIPermission::ID id) const {
-  IDMap::const_iterator i = id_map_.find(id);
+  auto i = id_map_.find(id);
   return (i == id_map_.end()) ? nullptr : i->second.get();
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByName(
     const std::string& name) const {
-  NameMap::const_iterator i = name_map_.find(name);
+  auto i = name_map_.find(name);
   return (i == name_map_.end()) ? nullptr : i->second;
 }
 
 APIPermissionSet PermissionsInfo::GetAll() const {
   APIPermissionSet permissions;
-  for (IDMap::const_iterator i = id_map_.begin(); i != id_map_.end(); ++i)
+  for (auto i = id_map_.cbegin(); i != id_map_.cend(); ++i)
     permissions.insert(i->second->id());
   return permissions;
 }
@@ -52,8 +52,7 @@ APIPermissionSet PermissionsInfo::GetAll() const {
 APIPermissionSet PermissionsInfo::GetAllByName(
     const std::set<std::string>& permission_names) const {
   APIPermissionSet permissions;
-  for (std::set<std::string>::const_iterator i = permission_names.begin();
-       i != permission_names.end(); ++i) {
+  for (auto i = permission_names.cbegin(); i != permission_names.cend(); ++i) {
     const APIPermissionInfo* permission_info = GetByName(*i);
     if (permission_info)
       permissions.insert(permission_info->id());
@@ -62,7 +61,7 @@ APIPermissionSet PermissionsInfo::GetAllByName(
 }
 
 bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
-  NameMap::const_iterator i = name_map_.lower_bound(name + '.');
+  auto i = name_map_.lower_bound(name + '.');
   if (i == name_map_.end()) return false;
   return base::StartsWith(i->first, name + '.', base::CompareCase::SENSITIVE);
 }
