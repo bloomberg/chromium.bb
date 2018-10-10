@@ -532,8 +532,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Update the web view's device scale factor.
   void UpdateWebViewWithDeviceScaleFactor();
-  // Informs that Show() will not happen.
-  void set_did_show() { did_show_ = true; }
 
   // Close the underlying WebWidget and stop the compositor.
   virtual void Close();
@@ -789,9 +787,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The maximum size to use for auto-resize.
   gfx::Size max_size_for_auto_resize_;
-
-  // Set to true if we should ignore RenderWidget::Show calls.
-  bool did_show_;
 
   // Indicates that we shouldn't bother generated paint events.
   bool is_hidden_;
