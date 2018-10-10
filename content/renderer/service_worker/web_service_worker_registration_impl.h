@@ -27,7 +27,6 @@ class WebServiceWorkerRegistrationProxy;
 
 namespace content {
 
-class WebServiceWorkerImpl;
 class ServiceWorkerProviderContext;
 
 // WebServiceWorkerRegistrationImpl represents a ServiceWorkerRegistration
@@ -120,9 +119,6 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   // the {installing,waiting,active} service worker object infos from |info_|.
   void RefreshVersionAttributes();
 
-  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
-      blink::mojom::ServiceWorkerObjectInfoPtr info);
-
   void OnUpdated(std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks,
                  blink::mojom::ServiceWorkerErrorType error,
                  const base::Optional<std::string>& error_msg);
@@ -146,11 +142,11 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   struct QueuedTask {
     QueuedTask(QueuedTaskType type,
-               const scoped_refptr<WebServiceWorkerImpl>& worker);
-    QueuedTask(const QueuedTask& other);
+               blink::mojom::ServiceWorkerObjectInfoPtr info);
+    QueuedTask(QueuedTask&& other);
     ~QueuedTask();
     QueuedTaskType type;
-    scoped_refptr<WebServiceWorkerImpl> worker;
+    blink::mojom::ServiceWorkerObjectInfoPtr info;
   };
 
   void RunQueuedTasks();

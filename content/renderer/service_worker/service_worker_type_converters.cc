@@ -5,6 +5,8 @@
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/associated_interface_request.h"
 
 namespace mojo {
 
@@ -124,6 +126,22 @@ TypeConverter<blink::WebPaymentDetailsModifier,
       blink::WebString::FromUTF8(input->method_data->stringified_data);
 
   return output;
+}
+
+blink::WebServiceWorkerObjectInfo
+TypeConverter<blink::WebServiceWorkerObjectInfo,
+              blink::mojom::ServiceWorkerObjectInfoPtr>::
+    Convert(const blink::mojom::ServiceWorkerObjectInfoPtr& input) {
+  if (!input) {
+    return blink::WebServiceWorkerObjectInfo(
+        blink::mojom::kInvalidServiceWorkerVersionId,
+        blink::mojom::ServiceWorkerState::kUnknown, blink::WebURL(),
+        mojo::ScopedInterfaceEndpointHandle() /* host_ptr_info */,
+        mojo::ScopedInterfaceEndpointHandle() /* request */);
+  }
+  return blink::WebServiceWorkerObjectInfo(
+      input->version_id, input->state, input->url,
+      input->host_ptr_info.PassHandle(), input->request.PassHandle());
 }
 
 }  // namespace mojo

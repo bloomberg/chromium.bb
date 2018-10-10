@@ -20,7 +20,6 @@
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/worker_thread_registry.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -119,7 +118,7 @@ class MockWebServiceWorkerContextProxy
       int event_id,
       blink::TransferableMessage message,
       const blink::WebSecurityOrigin& source_origin,
-      std::unique_ptr<blink::WebServiceWorker::Handle>) override {
+      blink::WebServiceWorkerObjectInfo) override {
     NOTREACHED();
   }
   void DispatchInstallEvent(int event_id) override { NOTREACHED(); }
@@ -301,11 +300,6 @@ class ServiceWorkerContextClientTest : public testing::Test {
         std::move(service_worker_host), std::move(registration_info));
     task_runner()->RunUntilIdle();
     return context_client;
-  }
-
-  bool ContainsServiceWorkerObject(ServiceWorkerContextClient* context_client,
-                                   int64_t version_id) {
-    return context_client->ContainsServiceWorkerObjectForTesting(version_id);
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
@@ -564,60 +558,6 @@ TEST_F(ServiceWorkerContextClientTest,
             static_cast<GURL>(mock_proxy.fetch_events()[0].second.Url()));
   EXPECT_EQ(expected_url_2,
             static_cast<GURL>(mock_proxy.fetch_events()[1].second.Url()));
-}
-
-TEST_F(ServiceWorkerContextClientTest, GetOrCreateServiceWorkerObject) {
-  ContextClientPipes pipes;
-  MockWebServiceWorkerContextProxy mock_proxy;
-  std::unique_ptr<ServiceWorkerContextClient> context_client =
-      CreateContextClient(&pipes, &mock_proxy);
-  scoped_refptr<WebServiceWorkerImpl> worker1;
-  scoped_refptr<WebServiceWorkerImpl> worker2;
-  const int64_t version_id = 200;
-  auto mock_service_worker_object_host =
-      std::make_unique<MockServiceWorkerObjectHost>(version_id);
-  ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
-
-  // Should return a worker object newly created with the 1st given |info|.
-  {
-    blink::mojom::ServiceWorkerObjectInfoPtr info =
-        mock_service_worker_object_host->CreateObjectInfo();
-    // ServiceWorkerObjectHost Mojo connection has been added.
-    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
-    EXPECT_FALSE(ContainsServiceWorkerObject(context_client.get(), version_id));
-    worker1 = context_client->GetOrCreateServiceWorkerObject(std::move(info));
-    EXPECT_TRUE(worker1);
-    EXPECT_TRUE(ContainsServiceWorkerObject(context_client.get(), version_id));
-    // |worker1| is holding the 1st blink::mojom::ServiceWorkerObjectHost Mojo
-    // connection to |mock_service_worker_object_host|.
-    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
-  }
-
-  // Should return the same worker object and release the 2nd given |info|.
-  {
-    blink::mojom::ServiceWorkerObjectInfoPtr info =
-        mock_service_worker_object_host->CreateObjectInfo();
-    EXPECT_EQ(2, mock_service_worker_object_host->GetBindingCount());
-    worker2 = context_client->GetOrCreateServiceWorkerObject(std::move(info));
-    EXPECT_EQ(worker1, worker2);
-    task_runner()->RunUntilIdle();
-    // The 2nd ServiceWorkerObjectHost Mojo connection in |info| has been
-    // dropped.
-    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
-  }
-
-  // The dtor decrements the refcounts.
-  worker1 = nullptr;
-  worker2 = nullptr;
-  task_runner()->RunUntilIdle();
-  EXPECT_FALSE(ContainsServiceWorkerObject(context_client.get(), version_id));
-  // The 1st ServiceWorkerObjectHost Mojo connection got broken.
-  EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
-
-  // Should return nullptr when given nullptr.
-  scoped_refptr<WebServiceWorkerImpl> invalid_worker =
-      context_client->GetOrCreateServiceWorkerObject(nullptr);
-  EXPECT_FALSE(invalid_worker);
 }
 
 }  // namespace content

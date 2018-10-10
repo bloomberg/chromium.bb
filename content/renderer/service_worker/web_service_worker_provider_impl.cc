@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/service_worker/web_service_worker_impl.h"
+#include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -200,8 +200,7 @@ void WebServiceWorkerProviderImpl::SetController(
   for (blink::mojom::WebFeature feature : features)
     provider_client_->CountFeature(feature);
   provider_client_->SetController(
-      WebServiceWorkerImpl::CreateHandle(
-          context_->GetOrCreateServiceWorkerObject(std::move(controller))),
+      controller.To<blink::WebServiceWorkerObjectInfo>(),
       should_notify_controller_change);
 }
 
@@ -211,11 +210,8 @@ void WebServiceWorkerProviderImpl::PostMessageToClient(
   if (!provider_client_)
     return;
 
-  scoped_refptr<WebServiceWorkerImpl> source_worker =
-      context_->GetOrCreateServiceWorkerObject(std::move(source));
   provider_client_->DispatchMessageEvent(
-      WebServiceWorkerImpl::CreateHandle(std::move(source_worker)),
-      std::move(message));
+      source.To<blink::WebServiceWorkerObjectInfo>(), std::move(message));
 }
 
 void WebServiceWorkerProviderImpl::CountFeature(

@@ -43,7 +43,6 @@
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -368,9 +367,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
     DCHECK(thread_checker.CalledOnValidThread());
   }
 
-  // Map from version id to JavaScript ServiceWorker object.
-  std::map<int64_t, WebServiceWorkerImpl*> workers_;
-
   mojo::Binding<mojom::ServiceWorker> service_worker_binding;
 
   // Maps for inflight event callbacks.
@@ -659,21 +655,6 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
 }
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
-
-scoped_refptr<WebServiceWorkerImpl>
-ServiceWorkerContextClient::GetOrCreateServiceWorkerObject(
-    blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  if (!info)
-    return nullptr;
-
-  auto found = context_->workers_.find(info->version_id);
-  if (found != context_->workers_.end()) {
-    return found->second;
-  }
-
-  return WebServiceWorkerImpl::CreateForServiceWorkerGlobalScope(
-      std::move(info));
-}
 
 void ServiceWorkerContextClient::WorkerReadyForInspection() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
@@ -1565,11 +1546,10 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
 
   DCHECK_NE(event->source_info_for_service_worker->version_id,
             blink::mojom::kInvalidServiceWorkerVersionId);
-  scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorkerObject(
-      std::move(event->source_info_for_service_worker));
   proxy_->DispatchExtendableMessageEvent(
       request_id, std::move(event->message), event->source_origin,
-      WebServiceWorkerImpl::CreateHandle(worker));
+      event->source_info_for_service_worker
+          .To<blink::WebServiceWorkerObjectInfo>());
 }
 
 void ServiceWorkerContextClient::
@@ -1597,11 +1577,10 @@ void ServiceWorkerContextClient::
 
   DCHECK_NE(event->source_info_for_service_worker->version_id,
             blink::mojom::kInvalidServiceWorkerVersionId);
-  scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorkerObject(
-      std::move(event->source_info_for_service_worker));
   proxy_->DispatchExtendableMessageEvent(
       request_id, std::move(event->message), event->source_origin,
-      WebServiceWorkerImpl::CreateHandle(worker));
+      event->source_info_for_service_worker
+          .To<blink::WebServiceWorkerObjectInfo>());
 }
 
 // S13nServiceWorker
@@ -1835,23 +1814,6 @@ void ServiceWorkerContextClient::StopWorker() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   if (embedded_worker_client_)
     embedded_worker_client_->StopWorker();
-}
-
-void ServiceWorkerContextClient::AddServiceWorkerObject(
-    int64_t version_id,
-    WebServiceWorkerImpl* worker) {
-  DCHECK(!base::ContainsKey(context_->workers_, version_id));
-  context_->workers_[version_id] = worker;
-}
-
-void ServiceWorkerContextClient::RemoveServiceWorkerObject(int64_t version_id) {
-  DCHECK(base::ContainsKey(context_->workers_, version_id));
-  context_->workers_.erase(version_id);
-}
-
-bool ServiceWorkerContextClient::ContainsServiceWorkerObjectForTesting(
-    int64_t version_id) {
-  return base::ContainsKey(context_->workers_, version_id);
 }
 
 base::WeakPtr<ServiceWorkerContextClient>
