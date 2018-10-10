@@ -297,8 +297,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the DownloadItem if Start() is being called in response for a
   // download resumption request.
-  // TODO(qinmin): Remove |url_request_context_getter| once network service is
-  // enabled.
   virtual void Start(std::unique_ptr<DownloadFile> download_file,
                      std::unique_ptr<DownloadRequestHandleInterface> req_handle,
                      const DownloadCreateInfo& new_create_info,

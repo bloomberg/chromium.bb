@@ -31,7 +31,7 @@ class DownloadRequestCoreTest : public testing::Test {
       const std::string& url) const {
     GURL gurl(url);
     return std::make_unique<download::DownloadUrlParameters>(
-        gurl, request_context_getter_.get(), TRAFFIC_ANNOTATION_FOR_TESTS);
+        gurl, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   void CheckRequestHeaders(const std::string& name,
@@ -48,7 +48,8 @@ class DownloadRequestCoreTest : public testing::Test {
   }
 
   void CreateRequestOnIOThread(download::DownloadUrlParameters* params) {
-    url_request_ = DownloadRequestCore::CreateRequestOnIOThread(true, params);
+    url_request_ = DownloadRequestCore::CreateRequestOnIOThread(
+        true, params, request_context_getter_);
     DCHECK(url_request_.get());
   }
 

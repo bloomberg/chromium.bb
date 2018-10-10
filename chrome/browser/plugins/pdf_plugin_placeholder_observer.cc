@@ -16,7 +16,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -63,10 +62,6 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
                              blink::kWebReferrerPolicyDefault));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  content::StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartition(
-          web_contents()->GetBrowserContext(),
-          render_frame_host->GetSiteInstance());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("pdf_plugin_placeholder", R"(
         semantics {
@@ -96,8 +91,7 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
       std::make_unique<download::DownloadUrlParameters>(
           url, render_frame_host->GetRenderViewHost()->GetProcess()->GetID(),
           render_frame_host->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host->GetRoutingID(),
-          storage_partition->GetURLRequestContext(), traffic_annotation);
+          render_frame_host->GetRoutingID(), traffic_annotation);
   params->set_referrer(referrer.url);
   params->set_referrer_policy(
       content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
