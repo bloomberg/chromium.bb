@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,8 +30,10 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -39,6 +42,7 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
@@ -1526,6 +1530,9 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
       autofill::features::GetLocalCardMigrationExperimentalFlag() ==
           autofill::features::LocalCardMigrationExperimentalFlag::
               kMigrationIncludeSettingsPage);
+  html_source->AddBoolean(
+      "upstreamEnabled",
+      base::FeatureList::IsEnabled(autofill::features::kAutofillUpstream));
 
   autofill::PersonalDataManager* personal_data_manager_ =
       autofill::PersonalDataManagerFactory::GetForProfile(profile);
@@ -1533,6 +1540,31 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
       "hasGooglePaymentsAccount",
       autofill::payments::GetBillingCustomerId(personal_data_manager_,
                                                profile->GetPrefs()) != 0);
+
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  html_source->AddBoolean("isUsingSecondaryPassphrase",
+                          sync_service->IsUsingSecondaryPassphrase());
+  html_source->AddBoolean(
+      "uploadToGoogleActive",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnablePaymentsInteractionsOnAuthError) ||
+          syncer::GetUploadToGoogleState(
+              sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
+              syncer::UploadState::ACTIVE);
+  const std::string& user_email =
+      personal_data_manager_->GetAccountInfoForPaymentsServer().email;
+  if (user_email.empty()) {
+    html_source->AddBoolean("userEmailDomainAllowed", false);
+  } else {
+    std::string domain = gaia::ExtractDomainName(user_email);
+    html_source->AddBoolean(
+        "userEmailDomainAllowed",
+        base::FeatureList::IsEnabled(
+            autofill::features::kAutofillUpstreamAllowAllEmailDomains) ||
+            (domain == "googlemail.com" || domain == "gmail.com" ||
+             domain == "google.com" || domain == "chromium.org"));
+  }
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
