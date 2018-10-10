@@ -39,21 +39,25 @@ class SaveCardBubbleControllerImpl
 
   ~SaveCardBubbleControllerImpl() override;
 
-  // Sets up the controller for local save and shows the bubble.
+  // Sets up the controller and offers to save the |card| locally.
   // |save_card_callback| will be invoked if and when the Save button is
-  // pressed.
-  void ShowBubbleForLocalSave(const CreditCard& card,
-                              base::OnceClosure save_card_callback);
+  // pressed. If |show_bubble| is true, pops up the offer-to-save bubble;
+  // otherwise, only the omnibox icon is displayed.
+  void OfferLocalSave(const CreditCard& card,
+                      bool show_bubble,
+                      base::OnceClosure save_card_callback);
 
-  // Sets up the controller for upload and shows the bubble.
+  // Sets up the controller and offers to upload the |card| to Google Payments.
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed. The contents of |legal_message| will be displayed in the bubble.
   // A textfield confirming the cardholder name will appear in the bubble if
-  // |should_request_name_from_user| is true.
-  void ShowBubbleForUpload(
+  // |should_request_name_from_user| is true. If |show_bubble| is true, pops up
+  // the offer-to-save bubble; otherwise, only the omnibox icon is displayed.
+  void OfferUploadSave(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool show_bubble,
       base::OnceCallback<void(const base::string16&)> save_card_callback);
 
   // Sets up the controller for the sign in promo and shows the bubble.
@@ -132,7 +136,11 @@ class SaveCardBubbleControllerImpl
 
   void FetchAccountInfo();
 
+  // Displays both the offer-to-save bubble and is associated omnibox icon.
   void ShowBubble();
+
+  // Displays the omnibox icon without popping up the offer-to-save bubble.
+  void ShowIconOnly();
 
   // Update the visibility and toggled state of the Omnibox save card icon.
   void UpdateIcon();

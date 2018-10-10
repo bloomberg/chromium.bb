@@ -51,23 +51,29 @@ class StrikeDatabase : public KeyedService {
   // Passes the number of strikes for |key| to |outer_callback|. In the case
   // that the database fails to retrieve the strike update or if no entry is
   // found for |key|, 0 is passed.
-  void GetStrikes(const std::string key, const StrikesCallback& outer_callback);
+  virtual void GetStrikes(const std::string key,
+                          const StrikesCallback& outer_callback);
 
   // Increments strike count by 1 and passes the updated strike count to the
   // callback. In the case of |key| has no entry, a StrikeData entry with strike
   // count of 1 is added to the database. If the database fails to save or
   // retrieve the strike update, 0 is passed to |outer_callback|.
-  void AddStrike(const std::string key, const StrikesCallback& outer_callback);
+  virtual void AddStrike(const std::string key,
+                         const StrikesCallback& outer_callback);
 
   // Removes database entry for |key|, which implicitly sets strike count to 0.
-  void ClearAllStrikesForKey(const std::string& key,
-                             const ClearStrikesCallback& outer_callback);
+  virtual void ClearAllStrikesForKey(
+      const std::string& key,
+      const ClearStrikesCallback& outer_callback);
 
   // Returns concatenation of prefix + |card_last_four_digits| to be used as key
   // for credit card save.
   std::string GetKeyForCreditCardSave(const std::string& card_last_four_digits);
 
  protected:
+  // Constructor for testing that does not initialize a ProtoDatabase.
+  StrikeDatabase();
+
   std::unique_ptr<leveldb_proto::ProtoDatabase<StrikeData>> db_;
 
  private:

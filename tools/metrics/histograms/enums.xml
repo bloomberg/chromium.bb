@@ -28712,6 +28712,8 @@ from previous Chrome versions.
   <int value="-1907342706" label="ReadItLaterInMenu:disabled"/>
   <int value="-1899715534" label="GamepadPollingInterval:enabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
+  <int value="-1893668420"
+      label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1890374564" label="OobeRecommendAppsScreen:disabled"/>
@@ -30193,6 +30195,8 @@ from previous Chrome versions.
   <int value="986796748" label="AccountConsistency:enabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
   <int value="989062160" label="ModuleScriptsImportMetaUrl:enabled"/>
+  <int value="994317727"
+      label="AutofillSaveCreditCardUsesStrikeSystem:disabled"/>
   <int value="996643125" label="EnableAppShortcutSearch:disabled"/>
   <int value="996701528" label="SystemKeyboardLock:enabled"/>
   <int value="996797157" label="V8ContextSnapshot:enabled"/>

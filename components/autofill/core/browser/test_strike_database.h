@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -14,13 +15,27 @@
 
 namespace autofill {
 
+// An in-memory-only test version of StrikeDatabase.
 class TestStrikeDatabase : public StrikeDatabase {
  public:
-  explicit TestStrikeDatabase(const base::FilePath& database_dir);
+  TestStrikeDatabase();
+  ~TestStrikeDatabase() override;
 
-  void AddEntries(
-      std::vector<std::pair<std::string, StrikeData>> entries_to_add,
-      const SetValueCallback& callback);
+  // StrikeDatabase:
+  void GetStrikes(const std::string key,
+                  const StrikesCallback& outer_callback) override;
+  void AddStrike(const std::string key,
+                 const StrikesCallback& outer_callback) override;
+  void ClearAllStrikesForKey(
+      const std::string& key,
+      const ClearStrikesCallback& outer_callback) override;
+
+  // TestStrikeDatabase:
+  void AddEntryWithNumStrikes(std::string key, int num_strikes);
+
+ private:
+  // In-memory database of StrikeData.
+  std::unordered_map<std::string, StrikeData> db_;
 };
 
 }  // namespace autofill

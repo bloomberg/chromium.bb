@@ -61,11 +61,13 @@ class WebViewAutofillClientIOS : public AutofillClient {
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
+                                    bool show_prompt,
                                     base::OnceClosure callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool show_prompt,
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    const base::Closure& callback) override;

@@ -273,6 +273,9 @@ extern const char
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackName[];
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[];
 
+extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
+extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
+
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 

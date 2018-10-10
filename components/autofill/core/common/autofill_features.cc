@@ -175,6 +175,12 @@ const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
 const base::Feature kAutofillSaveCardSignInAfterLocalSave{
     "AutofillSaveCardSignInAfterLocalSave", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether offering to save cards will consider data from the Autofill
+// strike database.
+const base::Feature kAutofillSaveCreditCardUsesStrikeSystem{
+    "AutofillSaveCreditCardUsesStrikeSystem",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 

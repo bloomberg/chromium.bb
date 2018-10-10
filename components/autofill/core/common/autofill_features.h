@@ -54,6 +54,7 @@ extern const base::Feature kAutofillResetFullServerCardsOnAuthError;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;
 extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
+extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystem;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;

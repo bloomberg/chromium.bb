@@ -100,6 +100,9 @@ class AutofillMetrics {
     // A textfield for the user to enter/confirm cardholder name was surfaced
     // in the offer-to-save dialog.
     USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME = 1 << 12,
+    // The Autofill StrikeDatabase decided not to allow offering to save for
+    // this card. On mobile, that means no save prompt is shown at all.
+    UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE = 1 << 13,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -1259,7 +1262,7 @@ class AutofillMetrics {
   };
 
  private:
-  static const int kNumCardUploadDecisionMetrics = 13;
+  static const int kNumCardUploadDecisionMetrics = 14;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };

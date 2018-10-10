@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
+#include "components/autofill/core/browser/test_strike_database.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -52,11 +53,13 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
+                                    bool show_prompt,
                                     base::OnceClosure callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool show_prompt,
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    const base::Closure& callback) override;
@@ -98,6 +101,11 @@ class TestAutofillClient : public AutofillClient {
     prefs_ = std::move(prefs);
   }
 
+  void set_test_strike_database(
+      std::unique_ptr<TestStrikeDatabase> test_strike_database) {
+    test_strike_database_ = std::move(test_strike_database);
+  }
+
   void set_form_origin(const GURL& url);
 
   void set_sync_service(syncer::SyncService* test_sync_service) {
@@ -106,6 +114,14 @@ class TestAutofillClient : public AutofillClient {
 
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
+  }
+
+  bool ConfirmSaveCardLocallyWasCalled() {
+    return confirm_save_credit_card_locally_called_;
+  }
+
+  bool get_offer_to_save_credit_card_bubble_was_shown() {
+    return offer_to_save_credit_card_bubble_was_shown_.value();
   }
 
   void set_migration_card_selections(
@@ -126,11 +142,17 @@ class TestAutofillClient : public AutofillClient {
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
+  std::unique_ptr<TestStrikeDatabase> test_strike_database_;
   GURL form_origin_;
   ukm::SourceId source_id_ = -1;
 
   security_state::SecurityLevel security_level_ =
       security_state::SecurityLevel::NONE;
+
+  bool confirm_save_credit_card_locally_called_ = false;
+
+  // Populated if save was offered. True if bubble was shown, false otherwise.
+  base::Optional<bool> offer_to_save_credit_card_bubble_was_shown_;
 
   std::vector<std::string> migration_card_selection_;
 
