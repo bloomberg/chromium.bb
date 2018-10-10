@@ -15,15 +15,11 @@
 # --gtest_repeat=5, but might pass on a single invocation).
 
 # Chrome Desktop failures (Mac, Linux, Windows).
--CrSettingsSiteListEntryTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 -MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
 -MediaRouterElementsBrowserTest.MediaRouterContainerSinkList
 -MediaRouterElementsBrowserTest.MediaRouterRouteDetails
-
-# Mac only failure. See crbug.com/876990
--CrSettingsPrivacyPageTest.All
 
 # ChromeOS only test failures.
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_DistinguishedName
