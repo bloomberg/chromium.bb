@@ -46,7 +46,7 @@ using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 class ProvidedService : public Service,
                         public test::mojom::ConnectTestService,
                         public test::mojom::BlockedInterface,
-                        public test::mojom::UserIdTest,
+                        public test::mojom::IdentityTest,
                         public base::SimpleThread {
  public:
   ProvidedService(const std::string& title, mojom::ServiceRequest request)
@@ -71,8 +71,8 @@ class ProvidedService : public Service,
                    base::Unretained(this)));
     registry_.AddInterface<test::mojom::BlockedInterface>(base::Bind(
         &ProvidedService::BindBlockedInterfaceRequest, base::Unretained(this)));
-    registry_.AddInterface<test::mojom::UserIdTest>(base::Bind(
-        &ProvidedService::BindUserIdTestRequest, base::Unretained(this)));
+    registry_.AddInterface(base::BindRepeating(
+        &ProvidedService::BindIdentityTestRequest, base::Unretained(this)));
   }
 
   void OnBindInterface(const BindSourceInfo& source_info,
@@ -107,9 +107,9 @@ class ProvidedService : public Service,
     blocked_bindings_.AddBinding(this, std::move(request));
   }
 
-  void BindUserIdTestRequest(test::mojom::UserIdTestRequest request,
-                             const BindSourceInfo& source_info) {
-    user_id_test_bindings_.AddBinding(this, std::move(request));
+  void BindIdentityTestRequest(test::mojom::IdentityTestRequest request,
+                               const BindSourceInfo& source_info) {
+    identity_test_bindings_.AddBinding(this, std::move(request));
   }
 
   // test::mojom::ConnectTestService:
@@ -126,10 +126,10 @@ class ProvidedService : public Service,
     std::move(callback).Run("Called Blocked Interface!");
   }
 
-  // test::mojom::UserIdTest:
-  void ConnectToClassAppAsDifferentUser(
+  // test::mojom::IdentityTest:
+  void ConnectToClassAppWithIdentity(
       const service_manager::Identity& target,
-      ConnectToClassAppAsDifferentUserCallback callback) override {
+      ConnectToClassAppWithIdentityCallback callback) override {
     service_binding_.GetConnector()->StartService(target);
     mojom::ConnectResult result;
     Identity resolved_identity;
@@ -137,7 +137,7 @@ class ProvidedService : public Service,
       base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
       Connector::TestApi test_api(service_binding_.GetConnector());
       test_api.SetStartServiceCallback(
-          base::Bind(&QuitLoop, &loop, &result, &resolved_identity));
+          base::BindRepeating(&QuitLoop, &loop, &result, &resolved_identity));
       loop.Run();
     }
     std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
@@ -155,7 +155,7 @@ class ProvidedService : public Service,
     caller_.reset();
     bindings_.CloseAllBindings();
     blocked_bindings_.CloseAllBindings();
-    user_id_test_bindings_.CloseAllBindings();
+    identity_test_bindings_.CloseAllBindings();
   }
 
   void OnConnectionError() {
@@ -174,7 +174,7 @@ class ProvidedService : public Service,
   BinderRegistryWithArgs<const BindSourceInfo&> registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
-  mojo::BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
+  mojo::BindingSet<test::mojom::IdentityTest> identity_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedService);
 };
