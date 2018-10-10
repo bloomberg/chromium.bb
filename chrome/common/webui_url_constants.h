@@ -128,6 +128,7 @@ extern const char kChromeUIResetPasswordHost[];
 extern const char kChromeUIResetPasswordURL[];
 extern const char kChromeUIRestartHost[];
 extern const char kChromeUIRestartURL[];
+extern const char kChromeUISafetyURL[];
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISettingsURL[];
 extern const char kChromeUISignInInternalsHost[];
