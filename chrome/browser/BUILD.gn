@@ -4544,6 +4544,8 @@ jumbo_split_static_library("browser") {
       "android/feed/feed_offline_bridge.h",
       "android/feed/feed_scheduler_bridge.cc",
       "android/feed/feed_scheduler_bridge.h",
+      "android/feed/history/feed_history_helper.cc",
+      "android/feed/history/feed_history_helper.h",
     ]
     deps += [ "//components/feed/content:feed_content" ]
   }
