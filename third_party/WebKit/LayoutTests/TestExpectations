@@ -5329,4 +5329,4 @@ crbug.com/893015 virtual/outofblink-cors/http/tests/fetch/chromium/release-handl
 # Sheriff 2018-10-09
 crbug.com/893508 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass ]
 crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
-crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
+crbug.com/893869 [ Linux Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
