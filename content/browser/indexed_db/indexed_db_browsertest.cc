@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -59,12 +60,16 @@ using url::Origin;
 
 namespace content {
 
+namespace {
+const Origin kFileOrigin = Origin::Create(GURL("file:///"));
+};
+
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side.
 class IndexedDBBrowserTest : public ContentBrowserTest,
                              public ::testing::WithParamInterface<const char*> {
  public:
-  IndexedDBBrowserTest() : disk_usage_(-1) {}
+  IndexedDBBrowserTest() = default;
 
   void SetUp() override {
     GetTestClassFactory()->Reset();
@@ -118,10 +123,11 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
 
-  IndexedDBContextImpl* GetContext() {
-    StoragePartition* partition =
-        BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext());
+  IndexedDBContextImpl* GetContext(Shell* browser = nullptr) {
+    if (!browser)
+      browser = shell();
+    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
+        browser->web_contents()->GetBrowserContext());
     return static_cast<IndexedDBContextImpl*>(partition->GetIndexedDBContext());
   }
 
@@ -147,68 +153,67 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         storage::GetHardCodedSettings(per_host_quota_kilobytes * KB));
   }
 
-  int64_t RequestDiskUsage() {
+  void DeleteForOrigin(const Origin& origin, Shell* browser = nullptr) {
     base::RunLoop loop;
-    PostTaskAndReplyWithResult(
-        GetContext()->TaskRunner(), FROM_HERE,
-        base::BindOnce(&IndexedDBContextImpl::GetOriginDiskUsage, GetContext(),
-                       Origin::Create(GURL("file:///"))),
-        base::BindOnce(&IndexedDBBrowserTest::DidGetDiskUsage,
-                       base::Unretained(this), loop.QuitClosure()));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(GetContext()->TaskRunner()));
-    EXPECT_TRUE(helper->Run());
-    // Wait for DidGetDiskUsage to be called.
+    IndexedDBContextImpl* context = GetContext();
+    context->TaskRunner()->PostTask(FROM_HERE,
+                                    base::BindLambdaForTesting([&]() {
+                                      context->DeleteForOrigin(kFileOrigin);
+                                      loop.Quit();
+                                    }));
     loop.Run();
-    return disk_usage_;
   }
 
-  int RequestBlobFileCount() {
+  int64_t RequestUsage(const Origin& origin, Shell* browser = nullptr) {
     base::RunLoop loop;
-    PostTaskAndReplyWithResult(
-        GetContext()->TaskRunner(), FROM_HERE,
-        base::BindOnce(&IndexedDBContextImpl::GetOriginBlobFileCount,
-                       GetContext(), Origin::Create(GURL("file:///"))),
-        base::BindOnce(&IndexedDBBrowserTest::DidGetBlobFileCount,
-                       base::Unretained(this), loop.QuitClosure()));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(GetContext()->TaskRunner()));
-    EXPECT_TRUE(helper->Run());
-    // Wait for DidGetBlobFileCount to be called.
+    int64_t size;
+    IndexedDBContextImpl* context = GetContext(browser);
+    context->TaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          size = context->GetOriginDiskUsage(origin);
+          loop.Quit();
+        }));
     loop.Run();
-    return blob_file_count_;
+    return size;
   }
 
-  bool RequestSchemaDowngrade(Origin origin) {
+  int RequestBlobFileCount(const Origin& origin) {
     base::RunLoop loop;
-    PostTaskAndReplyWithResult(
-        GetContext()->TaskRunner(), FROM_HERE,
-        base::BindOnce(&IndexedDBContextImpl::ForceSchemaDowngrade,
-                       GetContext(), origin),
-        base::BindOnce(&IndexedDBBrowserTest::DidDowngradeSchema,
-                       base::Unretained(this), loop.QuitClosure()));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(GetContext()->TaskRunner()));
-    EXPECT_TRUE(helper->Run());
-    // Wait for DidDowngradeSchema to be called.
+    int count;
+    IndexedDBContextImpl* context = GetContext();
+    context->TaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          count = context->GetOriginBlobFileCount(origin);
+          loop.Quit();
+        }));
     loop.Run();
-    return schema_downgrade_;
+    return count;
+  }
+
+  bool RequestSchemaDowngrade(const Origin& origin) {
+    base::RunLoop loop;
+    bool downgraded;
+    IndexedDBContextImpl* context = GetContext();
+    context->TaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          downgraded = context->ForceSchemaDowngrade(origin);
+          loop.Quit();
+        }));
+    loop.Run();
+    return downgraded;
   }
 
   V2SchemaCorruptionStatus RequestHasV2SchemaCorruption(Origin origin) {
     base::RunLoop loop;
-    PostTaskAndReplyWithResult(
-        GetContext()->TaskRunner(), FROM_HERE,
-        base::BindOnce(&IndexedDBContextImpl::HasV2SchemaCorruption,
-                       GetContext(), origin),
-        base::BindOnce(&IndexedDBBrowserTest::DidGetV2SchemaCorruption,
-                       base::Unretained(this), loop.QuitClosure()));
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(GetContext()->TaskRunner()));
-    EXPECT_TRUE(helper->Run());
-    // Wait for DidGetV2SchemaCorruption to be called.
+    V2SchemaCorruptionStatus status;
+    IndexedDBContextImpl* context = GetContext();
+    context->TaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          status = context->HasV2SchemaCorruption(origin);
+          loop.Quit();
+        }));
     loop.Run();
-    return v2_schema_corruption_;
+    return status;
   }
 
  protected:
@@ -222,33 +227,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     return GetTestClassFactory();
   }
 
-  void DidGetDiskUsage(base::OnceClosure done, int64_t bytes) {
-    disk_usage_ = bytes;
-    std::move(done).Run();
-  }
-
-  void DidGetBlobFileCount(base::OnceClosure done, int count) {
-    blob_file_count_ = count;
-    std::move(done).Run();
-  }
-
-  void DidDowngradeSchema(base::OnceClosure done, bool downgrade) {
-    schema_downgrade_ = downgrade;
-    std::move(done).Run();
-  }
-
-  void DidGetV2SchemaCorruption(base::OnceClosure done,
-                                V2SchemaCorruptionStatus corruption) {
-    v2_schema_corruption_ = corruption;
-    std::move(done).Run();
-  }
-
  private:
-  int64_t disk_usage_;
-  int blob_file_count_ = 0;
-  bool schema_downgrade_;
-  V2SchemaCorruptionStatus v2_schema_corruption_;
-
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
 };
 
@@ -415,10 +394,10 @@ class IndexedDBBrowserTestWithVersion123456Schema : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion123456Schema,
                        DestroyTest) {
-  int64_t original_size = RequestDiskUsage();
+  int64_t original_size = RequestUsage(kFileOrigin);
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64_t new_size = RequestDiskUsage();
+  int64_t new_size = RequestUsage(kFileOrigin);
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -430,10 +409,10 @@ class IndexedDBBrowserTestWithVersion987654SSVData : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion987654SSVData,
                        DestroyTest) {
-  int64_t original_size = RequestDiskUsage();
+  int64_t original_size = RequestUsage(kFileOrigin);
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64_t new_size = RequestDiskUsage();
+  int64_t new_size = RequestUsage(kFileOrigin);
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -445,10 +424,10 @@ class IndexedDBBrowserTestWithCorruptLevelDB : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
                        DestroyTest) {
-  int64_t original_size = RequestDiskUsage();
+  int64_t original_size = RequestUsage(kFileOrigin);
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64_t new_size = RequestDiskUsage();
+  int64_t new_size = RequestUsage(kFileOrigin);
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -460,10 +439,10 @@ class IndexedDBBrowserTestWithMissingSSTFile : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
                        DestroyTest) {
-  int64_t original_size = RequestDiskUsage();
+  int64_t original_size = RequestUsage(kFileOrigin);
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_missing_table.html"));
-  int64_t new_size = RequestDiskUsage();
+  int64_t new_size = RequestUsage(kFileOrigin);
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -485,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "fill_up_5k.html"));
-  int64_t size = RequestDiskUsage();
+  int64_t size = RequestUsage(kFileOrigin);
   const int kQuotaKilobytes = 2;
   EXPECT_GT(size, kQuotaKilobytes * 1024);
   SetQuota(kQuotaKilobytes);
@@ -494,13 +473,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   // First delete all IDB's for the test origin
-  // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
-  GetContext()->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
-                         &IndexedDBContextImpl::DeleteForOrigin),
-                     GetContext(), GURL("file:///")));
-  EXPECT_EQ(0, RequestBlobFileCount());  // Start with no blob files.
+  DeleteForOrigin(kFileOrigin);
+  EXPECT_EQ(0, RequestBlobFileCount(kFileOrigin));  // Start with no blob files.
   const GURL test_url = GetTestUrl("indexeddb", "empty_blob.html");
   // For some reason Android's futimes fails (EPERM) in this test. Do not assert
   // file times on Android, but do so on other platforms. crbug.com/467247
@@ -511,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   SimpleTest(GURL(test_url.spec()));
 #endif
   // Test stores one blob and one file to disk, so expect two files.
-  EXPECT_EQ(2, RequestBlobFileCount());
+  EXPECT_EQ(2, RequestBlobFileCount(kFileOrigin));
 }
 
 // Very flaky on many bots. See crbug.com/459835
@@ -549,19 +523,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   SimpleTest(GetTestUrl("indexeddb", "write_4mb_blob.html"));
-  int64_t size = RequestDiskUsage();
+  int64_t size = RequestUsage(kFileOrigin);
   // This assertion assumes that we do not compress blobs.
   EXPECT_GT(size, 4 << 20 /* 4 MB */);
-  // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
-  GetContext()->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
-                         &IndexedDBContextImpl::DeleteForOrigin),
-                     GetContext(), GURL("file:///")));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(GetContext()->TaskRunner()));
-  ASSERT_TRUE(helper->Run());
-  EXPECT_EQ(0, RequestDiskUsage());
+  DeleteForOrigin(kFileOrigin);
+  EXPECT_EQ(0, RequestUsage(kFileOrigin));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
@@ -587,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
 
 namespace {
 
-static std::unique_ptr<net::test_server::HttpResponse> ServePath(
+std::unique_ptr<net::test_server::HttpResponse> ServePath(
     std::string request_path) {
   base::FilePath resource_path =
       content::GetTestFilePath("indexeddb", request_path.c_str());
@@ -602,9 +568,8 @@ static std::unique_ptr<net::test_server::HttpResponse> ServePath(
   return std::move(http_response);
 }
 
-static void CompactIndexedDBBackingStore(
-    scoped_refptr<IndexedDBContextImpl> context,
-    const Origin& origin) {
+void CompactIndexedDBBackingStore(scoped_refptr<IndexedDBContextImpl> context,
+                                  const Origin& origin) {
   IndexedDBFactory* factory = context->GetIDBFactory();
 
   std::pair<IndexedDBFactory::OriginDBMapIterator,
@@ -621,10 +586,9 @@ static void CompactIndexedDBBackingStore(
   backing_store->Compact();
 }
 
-static void CorruptIndexedDBDatabase(
-    IndexedDBContextImpl* context,
-    const Origin& origin,
-    base::WaitableEvent* signal_when_finished) {
+void CorruptIndexedDBDatabase(IndexedDBContextImpl* context,
+                              const Origin& origin,
+                              base::WaitableEvent* signal_when_finished) {
   CompactIndexedDBBackingStore(context, origin);
 
   int num_files = 0;
@@ -658,9 +622,9 @@ static void CorruptIndexedDBDatabase(
   signal_when_finished->Signal();
 }
 
-static const char s_corrupt_db_test_prefix[] = "/corrupt/test/";
+const char s_corrupt_db_test_prefix[] = "/corrupt/test/";
 
-static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
+std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     IndexedDBContextImpl* context,
     const Origin& origin,
     const std::string& path,
@@ -767,9 +731,9 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
   return ServePath(request_path);
 }
 
-static const char s_indexeddb_test_prefix[] = "/indexeddb/test/";
+const char s_indexeddb_test_prefix[] = "/indexeddb/test/";
 
-static std::unique_ptr<net::test_server::HttpResponse> StaticFileRequestHandler(
+std::unique_ptr<net::test_server::HttpResponse> StaticFileRequestHandler(
     const std::string& path,
     IndexedDBBrowserTest* test,
     const net::test_server::HttpRequest& request) {
@@ -812,11 +776,11 @@ INSTANTIATE_TEST_CASE_P(IndexedDBBrowserTestInstantiation,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
   SimpleTest(GURL(test_url.spec() + "#fill"));
-  int64_t after_filling = RequestDiskUsage();
+  int64_t after_filling = RequestUsage(kFileOrigin);
   EXPECT_GT(after_filling, 0);
 
   SimpleTest(GURL(test_url.spec() + "#purge"));
-  int64_t after_deleting = RequestDiskUsage();
+  int64_t after_deleting = RequestUsage(kFileOrigin);
   EXPECT_LT(after_deleting, after_filling);
 
   // The above tests verify basic assertions - that filling writes data and
@@ -913,13 +877,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
   NavigateAndWaitForTitle(shell(), "force_close_event.html", nullptr,
                           "connection ready");
-  // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
-  GetContext()->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
-                         &IndexedDBContextImpl::DeleteForOrigin),
-                     GetContext(), GURL("file:///")));
-
+  DeleteForOrigin(kFileOrigin);
   base::string16 expected_title16(ASCIIToUTF16("connection closed"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("connection closed with error"));
