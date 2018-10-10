@@ -487,6 +487,7 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['wangxianzhu@chromium.org'],
+                component='Blink>Paint',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfPaint(_BlinkPerfBenchmark):
   subdir = 'paint'
