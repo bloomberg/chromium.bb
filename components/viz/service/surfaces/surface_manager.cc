@@ -40,10 +40,6 @@ const char kUmaRemovedTemporaryReference[] =
 
 }  // namespace
 
-SurfaceManager::TemporaryReferenceData::TemporaryReferenceData() = default;
-
-SurfaceManager::TemporaryReferenceData::~TemporaryReferenceData() = default;
-
 SurfaceManager::SurfaceManager(
     base::Optional<uint32_t> activation_deadline_in_frames)
     : activation_deadline_in_frames_(activation_deadline_in_frames),
@@ -159,17 +155,6 @@ void SurfaceManager::DestroySurface(const SurfaceId& surface_id) {
 }
 
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
-  // Remove any temporary references owned by |frame_sink_id|.
-  std::vector<SurfaceId> temp_refs_to_clear;
-  for (auto& map_entry : temporary_references_) {
-    base::Optional<FrameSinkId>& owner = map_entry.second.owner;
-    if (owner.has_value() && owner.value() == frame_sink_id)
-      temp_refs_to_clear.push_back(map_entry.first);
-  }
-
-  for (auto& surface_id : temp_refs_to_clear)
-    RemoveTemporaryReference(surface_id, RemovedReason::INVALIDATED);
-
   dependency_tracker_.OnFrameSinkInvalidated(frame_sink_id);
 
   GarbageCollectSurfaces();
@@ -200,16 +185,6 @@ void SurfaceManager::RemoveSurfaceReferences(
 
   for (const auto& reference : references)
     RemoveSurfaceReferenceImpl(reference);
-}
-
-void SurfaceManager::AssignTemporaryReference(const SurfaceId& surface_id,
-                                              const FrameSinkId& owner) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!HasTemporaryReference(surface_id))
-    return;
-
-  temporary_references_[surface_id].owner = owner;
 }
 
 void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
@@ -430,10 +405,9 @@ bool SurfaceManager::HasPersistentReference(const SurfaceId& surface_id) const {
 void SurfaceManager::AddTemporaryReference(const SurfaceId& surface_id) {
   DCHECK(!HasTemporaryReference(surface_id));
 
-  // Add an entry to |temporary_references_| with no owner for the temporary
-  // reference. Also add a range tracking entry so we know the order that
-  // surfaces were created for the FrameSinkId.
-  temporary_references_[surface_id].owner = base::Optional<FrameSinkId>();
+  // Add an entry to |temporary_references_|. Also add a range tracking entry so
+  // we know the order that surfaces were created for the FrameSinkId.
+  temporary_references_.emplace(surface_id, TemporaryReferenceData());
   temporary_reference_ranges_[surface_id.frame_sink_id()].push_back(
       surface_id.local_surface_id());
 

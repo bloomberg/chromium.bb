@@ -241,15 +241,6 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
 }
 
-void FrameSinkManagerImpl::AssignTemporaryReference(const SurfaceId& surface_id,
-                                                    const FrameSinkId& owner) {
-  surface_manager_.AssignTemporaryReference(surface_id, owner);
-}
-
-void FrameSinkManagerImpl::DropTemporaryReference(const SurfaceId& surface_id) {
-  surface_manager_.DropTemporaryReference(surface_id);
-}
-
 void FrameSinkManagerImpl::AddVideoDetectorObserver(
     mojom::VideoDetectorObserverPtr observer) {
   if (!video_detector_) {
@@ -289,15 +280,6 @@ void FrameSinkManagerImpl::RequestCopyOfOutput(
 }
 
 void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceId& surface_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (client_) {
-    client_->OnSurfaceCreated(surface_id);
-  } else {
-    // There is no client to assign an owner for the temporary reference, so we
-    // can drop the temporary reference safely.
-    surface_manager_.DropTemporaryReference(surface_id);
-  }
 }
 
 void FrameSinkManagerImpl::OnFirstSurfaceActivation(

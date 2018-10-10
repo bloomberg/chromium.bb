@@ -405,15 +405,6 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
   if (!enable_surface_synchronization_)
     return;
 
-  // If there's no primary surface, then we don't wish to display content at
-  // this time (e.g. the view is hidden) and so we don't need a fallback
-  // surface either. Since we won't use the fallback surface, we drop the
-  // temporary reference here to save resources.
-  if (!content_layer_->primary_surface_id().is_valid()) {
-    host_frame_sink_manager_->DropTemporaryReference(surface_info.id());
-    return;
-  }
-
   active_local_surface_id_ = surface_info.id().local_surface_id();
   active_device_scale_factor_ = surface_info.device_scale_factor();
 

@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
+namespace test {
 
 namespace {
 
@@ -32,6 +33,8 @@ SurfaceId MakeSurfaceId(uint32_t frame_sink_id_client_id) {
       FrameSinkId(frame_sink_id_client_id, 0),
       LocalSurfaceId(1, base::UnguessableToken::Deserialize(0, 1u)));
 }
+
+}  // namespace
 
 // TODO(riajiang): TestHostFrameSinkManager should be based on
 // mojom::FrameSinkManagerClient instead.
@@ -84,8 +87,6 @@ class TestFrameSinkManagerImpl : public FrameSinkManagerImpl {
   DISALLOW_COPY_AND_ASSIGN(TestFrameSinkManagerImpl);
 };
 
-}  // namespace
-
 class TestHitTestAggregator final : public HitTestAggregator {
  public:
   TestHitTestAggregator(
@@ -131,6 +132,12 @@ class HitTestAggregatorTest : public testing::Test {
     support_.reset();
     frame_sink_manager_.reset();
     host_frame_sink_manager_.reset();
+  }
+
+  void ExpireAllTemporaryReferencesAndGarbageCollect() {
+    frame_sink_manager_->surface_manager()->ExpireOldTemporaryReferences();
+    frame_sink_manager_->surface_manager()->ExpireOldTemporaryReferences();
+    frame_sink_manager_->surface_manager()->GarbageCollectSurfaces();
   }
 
   // Creates a hit test data element with 8 children recursively to
@@ -993,18 +1000,19 @@ TEST_F(HitTestAggregatorTest, DiscardedSurfaces) {
 
   // Discard Surface and ensure active count goes down.
   support2->EvictLastActivatedSurface();
-  surface_manager()->GarbageCollectSurfaces();
+  ExpireAllTemporaryReferencesAndGarbageCollect();
   EXPECT_TRUE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), e_surface_id.frame_sink_id()));
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), c_surface_id.frame_sink_id()));
 
   support()->EvictLastActivatedSurface();
-  surface_manager()->GarbageCollectSurfaces();
+  ExpireAllTemporaryReferencesAndGarbageCollect();
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), e_surface_id.frame_sink_id()));
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), c_surface_id.frame_sink_id()));
 }
 
+}  // namespace test
 }  // namespace viz
