@@ -96,6 +96,13 @@ struct RegulatoryLabel {
   const std::string image_url;
 };
 
+bool ShouldShowSafetyInfo() {
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return board[0] == "nocturne";
+}
+
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
 base::string16 GetAllowedConnectionTypesMessage() {
@@ -313,9 +320,15 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
   base::string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
   html_source->AddString("aboutProductTos", tos);
+  html_source->AddString(
+      "aboutProductSafety",
+      l10n_util::GetStringUTF16(IDS_ABOUT_SAFETY_INFORMATION));
+  html_source->AddString("aboutProductSafetyURL",
+                         base::UTF8ToUTF16(chrome::kChromeUISafetyURL));
 #endif
 
 #if defined(OS_CHROMEOS)
+  html_source->AddBoolean("shouldShowSafetyInfo", ShouldShowSafetyInfo());
   base::string16 os_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_VERSION_LICENSE,
       base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));

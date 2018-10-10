@@ -124,6 +124,7 @@ const char kChromeUIResetPasswordHost[] = "reset-password";
 const char kChromeUIResetPasswordURL[] = "chrome://reset-password/";
 const char kChromeUIRestartHost[] = "restart";
 const char kChromeUIRestartURL[] = "chrome://restart/";
+const char kChromeUISafetyURL[] = "https://g.co/PixelSlate/safety";
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
