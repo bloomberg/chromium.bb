@@ -687,13 +687,13 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
             EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
             EXPECT_TRUE(factory->IsBackingStorePendingClose(origin));
 
-            factory->ForceClose(origin);
+            factory->ForceClose(origin, /*delete_in_memory_store=*/false);
 
             EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
             EXPECT_FALSE(factory->IsBackingStorePendingClose(origin));
 
             // Ensure it is safe if the store is not open.
-            factory->ForceClose(origin);
+            factory->ForceClose(origin, /*delete_in_memory_store=*/false);
 
           },
           base::Unretained(context()),
@@ -822,7 +822,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
             }
 
             // Terminate all pending-close timers.
-            factory->ForceClose(origin);
+            factory->ForceClose(origin, /*delete_in_memory_store=*/false);
           },
           base::Unretained(context()), std::move(factory),
           std::move(upgrade_callbacks), base::MakeRefCounted<ErrorCallbacks>(),
@@ -908,7 +908,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
               connection->database()->Commit(
                   connection->GetTransaction(transaction_id));
               connection->Close();
-              factory->ForceClose(origin);
+              factory->ForceClose(origin, /*delete_in_memory_store=*/false);
               *result = callbacks->data_loss();
             },
             std::move(factory), std::move(callbacks), origin, transaction_id,

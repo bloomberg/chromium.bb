@@ -530,6 +530,26 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   EXPECT_EQ(0, RequestUsage(kFileOrigin));
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginIncognito) {
+  const GURL test_url = GetTestUrl("indexeddb", "fill_up_5k.html");
+  const Origin origin = Origin::Create(test_url);
+
+  Shell* browser = CreateOffTheRecordBrowser();
+  NavigateToURLBlockUntilNavigationsComplete(browser, test_url, 2);
+
+  EXPECT_GT(RequestUsage(origin, browser), 5 * 1024);
+
+  IndexedDBContextImpl* context = GetContext(browser);
+  base::RunLoop loop;
+  context->TaskRunner()->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                                    context->DeleteForOrigin(origin);
+                                    loop.Quit();
+                                  }));
+  loop.Run();
+
+  EXPECT_EQ(0, RequestUsage(origin, browser));
+}
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
   // Ignore several preceding transactions:
   // * The test calls deleteDatabase() which opens the backing store:

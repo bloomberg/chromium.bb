@@ -82,7 +82,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
 
-  void ForceClose(const url::Origin& origin) override;
+  void ForceClose(const url::Origin& origin,
+                  bool delete_in_memory_store) override;
   void ForceSchemaDowngrade(const url::Origin& origin) override;
   V2SchemaCorruptionStatus HasV2SchemaCorruption(
       const url::Origin& origin) override;
