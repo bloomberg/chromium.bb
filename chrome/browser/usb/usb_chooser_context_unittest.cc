@@ -14,14 +14,12 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/base/mock_device_client.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mock_usb_service.h"
-#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-using device::MockUsbDevice;
-using device::UsbDevice;
+using device::mojom::UsbDeviceInfoPtr;
 
 namespace {
 
@@ -33,7 +31,15 @@ class UsbChooserContextTest : public testing::Test {
  protected:
   Profile* profile() { return &profile_; }
 
-  device::MockDeviceClient device_client_;
+  UsbChooserContext* GetChooserContext(Profile* profile) {
+    auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile);
+    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
+    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+    chooser_context->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+    return chooser_context;
+  }
+
+  device::FakeUsbDeviceManager device_manager_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -56,12 +62,9 @@ void ExpectDevicesAndThen(
 
 TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   GURL origin("https://www.google.com");
-  scoped_refptr<UsbDevice> device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
-  device_client_.usb_service()->AddDevice(device);
-  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  UsbDeviceInfoPtr device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "123ABC");
+  UsbChooserContext* store = GetChooserContext(profile());
 
   base::DictionaryValue object_dict;
   object_dict.SetString("name", "Gizmo");
@@ -94,21 +97,16 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
 
 TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   GURL origin("https://www.google.com");
-  scoped_refptr<UsbDevice> device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
-  scoped_refptr<UsbDevice> other_device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
-  auto other_device_info = device::mojom::UsbDeviceInfo::From(*other_device);
-  DCHECK(other_device_info);
+  UsbDeviceInfoPtr device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
+  UsbDeviceInfoPtr other_device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
 
-  device_client_.usb_service()->AddDevice(device);
-  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  UsbChooserContext* store = GetChooserContext(profile());
 
   base::DictionaryValue object_dict;
   object_dict.SetString("name", "Gizmo");
-  object_dict.SetString("ephemeral-guid", device->guid());
+  object_dict.SetString("ephemeral-guid", device_info->guid);
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   store->GrantDevicePermission(origin, origin, *device_info);
@@ -136,18 +134,15 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
 
 TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   GURL origin("https://www.google.com");
-  scoped_refptr<UsbDevice> device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "123ABC");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
+  UsbDeviceInfoPtr device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "123ABC");
 
-  device_client_.usb_service()->AddDevice(device);
-  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  UsbChooserContext* store = GetChooserContext(profile());
   {
     // Call GetDevices once to make sure the connection with DeviceManager has
     // been set up, so that it can be notified when device is removed.
     std::set<std::string> guids;
-    guids.insert(device->guid());
+    guids.insert(device_info->guid);
     base::RunLoop loop;
     store->GetDevices(
         base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
@@ -164,7 +159,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
       store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
-  device_client_.usb_service()->RemoveDevice(device);
+  device_manager_.RemoveDevice(device_info->guid);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
@@ -173,13 +168,9 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
-  scoped_refptr<UsbDevice> reconnected_device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "123ABC");
-  auto reconnected_device_info =
-      device::mojom::UsbDeviceInfo::From(*reconnected_device);
-  DCHECK(reconnected_device_info);
+  UsbDeviceInfoPtr reconnected_device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "123ABC");
 
-  device_client_.usb_service()->AddDevice(reconnected_device);
   EXPECT_TRUE(
       store->HasDevicePermission(origin, origin, *reconnected_device_info));
   objects = store->GetGrantedObjects(origin, origin);
@@ -190,18 +181,15 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
 
 TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   GURL origin("https://www.google.com");
-  scoped_refptr<UsbDevice> device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
+  UsbDeviceInfoPtr device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
 
-  device_client_.usb_service()->AddDevice(device);
-  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  UsbChooserContext* store = GetChooserContext(profile());
   {
     // Call GetDevices once to make sure the connection with DeviceManager has
     // been set up, so that it can be notified when device is removed.
     std::set<std::string> guids;
-    guids.insert(device->guid());
+    guids.insert(device_info->guid);
     base::RunLoop loop;
     store->GetDevices(
         base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
@@ -218,7 +206,7 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
       store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
 
-  device_client_.usb_service()->RemoveDevice(device);
+  device_manager_.RemoveDevice(device_info->guid);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
@@ -227,13 +215,9 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(0u, all_origin_objects.size());
 
-  scoped_refptr<UsbDevice> reconnected_device =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
-  auto reconnected_device_info =
-      device::mojom::UsbDeviceInfo::From(*reconnected_device);
-  DCHECK(reconnected_device_info);
+  UsbDeviceInfoPtr reconnected_device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
 
-  device_client_.usb_service()->AddDevice(reconnected_device);
   EXPECT_FALSE(
       store->HasDevicePermission(origin, origin, *reconnected_device_info));
   objects = store->GetGrantedObjects(origin, origin);
@@ -244,20 +228,14 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
 
 TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
   GURL origin("https://www.google.com");
-  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
-  UsbChooserContext* incognito_store = UsbChooserContextFactory::GetForProfile(
-      profile()->GetOffTheRecordProfile());
+  UsbChooserContext* store = GetChooserContext(profile());
+  UsbChooserContext* incognito_store =
+      GetChooserContext(profile()->GetOffTheRecordProfile());
 
-  scoped_refptr<UsbDevice> device1 =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
-  scoped_refptr<UsbDevice> device2 =
-      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
-  auto device_info_1 = device::mojom::UsbDeviceInfo::From(*device1);
-  DCHECK(device_info_1);
-  auto device_info_2 = device::mojom::UsbDeviceInfo::From(*device2);
-  DCHECK(device_info_2);
-  device_client_.usb_service()->AddDevice(device1);
-  device_client_.usb_service()->AddDevice(device2);
+  UsbDeviceInfoPtr device_info_1 =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
+  UsbDeviceInfoPtr device_info_2 =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
 
   store->GrantDevicePermission(origin, origin, *device_info_1);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info_1));
@@ -295,24 +273,17 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
 TEST_F(UsbChooserContextTest, UsbGuardPermission) {
   const GURL kFooOrigin("https://foo.com");
   const GURL kBarOrigin("https://bar.com");
-  scoped_refptr<UsbDevice> device =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "Gizmo", "ABC123");
-  scoped_refptr<UsbDevice> ephemeral_device =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "Gizmo", "");
-  device_client_.usb_service()->AddDevice(device);
-  device_client_.usb_service()->AddDevice(ephemeral_device);
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
-  auto ephemeral_device_info =
-      device::mojom::UsbDeviceInfo::From(*ephemeral_device);
-  DCHECK(ephemeral_device_info);
+  UsbDeviceInfoPtr device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "ABC123");
+  UsbDeviceInfoPtr ephemeral_device_info =
+      device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
 
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(kFooOrigin, kFooOrigin,
                                      CONTENT_SETTINGS_TYPE_USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  auto* store = UsbChooserContextFactory::GetForProfile(profile());
+  auto* store = GetChooserContext(profile());
   store->GrantDevicePermission(kFooOrigin, kFooOrigin, *device_info);
   store->GrantDevicePermission(kFooOrigin, kFooOrigin, *ephemeral_device_info);
   store->GrantDevicePermission(kBarOrigin, kBarOrigin, *device_info);
@@ -408,13 +379,8 @@ TEST_F(UsbChooserContextTest,
 
   auto* store = UsbChooserContextFactory::GetForProfile(profile());
 
-  scoped_refptr<UsbDevice> specific_device =
-      base::MakeRefCounted<MockUsbDevice>(1234, 5678, "Google", "Gizmo",
-                                          "ABC123");
-
-  auto specific_device_info =
-      device::mojom::UsbDeviceInfo::From(*specific_device);
-  DCHECK(specific_device_info);
+  UsbDeviceInfoPtr specific_device_info = device_manager_.CreateAndAddDevice(
+      1234, 5678, "Google", "Gizmo", "ABC123");
 
   ExpectNoPermissions(store, *specific_device_info);
 
@@ -436,13 +402,9 @@ TEST_F(UsbChooserContextTest,
 
   auto* store = UsbChooserContextFactory::GetForProfile(profile());
 
-  scoped_refptr<UsbDevice> vendor_related_device =
-      base::MakeRefCounted<MockUsbDevice>(1234, 8765, "Google", "Widget",
-                                          "XYZ987");
-
-  auto vendor_related_device_info =
-      device::mojom::UsbDeviceInfo::From(*vendor_related_device);
-  DCHECK(vendor_related_device_info);
+  UsbDeviceInfoPtr vendor_related_device_info =
+      device_manager_.CreateAndAddDevice(1234, 8765, "Google", "Widget",
+                                         "XYZ987");
 
   ExpectNoPermissions(store, *vendor_related_device_info);
 
@@ -466,13 +428,8 @@ TEST_F(UsbChooserContextTest,
 
   auto* store = UsbChooserContextFactory::GetForProfile(profile());
 
-  scoped_refptr<UsbDevice> unrelated_device =
-      base::MakeRefCounted<MockUsbDevice>(2468, 1357, "Cool", "Gadget",
-                                          "4W350M3");
-
-  auto unrelated_device_info =
-      device::mojom::UsbDeviceInfo::From(*unrelated_device);
-  DCHECK(unrelated_device_info);
+  UsbDeviceInfoPtr unrelated_device_info = device_manager_.CreateAndAddDevice(
+      2468, 1357, "Cool", "Gadget", "4W350M3");
 
   ExpectNoPermissions(store, *unrelated_device_info);
 
@@ -499,19 +456,10 @@ TEST_F(UsbChooserContextTest,
 
   auto* store = UsbChooserContextFactory::GetForProfile(profile());
 
-  scoped_refptr<UsbDevice> specific_device =
-      base::MakeRefCounted<MockUsbDevice>(1234, 5678, "Google", "Gizmo",
-                                          "ABC123");
-  scoped_refptr<UsbDevice> unrelated_device =
-      base::MakeRefCounted<MockUsbDevice>(2468, 1357, "Cool", "Gadget",
-                                          "4W350M3");
-
-  auto specific_device_info =
-      device::mojom::UsbDeviceInfo::From(*specific_device);
-  auto unrelated_device_info =
-      device::mojom::UsbDeviceInfo::From(*unrelated_device);
-  DCHECK(specific_device_info);
-  DCHECK(unrelated_device_info);
+  UsbDeviceInfoPtr specific_device_info = device_manager_.CreateAndAddDevice(
+      1234, 5678, "Google", "Gizmo", "ABC123");
+  UsbDeviceInfoPtr unrelated_device_info = device_manager_.CreateAndAddDevice(
+      2468, 1357, "Cool", "Gadget", "4W350M3");
 
   ExpectNoPermissions(store, *specific_device_info);
   ExpectNoPermissions(store, *unrelated_device_info);

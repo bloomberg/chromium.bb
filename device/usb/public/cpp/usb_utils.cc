@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/usb/public/cpp/filter_utils.h"
+#include "device/usb/public/cpp/usb_utils.h"
+
+#include <utility>
 
 #include "device/usb/usb_device.h"
 
@@ -100,6 +102,20 @@ bool UsbDeviceFilterMatchesAny(
       return true;
   }
   return false;
+}
+
+std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
+    const std::vector<uint32_t>& packet_lengths,
+    mojom::UsbTransferStatus status) {
+  std::vector<mojom::UsbIsochronousPacketPtr> packets;
+  packets.reserve(packet_lengths.size());
+  for (uint32_t packet_length : packet_lengths) {
+    auto packet = mojom::UsbIsochronousPacket::New();
+    packet->length = packet_length;
+    packet->status = status;
+    packets.push_back(std::move(packet));
+  }
+  return packets;
 }
 
 }  // namespace device

@@ -72,6 +72,8 @@ class UsbChooserContext : public ChooserContextBase,
   base::WeakPtr<UsbChooserContext> AsWeakPtr();
 
   void DestroyDeviceManagerForTesting();
+  void SetDeviceManagerForTesting(
+      device::mojom::UsbDeviceManagerPtr fake_device_manager);
 
  private:
   // ChooserContextBase implementation.
@@ -84,6 +86,7 @@ class UsbChooserContext : public ChooserContextBase,
 
   void OnDeviceManagerConnectionError();
   void EnsureConnectionWithDeviceManager();
+  void SetUpDeviceManagerConnection();
 
   bool is_incognito_;
   std::map<std::pair<GURL, GURL>, std::set<std::string>> ephemeral_devices_;

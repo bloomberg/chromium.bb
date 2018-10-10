@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/mock_usb_device.h"
-#include "device/usb/public/cpp/filter_utils.h"
+#include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/usb_descriptors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,7 +18,7 @@ namespace {
 
 using testing::Return;
 
-class UsbFilterTest : public testing::Test {
+class UsbUtilsTest : public testing::Test {
  public:
   void SetUp() override {
     UsbConfigDescriptor config(1, false, false, 0);
@@ -32,26 +32,26 @@ class UsbFilterTest : public testing::Test {
   scoped_refptr<MockUsbDevice> android_phone_;
 };
 
-TEST_F(UsbFilterTest, MatchAny) {
+TEST_F(UsbUtilsTest, MatchAny) {
   auto filter = mojom::UsbDeviceFilter::New();
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchVendorId) {
+TEST_F(UsbUtilsTest, MatchVendorId) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_vendor_id = true;
   filter->vendor_id = 0x18d1;
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchVendorIdNegative) {
+TEST_F(UsbUtilsTest, MatchVendorIdNegative) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_vendor_id = true;
   filter->vendor_id = 0x1d6b;
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchProductId) {
+TEST_F(UsbUtilsTest, MatchProductId) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_vendor_id = true;
   filter->vendor_id = 0x18d1;
@@ -60,7 +60,7 @@ TEST_F(UsbFilterTest, MatchProductId) {
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchProductIdNegative) {
+TEST_F(UsbUtilsTest, MatchProductIdNegative) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_vendor_id = true;
   filter->vendor_id = 0x18d1;
@@ -69,21 +69,21 @@ TEST_F(UsbFilterTest, MatchProductIdNegative) {
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchInterfaceClass) {
+TEST_F(UsbUtilsTest, MatchInterfaceClass) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_class_code = true;
   filter->class_code = 0xff;
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchInterfaceClassNegative) {
+TEST_F(UsbUtilsTest, MatchInterfaceClassNegative) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_class_code = true;
   filter->class_code = 0xe0;
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchInterfaceSubclass) {
+TEST_F(UsbUtilsTest, MatchInterfaceSubclass) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_class_code = true;
   filter->class_code = 0xff;
@@ -92,7 +92,7 @@ TEST_F(UsbFilterTest, MatchInterfaceSubclass) {
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchInterfaceSubclassNegative) {
+TEST_F(UsbUtilsTest, MatchInterfaceSubclassNegative) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_class_code = true;
   filter->class_code = 0xff;
@@ -101,7 +101,7 @@ TEST_F(UsbFilterTest, MatchInterfaceSubclassNegative) {
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchInterfaceProtocol) {
+TEST_F(UsbUtilsTest, MatchInterfaceProtocol) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_class_code = true;
   filter->class_code = 0xff;
@@ -112,7 +112,7 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocol) {
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
+TEST_F(UsbUtilsTest, MatchInterfaceProtocolNegative) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->has_class_code = true;
   filter->class_code = 0xff;
@@ -123,7 +123,7 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchSerialNumber) {
+TEST_F(UsbUtilsTest, MatchSerialNumber) {
   auto filter = mojom::UsbDeviceFilter::New();
   filter->serial_number = base::ASCIIToUTF16("ABC123");
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
@@ -137,12 +137,12 @@ TEST_F(UsbFilterTest, MatchSerialNumber) {
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchAnyEmptyList) {
+TEST_F(UsbUtilsTest, MatchAnyEmptyList) {
   std::vector<mojom::UsbDeviceFilterPtr> filters;
   ASSERT_TRUE(UsbDeviceFilterMatchesAny(filters, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchesAnyVendorId) {
+TEST_F(UsbUtilsTest, MatchesAnyVendorId) {
   std::vector<mojom::UsbDeviceFilterPtr> filters;
   filters.push_back(mojom::UsbDeviceFilter::New());
   filters.back()->has_vendor_id = true;
@@ -150,7 +150,7 @@ TEST_F(UsbFilterTest, MatchesAnyVendorId) {
   ASSERT_TRUE(UsbDeviceFilterMatchesAny(filters, *android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchesAnyVendorIdNegative) {
+TEST_F(UsbUtilsTest, MatchesAnyVendorIdNegative) {
   std::vector<mojom::UsbDeviceFilterPtr> filters;
   filters.push_back(mojom::UsbDeviceFilter::New());
   filters.back()->has_vendor_id = true;

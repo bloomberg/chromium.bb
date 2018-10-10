@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/device_manager_impl.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
@@ -100,6 +101,11 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   // after moving //device/usb to //services/device.
   device_manager_instance_ = std::make_unique<device::usb::DeviceManagerImpl>();
   device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager_));
+  SetUpDeviceManagerConnection();
+}
+
+void UsbChooserContext::SetUpDeviceManagerConnection() {
+  DCHECK(device_manager_);
   device_manager_.set_connection_error_handler(
       base::BindOnce(&UsbChooserContext::OnDeviceManagerConnectionError,
                      base::Unretained(this)));
@@ -339,4 +345,12 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
 
 void UsbChooserContext::DestroyDeviceManagerForTesting() {
   device_manager_instance_.reset();
+}
+
+void UsbChooserContext::SetDeviceManagerForTesting(
+    device::mojom::UsbDeviceManagerPtr fake_device_manager) {
+  DCHECK(!device_manager_);
+  DCHECK(fake_device_manager);
+  device_manager_ = std::move(fake_device_manager);
+  SetUpDeviceManagerConnection();
 }
