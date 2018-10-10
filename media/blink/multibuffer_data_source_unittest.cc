@@ -1493,35 +1493,104 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
   Stop();
 }
 
-TEST_F(MultibufferDataSourceTest, DidPassCORSAccessTest) {
+TEST_F(MultibufferDataSourceTest, ResponseTypeBasic) {
   InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.SetWasFetchedViaServiceWorker(true);
-  std::vector<blink::WebURL> urlList = {GURL(kHttpDifferentOriginUrl)};
-  response1.SetURLListViaServiceWorker(urlList);
-  WebURLResponse response2 =
-      response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
+  response1.SetType(network::mojom::FetchResponseType::kBasic);
 
   EXPECT_CALL(host_, SetTotalBytes(kFileSize));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
   EXPECT_CALL(*this, ReadCallback(kDataSize));
 
-  EXPECT_FALSE(data_source_->DidPassCORSAccessCheck());
   Respond(response1);
   ReceiveData(kDataSize);
   ReadAt(0);
   EXPECT_TRUE(loading());
-  EXPECT_TRUE(data_source_->DidPassCORSAccessCheck());
+  EXPECT_FALSE(data_source_->IsCorsCrossOrigin());
 
   FinishLoading();
+}
 
-  // Verify that if reader_ is null, DidPassCORSAccessCheck still returns true.
-  data_source_->Stop();
-  base::RunLoop().RunUntilIdle();
+TEST_F(MultibufferDataSourceTest, ResponseTypeCors) {
+  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  set_preload(MultibufferDataSource::NONE);
+  WebURLResponse response1 =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response1.SetType(network::mojom::FetchResponseType::kCORS);
 
-  EXPECT_TRUE(data_source_->DidPassCORSAccessCheck());
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+
+  Respond(response1);
+  ReceiveData(kDataSize);
+  ReadAt(0);
+  EXPECT_TRUE(loading());
+  EXPECT_FALSE(data_source_->IsCorsCrossOrigin());
+
+  FinishLoading();
+}
+
+TEST_F(MultibufferDataSourceTest, ResponseTypeDefault) {
+  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  set_preload(MultibufferDataSource::NONE);
+  WebURLResponse response1 =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response1.SetType(network::mojom::FetchResponseType::kDefault);
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+
+  Respond(response1);
+  ReceiveData(kDataSize);
+  ReadAt(0);
+  EXPECT_TRUE(loading());
+  EXPECT_FALSE(data_source_->IsCorsCrossOrigin());
+
+  FinishLoading();
+}
+
+TEST_F(MultibufferDataSourceTest, ResponseTypeOpaque) {
+  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  set_preload(MultibufferDataSource::NONE);
+  WebURLResponse response1 =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response1.SetType(network::mojom::FetchResponseType::kOpaque);
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+
+  Respond(response1);
+  ReceiveData(kDataSize);
+  ReadAt(0);
+  EXPECT_TRUE(loading());
+  EXPECT_TRUE(data_source_->IsCorsCrossOrigin());
+
+  FinishLoading();
+}
+
+TEST_F(MultibufferDataSourceTest, ResponseTypeOpaqueRedirect) {
+  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  set_preload(MultibufferDataSource::NONE);
+  WebURLResponse response1 =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response1.SetType(network::mojom::FetchResponseType::kOpaqueRedirect);
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+
+  Respond(response1);
+  ReceiveData(kDataSize);
+  ReadAt(0);
+  EXPECT_TRUE(loading());
+  EXPECT_TRUE(data_source_->IsCorsCrossOrigin());
+
+  FinishLoading();
 }
 
 TEST_F(MultibufferDataSourceTest, EtagTest) {

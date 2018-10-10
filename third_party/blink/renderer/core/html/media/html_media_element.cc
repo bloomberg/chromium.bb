@@ -1506,30 +1506,14 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
 
 bool HTMLMediaElement::IsMediaDataCORSSameOrigin(
     const SecurityOrigin* origin) const {
-  // If a service worker handled the request, we don't know if the origin in the
-  // src is the same as the actual response URL so can't rely on URL checks
-  // alone. So detect an opaque response via
-  // DidGetOpaqueResponseFromServiceWorker().
-  if (GetWebMediaPlayer() &&
-      GetWebMediaPlayer()->DidGetOpaqueResponseFromServiceWorker()) {
-    return false;
-  }
+  if (!GetWebMediaPlayer())
+    return true;
 
-  // At this point, either a service worker was not used, or it didn't provide
-  // an opaque response, so continue with the normal checks.
-
-  // HasSingleSecurityOrigin() tells us whether the origin in the src
-  // is the same as the actual request (i.e. after redirects).
-  if (!HasSingleSecurityOrigin())
+  const auto network_state = GetWebMediaPlayer()->GetNetworkState();
+  if (network_state == WebMediaPlayer::kNetworkStateNetworkError)
     return false;
 
-  // DidPassCORSAccessCheck() means it was a successful CORS-enabled fetch (vs.
-  // non-CORS-enabled or failed). CanReadContent() does CheckAccess() on the
-  // URL plus allows data sources, to ensure that it is not a URL that requires
-  // CORS (basically same origin).
-  return (GetWebMediaPlayer() &&
-          GetWebMediaPlayer()->DidPassCORSAccessCheck()) ||
-         origin->CanReadContent(currentSrc());
+  return !GetWebMediaPlayer()->WouldTaintOrigin();
 }
 
 bool HTMLMediaElement::IsInCrossOriginFrame() const {

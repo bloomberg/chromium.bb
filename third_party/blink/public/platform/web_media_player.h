@@ -207,9 +207,10 @@ class WebMediaPlayer {
 
   virtual bool DidLoadingProgress() = 0;
 
-  virtual bool DidGetOpaqueResponseFromServiceWorker() const = 0;
-  virtual bool HasSingleSecurityOrigin() const = 0;
-  virtual bool DidPassCORSAccessCheck() const = 0;
+  // Returns true if the response is CORS-cross-origin and so we shouldn't be
+  // allowing media to play through webaudio.
+  // This should be called after the response has arrived.
+  virtual bool WouldTaintOrigin() const = 0;
 
   virtual double MediaTimeForTimeValue(double time_value) const = 0;
 

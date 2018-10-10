@@ -79,12 +79,9 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Method called on the render thread.
   bool HasSingleOrigin();
 
-  // Returns true if the media resource passed a CORS access control check.
-  bool DidPassCORSAccessCheck() const;
-
-  // Returns true if a service worker provided the media resource response,
-  // and the response was opaque.
-  bool DidGetOpaqueResponseViaServiceWorker() const;
+  // https://html.spec.whatwg.org/#cors-cross-origin
+  // This must be called after the response arrives.
+  bool IsCorsCrossOrigin() const;
 
   // Notifies changes in playback state for controlling media buffering
   // behavior.
