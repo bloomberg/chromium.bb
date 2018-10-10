@@ -121,8 +121,7 @@ bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
 BackgroundFetchManager::BackgroundFetchManager(
     ServiceWorkerRegistration* registration)
     : ContextLifecycleObserver(registration->GetExecutionContext()),
-      registration_(registration),
-      loader_(new BackgroundFetchIconLoader()) {
+      registration_(registration) {
   DCHECK(registration);
   bridge_ = BackgroundFetchBridge::From(registration_);
 }
@@ -252,16 +251,19 @@ ScriptPromise BackgroundFetchManager::fetch(
   mojom::blink::BackgroundFetchOptionsPtr options_ptr =
       mojom::blink::BackgroundFetchOptions::From(options);
   if (options.icons().size()) {
-    loader_->Start(
+    BackgroundFetchIconLoader* loader = new BackgroundFetchIconLoader();
+    loaders_.push_back(loader);
+    loader->Start(
         bridge_.Get(), execution_context, options.icons(),
         WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
                   id, WTF::Passed(std::move(web_requests)),
-                  std::move(options_ptr), WrapPersistent(resolver)));
+                  std::move(options_ptr), WrapPersistent(resolver),
+                  WrapWeakPersistent(loader)));
     return promise;
   }
 
   DidLoadIcons(id, std::move(web_requests), std::move(options_ptr), resolver,
-               SkBitmap(), -1 /* ideal_to_chosen_icon_size */);
+               nullptr, SkBitmap(), -1 /* ideal_to_chosen_icon_size */);
   return promise;
 }
 
@@ -270,8 +272,12 @@ void BackgroundFetchManager::DidLoadIcons(
     Vector<WebServiceWorkerRequest> web_requests,
     mojom::blink::BackgroundFetchOptionsPtr options,
     ScriptPromiseResolver* resolver,
+    BackgroundFetchIconLoader* loader,
     const SkBitmap& icon,
     int64_t ideal_to_chosen_icon_size) {
+  if (loader)
+    loaders_.erase(std::find(loaders_.begin(), loaders_.end(), loader));
+
   auto ukm_data = mojom::blink::BackgroundFetchUkmData::New();
   ukm_data->ideal_to_chosen_icon_size = ideal_to_chosen_icon_size;
   bridge_->Fetch(
@@ -535,15 +541,17 @@ void BackgroundFetchManager::DidGetDeveloperIds(
 void BackgroundFetchManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(bridge_);
-  visitor->Trace(loader_);
+  visitor->Trace(loaders_);
   ContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 
 void BackgroundFetchManager::ContextDestroyed(ExecutionContext* context) {
-  if (loader_) {
-    loader_->Stop();
+  for (const auto& loader : loaders_) {
+    if (loader)
+      loader->Stop();
   }
+  loaders_.clear();
 }
 
 }  // namespace blink
