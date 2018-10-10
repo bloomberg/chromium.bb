@@ -56,10 +56,5 @@ const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics{
 const base::Feature kDataReductionProxyBrotliHoldback{
     "DataReductionProxyBrotliHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables data reduction proxy when network service is enabled.
-const base::Feature kDataReductionProxyEnabledWithNetworkService{
-    "DataReductionProxyEnabledWithNetworkService",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features
 }  // namespace data_reduction_proxy
