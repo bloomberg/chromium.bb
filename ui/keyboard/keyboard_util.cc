@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event_sink.h"
@@ -184,6 +185,12 @@ bool SendKeyEvent(const std::string type,
         code,
         dom_code,
         modifiers);
+
+    // Marks the simulated key event is from the Virtual Keyboard.
+    ui::Event::Properties properties;
+    properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+    event.SetProperties(properties);
+
     ui::EventDispatchDetails details =
         host->event_sink()->OnEventFromSource(&event);
     CHECK(!details.dispatcher_destroyed);
