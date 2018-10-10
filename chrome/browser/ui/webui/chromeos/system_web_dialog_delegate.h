@@ -51,11 +51,15 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   static constexpr int kDialogWidth = 512;
   static constexpr int kDialogHeight = 480;
 
+ protected:
+  gfx::NativeWindow dialog_window() const { return dialog_window_; }
+
  private:
   GURL gurl_;
   base::string16 title_;
   content::WebUI* webui_ = nullptr;
   ui::ModalType modal_type_;
+  gfx::NativeWindow dialog_window_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebDialogDelegate);
 };
