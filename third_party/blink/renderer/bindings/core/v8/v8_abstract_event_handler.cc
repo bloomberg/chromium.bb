@@ -173,10 +173,9 @@ void V8AbstractEventHandler::InvokeEventHandler(ScriptState* script_state,
 
     if (!try_catch.CanContinue()) {  // Result of TerminateExecution().
       ExecutionContext* execution_context = ToExecutionContext(context);
-      if (execution_context->IsWorkerOrWorkletGlobalScope())
-        ToWorkerOrWorkletGlobalScope(execution_context)
-            ->ScriptController()
-            ->ForbidExecution();
+      if (auto* scope =
+              DynamicTo<WorkerOrWorkletGlobalScope>(execution_context))
+        scope->ScriptController()->ForbidExecution();
       return;
     }
     try_catch.Reset();

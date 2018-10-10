@@ -703,8 +703,8 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
     Deprecation::CountDeprecation(*document, feature);
     return;
   }
-  if (context->IsWorkerOrWorkletGlobalScope())
-    ToWorkerOrWorkletGlobalScope(context)->CountDeprecation(feature);
+  if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context))
+    scope->CountDeprecation(feature);
 }
 
 void Deprecation::CountDeprecation(const Document& document,
