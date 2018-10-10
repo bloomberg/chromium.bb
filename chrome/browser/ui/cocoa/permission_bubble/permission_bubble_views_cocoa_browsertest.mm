@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/permission_bubble/permission_bubble_browser_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -33,6 +33,16 @@ void ShowBubble(Browser* browser) {
   EXPECT_FALSE(test_api->GetPromptWindow());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(test_api->GetPromptWindow());
+}
+
+bool HasVisibleLocationBarForBrowser(Browser* browser) {
+  if (!browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
+    return false;
+
+  if (!browser->exclusive_access_manager()->context()->IsFullscreen())
+    return true;
+
+  return false;
 }
 
 }  // namespace

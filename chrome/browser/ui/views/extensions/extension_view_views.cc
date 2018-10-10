@@ -25,10 +25,6 @@
 #include "ui/base/cursor/cursor.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
-#endif
-
 ExtensionViewViews::ExtensionViewViews(extensions::ExtensionHost* host,
                                        Browser* browser)
     : views::WebView(browser ? browser->profile() : nullptr),
