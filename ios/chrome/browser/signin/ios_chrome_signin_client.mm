@@ -28,8 +28,8 @@ IOSChromeSigninClient::IOSChromeSigninClient(
     SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map)
-    : network_callback_helper_(std::make_unique<WaitForNetworkCallbackHelper>(
-          GetApplicationContext()->GetNetworkConnectionTracker())),
+    : network_callback_helper_(
+          std::make_unique<WaitForNetworkCallbackHelper>()),
       browser_state_(browser_state),
       signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),

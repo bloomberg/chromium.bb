@@ -7,7 +7,6 @@
 #include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -22,9 +21,8 @@ IOSWebViewSigninClient::IOSWebViewSigninClient(
     SigninErrorController* signin_error_controller,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map)
-    : network_callback_helper_(std::make_unique<WaitForNetworkCallbackHelper>(
-          ios_web_view::ApplicationContext::GetInstance()
-              ->GetNetworkConnectionTracker())),
+    : network_callback_helper_(
+          std::make_unique<WaitForNetworkCallbackHelper>()),
       pref_service_(pref_service),
       url_loader_factory_(url_loader_factory),
       cookie_manager_(cookie_manager),
