@@ -45391,6 +45391,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Learn more undo"/>
 </enum>
 
+<enum name="SigninGaiaCookieManagerLogout">
+  <int value="0" label="Request started"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure"/>
+</enum>
+
 <enum name="SigninHelperFlow">
   <int value="0" label="Shown">The signin flow was shown to the user.</int>
   <int value="1" label="Accepted">The user pressed accept to sign in.</int>
