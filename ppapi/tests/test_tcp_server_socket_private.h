@@ -53,10 +53,14 @@ class TestTCPServerSocketPrivate : public TestCase {
   std::string TestListen();
   std::string TestBacklog();
 
-  // The higher level test fixture must configure the corresponding events to
-  // fail with PP_ERROR_FAILED.
+  // The higher level test fixture is responsible for making socket methods
+  // behave in the expected manner.  The *Fails tests expect the specified event
+  // to fail with PP_ERROR_FAILED, and the *Hangs tests expect the specified
+  // operation to never complete, at least until teardown starts.
   std::string TestListenFails();
+  std::string TestListenHangs();
   std::string TestAcceptFails();
+  std::string TestAcceptHangs();
 
   std::string host_;
   uint16_t port_;

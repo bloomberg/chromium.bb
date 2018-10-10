@@ -88,7 +88,8 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       pending_write_bytes_written_(0),
       pending_write_pp_error_(PP_OK_COMPLETIONPENDING),
       is_potentially_secure_plugin_context_(
-          host->IsPotentiallySecurePluginContext(instance)) {
+          host->IsPotentiallySecurePluginContext(instance)),
+      weak_ptr_factory_(this) {
   DCHECK(host);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -360,7 +361,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
       mojo::MakeRequest(&bound_socket_),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnBindCompleted,
-                         base::Unretained(this),
+                         weak_ptr_factory_.GetWeakPtr(),
                          context->MakeReplyMessageContext()),
           net::ERR_FAILED, base::nullopt /* local_addr */));
 
@@ -880,7 +881,7 @@ void PepperTCPSocketMessageFilter::StartConnect(
   network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnConnectCompleted,
-                         base::Unretained(this), context),
+                         weak_ptr_factory_.GetWeakPtr(), context),
           net::ERR_FAILED, base::nullopt, base::nullopt,
           mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle());
@@ -1335,8 +1336,9 @@ void PepperTCPSocketMessageFilter::SendAcceptError(
 void PepperTCPSocketMessageFilter::Close() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Need to do this first, as destroying Mojo pipes may invoke some of the
+  // Need to do these first, as destroying Mojo pipes may invoke some of the
   // callbacks with failure messages.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   state_.DoTransition(TCPSocketState::CLOSE, true);
 
 #if defined(OS_CHROMEOS)

@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
@@ -362,6 +363,10 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
 
   // Used in place of the StoragePartition's NetworkContext when non-null.
   static network::mojom::NetworkContext* network_context_for_testing;
+
+  // Vends weak pointers on the UI thread, for callbacks passed through Mojo
+  // pipes not owned by |this|. All weak pointers released in Close().
+  base::WeakPtrFactory<PepperTCPSocketMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTCPSocketMessageFilter);
 };

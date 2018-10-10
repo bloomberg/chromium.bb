@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -386,16 +388,20 @@ enum class TCPFailureType {
 
   kBindClosePipe,
   kBindError,
+  kBindHangs,
 
   // These apply to both CreateTCPServerSocket and TCPBoundSocket::Listen().
   kCreateTCPServerSocketClosePipe,
   kCreateTCPServerSocketError,
+  kCreateTCPServerSocketHangs,
 
   kAcceptDropPipe,
   kAcceptError,
+  kAcceptHangs,
 
   kConnectClosePipe,
   kConnectError,
+  kConnectHangs,
   kWriteClosePipe,
   kWriteError,
   kReadClosePipe,
@@ -407,6 +413,7 @@ enum class TCPFailureType {
 
   kUpgradeToTLSClosePipe,
   kUpgradeToTLSError,
+  kUpgradeToTLSHangs,
   kSSLWriteClosePipe,
   kSSLWriteError,
   kSSLReadClosePipe,
@@ -444,6 +451,11 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       return;
     }
 
+    if (tcp_failure_type_ == TCPFailureType::kConnectHangs) {
+      create_connected_socket_callback_ = std::move(callback);
+      return;
+    }
+
     mojo::DataPipe send_pipe;
     mojo::DataPipe receive_pipe;
 
@@ -470,6 +482,11 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
           nullptr /* connected_socket */,
           mojo::ScopedDataPipeConsumerHandle() /* receive_stream */,
           mojo::ScopedDataPipeProducerHandle() /* send_stream */);
+      return;
+    }
+
+    if (tcp_failure_type_ == TCPFailureType::kAcceptHangs) {
+      accept_callback_ = std::move(callback);
       return;
     }
 
@@ -513,6 +530,11 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       std::move(callback).Run(
           net::ERR_FAILED, mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle(), base::nullopt /* ssl_info */);
+      return;
+    }
+
+    if (tcp_failure_type_ == TCPFailureType::kUpgradeToTLSHangs) {
+      upgrade_to_tls_callback_ = std::move(callback);
       return;
     }
 
@@ -600,6 +622,13 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
 
   network::mojom::SocketObserverPtr observer_;
 
+  // Callbacks held onto when simulating a hang.
+  network::mojom::NetworkContext::CreateTCPConnectedSocketCallback
+      create_connected_socket_callback_;
+  network::mojom::TCPServerSocket::AcceptCallback accept_callback_;
+  network::mojom::TCPConnectedSocket::UpgradeToTLSCallback
+      upgrade_to_tls_callback_;
+
   mojo::ScopedDataPipeProducerHandle receive_pipe_handle_;
   mojo::ScopedDataPipeConsumerHandle send_pipe_handle_;
 
@@ -622,6 +651,10 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
       std::move(callback).Run(net::ERR_FAILED, base::nullopt /* local_addr */);
       return;
     }
+    if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketHangs) {
+      create_server_socket_callback_ = std::move(callback);
+      return;
+    }
     std::move(callback).Run(net::OK, LocalAddress());
   }
 
@@ -633,6 +666,10 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
     binding_.Bind(std::move(request));
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketError) {
       std::move(callback).Run(net::ERR_FAILED);
+      return;
+    }
+    if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketHangs) {
+      listen_callback_ = std::move(callback);
       return;
     }
     std::move(callback).Run(net::OK);
@@ -655,6 +692,11 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
 
   std::unique_ptr<MockTCPConnectedSocket> connected_socket_;
 
+  // Callbacks held onto when simulating a hang.
+  network::mojom::NetworkContext::CreateTCPServerSocketCallback
+      create_server_socket_callback_;
+  network::mojom::TCPBoundSocket::ListenCallback listen_callback_;
+
   mojo::Binding<network::mojom::TCPServerSocket> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTCPServerSocket);
@@ -670,6 +712,10 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
     binding_.Bind(std::move(request));
     if (tcp_failure_type_ == TCPFailureType::kBindError) {
       std::move(callback).Run(net::ERR_FAILED, base::nullopt /* local_addr */);
+      return;
+    }
+    if (tcp_failure_type_ == TCPFailureType::kBindHangs) {
+      callback_ = std::move(callback);
       return;
     }
     std::move(callback).Run(net::OK, LocalAddress());
@@ -711,6 +757,9 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
   std::unique_ptr<MockTCPServerSocket> server_socket_;
   std::unique_ptr<MockTCPConnectedSocket> connected_socket_;
 
+  // Callback held onto when simulating a hang.
+  network::mojom::NetworkContext::CreateTCPBoundSocketCallback callback_;
+
   mojo::Binding<network::mojom::TCPBoundSocket> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTCPBoundSocket);
@@ -738,8 +787,8 @@ class MockNetworkContext : public network::TestNetworkContext {
     // TCPBoundSocket's pipe, which was just closed.
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketClosePipe)
       binding_.Close();
-    server_socket_ = std::make_unique<MockTCPServerSocket>(
-        tcp_failure_type_, std::move(request), std::move(callback));
+    server_sockets_.emplace_back(std::make_unique<MockTCPServerSocket>(
+        tcp_failure_type_, std::move(request), std::move(callback)));
   }
 
   void CreateTCPConnectedSocket(
@@ -752,9 +801,9 @@ class MockNetworkContext : public network::TestNetworkContext {
       CreateTCPConnectedSocketCallback callback) override {
     if (tcp_failure_type_ == TCPFailureType::kConnectClosePipe)
       binding_.Close();
-    connected_socket_ = std::make_unique<MockTCPConnectedSocket>(
+    connected_sockets_.emplace_back(std::make_unique<MockTCPConnectedSocket>(
         tcp_failure_type_, std::move(socket), std::move(observer),
-        std::move(callback));
+        std::move(callback)));
   }
 
   void CreateTCPBoundSocket(
@@ -765,8 +814,8 @@ class MockNetworkContext : public network::TestNetworkContext {
     if (tcp_failure_type_ == TCPFailureType::kBindClosePipe)
       binding_.Close();
     // These tests only create at most one object of a given type at a time.
-    bound_socket_ = std::make_unique<MockTCPBoundSocket>(
-        tcp_failure_type_, std::move(request), std::move(callback));
+    bound_sockets_.emplace_back(std::make_unique<MockTCPBoundSocket>(
+        tcp_failure_type_, std::move(request), std::move(callback)));
   }
 
   void ResolveHost(
@@ -779,9 +828,9 @@ class MockNetworkContext : public network::TestNetworkContext {
  private:
   TCPFailureType tcp_failure_type_;
 
-  std::unique_ptr<MockTCPServerSocket> server_socket_;
-  std::unique_ptr<MockTCPBoundSocket> bound_socket_;
-  std::unique_ptr<MockTCPConnectedSocket> connected_socket_;
+  std::vector<std::unique_ptr<MockTCPServerSocket>> server_sockets_;
+  std::vector<std::unique_ptr<MockTCPBoundSocket>> bound_sockets_;
+  std::vector<std::unique_ptr<MockTCPConnectedSocket>> connected_sockets_;
 
   mojo::Binding<network::mojom::NetworkContext> binding_;
 
@@ -829,6 +878,9 @@ TCP_SOCKET_FAILURE_TEST(TCPSocket_ConnectClosePipe,
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ConnectError,
                         TCPSocket_ConnectFails,
                         TCPFailureType::kConnectError);
+TCP_SOCKET_FAILURE_TEST(TCPSocket_ConnectHangs,
+                        TCPSocket_ConnectHangs,
+                        TCPFailureType::kConnectHangs);
 TCP_SOCKET_FAILURE_TEST(TCPSocket_WriteClosePipe,
                         TCPSocket_WriteFails,
                         TCPFailureType::kWriteClosePipe);
@@ -869,18 +921,27 @@ TCP_SOCKET_FAILURE_TEST(TCPSocket_BindClosePipe,
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindError,
                         TCPSocket_BindFailsConnectSucceeds,
                         TCPFailureType::kBindError);
+TCP_SOCKET_FAILURE_TEST(TCPSocket_BindHangs,
+                        TCPSocket_BindHangs,
+                        TCPFailureType::kBindHangs);
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenClosePipe,
                         TCPSocket_ListenFails,
                         TCPFailureType::kCreateTCPServerSocketClosePipe);
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenError,
                         TCPSocket_ListenFails,
                         TCPFailureType::kCreateTCPServerSocketError);
+TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenHangs,
+                        TCPSocket_ListenHangs,
+                        TCPFailureType::kCreateTCPServerSocketHangs);
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptClosePipe,
                         TCPSocket_AcceptFails,
                         TCPFailureType::kAcceptDropPipe);
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptError,
                         TCPSocket_AcceptFails,
                         TCPFailureType::kAcceptError);
+TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptHangs,
+                        TCPSocket_AcceptHangs,
+                        TCPFailureType::kAcceptHangs);
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketWriteClosePipe,
                         TCPSocket_AcceptedSocketWriteFails,
                         TCPFailureType::kWriteClosePipe);
@@ -899,6 +960,9 @@ TCP_SOCKET_FAILURE_TEST(TCPSocket_BindConnectClosePipe,
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindConnectError,
                         TCPSocket_BindConnectFails,
                         TCPFailureType::kConnectError);
+TCP_SOCKET_FAILURE_TEST(TCPSocket_BindConnectHangs,
+                        TCPSocket_BindConnectHangs,
+                        TCPFailureType::kConnectHangs);
 
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeClosePipe,
                         TCPSocketPrivate_SSLHandshakeFails,
@@ -906,6 +970,9 @@ TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeClosePipe,
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeError,
                         TCPSocketPrivate_SSLHandshakeFails,
                         TCPFailureType::kUpgradeToTLSError);
+TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeHangs,
+                        TCPSocketPrivate_SSLHandshakeHangs,
+                        TCPFailureType::kUpgradeToTLSHangs);
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLWriteClosePipe,
                         TCPSocketPrivate_SSLWriteFails,
                         TCPFailureType::kSSLWriteClosePipe);
@@ -925,12 +992,18 @@ TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_ListenClosePipe,
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_ListenError,
                         TCPServerSocketPrivate_ListenFails,
                         TCPFailureType::kCreateTCPServerSocketError);
+TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_ListenHangs,
+                        TCPServerSocketPrivate_ListenHangs,
+                        TCPFailureType::kCreateTCPServerSocketHangs);
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_AcceptClosePipe,
                         TCPServerSocketPrivate_AcceptFails,
                         TCPFailureType::kAcceptDropPipe);
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_AcceptError,
                         TCPServerSocketPrivate_AcceptFails,
                         TCPFailureType::kAcceptError);
+TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_AcceptHangs,
+                        TCPServerSocketPrivate_AcceptHangs,
+                        TCPFailureType::kAcceptHangs);
 
 // UDPSocket tests.
 

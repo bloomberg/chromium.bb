@@ -58,6 +58,7 @@ void TestTCPSocketPrivate::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, LargeRead, filter);
 
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, SSLHandshakeFails, filter);
+  RUN_CALLBACK_TEST(TestTCPSocketPrivate, SSLHandshakeHangs, filter);
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, SSLWriteFails, filter);
   RUN_CALLBACK_TEST(TestTCPSocketPrivate, SSLReadFails, filter);
 }
@@ -241,6 +242,18 @@ std::string TestTCPSocketPrivate::TestSSLHandshakeFails() {
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_ERROR_FAILED, cb.result());
 
+  PASS();
+}
+
+std::string TestTCPSocketPrivate::TestSSLHandshakeHangs() {
+  pp::TCPSocketPrivate socket(instance_);
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+
+  cb.WaitForResult(socket.Connect("foo.test", 443, cb.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb);
+  ASSERT_EQ(PP_OK, cb.result());
+
+  socket.SSLHandshake("foo.test", 443, DoNothingCallback());
   PASS();
 }
 

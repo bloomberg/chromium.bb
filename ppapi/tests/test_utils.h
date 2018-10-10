@@ -95,6 +95,30 @@ class NestedEvent {
   NestedEvent& operator=(const NestedEvent&);
 };
 
+// Returns a callback that does nothing, so can be invoked when the current
+// function is out of scope, unlike TestCompletionCallback.
+pp::CompletionCallback DoNothingCallback();
+
+template <typename OutputT>
+void DeleteStorage(void* user_data, int32_t flags) {
+  typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType*
+      storage = reinterpret_cast<typename pp::CompletionCallbackWithOutput<
+          OutputT>::OutputStorageType*>(user_data);
+  delete storage;
+}
+
+// Same as DoNothingCallback(), but with an OutputStorageType, which it deletes
+// when the callback is invoked.
+template <typename OutputT>
+pp::CompletionCallbackWithOutput<OutputT> DoNothingCallbackWithOutput() {
+  typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType*
+      storage = new
+      typename pp::CompletionCallbackWithOutput<OutputT>::OutputStorageType();
+  return pp::CompletionCallbackWithOutput<OutputT>(
+      &DeleteStorage<OutputT>, storage, PP_COMPLETIONCALLBACK_FLAG_OPTIONAL,
+      storage);
+}
+
 enum CallbackType { PP_REQUIRED, PP_OPTIONAL, PP_BLOCKING };
 class TestCompletionCallback {
  public:
