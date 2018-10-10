@@ -90,7 +90,8 @@
 #include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
-#include "ash/system/bluetooth/tray_bluetooth_helper.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper_experimental.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper_legacy.h"
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/caps_lock_notification_controller.h"
@@ -724,7 +725,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
       window_selector_controller_(std::make_unique<WindowSelectorController>()),
-      tray_bluetooth_helper_(std::make_unique<TrayBluetoothHelper>()),
       display_configurator_(std::make_unique<display::DisplayConfigurator>()),
       display_output_protection_(std::make_unique<DisplayOutputProtection>(
           display_configurator_.get())),
@@ -733,6 +733,13 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
+
+  if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
+    tray_bluetooth_helper_ =
+        std::make_unique<TrayBluetoothHelperExperimental>();
+  } else {
+    tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
+  }
 
   PowerStatus::Initialize();
 
