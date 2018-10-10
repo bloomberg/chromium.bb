@@ -30,6 +30,12 @@ void InvalidParameterHandler(const wchar_t* expression,
 
 }  // namespace
 
+CGaiaCredentialProviderModule::CGaiaCredentialProviderModule()
+    : ATL::CAtlDllModuleT<CGaiaCredentialProviderModule>(),
+      exit_manager_(nullptr) {}
+
+CGaiaCredentialProviderModule::~CGaiaCredentialProviderModule() {}
+
 // static
 HRESULT WINAPI
 CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
@@ -58,6 +64,8 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                                             LPVOID reserved) {
   switch (reason) {
     case DLL_PROCESS_ATTACH: {
+      exit_manager_ = std::make_unique<base::AtExitManager>();
+
       _set_invalid_parameter_handler(InvalidParameterHandler);
 
       // Initialize base.  Command line will be set from GetCommandLineW().
@@ -79,6 +87,7 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
       LOGFN(INFO) << "DllMain(DLL_PROCESS_DETACH)";
       base::CommandLine::Reset();
       _set_invalid_parameter_handler(nullptr);
+      exit_manager_.reset();
       break;
 
     default:
