@@ -18,10 +18,6 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/work_item.h"
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
 namespace installer {
 
 class InstallServiceWorkItemImpl;
@@ -42,11 +38,9 @@ class InstallServiceWorkItem : public WorkItem {
   // "C:\Program Files (x86)\Google\Chrome\ElevationService.exe" /svc
   InstallServiceWorkItem(const base::string16& service_name,
                          const base::string16& display_name,
-                         const base::CommandLine& service_cmd_line);
+                         const base::string16& service_cmd_line);
 
   ~InstallServiceWorkItem() override;
-
-  static bool DeleteService(const base::string16& service_name);
 
  private:
   friend class InstallServiceWorkItemTest;

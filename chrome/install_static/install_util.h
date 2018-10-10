@@ -109,10 +109,8 @@ const wchar_t* GetAppGuid();
 // the Windows OS.
 const CLSID& GetToastActivatorClsid();
 
-// Return the Elevation Service CLSID, Name, and Display Name respectively.
+// The CLSID of the COM server that provides silent elevation functionality.
 const CLSID& GetElevatorClsid();
-std::wstring GetElevationServiceName();
-std::wstring GetElevationServiceDisplayName();
 
 // Returns the unsuffixed application name of this program. This is the base of
 // the name registered with Default Programs. IMPORTANT: This must only be

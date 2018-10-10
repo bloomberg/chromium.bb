@@ -12,7 +12,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/optional.h"
@@ -157,17 +156,6 @@ bool StoreDMToken(const std::string& token);
 // Returns the file path to notification_helper.exe (in |version| directory).
 base::FilePath GetNotificationHelperPath(const base::FilePath& target_path,
                                          const base::Version& version);
-
-// Returns the file path to elevation_service.exe (in |version| directory).
-base::FilePath GetElevationServicePath(const base::FilePath& target_path,
-                                       const base::Version& version);
-
-// Returns the Elevation Service GUID prefixed with |prefix|.
-base::string16 GetElevationServiceGuid(base::StringPiece16 prefix);
-
-// Return the elevation service registry paths.
-base::string16 GetElevationServiceClsidRegistryPath();
-base::string16 GetElevationServiceAppidRegistryPath();
 
 }  // namespace installer
 
