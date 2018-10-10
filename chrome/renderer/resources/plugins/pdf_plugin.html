@@ -5,21 +5,9 @@
     <meta name="viewport"
       content="initial-scale=1, minimum-scale=1, width=device-width">
     <script>
-      // If this page is embedded in a WebViewPlugin, the 'window.plugin'
-      // object is externally defined, and we trigger the download that way.
-      if (window.plugin !== undefined) {
-        window.addEventListener('DOMContentLoaded', function () {
-          let button = document.getElementById('open-button');
-          button.addEventListener('click', function(e) {
-            window.plugin.openPDF();
-            e.preventDefault();
-          });
-        });
-      }
-
       window.onkeydown = function(e) {
         if (e.key == 'Enter' || e.key == ' ') {
-          document.getElementById('open-button').click();
+          plugin.openPDF();
           e.preventDefault();
         }
       };
@@ -54,9 +42,7 @@
         <div id="main-message">
           <h1>$i18n{fileName}</h1>
         </div>
-        <a href="$i18n{pdfUrl}" target="_blank">
-          <button id="open-button" tabindex="1">$i18n{open}</button>
-        </a>
+        <button onclick="plugin.openPDF()">$i18n{open}</a>
       </div>
     </div>
   </body>
