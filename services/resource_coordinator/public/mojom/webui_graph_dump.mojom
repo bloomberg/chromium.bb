@@ -46,8 +46,8 @@ struct WebUIGraph {
 };
 
 // This interface allows grabbing the momentary state of the RC graph for
-// visulation or inspection. This is exposed on the RC service, and used from
-// the chrome://discards WebUI graph view tab.
+// visualization or inspection. This is exposed on the RC service, and used
+// from the chrome://discards WebUI graph view tab.
 interface WebUIGraphDump {
   GetCurrentGraph() => (WebUIGraph graph);
 };
