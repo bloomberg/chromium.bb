@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
@@ -229,11 +230,9 @@ void PrepareDragForDownload(
 
 // Returns the FormatType to store file system files.
 const ui::Clipboard::FormatType& GetFileSystemFileFormatType() {
-  static const char kFormatString[] = "chromium/x-file-system-files";
-  CR_DEFINE_STATIC_LOCAL(ui::Clipboard::FormatType,
-                         format,
-                         (ui::Clipboard::GetFormatType(kFormatString)));
-  return format;
+  static base::NoDestructor<ui::Clipboard::FormatType> format(
+      ui::Clipboard::GetFormatType("chromium/x-file-system-files"));
+  return *format;
 }
 
 

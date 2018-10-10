@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
@@ -193,8 +194,8 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
-  CR_DEFINE_STATIC_LOCAL(RendererInterfaceBinders, binders, ());
-  return binders;
+  static base::NoDestructor<RendererInterfaceBinders> binders;
+  return *binders;
 }
 
 void RendererInterfaceBinders::CreateWebSocket(
