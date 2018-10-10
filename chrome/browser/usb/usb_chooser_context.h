@@ -89,10 +89,6 @@ class UsbChooserContext : public ChooserContextBase,
 
   std::unique_ptr<UsbPolicyAllowedDevices> usb_policy_allowed_devices_;
 
-  // TODO(donna.wu@intel.com): Have the Device Service own this instance in the
-  // near future.
-  std::unique_ptr<device::usb::DeviceManagerImpl> device_manager_instance_;
-
   // Connection to |device_manager_instance_|.
   device::mojom::UsbDeviceManagerPtr device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>

@@ -27,6 +27,8 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//device/usb/mojo",
+    "//device/usb/public/mojom",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
