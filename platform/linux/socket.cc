@@ -4,10 +4,11 @@
 
 #include "platform/api/socket.h"
 
+#include <sys/socket.h>
+
 #include <linux/in6.h>
 #include <linux/ipv6.h>
 #include <netinet/ip.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
