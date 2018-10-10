@@ -492,9 +492,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'passthrough', 'amd'], bug=794339)
 
     # Intel
-    # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
-    self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
-        ['linux', 'intel'], bug=540543)  # GPU timeout
     # Fixed on Mesa 12.0
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['linux', 'intel'], bug=642822)
