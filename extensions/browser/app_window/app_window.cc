@@ -1086,9 +1086,7 @@ AppWindow::CreateParams AppWindow::LoadDefaults(CreateParams params)
 SkRegion* AppWindow::RawDraggableRegionsToSkRegion(
     const std::vector<DraggableRegion>& regions) {
   SkRegion* sk_region = new SkRegion;
-  for (std::vector<DraggableRegion>::const_iterator iter = regions.begin();
-       iter != regions.end();
-       ++iter) {
+  for (auto iter = regions.cbegin(); iter != regions.cend(); ++iter) {
     const DraggableRegion& region = *iter;
     sk_region->op(
         region.bounds.x(),

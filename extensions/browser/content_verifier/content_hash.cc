@@ -267,7 +267,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
   // Now iterate over all the paths in sorted order and compute the block hashes
   // for each one.
   ComputedHashes::Writer writer;
-  for (SortedFilePathSet::iterator i = paths.begin(); i != paths.end(); ++i) {
+  for (auto i = paths.begin(); i != paths.end(); ++i) {
     if (is_cancelled && is_cancelled.Run())
       return false;
 

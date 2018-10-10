@@ -242,7 +242,7 @@ void EventRouter::RegisterObserver(Observer* observer,
 }
 
 void EventRouter::UnregisterObserver(Observer* observer) {
-  for (ObserverMap::iterator it = observers_.begin(); it != observers_.end();) {
+  for (auto it = observers_.begin(); it != observers_.end();) {
     if (it->second == observer)
       it = observers_.erase(it);
     else
@@ -264,7 +264,7 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
                                   listener->listener_url(),
                                   listener->GetBrowserContext());
   std::string base_event_name = GetBaseEventName(listener->event_name());
-  ObserverMap::iterator observer = observers_.find(base_event_name);
+  auto observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
 
@@ -282,7 +282,7 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
                                   listener->listener_url(),
                                   listener->GetBrowserContext());
   std::string base_event_name = GetBaseEventName(listener->event_name());
-  ObserverMap::iterator observer = observers_.find(base_event_name);
+  auto observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerRemoved(details);
 }
@@ -849,8 +849,7 @@ void EventRouter::SetRegisteredEvents(const std::string& extension_id,
                                       const std::set<std::string>& events,
                                       RegisteredEventType type) {
   auto events_value = std::make_unique<base::ListValue>();
-  for (std::set<std::string>::const_iterator iter = events.begin();
-       iter != events.end(); ++iter) {
+  for (auto iter = events.cbegin(); iter != events.cend(); ++iter) {
     events_value->AppendString(*iter);
   }
   const char* pref_key = type == RegisteredEventType::kLazy
