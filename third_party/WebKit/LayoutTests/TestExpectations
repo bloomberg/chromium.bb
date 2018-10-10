@@ -5187,6 +5187,7 @@ crbug.com/827639 intersection-observer/v2 [ Skip ]
 crbug.com/827639 http/tests/intersection-observer/v2 [ Skip ]
 
 crbug.com/875884 [ Linux Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
+crbug.com/875884 [ Linux Win ] virtual/threaded/lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 
 # Sheriff 2018-08-16
 crbug.com/874733 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash ]
