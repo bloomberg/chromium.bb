@@ -967,12 +967,12 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(common_params, std::move(begin_params), nullptr,
-                          navigation_client_ptr.PassInterface());
+                          navigation_client_ptr.PassInterface(), nullptr);
   } else {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(common_params, std::move(begin_params), nullptr,
-                          nullptr);
+                          nullptr, nullptr);
   }
 
   NavigationRequest* request =

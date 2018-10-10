@@ -194,9 +194,11 @@ namespace content {
 
 namespace {
 
+#ifndef STATIC_ASSERT_ENUM
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
+#endif
 
 // Check PP_TextInput_Type and ui::TextInputType are kept in sync.
 STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_NONE, PP_TEXTINPUT_TYPE_NONE);

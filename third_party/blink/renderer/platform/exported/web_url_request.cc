@@ -391,7 +391,7 @@ bool WebURLRequest::IsAdResource() const {
   return resource_request_->IsAdResource();
 }
 
-const WebContentSecurityPolicyList& WebURLRequest::GetNavigationCSP() const {
+const WebContentSecurityPolicyList& WebURLRequest::GetInitiatorCSP() const {
   return resource_request_->GetInitiatorCSP();
 }
 

@@ -585,10 +585,8 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
       GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now() /* navigation_start */, "GET",
       nullptr /* post_data */, base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK, false /* started_from_context_menu */,
-      false /* has_user_gesture */,
-      std::vector<ContentSecurityPolicy>() /* initiator_csp */,
-      CSPSource() /* initiator_self_source */);
+      false /* started_from_context_menu */, false /* has_user_gesture */,
+      InitiatorCSPInfo());
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           std::string() /* headers */, net::LOAD_NORMAL,
@@ -610,10 +608,10 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
         mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client);
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
         common_params, std::move(begin_params), nullptr,
-        navigation_client.PassInterface());
+        navigation_client.PassInterface(), nullptr);
   } else {
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-        common_params, std::move(begin_params), nullptr, nullptr);
+        common_params, std::move(begin_params), nullptr, nullptr, nullptr);
   }
   EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
             process_kill_waiter.Wait());

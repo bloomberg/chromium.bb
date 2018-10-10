@@ -96,8 +96,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
   void DispatchWillCommitProvisionalLoad() override;
-  void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                       ResourceRequest&) override;
+  void DispatchDidStartProvisionalLoad(
+      DocumentLoader*,
+      ResourceRequest&,
+      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,

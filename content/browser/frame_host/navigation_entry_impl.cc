@@ -692,11 +692,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       !IsViewSourceMode(), should_replace_entry(), GetBaseURLForDataURL(),
       GetHistoryURLForDataURL(), previews_state, navigation_start,
       frame_entry.method(), post_body ? post_body : post_data_,
-      base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */,
-      has_started_from_context_menu(), has_user_gesture(),
-      std::vector<ContentSecurityPolicy>() /* initiator_csp */,
-      CSPSource() /* initiator_self_source */, input_start);
+      base::Optional<SourceLocation>(), has_started_from_context_menu(),
+      has_user_gesture(), InitiatorCSPInfo(), input_start);
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(

@@ -44,6 +44,7 @@
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -911,12 +912,18 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
 
+  mojo::ScopedMessagePipeHandle navigation_initiator_handle;
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
     WebContentSecurityPolicyList initiator_csp =
         origin_document->GetContentSecurityPolicy()
             ->ExposeForNavigationalChecks();
     resource_request.SetInitiatorCSP(initiator_csp);
+    mojom::blink::NavigationInitiatorPtr navigation_initiator;
+    auto request = mojo::MakeRequest(&navigation_initiator);
+    origin_document->BindNavigationInitiatorRequest(std::move(request));
+    navigation_initiator_handle =
+        navigation_initiator.PassInterface().PassHandle();
   }
 
   // Record the latest requiredCSP value that will be used when sending this
@@ -1000,8 +1007,9 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // TODO(ananta):
   // We should get rid of the dependency on the DocumentLoader in consumers of
   // the DidStartProvisionalLoad() notification.
-  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request);
+  Client()->DispatchDidStartProvisionalLoad(
+      provisional_document_loader_, resource_request,
+      std::move(navigation_initiator_handle));
   probe::didStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
   DCHECK(provisional_document_loader_);
@@ -1096,7 +1104,8 @@ void FrameLoader::CommitNavigation(
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request);
+                                            resource_request,
+                                            mojo::ScopedMessagePipeHandle());
   probe::didStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
 
