@@ -8,6 +8,7 @@
 #include "base/ios/ios_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
@@ -58,6 +59,12 @@ enum NavigationManagerChoice {
   TEST_LEGACY_NAVIGATION_MANAGER,
   TEST_WK_BASED_NAVIGATION_MANAGER,
 };
+
+// Verifies correctness of WebState's title.
+ACTION_P(VerifyTitle, expected_title) {
+  WebState* web_state = arg0;
+  EXPECT_EQ(expected_title, base::UTF16ToASCII(web_state->GetTitle()));
+}
 
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation
 // passed to |DidStartNavigation|. Stores |NavigationContext| in |context|
@@ -676,7 +683,7 @@ class WebStateObserverTest
 
 // Tests successful navigation to a new page.
 TEST_P(WebStateObserverTest, NewPageNavigation) {
-  const GURL url = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -697,7 +704,10 @@ TEST_P(WebStateObserverTest, NewPageNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -731,7 +741,8 @@ TEST_P(WebStateObserverTest, EnableWebUsageTwice) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -786,7 +797,7 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
 
 // Tests web page reload navigation.
 TEST_P(WebStateObserverTest, WebPageReloadNavigation) {
-  const GURL url = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -800,7 +811,10 @@ TEST_P(WebStateObserverTest, WebPageReloadNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -825,18 +839,16 @@ TEST_P(WebStateObserverTest, WebPageReloadNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context, &nav_id,
                                             true /* is_web_page */));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  // TODO(crbug.com/700958): ios/web ignores |check_for_repost| flag and current
-  // delegate does not run callback for ShowRepostFormWarningDialog. Clearing
-  // the delegate will allow form resubmission. Remove this workaround (clearing
-  // the delegate, once |check_for_repost| is supported).
-  // web_state()->SetDelegate(nullptr);
   ASSERT_TRUE(ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->Reload(ReloadType::NORMAL,
-                                 false /*check_for_repost*/);
+                                 /*check_for_repost=*/false);
   }));
 }
 
@@ -860,7 +872,8 @@ TEST_P(WebStateObserverTest, ReloadWithUserAgentType) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -881,7 +894,8 @@ TEST_P(WebStateObserverTest, ReloadWithUserAgentType) {
       .WillOnce(Return(true));
   // TODO(crbug.com/798836): verify the correct User-Agent header is sent.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -897,7 +911,7 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
     return;
   }
-  const GURL url = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -918,14 +932,17 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
 
   // Perform same-document navigation.
-  const GURL hash_url = test_server_->GetURL("/echo#1");
+  const GURL hash_url = test_server_->GetURL("/echoall#1");
   WebStatePolicyDecider::RequestInfo hash_url_expected_request_info(
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
@@ -976,7 +993,7 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
 
 // Tests renderer-initiated hash change.
 TEST_P(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
-  const GURL url = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -997,14 +1014,17 @@ TEST_P(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
 
   // Perform same-page navigation using JavaScript.
-  const GURL hash_url = test_server_->GetURL("/echo#1");
+  const GURL hash_url = test_server_->GetURL("/echoall#1");
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(true));
@@ -1031,7 +1051,7 @@ TEST_P(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
 
 // Tests state change.
 TEST_P(WebStateObserverTest, StateNavigation) {
-  const GURL url = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -1052,7 +1072,10 @@ TEST_P(WebStateObserverTest, StateNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1108,7 +1131,8 @@ TEST_P(WebStateObserverTest, NativeContentNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewNativePageFinishedContext(web_state(), url, &context,
                                                    &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("Test Title"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1124,7 +1148,8 @@ TEST_P(WebStateObserverTest, NativeContentReload) {
   // No ShouldAllowRequest/ShouldAllowResponse callbacks for native content
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("Test Title"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1160,7 +1185,8 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   // No ShouldAllowRequest/ShouldAllowResponse callbacks for native content
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("Test Title"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1168,7 +1194,7 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   ASSERT_TRUE(LoadUrl(url));
 
   // Load a web navigation.
-  const GURL web_url = test_server_->GetURL("/echo");
+  const GURL web_url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   NavigationContext* context = nullptr;
@@ -1192,7 +1218,10 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), web_url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(web_url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1213,7 +1242,8 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   // This call is required to make sure WebStateObservers update their cached
   // version of current title.
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("Test Title"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1257,7 +1287,11 @@ TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
     EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
         .WillOnce(VerifyNewPageFinishedContext(
             web_state(), url, kExpectedMimeType, &context, &nav_id));
-    EXPECT_CALL(observer_, TitleWasSet(web_state())).Times(2);
+    EXPECT_CALL(observer_, TitleWasSet(web_state()))
+        .WillOnce(VerifyTitle(url.GetContent()));
+    EXPECT_CALL(observer_, TitleWasSet(web_state()))
+        .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
+    ;
     EXPECT_CALL(observer_, DidStopLoading(web_state()));
     EXPECT_CALL(observer_,
                 PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1289,7 +1323,9 @@ TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
       .WillOnce(VerifyPostFinishedContext(
           web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
           /*renderer_initiated=*/false));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  ;
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1304,8 +1340,8 @@ TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
 
 // Tests successful navigation to a new page with post HTTP method.
 TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
-  const GURL url = test_server_->GetURL("/form?echo");
-  const GURL action = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/form?echoall");
+  const GURL action = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -1319,7 +1355,9 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  ;
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1350,7 +1388,10 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
       .WillOnce(VerifyPostFinishedContext(
           web_state(), action, /*has_user_gesture=*/false, &context, &nav_id,
           /*renderer_initiated=*/true));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(action.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1361,8 +1402,8 @@ TEST_P(WebStateObserverTest, RendererInitiatedPostNavigation) {
 
 // Tests successful reload of a page returned for post request.
 TEST_P(WebStateObserverTest, ReloadPostNavigation) {
-  const GURL url = test_server_->GetURL("/form?echo");
-  const GURL action = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/form?echoall");
+  const GURL action = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -1376,7 +1417,8 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1399,7 +1441,10 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(action.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1441,7 +1486,10 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
       .WillOnce(VerifyPostFinishedContext(
           web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
           reload_is_renderer_initiated));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(action.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1477,7 +1525,8 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1500,7 +1549,8 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(action.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1533,7 +1583,8 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
         .WillOnce(Return(true));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1565,7 +1616,8 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
       .WillOnce(VerifyPostFinishedContext(
           web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
           /*renderer_initiated=*/false));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(action.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1581,8 +1633,8 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
 
 // Tests server redirect navigation.
 TEST_P(WebStateObserverTest, RedirectNavigation) {
-  const GURL url = test_server_->GetURL("/server-redirect?echo");
-  const GURL redirect_url = test_server_->GetURL("/echo");
+  const GURL url = test_server_->GetURL("/server-redirect?echoall");
+  const GURL redirect_url = test_server_->GetURL("/echoall");
 
   // Load url which replies with redirect.
   NavigationContext* context = nullptr;
@@ -1607,7 +1659,10 @@ TEST_P(WebStateObserverTest, RedirectNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), redirect_url, kExpectedMimeType, &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(redirect_url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1671,7 +1726,8 @@ TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
                                              &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
@@ -1770,7 +1826,8 @@ TEST_P(WebStateObserverTest, StopFinishedNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
                                              &context, &nav_id));
-  EXPECT_CALL(observer_, TitleWasSet(web_state()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
   test::LoadUrl(web_state(), url);
@@ -1899,7 +1956,8 @@ TEST_P(WebStateObserverTest, RestoreSession) {
     EXPECT_CALL(observer, DidFinishNavigation(web_state.get(), _))
         .WillOnce(VerifyRestorationFinishedContext(
             web_state.get(), url, kExpectedMimeType, &context, &nav_id));
-    EXPECT_CALL(observer, TitleWasSet(web_state.get()));
+    EXPECT_CALL(observer, TitleWasSet(web_state.get()))
+        .WillOnce(VerifyTitle(url.GetContent()));
     EXPECT_CALL(observer, DidStopLoading(web_state.get()));
     EXPECT_CALL(observer,
                 PageLoaded(web_state.get(), PageLoadCompletionStatus::SUCCESS));
