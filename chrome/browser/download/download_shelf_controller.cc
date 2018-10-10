@@ -42,6 +42,9 @@ void DownloadShelfController::OnItemRemoved(const ContentId& id) {
 }
 
 void DownloadShelfController::OnItemUpdated(const OfflineItem& item) {
+  if (profile_->IsOffTheRecord() != item.is_off_the_record)
+    return;
+
   if (OfflineItemUtils::IsDownload(item.id))
     return;
 
