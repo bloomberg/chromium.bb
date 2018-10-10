@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -16,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -43,7 +45,8 @@ class ParseTasksRemainingCounter
   }
 
   void Increment() {
-    DCHECK(count_ > 0) << "Once decremented to zero, Increment should never be called.";
+    DCHECK(count_ > 0)
+        << "Once decremented to zero, Increment should never be called.";
     count_++;
   }
 
