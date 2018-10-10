@@ -149,8 +149,6 @@ class HarfBuzzScopedPtr {
   DestroyFunction destroy_;
 };
 
-HarfBuzzShaper::HarfBuzzShaper(const String& text) : text_(text) {}
-
 using FeaturesVector = Vector<hb_feature_t, 6>;
 struct RangeData {
   hb_buffer_t* buffer;
