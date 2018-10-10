@@ -393,7 +393,8 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 void LogSyncPasswordHashChange(SyncPasswordHashChange event);
 
 // Log whether a sync password hash saved.
-void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state);
+void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
+                                bool is_under_advanced_protection);
 
 // Log the number of Gaia password hashes saved, and the number of enterprise
 // password hashes saved.

@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -1093,6 +1094,39 @@ TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
   EXPECT_CALL(*notifier_weak, UnsubscribeFromSigninEvents());
   store->ShutdownOnUIThread();
 }
+
+TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
+                                     PrefRegistry::NO_REGISTRATION_FLAGS);
+  ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
+  store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
+
+  base::HistogramTester histogram_tester;
+  store->ReportMetrics("sync_username", false, true);
+  std::string name =
+      "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser";
+  histogram_tester.ExpectBucketCount(
+      name, metrics_util::IsSyncPasswordHashSaved::NOT_SAVED, 1);
+
+  // Save password.
+  const base::string16 sync_password = base::ASCIIToUTF16("password");
+  const base::string16 input = base::ASCIIToUTF16("123password");
+  store->SaveGaiaPasswordHash(
+      "sync_username", sync_password,
+      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+  WaitForPasswordStore();
+
+  store->ReportMetrics("sync_username", false, true);
+  histogram_tester.ExpectBucketCount(
+      name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
+
+  store->ShutdownOnUIThread();
+}
+
 #endif
 
 }  // namespace password_manager

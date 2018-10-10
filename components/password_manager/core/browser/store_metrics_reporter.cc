@@ -25,7 +25,8 @@ StoreMetricsReporter::StoreMetricsReporter(
         password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
             sync_service, signin_manager),
         client->GetPasswordSyncState() ==
-            password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE);
+            password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE,
+        client->IsUnderAdvancedProtection());
   }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
   UMA_HISTOGRAM_BOOLEAN(

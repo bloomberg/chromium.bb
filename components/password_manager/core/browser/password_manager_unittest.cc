@@ -178,7 +178,7 @@ class PasswordManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
-    EXPECT_CALL(*store_, ReportMetrics(_, _)).Times(AnyNumber());
+    EXPECT_CALL(*store_, ReportMetrics(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(*store_, GetLoginsForSameOrganizationName(_, _))
         .Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr));

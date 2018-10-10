@@ -228,11 +228,12 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void GetAllLoginsWithAffiliationAndBrandingInformation(
       PasswordStoreConsumer* consumer);
 
-  // Reports usage metrics for the database. |sync_username| and
-  // |custom_passphrase_sync_enabled| determine some of the UMA stats that
-  // may be reported.
+  // Reports usage metrics for the database. |sync_username|, and
+  // |custom_passphrase_sync_enabled|, and |is_under_advanced_protection|
+  // determine some of the UMA stats that may be reported.
   virtual void ReportMetrics(const std::string& sync_username,
-                             bool custom_passphrase_sync_enabled);
+                             bool custom_passphrase_sync_enabled,
+                             bool is_under_advanced_protection);
 
   // Adds or replaces the statistics for the domain |stats.origin_domain|.
   void AddSiteStats(const InteractionsStats& stats);

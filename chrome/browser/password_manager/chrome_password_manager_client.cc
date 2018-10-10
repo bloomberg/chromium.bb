@@ -80,6 +80,7 @@
 #include "url/url_constants.h"
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -886,6 +887,15 @@ favicon::FaviconService* ChromePasswordManagerClient::GetFaviconService() {
 
 void ChromePasswordManagerClient::UpdateFormManagers() {
   password_manager_.UpdateFormManagers();
+}
+
+bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
+#if defined(FULL_SAFE_BROWSING)
+  return safe_browsing::AdvancedProtectionStatusManager::
+      IsUnderAdvancedProtection(profile_);
+#else
+  return false;
+#endif
 }
 
 void ChromePasswordManagerClient::PasswordFormsParsed(

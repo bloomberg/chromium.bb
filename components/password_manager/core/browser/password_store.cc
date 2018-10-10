@@ -287,7 +287,8 @@ void PasswordStore::GetAllLoginsWithAffiliationAndBrandingInformation(
 }
 
 void PasswordStore::ReportMetrics(const std::string& sync_username,
-                                  bool custom_passphrase_sync_enabled) {
+                                  bool custom_passphrase_sync_enabled,
+                                  bool is_under_advanced_protection) {
   if (background_task_runner_) {
     base::Closure task =
         base::Bind(&PasswordStore::ReportMetricsImpl, this, sync_username,
@@ -305,7 +306,8 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
                                                      /*is_gaia_password=*/true)
                   ? metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF
                   : metrics_util::IsSyncPasswordHashSaved::NOT_SAVED;
-    metrics_util::LogIsSyncPasswordHashSaved(hash_password_state);
+    metrics_util::LogIsSyncPasswordHashSaved(hash_password_state,
+                                             is_under_advanced_protection);
   }
 #endif
 }
