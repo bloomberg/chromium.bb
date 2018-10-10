@@ -375,9 +375,9 @@ void RenderFrameMessageFilter::DownloadUrl(
           }
         })");
   std::unique_ptr<download::DownloadUrlParameters> parameters(
-      new download::DownloadUrlParameters(
-          url, render_process_id_, render_view_id, render_frame_id,
-          request_context_.get(), traffic_annotation));
+      new download::DownloadUrlParameters(url, render_process_id_,
+                                          render_view_id, render_frame_id,
+                                          traffic_annotation));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);

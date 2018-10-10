@@ -28,6 +28,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 
@@ -40,7 +41,8 @@ storage::BlobStorageContext* BlobStorageContextGetter(
 }
 
 std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
-    download::DownloadUrlParameters* params) {
+    download::DownloadUrlParameters* params,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(params->offset() >= 0);
 
@@ -49,10 +51,9 @@ std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
   // resource_dispatcher_host_impl.h, so we must down cast. RDHI is the only
   // subclass of RDH as of 2012 May 4.
   std::unique_ptr<net::URLRequest> request(
-      params->url_request_context_getter()
-          ->GetURLRequestContext()
-          ->CreateRequest(params->url(), net::DEFAULT_PRIORITY, nullptr,
-                          params->GetNetworkTrafficAnnotation()));
+      url_request_context_getter->GetURLRequestContext()->CreateRequest(
+          params->url(), net::DEFAULT_PRIORITY, nullptr,
+          params->GetNetworkTrafficAnnotation()));
   request->set_method(params->method());
 
   if (params->post_body()) {

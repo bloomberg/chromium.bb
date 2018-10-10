@@ -69,7 +69,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -999,10 +998,6 @@ bool DownloadsDownloadFunction::RunAsync() {
             &error_))
     return false;
 
-  content::StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(
-          render_frame_host()->GetProcess()->GetBrowserContext(),
-          render_frame_host()->GetSiteInstance());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("downloads_api_run_async", R"(
         semantics {
@@ -1036,8 +1031,7 @@ bool DownloadsDownloadFunction::RunAsync() {
       new download::DownloadUrlParameters(
           download_url, render_frame_host()->GetProcess()->GetID(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host()->GetRoutingID(),
-          storage_partition->GetURLRequestContext(), traffic_annotation));
+          render_frame_host()->GetRoutingID(), traffic_annotation));
 
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {
