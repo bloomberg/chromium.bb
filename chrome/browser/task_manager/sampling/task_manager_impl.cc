@@ -35,6 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/task_manager/providers/arc/arc_process_task_provider.h"
+#include "chrome/browser/task_manager/providers/crostini/crostini_process_task_provider.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -87,6 +88,7 @@ TaskManagerImpl::TaskManagerImpl()
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAvailable())
     task_providers_.emplace_back(new ArcProcessTaskProvider());
+  task_providers_.emplace_back(new CrostiniProcessTaskProvider());
 #endif  // defined(OS_CHROMEOS)
 }
 

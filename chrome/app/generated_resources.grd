@@ -3188,6 +3188,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_TASK_MANAGER_ARC_SYSTEM" desc="The prefix for an ARC system processes row">
           System: <ph name="ARC_PROCESS_NAME">$1<ex>com.android.systemui</ex></ph>
         </message>
+        <message name="IDS_TASK_MANAGER_LINUX_VM_PREFIX" desc="The prefix for a Linux virtual machine row">
+          Linux Virtual Machine: <ph name="LINUX_VM_NAME">$1<ex>termina</ex></ph>
+        </message>
       </if>
 
       <message name="IDS_UTILITY_PROCESS_IMAGE_DECODER_NAME" desc="The name of the utility process used for decoding images.">
