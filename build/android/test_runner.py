@@ -210,6 +210,7 @@ def AddCommonOptions(parser):
       '--isolated-script-test-repeat',
       dest='repeat', type=int, default=0,
       help='Number of times to repeat the specified set of tests.')
+  # This is currently only implemented for gtests and instrumentation tests.
   parser.add_argument(
       '--gtest_also_run_disabled_tests', '--gtest-also-run-disabled-tests',
       '--isolated-script-test-also-run-disabled-tests',
