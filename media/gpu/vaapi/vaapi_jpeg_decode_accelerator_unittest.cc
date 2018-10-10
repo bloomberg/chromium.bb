@@ -33,12 +33,10 @@ constexpr const char* kTestFilename = "pixel-1280x720.jpg";
 constexpr const char* kExpectedMd5SumI420 = "6e9e1716073c9a9a1282e3f0e0dab743";
 constexpr const char* kExpectedMd5SumYUYV = "ff313a6aedbc4e157561e5c2d5c2e079";
 
-// <va/va.h> doesn't provide this specific packing/ordering.
-constexpr uint32_t kFourccYUYV = VA_FOURCC('Y', 'U', 'Y', 'V');
 constexpr VAImageFormat kImageFormatI420 = {.fourcc = VA_FOURCC_I420,
                                             .byte_order = VA_LSB_FIRST,
                                             .bits_per_pixel = 12};
-constexpr VAImageFormat kImageFormatYUYV = {.fourcc = kFourccYUYV,
+constexpr VAImageFormat kImageFormatYUYV = {.fourcc = VA_FOURCC_YUYV,
                                             .byte_order = VA_LSB_FIRST,
                                             .bits_per_pixel = 16};
 
