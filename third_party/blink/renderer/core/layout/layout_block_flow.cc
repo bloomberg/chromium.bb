@@ -4223,9 +4223,13 @@ bool LayoutBlockFlow::HitTestChildren(
                                   ? accumulated_offset - ScrolledContentOffset()
                                   : accumulated_offset);
 
-  if (hit_test_action == kHitTestFloat &&
-      HitTestFloats(result, location_in_container, scrolled_offset))
-    return true;
+  if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
+    // Hit-test the floats using the FloatingObjects list if we're in legacy
+    // layout. LayoutNG, on the other hand, just hit-tests floats in regular
+    // tree order.
+    if (HitTestFloats(result, location_in_container, scrolled_offset))
+      return true;
+  }
 
   if (ChildrenInline()) {
     if (line_boxes_.HitTest(LineLayoutBoxModel(this), result,

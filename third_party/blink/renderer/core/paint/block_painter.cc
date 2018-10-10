@@ -118,9 +118,28 @@ void BlockPainter::PaintChildren(const PaintInfo& paint_info) {
 
 void BlockPainter::PaintChild(const LayoutBox& child,
                               const PaintInfo& paint_info) {
-  if (!child.HasSelfPaintingLayer() && !child.IsFloating() &&
-      !child.IsColumnSpanAll())
+  if (child.HasSelfPaintingLayer() || child.IsColumnSpanAll())
+    return;
+  if (!child.IsFloating()) {
     child.Paint(paint_info);
+    return;
+  }
+  // Paint the float now if we're in the right phase and if this is NG. NG
+  // paints floats in regular tree order (the FloatingObjects list is only used
+  // by legacy layout).
+  if (paint_info.phase != PaintPhase::kFloat &&
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip)
+    return;
+
+  if (!layout_block_.IsLayoutNGObject())
+    return;
+
+  PaintInfo float_paint_info(paint_info);
+  if (paint_info.phase == PaintPhase::kFloat)
+    float_paint_info.phase = PaintPhase::kForeground;
+
+  ObjectPainter(child).PaintAllPhasesAtomically(float_paint_info);
 }
 
 void BlockPainter::PaintChildrenAtomically(const OrderIterator& order_iterator,
@@ -303,6 +322,11 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
     return;
   }
 
+  // LayoutNG paints floats in regular tree order, and doesn't use the
+  // FloatingObjects list.
+  if (layout_block_.IsLayoutNGObject())
+    return;
+
   // If we're painting floats (not selections or textclips), change
   // the paint phase to foreground.
   PaintInfo float_paint_info(paint_info);
@@ -318,12 +342,6 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
     // TODO(wangxianzhu): Should this be a DCHECK?
     if (floating_layout_object->HasSelfPaintingLayer())
       continue;
-    // Do not paint floats that will be painted by NG.
-    LayoutBlock* containing_block = floating_layout_object->ContainingBlock();
-    if (containing_block->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(containing_block)->PaintFragment()) {
-      continue;
-    }
     ObjectPainter(*floating_layout_object)
         .PaintAllPhasesAtomically(float_paint_info);
   }
