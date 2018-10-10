@@ -20,33 +20,6 @@ NGContainerFragmentBuilder::NGContainerFragmentBuilder(
 
 NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetInlineSize(
-    LayoutUnit inline_size) {
-  DCHECK_GE(inline_size, LayoutUnit());
-  size_.inline_size = inline_size;
-  return *this;
-}
-
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetEndMarginStrut(
-    const NGMarginStrut& end_margin_strut) {
-  end_margin_strut_ = end_margin_strut;
-  return *this;
-}
-
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetExclusionSpace(
-    NGExclusionSpace&& exclusion_space) {
-  exclusion_space_ = std::move(exclusion_space);
-  return *this;
-}
-
-NGContainerFragmentBuilder&
-NGContainerFragmentBuilder::SetUnpositionedListMarker(
-    const NGUnpositionedListMarker& marker) {
-  DCHECK(!unpositioned_list_marker_ || !marker);
-  unpositioned_list_marker_ = marker;
-  return *this;
-}
-
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     const NGLayoutResult& child,
     const NGLogicalOffset& child_offset) {
