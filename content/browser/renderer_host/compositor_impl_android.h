@@ -197,10 +197,6 @@ class CONTENT_EXPORT CompositorImpl
   // Registers the root frame sink ID.
   void RegisterRootFrameSink();
 
-  // Called when we fail to create the context for the root frame sink.
-  void OnFatalOrSurfaceContextCreationFailure(
-      gpu::ContextResult context_result);
-
   // Viz specific functions:
   void InitializeVizLayerTreeFrameSink(
       scoped_refptr<ws::ContextProviderCommandBuffer> context_provider);
