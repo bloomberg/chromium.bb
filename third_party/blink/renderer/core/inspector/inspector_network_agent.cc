@@ -576,9 +576,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
     response_object->setRemotePort(response.RemotePort());
   }
 
-  String protocol;
-  if (response.GetResourceLoadInfo())
-    protocol = response.GetResourceLoadInfo()->npn_negotiated_protocol;
+  String protocol = response.AlpnNegotiatedProtocol();
   if (protocol.IsEmpty() || protocol == "unknown") {
     if (response.WasFetchedViaSPDY()) {
       protocol = "h2";

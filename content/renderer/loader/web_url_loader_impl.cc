@@ -1264,8 +1264,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
       load_info.AddResponseHeader(WebString::FromLatin1(it->first),
                                   WebString::FromLatin1(it->second));
     }
-    load_info.SetNPNNegotiatedProtocol(
-        WebString::FromLatin1(info.alpn_negotiated_protocol));
     response->SetHTTPLoadInfo(load_info);
   }
 
