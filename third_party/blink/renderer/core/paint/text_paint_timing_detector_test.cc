@@ -262,4 +262,38 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_IgnoreRemovedText) {
   EXPECT_EQ(record->text, "earliest text");
 }
 
+TEST_F(TextPaintTimingDetectorTest, LastTextPaint_StopRecordingOverNodeLimit) {
+  SetBodyInnerHTML(R"HTML(
+    <body>
+    </body>
+  )HTML");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+
+  for (int i = 1; i <= 4999; i++) {
+    Element* div = GetDocument().CreateRawElement(HTMLNames::divTag);
+    div->appendChild(GetDocument().createTextNode(WTF::String::Number(i)));
+    div->setAttribute(HTMLNames::styleAttr,
+                      AtomicString("position:fixed;left:0px"));
+    GetDocument().body()->AppendChild(div);
+  }
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+
+  TextRecord* record;
+  Text* text;
+
+  text = GetDocument().createTextNode(WTF::String::Number(5000));
+  GetDocument().body()->AppendChild(text);
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  record =
+      GetPaintTracker().GetTextPaintTimingDetector().FindLastPaintCandidate();
+  EXPECT_EQ(record->text, "5000");
+
+  text = GetDocument().createTextNode(WTF::String::Number(5001));
+  GetDocument().body()->AppendChild(text);
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  record =
+      GetPaintTracker().GetTextPaintTimingDetector().FindLastPaintCandidate();
+  EXPECT_EQ(record->text, "5000");
+}
+
 }  // namespace blink
