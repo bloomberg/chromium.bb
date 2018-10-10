@@ -455,9 +455,10 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   if (IsPerNavigationMojoInterfaceEnabled()) {
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
     BeginNavigation(common_params, std::move(begin_params), nullptr,
-                    navigation_client_ptr.PassInterface());
+                    navigation_client_ptr.PassInterface(), nullptr);
   } else {
-    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr);
+    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr,
+                    nullptr);
   }
 }
 

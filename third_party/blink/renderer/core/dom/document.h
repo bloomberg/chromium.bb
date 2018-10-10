@@ -34,6 +34,8 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -258,7 +260,8 @@ class CORE_EXPORT Document : public ContainerNode,
                              public ExecutionContext,
                              public DocumentShutdownNotifier,
                              public SynchronousMutationNotifier,
-                             public Supplementable<Document> {
+                             public Supplementable<Document>,
+                             public mojom::blink::NavigationInitiator {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
 
@@ -1471,6 +1474,13 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
   bool IsLazyLoadPolicyEnforced() const;
 
+  void SendViolationReport(
+      mojom::blink::CSPViolationParamsPtr violation_params) override;
+  void BindNavigationInitiatorRequest(
+      mojom::blink::NavigationInitiatorRequest request) {
+    navigation_initiator_bindings_.AddBinding(this, std::move(request));
+  }
+
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
   // TODO(binji): See http://crbug.com/798572. This implementation shares the
@@ -1919,6 +1929,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // This is set through feature policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
+
+  // A list of all the navigation_initiator bindings owned by this document.
+  // Used to report CSP violations that result from CSP blocking
+  // navigation requests that were initiated by this document.
+  mojo::BindingSet<mojom::blink::NavigationInitiator>
+      navigation_initiator_bindings_;
 
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 

@@ -582,7 +582,8 @@ void NavigatorImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
@@ -645,7 +646,8 @@ void NavigatorImpl::OnBeginNavigation(
           frame_tree_node, pending_entry, common_params,
           std::move(begin_params), controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount(), override_user_agent,
-          std::move(blob_url_loader_factory), std::move(navigation_client)));
+          std::move(blob_url_loader_factory), std::move(navigation_client),
+          std::move(navigation_initiator)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // This frame has already run beforeunload before it sent this IPC.  See if

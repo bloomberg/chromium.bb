@@ -353,7 +353,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */),
       request_params, browser_initiated, false /* from_begin_navigation */,
-      &frame_entry, &entry, std::move(navigation_ui_data), nullptr));
+      &frame_entry, &entry, std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
   return navigation_request;
@@ -369,7 +369,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     int current_history_list_length,
     bool override_user_agent,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated fragment-navigations never take place in the browser,
   //   even with PlzNavigate.
@@ -404,7 +405,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       true,   // from_begin_navigation
       nullptr, entry,
       nullptr,  // navigation_ui_data
-      std::move(navigation_client)));
+      std::move(navigation_client), std::move(navigation_initiator)));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
   return navigation_request;
@@ -420,7 +421,8 @@ NavigationRequest::NavigationRequest(
     const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client)
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
       begin_params_(std::move(begin_params)),
@@ -541,7 +543,9 @@ NavigationRequest::NavigationRequest(
   begin_params_->headers = headers.ToString();
 
   initiator_csp_context_.reset(new InitiatorCSPContext(
-      common_params_.initiator_csp, common_params_.initiator_self_source));
+      common_params_.initiator_csp_info.initiator_csp,
+      common_params_.initiator_csp_info.initiator_self_source,
+      std::move(navigation_initiator)));
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -599,8 +603,8 @@ void NavigationRequest::BeginNavigation() {
   // otherwise block. Similarly, the NavigationHandle is created afterwards, so
   // that it gets the request URL after potentially being modified by CSP.
   net::Error net_error = CheckContentSecurityPolicy(
-      false /* is redirect */, false /* url_upgraded_after_redirect */,
-      false /* is_response_check */);
+      false /* has_followed redirect */,
+      false /* url_upgraded_after_redirect */, false /* is_response_check */);
   if (net_error != net::OK) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailedInternal().
@@ -693,7 +697,7 @@ void NavigationRequest::CreateNavigationHandle() {
               common_params_.navigation_type),
           common_params_.navigation_start, nav_entry_id_,
           common_params_.started_from_context_menu,
-          common_params_.should_check_main_world_csp,
+          common_params_.initiator_csp_info.should_check_main_world_csp,
           begin_params_->is_form_submission, std::move(navigation_ui_data_),
           common_params_.method, std::move(headers), common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
@@ -859,9 +863,10 @@ void NavigationRequest::OnRequestRedirected(
   // Check Content Security Policy before the NavigationThrottles run. This
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block.
-  net::Error net_error = CheckContentSecurityPolicy(
-      true /* is redirect */, redirect_info.insecure_scheme_was_upgraded,
-      false /* is_response_check */);
+  net::Error net_error =
+      CheckContentSecurityPolicy(true /* has_followed_redirect */,
+                                 redirect_info.insecure_scheme_was_upgraded,
+                                 false /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net_error), false /*skip_throttles*/,
@@ -1110,7 +1115,7 @@ void NavigationRequest::OnResponseStarted(
   // redirect or not in order to perform its checks. This is the reason
   // why we need to check the CSP both on request and response.
   net::Error net_error = CheckContentSecurityPolicy(
-      navigation_handle_->WasServerRedirect(),
+      navigation_handle_->WasServerRedirect() /* has_followed_redirect */,
       false /* url_upgraded_after_redirect */, true /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
@@ -1685,7 +1690,7 @@ void NavigationRequest::CommitNavigation() {
 bool NavigationRequest::IsAllowedByCSPDirective(
     CSPContext* context,
     CSPDirective::Name directive,
-    bool is_redirect,
+    bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
@@ -1702,25 +1707,26 @@ bool NavigationRequest::IsAllowedByCSPDirective(
     url = common_params_.url;
   }
   return context->IsAllowedByCsp(
-      directive, url, is_redirect, is_response_check,
+      directive, url, has_followed_redirect, is_response_check,
       common_params_.source_location.value_or(SourceLocation()), disposition,
       begin_params_->is_form_submission);
 }
 
 net::Error NavigationRequest::CheckCSPDirectives(
     RenderFrameHostImpl* parent,
-    bool is_redirect,
+    bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
   bool navigate_to_allowed = IsAllowedByCSPDirective(
-      initiator_csp_context_.get(), CSPDirective::NavigateTo, is_redirect,
-      url_upgraded_after_redirect, is_response_check, disposition);
+      initiator_csp_context_.get(), CSPDirective::NavigateTo,
+      has_followed_redirect, url_upgraded_after_redirect, is_response_check,
+      disposition);
 
   bool frame_src_allowed = true;
   if (parent) {
     frame_src_allowed = IsAllowedByCSPDirective(
-        parent, CSPDirective::FrameSrc, is_redirect,
+        parent, CSPDirective::FrameSrc, has_followed_redirect,
         url_upgraded_after_redirect, is_response_check, disposition);
   }
 
@@ -1740,13 +1746,13 @@ net::Error NavigationRequest::CheckCSPDirectives(
 }
 
 net::Error NavigationRequest::CheckContentSecurityPolicy(
-    bool is_redirect,
+    bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check) {
   if (common_params_.url.SchemeIs(url::kAboutScheme))
     return net::OK;
 
-  if (common_params_.should_check_main_world_csp ==
+  if (common_params_.initiator_csp_info.should_check_main_world_csp ==
       CSPDisposition::DO_NOT_CHECK) {
     return net::OK;
   }
@@ -1772,13 +1778,13 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   // This sequence of events allows site owners to learn about (via step 1) any
   // requests that are upgraded in step 2.
 
-  net::Error report_only_csp_status =
-      CheckCSPDirectives(parent, is_redirect, url_upgraded_after_redirect,
-                         is_response_check, CSPContext::CHECK_REPORT_ONLY_CSP);
+  net::Error report_only_csp_status = CheckCSPDirectives(
+      parent, has_followed_redirect, url_upgraded_after_redirect,
+      is_response_check, CSPContext::CHECK_REPORT_ONLY_CSP);
 
   // upgrade-insecure-requests is handled in the network code for redirects,
   // only do the upgrade here if this is not a redirect.
-  if (!is_redirect && !frame_tree_node()->IsMainFrame()) {
+  if (!has_followed_redirect && !frame_tree_node()->IsMainFrame()) {
     if (parent &&
         parent->ShouldModifyRequestUrlForCsp(true /* is subresource */)) {
       upgrade_if_insecure_ = true;
@@ -1787,9 +1793,9 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
     }
   }
 
-  net::Error enforced_csp_status =
-      CheckCSPDirectives(parent, is_redirect, url_upgraded_after_redirect,
-                         is_response_check, CSPContext::CHECK_ENFORCED_CSP);
+  net::Error enforced_csp_status = CheckCSPDirectives(
+      parent, has_followed_redirect, url_upgraded_after_redirect,
+      is_response_check, CSPContext::CHECK_ENFORCED_CSP);
   if (enforced_csp_status != net::OK)
     return enforced_csp_status;
   return report_only_csp_status;

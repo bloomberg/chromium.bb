@@ -649,8 +649,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               blink::WebURLRequest& request) override;
+  void DidStartProvisionalLoad(
+      blink::WebDocumentLoader* document_loader,
+      blink::WebURLRequest& request,
+      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(
@@ -1181,7 +1183,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const RequestNavigationParams& request_params);
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
-  void BeginNavigation(const NavigationPolicyInfo& info);
+  void BeginNavigation(
+      const NavigationPolicyInfo& info,
+      mojo::ScopedMessagePipeHandle navigation_initiator_handle);
 
   // Loads a data url.
   void LoadDataURL(

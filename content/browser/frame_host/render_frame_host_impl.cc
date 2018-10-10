@@ -487,23 +487,27 @@ struct PendingNavigation {
   mojom::BeginNavigationParamsPtr begin_navigation_params;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
   mojom::NavigationClientAssociatedPtrInfo navigation_client;
+  blink::mojom::NavigationInitiatorPtr navigation_initiator;
 
   PendingNavigation(
       CommonNavigationParams common_params,
       mojom::BeginNavigationParamsPtr begin_navigation_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client);
+      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      blink::mojom::NavigationInitiatorPtr navigation_initiator);
 };
 
 PendingNavigation::PendingNavigation(
     CommonNavigationParams common_params,
     mojom::BeginNavigationParamsPtr begin_navigation_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client)
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator)
     : common_params(common_params),
       begin_navigation_params(std::move(begin_navigation_params)),
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
-      navigation_client(std::move(navigation_client)) {}
+      navigation_client(std::move(navigation_client)),
+      navigation_initiator(std::move(navigation_initiator)) {}
 
 class FileChooserImpl : public content::FileSelectListener,
                         private content::WebContentsObserver {
@@ -1594,7 +1598,8 @@ void RenderFrameHostImpl::Init() {
         frame_tree_node(), pending_navigate_->common_params,
         std::move(pending_navigate_->begin_navigation_params),
         std::move(pending_navigate_->blob_url_loader_factory),
-        std::move(pending_navigate_->navigation_client));
+        std::move(pending_navigate_->navigation_client),
+        std::move(pending_navigate_->navigation_initiator));
     pending_navigate_.reset();
   }
 }
@@ -3483,7 +3488,8 @@ void RenderFrameHostImpl::BeginNavigation(
     const CommonNavigationParams& common_params,
     mojom::BeginNavigationParamsPtr begin_params,
     blink::mojom::BlobURLTokenPtr blob_url_token,
-    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
   if (!is_active())
     return;
 
@@ -3547,13 +3553,15 @@ void RenderFrameHostImpl::BeginNavigation(
   if (waiting_for_init_) {
     pending_navigate_ = std::make_unique<PendingNavigation>(
         validated_params, std::move(begin_params),
-        std::move(blob_url_loader_factory), std::move(navigation_client));
+        std::move(blob_url_loader_factory), std::move(navigation_client),
+        std::move(navigation_initiator));
     return;
   }
 
   frame_tree_node()->navigator()->OnBeginNavigation(
       frame_tree_node(), validated_params, std::move(begin_params),
-      std::move(blob_url_loader_factory), std::move(navigation_client));
+      std::move(blob_url_loader_factory), std::move(navigation_client),
+      std::move(navigation_initiator));
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(
@@ -3833,13 +3841,10 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   DCHECK(data_url.SchemeIs(url::kDataScheme));
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, false, false,
-      GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */,
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      std::vector<ContentSecurityPolicy>() /* initiator_csp */,
-      CSPSource() /* initiator_self_source */);
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, false, false, GURL(), GURL(),
+      PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
+      base::Optional<SourceLocation>(), false /* started_from_context_menu */,
+      false /* has_user_gesture */, InitiatorCSPInfo());
   CommitNavigation(0, nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
                    common_params, RequestNavigationParams(), false,
                    base::nullopt, base::nullopt /* subresource_overrides */,

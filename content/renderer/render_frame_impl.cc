@@ -537,13 +537,14 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<PreviewsState>(info.url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
-      should_check_main_world_csp, false /* started_from_context_menu */,
-      info.url_request.HasUserGesture(),
-      BuildContentSecurityPolicyList(info.url_request.GetNavigationCSP()),
-      info.url_request.GetNavigationCSP().self_source.has_value()
-          ? base::Optional<CSPSource>(BuildCSPSource(
-                info.url_request.GetNavigationCSP().self_source.value()))
-          : base::nullopt,
+      false /* started_from_context_menu */, info.url_request.HasUserGesture(),
+      InitiatorCSPInfo(
+          should_check_main_world_csp,
+          BuildContentSecurityPolicyList(info.url_request.GetInitiatorCSP()),
+          info.url_request.GetInitiatorCSP().self_source.has_value()
+              ? base::Optional<CSPSource>(BuildCSPSource(
+                    info.url_request.GetInitiatorCSP().self_source.value()))
+              : base::nullopt),
       input_start);
 }
 
@@ -4195,7 +4196,8 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 
 void RenderFrameImpl::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request) {
+    blink::WebURLRequest& request,
+    mojo::ScopedMessagePipeHandle navigation_initiator_handle) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
   if (!document_loader)
@@ -4226,7 +4228,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     info.input_start = pending_navigation_info_->input_start;
 
     pending_navigation_info_.reset(nullptr);
-    BeginNavigation(info);
+    BeginNavigation(info, std::move(navigation_initiator_handle));
   }
 
   NavigationState* navigation_state =
@@ -6306,10 +6308,12 @@ void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
       main_thread_use_time));
 }
 
+#ifndef STATIC_ASSERT_ENUM
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 #undef STATIC_ASSERT_ENUM
+#endif
 
 void RenderFrameImpl::OnEnableViewSourceMode() {
   DCHECK(frame_);
@@ -6721,7 +6725,9 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 }
 }  // namespace
 
-void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
+void RenderFrameImpl::BeginNavigation(
+    const NavigationPolicyInfo& info,
+    mojo::ScopedMessagePipeHandle navigation_initiator_handle) {
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info.url_request.Url();
 
@@ -6820,10 +6826,15 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
     BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
     navigation_state->set_navigation_client(std::move(navigation_client_impl_));
   }
+
+  blink::mojom::NavigationInitiatorPtr initiator_ptr(
+      blink::mojom::NavigationInitiatorPtrInfo(
+          std::move(navigation_initiator_handle), 0));
+
   GetFrameHost()->BeginNavigation(
       MakeCommonNavigationParams(info, load_flags, info.input_start),
       std::move(begin_navigation_params), std::move(blob_url_token),
-      std::move(navigation_client_info));
+      std::move(navigation_client_info), std::move(initiator_ptr));
 }
 
 void RenderFrameImpl::LoadDataURL(

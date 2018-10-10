@@ -291,7 +291,7 @@ class WebURLRequest {
 
   // This is the navigation relevant CSP to be used during request and response
   // checks.
-  BLINK_PLATFORM_EXPORT const WebContentSecurityPolicyList& GetNavigationCSP()
+  BLINK_PLATFORM_EXPORT const WebContentSecurityPolicyList& GetInitiatorCSP()
       const;
 
   // Should be set to true if this request (including redirects) should be

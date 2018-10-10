@@ -20,6 +20,7 @@ import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/platform/referrer.mojom";
 import "third_party/blink/public/web/commit_result.mojom";
 import "third_party/blink/public/web/window_features.mojom";
@@ -306,7 +307,8 @@ interface FrameHost {
       CommonNavigationParams common_params,
       BeginNavigationParams begin_params,
       blink.mojom.BlobURLToken? blob_url_token,
-      associated NavigationClient? navigation_client);
+      associated NavigationClient? navigation_client,
+      blink.mojom.NavigationInitiator? navigation_initiator);
 
   // Sent when a subresource response has started.
   // |cert_status| is the bitmask of status info of the SSL certificate. (see

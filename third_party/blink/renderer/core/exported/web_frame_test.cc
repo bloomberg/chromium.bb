@@ -7838,8 +7838,10 @@ class TestHistoryChildWebFrameClient
   ~TestHistoryChildWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
-                               WebURLRequest& request) override {
+  void DidStartProvisionalLoad(
+      WebDocumentLoader* document_loader,
+      WebURLRequest& request,
+      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override {
     replaces_current_history_item_ =
         document_loader->ReplacesCurrentHistoryItem();
   }
@@ -10650,7 +10652,10 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(0, callback_count_++);
     FrameTestHelpers::TestWebFrameClient::DidStartLoading();
   }
-  void DidStartProvisionalLoad(WebDocumentLoader*, WebURLRequest&) override {
+  void DidStartProvisionalLoad(
+      WebDocumentLoader*,
+      WebURLRequest&,
+      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override {
     EXPECT_EQ(1, callback_count_++);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,

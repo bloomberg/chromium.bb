@@ -30,6 +30,7 @@ mojom("mojom_platform") {
     "filesystem/file_system.mojom",
     "filesystem/file_writer.mojom",
     "frame/find_in_page.mojom",
+    "frame/navigation_initiator.mojom",
     "indexeddb/indexeddb.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/code_cache.mojom",
