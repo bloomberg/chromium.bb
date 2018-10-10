@@ -209,6 +209,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
       const gfx::Rect& work_area,
       WindowSelector::UpdateAnimationSettingsCallback callback);
 
+  // Returns the window of the window selector item that contains
+  // |location_in_screen|.
+  aura::Window* GetTargetWindowOnLocation(const gfx::Point& location_in_screen);
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -309,10 +313,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Adds the |dragged_window| into overview on drag ended. Might need to update
   // the window's bounds if it has been resized.
   void AddDraggedWindowIntoOverviewOnDragEnd(aura::Window* dragged_window);
-
-  // Returns the window of the window selector item that contains
-  // |location_in_screen|.
-  aura::Window* GetTargetWindowOnLocation(const gfx::Point& location_in_screen);
 
   // Root window the grid is in.
   aura::Window* root_window_;

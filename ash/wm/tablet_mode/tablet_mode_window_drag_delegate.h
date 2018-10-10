@@ -99,15 +99,14 @@ class TabletModeWindowDragDelegate {
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;
 
-  // Update the dragged window's transform during dragging.
+  // Updates the dragged window's transform during dragging.
   void UpdateDraggedWindowTransform(const gfx::Point& location_in_screen);
 
-  // Returns true if |dragged_window_| has been dragged more than half of the
-  // distance from top of the display to the top of the new selector item in
-  // overview, except that preview area is shown or splitview is active.
-  bool ShouldDropWindowIntoOverviewOnDragPosition(
+  // Returns true if the dragged window should be dropped into overview on drag
+  // end.
+  bool ShouldDropWindowIntoOverview(
       SplitViewController::SnapPosition snap_position,
-      int end_y_position_in_screen) const;
+      const gfx::Point& location_in_screen);
 
   // Returns true if fling event should drop the window into overview grid.
   bool ShouldFlingIntoOverview(const ui::GestureEvent* event) const;

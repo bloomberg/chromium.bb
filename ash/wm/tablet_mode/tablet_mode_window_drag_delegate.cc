@@ -37,13 +37,17 @@ WindowSelector* GetWindowSelector() {
              : nullptr;
 }
 
-// Returns the new selector item in overview during drag.
-WindowSelectorItem* GetNewSelectorItem(aura::Window* dragged_window) {
+WindowGrid* GetWindowGrid(aura::Window* dragged_window) {
   if (!GetWindowSelector())
     return nullptr;
 
-  WindowGrid* window_grid = GetWindowSelector()->GetGridWithRootWindow(
+  return GetWindowSelector()->GetGridWithRootWindow(
       dragged_window->GetRootWindow());
+}
+
+// Returns the new selector item in overview during drag.
+WindowSelectorItem* GetNewSelectorItem(aura::Window* dragged_window) {
+  WindowGrid* window_grid = GetWindowGrid(dragged_window);
   if (!window_grid || window_grid->empty())
     return nullptr;
 
@@ -164,24 +168,6 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
   }
 }
 
-bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverviewOnDragPosition(
-    SplitViewController::SnapPosition snap_position,
-    int end_y_position_in_screen) const {
-  // |snap_position| is not NONE, which means the preview area is shown or
-  // splitview is active.
-  if (snap_position != SplitViewController::NONE)
-    return false;
-
-  WindowSelectorItem* new_selector_item = GetNewSelectorItem(dragged_window_);
-  if (!new_selector_item)
-    return false;
-
-  const gfx::Rect new_selector_item_bounds =
-      new_selector_item->GetTransformedBounds();
-  return end_y_position_in_screen >
-         kDragPositionToOverviewRatio * new_selector_item_bounds.y();
-}
-
 void TabletModeWindowDragDelegate::EndWindowDrag(
     wm::WmToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
@@ -199,8 +185,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   if (GetWindowSelector()) {
     GetWindowSelector()->OnWindowDragEnded(
         dragged_window_, location_in_screen,
-        ShouldDropWindowIntoOverviewOnDragPosition(snap_position,
-                                                   location_in_screen.y()));
+        ShouldDropWindowIntoOverview(snap_position, location_in_screen));
   }
   split_view_controller_->OnWindowDragEnded(dragged_window_, snap_position,
                                             location_in_screen);
@@ -369,6 +354,35 @@ void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(
           (initial_location_in_screen_.y() - window_bounds.y()) * scale);
   transform.Scale(scale, scale);
   SetTransform(dragged_window_, transform);
+}
+
+bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
+    SplitViewController::SnapPosition snap_position,
+    const gfx::Point& location_in_screen) {
+  bool is_split_view_active = split_view_controller_->IsSplitViewModeActive();
+  // Do not drop the dragged window into overview if preview area is shown.
+  if (snap_position != SplitViewController::NONE && !is_split_view_active)
+    return false;
+
+  WindowSelectorItem* new_selector_item = GetNewSelectorItem(dragged_window_);
+  if (!new_selector_item)
+    return false;
+
+  WindowGrid* window_grid = GetWindowGrid(dragged_window_);
+  aura::Window* target_window =
+      window_grid->GetTargetWindowOnLocation(location_in_screen);
+  const bool is_new_selector_item_selected =
+      target_window && window_grid->IsNewSelectorItemWindow(target_window);
+
+  // TODO(crbug.com/878294): Should also consider drag distance when splitview
+  // is active.
+  if (is_split_view_active)
+    return is_new_selector_item_selected;
+
+  return is_new_selector_item_selected ||
+         location_in_screen.y() >=
+             kDragPositionToOverviewRatio *
+                 new_selector_item->GetTransformedBounds().y();
 }
 
 bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
