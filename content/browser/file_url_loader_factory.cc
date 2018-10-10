@@ -25,6 +25,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/file_data_pipe_producer.h"
@@ -38,7 +39,9 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
@@ -91,6 +94,25 @@ GURL AppendUrlSeparator(const GURL& url) {
   GURL::Replacements replacements;
   replacements.SetPathStr(new_path);
   return url.ReplaceComponents(replacements);
+}
+
+bool ShouldFailRequestDueToCORS(const network::ResourceRequest& request) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity)) {
+    return false;
+  }
+
+  const auto mode = request.fetch_request_mode;
+  if (mode == network::mojom::FetchRequestMode::kNavigate ||
+      mode == network::mojom::FetchRequestMode::kNoCORS) {
+    return false;
+  }
+
+  if (!request.request_initiator)
+    return true;
+
+  return !request.request_initiator->IsSameOriginWith(
+      url::Origin::Create(request.url));
 }
 
 class FileURLDirectoryLoader
@@ -710,6 +732,16 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
     return;
   }
+
+  // FileURLLoader doesn't support CORS and it's not covered by CORSURLLoader,
+  // so we need to reject requests that need CORS manually.
+  if (ShouldFailRequestDueToCORS(request)) {
+    client->OnComplete(
+        network::URLLoaderCompletionStatus(network::CORSErrorStatus(
+            network::mojom::CORSError::kCORSDisabledScheme)));
+    return;
+  }
+
   if (file_path.EndsWithSeparator() && file_path.IsAbsolute()) {
     task_runner_->PostTask(
         FROM_HERE,
