@@ -1394,7 +1394,7 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   DCHECK(change >= kUpdatePseudoElements || ChildNeedsStyleRecalc());
   DCHECK(!NeedsStyleRecalc());
 
-  for (Node* child = lastChild(); child; child = child->previousSibling()) {
+  for (Node* child = firstChild(); child; child = child->nextSibling()) {
     if (child->IsTextNode()) {
       ToText(child)->RecalcTextStyle(change);
     } else if (child->IsElementNode()) {
