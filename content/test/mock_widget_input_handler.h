@@ -192,7 +192,6 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   };
 
   // mojom::WidgetInputHandler override.
-  void FlushForTesting(FlushForTestingCallback callback) override;
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
   void SetEditCommandsForNextKeyEvent(

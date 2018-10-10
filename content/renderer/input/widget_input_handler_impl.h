@@ -32,7 +32,6 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
       mojom::WidgetInputHandlerAssociatedRequest interface_request);
   void SetBinding(mojom::WidgetInputHandlerRequest interface_request);
 
-  void FlushForTesting(FlushForTestingCallback callback) override;
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
   void SetEditCommandsForNextKeyEvent(

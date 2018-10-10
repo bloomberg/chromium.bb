@@ -60,9 +60,6 @@ interface LayoutTestControl {
   // that hosts parts of the main test window.
   ReplicateTestConfiguration(ShellTestConfiguration config);
 
-  // Ensures that all queued messages are flushed.
-  FlushForTesting() => ();
-
   // Sets the test config for a layout test that is being started.  This message
   // is sent only to a renderer that hosts parts of the main test window.
   SetTestConfiguration(ShellTestConfiguration config);

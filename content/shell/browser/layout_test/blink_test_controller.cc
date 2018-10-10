@@ -411,24 +411,15 @@ bool BlinkTestController::PrepareForLayoutTest(
       // renderer to propagate the state change.
       main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
 
-      // Flush IPC messages on the widget.
-      {
-        base::RunLoop run_loop;
-        main_window_->web_contents()
-            ->GetRenderViewHost()
-            ->GetWidget()
-            ->FlushForTesting(run_loop.QuitClosure());
-        run_loop.Run();
-      }
-
-      // Flush the TestControl interface.
-      {
-        base::RunLoop run_loop;
-        GetLayoutTestControlPtr(
-            main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-            ->FlushForTesting(run_loop.QuitClosure());
-        run_loop.Run();
-      }
+      // Flush various interfaces to ensure a test run begins from a known
+      // state.
+      main_window_->web_contents()
+          ->GetRenderViewHost()
+          ->GetWidget()
+          ->FlushForTesting();
+      GetLayoutTestControlPtr(
+          main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+          .FlushForTesting();
 
       // Loading the URL will immediately start the layout test. Manually call
       // LoadURLWithParams on the WebContents to avoid extraneous calls from
@@ -480,23 +471,12 @@ bool BlinkTestController::PrepareForLayoutTest(
     // renderer to propagate the state change.
     main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
 
-    // Flush IPC messages on the widget.
-    {
-      base::RunLoop run_loop;
-      main_window_->web_contents()
-          ->GetRenderViewHost()
-          ->GetWidget()
-          ->FlushForTesting(run_loop.QuitClosure());
-      run_loop.Run();
-    }
-
-    // Flush the TestControl interface.
-    {
-      base::RunLoop run_loop;
-      GetLayoutTestControlPtr(render_view_host->GetMainFrame())
-          ->FlushForTesting(run_loop.QuitClosure());
-      run_loop.Run();
-    }
+    // Flush various interfaces to ensure a test run begins from a known state.
+    main_window_->web_contents()
+        ->GetRenderViewHost()
+        ->GetWidget()
+        ->FlushForTesting();
+    GetLayoutTestControlPtr(render_view_host->GetMainFrame()).FlushForTesting();
 
     if (is_devtools_js_test) {
       LoadDevToolsJSTest();
@@ -1355,8 +1335,8 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
   }
 }
 
-mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
-    RenderFrameHost* frame) {
+mojom::LayoutTestControlAssociatedPtr&
+BlinkTestController::GetLayoutTestControlPtr(RenderFrameHost* frame) {
   GlobalFrameRoutingId key(frame->GetProcess()->GetID(), frame->GetRoutingID());
   if (layout_test_control_map_.find(key) == layout_test_control_map_.end()) {
     mojom::LayoutTestControlAssociatedPtr& new_ptr =
@@ -1367,7 +1347,7 @@ mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
                        weak_factory_.GetWeakPtr(), key));
   }
   DCHECK(layout_test_control_map_[key].get());
-  return layout_test_control_map_[key].get();
+  return layout_test_control_map_[key];
 }
 
 void BlinkTestController::HandleLayoutTestControlError(
