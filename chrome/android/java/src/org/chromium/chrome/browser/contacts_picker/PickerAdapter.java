@@ -64,6 +64,7 @@ public class PickerAdapter extends Adapter<ContactViewHolder>
      */
     public void setSearchString(String query) {
         if (query.equals("")) {
+            if (mSearchResults == null) return;
             mSearchResults.clear();
             mSearchResults = null;
         } else {
