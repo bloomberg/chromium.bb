@@ -218,10 +218,16 @@ void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
       SyncPasswordHashChange::SAVED_SYNC_PASSWORD_CHANGE_COUNT);
 }
 
-void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state) {
+void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
+                                bool is_under_advanced_protection) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.IsSyncPasswordHashSaved", state,
       IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+  if (is_under_advanced_protection) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser",
+        state, IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+  }
 }
 
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,

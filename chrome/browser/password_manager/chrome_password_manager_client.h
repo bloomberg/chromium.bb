@@ -112,6 +112,7 @@ class ChromePasswordManagerClient
   GetPasswordRequirementsService() override;
   favicon::FaviconService* GetFaviconService() override;
   void UpdateFormManagers() override;
+  bool IsUnderAdvancedProtection() const override;
 
   // autofill::mojom::PasswordManagerClient overrides.
   void AutomaticGenerationStatusChanged(
