@@ -873,6 +873,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             @DrawableRes int drawableResId, @StringRes int contentDescriptionResId) {}
 
     /**
+     * @return The experimental toolbar button if it exists.
+     */
+    public @Nullable View getExperimentalButtonView() {
+        return null;
+    }
+
+    /**
      * Disable the experimental toolbar button.
      */
     public void disableExperimentalButton() {}

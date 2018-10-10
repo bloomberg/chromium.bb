@@ -333,6 +333,13 @@ public class ChromeFullscreenManager
     }
 
     /**
+     * @return True if the browser controls are currently completely visible.
+     */
+    public boolean areBrowserControlsFullyVisible() {
+        return getBrowserControlHiddenRatio() == 0.f;
+    }
+
+    /**
      * @return Whether the browser controls should be drawn as a texture.
      */
     public boolean drawControlsAsTexture() {

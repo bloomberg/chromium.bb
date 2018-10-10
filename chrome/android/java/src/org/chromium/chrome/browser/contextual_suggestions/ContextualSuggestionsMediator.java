@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -74,9 +73,9 @@ class ContextualSuggestionsMediator
     private final Handler mHandler = new Handler();
     private final Provider<ContextualSuggestionsSource> mSuggestionSourceProvider;
     private @Nullable final OverviewModeBehavior mOverviewModeBehavior;
+    private final boolean mRequireReverseScrollForIPH;
 
     private ContextualSuggestionsCoordinator mCoordinator;
-    private View mIphParentView;
 
     private @Nullable ContextualSuggestionsSource mSuggestionsSource;
     private @Nullable FetchHelper mFetchHelper;
@@ -88,10 +87,23 @@ class ContextualSuggestionsMediator
     private boolean mSuggestionsSetOnBottomSheet;
     private boolean mHasRecordedButtonShownForTab;
 
+    /**
+     * Whether the browser controls have fully hidden at least once since the last time
+     * #clearSuggestions() was called. This is used as a proxy for whether the user has scrolled
+     * down on the current page.
+     */
+    private boolean mHaveBrowserControlsFullyHidden;
+
     private boolean mHasPeekDelayPassed;
 
     /** Whether the content sheet is observed to be opened for the first time. */
     private boolean mHasSheetBeenOpened;
+
+    /**
+     * Whether in-product help may be shown. This is set to false if the IPH system indicates that
+     * it wouldn't trigger our IPH if requested and when we attempt to show the IPH bubble.
+     */
+    private boolean mCanShowIph;
 
     /**
      * Construct a new {@link ContextualSuggestionsMediator}.
@@ -135,6 +147,14 @@ class ContextualSuggestionsMediator
             @Override
             public void onControlsOffsetChanged(
                     float topOffset, float bottomOffset, boolean needsAnimate) {
+                if (!mHaveBrowserControlsFullyHidden) {
+                    mHaveBrowserControlsFullyHidden =
+                            mFullscreenManager.areBrowserControlsOffScreen();
+                } else if (mCanShowIph && mRequireReverseScrollForIPH
+                        && mFullscreenManager.areBrowserControlsFullyVisible()) {
+                    mHandler.postDelayed(() -> maybeShowHelpBubble(),
+                            ToolbarPhone.LOC_BAR_WIDTH_CHANGE_ANIMATION_DURATION_MS);
+                }
                 reportToolbarButtonShown();
             }
 
@@ -156,20 +176,18 @@ class ContextualSuggestionsMediator
         } else {
             mOverviewModeBehavior = null;
         }
+
+        mRequireReverseScrollForIPH = ChromeFeatureList.isEnabled(
+                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_IPH_REVERSE_SCROLL);
     }
 
     /**
-     * Sets the {@link ContextualSuggestionsCoordinator} for bidirectional communication,
-     * and the {@link View} used to anchor an in-product help bubble.
+     * Sets the {@link ContextualSuggestionsCoordinator} for bidirectional communication.
      */
-    void initialize(ContextualSuggestionsCoordinator coordinator, View iphParentView) {
+    void initialize(ContextualSuggestionsCoordinator coordinator) {
         // TODO(pshmakov): get rid of this circular dependency by establishing an observer-observable
         // relationship between Mediator and Coordinator;
         mCoordinator = coordinator;
-
-        // TODO(twellington): The mediator shouldn't need to directly access other UI components or
-        // views. Make IPH implementation better adhere to MVC model.
-        mIphParentView = iphParentView;
     }
 
     /** Destroys the mediator. */
@@ -189,14 +207,6 @@ class ContextualSuggestionsMediator
         mEnabledStateMonitor.removeObserver(this);
     }
 
-    /**
-     * @return Whether the browser controls are currently completely hidden.
-     */
-    private boolean areBrowserControlsHidden() {
-        return MathUtils.areFloatsEqual(-mFullscreenManager.getTopControlOffset(),
-                mFullscreenManager.getTopControlsHeight());
-    }
-
     @Override
     public void onEnabledStateChanged(boolean enabled) {
         if (enabled) {
@@ -209,6 +219,13 @@ class ContextualSuggestionsMediator
     private void enable() {
         mSuggestionsSource = mSuggestionSourceProvider.get();
         mFetchHelper = new FetchHelper(this, mTabModelSelector);
+
+        Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
+        tracker.addOnInitializedCallback(success -> {
+            if (!success) return;
+            mCanShowIph =
+                    tracker.wouldTriggerHelpUI(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
+        });
     }
 
     private void disable() {
@@ -304,8 +321,9 @@ class ContextualSuggestionsMediator
     }
 
     private void reportToolbarButtonShown() {
-        if (mHasRecordedButtonShownForTab || areBrowserControlsHidden() || isOverviewModeVisible()
-                || mSuggestionsSource == null || !mModel.hasSuggestions()) {
+        if (mHasRecordedButtonShownForTab || !mFullscreenManager.areBrowserControlsFullyVisible()
+                || isOverviewModeVisible() || mSuggestionsSource == null
+                || !mModel.hasSuggestions()) {
             return;
         }
 
@@ -313,8 +331,10 @@ class ContextualSuggestionsMediator
         reportEvent(ContextualSuggestionsEvent.UI_BUTTON_SHOWN);
         TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                 EventConstants.CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN);
-        mHandler.postDelayed(() -> maybeShowHelpBubble(),
-                ToolbarPhone.LOC_BAR_WIDTH_CHANGE_ANIMATION_DURATION_MS);
+        if (mCanShowIph && !mRequireReverseScrollForIPH) {
+            mHandler.postDelayed(() -> maybeShowHelpBubble(),
+                    ToolbarPhone.LOC_BAR_WIDTH_CHANGE_ANIMATION_DURATION_MS);
+        }
     }
 
     @Override
@@ -391,6 +411,7 @@ class ContextualSuggestionsMediator
         mHasSheetBeenOpened = false;
         mHandler.removeCallbacksAndMessages(null);
         mHasPeekDelayPassed = false;
+        mHaveBrowserControlsFullyHidden = false;
         mModel.setClusterList(Collections.emptyList());
         mModel.setCloseButtonOnClickListener(null);
         mModel.setMenuButtonDelegate(null);
@@ -458,13 +479,17 @@ class ContextualSuggestionsMediator
     }
 
     private void maybeShowHelpBubble() {
-        View anchorView =
-                mIphParentView.getRootView().findViewById(R.id.experimental_toolbar_button);
-        if (mToolbarManager.isUrlBarFocused() || anchorView == null
-                || anchorView.getVisibility() != View.VISIBLE) {
+        View anchorView = mToolbarManager.getExperimentalButtonView();
+        if (!mCanShowIph || mToolbarManager.isUrlBarFocused() || anchorView == null
+                || anchorView.getVisibility() != View.VISIBLE
+                || !mFullscreenManager.areBrowserControlsFullyVisible()
+                || mSuggestionsSource == null || !mModel.hasSuggestions()) {
             return;
         }
 
+        // Either we'll fail to show or we'll successfully show. Either way, we can't show IPH
+        // after this attempt.
+        mCanShowIph = false;
         Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE)) {
             return;
@@ -472,10 +497,10 @@ class ContextualSuggestionsMediator
 
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         rectProvider.setInsetPx(0, 0, 0,
-                mIphParentView.getResources().getDimensionPixelOffset(
+                anchorView.getResources().getDimensionPixelOffset(
                         R.dimen.text_bubble_menu_anchor_y_inset));
 
-        mHelpBubble = new ImageTextBubble(mIphParentView.getContext(), mIphParentView,
+        mHelpBubble = new ImageTextBubble(anchorView.getContext(), anchorView,
                 R.string.contextual_suggestions_in_product_help,
                 R.string.contextual_suggestions_in_product_help_accessibility, true, rectProvider,
                 R.drawable.ic_logo_googleg_24dp);

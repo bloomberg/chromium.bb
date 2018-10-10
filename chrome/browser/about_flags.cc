@@ -2689,6 +2689,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          contextual_suggestions::kContextualSuggestionsAlternateCardLayout)},
+    {"contextual-suggestions-iph-reverse-scroll",
+     flag_descriptions::kContextualSuggestionsIPHReverseScrollName,
+     flag_descriptions::kContextualSuggestionsIPHReverseScrollDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         contextual_suggestions::kContextualSuggestionsIPHReverseScroll)},
     {"contextual-suggestions-opt-out",
      flag_descriptions::kContextualSuggestionsOptOutName,
      flag_descriptions::kContextualSuggestionsOptOutDescription, kOsAndroid,

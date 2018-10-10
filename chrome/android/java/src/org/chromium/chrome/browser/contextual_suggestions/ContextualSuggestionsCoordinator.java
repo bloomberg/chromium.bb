@@ -64,7 +64,7 @@ public class ContextualSuggestionsCoordinator {
         mBottomSheetController = bottomSheetController;
         mTabModelSelector = tabModelSelector;
         mMediator = mediator;
-        mediator.initialize(this, bottomSheetController.getBottomSheet());
+        mediator.initialize(this);
     }
 
     /** Called when the containing activity is destroyed. */

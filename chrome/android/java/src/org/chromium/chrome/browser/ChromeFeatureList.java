@@ -195,6 +195,8 @@ public abstract class ChromeFeatureList {
             "ContextualSuggestionsAlternateCardLayout";
     public static final String CONTEXTUAL_SUGGESTIONS_BUTTON = "ContextualSuggestionsButton";
     public static final String CONTEXTUAL_SUGGESTIONS_OPT_OUT = "ContextualSuggestionsOptOut";
+    public static final String CONTEXTUAL_SUGGESTIONS_IPH_REVERSE_SCROLL =
+            "ContextualSuggestionsIPHReverseScroll";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";
     // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on

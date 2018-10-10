@@ -172,6 +172,9 @@ extern const char kContextualSuggestionsAlternateCardLayoutDescription[];
 extern const char kContextualSuggestionsButtonName[];
 extern const char kContextualSuggestionsButtonDescription[];
 
+extern const char kContextualSuggestionsIPHReverseScrollName[];
+extern const char kContextualSuggestionsIPHReverseScrollDescription[];
+
 extern const char kContextualSuggestionsOptOutName[];
 extern const char kContextualSuggestionsOptOutDescription[];
 
