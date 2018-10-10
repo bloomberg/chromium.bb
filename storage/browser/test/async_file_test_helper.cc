@@ -18,7 +18,7 @@
 
 namespace content {
 
-typedef storage::FileSystemOperation::FileEntryList FileEntryList;
+using FileEntryList = storage::FileSystemOperation::FileEntryList;
 
 namespace {
 

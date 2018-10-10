@@ -127,20 +127,18 @@ class MockQuotaManager : public QuotaManager {
     int64_t quota;
   };
 
-  typedef std::pair<url::Origin, StorageType> OriginAndType;
-  typedef std::map<OriginAndType, StorageInfo> UsageAndQuotaMap;
-
   // This must be called via MockQuotaManagerProxy.
   void UpdateUsage(const url::Origin& origin, StorageType type, int64_t delta);
   void DidGetModifiedSince(GetOriginsCallback callback,
-                           std::set<url::Origin>* origins,
+                           std::unique_ptr<std::set<url::Origin>> origins,
                            StorageType storage_type);
   void DidDeleteOriginData(StatusCallback callback,
                            blink::mojom::QuotaStatusCode status);
 
   // The list of stored origins that have been added via AddOrigin.
   std::vector<OriginInfo> origins_;
-  UsageAndQuotaMap usage_and_quota_map_;
+  std::map<std::pair<url::Origin, StorageType>, StorageInfo>
+      usage_and_quota_map_;
   base::WeakPtrFactory<MockQuotaManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);

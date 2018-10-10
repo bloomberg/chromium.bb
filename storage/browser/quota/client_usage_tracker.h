@@ -35,17 +35,7 @@ class UsageTracker;
 class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                            public base::SupportsWeakPtr<ClientUsageTracker> {
  public:
-  using HostUsageAccumulator =
-      base::RepeatingCallback<void(int64_t limited_usage,
-                                   int64_t unlimited_usage)>;
-  using OriginUsageAccumulator =
-      base::RepeatingCallback<void(const base::Optional<url::Origin>& origin,
-                                   int64_t usage)>;
-  using UsageAccumulator = base::RepeatingCallback<void(int64_t usage)>;
   using OriginSetByHost = std::map<std::string, std::set<url::Origin>>;
-
-  using HostUsageCallback =
-      base::OnceCallback<void(int64_t limited_usage, int64_t unlimited_usage)>;
 
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
@@ -67,12 +57,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void SetUsageCacheEnabled(const url::Origin& origin, bool enabled);
 
  private:
-  using HostUsageAccumulatorMap =
-      CallbackQueueMap<HostUsageCallback, std::string, int64_t, int64_t>;
-
-  using HostSet = std::set<std::string>;
   using UsageMap = std::map<url::Origin, int64_t>;
-  using HostUsageMap = std::map<std::string, UsageMap>;
 
   struct AccumulateInfo {
     int pending_jobs = 0;
@@ -128,13 +113,18 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   int64_t global_limited_usage_;
   int64_t global_unlimited_usage_;
   bool global_usage_retrieved_;
-  HostSet cached_hosts_;
-  HostUsageMap cached_usage_by_host_;
+  std::set<std::string> cached_hosts_;
+  std::map<std::string, UsageMap> cached_usage_by_host_;
 
   OriginSetByHost non_cached_limited_origins_by_host_;
   OriginSetByHost non_cached_unlimited_origins_by_host_;
 
-  HostUsageAccumulatorMap host_usage_accumulators_;
+  CallbackQueueMap<
+      base::OnceCallback<void(int64_t limited_usage, int64_t unlimited_usage)>,
+      std::string,
+      int64_t,
+      int64_t>
+      host_usage_accumulators_;
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 

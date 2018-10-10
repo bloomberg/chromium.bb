@@ -27,9 +27,9 @@ namespace content {
 // A helper class to perform async file operations in a synchronous way.
 class AsyncFileTestHelper {
  public:
-  typedef storage::FileSystemOperation::FileEntryList FileEntryList;
-  typedef storage::FileSystemOperation::CopyProgressCallback
-      CopyProgressCallback;
+  using FileEntryList = storage::FileSystemOperation::FileEntryList;
+  using CopyProgressCallback =
+      storage::FileSystemOperation::CopyProgressCallback;
 
   static const int64_t kDontCheckSize;
 

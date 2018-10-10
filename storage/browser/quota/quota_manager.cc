@@ -1426,7 +1426,7 @@ void QuotaManager::DidDumpOriginInfoTableForHistogram(
 
     // Ignore stale database entries. If there is no map entry, the origin's
     // data has been deleted.
-    UsageMap::const_iterator found = usage_map.find(info.origin);
+    auto found = usage_map.find(info.origin);
     if (found == usage_map.end() || found->second == 0)
       continue;
 
@@ -1487,7 +1487,7 @@ void QuotaManager::GetEvictionOrigin(
   DCHECK(!is_getting_eviction_origin_);
   is_getting_eviction_origin_ = true;
 
-  GetOriginCallback did_get_origin_callback =
+  auto did_get_origin_callback =
       base::BindOnce(&QuotaManager::DidGetEvictionOrigin,
                      weak_factory_.GetWeakPtr(), std::move(callback));
 

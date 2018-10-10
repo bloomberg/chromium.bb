@@ -283,7 +283,7 @@ FileSystemContext::GetCopyOrMoveFileValidatorFactory(
 
 FileSystemBackend* FileSystemContext::GetFileSystemBackend(
     FileSystemType type) const {
-  FileSystemBackendMap::const_iterator found = backend_map_.find(type);
+  auto found = backend_map_.find(type);
   if (found != backend_map_.end())
     return found->second;
   NOTREACHED() << "Unknown filesystem type: " << type;
@@ -299,7 +299,7 @@ WatcherManager* FileSystemContext::GetWatcherManager(
 }
 
 bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
-  FileSystemBackendMap::const_iterator found = backend_map_.find(type);
+  auto found = backend_map_.find(type);
   return found != backend_map_.end() && found->second->GetQuotaUtil();
 }
 

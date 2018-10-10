@@ -18,10 +18,6 @@ namespace storage {
 
 namespace {
 
-using UsageAccumulator = base::RepeatingCallback<void(int64_t usage)>;
-using GlobalUsageAccumulator =
-    base::RepeatingCallback<void(int64_t usage, int64_t unlimited_usage)>;
-
 void DidGetGlobalUsageForLimitedGlobalUsage(UsageCallback callback,
                                             int64_t total_global_usage,
                                             int64_t global_unlimited_usage) {
@@ -78,7 +74,7 @@ void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
   // To avoid this, we add one more pending client as a sentinel
   // and fire the sentinel callback at the end.
   info->pending_clients = client_tracker_map_.size() + 1;
-  UsageAccumulator accumulator =
+  auto accumulator =
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalLimitedUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
@@ -102,7 +98,7 @@ void UsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
   // To avoid this, we add one more pending client as a sentinel
   // and fire the sentinel callback at the end.
   info->pending_clients = client_tracker_map_.size() + 1;
-  GlobalUsageAccumulator accumulator =
+  auto accumulator =
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
