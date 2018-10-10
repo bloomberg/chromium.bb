@@ -298,7 +298,7 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
       static_cast<ResourceType>(request.resource_type)));
   web_request->SetCredentialsMode(request.fetch_credentials_mode);
   web_request->SetCacheMode(
-      ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags));
+      ServiceWorkerUtils::GetCacheModeFromLoadFlags(request.load_flags));
   web_request->SetRedirectMode(request.fetch_redirect_mode);
   web_request->SetRequestContext(
       GetBlinkRequestContext(static_cast<blink::mojom::RequestContextType>(
