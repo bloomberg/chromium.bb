@@ -538,8 +538,8 @@ enum class ShowTabSwitcherSnapshotResult {
 // Clears incognito data that is specific to iOS and won't be cleared by
 // deleting the browser state.
 - (void)clearIOSSpecificIncognitoData;
-// Deletes the incognito browser state.
-- (void)deleteIncognitoBrowserState;
+// Destroys and rebuilds the incognito browser state.
+- (void)destroyAndRebuildIncognitoBrowserState;
 // Handles the notification that first run modal dialog UI is about to complete.
 - (void)handleFirstRunUIWillFinish;
 // Handles the notification that first run modal dialog UI completed.
@@ -857,14 +857,14 @@ enum class ShowTabSwitcherSnapshotResult {
                           }];
 }
 
-- (void)deleteIncognitoBrowserState {
+- (void)destroyAndRebuildIncognitoBrowserState {
   BOOL otrBVCIsCurrent = (self.currentBVC == self.otrBVC);
 
   // Clear the OTR tab model and notify the _tabSwitcher that its otrBVC will
   // be destroyed.
   [_tabSwitcher setOtrTabModel:nil];
 
-  [_browserViewWrangler deleteIncognitoTabModelState];
+  [_browserViewWrangler destroyAndRebuildIncognitoTabModel];
 
   if (otrBVCIsCurrent) {
     [self activateBVCAndMakeCurrentBVCPrimary];
@@ -873,6 +873,11 @@ enum class ShowTabSwitcherSnapshotResult {
   // Always set the new otr tab model for the tablet or grid switcher.
   // Notify the _tabSwitcher with the new otrBVC.
   [_tabSwitcher setOtrTabModel:self.otrTabModel];
+
+  // This seems the best place to deem the destroying and rebuilding the
+  // incognito browser state to be completed.
+  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
+      /*in_progress=*/false);
 }
 
 - (void)activateBVCAndMakeCurrentBVCPrimary {
@@ -1785,15 +1790,20 @@ enum class ShowTabSwitcherSnapshotResult {
 #pragma mark - Tab closure handlers
 
 - (void)lastIncognitoTabClosed {
+  // This seems the best place to mark the start of destroying the incognito
+  // browser state.
+  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
+      /*in_progress=*/true);
   DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
   [self clearIOSSpecificIncognitoData];
 
   // OffTheRecordProfileIOData cannot be deleted before all the requests are
   // deleted. All of the request trackers associated with the closed OTR tabs
   // will have posted CancelRequest calls to the IO thread by now; this just
-  // waits for those calls to run before calling |deleteIncognitoBrowserState|.
+  // waits for those calls to run before calling
+  // |destroyAndRebuildIncognitoBrowserState|.
   web::RequestTrackerImpl::RunAfterRequestsCancel(base::BindRepeating(^{
-    [self deleteIncognitoBrowserState];
+    [self destroyAndRebuildIncognitoBrowserState];
   }));
 
   // a) The first condition can happen when the last incognito tab is closed
