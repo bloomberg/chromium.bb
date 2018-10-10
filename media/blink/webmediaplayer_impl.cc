@@ -305,6 +305,23 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->SetStringProperty("frame_title",
                                 frame_->GetDocument().Title().Utf8());
 
+  // To make manual testing easier, include |surface_layer_mode_| in the log.
+  // TODO(liberato): Move this into media_factory.cc, so that it can be shared
+  // with the MediaStream startup.
+  const char* surface_layer_mode_name = "(unset)";
+  switch (surface_layer_mode_) {
+    case WebMediaPlayerParams::SurfaceLayerMode::kAlways:
+      surface_layer_mode_name = "kAlways";
+      break;
+    case WebMediaPlayerParams::SurfaceLayerMode::kOnDemand:
+      surface_layer_mode_name = "kOnDemand";
+      break;
+    case WebMediaPlayerParams::SurfaceLayerMode::kNever:
+      surface_layer_mode_name = "kNever";
+      break;
+  }
+  media_log_->SetStringProperty("surface_layer_mode", surface_layer_mode_name);
+
   if (params->initial_cdm())
     SetCdm(params->initial_cdm());
 
