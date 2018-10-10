@@ -53,11 +53,19 @@ std::string GetCacheKey(const GURL& resource_url,
   key.append(requesting_origin.Serialize());
   return key;
 }
-
-void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.Behaviour", status);
-}
 }  // namespace
+
+void GeneratedCodeCache::CollectStatistics(
+    GeneratedCodeCache::CacheEntryStatus status) {
+  switch (cache_type_) {
+    case GeneratedCodeCache::CodeCacheType::kJavaScript:
+      UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.JS.Behaviour", status);
+      break;
+    case GeneratedCodeCache::CodeCacheType::kWebAssembly:
+      UMA_HISTOGRAM_ENUMERATION("SiteIsolatedCodeCache.WASM.Behaviour", status);
+      break;
+  }
+}
 
 // Stores the information about a pending request while disk backend is
 // being initialized.
@@ -146,10 +154,12 @@ GeneratedCodeCache::PendingOperation::PendingOperation(
 GeneratedCodeCache::PendingOperation::~PendingOperation() = default;
 
 GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
-                                       int max_size_bytes)
+                                       int max_size_bytes,
+                                       CodeCacheType cache_type)
     : backend_state_(kUnInitialized),
       path_(path),
       max_size_bytes_(max_size_bytes),
+      cache_type_(cache_type),
       weak_ptr_factory_(this) {
   CreateBackend();
 }

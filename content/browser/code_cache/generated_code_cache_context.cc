@@ -27,9 +27,11 @@ void GeneratedCodeCacheContext::Initialize(const base::FilePath& path,
 void GeneratedCodeCacheContext::InitializeOnIO(const base::FilePath& path,
                                                int max_bytes) {
   generated_js_code_cache_.reset(
-      new GeneratedCodeCache(path.AppendASCII("js"), max_bytes));
+      new GeneratedCodeCache(path.AppendASCII("js"), max_bytes,
+                             GeneratedCodeCache::CodeCacheType::kJavaScript));
   generated_wasm_code_cache_.reset(
-      new GeneratedCodeCache(path.AppendASCII("wasm"), max_bytes));
+      new GeneratedCodeCache(path.AppendASCII("wasm"), max_bytes,
+                             GeneratedCodeCache::CodeCacheType::kWebAssembly));
 }
 
 GeneratedCodeCache* GeneratedCodeCacheContext::generated_js_code_cache() const {
