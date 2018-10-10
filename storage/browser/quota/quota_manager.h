@@ -90,37 +90,33 @@ class STORAGE_EXPORT QuotaEvictionHandler {
                                StatusCallback callback) = 0;
 
  protected:
-  virtual ~QuotaEvictionHandler() {}
+  virtual ~QuotaEvictionHandler() = default;
 };
 
 struct UsageInfo {
-  UsageInfo(const std::string& host,
-            blink::mojom::StorageType type,
-            int64_t usage)
-      : host(host), type(type), usage(usage) {}
-  std::string host;
-  blink::mojom::StorageType type;
-  int64_t usage;
+  UsageInfo(std::string host, blink::mojom::StorageType type, int64_t usage)
+      : host(std::move(host)), type(type), usage(usage) {}
+  const std::string host;
+  const blink::mojom::StorageType type;
+  const int64_t usage;
 };
 
-// The quota manager class.  This class is instantiated per profile and
-// held by the profile.  With the exception of the constructor and the
-// proxy() method, all methods should only be called on the IO thread.
-// TODO(sashab): Refactor this class to take a url::Origin, crbug.com/598424.
+// Each StoragePartition owns exactly one QuotaManager.
+//
+// Methods must be called on the IO thread, except for the constructor and
+// proxy().
 class STORAGE_EXPORT QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,
       public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
  public:
-  using UsageAndQuotaCallback =
-      base::OnceCallback<void(blink::mojom::QuotaStatusCode,
-                              int64_t /* usage */,
-                              int64_t /* quota */)>;
+  using UsageAndQuotaCallback = base::OnceCallback<
+      void(blink::mojom::QuotaStatusCode, int64_t usage, int64_t quota)>;
   using UsageAndQuotaWithBreakdownCallback = base::OnceCallback<void(
       blink::mojom::QuotaStatusCode,
-      int64_t /* usage */,
-      int64_t /* quota */,
-      base::flat_map<QuotaClient::ID, int64_t> /* usage breakdown */)>;
+      int64_t usage,
+      int64_t quota,
+      base::flat_map<QuotaClient::ID, int64_t> usage_breakdown)>;
 
   static const int64_t kNoLimit;
 
@@ -228,7 +224,7 @@ class STORAGE_EXPORT QuotaManager
   bool IsTrackingHostUsage(blink::mojom::StorageType type,
                            QuotaClient::ID client_id) const;
 
-  void GetStatistics(std::map<std::string, std::string>* statistics);
+  std::map<std::string, std::string> GetStatistics();
 
   bool IsStorageUnlimited(const url::Origin& origin,
                           blink::mojom::StorageType type) const;

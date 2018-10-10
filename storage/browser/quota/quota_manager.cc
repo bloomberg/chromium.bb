@@ -494,7 +494,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
     // crbug.com/349708
     TRACE_EVENT0("io", "QuotaManager::GetUsageInfoTask::Completed");
 
-    std::move(callback_).Run(entries_);
+    std::move(callback_).Run(std::move(entries_));
     DeleteSoon();
   }
 
@@ -508,8 +508,8 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
     std::map<std::string, int64_t> host_usage;
     tracker->GetCachedHostsUsage(&host_usage);
     for (const auto& host_usage_pair : host_usage) {
-      entries_.push_back(
-          UsageInfo(host_usage_pair.first, type, host_usage_pair.second));
+      entries_.emplace_back(host_usage_pair.first, type,
+                            host_usage_pair.second);
     }
     if (--remaining_trackers_ == 0)
       CallCompleted();
@@ -1057,17 +1057,17 @@ bool QuotaManager::IsTrackingHostUsage(StorageType type,
   return tracker && tracker->GetClientTracker(client_id);
 }
 
-void QuotaManager::GetStatistics(
-    std::map<std::string, std::string>* statistics) {
-  DCHECK(statistics);
+std::map<std::string, std::string> QuotaManager::GetStatistics() {
+  std::map<std::string, std::string> statistics;
   if (temporary_storage_evictor_) {
     std::map<std::string, int64_t> stats;
     temporary_storage_evictor_->GetStatistics(&stats);
     for (const auto& origin_usage_pair : stats) {
-      (*statistics)[origin_usage_pair.first] =
+      statistics[origin_usage_pair.first] =
           base::Int64ToString(origin_usage_pair.second);
     }
   }
+  return statistics;
 }
 
 bool QuotaManager::IsStorageUnlimited(const url::Origin& origin,
