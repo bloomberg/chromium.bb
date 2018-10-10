@@ -32,15 +32,31 @@ namespace ash {
 
 namespace {
 
-std::unique_ptr<views::NativeViewHost> CreateRemoteNavigableContentsView(
-    ws::WindowService* window_service,
-    const base::UnguessableToken& embed_token) {
-  constexpr uint32_t kEmbedFlags =
-      ws::mojom::kEmbedFlagEmbedderControlsVisibility;
-  auto remote_view = std::make_unique<ws::ServerRemoteViewHost>(window_service);
-  remote_view->EmbedUsingToken(embed_token, kEmbedFlags, base::DoNothing());
-  return remote_view;
-}
+class ServerRemoteContentViewManager
+    : public content::NavigableContentsView::RemoteViewManager {
+ public:
+  explicit ServerRemoteContentViewManager(ws::WindowService* window_service)
+      : window_service_(window_service) {}
+  ~ServerRemoteContentViewManager() override = default;
+
+  // content::NavigableContentsView::RemoteViewManager:
+  std::unique_ptr<views::NativeViewHost> CreateRemoteViewHost() override {
+    return std::make_unique<ws::ServerRemoteViewHost>(window_service_);
+  }
+
+  void EmbedUsingToken(views::NativeViewHost* view_host,
+                       const base::UnguessableToken& token) override {
+    constexpr uint32_t kEmbedFlags =
+        ws::mojom::kEmbedFlagEmbedderControlsVisibility;
+    static_cast<ws::ServerRemoteViewHost*>(view_host)->EmbedUsingToken(
+        token, kEmbedFlags, base::DoNothing());
+  }
+
+ private:
+  ws::WindowService* const window_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerRemoteContentViewManager);
+};
 
 }  // namespace
 
@@ -64,8 +80,8 @@ WindowServiceOwner::WindowServiceOwner(
   RegisterWindowProperties(window_service_->property_converter());
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  content::NavigableContentsView::SetRemoteViewFactory(
-      base::BindRepeating(&CreateRemoteNavigableContentsView, window_service_));
+  content::NavigableContentsView::SetRemoteViewManager(
+      std::make_unique<ServerRemoteContentViewManager>(window_service_));
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 }
 

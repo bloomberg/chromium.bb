@@ -13,6 +13,14 @@
 #include "services/content/public/cpp/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+#include "ui/views/controls/native/native_view_host.h"  // nogncheck
+#endif
+
+namespace aura {
+class Window;
+}
+
 namespace views {
 class View;
 class NativeViewHost;
@@ -28,7 +36,7 @@ class NavigableContentsImpl;
 // either Views, UIKit, AppKit, or the Android Framework.
 //
 // TODO(https://crbug.com/855092): Actually support UI frameworks other than
-// Views UI.
+// Views UI on Aura.
 class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
  public:
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
@@ -37,10 +45,21 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   // the default one. For example, on Chrome OS when Ash and the Window Service
   // are running in the same process, the default implementation
   // (views::RemoteViewHost) will not work.
-  using RemoteViewFactory =
-      base::RepeatingCallback<std::unique_ptr<views::NativeViewHost>(
-          const base::UnguessableToken& embed_token)>;
-  static void SetRemoteViewFactory(RemoteViewFactory factory);
+  class RemoteViewManager {
+   public:
+    virtual ~RemoteViewManager() {}
+
+    // Creates a new NativeViewHost suitable for remote embedding.
+    virtual std::unique_ptr<views::NativeViewHost> CreateRemoteViewHost() = 0;
+
+    // Initiates an embedding of a remote client -- identified by |token| --
+    // within |view_host|. Note that |view_host| is always an object returned by
+    // |CreateRemoteViewHost()| on the same RemoteViewManager.
+    virtual void EmbedUsingToken(views::NativeViewHost* view_host,
+                                 const base::UnguessableToken& token) = 0;
+  };
+
+  static void SetRemoteViewManager(std::unique_ptr<RemoteViewManager> manager);
 #endif
 
   ~NavigableContentsView();
@@ -53,11 +72,11 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   static void SetClientRunningInServiceProcess();
   static bool IsClientRunningInServiceProcess();
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
   views::View* view() const { return view_.get(); }
-#endif
 
-  gfx::NativeView native_view() const { return native_view_; }
+  gfx::NativeView native_view() const { return view_->native_view(); }
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
  private:
   friend class NavigableContents;
@@ -69,27 +88,17 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   // object and another native UI object within the Content Service.
   void EmbedUsingToken(const base::UnguessableToken& token);
 
-  // Used by NavigableContentsImpl to directly inject a NativeView in the
-  // in-process case.
-  void set_native_view(gfx::NativeView view) { native_view_ = view; }
-
   // Used by the service directly when running in the same process. Establishes
   // a way for an embed token to be used without the UI service.
   static void RegisterInProcessEmbedCallback(
       const base::UnguessableToken& token,
       base::OnceCallback<void(NavigableContentsView*)> callback);
 
-#if defined(TOOLKIT_VIEWS)
-  // This NavigableContents's View. Only initialized if |GetView()| is called,
-  // and only on platforms which support Views UI.
-  std::unique_ptr<views::View> view_;
-#endif  // BUILDFLAG(TOOLKIT_VIEWS)
-
-  // Returns the native view object in which this NavigableContentsView is
-  // rendering its web contents. For in-process clients, this is the NativeView
-  // of the WebContents itself; for out-of-process clients, it's the contents'
-  // embedding root within this (the client) process.
-  gfx::NativeView native_view_ = nullptr;
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+  // This NavigableContents's Window and corresponding View.
+  std::unique_ptr<aura::Window> window_;
+  std::unique_ptr<views::NativeViewHost> view_;
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsView);
 };

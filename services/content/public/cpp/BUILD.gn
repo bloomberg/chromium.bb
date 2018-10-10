@@ -49,4 +49,8 @@ component("cpp") {
       ]
     }
   }
+
+  if (use_aura) {
+    deps += [ "//ui/aura" ]
+  }
 }
