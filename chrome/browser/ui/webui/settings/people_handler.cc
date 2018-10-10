@@ -284,6 +284,9 @@ void PeopleHandler::RegisterMessages() {
       "SyncSetupSignout", base::BindRepeating(&PeopleHandler::HandleSignout,
                                               base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "SyncSetupPauseSync", base::BindRepeating(&PeopleHandler::HandlePauseSync,
+                                                base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "SyncSetupStartSignIn",
       base::BindRepeating(&PeopleHandler::HandleStartSignin,
                           base::Unretained(this)));
@@ -803,6 +806,15 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
     webui::DeleteProfileAtPath(profile_->GetPath(),
                                ProfileMetrics::DELETE_PROFILE_SETTINGS);
   }
+}
+
+void PeopleHandler::HandlePauseSync(const base::ListValue* args) {
+  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_));
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  DCHECK(signin_manager->IsAuthenticated());
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->UpdateCredentials(
+      signin_manager->GetAuthenticatedAccountId(),
+      OAuth2TokenServiceDelegate::kInvalidRefreshToken);
 }
 #endif
 

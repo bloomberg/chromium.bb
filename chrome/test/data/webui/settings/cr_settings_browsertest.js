@@ -935,6 +935,7 @@ CrSettingsPrivacyPageTest.prototype = {
     'test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
+    'test_sync_browser_proxy.js',
     'privacy_page_test.js',
   ]),
 };

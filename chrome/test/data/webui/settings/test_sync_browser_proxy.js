@@ -15,6 +15,7 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
       'setSyncDatatypes',
       'setSyncEncryption',
       'signOut',
+      'pauseSync',
       'startSignIn',
       'startSyncingWithEmail',
       'unifiedConsentToggleChanged',
@@ -42,6 +43,11 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   signOut(deleteProfile) {
     this.methodCalled('signOut', deleteProfile);
+  }
+
+  /** @override */
+  pauseSync() {
+    this.methodCalled('pauseSync');
   }
 
   /** @override */
