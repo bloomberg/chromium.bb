@@ -7,6 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/explore_sites_category_recycler"
+    android:background="@color/modern_primary_color"
     android:scrollbars="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
