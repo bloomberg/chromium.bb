@@ -55,7 +55,7 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     if (!memory)
       break;
 
-    wchar_t* name;
+    std::unique_ptr<wchar_t, NtAllocDeleter> name;
     uint32_t attributes = 0;
     HANDLE root_directory = 0;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
@@ -68,14 +68,16 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
     wchar_t* full_name = nullptr;
+    const wchar_t* name_ptr = name.get();
 
     if (root_directory) {
-      ret = sandbox::AllocAndGetFullPath(root_directory, name, &full_name);
+      ret =
+          sandbox::AllocAndGetFullPath(root_directory, name.get(), &full_name);
       if (!NT_SUCCESS(ret) || !full_name)
         break;
       params[OpenKey::NAME] = ParamPickerMake(full_name);
     } else {
-      params[OpenKey::NAME] = ParamPickerMake(name);
+      params[OpenKey::NAME] = ParamPickerMake(name_ptr);
     }
 
     bool query_broker = QueryBroker(IPC_NTCREATEKEY_TAG, params.GetBase());
@@ -89,11 +91,9 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     SharedMemIPCClient ipc(memory);
     CrossCallReturn answer = {0};
 
-    ResultCode code =
-        CrossCall(ipc, IPC_NTCREATEKEY_TAG, name, attributes, root_directory,
-                  desired_access, title_index, create_options, &answer);
-
-    operator delete(name, NT_ALLOC);
+    ResultCode code = CrossCall(ipc, IPC_NTCREATEKEY_TAG, name.get(),
+                                attributes, root_directory, desired_access,
+                                title_index, create_options, &answer);
 
     if (SBOX_ALL_OK != code)
       break;
@@ -138,7 +138,7 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
     if (!memory)
       break;
 
-    wchar_t* name;
+    std::unique_ptr<wchar_t, NtAllocDeleter> name;
     uint32_t attributes;
     HANDLE root_directory;
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
@@ -151,14 +151,16 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
     wchar_t* full_name = nullptr;
+    const wchar_t* name_ptr = name.get();
 
     if (root_directory) {
-      ret = sandbox::AllocAndGetFullPath(root_directory, name, &full_name);
+      ret =
+          sandbox::AllocAndGetFullPath(root_directory, name.get(), &full_name);
       if (!NT_SUCCESS(ret) || !full_name)
         break;
       params[OpenKey::NAME] = ParamPickerMake(full_name);
     } else {
-      params[OpenKey::NAME] = ParamPickerMake(name);
+      params[OpenKey::NAME] = ParamPickerMake(name_ptr);
     }
 
     bool query_broker = QueryBroker(IPC_NTOPENKEY_TAG, params.GetBase());
@@ -171,10 +173,8 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
 
     SharedMemIPCClient ipc(memory);
     CrossCallReturn answer = {0};
-    ResultCode code = CrossCall(ipc, IPC_NTOPENKEY_TAG, name, attributes,
+    ResultCode code = CrossCall(ipc, IPC_NTOPENKEY_TAG, name.get(), attributes,
                                 root_directory, desired_access, &answer);
-
-    operator delete(name, NT_ALLOC);
 
     if (SBOX_ALL_OK != code)
       break;
