@@ -14,10 +14,11 @@ std::unique_ptr<service_manager::Service> MediaSessionService::Create() {
   return std::make_unique<MediaSessionService>();
 }
 
-MediaSessionService::MediaSessionService() = default;
+MediaSessionService::MediaSessionService()
+    : audio_focus_manager_(std::make_unique<AudioFocusManager>()) {}
 
 MediaSessionService::~MediaSessionService() {
-  AudioFocusManager::GetInstance()->CloseAllMojoObjects();
+  audio_focus_manager_->CloseAllMojoObjects();
 }
 
 void MediaSessionService::OnStart() {
@@ -26,11 +27,11 @@ void MediaSessionService::OnStart() {
 
   registry_.AddInterface(
       base::BindRepeating(&AudioFocusManager::BindToInterface,
-                          base::Unretained(AudioFocusManager::GetInstance())));
+                          base::Unretained(audio_focus_manager_.get())));
 
   registry_.AddInterface(
       base::BindRepeating(&AudioFocusManager::BindToDebugInterface,
-                          base::Unretained(AudioFocusManager::GetInstance())));
+                          base::Unretained(audio_focus_manager_.get())));
 }
 
 void MediaSessionService::OnBindInterface(

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "services/media_session/audio_focus_manager.h"
 #include "services/media_session/public/cpp/switches.h"
 
 namespace media_session {
@@ -106,9 +105,6 @@ base::UnguessableToken MockMediaSession::RequestAudioFocusFromService(
   // active.
   if (result)
     SetState(mojom::MediaSessionInfo::SessionState::kActive);
-
-  if (IsAudioFocusEnforcementEnabled())
-    AudioFocusManager::GetInstance()->FlushForTesting();
 
   return GetRequestIdFromClient();
 }

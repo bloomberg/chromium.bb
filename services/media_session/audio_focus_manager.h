@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/memory/singleton.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -30,11 +29,11 @@ class MockMediaSession;
 class AudioFocusManager : public mojom::AudioFocusManager,
                           public mojom::AudioFocusManagerDebug {
  public:
+  AudioFocusManager();
+  ~AudioFocusManager() override;
+
   // TODO(beccahughes): Remove this.
   using RequestId = base::UnguessableToken;
-
-  // Returns Chromium's internal AudioFocusManager.
-  static AudioFocusManager* GetInstance();
 
   // mojom::AudioFocusManager.
   void RequestAudioFocus(mojom::AudioFocusRequestClientRequest request,
@@ -61,7 +60,6 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void CloseAllMojoObjects();
 
  private:
-  friend struct base::DefaultSingletonTraits<AudioFocusManager>;
   friend class AudioFocusManagerTest;
   friend class test::MockMediaSession;
 
@@ -85,15 +83,6 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   void AbandonAudioFocusInternal(RequestId);
   void EnforceAudioFocusAbandon(mojom::AudioFocusType);
-
-  // Flush for testing will flush any pending messages to the observers.
-  void FlushForTesting();
-
-  // Reset for testing will clear any built up internal state.
-  void ResetForTesting();
-
-  AudioFocusManager();
-  ~AudioFocusManager() override;
 
   std::unique_ptr<StackRow> RemoveFocusEntryIfPresent(RequestId id);
 

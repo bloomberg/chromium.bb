@@ -61,10 +61,6 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     // Bind |audio_focus_debug_ptr_| to AudioFocusManagerDebug.
     connector_->BindInterface("test",
                               mojo::MakeRequest(&audio_focus_debug_ptr_));
-
-    // AudioFocusManager is a singleton so we should make sure we reset any
-    // state in between tests.
-    AudioFocusManager::GetInstance()->ResetForTesting();
   }
 
   void TearDown() override {
@@ -93,7 +89,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   void AbandonAudioFocusNoReset(test::MockMediaSession* session) {
     session->audio_focus_request()->AbandonAudioFocus();
     session->FlushForTesting();
-    FlushForTesting();
+    audio_focus_ptr_.FlushForTesting();
   }
 
   AudioFocusManager::RequestId RequestAudioFocus(
@@ -116,7 +112,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
 
     GetDebugService()->GetDebugInfoForRequest(request_id, std::move(callback));
 
-    FlushForTesting();
+    audio_focus_ptr_.FlushForTesting();
     audio_focus_debug_ptr_.FlushForTesting();
 
     return result;
@@ -144,7 +140,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     observer->BindToMojoRequest(mojo::MakeRequest(&observer_ptr));
     GetService()->AddObserver(std::move(observer_ptr));
 
-    FlushForTesting();
+    audio_focus_ptr_.FlushForTesting();
     return observer;
   }
 
@@ -206,7 +202,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
         },
         &result));
 
-    FlushForTesting();
+    audio_focus_ptr_.FlushForTesting();
     return result;
   }
 
@@ -222,32 +218,23 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     if (!GetParam())
       return;
 
-    FlushForTesting();
-  }
-
-  void FlushForTesting() {
     audio_focus_ptr_.FlushForTesting();
-    AudioFocusManager::GetInstance()->FlushForTesting();
   }
 
   base::test::ScopedCommandLine command_line_;
   base::test::ScopedTaskEnvironment task_environment_;
+  base::HistogramTester histogram_tester_;
+
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
+
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
-  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManagerTest);
 };
 
 INSTANTIATE_TEST_CASE_P(, AudioFocusManagerTest, testing::Bool());
-
-TEST_P(AudioFocusManagerTest, InstanceAvailableAndSame) {
-  AudioFocusManager* audio_focus_manager = AudioFocusManager::GetInstance();
-  EXPECT_TRUE(!!audio_focus_manager);
-  EXPECT_EQ(audio_focus_manager, AudioFocusManager::GetInstance());
-}
 
 TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_ReplaceFocusedEntry) {
   test::MockMediaSession media_session_1;
