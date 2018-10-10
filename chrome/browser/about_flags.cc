@@ -1059,33 +1059,6 @@ const FeatureEntry::FeatureVariation
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          arraysize(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "4"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin6px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "6"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "8"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin10px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "10"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin12px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "12"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin14px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "14"}};
-
-const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
-    {"4px vertical margin", kOmniboxUIVerticalMargin4px,
-     arraysize(kOmniboxUIVerticalMargin4px), nullptr},
-    {"6px vertical margin", kOmniboxUIVerticalMargin6px,
-     arraysize(kOmniboxUIVerticalMargin6px), nullptr},
-    {"8px vertical margin", kOmniboxUIVerticalMargin8px,
-     arraysize(kOmniboxUIVerticalMargin8px), nullptr},
-    {"10px vertical margin", kOmniboxUIVerticalMargin10px,
-     arraysize(kOmniboxUIVerticalMargin10px), nullptr},
-    {"12px vertical margin", kOmniboxUIVerticalMargin12px,
-     arraysize(kOmniboxUIVerticalMargin12px), nullptr},
-    {"14px vertical margin", kOmniboxUIVerticalMargin14px,
-     arraysize(kOmniboxUIVerticalMargin14px), nullptr}};
-
 const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceDisabled,
@@ -3422,13 +3395,6 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
-
-    {"omnibox-ui-vertical-margin",
-     flag_descriptions::kOmniboxUIVerticalMarginName,
-     flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUIExperimentVerticalMargin,
-                                    kOmniboxUIVerticalMarginVariations,
-                                    "OmniboxUIVerticalMarginVariations")},
 
     {"omnibox-ui-swap-title-and-url",
      flag_descriptions::kOmniboxUISwapTitleAndUrlName,

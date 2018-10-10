@@ -192,15 +192,9 @@ int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
 
 // static
 gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
-  switch (ui::MaterialDesignController::GetMode()) {
-    case ui::MaterialDesignController::MATERIAL_REFRESH:
-      return gfx::Insets(4, 6);
-    case ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH:
-      return gfx::Insets(6, 1, 5, 1);
-    default:
-      return gfx::Insets(4);
-  }
-  NOTREACHED();
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+             ? gfx::Insets(6, 1, 5, 1)
+             : gfx::Insets(4, 6);
 }
 
 // static

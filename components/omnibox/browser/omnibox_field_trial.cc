@@ -170,11 +170,6 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 #endif
 };
 
-// Feature used for the vertical margin UI experiment, currently only used on
-// desktop platforms.
-const base::Feature kUIExperimentVerticalMargin{
-    "OmniboxUIExperimentVerticalMargin", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a
 // query.
@@ -783,14 +778,6 @@ bool OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() {
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
-int OmniboxFieldTrial::GetSuggestionVerticalMargin() {
-  if (base::FeatureList::IsEnabled(features::kExperimentalUi))
-    return 10;
-
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam, 10);
-}
-
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }
@@ -865,7 +852,6 @@ const char
 
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
     "UIMaxAutocompleteMatches";
-const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
 const char OmniboxFieldTrial::kPedalSuggestionModeParam[] =
     "PedalSuggestionMode";
 
