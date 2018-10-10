@@ -798,15 +798,7 @@ void EmbeddedWorkerInstance::RequestTermination(
     return;
   }
 
-  if (status() == EmbeddedWorkerStatus::STOPPING) {
-    std::move(callback).Run(true /* will_be_terminated */);
-    return;
-  }
-  owner_version_->StopWorkerIfIdle(true /* requested_from_renderer */);
-
-  // If DevTools is attached and the worker won't be stopped, the worker needs
-  // to continue to work.
-  std::move(callback).Run(status() != EmbeddedWorkerStatus::RUNNING);
+  std::move(callback).Run(owner_version_->OnRequestTermination());
 }
 
 void EmbeddedWorkerInstance::CountFeature(blink::mojom::WebFeature feature) {

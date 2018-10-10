@@ -24,3 +24,7 @@ crbug.com/850689 http/tests/inspector-protocol/network/interception-set-cookie.j
 # because content_shell does not add the about: handler. With network service
 # enabled this fails in both content_shell and chrome.
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
+
+# Timeout because activation is not triggered when DevTools is opened.
+crbug.com/879069 http/tests/devtools/service-workers/service-workers-redundant.js [ Timeout ]
+crbug.com/879069 http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Timeout ]

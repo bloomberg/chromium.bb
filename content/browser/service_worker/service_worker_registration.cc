@@ -313,7 +313,7 @@ void ServiceWorkerRegistration::OnNoWork(ServiceWorkerVersion* version) {
     return;
   DCHECK_EQ(active_version(), version);
   if (IsReadyToActivate())
-    ActivateWaitingVersion(false /* delay */);
+    ActivateWaitingVersion(true /* delay */);
 }
 
 bool ServiceWorkerRegistration::IsReadyToActivate() const {
@@ -327,7 +327,7 @@ bool ServiceWorkerRegistration::IsReadyToActivate() const {
     return true;
   }
   if (IsLameDuckActiveVersion()) {
-    return !active->HasWorkInBrowser() ||
+    return active->HasNoWork() ||
            waiting->TimeSinceSkipWaiting() > kMaxLameDuckTime ||
            active->TimeSinceNoControllees() > kMaxLameDuckTime;
   }
