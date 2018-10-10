@@ -204,13 +204,9 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       can_have_scrollbars_(true),
       has_pending_layout_(false),
       layout_scheduling_enabled_(true),
-      in_synchronous_post_layout_(false),
       layout_count_for_testing_(0),
       lifecycle_update_count_for_testing_(0),
       nested_layout_count_(0),
-      post_layout_tasks_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
-                               this,
-                               &LocalFrameView::PostLayoutTimerFired),
       update_plugins_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &LocalFrameView::UpdatePluginsTimerFired),
@@ -379,8 +375,6 @@ void LocalFrameView::Dispose() {
   // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
   // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
   auto_size_info_.Clear();
-
-  post_layout_tasks_timer_.Stop();
 
   // FIXME: Do we need to do something here for OOPI?
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
@@ -599,15 +593,6 @@ void LocalFrameView::PerformPreLayoutTasks() {
   base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
                                                   false);
 
-  if (!nested_layout_count_ && !in_synchronous_post_layout_ &&
-      post_layout_tasks_timer_.IsActive()) {
-    // This is a new top-level layout. If there are any remaining tasks from the
-    // previous layout, finish them now.
-    in_synchronous_post_layout_ = true;
-    PerformPostLayoutTasks();
-    in_synchronous_post_layout_ = false;
-  }
-
   bool was_resized = WasViewportResized();
   Document* document = frame_->GetDocument();
   if (was_resized)
@@ -754,30 +739,6 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
       .MarkNextPaintAsMeaningfulIfNeeded(
           layout_object_counter_, contents_height_before_layout,
           GetLayoutView()->DocumentRect().Height(), Height());
-}
-
-void LocalFrameView::ScheduleOrPerformPostLayoutTasks() {
-  if (post_layout_tasks_timer_.IsActive())
-    return;
-
-  if (!in_synchronous_post_layout_) {
-    in_synchronous_post_layout_ = true;
-    // Calls resumeScheduledEvents()
-    PerformPostLayoutTasks();
-    in_synchronous_post_layout_ = false;
-  }
-
-  if (!post_layout_tasks_timer_.IsActive() &&
-      (NeedsLayout() || in_synchronous_post_layout_)) {
-    // If we need layout or are already in a synchronous call to
-    // postLayoutTasks(), defer LocalFrameView updates and event dispatch until
-    // after we return.  postLayoutTasks() can make us need to update again, and
-    // we can get stuck in a nasty cycle unless we call it through the timer
-    // here.
-    post_layout_tasks_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-    if (NeedsLayout())
-      UpdateLayout();
-  }
 }
 
 void LocalFrameView::UpdateLayout() {
@@ -946,8 +907,10 @@ void LocalFrameView::UpdateLayout() {
     UpdateDocumentAnnotatedRegions();
     CheckDoesNotNeedLayout();
 
-    ScheduleOrPerformPostLayoutTasks();
-    CheckDoesNotNeedLayout();
+    if (nested_layout_count_ == 1) {
+      PerformPostLayoutTasks();
+      CheckDoesNotNeedLayout();
+    }
 
     // FIXME: The notion of a single root for layout is no longer applicable.
     // Remove or update this code. crbug.com/460596
@@ -1999,8 +1962,6 @@ void LocalFrameView::UpdatePluginsTimerFired(TimerBase*) {
 
 void LocalFrameView::FlushAnyPendingPostLayoutTasks() {
   DCHECK(!IsInPerformLayout());
-  if (post_layout_tasks_timer_.IsActive())
-    PerformPostLayoutTasks();
   if (update_plugins_timer_.IsActive()) {
     update_plugins_timer_.Stop();
     UpdatePluginsTimerFired(nullptr);
@@ -2024,8 +1985,6 @@ void LocalFrameView::PerformPostLayoutTasks() {
   // layout() call.
   DCHECK(!IsInPerformLayout());
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::performPostLayoutTasks");
-
-  post_layout_tasks_timer_.Stop();
 
   frame_->Selection().DidLayout();
 
@@ -2085,10 +2044,6 @@ void LocalFrameView::SendResizeEventIfNeeded() {
 
   if (frame_->IsMainFrame())
     probe::didResizeMainFrame(frame_.Get());
-}
-
-void LocalFrameView::PostLayoutTimerFired(TimerBase*) {
-  PerformPostLayoutTasks();
 }
 
 void LocalFrameView::SetInputEventsScaleForEmulation(

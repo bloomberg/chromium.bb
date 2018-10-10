@@ -296,8 +296,6 @@ class CORE_EXPORT LocalFrameView final
 
   void DidAttachDocument();
 
-  void PostLayoutTimerFired(TimerBase*);
-
   bool SafeToPropagateScrollToParent() const {
     return safe_to_propagate_scroll_to_parent_;
   }
@@ -762,7 +760,6 @@ class CORE_EXPORT LocalFrameView final
 
   void PerformPreLayoutTasks();
   void PerformLayout(bool in_subtree_layout);
-  void ScheduleOrPerformPostLayoutTasks();
   void PerformPostLayoutTasks();
 
   void RecordDeferredLoadingStats();
@@ -857,11 +854,9 @@ class CORE_EXPORT LocalFrameView final
   DepthOrderedLayoutObjectList orthogonal_writing_mode_root_list_;
 
   bool layout_scheduling_enabled_;
-  bool in_synchronous_post_layout_;
   unsigned layout_count_for_testing_;
   unsigned lifecycle_update_count_for_testing_;
   unsigned nested_layout_count_;
-  TaskRunnerTimer<LocalFrameView> post_layout_tasks_timer_;
   TaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 
   bool first_layout_;
