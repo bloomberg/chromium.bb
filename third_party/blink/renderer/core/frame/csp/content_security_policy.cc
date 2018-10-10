@@ -657,7 +657,7 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
     SecurityViolationReportingPolicy reporting_policy) const {
   if (document.GetContentSecurityPolicy() &&
       !document.GetContentSecurityPolicy()->AllowPluginType(
-          type, type_attribute, url))
+          type, type_attribute, url, reporting_policy))
     return false;
 
   // CSP says that a plugin document in a nested browsing context should
@@ -671,7 +671,8 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
                                             .Parent()
                                             ->GetSecurityContext()
                                             ->GetContentSecurityPolicy();
-    if (parent_csp && !parent_csp->AllowPluginType(type, type_attribute, url))
+    if (parent_csp && !parent_csp->AllowPluginType(type, type_attribute, url,
+                                                   reporting_policy))
       return false;
   }
 
