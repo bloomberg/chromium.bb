@@ -29,12 +29,15 @@
 #include "chrome/browser/resource_coordinator/usage_clock.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/web_contents_tester.h"
-#include "device/base/mock_device_client.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -477,8 +480,13 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  // Make sure there is a DeviceClient instance.
-  device::MockDeviceClient device_client;
+  // Connect with the FakeUsbDeviceManager.
+  device::FakeUsbDeviceManager device_manager;
+  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
+  device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  UsbChooserContextFactory::GetForProfile(profile())
+      ->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+
   UsbTabHelper* usb_tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents_);
   usb_tab_helper->CreateWebUsbService(
