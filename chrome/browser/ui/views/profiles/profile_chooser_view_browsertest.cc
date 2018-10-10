@@ -116,6 +116,10 @@ class ProfileChooserViewExtensionsTest
 
   // SupportsTestUi:
   void ShowUi(const std::string& name) override {
+    // Bubble dialogs' bounds may exceed the display's work area.
+    // https://crbug.com/893292.
+    set_should_verify_dialog_bounds(false);
+
     constexpr char kSignedIn[] = "SignedIn";
     constexpr char kMultiProfile[] = "MultiProfile";
     constexpr char kGuest[] = "Guest";

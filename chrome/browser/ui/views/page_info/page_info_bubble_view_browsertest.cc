@@ -112,6 +112,10 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
+    // Bubble dialogs' bounds may exceed the display's work area.
+    // https://crbug.com/893292.
+    set_should_verify_dialog_bounds(false);
+
     // All the possible test names.
     constexpr char kInsecure[] = "Insecure";
     constexpr char kInternal[] = "Internal";

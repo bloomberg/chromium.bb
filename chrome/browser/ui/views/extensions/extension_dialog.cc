@@ -98,14 +98,15 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   // Center the window over the browser.
   views::Widget* parent_widget =
       views::Widget::GetWidgetForNativeWindow(parent);
-  gfx::Point center = parent_widget->GetWindowBoundsInScreen().CenterPoint();
-  int x = center.x() - width / 2;
-  int y = center.y() - height / 2;
+  gfx::Rect bounds_rect = parent_widget->GetWindowBoundsInScreen();
+  bounds_rect.ClampToCenteredSize({width, height});
+
   // Ensure the top left and top right of the window are on screen, with
-  // priority given to the top left.
+  // priority given to the top left. Use the display's work_area() rather than
+  // bounds(), since the work_area() may be smaller e.g. when the docked
+  // magnifier is enabled.
   gfx::Rect screen_rect =
-      display::Screen::GetScreen()->GetDisplayNearestPoint(center).bounds();
-  gfx::Rect bounds_rect = gfx::Rect(x, y, width, height);
+      display::Screen::GetScreen()->GetDisplayNearestWindow(parent).work_area();
   bounds_rect.AdjustToFit(screen_rect);
   window->SetBounds(bounds_rect);
 
