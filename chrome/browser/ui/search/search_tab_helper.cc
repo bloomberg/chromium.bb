@@ -338,6 +338,16 @@ void SearchTabHelper::OnResetCustomLinks() {
     instant_service_->ResetCustomLinks();
 }
 
+void SearchTabHelper::OnDoesUrlResolve(
+    const GURL& url,
+    chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    instant_service_->DoesUrlResolve(url, std::move(callback));
+  else
+    std::move(callback).Run(/*resolves=*/true, /*timeout=*/false);
+}
+
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
