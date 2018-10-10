@@ -402,6 +402,7 @@ class PDFEngine {
   virtual void AppendPage(PDFEngine* engine, int index) = 0;
 
   virtual std::string GetMetadata(const std::string& key) = 0;
+  virtual std::vector<uint8_t> GetSaveData() = 0;
 
   virtual void SetCaretPosition(const pp::Point& position) = 0;
   virtual void MoveRangeSelectionExtent(const pp::Point& extent) = 0;

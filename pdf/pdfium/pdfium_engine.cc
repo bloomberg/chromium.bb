@@ -133,7 +133,7 @@ constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
 
 // Flag to turn edit mode tracking on.
 // Do not flip until form saving is completely functional.
-constexpr bool kIsEditModeTracked = false;
+constexpr bool kIsEditModeTracked = true;
 
 PDFiumEngine* g_engine_for_fontmapper = nullptr;
 
@@ -888,6 +888,13 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
 
 std::string PDFiumEngine::GetMetadata(const std::string& key) {
   return GetDocumentMetadata(doc(), key);
+}
+
+std::vector<uint8_t> PDFiumEngine::GetSaveData() {
+  PDFiumMemBufferFileWrite output_file_write;
+  if (!FPDF_SaveAsCopy(doc(), &output_file_write, 0))
+    return std::vector<uint8_t>();
+  return output_file_write.TakeBuffer();
 }
 
 void PDFiumEngine::OnPendingRequestComplete() {
