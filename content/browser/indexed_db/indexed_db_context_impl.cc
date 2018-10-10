@@ -310,8 +310,6 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
     return factory_->GetLastModified(origin);
   }
 
-  if (data_path_.empty())
-    return base::Time();
   base::FilePath idb_directory = GetLevelDBPath(origin);
   base::File::Info file_info;
   if (!base::GetFileInfo(idb_directory, &file_info))
@@ -327,7 +325,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
 void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   ForceClose(origin, FORCE_CLOSE_DELETE_ORIGIN);
-  if (data_path_.empty() || !HasOrigin(origin))
+  if (is_incognito() || !HasOrigin(origin))
     return;
 
   base::FilePath idb_directory = GetLevelDBPath(origin);
@@ -346,7 +344,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   base::DeleteFile(GetBlobStorePath(origin), true /* recursive */);
   QueryDiskAndUpdateQuotaUsage(origin);
   if (s.ok()) {
-    RemoveFromOriginSet(origin);
+    GetOriginSet()->erase(origin);
     origin_size_map_.erase(origin);
   }
 }
@@ -360,7 +358,7 @@ void IndexedDBContextImpl::CopyOriginData(const GURL& origin_url,
 void IndexedDBContextImpl::CopyOriginData(const Origin& origin,
                                           IndexedDBContext* dest_context) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
-  if (data_path_.empty() || !HasOrigin(origin))
+  if (is_incognito() || !HasOrigin(origin))
     return;
 
   IndexedDBContextImpl* dest_context_impl =
@@ -395,7 +393,7 @@ void IndexedDBContextImpl::ForceClose(const Origin origin,
                             reason,
                             FORCE_CLOSE_REASON_MAX);
 
-  if (data_path_.empty() || !HasOrigin(origin))
+  if (is_incognito() || !HasOrigin(origin))
     return;
 
   if (factory_.get())
@@ -406,7 +404,7 @@ void IndexedDBContextImpl::ForceClose(const Origin origin,
 bool IndexedDBContextImpl::ForceSchemaDowngrade(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
 
-  if (data_path_.empty() || !HasOrigin(origin))
+  if (is_incognito() || !HasOrigin(origin))
     return false;
 
   if (factory_.get()) {
@@ -421,7 +419,7 @@ V2SchemaCorruptionStatus IndexedDBContextImpl::HasV2SchemaCorruption(
     const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
 
-  if (data_path_.empty() || !HasOrigin(origin))
+  if (is_incognito() || !HasOrigin(origin))
     return V2SchemaCorruptionStatus::kUnknown;
 
   if (factory_.get())
@@ -475,7 +473,7 @@ void IndexedDBContextImpl::ConnectionOpened(const Origin& origin,
   quota_manager_proxy()->NotifyStorageAccessed(
       storage::QuotaClient::kIndexedDatabase, origin,
       blink::mojom::StorageType::kTemporary);
-  if (AddToOriginSet(origin)) {
+  if (GetOriginSet()->insert(origin).second) {
     // A newly created db, notify the quota system.
     QueryDiskAndUpdateQuotaUsage(origin);
   } else {
@@ -499,7 +497,7 @@ void IndexedDBContextImpl::TransactionComplete(const Origin& origin) {
 }
 
 void IndexedDBContextImpl::DatabaseDeleted(const Origin& origin) {
-  AddToOriginSet(origin);
+  GetOriginSet()->insert(origin);
   QueryDiskAndUpdateQuotaUsage(origin);
 }
 
@@ -540,7 +538,7 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
                                           std::move(factory_)));
   }
 
-  if (data_path_.empty())
+  if (is_incognito())
     return;
 
   if (force_keep_session_state_)
@@ -580,13 +578,13 @@ base::FilePath IndexedDBContextImpl::GetLevelDBFileName(const Origin& origin) {
 
 base::FilePath IndexedDBContextImpl::GetBlobStorePath(
     const Origin& origin) const {
-  DCHECK(!data_path_.empty());
+  DCHECK(!is_incognito());
   return data_path_.Append(GetBlobStoreFileName(origin));
 }
 
 base::FilePath IndexedDBContextImpl::GetLevelDBPath(
     const Origin& origin) const {
-  DCHECK(!data_path_.empty());
+  DCHECK(!is_incognito());
   return data_path_.Append(GetLevelDBFileName(origin));
 }
 

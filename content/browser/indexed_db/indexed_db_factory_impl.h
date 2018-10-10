@@ -177,7 +177,10 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   std::map<url::Origin, scoped_refptr<IndexedDBBackingStore>>
       backing_store_map_;
 
-  std::set<scoped_refptr<IndexedDBBackingStore> > session_only_backing_stores_;
+  // In-memory (incognito) backing stores should live as long as the
+  // StoragePartition which owns the IndexedDBContext which owns this
+  // IndexedDBFactory.
+  std::set<scoped_refptr<IndexedDBBackingStore>> in_memory_backing_stores_;
   std::map<url::Origin, scoped_refptr<IndexedDBBackingStore>>
       backing_stores_with_active_blobs_;
   std::set<url::Origin> backends_opened_since_boot_;

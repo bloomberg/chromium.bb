@@ -671,11 +671,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     backing_store_map_[origin] = backing_store;
     // If an in-memory database, bind lifetime to this factory instance.
     if (open_in_memory)
-      session_only_backing_stores_.insert(backing_store);
+      in_memory_backing_stores_.insert(backing_store);
 
     // All backing stores associated with this factory should be of the same
     // type.
-    DCHECK_NE(session_only_backing_stores_.empty(), open_in_memory);
+    DCHECK_NE(in_memory_backing_stores_.empty(), open_in_memory);
 
     return backing_store;
   }
