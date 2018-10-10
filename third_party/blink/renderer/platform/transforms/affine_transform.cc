@@ -258,7 +258,7 @@ IntPoint AffineTransform::MapPoint(const IntPoint& point) const {
   Map(point.X(), point.Y(), x2, y2);
 
   // Round the point.
-  return IntPoint(lround(x2), lround(y2));
+  return IntPoint(static_cast<int>(lround(x2)), static_cast<int>(lround(y2)));
 }
 
 FloatPoint AffineTransform::MapPoint(const FloatPoint& point) const {
@@ -272,7 +272,8 @@ IntSize AffineTransform::MapSize(const IntSize& size) const {
   double width2 = size.Width() * XScale();
   double height2 = size.Height() * YScale();
 
-  return IntSize(lround(width2), lround(height2));
+  return IntSize(static_cast<int>(lround(width2)),
+                 static_cast<int>(lround(height2)));
 }
 
 FloatSize AffineTransform::MapSize(const FloatSize& size) const {

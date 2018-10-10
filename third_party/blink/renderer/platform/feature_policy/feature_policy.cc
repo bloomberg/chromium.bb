@@ -102,7 +102,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         }
       }
 
-      for (size_t i = 1; i < tokens.size(); i++) {
+      for (wtf_size_t i = 1; i < tokens.size(); i++) {
         if (!tokens[i].ContainsOnlyASCII()) {
           messages->push_back("Non-ASCII characters in origin.");
           continue;

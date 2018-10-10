@@ -421,7 +421,7 @@ String KURL::GetPath() const {
 
 bool KURL::SetProtocol(const String& protocol) {
   // Firefox and IE remove everything after the first ':'.
-  int separator_position = protocol.find(':');
+  wtf_size_t separator_position = protocol.find(':');
   String new_protocol = protocol.Substring(0, separator_position);
   StringUTF8Adaptor new_protocol_utf8(new_protocol);
 
@@ -477,7 +477,7 @@ static String ParsePortFromStringPosition(const String& value,
 }
 
 void KURL::SetHostAndPort(const String& host_and_port) {
-  size_t separator = host_and_port.find(':');
+  wtf_size_t separator = host_and_port.find(':');
   if (!separator)
     return;
 
