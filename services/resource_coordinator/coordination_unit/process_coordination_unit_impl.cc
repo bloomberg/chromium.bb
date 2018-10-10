@@ -45,7 +45,8 @@ void ProcessCoordinationUnitImpl::SetExpectedTaskQueueingDuration(
 }
 
 void ProcessCoordinationUnitImpl::SetLaunchTime(base::Time launch_time) {
-  SetProperty(mojom::PropertyType::kLaunchTime, launch_time.ToTimeT());
+  DCHECK(launch_time_.is_null());
+  launch_time_ = launch_time;
 }
 
 void ProcessCoordinationUnitImpl::SetMainThreadTaskLoadIsLow(

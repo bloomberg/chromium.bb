@@ -51,6 +51,7 @@ class ProcessCoordinationUnitImpl
       const;
 
   base::ProcessId process_id() const { return process_id_; }
+  base::Time launch_time() const { return launch_time_; }
 
   // Removes |frame_cu| from the set of frames hosted by this process. Invoked
   // from the destructor of FrameCoordinationUnitImpl.
@@ -75,6 +76,7 @@ class ProcessCoordinationUnitImpl
   uint64_t private_footprint_kb_ = 0u;
 
   base::ProcessId process_id_ = base::kNullProcessId;
+  base::Time launch_time_;
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
