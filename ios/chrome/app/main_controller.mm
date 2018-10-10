@@ -946,6 +946,7 @@ enum class ShowTabSwitcherSnapshotResult {
   _browserViewWrangler = nil;
 
   [_mainCoordinator stop];
+  _httpProtocolHandlerDelegate.reset();
 
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
