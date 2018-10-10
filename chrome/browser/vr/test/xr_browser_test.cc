@@ -180,7 +180,7 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
       "typeof javascriptDone !== 'undefined'", web_contents);
   EXPECT_TRUE(code_available) << "Attempted to wait on a JavaScript test step "
                               << "without the code to do so. You either forgot "
-                              << "to import web[v|x]r_e2e.js or "
+                              << "to import webxr_e2e.js or "
                               << "are incorrectly using a C++ function.";
 
   // Actually wait for the step to finish.

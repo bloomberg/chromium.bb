@@ -253,7 +253,7 @@ public abstract class XrTestFramework {
     public static void waitOnJavaScriptStep(WebContents webContents) {
         // Make sure we aren't trying to wait on a JavaScript test step without the code to do so.
         Assert.assertTrue("Attempted to wait on a JavaScript step without the code to do so. You "
-                        + "either forgot to import web[v|x]r_e2e.js or are incorrectly using a "
+                        + "either forgot to import webxr_e2e.js or are incorrectly using a "
                         + "Java method.",
                 Boolean.parseBoolean(runJavaScriptOrFail("typeof javascriptDone !== 'undefined'",
                         POLL_TIMEOUT_SHORT_MS, webContents)));
