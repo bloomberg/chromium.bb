@@ -609,18 +609,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
       textInputClient_->InsertChar(
           ui::KeyEvent([text characterAtIndex:0], ui::VKEY_UNKNOWN,
                        ui::DomCode::NONE, ui::EF_NONE));
-      // Leave character events that may have triggered IME confirmation for
-      // inline IME (e.g. Korean) as "unhandled". There will be no more
-      // -insertText: messages, but we are unable to handle these via
-      // -handleKeyEvent: earlier in this method since toolkit-views client code
-      // assumes it can ignore characters associated with, e.g., VKEY_TAB.
-      DCHECK(keyDownEvent_);  // Otherwise it is not a character event.
-      if ([self hasMarkedText] || !IsImeTriggerEvent(keyDownEvent_))
-        hasUnhandledKeyDownEvent_ = NO;
     } else {
       textInputClient_->InsertText(base::SysNSStringToUTF16(text));
-      hasUnhandledKeyDownEvent_ = NO;
     }
+    // Suppress accelerators that may be bound to this key, since it inserted
+    // text instead. But note that IME may follow with -insertNewLine:, which
+    // will resurrect the keyEvent for accelerator handling.
+    hasUnhandledKeyDownEvent_ = NO;
   }
 }
 
@@ -839,6 +834,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Convert the event into an action message, according to OSX key mappings.
   keyDownEvent_ = theEvent;
   hasUnhandledKeyDownEvent_ = YES;
+  wantsKeyHandledForInsert_ = NO;
   [self interpretKeyEvents:@[ theEvent ]];
 
   // When there is marked text, -[NSView interpretKeyEvents:] may handle the
@@ -852,8 +848,16 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (hadMarkedTextAtKeyDown && IsImeTriggerEvent(theEvent))
     hasUnhandledKeyDownEvent_ = NO;
 
-  // If |keyDownEvent_| wasn't cleared during -interpretKeyEvents:, it wasn't
-  // handled. Give Widget accelerators a chance to handle it.
+  // Even with marked text, some IMEs may follow with -insertNewLine:;
+  // simultaneously confirming the composition. In this case, always generate
+  // the corresponding ui::KeyEvent. Note this is done even if there was no
+  // marked text, so it is orthogonal to the case above.
+  if (wantsKeyHandledForInsert_)
+    hasUnhandledKeyDownEvent_ = YES;
+
+  // If |hasUnhandledKeyDownEvent_| wasn't set to NO during
+  // -interpretKeyEvents:, it wasn't handled. Give Widget accelerators a chance
+  // to handle it.
   [self handleUnhandledKeyDownAsKeyEvent];
   DCHECK(!hasUnhandledKeyDownEvent_);
   keyDownEvent_ = nil;
@@ -1430,9 +1434,34 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (void)doCommandBySelector:(SEL)selector {
   // Like the renderer, handle insert action messages as a regular key dispatch.
-  // This ensures, e.g., insertTab correctly changes focus between fields.
-  if (keyDownEvent_ && [NSStringFromSelector(selector) hasPrefix:@"insert"])
+  // This ensures, e.g., insertTab correctly changes focus between fields. This
+  // handles:
+  //  -insertTab:(id)sender
+  //  -insertBacktab:
+  //  -insertNewline:
+  //  -insertParagraphSeparator:
+  //  -insertNewlineIgnoringFieldEditor:
+  //  -insertTabIgnoringFieldEditor:
+  //  -insertLineBreak:
+  //  -insertContainerBreak:
+  //  -insertSingleQuoteIgnoringSubstitution:
+  //  -insertDoubleQuoteIgnoringSubstitution:
+  // It does not handle |-insertText:(id)insertString|, which is not a command.
+  // I.e. AppKit invokes _either_ -insertText: or -doCommandBySelector:. Also
+  // note -insertText: is only invoked if -inputContext: has returned nil.
+  DCHECK_NE(@selector(insertText:), selector);
+  if (keyDownEvent_ && [NSStringFromSelector(selector) hasPrefix:@"insert"]) {
+    // When return is pressed during IME composition, engines typically first
+    // confirm the composition with a series of -insertText:replacementRange:
+    // calls. Then, some also invoke -insertNewLine: (some do not). If an engine
+    // DOES invokes -insertNewLine:, we always want a corresponding VKEY_RETURN
+    // ui::KeyEvent generated. If it does NOT follow with -insertNewLine:, the
+    // VKEY_RETURN must be suppressed in keyDown:, since it typically will have
+    // merely dismissed the IME window: the composition is still ongoing.
+    // Setting this ensures keyDown: always generates a ui::KeyEvent.
+    wantsKeyHandledForInsert_ = YES;
     return;  // Handle in -keyDown:.
+  }
 
   if ([self respondsToSelector:selector]) {
     [self performSelector:selector withObject:nil];
