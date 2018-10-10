@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
+class SerializedScriptValue;
 class Task;
 
 // Runs |function| with |arguments| on a thread from the given ThreadPool.
@@ -28,12 +29,21 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   ThreadPoolTask(ThreadPool*,
                  v8::Isolate*,
                  const ScriptValue& function,
-                 const Vector<ScriptValue>& arguments);
+                 const Vector<ScriptValue>& arguments,
+                 TaskType);
   ~ThreadPoolTask();
+  // Returns the result of this task, or a promise that will be resolved with
+  // the result when it completes.
   ScriptValue GetResult(ScriptState*) LOCKS_EXCLUDED(mutex_);
   void Cancel() LOCKS_EXCLUDED(mutex_);
 
+  base::WeakPtr<ThreadPoolTask> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
+  enum class State { kPending, kStarted, kCancelPending, kCompleted, kFailed };
+
   void StartTaskOnWorkerThread() LOCKS_EXCLUDED(mutex_);
   v8::Local<v8::Value> RunTaskOnWorkerThread(v8::Isolate*);
 
@@ -41,8 +51,12 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   void MaybeStartTask() EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   void PrerequisiteFinished(size_t prerequisite_index,
                             v8::Local<v8::Value>,
-                            scoped_refptr<SerializedScriptValue>)
-      LOCKS_EXCLUDED(mutex_);
+                            scoped_refptr<SerializedScriptValue>,
+                            State) LOCKS_EXCLUDED(mutex_);
+  bool HasFinished() const EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
+    return state_ == State::kCompleted || state_ == State::kFailed;
+  }
+  void AdvanceState(State new_state) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   // Called on main thread
   static ThreadPoolThread* SelectThread(
@@ -52,20 +66,11 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   void RegisterDependencies(const Vector<ThreadPoolTask*>& prerequisites,
                             const Vector<size_t>& prerequisite_indices)
       LOCKS_EXCLUDED(mutex_);
-  scoped_refptr<SerializedScriptValue> RegisterDependencyIfNotComplete(
-      ThreadPoolTask* dependent,
-      size_t index) LOCKS_EXCLUDED(mutex_);
   void TaskCompleted();
-
-  enum class State {
-    kPending,
-    kStarted,
-    kCancelled,
-    kCompleted,
-  };
 
   // worker_thread_ is selected in the constructor and not changed thereafter.
   ThreadPoolThread* worker_thread_ = nullptr;
+  const TaskType task_type_;
 
   // Main thread only
   scoped_refptr<ThreadPoolTask> self_keep_alive_;
@@ -112,6 +117,8 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   HashSet<std::unique_ptr<Dependent>> dependents_ GUARDED_BY(mutex_);
 
   Mutex mutex_;
+
+  base::WeakPtrFactory<ThreadPoolTask> weak_factory_;
 };
 
 // This is a thin, v8-exposed wrapper around ThreadPoolTask that allows

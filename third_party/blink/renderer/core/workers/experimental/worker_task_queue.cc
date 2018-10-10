@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/experimental/worker_task_queue.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/workers/experimental/task.h"
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool.h"
@@ -27,7 +28,6 @@ WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
         "WorkerTaskQueue can only be constructed from a document.");
     return nullptr;
   }
-
   DCHECK(type == "user-interaction" || type == "background");
   TaskType task_type = type == "user-interaction" ? TaskType::kUserInteraction
                                                   : TaskType::kIdleTask;
@@ -44,33 +44,18 @@ ScriptPromise WorkerTaskQueue::postFunction(
     const Vector<ScriptValue>& arguments) {
   DCHECK(document_->IsContextThread());
   DCHECK(task.IsFunction());
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  scoped_refptr<SerializedScriptValue> serialized_task =
-      SerializedScriptValue::SerializeAndSwallowExceptions(
-          script_state->GetIsolate(),
-          task.V8Value()->ToString(script_state->GetIsolate()));
-  if (!serialized_task) {
-    resolver->Reject();
-    return resolver->Promise();
-  }
 
-  Vector<scoped_refptr<SerializedScriptValue>> serialized_arguments;
-  serialized_arguments.ReserveInitialCapacity(arguments.size());
-  for (auto& argument : arguments) {
-    scoped_refptr<SerializedScriptValue> serialized_argument =
-        SerializedScriptValue::SerializeAndSwallowExceptions(
-            script_state->GetIsolate(), argument.V8Value());
-    if (!serialized_argument) {
-      resolver->Reject();
-      return resolver->Promise();
-    }
-    serialized_arguments.push_back(serialized_argument);
+  ThreadPoolTask* thread_pool_task = new ThreadPoolTask(
+      ThreadPool::From(*document_), script_state->GetIsolate(), task, arguments,
+      task_type_);
+  if (signal) {
+    signal->AddAlgorithm(
+        WTF::Bind(&ThreadPoolTask::Cancel, thread_pool_task->GetWeakPtr()));
   }
+  ScriptValue value = thread_pool_task->GetResult(script_state);
+  DCHECK(value.V8Value()->IsPromise());
 
-  ThreadPool::From(*document_)
-      ->PostTask(std::move(serialized_task), resolver, signal,
-                 std::move(serialized_arguments), task_type_);
-  return resolver->Promise();
+  return ScriptPromise(script_state, value.V8Value());
 }
 
 Task* WorkerTaskQueue::postTask(ScriptState* script_state,
@@ -79,9 +64,9 @@ Task* WorkerTaskQueue::postTask(ScriptState* script_state,
   DCHECK(document_->IsContextThread());
   DCHECK(function.IsFunction());
 
-  ThreadPoolTask* thread_pool_task =
-      new ThreadPoolTask(ThreadPool::From(*document_),
-                         script_state->GetIsolate(), function, arguments);
+  ThreadPoolTask* thread_pool_task = new ThreadPoolTask(
+      ThreadPool::From(*document_), script_state->GetIsolate(), function,
+      arguments, task_type_);
   return new Task(thread_pool_task);
 }
 

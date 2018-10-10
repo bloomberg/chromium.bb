@@ -18,9 +18,15 @@ namespace blink {
 ThreadPoolTask::ThreadPoolTask(ThreadPool* thread_pool,
                                v8::Isolate* isolate,
                                const ScriptValue& function,
-                               const Vector<ScriptValue>& arguments)
-    : self_keep_alive_(base::AdoptRef(this)), arguments_(arguments.size()) {
+                               const Vector<ScriptValue>& arguments,
+                               TaskType task_type)
+    : task_type_(task_type),
+      self_keep_alive_(base::AdoptRef(this)),
+      arguments_(arguments.size()),
+      weak_factory_(this) {
   DCHECK(IsMainThread());
+  DCHECK(task_type_ == TaskType::kUserInteraction ||
+         task_type_ == TaskType::kIdleTask);
 
   // TODO(japhet): Handle serialization failures
   function_ = SerializedScriptValue::SerializeAndSwallowExceptions(
@@ -52,9 +58,10 @@ ThreadPoolTask::ThreadPoolTask(ThreadPool* thread_pool,
     return;
   }
 
-  // Other ThreadPoolTask instances don't have a reference to |this| yet, so
-  // no need to lock mutex_. RegisterDependencies() populates those references,
-  // so any logic after this point must consider the potential for data races.
+  // Prior to this point, other ThreadPoolTask instances don't have a reference
+  // to |this| yet, so no need to lock mutex_. RegisterDependencies() populates
+  // those references, so RegisterDependencies() and any logic thereafter must
+  // consider the potential for data races.
   RegisterDependencies(prerequisites, prerequisites_indices);
 }
 
@@ -87,7 +94,7 @@ ThreadPoolThread* ThreadPoolTask::SelectThread(
 ThreadPoolThread* ThreadPoolTask::GetScheduledThread() {
   DCHECK(IsMainThread());
   MutexLocker lock(mutex_);
-  return state_ == State::kCompleted ? nullptr : worker_thread_;
+  return HasFinished() ? nullptr : worker_thread_;
 }
 
 // Should only be called from constructor. Split out in to a helper because
@@ -104,28 +111,34 @@ void ThreadPoolTask::RegisterDependencies(
   for (size_t i = 0; i < prerequisites.size(); i++) {
     ThreadPoolTask* prerequisite = prerequisites[i];
     size_t prerequisite_index = prerequisites_indices[i];
-    scoped_refptr<SerializedScriptValue> result =
-        prerequisite->RegisterDependencyIfNotComplete(this, prerequisite_index);
-    if (result)
-      PrerequisiteFinished(prerequisite_index, v8::Local<v8::Value>(), result);
-  }
-}
+    scoped_refptr<SerializedScriptValue> result;
+    State prerequisite_state = State::kPending;
 
-scoped_refptr<SerializedScriptValue>
-ThreadPoolTask::RegisterDependencyIfNotComplete(ThreadPoolTask* dependent,
-                                                size_t index) {
-  DCHECK(IsMainThread());
-  MutexLocker lock(mutex_);
-  if (state_ == State::kCompleted)
-    return serialized_result_;
-  dependents_.insert(std::make_unique<Dependent>(dependent, index));
-  return nullptr;
+    {
+      MutexLocker lock(prerequisite->mutex_);
+      prerequisite_state = prerequisite->state_;
+      if (prerequisite->HasFinished()) {
+        result = prerequisite->serialized_result_;
+      } else {
+        prerequisite->dependents_.insert(
+            std::make_unique<Dependent>(this, prerequisite_index));
+      }
+    }
+
+    // TODO(japhet): if a prerequisite failed, this task will be cancelled.
+    // Should that throw an exception?
+    if (prerequisite_state == State::kCompleted ||
+        prerequisite_state == State::kFailed) {
+      PrerequisiteFinished(prerequisite_index, v8::Local<v8::Value>(), result,
+                           prerequisite_state);
+    }
+  }
 }
 
 ThreadPoolTask::~ThreadPoolTask() {
   DCHECK(IsMainThread());
   DCHECK(!resolver_);
-  DCHECK_EQ(State::kCompleted, state_);
+  DCHECK(HasFinished());
   DCHECK(!function_);
   DCHECK(arguments_.IsEmpty());
   DCHECK(!prerequisites_remaining_);
@@ -135,14 +148,19 @@ ThreadPoolTask::~ThreadPoolTask() {
 void ThreadPoolTask::PrerequisiteFinished(
     size_t prerequisite_index,
     v8::Local<v8::Value> v8_result,
-    scoped_refptr<SerializedScriptValue> result) {
+    scoped_refptr<SerializedScriptValue> result,
+    State prerequisite_state) {
   MutexLocker lock(mutex_);
-  DCHECK(state_ == State::kPending || state_ == State::kCancelled);
+  DCHECK(state_ == State::kPending || state_ == State::kCancelPending);
+  DCHECK(prerequisite_state == State::kCompleted ||
+         prerequisite_state == State::kFailed);
   DCHECK_GT(prerequisites_remaining_, 0u);
   prerequisites_remaining_--;
   // If the result of the prerequisite doesn't need to move between threads,
   // save the deserialized v8::Value for later use.
-  if (worker_thread_->IsCurrentThread() && !v8_result.IsEmpty()) {
+  if (prerequisite_state == State::kFailed) {
+    AdvanceState(State::kCancelPending);
+  } else if (worker_thread_->IsCurrentThread() && !v8_result.IsEmpty()) {
     arguments_[prerequisite_index].v8_value =
         std::make_unique<ScopedPersistent<v8::Value>>(
             ToIsolate(worker_thread_->GlobalScope()), v8_result);
@@ -155,9 +173,8 @@ void ThreadPoolTask::PrerequisiteFinished(
 void ThreadPoolTask::MaybeStartTask() {
   if (prerequisites_remaining_)
     return;
-  DCHECK(state_ == State::kPending || state_ == State::kCancelled);
-  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalWorker),
-                      FROM_HERE,
+  DCHECK(state_ == State::kPending || state_ == State::kCancelPending);
+  PostCrossThreadTask(*worker_thread_->GetTaskRunner(task_type_), FROM_HERE,
                       CrossThreadBind(&ThreadPoolTask::StartTaskOnWorkerThread,
                                       CrossThreadUnretained(this)));
 }
@@ -171,13 +188,14 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
     DCHECK(!prerequisites_remaining_);
     switch (state_) {
       case State::kPending:
-        state_ = State::kStarted;
+        AdvanceState(State::kStarted);
         break;
-      case State::kCancelled:
+      case State::kCancelPending:
         was_cancelled = true;
         break;
       case State::kStarted:
       case State::kCompleted:
+      case State::kFailed:
         NOTREACHED();
         break;
     }
@@ -187,15 +205,22 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
   v8::Isolate* isolate = ToIsolate(global_scope);
   ScriptState::Scope scope(global_scope->ScriptController()->GetScriptState());
 
-  scoped_refptr<SerializedScriptValue> local_result;
+  v8::TryCatch block(isolate);
   v8::Local<v8::Value> return_value;
   if (was_cancelled) {
-    local_result = SerializedScriptValue::Create();
+    return_value = V8String(isolate, "Task aborted");
   } else {
     return_value = RunTaskOnWorkerThread(isolate);
-    local_result = SerializedScriptValue::SerializeAndSwallowExceptions(
-        isolate, return_value);
+    DCHECK_EQ(return_value.IsEmpty(), block.HasCaught());
+    if (block.HasCaught())
+      return_value = block.Exception()->ToString(isolate);
   }
+
+  scoped_refptr<SerializedScriptValue> local_result =
+      SerializedScriptValue::SerializeAndSwallowExceptions(isolate,
+                                                           return_value);
+  State local_state =
+      block.HasCaught() || was_cancelled ? State::kFailed : State::kCompleted;
 
   function_ = nullptr;
   arguments_.clear();
@@ -204,13 +229,13 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
   {
     MutexLocker lock(mutex_);
     serialized_result_ = local_result;
-    state_ = State::kCompleted;
+    AdvanceState(local_state);
     dependents_to_notify.swap(dependents_);
   }
 
   for (auto& dependent : dependents_to_notify) {
     dependent->task->PrerequisiteFinished(dependent->index, return_value,
-                                          local_result);
+                                          local_result, local_state);
   }
 
   PostCrossThreadTask(
@@ -219,7 +244,7 @@ void ThreadPoolTask::StartTaskOnWorkerThread() {
       FROM_HERE,
       CrossThreadBind(&ThreadPoolTask::TaskCompleted,
                       CrossThreadUnretained(this)));
-  // TaskCompleted maye delete |this| at any time after this point.
+  // TaskCompleted may delete |this| at any time after this point.
 }
 
 v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
@@ -245,34 +270,35 @@ v8::Local<v8::Value> ThreadPoolTask::RunTaskOnWorkerThread(
       params[i] = arguments_[i].v8_value->NewLocal(isolate);
   }
 
-  v8::TryCatch block(isolate);
   v8::MaybeLocal<v8::Value> ret = script_function->Call(
       context, script_function, params.size(), params.data());
-  DCHECK_EQ(ret.IsEmpty(), block.HasCaught());
 
   v8::Local<v8::Value> return_value;
   if (!ret.IsEmpty()) {
     return_value = ret.ToLocalChecked();
     if (return_value->IsPromise())
       return_value = return_value.As<v8::Promise>()->Result();
-  } else {
-    return_value = block.Exception()->ToString(isolate);
   }
   return return_value;
 }
 
 void ThreadPoolTask::TaskCompleted() {
   DCHECK(IsMainThread());
-#if DCHECK_IS_ON
+  bool rejected = false;
   {
     MutexLocker lock(mutex_);
-    DCHECK_EQ(State::kCompleted, state_);
+    DCHECK(HasFinished());
+    rejected = state_ == State::kFailed;
   }
-#endif
   if (resolver_ && resolver_->GetScriptState()->ContextIsValid()) {
-    resolver_->Resolve(GetResult(resolver_->GetScriptState()));
-    resolver_ = nullptr;
+    ScriptState::Scope scope(resolver_->GetScriptState());
+    ScriptValue value = GetResult(resolver_->GetScriptState());
+    if (rejected)
+      resolver_->Reject(v8::Exception::Error(value.V8Value().As<v8::String>()));
+    else
+      resolver_->Resolve(value);
   }
+  resolver_ = nullptr;
   worker_thread_->DecrementTasksInProgressCount();
   self_keep_alive_.reset();
   // |this| may be deleted here.
@@ -281,7 +307,7 @@ void ThreadPoolTask::TaskCompleted() {
 ScriptValue ThreadPoolTask::GetResult(ScriptState* script_state) {
   DCHECK(IsMainThread());
   MutexLocker lock(mutex_);
-  if (state_ != State::kCompleted) {
+  if (!HasFinished()) {
     DCHECK(!serialized_result_);
     DCHECK(deserialized_result_.IsEmpty());
     if (!resolver_)
@@ -301,7 +327,26 @@ void ThreadPoolTask::Cancel() {
   DCHECK(IsMainThread());
   MutexLocker lock(mutex_);
   if (state_ == State::kPending)
-    state_ = State::kCancelled;
+    AdvanceState(State::kCancelPending);
+}
+
+void ThreadPoolTask::AdvanceState(State new_state) {
+  switch (new_state) {
+    case State::kPending:
+      NOTREACHED() << "kPending should only be set via initialiation";
+      break;
+    case State::kCancelPending:
+    case State::kStarted:
+      DCHECK_EQ(State::kPending, state_);
+      break;
+    case State::kCompleted:
+      DCHECK_EQ(State::kStarted, state_);
+      break;
+    case State::kFailed:
+      DCHECK(state_ == State::kStarted || state_ == State::kCancelPending);
+      break;
+  }
+  state_ = new_state;
 }
 
 }  // namespace blink
