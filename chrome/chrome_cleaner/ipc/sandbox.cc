@@ -7,7 +7,9 @@
 #include <windows.h>
 
 #include <iterator>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -391,6 +393,25 @@ ResultCode RunSandboxTarget(const base::CommandLine& command_line,
   NotifyInitializationDone();
 
   return hooks->TargetDroppedPrivileges(command_line);
+}
+
+ResultCode GetResultCodeForSandboxConnectionError(SandboxType sandbox_type) {
+  ResultCode result_code = RESULT_CODE_INVALID;
+  switch (sandbox_type) {
+    case SandboxType::kEset:
+      result_code = RESULT_CODE_ESET_SANDBOX_DISCONNECTED_TOO_SOON;
+      break;
+    case SandboxType::kJsonParser:
+      result_code = RESULT_CODE_JSON_PARSER_SANDBOX_DISCONNECTED_TOO_SOON;
+      break;
+    case SandboxType::kZipArchiver:
+      result_code = RESULT_CODE_ZIP_ARCHIVER_SANDBOX_DISCONNECTED_TOO_SOON;
+      break;
+    default:
+      NOTREACHED() << "No result code for unknown sandbox type "
+                   << static_cast<int>(sandbox_type);
+  }
+  return result_code;
 }
 
 }  // namespace chrome_cleaner
