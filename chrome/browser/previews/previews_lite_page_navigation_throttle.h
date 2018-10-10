@@ -46,14 +46,32 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // remain synchronized with the enum |PreviewsServerLitePageServerResponse| in
   // metrics/histograms/enums.xml.
   enum class ServerResponse {
+    // A preview was served (HTTP 200).
     kOk = 0,
+
+    // The client was redirected to another page (HTTP 307).
     kRedirect = 1,
+
+    // The requested preview was not available (HTTP 307).
     kPreviewUnavailable = 2,
+
+    // The previews server is not available (HTTP 503).
     kServiceUnavailable = 3,
+
+    // The previews server responded with some other HTTP code.
     kOther = 4,
+
+    // There was some network error and we did not get a response from the
+    // previews server.
     kFailed = 5,
+
+    // The previews server did not respond after a timeout.
     kTimeout = 6,
-    kMaxValue = kTimeout,
+
+    // The previews server rejected our authentication (HTTP 403).
+    kAuthFailure = 7,
+
+    kMaxValue = kAuthFailure,
   };
 
   PreviewsLitePageNavigationThrottle(

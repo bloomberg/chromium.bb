@@ -40704,6 +40704,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Service Unavailable"/>
   <int value="4" label="Other"/>
   <int value="5" label="Failed"/>
+  <int value="6" label="Previews Server Timeout"/>
+  <int value="7" label="Authentication Failure"/>
 </enum>
 
 <enum name="PreviewsStalePreviewTimestamp">
