@@ -157,14 +157,9 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
     EXPECT_EQ(inputs[i].access_granted, origin->IsPotentiallyTrustworthy());
   }
 
-  // Opaque origins are not considered secure.
+  // Anonymous opaque origins are not considered secure.
   scoped_refptr<SecurityOrigin> opaque_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  EXPECT_FALSE(opaque_origin->IsPotentiallyTrustworthy());
-  // ... unless they are specially marked as such.
-  opaque_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-  EXPECT_TRUE(opaque_origin->IsPotentiallyTrustworthy());
-  opaque_origin->SetOpaqueOriginIsPotentiallyTrustworthy(false);
   EXPECT_FALSE(opaque_origin->IsPotentiallyTrustworthy());
 }
 
@@ -245,6 +240,18 @@ TEST_F(SecurityOriginTest, CanAccess) {
         SecurityOrigin::CreateFromString(tests[i].origin2);
     EXPECT_EQ(tests[i].can_access, origin1->CanAccess(origin2.get()));
     EXPECT_EQ(tests[i].can_access, origin2->CanAccess(origin1.get()));
+    EXPECT_FALSE(origin1->DeriveNewOpaqueOrigin()->CanAccess(origin1.get()));
+    EXPECT_FALSE(origin2->DeriveNewOpaqueOrigin()->CanAccess(origin1.get()));
+    EXPECT_FALSE(origin1->DeriveNewOpaqueOrigin()->CanAccess(origin2.get()));
+    EXPECT_FALSE(origin2->DeriveNewOpaqueOrigin()->CanAccess(origin2.get()));
+    EXPECT_FALSE(origin2->CanAccess(origin1->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin2->CanAccess(origin1->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin1->CanAccess(origin2->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin2->CanAccess(origin2->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin1->DeriveNewOpaqueOrigin()->CanAccess(
+        origin1->DeriveNewOpaqueOrigin().get()));
+    EXPECT_FALSE(origin2->DeriveNewOpaqueOrigin()->CanAccess(
+        origin2->DeriveNewOpaqueOrigin().get()));
   }
 }
 
@@ -582,10 +589,10 @@ TEST_F(SecurityOriginTest, UrlOriginConversions) {
 
     EXPECT_EQ(test_case.opaque, origin_roundtrip_via_kurl.opaque());
     EXPECT_EQ(test_case.opaque, origin_roundtrip_via_gurl.opaque());
+    EXPECT_EQ(origin_roundtrip_via_gurl, origin_via_gurl);
     if (!test_case.opaque) {
       EXPECT_EQ(origin_via_gurl, origin_roundtrip_via_kurl);
       EXPECT_EQ(origin_roundtrip_via_kurl, origin_roundtrip_via_gurl);
-      EXPECT_EQ(origin_roundtrip_via_gurl, origin_via_gurl);
     }
   }
 }

@@ -24,6 +24,10 @@
 
 class GURL;
 
+namespace blink {
+class SecurityOrigin;
+}  // namespace blink
+
 namespace ipc_fuzzer {
 template <class T>
 struct FuzzTraits;
@@ -32,6 +36,7 @@ struct FuzzTraits;
 namespace mojo {
 template <typename DataViewType, typename T>
 struct StructTraits;
+struct UrlOriginAdapter;
 }  // namespace mojo
 
 namespace url {
@@ -253,10 +258,12 @@ class URL_EXPORT Origin {
   Origin DeriveNewOpaqueOrigin() const;
 
  private:
+  friend class blink::SecurityOrigin;
   friend class OriginTest;
-  friend IPC::ParamTraits<url::Origin>;
+  friend struct mojo::UrlOriginAdapter;
   friend struct ipc_fuzzer::FuzzTraits<Origin>;
   friend struct mojo::StructTraits<url::mojom::OriginDataView, url::Origin>;
+  friend IPC::ParamTraits<url::Origin>;
   friend URL_EXPORT std::ostream& operator<<(std::ostream& out,
                                              const Origin& origin);
 
