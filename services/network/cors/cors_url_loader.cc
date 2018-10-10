@@ -349,13 +349,16 @@ void CORSURLLoader::StartRequest() {
   // `HEAD`, or |httpRequest|’s mode is "websocket", then append
   // `Origin`/the result of serializing a request origin with |httpRequest|, to
   // |httpRequest|’s header list.
-  if (fetch_cors_flag_ ||
-      (request_.method != "GET" && request_.method != "HEAD")) {
-    if (request_.request_initiator) {
-      request_.headers.SetHeader(
-          net::HttpRequestHeaders::kOrigin,
-          (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
-    }
+  //
+  // We exclude navigation requests to keep the existing behavior.
+  // TODO(yhirano): Reconsider this.
+  if (request_.fetch_request_mode != mojom::FetchRequestMode::kNavigate &&
+      request_.request_initiator &&
+      (fetch_cors_flag_ ||
+       (request_.method != "GET" && request_.method != "HEAD"))) {
+    request_.headers.SetHeader(
+        net::HttpRequestHeaders::kOrigin,
+        (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
   }
 
   if (fetch_cors_flag_ &&
