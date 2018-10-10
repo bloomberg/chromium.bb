@@ -487,6 +487,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   SingleTypeMockServer* server() { return mock_server_.get(); }
   NonBlockingTypeDebugInfoEmitter* emitter() { return emitter_.get(); }
   MockNudgeHandler* nudge_handler() { return &mock_nudge_handler_; }
+  StatusController* status_controller() { return &status_controller_; }
 
  private:
   // An encryptor for our cryptographer.
@@ -753,6 +754,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_NoDuplicateHash) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/false, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/false, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
+      "PREFERENCE",
+      /*sample=*/false, /*count=*/1);
 
   // Make sure all the updates arrived, in order.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -781,6 +789,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashWithinPartialUpdate) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
+      "PREFERENCE",
+      /*sample=*/false, /*count=*/1);
 
   // Make sure the duplicate entry got de-duped, and the last one won.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -810,6 +825,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
+      "PREFERENCE",
+      /*sample=*/false, /*count=*/1);
 
   // Make sure the duplicate entry got de-duped, and the last one won.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -819,33 +841,52 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
   EXPECT_EQ(kValue2, result[0].entity->specifics.preference().value());
 }
 
-TEST_F(ModelTypeWorkerTest, ReceiveUpdates_EmptyHashNotConsideredDuplicate) {
+TEST_F(ModelTypeWorkerTest,
+       ReceiveUpdates_EmptyHashNotConsideredDuplicateIfForDistinctServerIds) {
   NormalInitialize();
-
   base::HistogramTester histograms;
+  // First create two entities with different tags, so they get assigned
+  // different server ids.
+  SyncEntity entity1 = server()->UpdateFromServer(
+      /*version_offset=*/10, GenerateTagHash(kTag1),
+      GenerateSpecifics("key1", "value1"));
+  SyncEntity entity2 = server()->UpdateFromServer(
+      /*version_offset=*/10, GenerateTagHash(kTag2),
+      GenerateSpecifics("key2", "value2"));
 
-  // Some model types (e.g. AUTOFILL_WALLET_DATA) don't have client tag hashes.
-  TriggerPartialUpdateFromServer(10, "", kValue1, "", kValue2);
-  TriggerPartialUpdateFromServer(10, "", kValue3);
+  // Modify both entities to have empty tags.
+  entity1.set_client_defined_unique_tag("");
+  entity2.set_client_defined_unique_tag("");
 
-  // The missing (empty) tags should not be considered duplicates.
+  worker()->ProcessGetUpdatesResponse(
+      server()->GetProgress(), server()->GetContext(), {&entity1, &entity2},
+      status_controller());
+
+  // No duplicates in either of the partial updates.
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
-      /*sample=*/false, /*count=*/2);
+      /*sample=*/false, /*count=*/1);
 
   ApplyUpdates();
 
+  // No duplicate server ids, but duplicate client tag hashes.
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/false, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/false, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
+      "PREFERENCE",
       /*sample=*/false, /*count=*/1);
 
   // Make sure the empty client tag hashes did *not* get de-duped.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
   UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
-  ASSERT_EQ(3u, result.size());
-  EXPECT_EQ(kValue1, result[0].entity->specifics.preference().value());
-  EXPECT_EQ(kValue2, result[1].entity->specifics.preference().value());
-  EXPECT_EQ(kValue3, result[2].entity->specifics.preference().value());
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(entity1.id_string(), result[0].entity->id);
+  EXPECT_EQ(entity2.id_string(), result[1].entity->id);
 }
 
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_MultipleDuplicateHashes) {
@@ -872,6 +913,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_MultipleDuplicateHashes) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
+      "PREFERENCE",
+      /*sample=*/false, /*count=*/1);
 
   // Make sure the duplicate entries got de-duped, and the last one won.
   ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
@@ -883,6 +931,56 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_MultipleDuplicateHashes) {
   EXPECT_EQ(kValue1, result[0].entity->specifics.preference().value());
   EXPECT_EQ(kValue2, result[1].entity->specifics.preference().value());
   EXPECT_EQ(kValue3, result[2].entity->specifics.preference().value());
+}
+
+TEST_F(ModelTypeWorkerTest,
+       ReceiveUpdates_DuplicateClientTagHashesForDistinctServerIds) {
+  // This is testing that in a a scenario where two updates are having the same
+  // client tag hashes and different server ids, the proper UMA metrics are
+  // emitted. This scenario is considered a bug on the server.
+  NormalInitialize();
+
+  base::HistogramTester histograms;
+
+  // First create two entities with different tags, so they get assigned
+  // different server ids.
+  SyncEntity entity1 = server()->UpdateFromServer(
+      /*version_offset=*/10, GenerateTagHash(kTag1),
+      GenerateSpecifics("key1", "value1"));
+  SyncEntity entity2 = server()->UpdateFromServer(
+      /*version_offset=*/10, GenerateTagHash(kTag2),
+      GenerateSpecifics("key2", "value2"));
+  // Mimic a bug on the server by modifying the second entity to have the same
+  // tag as the first one.
+  entity2.set_client_defined_unique_tag(GenerateTagHash(kTag1));
+  worker()->ProcessGetUpdatesResponse(
+      server()->GetProgress(), server()->GetContext(), {&entity1, &entity2},
+      status_controller());
+
+  // No duplicates in either of the partial updates.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+
+  ApplyUpdates();
+
+  // No duplicate server ids, but duplicate client tag hashes.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateServerIdInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/false, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates."
+      "PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+
+  // Make sure the first update has been discarded.
+  ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(entity2.id_string(), result[0].entity->id);
 }
 
 // Test that an update download coming in multiple parts gets accumulated into
