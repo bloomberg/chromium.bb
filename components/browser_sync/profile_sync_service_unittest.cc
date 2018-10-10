@@ -59,6 +59,7 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
   }
 
   void ReenableType(syncer::ModelType type) override {}
+  void ReadyForStartChanged(syncer::ModelType type) override {}
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(syncer::ModelTypeSet undesired_types) override {}
   void Stop(syncer::ShutdownReason reason) override {}

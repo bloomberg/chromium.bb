@@ -155,6 +155,8 @@ UserShare* FakeSyncService::GetUserShare() const {
 
 void FakeSyncService::ReenableDatatype(ModelType type) {}
 
+void FakeSyncService::ReadyForStartChanged(ModelType type) {}
+
 syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
   return syncer::SyncTokenStatus();
 }

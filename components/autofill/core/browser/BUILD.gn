@@ -80,6 +80,8 @@ jumbo_static_library("browser") {
     "autofill_type.h",
     "autofill_wallet_data_type_controller.cc",
     "autofill_wallet_data_type_controller.h",
+    "autofill_wallet_model_type_controller.cc",
+    "autofill_wallet_model_type_controller.h",
     "card_unmask_delegate.cc",
     "card_unmask_delegate.h",
     "contact_info.cc",

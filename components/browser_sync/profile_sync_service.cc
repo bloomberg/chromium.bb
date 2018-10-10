@@ -901,6 +901,13 @@ void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
   data_type_manager_->ReenableType(type);
 }
 
+void ProfileSyncService::ReadyForStartChanged(syncer::ModelType type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!engine_initialized_ || !data_type_manager_)
+    return;
+  data_type_manager_->ReadyForStartChanged(type);
+}
+
 void ProfileSyncService::UpdateEngineInitUMA(bool success) const {
   if (is_first_time_sync_configure_) {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);

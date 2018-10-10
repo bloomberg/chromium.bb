@@ -101,6 +101,11 @@ class ModelAssociationManager {
   // When this is completed, |OnModelAssociationDone| will be invoked.
   void StartAssociationAsync(const ModelTypeSet& types_to_associate);
 
+  // Stops an individual datatype |type| for |shutdown_reason|.
+  void StopDatatype(ModelType type,
+                    ShutdownReason shutdown_reason,
+                    SyncError error);
+
   // This is used for TESTING PURPOSE ONLY. The test case can inspect
   // and modify the timer.
   // TODO(sync) : This would go away if we made this class be able to do
@@ -135,10 +140,10 @@ class ModelAssociationManager {
   void ModelAssociationDone(State new_state);
 
   // A helper to stop an individual datatype.
-  void StopDatatype(const SyncError& error,
-                    ShutdownReason shutdown_reason,
-                    DataTypeController* dtc,
-                    DataTypeController::StopCallback callback);
+  void StopDatatypeImpl(const SyncError& error,
+                        ShutdownReason shutdown_reason,
+                        DataTypeController* dtc,
+                        DataTypeController::StopCallback callback);
 
   // Calls delegate's OnAllDataTypesReadyForConfigure when all datatypes from
   // desired_types_ are ready for configure. Ensures that for every call to

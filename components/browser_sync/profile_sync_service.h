@@ -263,6 +263,7 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
   void ReenableDatatype(syncer::ModelType type) override;
+  void ReadyForStartChanged(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
