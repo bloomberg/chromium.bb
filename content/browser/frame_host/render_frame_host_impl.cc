@@ -4717,6 +4717,13 @@ void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
   }
 }
 
+void RenderFrameHostImpl::BindDevToolsAgent(
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
+    blink::mojom::DevToolsAgentAssociatedRequest request) {
+  GetNavigationControl()->BindDevToolsAgent(std::move(host),
+                                            std::move(request));
+}
+
 bool RenderFrameHostImpl::IsSameSiteInstance(
     RenderFrameHostImpl* other_render_frame_host) {
   // As a sanity check, make sure the frame belongs to the same BrowserContext.

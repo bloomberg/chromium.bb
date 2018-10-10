@@ -345,14 +345,15 @@ void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
 void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(web_local_frame_impl_->GetFrame());
   DCHECK(inspected_frames_->Root()->View());
-  agent_->WillBeDestroyed();
+  agent_->Dispose();
   resource_content_loader_->Dispose();
   worker_client_ = nullptr;
 }
 
 void WebDevToolsAgentImpl::BindRequest(
+    mojom::blink::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
     mojom::blink::DevToolsAgentAssociatedRequest request) {
-  agent_->BindRequest(std::move(request));
+  agent_->BindRequest(std::move(host_ptr_info), std::move(request));
 }
 
 void WebDevToolsAgentImpl::DetachSession(InspectorSession* session) {

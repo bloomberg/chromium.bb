@@ -921,12 +921,17 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
 
 void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
   blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
-  if (frame_host_ && render_frame_alive_ && force)
-    frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr);
+  blink::mojom::DevToolsAgentHostAssociatedRequest host_request;
+  if (frame_host_ && render_frame_alive_ && force) {
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info;
+    host_request = mojo::MakeRequest(&host_ptr_info);
+    frame_host_->BindDevToolsAgent(std::move(host_ptr_info),
+                                   mojo::MakeRequest(&agent_ptr));
+  }
   int process_id = frame_host_ ? frame_host_->GetProcess()->GetID()
                                : ChildProcessHost::kInvalidUniqueID;
-  GetRendererChannel()->SetRenderer(std::move(agent_ptr), process_id,
-                                    frame_host_);
+  GetRendererChannel()->SetRenderer(
+      std::move(agent_ptr), std::move(host_request), process_id, frame_host_);
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {

@@ -77,6 +77,7 @@
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/web/commit_result.mojom.h"
+#include "third_party/blink/public/web/devtools_agent.mojom.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/accessibility/ax_mode.h"
@@ -717,6 +718,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Cancels any blocked request for the frame and its subframes.
   void CancelBlockedRequestsForFrame();
+
+  // Binds a DevToolsAgent interface for debugging.
+  void BindDevToolsAgent(blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
+                         blink::mojom::DevToolsAgentAssociatedRequest request);
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();

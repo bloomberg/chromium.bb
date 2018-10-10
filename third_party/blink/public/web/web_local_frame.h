@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -506,6 +507,12 @@ class WebLocalFrame : public WebFrame {
   virtual bool Confirm(const WebString& message) = 0;
   virtual WebString Prompt(const WebString& message,
                            const WebString& default_value) = 0;
+
+  // Debugging -----------------------------------------------------------
+
+  virtual void BindDevToolsAgent(
+      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
+      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
 
   // Editing -------------------------------------------------------------
 

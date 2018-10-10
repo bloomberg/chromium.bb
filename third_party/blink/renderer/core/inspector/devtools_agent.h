@@ -39,9 +39,10 @@ class CORE_EXPORT DevToolsAgent
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~DevToolsAgent() override;
 
-  void WillBeDestroyed();
+  void Dispose();
   void FlushProtocolNotifications();
-  void BindRequest(mojom::blink::DevToolsAgentAssociatedRequest);
+  void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,
+                   mojom::blink::DevToolsAgentAssociatedRequest);
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -55,8 +56,11 @@ class CORE_EXPORT DevToolsAgent
       mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
   void InspectElement(const WebPoint& point) override;
 
+  void CleanupConnection();
+
   Client* client_;
   mojo::AssociatedBinding<mojom::blink::DevToolsAgent> binding_;
+  mojom::blink::DevToolsAgentHostAssociatedPtr host_ptr_;
   HeapHashSet<Member<Session>> sessions_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
