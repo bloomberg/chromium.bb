@@ -3144,6 +3144,10 @@ jumbo_split_static_library("browser") {
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
       "task_manager/providers/arc/arc_process_task_provider.h",
+      "task_manager/providers/crostini/crostini_process_task.cc",
+      "task_manager/providers/crostini/crostini_process_task.h",
+      "task_manager/providers/crostini/crostini_process_task_provider.cc",
+      "task_manager/providers/crostini/crostini_process_task_provider.h",
       "upgrade_detector/upgrade_detector_chromeos.cc",
       "upgrade_detector/upgrade_detector_chromeos.h",
     ]
