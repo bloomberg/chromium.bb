@@ -76,10 +76,21 @@ source_set("api") {
     ]
   }
 
-  visibility = [
-    "//chrome/browser",
+  if (use_lld) {
+    visibility = [
+      "//chrome/browser",
+      "//chrome/browser/ui",
+    ]
+  } else {
+    # //chrome/browser:browser and //chrome/browser/ui:* will be split into
+    # multiple libraries when not linking with lld.
+    visibility = [
+      "//chrome/browser:*",
+      "//chrome/browser/ui:*",
+    ]
+  }
+  visibility += [
     "//chrome/browser/chromeos",
-    "//chrome/browser/ui",
     ":api_registration",
   ]
 }
