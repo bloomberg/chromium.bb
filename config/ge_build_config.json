@@ -1166,18 +1166,6 @@
       ]
     },
     {
-      "name": "rammus",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "reks",
       "configs": [
         {
@@ -2281,6 +2269,21 @@
         {
           "board_name": "octopus",
           "name": "yorp",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "rammus",
+      "reference_board_name": "rammus",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "rammus",
+          "name": "shyvana",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
