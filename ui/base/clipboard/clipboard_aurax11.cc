@@ -379,9 +379,8 @@ SelectionData ClipboardAuraX11::AuraX11Details::RequestAndWaitForTypes(
     // with the X server.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
 
-    for (std::vector< ::Atom>::const_iterator it = types.begin();
-         it != types.end(); ++it) {
-      SelectionFormatMap::const_iterator format_map_it = format_map.find(*it);
+    for (auto it = types.begin(); it != types.end(); ++it) {
+      auto format_map_it = format_map.find(*it);
       if (format_map_it != format_map.end())
         return SelectionData(format_map_it->first, format_map_it->second);
     }
@@ -406,8 +405,7 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
     // We can local fastpath and return the list of local targets.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
 
-    for (SelectionFormatMap::const_iterator it = format_map.begin();
-         it != format_map.end(); ++it) {
+    for (auto it = format_map.begin(); it != format_map.end(); ++it) {
       out.push_back(it->first);
     }
   } else {
@@ -814,14 +812,13 @@ void ClipboardAuraX11::WriteObjects(ClipboardType type,
   DCHECK(IsSupportedClipboardType(type));
 
   aurax11_details_->CreateNewClipboardData();
-  for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end();
-       ++iter) {
+  for (auto iter = objects.begin(); iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
   aurax11_details_->TakeOwnershipOfSelection(type);
 
   if (type == CLIPBOARD_TYPE_COPY_PASTE) {
-    ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
+    auto text_iter = objects.find(CBF_TEXT);
     if (text_iter != objects.end()) {
       aurax11_details_->CreateNewClipboardData();
       const ObjectMapParams& params_vector = text_iter->second;

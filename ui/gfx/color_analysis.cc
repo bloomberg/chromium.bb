@@ -541,7 +541,7 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
     clusters.resize(kNumberOfClusters, KMeanCluster());
 
     // Pick a starting point for each cluster
-    std::vector<KMeanCluster>::iterator cluster = clusters.begin();
+    auto cluster = clusters.begin();
     while (cluster != clusters.end()) {
       // Try up to 10 times to find a unique color. If no unique color can be
       // found, destroy this cluster.
@@ -562,9 +562,8 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
         // Loop through the previous clusters and check to see if we have seen
         // this color before.
         color_unique = true;
-        for (std::vector<KMeanCluster>::iterator
-            cluster_check = clusters.begin();
-            cluster_check != cluster; ++cluster_check) {
+        for (auto cluster_check = clusters.begin(); cluster_check != cluster;
+             ++cluster_check) {
           if (cluster_check->IsAtCentroid(r, g, b)) {
             color_unique = false;
             break;
@@ -612,11 +611,11 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
           continue;
 
         uint32_t distance_sqr_to_closest_cluster = UINT_MAX;
-        std::vector<KMeanCluster>::iterator closest_cluster = clusters.begin();
+        auto closest_cluster = clusters.begin();
 
         // Figure out which cluster this color is closest to in RGB space.
-        for (std::vector<KMeanCluster>::iterator cluster = clusters.begin();
-            cluster != clusters.end(); ++cluster) {
+        for (auto cluster = clusters.begin(); cluster != clusters.end();
+             ++cluster) {
           uint32_t distance_sqr = cluster->GetDistanceSqr(r, g, b);
 
           if (distance_sqr < distance_sqr_to_closest_cluster) {
@@ -630,8 +629,8 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
 
       // Calculate the new cluster centers and see if we've converged or not.
       convergence = true;
-      for (std::vector<KMeanCluster>::iterator cluster = clusters.begin();
-          cluster != clusters.end(); ++cluster) {
+      for (auto cluster = clusters.begin(); cluster != clusters.end();
+           ++cluster) {
         convergence &= cluster->CompareCentroidWithAggregate();
 
         cluster->RecomputeCentroid();
@@ -645,8 +644,8 @@ SkColor CalculateKMeanColorOfBuffer(uint8_t* decoded_data,
 
     // Loop through the clusters to figure out which cluster has an appropriate
     // color. Skip any that are too bright/dark and go in order of weight.
-    for (std::vector<KMeanCluster>::iterator cluster = clusters.begin();
-        cluster != clusters.end(); ++cluster) {
+    for (auto cluster = clusters.begin(); cluster != clusters.end();
+         ++cluster) {
       uint8_t r, g, b;
       cluster->GetCentroid(&r, &g, &b);
 

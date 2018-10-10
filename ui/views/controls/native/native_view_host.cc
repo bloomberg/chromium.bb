@@ -229,7 +229,7 @@ void NativeViewHost::ClearFocus() {
 
   Widget::Widgets widgets;
   Widget::GetAllChildWidgets(native_view(), &widgets);
-  for (Widget::Widgets::iterator i = widgets.begin(); i != widgets.end(); ++i) {
+  for (auto i = widgets.begin(); i != widgets.end(); ++i) {
     focus_manager->ViewRemoved((*i)->GetRootView());
     if (!focus_manager->GetFocusedView())
       return;

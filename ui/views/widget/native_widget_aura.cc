@@ -1157,8 +1157,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
   }
 
   const aura::Window::Windows& child_windows = native_view->children();
-  for (aura::Window::Windows::const_iterator i = child_windows.begin();
-       i != child_windows.end(); ++i) {
+  for (auto i = child_windows.begin(); i != child_windows.end(); ++i) {
     GetAllChildWidgets((*i), children);
   }
 }
@@ -1194,8 +1193,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
   // First notify all the widgets that they are being disassociated
   // from their previous parent.
-  for (Widget::Widgets::iterator it = widgets.begin();
-      it != widgets.end(); ++it) {
+  for (auto it = widgets.begin(); it != widgets.end(); ++it) {
     (*it)->NotifyNativeViewHierarchyWillChange();
   }
 
@@ -1219,8 +1217,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   }
 
   // And now, notify them that they have a brand new parent.
-  for (Widget::Widgets::iterator it = widgets.begin();
-      it != widgets.end(); ++it) {
+  for (auto it = widgets.begin(); it != widgets.end(); ++it) {
     (*it)->NotifyNativeViewHierarchyChanged();
   }
 }

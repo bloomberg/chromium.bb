@@ -89,8 +89,7 @@ display::Display::TouchSupport GetInternalDisplayTouchSupport() {
   if (!screen)
     return display::Display::TouchSupport::UNKNOWN;
   const std::vector<display::Display>& displays = screen->GetAllDisplays();
-  for (std::vector<display::Display>::const_iterator it = displays.begin();
-       it != displays.end(); ++it) {
+  for (auto it = displays.begin(); it != displays.end(); ++it) {
     if (it->IsInternal())
       return it->touch_support();
   }

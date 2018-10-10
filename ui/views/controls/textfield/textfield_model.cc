@@ -487,7 +487,7 @@ bool TextfieldModel::CanRedo() {
   if (edit_history_.empty())
     return false;
   // There is no redo iff the current edit is the last element in the history.
-  EditHistory::iterator iter = current_edit_;
+  auto iter = current_edit_;
   return iter == edit_history_.end() || // at the top.
       ++iter != edit_history_.end();
 }
@@ -761,7 +761,7 @@ void TextfieldModel::ClearRedoHistory() {
     ClearEditHistory();
     return;
   }
-  EditHistory::iterator delete_start = current_edit_;
+  auto delete_start = current_edit_;
   ++delete_start;
   edit_history_.erase(delete_start, edit_history_.end());
 }

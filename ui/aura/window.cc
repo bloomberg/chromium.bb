@@ -890,7 +890,7 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   if (child->OwnsLayer())
     layer()->Remove(child->layer());
   child->parent_ = NULL;
-  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
+  auto i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   children_.erase(i);
   child->OnParentChanged();
@@ -1078,9 +1078,7 @@ bool Window::CleanupGestureState() {
   bool state_modified = false;
   state_modified |= env_->gesture_recognizer()->CancelActiveTouches(this);
   state_modified |= env_->gesture_recognizer()->CleanupStateForConsumer(this);
-  for (Window::Windows::iterator iter = children_.begin();
-       iter != children_.end();
-       ++iter) {
+  for (auto iter = children_.begin(); iter != children_.end(); ++iter) {
     state_modified |= (*iter)->CleanupGestureState();
   }
   return state_modified;
