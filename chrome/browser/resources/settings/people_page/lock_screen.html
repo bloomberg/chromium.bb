@@ -173,7 +173,8 @@
         </div>
       </template>
 
-      <template is="dom-if" if="[[easyUnlockAllowed_]]">
+      <template is="dom-if" if="[[easyUnlockAvailable_(
+          multideviceSettingsEnabled_, easyUnlockAllowed_)]]">
         <div id="easyUnlock" class="settings-box two-line">
           <div class="start">
             <div>$i18n{easyUnlockSectionTitle}</div>
