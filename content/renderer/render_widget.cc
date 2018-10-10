@@ -392,7 +392,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       webwidget_internal_(nullptr),
       owner_delegate_(nullptr),
       auto_resize_mode_(false),
-      did_show_(false),
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
       is_fullscreen_granted_(false),
@@ -1536,23 +1535,20 @@ void RenderWidget::AutoscrollEnd() {
 // created RenderWidget (i.e., as a blocked popup or as a new tab).
 //
 void RenderWidget::Show(WebNavigationPolicy policy) {
-  if (did_show_) {
+  if (!show_callback_) {
     if (owner_delegate_) {
       // When SupportsMultipleWindows is disabled, popups are reusing
-      // the same view. In some scenarios, this makes blink to call Show()
-      // twice. But otherwise, if it is enabled, we should not visit Show() more
-      // than once.
+      // the view's RenderWidget. In some scenarios, this makes blink to call
+      // Show() twice. But otherwise, if it is enabled, we should not visit
+      // Show() more than once.
       DCHECK(!owner_delegate_->SupportsMultipleWindowsForWidget());
+      return;
     } else {
-      DCHECK(!did_show_) << "received extraneous Show call";
+      NOTREACHED() << "received extraneous Show call";
     }
-    return;
   }
 
   DCHECK(routing_id_ != MSG_ROUTING_NONE);
-  DCHECK(show_callback_);
-
-  did_show_ = true;
 
   // The opener is responsible for actually showing this widget.
   std::move(show_callback_).Run(this, policy, initial_rect_);
@@ -1715,15 +1711,21 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
   WebRect window_rect = rect_in_screen;
   EmulatedToScreenRectIfNeeded(&window_rect);
 
-  if (!resizing_mode_selector_->is_synchronous_mode()) {
-    if (did_show_) {
-      Send(new WidgetHostMsg_RequestSetBounds(routing_id_, window_rect));
-      SetPendingWindowRect(window_rect);
-    } else {
-      initial_rect_ = window_rect;
-    }
-  } else {
+  if (resizing_mode_selector_->is_synchronous_mode()) {
+    // This is a layout-test-only path. At one point, it was planned to be
+    // removed. See https://crbug.com/309760.
     SetWindowRectSynchronously(window_rect);
+    return;
+  }
+
+  if (show_callback_) {
+    // The widget is not shown yet. Delay the |window_rect| being sent to the
+    // browser until Show() is called so it can be sent with that IPC, once the
+    // browser is ready for the info.
+    initial_rect_ = window_rect;
+  } else {
+    Send(new WidgetHostMsg_RequestSetBounds(routing_id_, window_rect));
+    SetPendingWindowRect(window_rect);
   }
 }
 
@@ -1899,8 +1901,12 @@ void RenderWidget::SetWindowRectSynchronously(
 
   widget_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
-  if (!did_show_)
+  if (show_callback_) {
+    // Tests may call here directly to control the window rect. If
+    // Show() did not happen yet, the rect is stored to be passed to the
+    // browser when the RenderWidget requests Show().
     initial_rect_ = new_window_rect;
+  }
 }
 
 void RenderWidget::UpdateCaptureSequenceNumber(

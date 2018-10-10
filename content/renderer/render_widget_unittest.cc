@@ -401,7 +401,6 @@ class PopupRenderWidget : public RenderWidget {
                      false,
                      false) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
-    did_show_ = true;
   }
 
   IPC::TestSink* sink() { return &sink_; }

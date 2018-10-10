@@ -464,11 +464,15 @@ void RenderViewImpl::Initialize(
     mojom::CreateViewParamsPtr params,
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  bool has_show_callback = !!show_callback;
 #if defined(OS_ANDROID)
   // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
   // HandleNavigation codepath.
-  was_created_by_renderer_ = has_show_callback;
+  // Renderer-created RenderViews have a ShowCallback because they send a Show
+  // request (ViewHostMsg_ShowWidget, ViewHostMsg_ShowFullscreenWidget, or
+  // FrameHostMsg_ShowCreatedWindow) to the browser to attach them to the UI
+  // there. Browser-created RenderViews do not send a Show request to the
+  // browser, so have no such callback.
+  was_created_by_renderer_ = !!show_callback;
 #endif
 
   WebFrame* opener_frame =
@@ -557,14 +561,6 @@ void RenderViewImpl::Initialize(
                                        params->replicated_frame_state,
                                        params->devtools_main_frame_token);
   }
-
-  // If this RenderView's creation was initiated by an opener page in this
-  // process, (e.g. window.open()), we won't be visible until we ask the opener,
-  // via |show_callback|, to make us visible. Otherwise, we went through a
-  // browser-initiated creation, and Show() won't be called. In this case, no
-  // |show_callback| is given to inform that Show() won't be called.
-  if (!has_show_callback)
-    RenderWidget::set_did_show();
 
   // TODO(davidben): Move this state from Blink into content.
   if (params->window_was_created_with_opener)
