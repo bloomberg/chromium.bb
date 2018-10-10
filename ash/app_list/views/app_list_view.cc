@@ -463,9 +463,7 @@ const char* AppListView::GetClassName() const {
 }
 
 bool AppListView::CanProcessEventsWithinSubtree() const {
-  // Do not let this view or any of its descendants process events if we are
-  // currently showing the launcher via swiping up on shelf.
-  if (delegate_->IsSwipingUpOnShelf())
+  if (!delegate_->CanProcessEventsOnApplistViews())
     return false;
 
   return views::View::CanProcessEventsWithinSubtree();

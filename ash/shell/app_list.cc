@@ -320,9 +320,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return false;
   }
 
-  bool IsSwipingUpOnShelf() override {
+  bool CanProcessEventsOnApplistViews() override {
     NOTIMPLEMENTED();
-    return false;
+    return true;
   }
 
   ws::WindowService* GetWindowService() override {
