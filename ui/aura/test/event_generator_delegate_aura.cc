@@ -90,18 +90,12 @@ class EventTargeterMus : public ui::EventTarget,
                                 &remote_event_injector_);
     }
     base::RunLoop run_loop;
-    std::unique_ptr<ui::Event> cloned_event;
-    // TODO: event conversion should not be necessary. https://crbug.com/865781
-    if (event->IsMouseEvent())
-      cloned_event = std::make_unique<ui::PointerEvent>(*event->AsMouseEvent());
-    else if (event->IsTouchEvent())
-      cloned_event = std::make_unique<ui::PointerEvent>(*event->AsTouchEvent());
-    else
-      DCHECK(!event->IsGestureEvent());
-    ui::Event* event_to_send = cloned_event ? cloned_event.get() : event;
+    // GestureEvent should never be remotely injected (they are generated from
+    // TouchEvents).
+    DCHECK(!event->IsGestureEvent());
     remote_event_injector_->InjectEvent(
         display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-        ui::Event::Clone(*event_to_send),
+        ui::Event::Clone(*event),
         base::BindOnce(
             [](base::RunLoop* run_loop, bool success) {
               // NOTE: a failure is not necessarily fatal, or result in the test

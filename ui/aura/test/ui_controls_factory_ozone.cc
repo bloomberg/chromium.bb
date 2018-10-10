@@ -232,18 +232,8 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
  private:
   void SendEventToSink(ui::Event* event, base::OnceClosure closure) {
     if (host_->window()->env()->mode() == aura::Env::Mode::MUS) {
-      std::unique_ptr<ui::Event> event_to_send;
-      if (event->IsMouseEvent()) {
-        // WindowService expects MouseEvents as PointerEvents.
-        // See http://crbug.com/617222.
-        event_to_send =
-            std::make_unique<ui::PointerEvent>(*event->AsMouseEvent());
-      } else {
-        event_to_send = ui::Event::Clone(*event);
-      }
-
       GetEventInjector()->InjectEvent(
-          host_->GetDisplayId(), std::move(event_to_send),
+          host_->GetDisplayId(), ui::Event::Clone(*event),
           base::BindOnce(&OnWindowServiceProcessedEvent, std::move(closure)));
       return;
     }
