@@ -576,6 +576,7 @@ source_set("base") {
 }
 
 source_set("dmg_fp") {
+  cflags = [ "-Wno-error=attributes" ]
   defines = [
     "FALLTHROUGH=[[fallthrough]]",
     "INT_MAX=0x7fffffff",
