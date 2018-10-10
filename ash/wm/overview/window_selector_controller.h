@@ -43,6 +43,10 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // Returns true if window selection mode is active.
   bool IsSelecting() const;
 
+  // Returns true if overview has been shutdown, but is still animating to the
+  // end state ui.
+  bool IsCompletingShutdownAnimations();
+
   // Moves the current selection by |increment| items. Positive values of
   // |increment| move the selection forward, negative values move it backward.
   void IncrementSelection(int increment);

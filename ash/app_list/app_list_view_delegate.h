@@ -116,9 +116,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
       ui::EventType type,
       const gfx::Point& screen_location) = 0;
 
-  // Checks if we are in the act of currently swiping up on the shelf to show
-  // the home launcher.
-  virtual bool IsSwipingUpOnShelf() = 0;
+  // Checks if we are allowed to process events on the app list main view and
+  // its descendants.
+  virtual bool CanProcessEventsOnApplistViews() = 0;
 
   virtual ws::WindowService* GetWindowService() = 0;
 };

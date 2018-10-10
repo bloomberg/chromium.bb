@@ -737,11 +737,20 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
   return false;
 }
 
-bool AppListControllerImpl::IsSwipingUpOnShelf() {
-  if (!home_launcher_gesture_handler_)
+bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
+  // Do not allow processing events during overview or while overview is
+  // finished but still animating out.
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  if (window_selector_controller->IsSelecting() ||
+      window_selector_controller->IsCompletingShutdownAnimations()) {
     return false;
+  }
 
-  return home_launcher_gesture_handler_->mode() ==
+  if (!home_launcher_gesture_handler_)
+    return true;
+
+  return home_launcher_gesture_handler_->mode() !=
          HomeLauncherGestureHandler::Mode::kSlideUpToShow;
 }
 

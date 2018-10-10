@@ -331,7 +331,11 @@ bool WindowSelectorController::ToggleOverview(
 }
 
 bool WindowSelectorController::IsSelecting() const {
-  return window_selector_.get() != NULL;
+  return window_selector_.get() != nullptr;
+}
+
+bool WindowSelectorController::IsCompletingShutdownAnimations() {
+  return !delayed_animations_.empty();
 }
 
 void WindowSelectorController::IncrementSelection(int increment) {
