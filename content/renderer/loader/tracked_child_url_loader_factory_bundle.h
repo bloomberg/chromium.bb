@@ -125,8 +125,8 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
   bool IsHostChildURLLoaderFactoryBundle() const override;
 
   // Update this bundle with |info|, and post cloned |info| to tracked bundles.
-  // TODO(chongz): We should also update |direct_network_factory_| together with
-  // the |URLLoaderFactoryBundleInfo| we got from browser.
+  // Note: We don't need to worry about |direct_network_factory_| since it's
+  // only used by |RendererBlinkPlatformImpl| and doesn't rely on this codepath.
   void UpdateThisAndAllClones(std::unique_ptr<URLLoaderFactoryBundleInfo> info);
 
  private:
