@@ -170,6 +170,25 @@ constexpr char kCssFragmentIdentifierPrefix[] = "targetElement=";
 constexpr size_t kCssFragmentIdentifierPrefixLength =
     base::size(kCssFragmentIdentifierPrefix);
 
+// Logs a UseCounter for the size of the cursor that will be set. This will be
+// used for compatibility analysis to determine whether the maximum size can be
+// reduced.
+void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
+  DCHECK(frame);
+  Image* image = cursor.GetImage();
+  if (!image)
+    return;
+  // Should not overflow, this calculation is done elsewhere when determining
+  // whether the cursor exceeds its maximum size (see event_handler.cc).
+  IntSize scaled_size = image->Size();
+  scaled_size.Scale(1 / cursor.ImageScaleFactor());
+  if (scaled_size.Width() > 32 || scaled_size.Height() > 32) {
+    UseCounter::Count(frame, WebFeature::kCursorImageGT32x32);
+  } else {
+    UseCounter::Count(frame, WebFeature::kCursorImageLE32x32);
+  }
+}
+
 }  // namespace
 
 // Defines a UKM that is part of a hierarchical ukm, recorded in
@@ -3576,6 +3595,7 @@ void LocalFrameView::SetCursor(const Cursor& cursor) {
   Page* page = GetFrame().GetPage();
   if (!page || frame_->GetEventHandler().IsMousePositionUnknown())
     return;
+  LogCursorSizeCounter(&GetFrame(), cursor);
   page->GetChromeClient().SetCursor(cursor, frame_);
 }
 
