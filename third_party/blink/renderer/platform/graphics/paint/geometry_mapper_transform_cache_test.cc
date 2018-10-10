@@ -201,4 +201,46 @@ TEST_F(GeometryMapperTransformCacheTest,
                                            *t3, 7, 8);
 }
 
+TEST_F(GeometryMapperTransformCacheTest, TransformUpdate) {
+  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
+  auto t2 = CreateTransform(*t1, TransformationMatrix());
+  auto t3 = CreateTransform(*t2, TransformationMatrix().Translate(7, 8));
+
+  Check2dTranslationToRoot(t0(), 0, 0);
+  Check2dTranslationToRoot(*t1, 1, 2);
+  Check2dTranslationToRoot(*t2, 1, 2);
+  Check2dTranslationToRoot(*t3, 8, 10);
+
+  // Change t2 to a scale.
+  GeometryMapperTransformCache::ClearCache();
+  t2->Update(
+      *t1, TransformPaintPropertyNode::State{TransformationMatrix().Scale(3)});
+  Check2dTranslationToRoot(t0(), 0, 0);
+  Check2dTranslationToRoot(*t1, 1, 2);
+  auto to_plane_root = TransformationMatrix().Translate(1, 2).Scale(3);
+  CheckRootAsPlaneRoot(*t2, *t2, to_plane_root, 0, 0);
+  to_plane_root = to_plane_root.Translate(7, 8);
+  CheckRootAsPlaneRoot(*t3, *t2, to_plane_root, 7, 8);
+
+  // Change t2 to a 3d transform so that it becomes a plane root.
+  GeometryMapperTransformCache::ClearCache();
+  t2->Update(*t1, TransformPaintPropertyNode::State{
+                      TransformationMatrix().Rotate3d(0, 45, 0)});
+  Check2dTranslationToRoot(t0(), 0, 0);
+  Check2dTranslationToRoot(*t1, 1, 2);
+  auto to_screen = TransformationMatrix().Translate(1, 2).Rotate3d(0, 45, 0);
+  CheckPlaneRootSameAs2dTranslationRoot(*t2, to_screen, *t2, 0, 0);
+  to_screen = to_screen.Translate(7, 8);
+  CheckPlaneRootSameAs2dTranslationRoot(*t3, to_screen, *t2, 7, 8);
+
+  // Change t2 back to a 2d translation.
+  GeometryMapperTransformCache::ClearCache();
+  t2->Update(*t1, TransformPaintPropertyNode::State{
+                      TransformationMatrix().Translate(11, 12)});
+  Check2dTranslationToRoot(t0(), 0, 0);
+  Check2dTranslationToRoot(*t1, 1, 2);
+  Check2dTranslationToRoot(*t2, 12, 14);
+  Check2dTranslationToRoot(*t3, 19, 22);
+}
+
 }  // namespace blink

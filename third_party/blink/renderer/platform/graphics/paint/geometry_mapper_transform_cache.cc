@@ -59,6 +59,8 @@ void GeometryMapperTransformCache::Update(
     }
   } else {
     root_of_2d_translation_ = &node;
+    to_2d_translation_root_.MakeIdentity();
+    from_2d_translation_root_.MakeIdentity();
   }
 
   TransformationMatrix local = node.Matrix();
