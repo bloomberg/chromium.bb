@@ -307,16 +307,10 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   }
 }
 
-void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
+void ChromeExtensionsDispatcherDelegate::RequireWebViewModules(
     extensions::ScriptContext* context) {
-  // Note: setting up the WebView class here, not the chrome.webview API.
-  // The API will be automatically set up when first used.
-  if (context->GetAvailability("webViewInternal").is_available()) {
-    // TODO(fsamuel): Eagerly calling Require on context startup is expensive.
-    // It would be better if there were a light way of detecting when a webview
-    // or appview is created and only then set up the infrastructure.
-    context->module_system()->Require("chromeWebView");
-  }
+  DCHECK(context->GetAvailability("webViewInternal").is_available());
+  context->module_system()->Require("chromeWebView");
 }
 
 void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(

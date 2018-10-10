@@ -297,7 +297,6 @@ void Dispatcher::DidCreateScriptContext(
   }
 
   RequireGuestViewModules(context);
-  delegate_->RequireAdditionalModules(context);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   switch (context->context_type()) {
@@ -416,7 +415,6 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
     // necessary for Extension SW.
     RequireGuestViewModules(context);
-    delegate_->RequireAdditionalModules(context);
   }
 
   g_worker_script_context_set.Get().Insert(base::WrapUnique(context));
@@ -663,6 +661,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       // chrome.webview API bindings.
       {"webView", IDR_WEB_VIEW_JS},
       {"webViewElement", IDR_WEB_VIEW_ELEMENT_JS},
+      {"extensionsWebViewElement", IDR_EXTENSIONS_WEB_VIEW_ELEMENT_JS},
       {"webViewActionRequests", IDR_WEB_VIEW_ACTION_REQUESTS_JS},
       {"webViewApiMethods", IDR_WEB_VIEW_API_METHODS_JS},
       {"webViewAttributes", IDR_WEB_VIEW_ATTRIBUTES_JS},
@@ -1329,6 +1328,10 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   ModuleSystem* module_system = context->module_system();
   bool requires_guest_view_module = false;
 
+  // TODO(fsamuel): Eagerly calling Require on context startup is expensive.
+  // It would be better if there were a light way of detecting when a webview
+  // or appview is created and only then set up the infrastructure.
+
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     requires_guest_view_module = true;
@@ -1350,7 +1353,9 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // Require WebView.
   if (context->GetAvailability("webViewInternal").is_available()) {
     requires_guest_view_module = true;
-    module_system->Require("webViewElement");
+    // The embedder of the extensions layer may define its own implementation
+    // of WebView.
+    delegate_->RequireWebViewModules(context);
   }
 
   if (requires_guest_view_module &&
