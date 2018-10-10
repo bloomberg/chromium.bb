@@ -82,6 +82,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                         const IntRect& rect,
                         TimeTicks timestamp);
 
+  void AddLayoutJankFraction(double jank_fraction);
+
   void Trace(blink::Visitor*) override;
 
  private:

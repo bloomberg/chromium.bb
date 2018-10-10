@@ -629,6 +629,7 @@
       // Tracks "jank" from layout objects changing their visual location
       // between animation frames (see crbug.com/581518).
       name: "JankTracking",
+      implied_by: ["LayoutJankAPI"],
       status: "experimental",
     },
     {
@@ -641,6 +642,12 @@
     {
       name: "LayeredAPI",
       implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      // Exposes layout jank fractions to Javascript. See explainer:
+      // http://bit.ly/lsm-explainer.
+      name: "LayoutJankAPI",
+      status: "test",
     },
     {
       name: "LayoutNG",

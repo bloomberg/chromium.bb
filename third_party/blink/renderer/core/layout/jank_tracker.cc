@@ -11,6 +11,9 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
@@ -180,6 +183,16 @@ void JankTracker::NotifyPrePaintFinished() {
                        "data",
                        PerFrameTraceData(jank_fraction, granularity_scale),
                        "frame", ToTraceValue(&frame_view_->GetFrame()));
+
+  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled() && jank_fraction > 0 &&
+      frame_view_->GetFrame().DomWindow()) {
+    WindowPerformance* performance =
+        DOMWindowPerformance::performance(*frame_view_->GetFrame().DomWindow());
+    if (performance &&
+        performance->HasObserverFor(PerformanceEntry::kLayoutJank)) {
+      performance->AddLayoutJankFraction(jank_fraction);
+    }
+  }
 
   region_ = Region();
 }
