@@ -295,18 +295,8 @@ class STORAGE_EXPORT QuotaManager
   using DumpOriginInfoTableCallback =
       base::OnceCallback<void(const OriginInfoTableEntries&)>;
 
-  using ClosureQueue = CallbackQueue<base::OnceClosure>;
-  using HostQuotaCallbackMap = CallbackQueueMap<QuotaCallback,
-                                                std::string,
-                                                blink::mojom::QuotaStatusCode,
-                                                int64_t>;
-  using QuotaSettingsCallbackQueue =
-      CallbackQueue<QuotaSettingsCallback, const QuotaSettings&>;
-
   // The values returned total_space, available_space.
   using StorageCapacityCallback = base::OnceCallback<void(int64_t, int64_t)>;
-  using StorageCapacityCallbackQueue =
-      CallbackQueue<StorageCapacityCallback, int64_t, int64_t>;
 
   struct EvictionContext {
     EvictionContext();
@@ -439,8 +429,10 @@ class STORAGE_EXPORT QuotaManager
   scoped_refptr<base::TaskRunner> get_settings_task_runner_;
   QuotaSettings settings_;
   base::TimeTicks settings_timestamp_;
-  QuotaSettingsCallbackQueue settings_callbacks_;
-  StorageCapacityCallbackQueue storage_capacity_callbacks_;
+  CallbackQueue<QuotaSettingsCallback, const QuotaSettings&>
+      settings_callbacks_;
+  CallbackQueue<StorageCapacityCallback, int64_t, int64_t>
+      storage_capacity_callbacks_;
 
   GetOriginCallback lru_origin_callback_;
   std::set<url::Origin> access_notified_origins_;
@@ -457,7 +449,11 @@ class STORAGE_EXPORT QuotaManager
   EvictionContext eviction_context_;
   bool is_getting_eviction_origin_;
 
-  HostQuotaCallbackMap persistent_host_quota_callbacks_;
+  CallbackQueueMap<QuotaCallback,
+                   std::string,
+                   blink::mojom::QuotaStatusCode,
+                   int64_t>
+      persistent_host_quota_callbacks_;
 
   // Map from origin to count.
   std::map<url::Origin, int> origins_in_use_;

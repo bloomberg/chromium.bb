@@ -16,7 +16,6 @@ namespace storage {
 
 namespace {
 
-using OriginUsageAccumulator = ClientUsageTracker::OriginUsageAccumulator;
 using OriginSetByHost = ClientUsageTracker::OriginSetByHost;
 
 void DidGetHostUsage(UsageCallback callback,
@@ -30,7 +29,7 @@ void DidGetHostUsage(UsageCallback callback,
 bool EraseOriginFromOriginSet(OriginSetByHost* origins_by_host,
                               const std::string& host,
                               const url::Origin& origin) {
-  OriginSetByHost::iterator found = origins_by_host->find(host);
+  auto found = origins_by_host->find(host);
   if (found == origins_by_host->end())
     return false;
 
@@ -45,7 +44,7 @@ bool EraseOriginFromOriginSet(OriginSetByHost* origins_by_host,
 bool OriginSetContainsOrigin(const OriginSetByHost& origins,
                              const std::string& host,
                              const url::Origin& origin) {
-  OriginSetByHost::const_iterator itr = origins.find(host);
+  auto itr = origins.find(host);
   return itr != origins.end() && base::ContainsKey(itr->second, origin);
 }
 
@@ -99,7 +98,7 @@ void ClientUsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
 
   AccumulateInfo* info = new AccumulateInfo;
   info->pending_jobs = non_cached_limited_origins_by_host_.size() + 1;
-  UsageAccumulator accumulator = base::BindRepeating(
+  auto accumulator = base::BindRepeating(
       &ClientUsageTracker::AccumulateLimitedOriginUsage, AsWeakPtr(),
       base::Owned(info), AdaptCallbackForRepeating(std::move(callback)));
 
@@ -215,11 +214,11 @@ void ClientUsageTracker::SetUsageCacheEnabled(const url::Origin& origin,
   std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
   if (!enabled) {
     // Erase |origin| from cache and subtract its usage.
-    HostUsageMap::iterator found_host = cached_usage_by_host_.find(host);
+    auto found_host = cached_usage_by_host_.find(host);
     if (found_host != cached_usage_by_host_.end()) {
       UsageMap& cached_usage_for_host = found_host->second;
 
-      UsageMap::iterator found = cached_usage_for_host.find(origin);
+      auto found = cached_usage_for_host.find(origin);
       if (found != cached_usage_for_host.end()) {
         int64_t usage = found->second;
         UpdateUsageCache(origin, -usage);
@@ -274,7 +273,7 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
   // loop).  To avoid this, we add one more pending host as a sentinel and
   // fire the sentinel callback at the end.
   info->pending_jobs = origins_by_host.size() + 1;
-  HostUsageAccumulator accumulator = base::BindRepeating(
+  auto accumulator = base::BindRepeating(
       &ClientUsageTracker::AccumulateHostUsage, AsWeakPtr(), base::Owned(info),
       base::AdaptCallbackForRepeating(std::move(callback)));
 
@@ -322,7 +321,7 @@ void ClientUsageTracker::GetUsageForOrigins(
   // loop).  To avoid this, we add one more pending origin as a sentinel and
   // fire the sentinel callback at the end.
   info->pending_jobs = origins.size() + 1;
-  OriginUsageAccumulator accumulator =
+  auto accumulator =
       base::BindRepeating(&ClientUsageTracker::AccumulateOriginUsage,
                           AsWeakPtr(), base::Owned(info), host);
 
@@ -396,7 +395,7 @@ void ClientUsageTracker::AddCachedHost(const std::string& host) {
 }
 
 int64_t ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
-  HostUsageMap::const_iterator found = cached_usage_by_host_.find(host);
+  auto found = cached_usage_by_host_.find(host);
   if (found == cached_usage_by_host_.end())
     return 0;
 
@@ -410,11 +409,11 @@ int64_t ClientUsageTracker::GetCachedHostUsage(const std::string& host) const {
 bool ClientUsageTracker::GetCachedOriginUsage(const url::Origin& origin,
                                               int64_t* usage) const {
   std::string host = net::GetHostOrSpecFromURL(origin.GetURL());
-  HostUsageMap::const_iterator found_host = cached_usage_by_host_.find(host);
+  auto found_host = cached_usage_by_host_.find(host);
   if (found_host == cached_usage_by_host_.end())
     return false;
 
-  UsageMap::const_iterator found = found_host->second.find(origin);
+  auto found = found_host->second.find(origin);
   if (found == found_host->second.end())
     return false;
 

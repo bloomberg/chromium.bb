@@ -38,7 +38,7 @@ class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
 
   std::string GetPluginIDForURL(const FileSystemURL& url) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
-    Map::iterator found = map_.find(url.filesystem_id());
+    auto found = map_.find(url.filesystem_id());
     if (url.type() != kFileSystemTypePluginPrivate || found == map_.end()) {
       NOTREACHED() << "Unsupported url is given: " << url.DebugString();
       return std::string();

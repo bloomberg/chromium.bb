@@ -27,11 +27,7 @@ namespace storage {
 // common place.
 class STORAGE_EXPORT ScopedFile {
  public:
-  typedef base::OnceCallback<void(const base::FilePath&)> ScopeOutCallback;
-  typedef std::pair<ScopeOutCallback, scoped_refptr<base::TaskRunner> >
-      ScopeOutCallbackPair;
-  typedef std::vector<ScopeOutCallbackPair> ScopeOutCallbackList;
-
+  using ScopeOutCallback = base::OnceCallback<void(const base::FilePath&)>;
   enum ScopeOutPolicy {
     DELETE_ON_SCOPE_OUT,
     DONT_DELETE_ON_SCOPE_OUT,
@@ -82,7 +78,8 @@ class STORAGE_EXPORT ScopedFile {
   base::FilePath path_;
   ScopeOutPolicy scope_out_policy_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
-  ScopeOutCallbackList scope_out_callbacks_;
+  std::vector<std::pair<ScopeOutCallback, scoped_refptr<base::TaskRunner>>>
+      scope_out_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFile);
 };

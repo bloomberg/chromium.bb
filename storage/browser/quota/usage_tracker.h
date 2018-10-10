@@ -75,15 +75,6 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
     base::flat_map<QuotaClient::ID, int64_t> usage_breakdown;
   };
 
-  using UsageCallbackQueue = CallbackQueue<UsageCallback, int64_t>;
-  using GlobalUsageCallbackQueue =
-      CallbackQueue<GlobalUsageCallback, int64_t, int64_t>;
-  using HostUsageCallbackMap =
-      CallbackQueueMap<UsageWithBreakdownCallback,
-                       std::string,
-                       int64_t,
-                       base::flat_map<QuotaClient::ID, int64_t>>;
-
   friend class ClientUsageTracker;
   void AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                           int64_t limited_usage);
@@ -102,9 +93,14 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   std::map<QuotaClient::ID, std::unique_ptr<ClientUsageTracker>>
       client_tracker_map_;
 
-  UsageCallbackQueue global_limited_usage_callbacks_;
-  GlobalUsageCallbackQueue global_usage_callbacks_;
-  HostUsageCallbackMap host_usage_callbacks_;
+  CallbackQueue<UsageCallback, int64_t> global_limited_usage_callbacks_;
+  CallbackQueue<GlobalUsageCallback, int64_t, int64_t> global_usage_callbacks_;
+
+  CallbackQueueMap<UsageWithBreakdownCallback,
+                   std::string,
+                   int64_t,
+                   base::flat_map<QuotaClient::ID, int64_t>>
+      host_usage_callbacks_;
 
   StorageMonitor* storage_monitor_;
 

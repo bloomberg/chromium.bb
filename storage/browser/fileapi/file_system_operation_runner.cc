@@ -335,7 +335,7 @@ void FileSystemOperationRunner::Cancel(OperationID id,
     return;
   }
 
-  Operations::iterator found = operations_.find(id);
+  auto found = operations_.find(id);
   if (found == operations_.end() || !found->second) {
     // There is no operation with |id|.
     std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
@@ -703,7 +703,7 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
   // this call.
   scoped_refptr<FileSystemContext> context(file_system_context_);
 
-  OperationToURLSet::iterator found = write_target_urls_.find(id);
+  auto found = write_target_urls_.find(id);
   if (found != write_target_urls_.end()) {
     const FileSystemURLSet& urls = found->second;
     for (const FileSystemURL& url : urls) {
@@ -719,8 +719,7 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
   finished_operations_.erase(id);
 
   // Dispatch stray cancel callback if exists.
-  std::map<OperationID, StatusCallback>::iterator found_cancel =
-      stray_cancel_callbacks_.find(id);
+  auto found_cancel = stray_cancel_callbacks_.find(id);
   if (found_cancel != stray_cancel_callbacks_.end()) {
     // This cancel has been requested after the operation has finished,
     // so report that we failed to stop it.

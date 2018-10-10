@@ -68,12 +68,9 @@ bool MockQuotaManager::AddOrigin(const url::Origin& origin,
 bool MockQuotaManager::OriginHasData(const url::Origin& origin,
                                      StorageType type,
                                      QuotaClient::ID quota_client) const {
-  for (std::vector<OriginInfo>::const_iterator current = origins_.begin();
-       current != origins_.end();
-       ++current) {
-    if (current->origin == origin &&
-        current->type == type &&
-        current->quota_client_mask & quota_client)
+  for (const auto& info : origins_) {
+    if (info.origin == origin && info.type == type &&
+        info.quota_client_mask & quota_client)
       return true;
   }
   return false;
@@ -82,27 +79,23 @@ bool MockQuotaManager::OriginHasData(const url::Origin& origin,
 void MockQuotaManager::GetOriginsModifiedSince(StorageType type,
                                                base::Time modified_since,
                                                GetOriginsCallback callback) {
-  std::set<url::Origin>* origins_to_return = new std::set<url::Origin>();
-  for (std::vector<OriginInfo>::const_iterator current = origins_.begin();
-       current != origins_.end();
-       ++current) {
-    if (current->type == type && current->modified >= modified_since)
-      origins_to_return->insert(current->origin);
+  auto origins_to_return = std::make_unique<std::set<url::Origin>>();
+  for (const auto& info : origins_) {
+    if (info.type == type && info.modified >= modified_since)
+      origins_to_return->insert(info.origin);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MockQuotaManager::DidGetModifiedSince,
                                 weak_factory_.GetWeakPtr(), std::move(callback),
-                                base::Owned(origins_to_return), type));
+                                std::move(origins_to_return), type));
 }
 
 void MockQuotaManager::DeleteOriginData(const url::Origin& origin,
                                         StorageType type,
                                         int quota_client_mask,
                                         StatusCallback callback) {
-  for (std::vector<OriginInfo>::iterator current = origins_.begin();
-       current != origins_.end();
-       ++current) {
+  for (auto current = origins_.begin(); current != origins_.end(); ++current) {
     if (current->origin == origin && current->type == type) {
       // Modify the mask: if it's 0 after "deletion", remove the origin.
       current->quota_client_mask &= ~quota_client_mask;
@@ -126,9 +119,10 @@ void MockQuotaManager::UpdateUsage(const url::Origin& origin,
   usage_and_quota_map_[std::make_pair(origin, type)].usage += delta;
 }
 
-void MockQuotaManager::DidGetModifiedSince(GetOriginsCallback callback,
-                                           std::set<url::Origin>* origins,
-                                           StorageType storage_type) {
+void MockQuotaManager::DidGetModifiedSince(
+    GetOriginsCallback callback,
+    std::unique_ptr<std::set<url::Origin>> origins,
+    StorageType storage_type) {
   std::move(callback).Run(*origins, storage_type);
 }
 

@@ -308,8 +308,7 @@ class STORAGE_EXPORT FileSystemOperationRunner {
 
   // We keep track of the file to be modified by each operation so that
   // we can notify observers when we're done.
-  using OperationToURLSet = std::map<OperationID, FileSystemURLSet>;
-  OperationToURLSet write_target_urls_;
+  std::map<OperationID, FileSystemURLSet> write_target_urls_;
 
   // Operations that are finished but not yet fire their callbacks.
   std::set<OperationID> finished_operations_;
