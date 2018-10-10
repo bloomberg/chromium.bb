@@ -373,8 +373,7 @@ void GestureRecognizerImpl::AddGestureEventHelper(GestureEventHelper* helper) {
 
 void GestureRecognizerImpl::RemoveGestureEventHelper(
     GestureEventHelper* helper) {
-  std::vector<GestureEventHelper*>::iterator it = std::find(helpers_.begin(),
-      helpers_.end(), helper);
+  auto it = std::find(helpers_.begin(), helpers_.end(), helper);
   if (it != helpers_.end())
     helpers_.erase(it);
 }

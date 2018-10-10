@@ -64,8 +64,7 @@ void MessageCenterImpl::AddNotificationBlocker(NotificationBlocker* blocker) {
 void MessageCenterImpl::RemoveNotificationBlocker(
     NotificationBlocker* blocker) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  std::vector<NotificationBlocker*>::iterator iter =
-      std::find(blockers_.begin(), blockers_.end(), blocker);
+  auto iter = std::find(blockers_.begin(), blockers_.end(), blocker);
   if (iter == blockers_.end())
     return;
   blocker->RemoveObserver(this);

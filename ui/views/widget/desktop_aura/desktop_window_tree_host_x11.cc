@@ -476,8 +476,7 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // If we have children, close them. Use a copy for iteration because they'll
   // remove themselves.
   std::set<DesktopWindowTreeHostX11*> window_children_copy = window_children_;
-  for (std::set<DesktopWindowTreeHostX11*>::iterator it =
-           window_children_copy.begin(); it != window_children_copy.end();
+  for (auto it = window_children_copy.begin(); it != window_children_copy.end();
        ++it) {
     (*it)->CloseNow();
   }

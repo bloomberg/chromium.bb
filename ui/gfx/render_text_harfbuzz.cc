@@ -1595,10 +1595,9 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
             SkIntToScalar(origin.x()) + offset_x,
             SkIntToScalar(origin.y() + run.font_params.baseline_offset));
       }
-      for (BreakList<SkColor>::const_iterator it =
-               colors().GetBreak(segment.char_range.start());
+      for (auto it = colors().GetBreak(segment.char_range.start());
            it != colors().breaks().end() &&
-               it->first < segment.char_range.end();
+           it->first < segment.char_range.end();
            ++it) {
         const Range intersection =
             colors().GetRange(it).Intersect(segment.char_range);

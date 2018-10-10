@@ -58,10 +58,8 @@ void EventTarget::AddPostTargetHandler(EventHandler* handler) {
 }
 
 void EventTarget::RemovePostTargetHandler(EventHandler* handler) {
-  EventHandlerList::iterator find =
-      std::find(post_target_list_.begin(),
-                post_target_list_.end(),
-                handler);
+  auto find =
+      std::find(post_target_list_.begin(), post_target_list_.end(), handler);
   if (find != post_target_list_.end())
     post_target_list_.erase(find);
 }
@@ -99,8 +97,9 @@ void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
 void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
   EventTarget* target = this;
   while (target) {
-    for (EventHandlerList::iterator it = target->post_target_list_.begin(),
-        end = target->post_target_list_.end(); it != end; ++it) {
+    for (auto it = target->post_target_list_.begin(),
+              end = target->post_target_list_.end();
+         it != end; ++it) {
       list->push_back(*it);
     }
     target = target->GetParentTarget();

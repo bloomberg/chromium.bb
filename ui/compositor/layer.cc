@@ -284,8 +284,7 @@ void Layer::Remove(Layer* child) {
   if (compositor)
     child->ResetCompositorForAnimatorsInTree(compositor);
 
-  std::vector<Layer*>::iterator i =
-      std::find(children_.begin(), children_.end(), child);
+  auto i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = nullptr;

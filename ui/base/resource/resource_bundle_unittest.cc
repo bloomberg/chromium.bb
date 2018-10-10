@@ -92,8 +92,7 @@ void AddCustomChunk(const base::StringPiece& custom_chunk,
       bitmap_data->begin(),
       bitmap_data->begin() + arraysize(kPngMagic),
       kPngMagic));
-  std::vector<unsigned char>::iterator ihdr_start =
-      bitmap_data->begin() + arraysize(kPngMagic);
+  auto ihdr_start = bitmap_data->begin() + arraysize(kPngMagic);
   char ihdr_length_data[sizeof(uint32_t)];
   for (size_t i = 0; i < sizeof(uint32_t); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);

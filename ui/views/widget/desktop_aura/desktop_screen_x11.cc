@@ -232,8 +232,7 @@ display::Display DesktopScreenX11::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   if (displays_.size() <= 1)
     return GetPrimaryDisplay();
-  for (std::vector<display::Display>::const_iterator it = displays_.begin();
-       it != displays_.end(); ++it) {
+  for (auto it = displays_.begin(); it != displays_.end(); ++it) {
     if (it->bounds().Contains(point))
       return *it;
   }
@@ -244,8 +243,7 @@ display::Display DesktopScreenX11::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   int max_area = 0;
   const display::Display* matching = NULL;
-  for (std::vector<display::Display>::const_iterator it = displays_.begin();
-       it != displays_.end(); ++it) {
+  for (auto it = displays_.begin(); it != displays_.end(); ++it) {
     gfx::Rect intersect = gfx::IntersectRects(it->bounds(), match_rect);
     int area = intersect.width() * intersect.height();
     if (area > max_area) {

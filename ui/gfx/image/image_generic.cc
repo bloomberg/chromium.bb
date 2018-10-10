@@ -39,8 +39,8 @@ class PNGImageSource : public ImageSkiaSource {
     // 1) The ImageSkiaRep with the highest scale if all available
     // scales are smaller than |scale|.
     // 2) The ImageSkiaRep with the smallest one that is larger than |scale|.
-    for (ImageSkiaRepSet::const_iterator iter = image_skia_reps_.begin();
-         iter != image_skia_reps_.end(); ++iter) {
+    for (auto iter = image_skia_reps_.begin(); iter != image_skia_reps_.end();
+         ++iter) {
       if ((*iter).scale() == scale)
         return (*iter);
       if (!rep || rep->scale() < (*iter).scale())

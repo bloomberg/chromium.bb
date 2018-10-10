@@ -173,9 +173,7 @@ void OSExchangeDataProviderAuraX11::SetFilename(const base::FilePath& path) {
 void OSExchangeDataProviderAuraX11::SetFilenames(
     const std::vector<FileInfo>& filenames) {
   std::vector<std::string> paths;
-  for (std::vector<FileInfo>::const_iterator it = filenames.begin();
-       it != filenames.end();
-       ++it) {
+  for (auto it = filenames.begin(); it != filenames.end(); ++it) {
     std::string url_spec = net::FilePathToFileURL(it->path).spec();
     if (!url_spec.empty())
       paths.push_back(url_spec);
