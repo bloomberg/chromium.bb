@@ -283,6 +283,14 @@ void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
   settings_->SetIgnoreLongTermBlackListRules(ignore_long_term_black_list_rules);
 }
 
+void DataReductionProxyService::SetCustomProxyConfigClient(
+    network::mojom::CustomProxyConfigClientPtrInfo config_client_info) {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DataReductionProxyIOData::SetCustomProxyConfigClient,
+                     io_data_, std::move(config_client_info)));
+}
+
 void DataReductionProxyService::LoadHistoricalDataUsage(
     const HistoricalDataUsageCallback& load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(

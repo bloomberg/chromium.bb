@@ -109,6 +109,10 @@ void DataReductionProxySettings::OnServiceInitialized() {
   // Technically, this is not "at startup", but this is the first chance that
   // IO data objects can be called.
   UpdateIOData(true);
+  if (proxy_config_client_) {
+    data_reduction_proxy_service_->SetCustomProxyConfigClient(
+        std::move(proxy_config_client_));
+  }
 }
 
 void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
@@ -119,9 +123,10 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
-  // TODO(crbug.com/721403): Make DRP work with network service.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      !params::IsEnabledWithNetworkService()) {
     return false;
+  }
 
   if (spdy_proxy_auth_enabled_.GetPrefName().empty())
     return false;
@@ -311,6 +316,12 @@ DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()
     return data_reduction_proxy_service_->event_store();
 
   return nullptr;
+}
+
+void DataReductionProxySettings::SetCustomProxyConfigClient(
+    network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client) {
+  DCHECK(!data_reduction_proxy_service_);
+  proxy_config_client_ = std::move(proxy_config_client);
 }
 
 // Metrics methods

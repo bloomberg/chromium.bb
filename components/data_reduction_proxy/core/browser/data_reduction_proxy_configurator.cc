@@ -42,6 +42,8 @@ void DataReductionProxyConfigurator::Enable(
       net_log_, network_properties_manager.IsSecureProxyDisallowedByCarrier(),
       DataReductionProxyServer::ConvertToNetProxyServers(proxies_for_http));
   config_ = config;
+  if (config_updated_callback_)
+    config_updated_callback_.Run();
 }
 
 net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
@@ -110,6 +112,8 @@ void DataReductionProxyConfigurator::Disable() {
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
   data_reduction_proxy_event_creator_->AddProxyDisabledEvent(net_log_);
   config_ = config;
+  if (config_updated_callback_)
+    config_updated_callback_.Run();
 }
 
 void DataReductionProxyConfigurator::SetBypassRules(

@@ -122,6 +122,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));
+  configurator_->SetConfigUpdatedCallback(base::BindRepeating(
+      &DataReductionProxyIOData::OnProxyConfigUpdated, base::Unretained(this)));
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
         std::make_unique<DataReductionProxyMutableConfigValues>();
@@ -459,12 +461,34 @@ void DataReductionProxyIOData::UpdateProxyRequestHeaders(
       FROM_HERE,
       base::BindOnce(&DataReductionProxyService::SetProxyRequestHeadersOnUI,
                      service_, std::move(headers)));
+  OnProxyConfigUpdated();
+}
+
+void DataReductionProxyIOData::OnProxyConfigUpdated() {
+  if (!proxy_config_client_)
+    return;
+
+  auto config = network::mojom::CustomProxyConfig::New();
+  config->rules = configurator_->GetProxyConfig().proxy_rules();
+
+  net::EffectiveConnectionType type = GetEffectiveConnectionType();
+  if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
+    config->pre_cache_headers.SetHeader(
+        chrome_proxy_ect_header(),
+        net::GetNameForEffectiveConnectionType(type));
+  }
+
+  request_options_->AddRequestHeader(&config->post_cache_headers,
+                                     base::nullopt);
+  proxy_config_client_->OnCustomProxyConfigUpdated(std::move(config));
 }
 
 void DataReductionProxyIOData::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   effective_connection_type_ = type;
+  OnProxyConfigUpdated();
 }
 
 void DataReductionProxyIOData::OnRTTOrThroughputEstimatesComputed(
@@ -477,6 +501,12 @@ net::EffectiveConnectionType
 DataReductionProxyIOData::GetEffectiveConnectionType() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return effective_connection_type_;
+}
+
+void DataReductionProxyIOData::SetCustomProxyConfigClient(
+    network::mojom::CustomProxyConfigClientPtrInfo config_client_info) {
+  proxy_config_client_.Bind(std::move(config_client_info));
+  OnProxyConfigUpdated();
 }
 
 }  // namespace data_reduction_proxy

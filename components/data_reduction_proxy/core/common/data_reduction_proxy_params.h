@@ -148,6 +148,10 @@ const char* GetMissingViaBypassParamName();
 // metrics harness.
 bool IsDataSaverSiteBreakdownUsingPLMEnabled();
 
+// Returns whether network service is enabled and data reduction proxy should be
+// used.
+bool IsEnabledWithNetworkService();
+
 // Returns the experiment parameter name to discard the cached result for canary
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
