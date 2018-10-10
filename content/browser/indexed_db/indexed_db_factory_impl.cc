@@ -326,7 +326,8 @@ leveldb::Status IndexedDBFactoryImpl::AbortTransactions(const Origin& origin) {
   return leveldb::Status::OK();
 }
 
-void IndexedDBFactoryImpl::ForceClose(const Origin& origin) {
+void IndexedDBFactoryImpl::ForceClose(const Origin& origin,
+                                      bool delete_in_memory_store) {
   OriginDBs range = GetOpenDatabasesForOrigin(origin);
 
   while (range.first != range.second) {
@@ -335,8 +336,13 @@ void IndexedDBFactoryImpl::ForceClose(const Origin& origin) {
     db->ForceClose();
   }
 
-  if (backing_store_map_.find(origin) != backing_store_map_.end())
+  auto it = backing_store_map_.find(origin);
+  if (it != backing_store_map_.end()) {
+    if (delete_in_memory_store)
+      in_memory_backing_stores_.erase(it->second);
+
     ReleaseBackingStore(origin, true /* immediate */);
+  }
 }
 
 void IndexedDBFactoryImpl::ForceSchemaDowngrade(const Origin& origin) {
@@ -669,6 +675,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     if (first_time)
       backends_opened_since_boot_.insert(origin);
     backing_store_map_[origin] = backing_store;
+
     // If an in-memory database, bind lifetime to this factory instance.
     if (open_in_memory)
       in_memory_backing_stores_.insert(backing_store);
@@ -767,7 +774,9 @@ size_t IndexedDBFactoryImpl::GetConnectionCount(const Origin& origin) const {
 
 int64_t IndexedDBFactoryImpl::GetInMemoryDBSize(const Origin& origin) const {
   const auto& it = backing_store_map_.find(origin);
-  DCHECK(it != backing_store_map_.end());
+  // Origin won't be present in map if it has been deleted.
+  if (it == backing_store_map_.end())
+    return 0;
 
   const scoped_refptr<IndexedDBBackingStore>& backing_store = it->second;
   int64_t level_db_size = 0;

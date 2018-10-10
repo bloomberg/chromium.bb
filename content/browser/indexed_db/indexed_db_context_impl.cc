@@ -325,8 +325,14 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
 void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   ForceClose(origin, FORCE_CLOSE_DELETE_ORIGIN);
-  if (is_incognito() || !HasOrigin(origin))
+  if (!HasOrigin(origin))
     return;
+
+  if (is_incognito()) {
+    GetOriginSet()->erase(origin);
+    origin_size_map_.erase(origin);
+    return;
+  }
 
   base::FilePath idb_directory = GetLevelDBPath(origin);
   EnsureDiskUsageCacheInitialized(origin);
@@ -393,11 +399,11 @@ void IndexedDBContextImpl::ForceClose(const Origin origin,
                             reason,
                             FORCE_CLOSE_REASON_MAX);
 
-  if (is_incognito() || !HasOrigin(origin))
+  if (!HasOrigin(origin))
     return;
 
   if (factory_.get())
-    factory_->ForceClose(origin);
+    factory_->ForceClose(origin, reason == FORCE_CLOSE_DELETE_ORIGIN);
   DCHECK_EQ(0UL, GetConnectionCount(origin));
 }
 

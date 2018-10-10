@@ -70,7 +70,8 @@ class MockIndexedDBFactory : public IndexedDBFactory {
   // The Android NDK implements a subset of STL, and the gtest templates can't
   // deal with std::pair's. This means we can't use GoogleMock for this method
   OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
-  MOCK_METHOD1(ForceClose, void(const url::Origin& origin));
+  MOCK_METHOD2(ForceClose,
+               void(const url::Origin& origin, bool delete_in_memory_store));
   MOCK_METHOD1(ForceSchemaDowngrade, void(const url::Origin& origin));
   MOCK_METHOD1(HasV2SchemaCorruption,
                V2SchemaCorruptionStatus(const url::Origin& origin));
