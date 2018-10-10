@@ -248,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopActions) {
+// TODO(https://crbug.com/894016): flaky.
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopActions) {
   AutomationManagerAura::GetInstance()->Enable();
   // Trigger the shelf subtree to be computed.
   ash::Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
