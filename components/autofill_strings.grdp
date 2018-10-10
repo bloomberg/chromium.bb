@@ -266,8 +266,8 @@
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER" desc="The body text for a dialog that offers to migrate local cards into the cloud. [ICU Syntax]">
       {NUM_CARDS, plural,
-      =1 {This card will be saved to your Google Account for faster checkout across devices.}
-      other {These cards will be saved to your Google Account for faster checkout across devices.}}
+      =1 {This card and its billing address will be saved to your Google Account for faster checkout across devices.}
+      other {These cards and their billing addresses will be saved to your Google Account for faster checkout across devices.}}
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated. [ICU Syntax]">
       {NUM_CARDS, plural,
