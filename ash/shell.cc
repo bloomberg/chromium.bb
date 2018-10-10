@@ -476,7 +476,7 @@ void Shell::EnableKeyboard() {
   if (!keyboard::IsKeyboardEnabled())
     return;
 
-  if (keyboard_controller_->enabled()) {
+  if (keyboard_controller_->IsEnabled()) {
     // Disable and re-enable the keyboard, as some callers expect the keyboard
     // to be reloaded.
     // TODO(https://crbug.com/731537): Add a separate function for reloading the
@@ -503,7 +503,7 @@ void Shell::EnableKeyboard() {
 }
 
 void Shell::DisableKeyboard() {
-  if (keyboard_controller_->enabled()) {
+  if (keyboard_controller_->IsEnabled()) {
     for (auto* const controller : GetAllRootWindowControllers())
       controller->DeactivateKeyboard(keyboard_controller_.get());
   }

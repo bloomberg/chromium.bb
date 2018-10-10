@@ -375,10 +375,8 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
     if (applist_container->Contains(gained_focus) &&
         keyboard::KeyboardController::HasInstance()) {
       auto* const keyboard_controller = keyboard::KeyboardController::Get();
-      if (keyboard_controller->enabled() &&
-          keyboard_controller->IsKeyboardVisible()) {
+      if (keyboard_controller->IsKeyboardVisible())
         keyboard_controller->HideKeyboardImplicitlyBySystem();
-      }
     }
   }
 }

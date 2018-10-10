@@ -93,7 +93,7 @@ void WaitControllerStateChangesTo(KeyboardControllerState state) {
 
 bool IsKeyboardShowing() {
   auto* keyboard_controller = KeyboardController::Get();
-  DCHECK(keyboard_controller->enabled());
+  DCHECK(keyboard_controller->IsEnabled());
 
   // KeyboardController sets its state to SHOWN when it is about to show.
   return keyboard_controller->GetStateForTest() ==
@@ -102,7 +102,7 @@ bool IsKeyboardShowing() {
 
 bool IsKeyboardHiding() {
   auto* keyboard_controller = KeyboardController::Get();
-  DCHECK(keyboard_controller->enabled());
+  DCHECK(keyboard_controller->IsEnabled());
 
   return keyboard_controller->GetStateForTest() ==
              KeyboardControllerState::WILL_HIDE ||

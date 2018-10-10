@@ -42,7 +42,7 @@ class KEYBOARD_EXPORT KeyboardControllerMojoImpl
   void NotifyConfigChanged(mojom::KeyboardConfigPtr config);
   void NotifyKeyboardVisibilityChanged(bool visible);
   void NotifyKeyboardVisibleBoundsChanged(const gfx::Rect& bounds);
-  void NotifyKeyboardEnabledChanged(bool enabled);
+  void NotifyKeyboardDisabled();
 
   ::keyboard::KeyboardController* controller_;
   std::unique_ptr<ControllerObserver> controller_observer_;

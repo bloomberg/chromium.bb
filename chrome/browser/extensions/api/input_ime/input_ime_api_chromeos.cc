@@ -776,7 +776,7 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
     // But still need to unload keyboard container document. Since ime extension
     // need to re-render the document when it's recovered.
     auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->enabled()) {
+    if (keyboard_controller->IsEnabled()) {
       // Keyboard controller "Reload" method only reload current page when the
       // url is changed. So we need unload the current page first. Then next
       // engine->Enable() can refresh the inputview page correctly.

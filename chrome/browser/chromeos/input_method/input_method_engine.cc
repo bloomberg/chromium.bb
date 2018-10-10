@@ -220,9 +220,8 @@ void InputMethodEngine::HideInputView() {
   // KeyboardController in the browser process under MASH.
   if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->enabled()) {
+    if (keyboard_controller->IsEnabled())
       keyboard_controller->HideKeyboardByUser();
-    }
   }
 }
 
@@ -234,7 +233,7 @@ void InputMethodEngine::EnableInputView() {
   // KeyboardController in the browser process under MASH.
   if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->enabled())
+    if (keyboard_controller->IsEnabled())
       keyboard_controller->Reload();
   }
 }

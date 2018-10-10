@@ -124,7 +124,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
     auto* keyboard = keyboard::KeyboardController::Get();
-    ASSERT_TRUE(keyboard->enabled());
+    ASSERT_TRUE(keyboard->IsEnabled());
     if (show == keyboard->IsKeyboardVisible())
       return;
 

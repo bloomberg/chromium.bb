@@ -536,7 +536,11 @@ aura::Window* RootWindowController::GetWindowForFullscreenMode() {
 void RootWindowController::ActivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
   DCHECK(keyboard_controller);
-  if (!keyboard::IsKeyboardEnabled() || !keyboard_controller->enabled())
+
+  // There is a potential edge case where IsKeyboardEnabled() returns true but
+  // EnableKeyboard() has not been called. In that case we still don't want to
+  // activate the keyboard.
+  if (!keyboard::IsKeyboardEnabled() || !keyboard_controller->IsEnabled())
     return;
 
   // If the keyboard is already activated, ensure that it is activated in this
@@ -555,7 +559,7 @@ void RootWindowController::ActivateKeyboard(
 void RootWindowController::DeactivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
   DCHECK(keyboard_controller);
-  if (!keyboard_controller->enabled())
+  if (!keyboard_controller->IsEnabled())
     return;
 
   // If the VK is under the root window of this controller.

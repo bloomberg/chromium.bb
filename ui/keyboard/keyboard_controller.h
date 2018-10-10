@@ -222,8 +222,9 @@ class KEYBOARD_EXPORT KeyboardController
   // container behavior.
   bool IsOverscrollAllowed() const;
 
-  // Whether the keyboard is enabled.
-  bool enabled() const { return ui_ != nullptr; }
+  // Whether the keyboard has been enabled, i.e. EnableKeyboard() has been
+  // called.
+  bool IsEnabled() const { return ui_ != nullptr; }
 
   // Handle mouse and touch events on the keyboard. The effects of this method
   // will not stop propagation to the keyboard extension.

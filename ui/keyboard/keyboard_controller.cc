@@ -189,8 +189,8 @@ KeyboardController::KeyboardController()
 
 KeyboardController::~KeyboardController() {
   DCHECK(g_keyboard_controller);
-  DCHECK(!enabled())
-      << "Keyboard must be disabled before KeyboardController is destroyed";
+  DCHECK(!ui_)
+      << "Keyboard UI must be destroyed before KeyboardController is destroyed";
   g_keyboard_controller = nullptr;
 }
 
@@ -207,7 +207,7 @@ bool KeyboardController::HasInstance() {
 
 void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
                                         KeyboardLayoutDelegate* delegate) {
-  if (enabled())
+  if (ui_)
     DisableKeyboard();
 
   ui_ = std::move(ui);
@@ -226,7 +226,7 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
 }
 
 void KeyboardController::DisableKeyboard() {
-  if (!enabled())
+  if (!ui_)
     return;
 
   if (parent_container_)
@@ -371,7 +371,7 @@ ui::TextInputClient* KeyboardController::GetTextInputClient() {
 }
 
 bool KeyboardController::InsertText(const base::string16& text) {
-  if (!enabled())
+  if (!ui_)
     return false;
 
   ui::InputMethod* input_method = ui_->GetInputMethod();
@@ -392,7 +392,7 @@ bool KeyboardController::UpdateKeyboardConfig(
   if (config.Equals(keyboard_config_))
     return false;
   keyboard_config_ = config;
-  if (enabled())
+  if (IsEnabled())
     NotifyKeyboardConfigChanged();
   return true;
 }
@@ -403,7 +403,7 @@ bool KeyboardController::IsKeyboardOverscrollEnabled() const {
 
   // Users of the sticky accessibility on-screen keyboard are likely to be using
   // mouse input, which may interfere with overscrolling.
-  if (enabled() && !IsOverscrollAllowed())
+  if (IsEnabled() && !IsOverscrollAllowed())
     return false;
 
   // If overscroll enabled behavior is set, use it instead. Currently
@@ -688,7 +688,7 @@ void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
 
 void KeyboardController::OnShowVirtualKeyboardIfEnabled() {
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (IsKeyboardEnabled() && !keyboard_locked())
+  if (keyboard::IsKeyboardEnabled() && !keyboard_locked())
     ShowKeyboardInternal(display::Display());
 }
 
@@ -856,7 +856,7 @@ void KeyboardController::ReportLingeringState() {
 }
 
 gfx::Rect KeyboardController::GetWorkspaceOccludedBounds() const {
-  if (!enabled())
+  if (!ui_)
     return gfx::Rect();
 
   const gfx::Rect visual_bounds_in_window(visual_bounds_in_screen_.size());
@@ -964,7 +964,7 @@ bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
 
 bool KeyboardController::DisplayVirtualKeyboard() {
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (IsKeyboardEnabled() && !keyboard_locked()) {
+  if (keyboard::IsKeyboardEnabled() && !keyboard_locked()) {
     ShowKeyboardInternal(display::Display());
     return true;
   }
@@ -981,7 +981,11 @@ void KeyboardController::RemoveObserver(
 }
 
 bool KeyboardController::IsKeyboardVisible() {
-  return state_ == KeyboardControllerState::SHOWN;
+  if (state_ == KeyboardControllerState::SHOWN) {
+    DCHECK(IsEnabled());
+    return true;
+  }
+  return false;
 }
 
 void KeyboardController::UpdateInputMethodObserver() {

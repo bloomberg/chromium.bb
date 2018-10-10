@@ -39,8 +39,6 @@ void SendProcessKeyEvent(ui::EventType type,
 
 bool g_accessibility_keyboard_enabled = false;
 
-bool g_hotrod_keyboard_enabled = false;
-
 bool g_keyboard_enabled_from_shelf = false;
 
 bool g_touch_keyboard_enabled = false;
@@ -57,14 +55,6 @@ void SetAccessibilityKeyboardEnabled(bool enabled) {
 
 bool GetAccessibilityKeyboardEnabled() {
   return g_accessibility_keyboard_enabled;
-}
-
-void SetHotrodKeyboardEnabled(bool enabled) {
-  g_hotrod_keyboard_enabled = enabled;
-}
-
-bool GetHotrodKeyboardEnabled() {
-  return g_hotrod_keyboard_enabled;
 }
 
 void SetKeyboardEnabledFromShelf(bool enabled) {
@@ -85,10 +75,6 @@ bool GetTouchKeyboardEnabled() {
 
 void SetRequestedKeyboardState(KeyboardState state) {
   g_requested_keyboard_state = state;
-}
-
-KeyboardState GetKeyboardRequestedState() {
-  return g_requested_keyboard_state;
 }
 
 std::string GetKeyboardLayout() {

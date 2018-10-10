@@ -180,7 +180,7 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   const int keyboard_height =
-      keyboard_controller->enabled()
+      keyboard_controller->IsEnabled()
           ? keyboard_controller->GetKeyboardLockScreenOffsetBounds().height()
           : 0;
   gfx::Rect bounds = screen_util::GetDisplayBoundsWithShelf(window);

@@ -106,10 +106,8 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
   // KeyboardController in the browser process.
   if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->enabled() &&
-        keyboard_controller->IsKeyboardVisible()) {
+    if (keyboard_controller->IsKeyboardVisible())
       keyboard_controller->HideKeyboardExplicitlyBySystem();
-    }
   }
 #endif
 

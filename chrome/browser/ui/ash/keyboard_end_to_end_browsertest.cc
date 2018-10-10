@@ -37,15 +37,14 @@ class KeyboardEndToEndTest : public InProcessBrowserTest {
     ASSERT_TRUE(web_contents);
 
     ASSERT_TRUE(KeyboardController::Get());
-    ASSERT_TRUE(KeyboardController::Get()->enabled());
+    ASSERT_TRUE(KeyboardController::Get()->IsEnabled());
     EXPECT_FALSE(IsKeyboardVisible());
   }
 
  protected:
   bool IsKeyboardVisible() {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
-    return keyboard_controller->enabled() &&
-           keyboard_controller->IsKeyboardVisible();
+    return keyboard_controller->IsKeyboardVisible();
   }
 
   // Initialized in |SetUpOnMainThread|.
