@@ -24,6 +24,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -732,6 +733,7 @@ public class ApiCompatibilityUtils {
     /**
      * Creates regular LayerDrawable on Android L+. On older versions creates a helper class that
      * fixes issues around {@link LayerDrawable#mutate()}. See https://crbug.com/890317 for details.
+     * See also {@link #createTransitionDrawable}.
      * @param layers A list of drawables to use as layers in this new drawable.
      */
     public static LayerDrawable createLayerDrawable(@NonNull Drawable[] layers) {
@@ -741,6 +743,19 @@ public class ApiCompatibilityUtils {
         return new LayerDrawable(layers);
     }
 
+    /**
+     * Creates regular TransitionDrawable on Android L+. On older versions creates a helper class
+     * that fixes issues around {@link TransitionDrawable#mutate()}. See https://crbug.com/892061
+     * for details. See also {@link #createLayerDrawable}.
+     * @param layers A list of drawables to use as layers in this new drawable.
+     */
+    public static TransitionDrawable createTransitionDrawable(@NonNull Drawable[] layers) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            return new TransitionDrawableCompat(layers);
+        }
+        return new TransitionDrawable(layers);
+    }
+
     private static class LayerDrawableCompat extends LayerDrawable {
         private boolean mMutated;
 
@@ -748,6 +763,7 @@ public class ApiCompatibilityUtils {
             super(layers);
         }
 
+        @NonNull
         @Override
         public Drawable mutate() {
             // LayerDrawable in Android K loses bounds of layers, so this method works around that.
@@ -756,24 +772,61 @@ public class ApiCompatibilityUtils {
                 return this;
             }
 
-            // Save bounds before mutation.
-            Rect[] oldBounds = new Rect[getNumberOfLayers()];
-            for (int i = 0; i < getNumberOfLayers(); i++) {
-                oldBounds[i] = getDrawable(i).getBounds();
-            }
-
+            Rect[] oldBounds = getLayersBounds(this);
             Drawable superResult = super.mutate();
-            if (superResult != this) {
-                // Unexpected, LayerDrawable.mutate() always returns this.
-                return superResult;
-            }
-
-            // Restore the saved bounds.
-            for (int i = 0; i < getNumberOfLayers(); i++) {
-                getDrawable(i).setBounds(oldBounds[i]);
-            }
+            // LayerDrawable.mutate() always returns this, bail out if this isn't the case.
+            if (superResult != this) return superResult;
+            restoreLayersBounds(this, oldBounds);
             mMutated = true;
             return this;
+        }
+    }
+
+    private static class TransitionDrawableCompat extends TransitionDrawable {
+        private boolean mMutated;
+
+        TransitionDrawableCompat(@NonNull Drawable[] layers) {
+            super(layers);
+        }
+
+        @NonNull
+        @Override
+        public Drawable mutate() {
+            // LayerDrawable in Android K loses bounds of layers, so this method works around that.
+            if (mMutated) {
+                // This object has already been mutated and shouldn't have any shared state.
+                return this;
+            }
+            Rect[] oldBounds = getLayersBounds(this);
+            Drawable superResult = super.mutate();
+            // TransitionDrawable.mutate() always returns this, bail out if this isn't the case.
+            if (superResult != this) return superResult;
+            restoreLayersBounds(this, oldBounds);
+            mMutated = true;
+            return this;
+        }
+    }
+
+    /**
+     * Helper for {@link LayerDrawableCompat#mutate} and {@link TransitionDrawableCompat#mutate}.
+     * Obtains the bounds of layers so they can be restored after a mutation.
+     */
+    private static Rect[] getLayersBounds(LayerDrawable layerDrawable) {
+        Rect[] result = new Rect[layerDrawable.getNumberOfLayers()];
+        for (int i = 0; i < layerDrawable.getNumberOfLayers(); i++) {
+            result[i] = layerDrawable.getDrawable(i).getBounds();
+        }
+        return result;
+    }
+
+    /**
+     * Helper for {@link LayerDrawableCompat#mutate} and {@link TransitionDrawableCompat#mutate}.
+     * Restores the bounds of layers after a mutation.
+     */
+    private static void restoreLayersBounds(LayerDrawable layerDrawable, Rect[] oldBounds) {
+        assert layerDrawable.getNumberOfLayers() == oldBounds.length;
+        for (int i = 0; i < layerDrawable.getNumberOfLayers(); i++) {
+            layerDrawable.getDrawable(i).setBounds(oldBounds[i]);
         }
     }
 }

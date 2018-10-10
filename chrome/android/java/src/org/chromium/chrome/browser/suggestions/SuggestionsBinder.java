@@ -354,7 +354,8 @@ public class SuggestionsBinder {
         // Cross-fade between the placeholder and the thumbnail. We cross-fade because the incoming
         // image may have transparency and we don't want the previous image showing up behind.
         Drawable[] layers = {mThumbnailView.getDrawable(), thumbnail};
-        TransitionDrawable transitionDrawable = new TransitionDrawable(layers);
+        TransitionDrawable transitionDrawable =
+                ApiCompatibilityUtils.createTransitionDrawable(layers);
         mThumbnailView.setImageDrawable(transitionDrawable);
         transitionDrawable.setCrossFadeEnabled(true);
         transitionDrawable.startTransition(duration);
