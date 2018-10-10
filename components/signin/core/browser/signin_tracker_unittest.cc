@@ -69,15 +69,13 @@ class SigninTrackerTest : public testing::Test {
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
-  }
 
-  void SetUp() override {
     tracker_ = std::make_unique<SigninTracker>(
         &fake_oauth2_token_service_, &fake_signin_manager_,
         &fake_gaia_cookie_manager_service_, &observer_);
   }
 
-  void TearDown() override { tracker_.reset(); }
+  ~SigninTrackerTest() override { tracker_.reset(); }
 
   base::MessageLoop message_loop_;
   std::unique_ptr<SigninTracker> tracker_;
