@@ -125,7 +125,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Returns our url_index.
   UrlIndex* url_index() const { return url_index_; }
 
-  bool has_opaque_data() const { return has_opaque_data_; }
+  // This must be called after the response arrives.
+  bool is_cors_cross_origin() const { return is_cors_cross_origin_; }
 
   // Notifies the url index that this is currently used.
   // The url <-> URLData mapping will be eventually be invalidated if
@@ -145,7 +146,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   void set_range_supported();
   void set_last_modified(base::Time last_modified);
   void set_etag(const std::string& etag);
-  void set_has_opaque_data(bool has_opaque_data);
+  void set_is_cors_cross_origin(bool is_cors_cross_origin);
 
   // A redirect has occured (or we've found a better UrlData for the same
   // resource).
@@ -238,9 +239,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // will not cache this url.
   bool cacheable_;
 
-  // True if a service worker intercepted a request for this resource
-  // and provided an opaque response.
-  bool has_opaque_data_;
+  // https://html.spec.whatwg.org/#cors-cross-origin
+  bool is_cors_cross_origin_ = false;
 
   // Last time some media time used this resource.
   // Note that we use base::Time rather than base::TimeTicks because
