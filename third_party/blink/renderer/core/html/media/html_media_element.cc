@@ -2252,10 +2252,15 @@ bool HTMLMediaElement::paused() const {
 }
 
 double HTMLMediaElement::defaultPlaybackRate() const {
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return 1.0;
   return default_playback_rate_;
 }
 
 void HTMLMediaElement::setDefaultPlaybackRate(double rate) {
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return;
+
   if (default_playback_rate_ == rate)
     return;
 
@@ -2264,12 +2269,16 @@ void HTMLMediaElement::setDefaultPlaybackRate(double rate) {
 }
 
 double HTMLMediaElement::playbackRate() const {
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return 1.0;
   return playback_rate_;
 }
 
 void HTMLMediaElement::setPlaybackRate(double rate,
                                        ExceptionState& exception_state) {
   BLINK_MEDIA_LOG << "setPlaybackRate(" << (void*)this << ", " << rate << ")";
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return;
 
   if (rate != 0.0 && (rate < kMinRate || rate > kMaxRate)) {
     UseCounter::Count(GetDocument(),
@@ -2319,11 +2328,15 @@ bool HTMLMediaElement::Autoplay() const {
 }
 
 String HTMLMediaElement::preload() const {
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return PreloadTypeToString(WebMediaPlayer::kPreloadNone);
   return PreloadTypeToString(PreloadType());
 }
 
 void HTMLMediaElement::setPreload(const AtomicString& preload) {
   BLINK_MEDIA_LOG << "setPreload(" << (void*)this << ", " << preload << ")";
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
+    return;
   setAttribute(preloadAttr, preload);
 }
 
