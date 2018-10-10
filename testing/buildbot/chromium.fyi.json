@@ -3166,32 +3166,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--browser=cros-chrome",
-          "--remote=127.0.0.1",
-          "--remote-ssh-port=9222",
-          "--xvfb",
-          "--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs",
-          "--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain"
-        ],
-        "isolate_name": "telemetry_perf_unittests",
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ],
-          "hard_timeout": 3600,
-          "idempotent": false,
-          "io_timeout": 3600,
-          "shards": 6
-        }
-      },
-      {
-        "args": [
           "--jobs=1",
           "--browser=cros-chrome",
           "--remote=127.0.0.1",

@@ -470,6 +470,9 @@
           'shards': 6,
         },
       },
+    },
+
+    'chromeos_isolated_scripts_experimental': {
       'telemetry_unittests': {
         'args': [
           '--jobs=1',
