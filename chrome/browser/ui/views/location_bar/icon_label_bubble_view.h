@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
