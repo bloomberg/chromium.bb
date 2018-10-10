@@ -196,6 +196,17 @@ cr.define('multidevice_setup', () => {
               forwardButton.click();
             });
           });
+
+      test('SuccessPage Settings link closes UI (post-OOBE)', done => {
+        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
+
+        setMode(false /* isOobeMode */);
+        setVisiblePage(SUCCESS);
+
+        multiDeviceSetupElement.$$('setup-succeeded-page')
+            .$$('#settings-link')
+            .click();
+      });
     });
   }
   return {registerIntegrationTests: registerIntegrationTests};

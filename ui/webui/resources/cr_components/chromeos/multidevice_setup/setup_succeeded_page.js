@@ -44,10 +44,16 @@ Polymer({
     this.browserProxy_.openMultiDeviceSettings();
   },
 
+  /** @private */
+  onSettingsLinkClicked_: function() {
+    this.openSettings_();
+    this.fire('setup-exited');
+  },
+
   /** @override */
   ready: function() {
     let linkElement = this.$$('#settings-link');
     linkElement.setAttribute('href', '#');
-    linkElement.addEventListener('click', () => this.openSettings_());
-  }
+    linkElement.addEventListener('click', () => this.onSettingsLinkClicked_());
+  },
 });
