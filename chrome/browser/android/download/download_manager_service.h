@@ -187,8 +187,8 @@ class DownloadManagerService
   // only mode.
   void CreateInProgressDownloadManager();
 
-  // Called to when |in_progress_manager_| is initialized.
-  void OnInProgressManagerInitiailized();
+  // Called when all pending downloads are loaded.
+  void OnPendingDownloadsLoaded();
 
   typedef base::Callback<void(bool)> ResumeCallback;
   void set_resume_callback_for_testing(const ResumeCallback& resume_cb) {
@@ -199,6 +199,7 @@ class DownloadManagerService
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   bool is_history_query_complete_;
+  bool is_pending_downloads_loaded_;
 
   enum PendingGetDownloadsFlags {
     NONE = 0,
