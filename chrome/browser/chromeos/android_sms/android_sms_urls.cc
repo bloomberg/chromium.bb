@@ -24,11 +24,7 @@ const char kAndroidMessagesSandboxUrl[] =
 
 const char kAndroidMessagesProdUrl[] = "https://messages.android.com/";
 
-// NOTE: Using experiment mods until changes roll out to prod.
-const char kExperimentUrlParams[] =
-    "?e=DittoServiceWorker,DittoPwa,DittoIndexedDb&DefaultToPersistent=true";
-
-const char kProdUrlParams[] = "?DefaultToPersistent=true";
+const char kUrlParams[] = "?DefaultToPersistent=true";
 
 GURL GetURLInternal(bool with_params) {
   const base::CommandLine* command_line =
@@ -42,8 +38,7 @@ GURL GetURLInternal(bool with_params) {
     url_string = std::string(use_prod_url ? kAndroidMessagesProdUrl
                                           : kAndroidMessagesSandboxUrl);
   if (with_params)
-    url_string +=
-        std::string(use_prod_url ? kProdUrlParams : kExperimentUrlParams);
+    url_string += kUrlParams;
   return GURL(url_string);
 }
 
