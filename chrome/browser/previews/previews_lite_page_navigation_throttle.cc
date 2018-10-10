@@ -395,6 +395,39 @@ PreviewsLitePageNavigationThrottle::WillStartRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
+  // WillRedirectRequest is called after the navigation_handle's URL has already
+  // been set to the next location. So inspect the previous URL for the presence
+  // of the previews server.
+  const std::vector<GURL>& redirect_chain =
+      navigation_handle()->GetRedirectChain();
+  // |navigation_handle()->GetURL()| is always the last element in the redirect
+  // chain. So if we've come here after a redirect, the length of
+  // |redirect_chain| is at least 2.
+  const GURL& previous_url = redirect_chain[redirect_chain.size() - 2];
+
+  // If we are redirecting on a preview, count some UMA and proceed.
+  std::string original_url;
+  if (GetOriginalURL(previous_url, &original_url)) {
+    // A redirect means one of two things: (1) there is no preview available for
+    // this page and we should redirect back to the original page. (2) the
+    // previews server is forwarding along a redirect from the origin. The
+    // difference between the two is where the Location header is pointing. If
+    // it is pointing towards the original page, it is considered a bypass.
+    // Otherwise it is just a forwarded bypass.
+    if (GURL(original_url) == navigation_handle()->GetURL()) {
+      manager_->AddSingleBypass(navigation_handle()->GetURL().spec());
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Previews.ServerLitePage.HttpOnlyFallbackPenalty",
+          base::TimeTicks::Now() - navigation_handle()->NavigationStart());
+      UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                                ServerResponse::kPreviewUnavailable);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                                ServerResponse::kRedirect);
+    }
+    return content::NavigationThrottle::PROCEED;
+  }
+
   return MaybeNavigateToPreview();
 }
 
@@ -451,22 +484,12 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
     return content::NavigationThrottle::PROCEED;
   }
 
-  if (response_code == net::HTTP_TEMPORARY_REDIRECT) {
-    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
-                              ServerResponse::kRedirect);
-    return content::NavigationThrottle::PROCEED;
-  }
-
   const base::TimeDelta penalty =
       base::TimeTicks::Now() - navigation_handle()->NavigationStart();
   UMA_HISTOGRAM_MEDIUM_TIMES("Previews.ServerLitePage.HttpOnlyFallbackPenalty",
                              penalty);
 
-  if (response_code == net::HTTP_NOT_FOUND) {
-    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
-                              ServerResponse::kPreviewUnavailable);
-
-  } else if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
+  if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
     std::string retry_after_header;
     base::TimeDelta retry_after = base::TimeDelta::FromSeconds(
         base::RandInt(60, previews::params::PreviewServerLoadshedMaxSeconds()));
@@ -479,6 +502,9 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
 
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               ServerResponse::kServiceUnavailable);
+  } else if (response_code == net::HTTP_FORBIDDEN) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              ServerResponse::kAuthFailure);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               ServerResponse::kOther);
