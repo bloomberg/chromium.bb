@@ -39,10 +39,10 @@ class Widget;
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
-                                 public PageActionIconView::Delegate,
                                  public ContentSettingImageView::Delegate,
-                                 public ToolbarButtonProvider,
                                  public ImmersiveModeController::Observer,
+                                 public PageActionIconView::Delegate,
+                                 public ToolbarButtonProvider,
                                  public views::WidgetObserver {
  public:
   static const char kViewClassName[];
@@ -80,6 +80,49 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   SkColor active_color_for_testing() const { return active_color_; }
 
+  // views::AccessiblePaneView:
+  const char* GetClassName() const override;
+
+  // BrowserActionsContainer::Delegate:
+  views::MenuButton* GetOverflowReferenceView() override;
+  base::Optional<int> GetMaxBrowserActionsWidth() const override;
+  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
+      ToolbarActionsBarDelegate* delegate,
+      Browser* browser,
+      ToolbarActionsBar* main_bar) const override;
+
+  // ContentSettingImageView::Delegate:
+  SkColor GetContentSettingInkDropColor() const override;
+  content::WebContents* GetContentSettingWebContents() override;
+  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
+      override;
+  void OnContentSettingImageBubbleShown(
+      ContentSettingImageModel::ImageType type) const override;
+
+  // ImmersiveModeController::Observer:
+  void OnImmersiveRevealStarted() override;
+
+  // PageActionIconView::Delegate:
+  SkColor GetPageActionInkDropColor() const override;
+  content::WebContents* GetWebContentsForPageActionIconView() override;
+
+  // ToolbarButtonProvider:
+  BrowserActionsContainer* GetBrowserActionsContainer() override;
+  PageActionIconContainerView* GetPageActionIconContainerView() override;
+  AppMenuButton* GetAppMenuButton() override;
+  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
+  void FocusToolbar() override;
+  views::AccessiblePaneView* GetAsAccessiblePaneView() override;
+
+  // views::WidgetObserver:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+
+ protected:
+  // views::AccessiblePaneView:
+  gfx::Size CalculatePreferredSize() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void ChildVisibilityChanged(views::View* child) override;
+
  private:
   friend class HostedAppNonClientFrameViewAshTest;
   friend class HostedAppGlassBrowserFrameViewTest;
@@ -107,46 +150,6 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   SkColor GetIconColor() const;
   SkColor GetIconInkDropColor() const;
   void UpdateChildrenColor();
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
-  const char* GetClassName() const override;
-
-  // BrowserActionsContainer::Delegate:
-  views::MenuButton* GetOverflowReferenceView() override;
-  base::Optional<int> GetMaxBrowserActionsWidth() const override;
-  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
-      ToolbarActionsBarDelegate* delegate,
-      Browser* browser,
-      ToolbarActionsBar* main_bar) const override;
-
-  // PageActionIconView::Delegate:
-  SkColor GetPageActionInkDropColor() const override;
-  content::WebContents* GetWebContentsForPageActionIconView() override;
-
-  // ContentSettingImageView::Delegate:
-  SkColor GetContentSettingInkDropColor() const override;
-  content::WebContents* GetContentSettingWebContents() override;
-  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
-      override;
-  void OnContentSettingImageBubbleShown(
-      ContentSettingImageModel::ImageType type) const override;
-
-  // ToolbarButtonProvider:
-  BrowserActionsContainer* GetBrowserActionsContainer() override;
-  PageActionIconContainerView* GetPageActionIconContainerView() override;
-  AppMenuButton* GetAppMenuButton() override;
-  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
-  void FocusToolbar() override;
-  views::AccessiblePaneView* GetAsAccessiblePaneView() override;
-
-  // ImmersiveModeController::Observer:
-  void OnImmersiveRevealStarted() override;
-
-  // views::WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // Whether we're waiting for the widget to become visible.
   bool pending_widget_visibility_ = true;
