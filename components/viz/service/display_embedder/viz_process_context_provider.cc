@@ -196,6 +196,10 @@ bool VizProcessContextProvider::UseRGB565PixelFormat() const {
          attributes_.green_size == 6 && attributes_.blue_size == 5;
 }
 
+uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
+  return attributes_.alpha_size > 0 ? GL_RGBA : GL_RGB;
+}
+
 void VizProcessContextProvider::InitializeContext(
     scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::SurfaceHandle surface_handle,
