@@ -1458,11 +1458,33 @@ void CrostiniManager::OnLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& signal) {
   if (signal.owner_id() != owner_id_)
     return;
+  ConciergeClientResult result;
+
+  switch (signal.status()) {
+    case vm_tools::cicerone::LxdContainerCreatedSignal::UNKNOWN:
+      result = ConciergeClientResult::UNKNOWN_ERROR;
+      break;
+    case vm_tools::cicerone::LxdContainerCreatedSignal::CREATED:
+      result = ConciergeClientResult::SUCCESS;
+      break;
+    case vm_tools::cicerone::LxdContainerCreatedSignal::DOWNLOAD_TIMED_OUT:
+      result = ConciergeClientResult::CONTAINER_DOWNLOAD_TIMED_OUT;
+      break;
+    case vm_tools::cicerone::LxdContainerCreatedSignal::CANCELLED:
+      result = ConciergeClientResult::CONTAINER_CREATE_CANCELLED;
+      break;
+    case vm_tools::cicerone::LxdContainerCreatedSignal::FAILED:
+      result = ConciergeClientResult::CONTAINER_CREATE_FAILED;
+      break;
+    default:
+      result = ConciergeClientResult::UNKNOWN_ERROR;
+      break;
+  }
   // Find the callbacks to call, then erase them from the map.
   auto range = create_lxd_container_callbacks_.equal_range(
       std::make_tuple(signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
-    std::move(it->second).Run(ConciergeClientResult::SUCCESS);
+    std::move(it->second).Run(result);
   }
   create_lxd_container_callbacks_.erase(range.first, range.second);
 }

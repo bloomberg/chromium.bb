@@ -104,6 +104,13 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void CreateContainerFailsCallback(base::OnceClosure closure,
+                                    ConciergeClientResult result) {
+    create_container_fails_callback_called_ = true;
+    EXPECT_EQ(result, ConciergeClientResult::UNKNOWN_ERROR);
+    std::move(closure).Run();
+  }
+
   void InstallLinuxPackageCallback(base::OnceClosure closure,
                                    ConciergeClientResult expected_result,
                                    const std::string& expected_failure_reason,
@@ -153,6 +160,7 @@ class CrostiniManagerTest : public testing::Test {
       run_loop_;  // run_loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniManager> crostini_manager_;
+  bool create_container_fails_callback_called_ = false;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -333,9 +341,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalFailure) {
 class CrostiniManagerRestartTest : public CrostiniManagerTest,
                                    public CrostiniManager::RestartObserver {
  public:
-  void SetUp() override {
-    CrostiniManagerTest::SetUp();
-  }
+  void SetUp() override { CrostiniManagerTest::SetUp(); }
 
   void RestartCrostiniCallback(base::OnceClosure closure,
                                ConciergeClientResult result) {
@@ -501,6 +507,25 @@ TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreated) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
   run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortOnContainerCreatedError) {
+  abort_on_container_started_ = true;
+  fake_cicerone_client_->set_lxd_container_created_signal_status(
+      vm_tools::cicerone::LxdContainerCreatedSignal::UNKNOWN);
+  // Use termina/penguin names to allow fetch ssh keys.
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+      base::BindOnce(&CrostiniManagerTest::CreateContainerFailsCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+
+  EXPECT_TRUE(create_container_fails_callback_called_);
   EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
