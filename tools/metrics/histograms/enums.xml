@@ -20331,6 +20331,38 @@ Called by update_net_error_codes.py.-->
   <int value="2556" label="V8AtomicsWake"/>
   <int value="2557" label="FormDisabledAttributePresent"/>
   <int value="2558" label="FormDisabledAttributePresentAndSubmit"/>
+  <int value="2559" label="CSSValueAppearanceCheckboxRendered"/>
+  <int value="2560" label="CSSValueAppearanceCheckboxForOthersRendered"/>
+  <int value="2561" label="CSSValueAppearanceRadioRendered"/>
+  <int value="2562" label="CSSValueAppearanceRadioForOthersRendered"/>
+  <int value="2563" label="CSSValueAppearanceInnerSpinButtonRendered"/>
+  <int value="2564" label="CSSValueAppearanceInnerSpinButtonForOthersRendered"/>
+  <int value="2565" label="CSSValueAppearanceMenuListRendered"/>
+  <int value="2566" label="CSSValueAppearanceMenuListForOthersRendered"/>
+  <int value="2567" label="CSSValueAppearanceProgressBarRendered"/>
+  <int value="2568" label="CSSValueAppearanceSliderHorizontalRendered"/>
+  <int value="2569"
+      label="CSSValueAppearanceSliderHorizontalForOthersRendered"/>
+  <int value="2570" label="CSSValueAppearanceSliderVerticalRendered"/>
+  <int value="2571" label="CSSValueAppearanceSliderVerticalForOthersRendered"/>
+  <int value="2572" label="CSSValueAppearanceSliderThumbHorizontalRendered"/>
+  <int value="2573"
+      label="CSSValueAppearanceSliderThumbHorizontalForOthersRendered"/>
+  <int value="2574" label="CSSValueAppearanceSliderThumbVerticalRendered"/>
+  <int value="2575"
+      label="CSSValueAppearanceSliderThumbVerticalForOthersRendered"/>
+  <int value="2576" label="CSSValueAppearanceSearchFieldRendered"/>
+  <int value="2577" label="CSSValueAppearanceSearchFieldForOthersRendered"/>
+  <int value="2578" label="CSSValueAppearanceSearchCancelRendered"/>
+  <int value="2579" label="CSSValueAppearanceSearchCancelForOthersRendered"/>
+  <int value="2580" label="CSSValueAppearanceTextAreaRendered"/>
+  <int value="2581" label="CSSValueAppearanceTextAreaForOthersRendered"/>
+  <int value="2582" label="CSSValueAppearanceMenuListButtonRendered"/>
+  <int value="2583" label="CSSValueAppearanceMenuListButtonForOthersRendered"/>
+  <int value="2584" label="CSSValueAppearancePushButtonRendered"/>
+  <int value="2585" label="CSSValueAppearancePushButtonForOthersRendered"/>
+  <int value="2586" label="CSSValueAppearanceSquareButtonRendered"/>
+  <int value="2587" label="CSSValueAppearanceSquareButtonForOthersRendered"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
