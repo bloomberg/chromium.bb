@@ -55,7 +55,7 @@ public class WebappDisclosureSnackbarController implements SnackbarManager.Snack
                                     this, Snackbar.TYPE_PERSISTENT,
                                     Snackbar.UMA_WEBAPK_PRIVACY_DISCLOSURE)
                             .setAction(
-                                    activity.getResources().getString(R.string.ok_got_it), storage)
+                                    activity.getResources().getString(R.string.ok), storage)
                             .setSingleLine(false));
         }
     }
