@@ -8502,9 +8502,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_LOCAL_DISCOVERY_ADDING_PRINTER" desc="Title for 'adding printer' page">
           Adding printer...
         </message>
-        <message name="IDS_LOCAL_DISCOVERY_ADDING_DEVICE" desc="Title for 'adding device' page">
-          Adding device...
-        </message>
         <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED" desc="Title for error page">
           Could not complete registration
         </message>
@@ -8513,9 +8510,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE2" desc="Message for adding printer number 2">
           Adding the printer to your account - this may take a moment...
-        </message>
-        <message name="IDS_LOCAL_DISCOVERY_ADDING_DEVICE_MESSAGE1" desc="Message for adding device number 1">
-          Adding the device to your account - this may take a moment...
         </message>
         <message name="IDS_LOCAL_DISCOVERY_ERROR_OCURRED_MESSAGE" desc="Message for error page">
           An error has occurred. Please check your printer and try again.
