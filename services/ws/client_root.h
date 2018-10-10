@@ -59,6 +59,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   bool is_top_level() const { return is_top_level_; }
 
+  // Called when the LocalSurfaceId of the embedder changes.
+  void OnLocalSurfaceIdChanged();
+
   // Attaches/unattaches server_window->attached_frame_sink_id() to the
   // HostFrameSinkManager.
   void AttachChildFrameSinkId(ServerWindow* server_window);

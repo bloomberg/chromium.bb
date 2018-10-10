@@ -1139,11 +1139,11 @@ bool WindowTree::SetWindowBoundsImpl(
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   const gfx::Rect original_bounds =
       IsTopLevel(window) ? window->GetBoundsInScreen() : window->bounds();
+  const bool local_surface_id_changed =
+      server_window->local_surface_id() != local_surface_id;
 
-  if (original_bounds == bounds &&
-      server_window->local_surface_id() == local_surface_id) {
+  if (original_bounds == bounds && !local_surface_id_changed)
     return true;
-  }
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kBounds);
@@ -1172,8 +1172,21 @@ bool WindowTree::SetWindowBoundsImpl(
     return false;
   }
 
-  if (window->bounds() == original_bounds)
-    return false;
+  if (window->bounds() == original_bounds) {
+    if (local_surface_id_changed) {
+      // If the bounds didn't change, but the LocalSurfaceId did, then the
+      // LocalSurfaceId needs to be propagated to any embeddings.
+      if (server_window->HasEmbedding() &&
+          server_window->embedding()->embedding_tree() == this) {
+        WindowTree* embedded_tree = server_window->embedding()->embedded_tree();
+        ClientRoot* embedded_client_root =
+            embedded_tree->GetClientRootForWindow(window);
+        DCHECK(embedded_client_root);
+        embedded_client_root->OnLocalSurfaceIdChanged();
+      }
+    }
+    return (bounds == original_bounds);
+  }
 
   if (window->bounds() == bounds &&
       server_window->local_surface_id() == local_surface_id) {

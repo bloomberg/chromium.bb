@@ -309,6 +309,30 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change.type);
   EXPECT_EQ(bounds2, bounds_change.bounds2);
   EXPECT_EQ(local_surface_id, bounds_change.local_surface_id);
+  embedding_helper->window_tree_client.tracker()->changes()->clear();
+
+  // Set the bounds from the parent, only updating the LocalSurfaceId (bounds
+  // remains the same). The client should be notified.
+  base::Optional<viz::LocalSurfaceId> local_surface_id2(
+      viz::LocalSurfaceId(1, 3, base::UnguessableToken::Create()));
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
+      window, bounds2, local_surface_id2));
+  EXPECT_EQ(bounds2, window->bounds());
+  ASSERT_EQ(1u,
+            embedding_helper->window_tree_client.tracker()->changes()->size());
+  const Change bounds_change2 =
+      (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
+  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change2.type);
+  EXPECT_EQ(bounds2, bounds_change2.bounds2);
+  EXPECT_EQ(local_surface_id2, bounds_change2.local_surface_id);
+  embedding_helper->window_tree_client.tracker()->changes()->clear();
+
+  // Try again with the same values. This should succeed, but not notify the
+  // client.
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
+      window, bounds2, local_surface_id2));
+  EXPECT_TRUE(
+      embedding_helper->window_tree_client.tracker()->changes()->empty());
 }
 
 // Tests the ability of the client to change properties on the server.

@@ -94,6 +94,11 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
   }
 }
 
+void ClientRoot::OnLocalSurfaceIdChanged() {
+  if (!ShouldAssignLocalSurfaceId())
+    HandleBoundsOrScaleFactorChange(window_->bounds());
+}
+
 void ClientRoot::AttachChildFrameSinkId(ServerWindow* server_window) {
   DCHECK(server_window->attached_frame_sink_id().is_valid());
   DCHECK(ServerWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
