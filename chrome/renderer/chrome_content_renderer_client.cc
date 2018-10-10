@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/pdf_util.h"
+#include "chrome/common/pdf_uma.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/common/prerender_types.h"
