@@ -13,11 +13,17 @@ namespace blink {
 
 class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
  public:
+  using RegistrationMap =
+      HeapHashMap<AtomicString, Member<PropertyRegistration>>;
+
   static PropertyRegistry* Create() { return new PropertyRegistry(); }
 
   void RegisterProperty(const AtomicString&, PropertyRegistration&);
   const PropertyRegistration* Registration(const AtomicString&) const;
   size_t RegistrationCount() const { return registrations_.size(); }
+
+  RegistrationMap::const_iterator begin() const;
+  RegistrationMap::const_iterator end() const;
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(registrations_); }
 
@@ -31,7 +37,7 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
                                            const CSSValue*);
 
  private:
-  HeapHashMap<AtomicString, Member<PropertyRegistration>> registrations_;
+  RegistrationMap registrations_;
 };
 
 }  // namespace blink
