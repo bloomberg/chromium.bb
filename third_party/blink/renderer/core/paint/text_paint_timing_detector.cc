@@ -20,6 +20,7 @@ namespace blink {
 
 // Calculate metrics candidate every 1 second after the first text pre-paint.
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
+constexpr size_t kNodeNumberLimit = 5000;
 
 static bool LargeTextOnTop(std::unique_ptr<TextRecord>& a,
                            std::unique_ptr<TextRecord>& b) {
@@ -40,20 +41,20 @@ TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
       frame_view_(frame_view) {}
 
 void TextPaintTimingDetector::PopulateTraceValue(
-    std::unique_ptr<TracedValue>& value,
-    TextRecord* first_text_paint,
-    int report_index) {
-  value->SetInteger("DOMNodeId", first_text_paint->node_id);
-  value->SetString("text", first_text_paint->text);
-  value->SetInteger("size", first_text_paint->first_size);
-  value->SetInteger("reportIndex", report_index);
-  value->SetString("frame",
-                   IdentifiersFactory::FrameId(&frame_view_->GetFrame()));
+    TracedValue& value,
+    const TextRecord& first_text_paint,
+    unsigned candidate_index) const {
+  value.SetInteger("DOMNodeId", first_text_paint.node_id);
+  value.SetString("text", first_text_paint.text);
+  value.SetInteger("size", first_text_paint.first_size);
+  value.SetInteger("candidateIndex", candidate_index);
+  value.SetString("frame",
+                  IdentifiersFactory::FrameId(&frame_view_->GetFrame()));
 }
 
 IntRect TextPaintTimingDetector::CalculateTransformedRect(
     LayoutRect& invalidated_rect,
-    const PaintLayer& painting_layer) {
+    const PaintLayer& painting_layer) const {
   const auto* local_transform = painting_layer.GetLayoutObject()
                                     .FirstFragment()
                                     .LocalBorderBoxProperties()
@@ -77,15 +78,16 @@ IntRect TextPaintTimingDetector::CalculateTransformedRect(
 void TextPaintTimingDetector::TimerFired(TimerBase* timer) {
   if (TextRecord* largest_text_first_paint = FindLargestPaintCandidate()) {
     std::unique_ptr<TracedValue> value = TracedValue::Create();
-    PopulateTraceValue(value, largest_text_first_paint,
-                       largest_text_report_count_++);
+    PopulateTraceValue(*value, *largest_text_first_paint,
+                       largest_text_candidate_index_max_++);
     TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
         "loading", "LargestTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
         largest_text_first_paint->first_paint_time, "data", std::move(value));
   }
   if (TextRecord* last_text_first_paint = FindLastPaintCandidate()) {
     std::unique_ptr<TracedValue> value = TracedValue::Create();
-    PopulateTraceValue(value, last_text_first_paint, last_text_report_count_++);
+    PopulateTraceValue(*value, *last_text_first_paint,
+                       last_text_candidate_index_max_++);
     TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
         "loading", "LastTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
         last_text_first_paint->first_paint_time, "data", std::move(value));
@@ -157,9 +159,19 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
     return;
   if (recorded_text_node_ids_.find(node_id) != recorded_text_node_ids_.end())
     return;
-
   // When node_id is not found in recorded_text_node_ids_, this invalidation is
   // the text's first invalidation.
+
+  // We deactivate the algorithm if the number of nodes exceeds limitation.
+  recorded_node_count_++;
+  if (recorded_node_count_ > kNodeNumberLimit) {
+    // for assessing whether kNodeNumberLimit is large enough for all
+    // normal cases
+    TRACE_EVENT_INSTANT1("loading", "TextPaintTimingDetector::OverNodeLimit",
+                         TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
+                         recorded_node_count_);
+    return;
+  }
   LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
   int rect_size = 0;
   if (!invalidated_rect.IsEmpty()) {

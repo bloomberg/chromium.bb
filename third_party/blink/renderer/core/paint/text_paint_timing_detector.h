@@ -65,11 +65,11 @@ class CORE_EXPORT TextPaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
-  void PopulateTraceValue(std::unique_ptr<TracedValue>& value,
-                          TextRecord* first_text_paint,
-                          int report_count);
+  void PopulateTraceValue(TracedValue& value,
+                          const TextRecord& first_text_paint,
+                          unsigned candidate_index) const;
   IntRect CalculateTransformedRect(LayoutRect& visual_rect,
-                                   const PaintLayer& painting_layer);
+                                   const PaintLayer& painting_layer) const;
   void TimerFired(TimerBase*);
 
   void ReportSwapTime(WebLayerTreeView::SwapResult result,
@@ -92,8 +92,9 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;
-  unsigned largest_text_report_count_ = 0;
-  unsigned last_text_report_count_ = 0;
+  unsigned recorded_node_count_ = 0;
+  unsigned largest_text_candidate_index_max_ = 0;
+  unsigned last_text_candidate_index_max_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
 };
