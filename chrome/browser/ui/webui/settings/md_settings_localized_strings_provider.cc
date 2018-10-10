@@ -537,8 +537,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"clearBrowsingHistory", IDS_SETTINGS_CLEAR_BROWSING_HISTORY},
       {"clearBrowsingHistorySummary",
        IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY},
-      {"clearBrowsingHistorySummarySignedIn",
-       IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNC_ERROR},
       {"clearDownloadHistory", IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY},
       {"clearCache", IDS_SETTINGS_CLEAR_CACHE},
       {"clearCookies", IDS_SETTINGS_CLEAR_COOKIES},
@@ -563,6 +561,11 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
+  html_source->AddString(
+      "clearBrowsingHistorySummarySignedIn",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN,
+          base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
   html_source->AddString(
       "clearBrowsingHistorySummarySynced",
       l10n_util::GetStringFUTF16(
