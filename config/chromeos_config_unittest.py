@@ -385,6 +385,16 @@ class CBuildBotTest(ChromeosConfigTestBase):
                     'Invalid luci_builder "%s" on "%s"' %
                     (config.luci_builder, build_name))
 
+  def testAffinityConfigsHaveAffinityLuciBuilder(self):
+    """Configs must have names set."""
+    for build_name, config in self.site_config.iteritems():
+      if config.build_affinity:
+        self.assertIn(config.luci_builder,
+                      (config_lib.LUCI_BUILDER_INCREMENTAL,
+                       config_lib.LUCI_BUILDER_CQ),
+                      'Non affinity luci_builder "%s" on "%s"' %
+                      (config.luci_builder, build_name))
+
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""
     for config in self.site_config.itervalues():

@@ -79,12 +79,16 @@ ALL_DISPLAY_LABEL = {
 LUCI_BUILDER_TRY = 'Try'
 LUCI_BUILDER_PRECQ = 'PreCQ'
 LUCI_BUILDER_PROD = 'Prod'
+LUCI_BUILDER_INCREMENTAL = 'Incremental'
+LUCI_BUILDER_CQ = 'CQ'
 LUCI_BUILDER_STAGING = 'Staging'
 
 ALL_LUCI_BUILDER = {
     LUCI_BUILDER_TRY,
     LUCI_BUILDER_PRECQ,
     LUCI_BUILDER_PROD,
+    LUCI_BUILDER_INCREMENTAL,
+    LUCI_BUILDER_CQ,
     LUCI_BUILDER_STAGING,
 }
 
@@ -1067,6 +1071,13 @@ def DefaultSettings():
 
       # If false, turn off rebooting between builds
       auto_reboot=True,
+
+      # Attempt to run this build on the same bot each time it builds.
+      # This is only meaningful for slave builds run on swarming. This
+      # should only be used with LUCI Builders that use a reserved
+      # role to avoid having bots stolen by other builds while
+      # waiting on a new master build.
+      build_affinity=False,
   )
 
 
