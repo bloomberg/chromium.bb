@@ -265,8 +265,9 @@ class CreditCard : public AutofillDataModel {
   // uses a two line layout and the credit card number is selected.
   base::string16 DescriptiveExpiration(const std::string& app_locale) const;
 
-  // Localized expiration for this card formatted as 'Exp: 06/17'.
-  base::string16 AbbreviatedExpirationDateForDisplay() const;
+  // Localized expiration for this card formatted as 'Exp: 06/17' if with_prefix
+  // is true or as '06/17' otherwise.
+  base::string16 AbbreviatedExpirationDateForDisplay(bool with_prefix) const;
   // Formatted expiration date (e.g., 05/2020).
   base::string16 ExpirationDateForDisplay() const;
   // Expiration functions.

@@ -832,16 +832,16 @@ base::string16 CreditCard::DescriptiveExpiration(
       GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
 }
 
-base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
+base::string16 CreditCard::AbbreviatedExpirationDateForDisplay(
+    bool with_prefix) const {
   base::string16 month = ExpirationMonthAsString();
   base::string16 year = Expiration2DigitYearAsString();
   if (month.empty() || year.empty())
     return base::string16();
 
   return l10n_util::GetStringFUTF16(
-      features::IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled()
-          ? IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR_V2
-          : IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR,
+      with_prefix ? IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR
+                  : IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR_V2,
       month, year);
 }
 
