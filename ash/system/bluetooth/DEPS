@@ -3,7 +3,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "tray_bluetooth_helper_unittest.cc": [
+  "tray_bluetooth_helper_legacy_unittest.cc": [
     "+dbus",
   ],
 }

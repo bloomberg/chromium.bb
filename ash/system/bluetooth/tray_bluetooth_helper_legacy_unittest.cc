@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/bluetooth/tray_bluetooth_helper.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper_legacy.h"
 
+#include <string>
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
@@ -32,10 +33,10 @@ bool ExistInFilteredDevices(const std::string& address,
   return false;
 }
 
-using TrayBluetoothHelperTest = AshTestBase;
+using TrayBluetoothHelperLegacyTest = AshTestBase;
 
 // Tests basic functionality.
-TEST_F(TrayBluetoothHelperTest, Basics) {
+TEST_F(TrayBluetoothHelperLegacyTest, Basics) {
   // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
   // wait or use timers.
   FakeBluetoothAdapterClient* adapter_client =
@@ -55,7 +56,7 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
       dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
 
-  TrayBluetoothHelper helper;
+  TrayBluetoothHelperLegacy helper;
   helper.Initialize();
   RunAllPendingInMessageLoop();
   EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOff,
@@ -80,10 +81,10 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
 }
 
 // Tests GetBluetoothState() returns the right value based on the adapter state.
-TEST_F(TrayBluetoothHelperTest, GetBluetoothState) {
-  TrayBluetoothHelper helper;
-  // Purposely don't call TrayBluetoothHelper::Initialize() to simulate that the
-  // BluetoothAdapter object hasn't been retrieved yet.
+TEST_F(TrayBluetoothHelperLegacyTest, GetBluetoothState) {
+  TrayBluetoothHelperLegacy helper;
+  // Purposely don't call TrayBluetoothHelperLegacy::Initialize() to simulate
+  // that the BluetoothAdapter object hasn't been retrieved yet.
   EXPECT_EQ(device::mojom::BluetoothSystem::State::kUnavailable,
             helper.GetBluetoothState());
 
@@ -122,7 +123,7 @@ TEST_F(TrayBluetoothHelperTest, GetBluetoothState) {
 
 // Tests the Bluetooth device list when UnfilteredBluetoothDevices feature is
 // enabled.
-TEST_F(TrayBluetoothHelperTest, UnfilteredBluetoothDevices) {
+TEST_F(TrayBluetoothHelperLegacyTest, UnfilteredBluetoothDevices) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine(device::kUnfilteredBluetoothDevices.name,
                                    "");
@@ -145,7 +146,7 @@ TEST_F(TrayBluetoothHelperTest, UnfilteredBluetoothDevices) {
       dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
       dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
 
-  TrayBluetoothHelper helper;
+  TrayBluetoothHelperLegacy helper;
   helper.Initialize();
   base::RunLoop().RunUntilIdle();
 
