@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 
+#include "base/atomic_sequence_num.h"
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
@@ -36,8 +37,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
-
-static unsigned g_version = 0;
 
 FontFaceCache::FontFaceCache() : version_(0) {}
 
@@ -137,7 +136,10 @@ void FontFaceCache::ClearAll() {
 }
 
 void FontFaceCache::IncrementVersion() {
-  version_ = ++g_version;
+  // Versions are guaranteed to be monotonically increasing, but not necessary
+  // sequential within a thread.
+  static base::AtomicSequenceNumber g_version;
+  version_ = g_version.GetNext();
 }
 
 CSSSegmentedFontFace* FontFaceCache::Get(
