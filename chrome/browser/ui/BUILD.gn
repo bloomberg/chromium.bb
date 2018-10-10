@@ -10,6 +10,7 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//components/feature_engagement/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/signin/features.gni")
@@ -414,7 +415,7 @@ jumbo_split_static_library("ui") {
     "//components/encrypted_messages:encrypted_message_proto",
     "//components/favicon/content",
     "//components/favicon/core",
-    "//components/feature_engagement:buildflags",
+    "//components/feature_engagement",
     "//components/feedback",
     "//components/flags_ui",
     "//components/gcm_driver",
@@ -3336,6 +3337,13 @@ jumbo_split_static_library("ui") {
       "ash/assistant/device_actions.h",
       "ash/assistant/web_contents_manager.cc",
       "ash/assistant/web_contents_manager.h",
+    ]
+  }
+
+  if (enable_desktop_in_product_help) {
+    sources += [
+      "in_product_help/reopen_tab_iph_trigger.cc",
+      "in_product_help/reopen_tab_iph_trigger.h",
     ]
   }
 
