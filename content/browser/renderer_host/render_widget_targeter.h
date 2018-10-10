@@ -232,6 +232,8 @@ class RenderWidgetTargeter {
   std::unique_ptr<OneShotTimeoutMonitor> async_hit_test_timeout_;
   std::unique_ptr<OneShotTimeoutMonitor> async_verify_hit_test_timeout_;
 
+  uint64_t trace_id_;
+
   Delegate* const delegate_;
   base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_;
 
