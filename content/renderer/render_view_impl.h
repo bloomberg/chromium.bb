@@ -81,15 +81,25 @@ namespace mojom {
 class CreateViewParams;
 }
 
+// RenderViewImpl (the implementation of RenderView) is the renderer process
+// object that owns the blink frame tree.
 //
-// RenderView is an object that manages a WebView object, and provides a
-// communication interface with an embedding application process.
+// Each top-level web container has a frame tree, and thus a RenderViewImpl.
+// Typically such a container is a browser tab, or a tab-less window. It can
+// also be other cases such as a background page or extension.
 //
-// DEPRECATED: RenderViewImpl is being removed as part of the SiteIsolation
-// project. New code should be added to RenderFrameImpl instead.
+// Under site isolation, frames in the main frame's tree may be moved out
+// to a separate frame tree (possibly in another process), leaving remote
+// placeholders behind. Each such frame tree also includes a RenderViewImpl as
+// the owner of it. Thus a tab may have multiple RenderViewImpls, one for the
+// main frame, and one for each other frame tree generated.
 //
-// For context, please see https://crbug.com/467770 and
-// https://www.chromium.org/developers/design-documents/site-isolation.
+// The RenderViewImpl manages a WebView object from blink, which hosts the
+// web page and a blink frame tree. If the main frame (root of the tree) is
+// a local frame for this view, then it also manages a RenderWidget for the
+// main frame.
+//
+// TODO(419087): That RenderWidget should be managed by the main frame itself.
 class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                                       public blink::WebViewClient,
                                       public RenderWidgetOwnerDelegate,
