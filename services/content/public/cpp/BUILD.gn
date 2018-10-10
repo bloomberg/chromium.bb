@@ -23,6 +23,8 @@ component("cpp") {
     "navigable_contents_view.cc",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   defines = [ "IS_CONTENT_SERVICE_CPP_IMPL" ]
 
   public_deps = [

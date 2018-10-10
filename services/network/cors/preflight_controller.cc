@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
@@ -177,8 +178,8 @@ base::Optional<CORSErrorStatus> CheckPreflightResult(
 class WrappedLegacyURLLoaderFactory final : public mojom::URLLoaderFactory {
  public:
   static WrappedLegacyURLLoaderFactory* GetSharedInstance() {
-    static WrappedLegacyURLLoaderFactory factory;
-    return &factory;
+    static base::NoDestructor<WrappedLegacyURLLoaderFactory> factory;
+    return &*factory;
   }
 
   ~WrappedLegacyURLLoaderFactory() override = default;
@@ -360,8 +361,8 @@ PreflightController::CreatePreflightRequestForTesting(
 
 // static
 PreflightController* PreflightController::GetDefaultController() {
-  static PreflightController controller;
-  return &controller;
+  static base::NoDestructor<PreflightController> controller;
+  return &*controller;
 }
 
 PreflightController::PreflightController() = default;

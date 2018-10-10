@@ -59,6 +59,8 @@ jumbo_component("cpp") {
     ]
   }
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     ":cpp_base",
     "//net",
@@ -120,6 +122,8 @@ jumbo_component("cpp_base") {
     "network_ipc_param_traits.cc",
     "p2p_param_traits.cc",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
     "//services/network/public/mojom:data_pipe_interfaces",

@@ -70,6 +70,8 @@ component("lib") {
     "window_tree_factory.cc",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     "//components/discardable_memory/public/interfaces",
     "//components/viz/host",
@@ -99,6 +101,8 @@ source_set("host") {
   sources = [
     "host_context_factory.cc",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
     ":lib",

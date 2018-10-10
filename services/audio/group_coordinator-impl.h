@@ -5,6 +5,8 @@
 #ifndef SERVICES_AUDIO_GROUP_COORDINATOR_IMPL_H_
 #define SERVICES_AUDIO_GROUP_COORDINATOR_IMPL_H_
 
+#include "base/no_destructor.h"
+
 namespace audio {
 
 template <typename Member>
@@ -94,8 +96,8 @@ const std::vector<Member*>& GroupCoordinator<Member>::GetCurrentMembers(
     }
   }
 
-  static const std::vector<Member*> empty_set;
-  return empty_set;
+  static const base::NoDestructor<std::vector<Member*>> empty_set;
+  return *empty_set;
 }
 
 template <typename Member>

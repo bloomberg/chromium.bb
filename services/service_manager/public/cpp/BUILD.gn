@@ -29,6 +29,8 @@ component("cpp") {
     "service_runner.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     ":cpp_types",
     "//base",
@@ -62,6 +64,8 @@ component("cpp_types") {
     "interface_provider_spec.h",
     "types_export.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
     "//services/service_manager/public/mojom:constants",

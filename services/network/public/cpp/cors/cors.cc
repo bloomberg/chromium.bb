@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
@@ -89,10 +90,9 @@ bool IsSimilarToIntABNF(const std::string& header_value) {
 bool IsCORSSafelistedLowerCaseContentType(
     const std::string& lower_case_media_type) {
   DCHECK_EQ(lower_case_media_type, base::ToLowerASCII(lower_case_media_type));
-  static const std::set<std::string> safe_types = {
-      "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"};
   std::string mime_type = ExtractMIMETypeFromMediaType(lower_case_media_type);
-  return safe_types.find(mime_type) != safe_types.end();
+  return mime_type == "application/x-www-form-urlencoded" ||
+         mime_type == "multipart/form-data" || mime_type == "text/plain";
 }
 
 }  // namespace
@@ -329,9 +329,9 @@ mojom::FetchResponseType CalculateResponseTainting(
 bool IsCORSSafelistedMethod(const std::string& method) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-method
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
-  static const std::set<std::string> safe_methods = {
-      net::HttpRequestHeaders::kGetMethod, kHeadMethod, kPostMethod};
-  return safe_methods.find(base::ToUpperASCII(method)) != safe_methods.end();
+  std::string method_upper = base::ToUpperASCII(method);
+  return method_upper == net::HttpRequestHeaders::kGetMethod ||
+         method_upper == kHeadMethod || method_upper == kPostMethod;
 }
 
 bool IsCORSSafelistedContentType(const std::string& media_type) {
@@ -358,7 +358,7 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
   //
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
-  static const std::set<std::string> safe_names = {
+  static const char* const safe_names[] = {
       "accept", "accept-language", "content-language", "intervention",
       "content-type", "save-data",
       // The Device Memory header field is a number that indicates the client’s
@@ -369,7 +369,8 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
       // for more details.
       "device-memory", "dpr", "width", "viewport-width"};
   const std::string lower_name = base::ToLowerASCII(name);
-  if (safe_names.find(lower_name) == safe_names.end())
+  if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
+      std::end(safe_names))
     return false;
 
   // Client hints are device specific, and not origin specific. As such all
@@ -477,11 +478,9 @@ std::vector<std::string> CORSUnsafeNotForbiddenRequestHeaderNames(
 }
 
 bool IsForbiddenMethod(const std::string& method) {
-  static const std::vector<std::string> forbidden_methods = {"trace", "track",
-                                                             "connect"};
   const std::string lower_method = base::ToLowerASCII(method);
-  return std::find(forbidden_methods.begin(), forbidden_methods.end(),
-                   lower_method) != forbidden_methods.end();
+  return lower_method == "trace" || lower_method == "track" ||
+         lower_method == "connect";
 }
 
 bool IsForbiddenHeader(const std::string& name) {
@@ -494,34 +493,34 @@ bool IsForbiddenHeader(const std::string& name) {
   //   `User-Agent`, `Via`
   // or starts with `Proxy-` or `Sec-` (including when it is just `Proxy-` or
   // `Sec-`)."
-  static const std::set<std::string> forbidden_names = {
-      "accept-charset",
-      "accept-encoding",
-      "access-control-request-headers",
-      "access-control-request-method",
-      "connection",
-      "content-length",
-      "cookie",
-      "cookie2",
-      "date",
-      "dnt",
-      "expect",
-      "host",
-      "keep-alive",
-      "origin",
-      "referer",
-      "te",
-      "trailer",
-      "transfer-encoding",
-      "upgrade",
-      "user-agent",
-      "via"};
+  static const base::NoDestructor<std::set<std::string>> forbidden_names(
+      std::set<std::string>{"accept-charset",
+                            "accept-encoding",
+                            "access-control-request-headers",
+                            "access-control-request-method",
+                            "connection",
+                            "content-length",
+                            "cookie",
+                            "cookie2",
+                            "date",
+                            "dnt",
+                            "expect",
+                            "host",
+                            "keep-alive",
+                            "origin",
+                            "referer",
+                            "te",
+                            "trailer",
+                            "transfer-encoding",
+                            "upgrade",
+                            "user-agent",
+                            "via"});
   const std::string lower_name = base::ToLowerASCII(name);
   if (StartsWith(lower_name, "proxy-", base::CompareCase::SENSITIVE) ||
       StartsWith(lower_name, "sec-", base::CompareCase::SENSITIVE)) {
     return true;
   }
-  return forbidden_names.find(lower_name) != forbidden_names.end();
+  return forbidden_names->find(lower_name) != forbidden_names->end();
 }
 
 bool IsOkStatus(int status) {
