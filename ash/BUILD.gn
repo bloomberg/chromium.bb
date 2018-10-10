@@ -186,6 +186,8 @@ component("ash") {
     "assistant/model/assistant_ui_model.cc",
     "assistant/model/assistant_ui_model.h",
     "assistant/model/assistant_ui_model_observer.h",
+    "assistant/ui/assistant_background_layer.cc",
+    "assistant/ui/assistant_background_layer.h",
     "assistant/ui/assistant_container_view.cc",
     "assistant/ui/assistant_container_view.h",
     "assistant/ui/assistant_container_view_animator.cc",
