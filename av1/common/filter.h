@@ -205,8 +205,13 @@ static INLINE const InterpFilterParams *get_4tap_interp_filter_params(
 }
 
 static INLINE const int16_t *av1_get_interp_filter_kernel(
-    const InterpFilter interp_filter) {
-  return av1_interp_filter_params_list[interp_filter].filter_ptr;
+    const InterpFilter interp_filter, int subpel_search) {
+  assert(subpel_search >= USE_2_TAPS);
+  return (subpel_search == USE_2_TAPS)
+             ? av1_interp_4tap[BILINEAR].filter_ptr
+             : ((subpel_search == USE_4_TAPS)
+                    ? av1_interp_4tap[interp_filter].filter_ptr
+                    : av1_interp_filter_params_list[interp_filter].filter_ptr);
 }
 
 static INLINE const int16_t *av1_get_interp_filter_subpel_kernel(
