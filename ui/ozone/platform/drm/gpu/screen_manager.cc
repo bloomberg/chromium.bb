@@ -10,6 +10,7 @@
 
 #include "base/files/platform_file.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -19,8 +20,8 @@
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
-#include "ui/ozone/platform/drm/gpu/drm_console_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
@@ -57,15 +58,15 @@ bool FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
 
   // If the display controller is in mirror mode, the CRTCs should be sharing
   // the same framebuffer.
-  DrmConsoleBuffer saved_buffer(drm, saved_crtc->buffer_id);
-  if (!saved_buffer.Initialize()) {
+  DrmDumbBuffer saved_buffer(drm);
+  if (!saved_buffer.InitializeFromFramebuffer(saved_crtc->buffer_id)) {
     VLOG(2) << "Failed to grab saved framebuffer " << saved_crtc->buffer_id;
     return false;
   }
 
   // Don't copy anything if the sizes mismatch. This can happen when the user
   // changes modes.
-  if (saved_buffer.canvas()->getBaseLayerSize() !=
+  if (saved_buffer.GetCanvas()->getBaseLayerSize() !=
       surface->getCanvas()->getBaseLayerSize()) {
     VLOG(2) << "Previous buffer has a different size than modeset buffer";
     return false;
@@ -74,7 +75,8 @@ bool FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
   SkPaint paint;
   // Copy the source buffer. Do not perform any blending.
   paint.setBlendMode(SkBlendMode::kSrc);
-  surface->getCanvas()->drawImage(saved_buffer.image(), 0, 0, &paint);
+  surface->getCanvas()->drawImage(saved_buffer.surface()->makeImageSnapshot(),
+                                  0, 0, &paint);
   return true;
 }
 

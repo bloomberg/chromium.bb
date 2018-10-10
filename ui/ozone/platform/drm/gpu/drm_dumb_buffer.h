@@ -25,20 +25,31 @@ class DrmDevice;
 // draw into using Skia.
 class DrmDumbBuffer {
  public:
+  enum class HandleCloser {
+    DESTROY_DUMB,
+    GEM_CLOSE,
+  };
+
   DrmDumbBuffer(const scoped_refptr<DrmDevice>& drm);
   ~DrmDumbBuffer();
 
-  // Allocates the backing pixels and wraps them in |surface_|. |info| is used
-  // to describe the buffer characteristics (size, color format).
+  // Allocates a new dumb buffer, maps it, and wraps it in an SkSurface.
+  // |info| determines the buffer characteristics (size, color format).
   bool Initialize(const SkImageInfo& info);
 
+  // Imports an existing framebuffer, maps it, and wraps it in an SkSurface.
+  bool InitializeFromFramebuffer(uint32_t framebuffer_id);
+
   SkCanvas* GetCanvas() const;
+  SkSurface* surface() const { return surface_.get(); }
 
   uint32_t GetHandle() const;
   gfx::Size GetSize() const;
   uint32_t stride() const { return stride_; }
 
- protected:
+ private:
+  bool MapDumbBuffer(const SkImageInfo& info);
+
   const scoped_refptr<DrmDevice> drm_;
 
   // Length of a row of pixels.
@@ -46,6 +57,9 @@ class DrmDumbBuffer {
 
   // Buffer handle used by the DRM allocator.
   uint32_t handle_ = 0;
+
+  // Method of closing |handle_|.
+  HandleCloser handle_closer_ = HandleCloser::DESTROY_DUMB;
 
   // Base address for memory mapping.
   void* mmap_base_ = 0;
