@@ -112,6 +112,7 @@
           "device:mtp",
           "device:nfc",
           "device:serial",
+          "device:usb",
           "device:vibration",
           "device:wake_lock"
         ],

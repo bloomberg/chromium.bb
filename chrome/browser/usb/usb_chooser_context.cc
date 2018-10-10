@@ -13,8 +13,11 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
+#include "content/public/common/service_manager_connection.h"
 #include "device/usb/mojo/device_manager_impl.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -92,10 +95,11 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
     return;
 
-  // TODO(donna.wu@intel.com): Request UsbDeviceManagerPtr from DeviceService
-  // after moving //device/usb to //services/device.
-  device_manager_instance_ = std::make_unique<device::usb::DeviceManagerImpl>();
-  device_manager_instance_->AddBinding(mojo::MakeRequest(&device_manager_));
+  // Request UsbDeviceManagerPtr from DeviceService.
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(device::mojom::kServiceName,
+                      mojo::MakeRequest(&device_manager_));
   SetUpDeviceManagerConnection();
 }
 
