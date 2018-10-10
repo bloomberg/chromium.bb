@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/new_selector_item_view.h"
+#include "ash/wm/overview/drop_target_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -12,13 +12,13 @@
 namespace ash {
 namespace {
 
-constexpr SkColor kNewSelectorItemBackgroundColor =
+constexpr SkColor kDropTargetBackgroundColor =
     SkColorSetARGB(0xFF, 0xFF, 0XFF, 0XFF);
-constexpr SkColor kNewSelectorItemBorderColor =
+constexpr SkColor kDropTargetBorderColor =
     SkColorSetARGB(0x4C, 0xE8, 0XEA, 0XED);
-constexpr float kNewSelectorItemBackgroundOpacity = 0.14f;
-constexpr int kNewSelectorItemBorderThickness = 2;
-constexpr int kNewSelectorItemMiddleSize = 96;
+constexpr float kDropTargetBackgroundOpacity = 0.14f;
+constexpr int kDropTargetBorderThickness = 2;
+constexpr int kDropTargetMiddleSize = 96;
 
 // Values for the plus icon.
 constexpr SkColor kPlusIconColor = SkColorSetARGB(0xFF, 0xE8, 0XEA, 0XED);
@@ -29,7 +29,7 @@ constexpr int kPlusIconLargestSize = 72;
 
 }  // namespace
 
-class NewSelectorItemView::PlusIconView : public views::ImageView {
+class DropTargetView::PlusIconView : public views::ImageView {
  public:
   PlusIconView() {
     SetPaintToLayer();
@@ -44,11 +44,11 @@ class NewSelectorItemView::PlusIconView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(PlusIconView);
 };
 
-NewSelectorItemView::NewSelectorItemView(bool has_plus_icon) {
+DropTargetView::DropTargetView(bool has_plus_icon) {
   background_view_ = new views::View();
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  background_view_->layer()->SetColor(kNewSelectorItemBackgroundColor);
-  background_view_->layer()->SetOpacity(kNewSelectorItemBackgroundOpacity);
+  background_view_->layer()->SetColor(kDropTargetBackgroundColor);
+  background_view_->layer()->SetOpacity(kDropTargetBackgroundOpacity);
   AddChildView(background_view_);
 
   if (has_plus_icon) {
@@ -56,18 +56,18 @@ NewSelectorItemView::NewSelectorItemView(bool has_plus_icon) {
     AddChildView(plus_icon_);
   }
 
-  SetBorder(views::CreateRoundedRectBorder(kNewSelectorItemBorderThickness,
+  SetBorder(views::CreateRoundedRectBorder(kDropTargetBorderThickness,
                                            kOverviewWindowRoundingDp,
-                                           kNewSelectorItemBorderColor));
+                                           kDropTargetBorderColor));
 }
 
-void NewSelectorItemView::UpdateBackgroundVisibility(bool visible) {
+void DropTargetView::UpdateBackgroundVisibility(bool visible) {
   if (background_view_->visible() == visible)
     return;
   background_view_->SetVisible(visible);
 }
 
-void NewSelectorItemView::Layout() {
+void DropTargetView::Layout() {
   const gfx::Rect local_bounds = GetLocalBounds();
   background_view_->SetBoundsRect(local_bounds);
 
@@ -75,7 +75,7 @@ void NewSelectorItemView::Layout() {
     const int min_dimension =
         std::min(local_bounds.width(), local_bounds.height());
     int plus_icon_size = 0;
-    if (min_dimension <= kNewSelectorItemMiddleSize) {
+    if (min_dimension <= kDropTargetMiddleSize) {
       plus_icon_size = kPlusIconSizeFirFraction * min_dimension;
     } else {
       plus_icon_size = std::max(
@@ -85,7 +85,7 @@ void NewSelectorItemView::Layout() {
     }
 
     gfx::Rect icon_bounds = local_bounds;
-    plus_icon_->SetImage(gfx::CreateVectorIcon(kOverviewNewSelectorItemPlusIcon,
+    plus_icon_->SetImage(gfx::CreateVectorIcon(kOverviewDropTargetPlusIcon,
                                                plus_icon_size, kPlusIconColor));
     icon_bounds.ClampToCenteredSize(gfx::Size(plus_icon_size, plus_icon_size));
     plus_icon_->SetBoundsRect(icon_bounds);

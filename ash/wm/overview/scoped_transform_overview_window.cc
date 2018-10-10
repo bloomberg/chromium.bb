@@ -10,7 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
-#include "ash/wm/overview/new_selector_item_view.h"
+#include "ash/wm/overview/drop_target_view.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_grid.h"
@@ -134,9 +134,9 @@ class ScopedTransformOverviewWindow::WindowMask : public ui::LayerDelegate,
     // |kOverviewWindowRoundingDp|.
     const gfx::Vector2dF scale = window_->transform().Scale2d();
     const SkScalar r_x = SkIntToScalar(
-        std::round(NewSelectorItemView::kOverviewWindowRoundingDp / scale.x()));
+        std::round(DropTargetView::kOverviewWindowRoundingDp / scale.x()));
     const SkScalar r_y = SkIntToScalar(
-        std::round(NewSelectorItemView::kOverviewWindowRoundingDp / scale.y()));
+        std::round(DropTargetView::kOverviewWindowRoundingDp / scale.y()));
 
     SkPath path;
     SkScalar radii[8] = {r_x, r_y, r_x, r_y, r_x, r_y, r_x, r_y};
@@ -547,8 +547,8 @@ void ScopedTransformOverviewWindow::CreateAndApplyMaskAndShadow() {
   mask_->layer()->SetBounds(layer->bounds());
   mask_->set_top_inset(GetTopInset());
   layer->SetMaskLayer(mask_->layer());
-  // Do not apply the shadow for the new selector item in overview.
-  if (selector_item_->window_grid()->IsNewSelectorItemWindow(window_)) {
+  // Do not apply the shadow for the drop target in overview.
+  if (selector_item_->window_grid()->IsDropTargetWindow(window_)) {
     selector_item_->SetShadowBounds(base::nullopt);
   } else {
     selector_item_->SetShadowBounds(

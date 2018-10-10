@@ -81,7 +81,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_timer.icon",
     "overview_text_filter_search.icon",
     "overview_window_close.icon",
-    "overview_new_selector_item_plus.icon",
+    "overview_drop_target_plus.icon",
     "palette_action_capture_region.icon",
     "palette_action_capture_screen.icon",
     "palette_action_create_note.icon",
