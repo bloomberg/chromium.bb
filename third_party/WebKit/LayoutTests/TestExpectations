@@ -1830,7 +1830,6 @@ crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
-crbug.com/870173 virtual/outofblink-cors-ns/http/tests/navigation/form-targets-cross-site-frame-no-referrer.html [ Failure ]
 
 # ====== Out of Blink CORS related tests END ======
 
