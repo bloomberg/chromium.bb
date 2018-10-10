@@ -55,7 +55,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
     virtual ~Visitor() {}
   };
 
-  QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session);
+  QuicSpdyStream(QuicStreamId id,
+                 QuicSpdySession* spdy_session,
+                 StreamType type);
   QuicSpdyStream(const QuicSpdyStream&) = delete;
   QuicSpdyStream& operator=(const QuicSpdyStream&) = delete;
   ~QuicSpdyStream() override;

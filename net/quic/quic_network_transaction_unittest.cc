@@ -8228,11 +8228,6 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
       ASYNC, ConstructServerDataPacket(12, push_stream_1, false, true, 0,
                                        "and hello 1!"));
 
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndRstPacket(
-          12, push_stream_0, quic::QUIC_RST_ACKNOWLEDGEMENT, 12, 12, 1));
-
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);

@@ -55,12 +55,13 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSession {
 
   std::unique_ptr<QuicSpdyClientStream> CreateClientStream() override {
     return QuicMakeUnique<MockQuicSpdyClientStream>(GetNextOutgoingStreamId(),
-                                                    this);
+                                                    this, BIDIRECTIONAL);
   }
 
   MockQuicSpdyClientStream* CreateIncomingDynamicStream(
       QuicStreamId id) override {
-    MockQuicSpdyClientStream* stream = new MockQuicSpdyClientStream(id, this);
+    MockQuicSpdyClientStream* stream =
+        new MockQuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }

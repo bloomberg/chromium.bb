@@ -118,8 +118,8 @@ class TestHeadersStream : public QuicHeadersStream {
 
 class TestStream : public QuicSpdyStream {
  public:
-  TestStream(QuicStreamId id, QuicSpdySession* session)
-      : QuicSpdyStream(id, session) {}
+  TestStream(QuicStreamId id, QuicSpdySession* session, StreamType type)
+      : QuicSpdyStream(id, session, type) {}
 
   using QuicStream::CloseWriteSide;
 
@@ -155,7 +155,8 @@ class TestSession : public QuicSpdySession {
   }
 
   TestStream* CreateOutgoingDynamicStream() override {
-    TestStream* stream = new TestStream(GetNextOutgoingStreamId(), this);
+    TestStream* stream =
+        new TestStream(GetNextOutgoingStreamId(), this, BIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
@@ -168,7 +169,7 @@ class TestSession : public QuicSpdySession {
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
       return nullptr;
     } else {
-      TestStream* stream = new TestStream(id, this);
+      TestStream* stream = new TestStream(id, this, BIDIRECTIONAL);
       ActivateStream(QuicWrapUnique(stream));
       return stream;
     }

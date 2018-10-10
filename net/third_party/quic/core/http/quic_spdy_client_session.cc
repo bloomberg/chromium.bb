@@ -80,7 +80,8 @@ QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream() {
 
 std::unique_ptr<QuicSpdyClientStream>
 QuicSpdyClientSession::CreateClientStream() {
-  return QuicMakeUnique<QuicSpdyClientStream>(GetNextOutgoingStreamId(), this);
+  return QuicMakeUnique<QuicSpdyClientStream>(GetNextOutgoingStreamId(), this,
+                                              BIDIRECTIONAL);
 }
 
 QuicCryptoClientStreamBase* QuicSpdyClientSession::GetMutableCryptoStream() {
@@ -130,8 +131,8 @@ QuicSpdyStream* QuicSpdyClientSession::CreateIncomingDynamicStream(
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
-  QuicSpdyStream* stream = new QuicSpdyClientStream(id, this);
-  stream->CloseWriteSide();
+  QuicSpdyStream* stream =
+      new QuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }

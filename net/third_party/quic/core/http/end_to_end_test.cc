@@ -2359,7 +2359,10 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
       QuicSpdySession* session,
       QuicSimpleServerBackend* quic_simple_server_backend,
       QuicString response_body)
-      : QuicSimpleServerStream(id, session, quic_simple_server_backend),
+      : QuicSimpleServerStream(id,
+                               session,
+                               BIDIRECTIONAL,
+                               quic_simple_server_backend),
         response_body_(std::move(response_body)) {}
 
   ~ServerStreamWithErrorResponseBody() override = default;
@@ -2405,7 +2408,10 @@ class ServerStreamThatDropsBody : public QuicSimpleServerStream {
   ServerStreamThatDropsBody(QuicStreamId id,
                             QuicSpdySession* session,
                             QuicSimpleServerBackend* quic_simple_server_backend)
-      : QuicSimpleServerStream(id, session, quic_simple_server_backend) {}
+      : QuicSimpleServerStream(id,
+                               session,
+                               BIDIRECTIONAL,
+                               quic_simple_server_backend) {}
 
   ~ServerStreamThatDropsBody() override = default;
 
@@ -2462,7 +2468,10 @@ class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
       QuicSpdySession* session,
       QuicSimpleServerBackend* quic_simple_server_backend,
       int64_t body_bytes)
-      : QuicSimpleServerStream(id, session, quic_simple_server_backend),
+      : QuicSimpleServerStream(id,
+                               session,
+                               BIDIRECTIONAL,
+                               quic_simple_server_backend),
         body_bytes_(body_bytes) {}
 
   ~ServerStreamThatSendsHugeResponse() override = default;
