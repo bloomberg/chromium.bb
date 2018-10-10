@@ -84,6 +84,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/prefs",
     "//ios/web/public",
+    "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gmock",
     "//testing/gtest",
