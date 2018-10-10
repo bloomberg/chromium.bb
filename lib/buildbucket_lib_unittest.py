@@ -499,3 +499,42 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     buildbucket_ids = buildbucket_lib.GetBuildbucketIds(metadata)
     self.assertTrue('bb_id_2' in buildbucket_ids)
     self.assertTrue('bb_id_3' in buildbucket_ids)
+
+
+
+class BuildbucketLibNetworkTest(cros_test_lib.MockTestCase):
+  """Network tests for methods in buildbucket_lib."""
+
+  def getTestClient(self):
+    """Create a buildbucket client which is safe for network tests."""
+    return buildbucket_lib.BuildbucketClient(
+        auth.GetAccessToken, buildbucket_lib.BUILDBUCKET_TEST_HOST,
+        service_account_json=buildbucket_lib.GetServiceAccount(
+            constants.CHROMEOS_SERVICE_ACCOUNT))
+
+  def getProdClient(self):
+    """Create a buildbucket client which is safe for RO network tests."""
+    return buildbucket_lib.BuildbucketClient(
+        auth.GetAccessToken, buildbucket_lib.BUILDBUCKET_HOST,
+        service_account_json=buildbucket_lib.GetServiceAccount(
+            constants.CHROMEOS_SERVICE_ACCOUNT))
+
+  @cros_test_lib.NetworkTest()
+  def testSearchAndExtractBotIds(self):
+    buildbucket_client = self.getProdClient()
+    self.assertTrue(buildbucket_client)
+
+    previous_builds = buildbucket_client.SearchAllBuilds(
+        False,
+        buckets=constants.ACTIVE_BUCKETS,
+        limit=10,
+        tags=['cbb_config:success-build',
+              'cbb_branch:master'],
+        status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
+
+    self.assertEqual(len(previous_builds), 10)
+
+    # This test would fail, if the search results included buildbot builds.
+    for b in previous_builds:
+      self.assertTrue(buildbucket_lib.GetResultDetails(b))
+      self.assertTrue(buildbucket_lib.GetBotId(b).startswith('swarm-cros'))
