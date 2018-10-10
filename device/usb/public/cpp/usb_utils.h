@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_USB_PUBLIC_CPP_FILTER_UTILS_H_
-#define DEVICE_USB_PUBLIC_CPP_FILTER_UTILS_H_
+#ifndef DEVICE_USB_PUBLIC_CPP_USB_UTILS_H_
+#define DEVICE_USB_PUBLIC_CPP_USB_UTILS_H_
 
 #include <vector>
 
@@ -28,6 +28,10 @@ bool UsbDeviceFilterMatchesAny(
     const std::vector<mojom::UsbDeviceFilterPtr>& filters,
     const mojom::UsbDeviceInfo& device_info);
 
+std::vector<mojom::UsbIsochronousPacketPtr> BuildIsochronousPacketArray(
+    const std::vector<uint32_t>& packet_lengths,
+    mojom::UsbTransferStatus status);
+
 }  // namespace device
 
-#endif  // DEVICE_USB_PUBLIC_CPP_FILTER_UTILS_H_
+#endif  // DEVICE_USB_PUBLIC_CPP_USB_UTILS_H_

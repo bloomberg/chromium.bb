@@ -3234,6 +3234,7 @@ test("unit_tests") {
       "//chrome/browser/apps/foundation/app_service:unit_tests",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//components/signin/core/browser:signin_buildflags",
+      "//device/usb/public/cpp:test_support",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
     ]
