@@ -3368,6 +3368,7 @@ test("unit_tests") {
       "../browser/feature_engagement/incognito_window/incognito_window_tracker_unittest.cc",
       "../browser/feature_engagement/new_tab/new_tab_tracker_unittest.cc",
       "../browser/feature_engagement/session_duration_updater_unittest.cc",
+      "../browser/ui/in_product_help/reopen_tab_iph_trigger_unittest.cc",
     ]
     deps += [ "//components/feature_engagement/test:test_support" ]
   }
