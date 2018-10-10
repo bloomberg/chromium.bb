@@ -1823,19 +1823,13 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
 
 # Timeout tests in dictionary order.
-crbug.com/870173 virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/authenticated_worker.https.html [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors/http/tests/security/secureContexts/unauthenticated_worker.html [ Timeout ]
-crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/document-domain-canonicalizes.html [ Timeout ]
 
 # Failing tests in dictionary order.
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
-crbug.com/870173 virtual/outofblink-cors/http/tests/security/video-poster-cross-origin-crash2.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorigin-redirect-credentials.html [ Failure ]
-crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/video-poster-cross-origin-crash2.html [ Failure ]
 crbug.com/870173 virtual/outofblink-cors-ns/http/tests/navigation/form-targets-cross-site-frame-no-referrer.html [ Failure ]
 
 # ====== Out of Blink CORS related tests END ======
