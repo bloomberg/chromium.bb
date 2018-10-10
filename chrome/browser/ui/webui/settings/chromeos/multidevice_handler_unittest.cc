@@ -10,6 +10,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,10 +23,12 @@ namespace {
 class TestMultideviceHandler : public MultideviceHandler {
  public:
   TestMultideviceHandler(
+      PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
           android_sms_app_helper)
-      : MultideviceHandler(multidevice_setup_client,
+      : MultideviceHandler(prefs,
+                           multidevice_setup_client,
                            std::move(android_sms_app_helper)) {}
   ~TestMultideviceHandler() override = default;
 
@@ -116,8 +119,10 @@ class MultideviceHandlerTest : public testing::Test {
     fake_android_sms_app_helper_delegate_ =
         fake_android_sms_app_helper_delegate.get();
 
+    prefs_.reset(new TestingPrefServiceSimple());
+
     handler_ = std::make_unique<TestMultideviceHandler>(
-        fake_multidevice_setup_client_.get(),
+        prefs_.get(), fake_multidevice_setup_client_.get(),
         std::move(fake_android_sms_app_helper_delegate));
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
@@ -254,6 +259,7 @@ class MultideviceHandlerTest : public testing::Test {
         fake_multidevice_setup_client_->GetFeatureStates());
   }
 
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<content::TestWebUI> test_web_ui_;
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;

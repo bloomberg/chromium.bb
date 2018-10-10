@@ -12,6 +12,13 @@
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/cryptauth/remote_device_ref.h"
+#include "components/prefs/pref_change_registrar.h"
+
+class PrefService;
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
 
 namespace chromeos {
 
@@ -26,7 +33,8 @@ class MultideviceHandler
     : public ::settings::SettingsPageUIHandler,
       public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
-  explicit MultideviceHandler(
+  MultideviceHandler(
+      PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
           android_sms_app_helper);
@@ -59,9 +67,19 @@ class MultideviceHandler
   void HandleRemoveHostDevice(const base::ListValue* args);
   void HandleRetryPendingHostSetup(const base::ListValue* args);
   void HandleSetUpAndroidSms(const base::ListValue* args);
+  void HandleGetSmartLockSignInEnabled(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
+
+  void RegisterPrefChangeListeners();
+  void NotifySmartLockSignInEnabledChanged();
+
+  // Unowned pointer to the preferences service.
+  PrefService* prefs_;
+
+  // Registers preference value change listeners.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Returns null if requisite data has not yet been fetched (i.e., if one or
   // both of |last_host_status_update_| and |last_feature_states_update_| is

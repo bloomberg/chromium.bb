@@ -7,10 +7,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
 
@@ -36,13 +40,17 @@ void OnRetrySetHostNowResult(bool success) {
 }  // namespace
 
 MultideviceHandler::MultideviceHandler(
+    PrefService* prefs,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
         android_sms_app_helper)
-    : multidevice_setup_client_(multidevice_setup_client),
+    : prefs_(prefs),
+      multidevice_setup_client_(multidevice_setup_client),
       android_sms_app_helper_(std::move(android_sms_app_helper)),
       multidevice_setup_observer_(this),
-      callback_weak_ptr_factory_(this) {}
+      callback_weak_ptr_factory_(this) {
+  RegisterPrefChangeListeners();
+}
 
 MultideviceHandler::~MultideviceHandler() {}
 
@@ -70,6 +78,10 @@ void MultideviceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setUpAndroidSms",
       base::BindRepeating(&MultideviceHandler::HandleSetUpAndroidSms,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSmartLockSignInEnabled",
+      base::BindRepeating(&MultideviceHandler::HandleGetSmartLockSignInEnabled,
                           base::Unretained(this)));
 }
 
@@ -176,6 +188,18 @@ void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
   android_sms_app_helper_->InstallAndLaunchAndroidSmsApp();
 }
 
+void MultideviceHandler::HandleGetSmartLockSignInEnabled(
+    const base::ListValue* args) {
+  std::string callback_id;
+  bool result = args->GetString(0, &callback_id);
+  DCHECK(result);
+
+  bool signInEnabled = prefs_->GetBoolean(
+      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(signInEnabled));
+}
+
 void MultideviceHandler::OnSetFeatureStateEnabledResult(
     const std::string& js_callback_id,
     bool success) {
@@ -219,6 +243,22 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
   }
 
   return page_content_dictionary;
+}
+
+void MultideviceHandler::RegisterPrefChangeListeners() {
+  pref_change_registrar_.Init(prefs_);
+  pref_change_registrar_.Add(
+      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
+      base::BindRepeating(
+          &MultideviceHandler::NotifySmartLockSignInEnabledChanged,
+          base::Unretained(this)));
+}
+
+void MultideviceHandler::NotifySmartLockSignInEnabledChanged() {
+  bool sign_in_enabled = prefs_->GetBoolean(
+      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
+  FireWebUIListener("smart-lock-signin-enabled-changed",
+                    base::Value(sign_in_enabled));
 }
 
 }  // namespace settings

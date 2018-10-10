@@ -33,12 +33,10 @@ Polymer({
 
   behaviors: [
     MultiDeviceFeatureBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
-    /** Preferences state. */
-    prefs: {type: Object},
-
     /** @type {?SettingsRoutes} */
     routes: {
       type: Object,
@@ -65,10 +63,21 @@ Polymer({
     },
   },
 
-  observers: [
-    'updateSmartLockSignInEnabled_(prefs.' +
-        settings.SmartLockSignInEnabledPrefName + '.value)',
-  ],
+  /** @private {?settings.MultiDeviceBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  ready: function() {
+    this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
+
+    this.addWebUIListener(
+        'smart-lock-signin-enabled-changed',
+        this.updateSmartLockSignInEnabled_.bind(this));
+
+    this.browserProxy_.getSmartLockSignInEnabled().then(enabled => {
+      this.updateSmartLockSignInEnabled_(enabled);
+    });
+  },
 
   /**
    * Returns true if Smart Lock is an enabled feature.
@@ -82,7 +91,7 @@ Polymer({
   },
 
   /**
-   * Updates the state of Smart Lock 'sign-in enabled' toggle.
+   * Updates the state of the Smart Lock 'sign-in enabled' toggle.
    * @private
    */
   updateSmartLockSignInEnabled_: function(enabled) {
