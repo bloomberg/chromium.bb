@@ -517,11 +517,13 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   // thread.
   if (compositor_thread_scheduler) {
     // When the RenderWidget is for a frame (ie for a local root) then it uses
-    // the compositor thread task runner. When it is for a popup, it does not.
-    // When |owner_delegate_| is true, the RenderWidget is attached to the main
-    // Frame (which makes it a local root). Otherwise, if it is |for_oopif_|
-    // then it is a local root (a local Frame) sitting below a remote Frame.
-    if (owner_delegate_ || for_oopif_) {
+    // the compositor thread task runner. When it is for a popup or other such
+    // widgets, it does not.
+    // TODO(danakj): The |web_widget| given here should become a WebFrameWidget
+    // in the case the RenderWidget is for a RenderViewImpl, but currently the
+    // WebFrameWidget gets attached after RenderWidget init. So we have to check
+    // IsWebView() as well.
+    if (web_widget->IsWebFrameWidget() || web_widget->IsWebView()) {
       compositor_input_task_runner =
           compositor_thread_scheduler->InputTaskRunner();
     }
