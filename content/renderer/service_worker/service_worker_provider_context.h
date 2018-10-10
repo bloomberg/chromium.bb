@@ -41,7 +41,6 @@ namespace service_worker_provider_context_unittest {
 class ServiceWorkerProviderContextTest;
 }  // namespace service_worker_provider_context_unittest
 
-class WebServiceWorkerImpl;
 class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerProviderContextDeleter;
 
@@ -149,11 +148,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   GetOrCreateServiceWorkerRegistrationObject(
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
 
-  // For service worker clients. Returns the service worker object described by
-  // |info|. Creates a new object if needed, or else returns the existing one.
-  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
-      blink::mojom::ServiceWorkerObjectInfoPtr info);
-
   // Called when ServiceWorkerNetworkProvider is destructed. This function
   // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
   // reason ServiceWorkerNetworkProvider is special compared to the other
@@ -186,7 +180,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
                                           ServiceWorkerProviderContextDeleter>;
   friend class service_worker_provider_context_unittest::
       ServiceWorkerProviderContextTest;
-  friend class WebServiceWorkerImpl;
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
 
@@ -213,12 +206,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void RemoveServiceWorkerRegistrationObject(int64_t registration_id);
   bool ContainsServiceWorkerRegistrationObjectForTesting(
       int64_t registration_id);
-
-  // For service worker clients. Keeps the mapping from version id to
-  // ServiceWorker object.
-  void AddServiceWorkerObject(int64_t version_id, WebServiceWorkerImpl* worker);
-  void RemoveServiceWorkerObject(int64_t version_id);
-  bool ContainsServiceWorkerObjectForTesting(int64_t version_id);
 
   // S13nServiceWorker:
   // For service worker clients.

@@ -58,7 +58,6 @@ class HostChildURLLoaderFactoryBundle;
 class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
 class ServiceWorkerTimeoutTimer;
-class WebServiceWorkerImpl;
 class WebWorkerFetchContext;
 
 // ServiceWorkerContextClient is a "client" of a service worker execution
@@ -101,11 +100,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ServiceWorkerContextClient() override;
-
-  // Returns the service worker object described by |info|. Creates a new object
-  // if needed, or else returns the existing one.
-  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
-      blink::mojom::ServiceWorkerObjectInfoPtr info);
 
   // WebServiceWorkerContextClient overrides.
   void WorkerReadyForInspection() override;
@@ -234,7 +228,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   class NavigationPreloadRequest;
   friend class ControllerServiceWorkerImpl;
   friend class ServiceWorkerContextClientTest;
-  friend class WebServiceWorkerImpl;
   FRIEND_TEST_ALL_PREFIXES(
       ServiceWorkerContextClientTest,
       DispatchOrQueueFetchEvent_RequestedTerminationAndDie);
@@ -369,11 +362,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // Stops the worker context. Called on the main thread.
   void StopWorker();
-
-  // Keeps the mapping from version id to ServiceWorker object.
-  void AddServiceWorkerObject(int64_t version_id, WebServiceWorkerImpl* worker);
-  void RemoveServiceWorkerObject(int64_t version_id);
-  bool ContainsServiceWorkerObjectForTesting(int64_t version_id);
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 

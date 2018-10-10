@@ -298,6 +298,18 @@ void ServiceWorkerGlobalScope::SetRegistration(
       GetExecutionContext(), base::WrapUnique(handle.release()));
 }
 
+ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
+    WebServiceWorkerObjectInfo info) {
+  if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
+    return nullptr;
+  ServiceWorker* worker = service_worker_objects_.at(info.version_id);
+  if (!worker) {
+    worker = new ServiceWorker(this, std::move(info));
+    service_worker_objects_.Set(info.version_id, worker);
+  }
+  return worker;
+}
+
 bool ServiceWorkerGlobalScope::AddEventListenerInternal(
     const AtomicString& event_type,
     EventListener* listener,
@@ -345,6 +357,7 @@ void ServiceWorkerGlobalScope::DispatchExtendableEventWithRespondWith(
 void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(clients_);
   visitor->Trace(registration_);
+  visitor->Trace(service_worker_objects_);
   WorkerGlobalScope::Trace(visitor);
 }
 

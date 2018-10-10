@@ -36,7 +36,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 
@@ -96,7 +96,7 @@ class WebServiceWorkerContextProxy {
       int event_id,
       TransferableMessage,
       const WebSecurityOrigin& source_origin,
-      std::unique_ptr<WebServiceWorker::Handle>) = 0;
+      WebServiceWorkerObjectInfo) = 0;
   virtual void DispatchInstallEvent(int event_id) = 0;
   virtual void DispatchFetchEvent(int fetch_event_id,
                                   const WebServiceWorkerRequest& web_request,

@@ -573,8 +573,6 @@ target(link_target_type, "renderer") {
     "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_type_util.cc",
     "service_worker/service_worker_type_util.h",
-    "service_worker/web_service_worker_impl.cc",
-    "service_worker/web_service_worker_impl.h",
     "service_worker/web_service_worker_provider_impl.cc",
     "service_worker/web_service_worker_provider_impl.h",
     "service_worker/web_service_worker_registration_impl.cc",

@@ -357,7 +357,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     int event_id,
     TransferableMessage message,
     const WebSecurityOrigin& source_origin,
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+    WebServiceWorkerObjectInfo info) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
@@ -365,9 +365,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   String origin;
   if (!source_origin.IsOpaque())
     origin = source_origin.ToString();
-  ServiceWorker* source =
-      ServiceWorker::From(worker_global_scope_->GetExecutionContext(),
-                          base::WrapUnique(handle.release()));
+  ServiceWorker* source = ServiceWorker::From(
+      worker_global_scope_->GetExecutionContext(), std::move(info));
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kMessage, event_id);
 

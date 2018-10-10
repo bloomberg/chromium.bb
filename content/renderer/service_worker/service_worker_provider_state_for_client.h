@@ -17,7 +17,6 @@
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -95,10 +94,6 @@ struct ServiceWorkerProviderStateForClient {
   // For service worker clients. Map from registration id to JavaScript
   // ServiceWorkerRegistration object.
   std::map<int64_t, WebServiceWorkerRegistrationImpl*> registrations_;
-
-  // For service worker clients. Map from version id to JavaScript ServiceWorker
-  // object.
-  std::map<int64_t, WebServiceWorkerImpl*> workers_;
 };
 
 }  // namespace content

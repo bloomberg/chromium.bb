@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -105,6 +106,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   void SetRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 
+  // Returns the ServiceWorker object described by the object info in current
+  // execution context. Creates a new object if needed, or else returns the
+  // existing one.
+  ServiceWorker* GetOrCreateServiceWorker(WebServiceWorkerObjectInfo);
+
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
@@ -157,6 +163,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;
+  // Map from service worker version id to JavaScript ServiceWorker object in
+  // current execution context.
+  HeapHashMap<int64_t,
+              WeakMember<ServiceWorker>,
+              WTF::IntHash<int64_t>,
+              WTF::UnsignedWithZeroKeyHashTraits<int64_t>>
+      service_worker_objects_;
   bool did_evaluate_script_ = false;
   size_t script_count_ = 0;
   size_t script_total_size_ = 0;

@@ -105,11 +105,10 @@ class ServiceWorkerGlobalScopeProxy final
       TransferableMessage,
       const WebSecurityOrigin& source_origin,
       const WebServiceWorkerClientInfo&) override;
-  void DispatchExtendableMessageEvent(
-      int event_id,
-      TransferableMessage,
-      const WebSecurityOrigin& source_origin,
-      std::unique_ptr<WebServiceWorker::Handle>) override;
+  void DispatchExtendableMessageEvent(int event_id,
+                                      TransferableMessage,
+                                      const WebSecurityOrigin& source_origin,
+                                      WebServiceWorkerObjectInfo) override;
   void DispatchFetchEvent(int fetch_event_id,
                           const WebServiceWorkerRequest&,
                           bool navigation_preload_sent) override;

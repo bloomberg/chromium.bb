@@ -40,28 +40,22 @@ void ServiceWorkerRegistration::DispatchUpdateFoundEvent() {
   DispatchEvent(*Event::Create(EventTypeNames::updatefound));
 }
 
-void ServiceWorkerRegistration::SetInstalling(
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+void ServiceWorkerRegistration::SetInstalling(WebServiceWorkerObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  installing_ = ServiceWorker::From(GetExecutionContext(),
-                                    base::WrapUnique(handle.release()));
+  installing_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
 }
 
-void ServiceWorkerRegistration::SetWaiting(
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+void ServiceWorkerRegistration::SetWaiting(WebServiceWorkerObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  waiting_ = ServiceWorker::From(GetExecutionContext(),
-                                 base::WrapUnique(handle.release()));
+  waiting_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
 }
 
-void ServiceWorkerRegistration::SetActive(
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+void ServiceWorkerRegistration::SetActive(WebServiceWorkerObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  active_ = ServiceWorker::From(GetExecutionContext(),
-                                base::WrapUnique(handle.release()));
+  active_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
 }
 
 ServiceWorkerRegistration* ServiceWorkerRegistration::GetOrCreate(

@@ -6,8 +6,6 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 
@@ -23,11 +21,22 @@ ServiceWorkerContainerClient::~ServiceWorkerContainerClient() = default;
 const char ServiceWorkerContainerClient::kSupplementName[] =
     "ServiceWorkerContainerClient";
 
-ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
-    ExecutionContext* context) {
-  if (!context)
+ServiceWorker* ServiceWorkerContainerClient::GetOrCreateServiceWorker(
+    WebServiceWorkerObjectInfo info) {
+  if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
     return nullptr;
-  Document* document = To<Document>(context);
+  ServiceWorker* worker = service_worker_objects_.at(info.version_id);
+  if (!worker) {
+    worker = new ServiceWorker(GetSupplementable(), std::move(info));
+    service_worker_objects_.Set(info.version_id, worker);
+  }
+  return worker;
+}
+
+ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
+    Document* document) {
+  if (!document)
+    return nullptr;
   if (!document->GetFrame() || !document->GetFrame()->Client())
     return nullptr;
 
@@ -40,6 +49,11 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
     Supplement<Document>::ProvideTo(*document, client);
   }
   return client;
+}
+
+void ServiceWorkerContainerClient::Trace(blink::Visitor* visitor) {
+  visitor->Trace(service_worker_objects_);
+  Supplement<Document>::Trace(visitor);
 }
 
 }  // namespace blink

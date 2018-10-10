@@ -34,7 +34,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -431,11 +430,11 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
 }
 
 void ServiceWorkerContainer::SetController(
-    std::unique_ptr<WebServiceWorker::Handle> handle,
+    WebServiceWorkerObjectInfo info,
     bool should_notify_controller_change) {
   if (!GetExecutionContext())
     return;
-  controller_ = ServiceWorker::From(GetExecutionContext(), std::move(handle));
+  controller_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
   if (controller_) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kServiceWorkerControlledPage);
@@ -445,7 +444,7 @@ void ServiceWorkerContainer::SetController(
 }
 
 void ServiceWorkerContainer::DispatchMessageEvent(
-    std::unique_ptr<WebServiceWorker::Handle> handle,
+    WebServiceWorkerObjectInfo info,
     TransferableMessage message) {
   if (!GetExecutionContext() || !GetExecutionContext()->ExecutingWindow())
     return;
@@ -453,7 +452,7 @@ void ServiceWorkerContainer::DispatchMessageEvent(
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
   ServiceWorker* source =
-      ServiceWorker::From(GetExecutionContext(), std::move(handle));
+      ServiceWorker::From(GetExecutionContext(), std::move(info));
   MessageEvent* event;
   if (!msg.locked_agent_cluster_id ||
       GetExecutionContext()->IsSameAgentCluster(*msg.locked_agent_cluster_id)) {
@@ -490,9 +489,8 @@ ServiceWorkerContainer::ServiceWorkerContainer(
   if (!execution_context)
     return;
 
-  DCHECK(execution_context->IsDocument());
   if (ServiceWorkerContainerClient* client =
-          ServiceWorkerContainerClient::From(execution_context)) {
+          ServiceWorkerContainerClient::From(To<Document>(execution_context))) {
     provider_ = client->Provider();
     if (provider_)
       provider_->SetClient(this);
