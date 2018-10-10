@@ -159,16 +159,25 @@ class StreamHandleListener
     : public blink::WebServiceWorkerStreamHandle::Listener {
  public:
   StreamHandleListener(
-      blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr)
-      : callback_ptr_(std::move(callback_ptr)) {}
+      blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr,
+      std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token)
+      : callback_ptr_(std::move(callback_ptr)), token_(std::move(token)) {}
 
   ~StreamHandleListener() override {}
 
-  void OnAborted() override { callback_ptr_->OnAborted(); }
-  void OnCompleted() override { callback_ptr_->OnCompleted(); }
+  void OnAborted() override {
+    callback_ptr_->OnAborted();
+    token_.reset();
+  }
+
+  void OnCompleted() override {
+    callback_ptr_->OnCompleted();
+    token_.reset();
+  }
 
  private:
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr_;
+  std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
 };
 
 bool IsOutOfProcessNetworkService() {
@@ -1043,8 +1052,9 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
   body_as_stream->stream = web_body_as_stream->DrainStreamDataPipe();
   DCHECK(body_as_stream->stream.is_valid());
 
-  web_body_as_stream->SetListener(
-      std::make_unique<StreamHandleListener>(std::move(callback_ptr)));
+  web_body_as_stream->SetListener(std::make_unique<StreamHandleListener>(
+      std::move(callback_ptr),
+      context_->timeout_timer->CreateStayAwakeToken()));
 
   auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;

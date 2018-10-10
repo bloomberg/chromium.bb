@@ -466,6 +466,37 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
   NOTREACHED();
 }
 
+bool ServiceWorkerVersion::OnRequestTermination() {
+  if (running_status() == EmbeddedWorkerStatus::STOPPING)
+    return true;
+  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
+
+  worker_is_idle_on_renderer_ = true;
+
+  // Determine if the worker can be terminated.
+  bool will_be_terminated = HasNoWork();
+  if (embedded_worker_->devtools_attached()) {
+    // Basically the service worker won't be terminated if DevTools is attached.
+    will_be_terminated = false;
+
+    // But when activation is happening and this worker needs to be terminated
+    // asap, it'll be terminated.
+    // TODO(shimazu): implement it to make activation progress, otherwise
+    // activation won't be triggered until DevTools is closed.
+  }
+
+  if (will_be_terminated) {
+    embedded_worker_->Stop();
+  } else {
+    // The worker needs to run more. The worker should start handling queued
+    // events dispatched to the worker directly (e.g. FetchEvent for
+    // subresources).
+    worker_is_idle_on_renderer_ = false;
+  }
+
+  return will_be_terminated;
+}
+
 void ServiceWorkerVersion::ScheduleUpdate() {
   if (!context_)
     return;
@@ -572,7 +603,7 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   // be dispatched will reset the idle status. That means the worker can receive
   // events directly from any clients, so we cannot trigger OnNoWork after this
   // point.
-  idle_timer_fired_in_renderer_ = false;
+  worker_is_idle_on_renderer_ = false;
   return request_id;
 }
 
@@ -714,8 +745,10 @@ void ServiceWorkerVersion::OnStreamResponseStarted() {
 void ServiceWorkerVersion::OnStreamResponseFinished() {
   DCHECK_GT(inflight_stream_response_count_, 0);
   inflight_stream_response_count_--;
-  if (!HasWorkInBrowser())
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
+      !HasWorkInBrowser()) {
     OnNoWorkInBrowser();
+  }
 }
 
 void ServiceWorkerVersion::AddObserver(Observer* observer) {
@@ -867,6 +900,12 @@ void ServiceWorkerVersion::SetTickClockForTesting(
 
 void ServiceWorkerVersion::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
+}
+
+bool ServiceWorkerVersion::HasNoWork() const {
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
+    return !HasWorkInBrowser();
+  return !HasWorkInBrowser() && worker_is_idle_on_renderer_;
 }
 
 const net::HttpResponseInfo*
@@ -1336,6 +1375,11 @@ void ServiceWorkerVersion::OpenWindow(
       base::BindOnce(&OnOpenWindowFinished, std::move(callback)));
 }
 
+bool ServiceWorkerVersion::HasWorkInBrowser() const {
+  return !inflight_requests_.IsEmpty() || inflight_stream_response_count_ > 0 ||
+         !start_callbacks_.empty();
+}
+
 void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
@@ -1513,7 +1557,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   // again from OnStoppedInternal if StopWorker is called before OnStarted.
 
   StartTimeoutTimer();
-  idle_timer_fired_in_renderer_ = false;
+  worker_is_idle_on_renderer_ = false;
 
   auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
   provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
@@ -1701,7 +1745,8 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // skip this check.
   if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
       GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
-    StopWorkerIfIdle(false /* requested_from_renderer */);
+    if (HasNoWork())
+      embedded_worker_->StopIfNotAttachedToDevTools();
     return;
   }
 
@@ -1726,53 +1771,7 @@ void ServiceWorkerVersion::OnPingTimeout() {
   // blink::ServiceWorkerStatusCode::kErrorTimeout.
   embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::kLevelVerbose,
                                         kNotRespondingErrorMesage);
-  StopWorkerIfIdle(false /* requested_from_renderer */);
-}
-
-void ServiceWorkerVersion::StopWorkerIfIdle(bool requested_from_renderer) {
-  if (running_status() == EmbeddedWorkerStatus::STOPPED ||
-      running_status() == EmbeddedWorkerStatus::STOPPING ||
-      !stop_callbacks_.empty()) {
-    return;
-  }
-
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
-    // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), check if
-    // the worker really is idle.
-    if (!ping_controller_.IsTimedOut() && HasWorkInBrowser())
-      return;
-    embedded_worker_->StopIfNotAttachedToDevTools();
-    return;
-  }
-
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-  // Ping timeout
-  if (ping_controller_.IsTimedOut()) {
-    DCHECK(!requested_from_renderer);
-    embedded_worker_->StopIfNotAttachedToDevTools();
-    return;
-  }
-
-  // Idle timeout
-  DCHECK(requested_from_renderer);
-  DCHECK(start_callbacks_.empty());
-  idle_timer_fired_in_renderer_ = true;
-
-  // We may still have some work in the browser-side that are not
-  // observable by the renderer, i.e. response streaming. In such case
-  // we return here with setting |idle_timer_fired_in_renderer_| to true.
-  // It will be checked later (i.e. when streaming finishes) to see if we
-  // we should fire OnNoWork().
-  if (HasWorkInBrowser())
-    return;
   embedded_worker_->StopIfNotAttachedToDevTools();
-  OnNoWorkInBrowser();
-}
-
-bool ServiceWorkerVersion::HasWorkInBrowser() const {
-  return !inflight_requests_.IsEmpty() || inflight_stream_response_count_ > 0 ||
-         !start_callbacks_.empty();
 }
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
@@ -1953,7 +1952,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
                            should_restart);
     ClearTick(&stop_time_);
   }
-  idle_timer_fired_in_renderer_ = false;
   StopTimeoutTimer();
 
   // Fire all stop callbacks.
@@ -1989,6 +1987,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   installed_scripts_sender_.reset();
   binding_.Close();
   pending_external_requests_.clear();
+  worker_is_idle_on_renderer_ = true;
 
   for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
@@ -2022,14 +2021,10 @@ void ServiceWorkerVersion::OnNoWorkInBrowser() {
   }
 
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-  if (!idle_timer_fired_in_renderer_ &&
-      running_status() != EmbeddedWorkerStatus::STOPPED) {
-    return;
+  if (worker_is_idle_on_renderer_) {
+    for (auto& observer : observers_)
+      observer.OnNoWork(this);
   }
-
-  for (auto& observer : observers_)
-    observer.OnNoWork(this);
-  idle_timer_fired_in_renderer_ = false;
 }
 
 bool ServiceWorkerVersion::IsStartWorkerAllowed() const {

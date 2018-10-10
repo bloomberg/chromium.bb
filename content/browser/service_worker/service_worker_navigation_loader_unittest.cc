@@ -587,6 +587,10 @@ class ServiceWorkerNavigationLoaderTest
   void MainResourceLoadFailed() override {
     was_main_resource_load_failed_called_ = true;
   }
+
+  bool HasWorkInBrowser(ServiceWorkerVersion* version) const {
+    return version->HasWorkInBrowser();
+  }
   // --------------------------------------------------------------------------
 
   TestBrowserThreadBundle thread_bundle_;
@@ -773,7 +777,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
-  EXPECT_TRUE(version_->HasWorkInBrowser());
+  EXPECT_FALSE(version_->HasNoWork());
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -879,10 +883,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
-  EXPECT_TRUE(version_->HasWorkInBrowser());
+  EXPECT_TRUE(HasWorkInBrowser(version_.get()));
   loader_ptr_.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(version_->HasWorkInBrowser());
+  EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 
   // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
   // on connection error, the URLLoaderClient still exists. In this test, it is
@@ -998,9 +1002,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
 
   // Although the response was already received, the event remains outstanding
   // until waitUntil() resolves.
-  EXPECT_TRUE(version_->HasWorkInBrowser());
+  EXPECT_TRUE(HasWorkInBrowser(version_.get()));
   helper_->FinishWaitUntil();
-  EXPECT_FALSE(version_->HasWorkInBrowser());
+  EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 }
 
 // Test asking the loader to fallback to network. In production code, this

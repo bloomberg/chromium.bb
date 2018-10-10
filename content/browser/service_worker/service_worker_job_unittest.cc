@@ -33,6 +33,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -909,7 +910,8 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     ServiceWorkerVersion::Status status;
   };
 
-  UpdateJobTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  UpdateJobTestHelper()
+      : EmbeddedWorkerTestHelper(base::FilePath()), weak_factory_(this) {}
   ~UpdateJobTestHelper() override {
     if (observed_registration_.get())
       observed_registration_->RemoveListener(this);
@@ -924,6 +926,10 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
 
   void set_force_start_worker_failure(bool force_start_worker_failure) {
     force_start_worker_failure_ = force_start_worker_failure;
+  }
+
+  const base::Optional<bool>& will_be_terminated() const {
+    return will_be_terminated_;
   }
 
   scoped_refptr<ServiceWorkerRegistration> SetupInitialRegistration(
@@ -944,6 +950,17 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     EXPECT_FALSE(registration->waiting_version());
     observed_registration_ = registration;
     return registration;
+  }
+
+  void RequestTermination(int embedded_worker_id) {
+    GetEmbeddedWorkerInstanceHost(embedded_worker_id)
+        ->RequestTermination(
+            base::BindOnce(&UpdateJobTestHelper::OnRequestedTermination,
+                           weak_factory_.GetWeakPtr()));
+  }
+
+  void OnRequestedTermination(bool will_be_terminated) {
+    will_be_terminated_ = will_be_terminated;
   }
 
   // EmbeddedWorkerTestHelper overrides
@@ -1078,6 +1095,9 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   std::set<int /* embedded_worker_id */> started_workers_;
   bool update_found_ = false;
   bool force_start_worker_failure_ = false;
+  base::Optional<bool> will_be_terminated_;
+
+  base::WeakPtrFactory<UpdateJobTestHelper> weak_factory_;
 };
 
 // Helper class for update tests that evicts the active version when the update
@@ -1891,6 +1911,17 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
   // until the runner runs again.
   first_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
+
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // S13nServiceWorker: Activating the new version won't happen until
+    // RequestTermination() is called.
+    EXPECT_EQ(first_version.get(), registration->active_version());
+    update_helper->RequestTermination(
+        first_version->embedded_worker()->embedded_worker_id());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(update_helper->will_be_terminated().value());
+  }
+
   EXPECT_EQ(new_version.get(), registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
 
