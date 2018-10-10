@@ -255,12 +255,12 @@ class InputRouterImplTest : public testing::Test {
   }
 
   void SimulateWheelEvent(float x,
-                                   float y,
-                                   float dX,
-                                   float dY,
-                                   int modifiers,
-                                   bool precise,
-                                   WebMouseWheelEvent::Phase phase) {
+                          float y,
+                          float dX,
+                          float dY,
+                          int modifiers,
+                          bool precise,
+                          WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
         x, y, dX, dY, modifiers, precise);
     wheel_event.phase = phase;
