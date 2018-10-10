@@ -45164,6 +45164,36 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Context menu"/>
 </enum>
 
+<enum name="ShownAfterCrashingReason">
+  <summary>
+    This enum describes the reason that a crashed subframe became visible.
+  </summary>
+  <int value="0" label="TabWasShown">
+    The crashed subframe became visible because the user switched to a tab that
+    contains it.
+  </int>
+  <int value="1" label="ViewportIntersection">
+    The crashed subframe became visible because its viewport intersection became
+    non-empty. For example, this can happens when the subframe was scrolled into
+    view.
+  </int>
+  <int value="2" label="Visibility">
+    The crashed subframe became visible because its visibility was updated, for
+    example if the parent frame changed the iframe element's visibility through
+    CSS.
+  </int>
+  <int value="3" label="ViewportIntersectionAfterTabWasShown">
+    The crashed subframe became visible after (1) a tab that contains it became
+    visible, and then (2) its viewport intersection became non-empty, for
+    example if the subframe was scrolled into view.
+  </int>
+  <int value="4" label="VisibilityAfterTabWasShown">
+    The crashed subframe became visible after (1) a tab that contains it became
+    visible, and then (2) its visibility was updated, for example if the parent
+    frame changed the iframe element's visibility through CSS.
+  </int>
+</enum>
+
 <enum name="ShowTabSwitcherSnapshotResult">
   <int value="0" label="Snapshot not attempted, page is still loading">
     Snapshot was not attempted because the page is still loading and would
