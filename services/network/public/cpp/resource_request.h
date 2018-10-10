@@ -70,6 +70,13 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // Additional HTTP request headers.
   net::HttpRequestHeaders headers;
 
+  // 'X-Requested-With' header value. Some consumers want to set this header,
+  // but such internal headers must be ignored by CORS checks (which run inside
+  // Network Service), so the value is stored here (rather than in |headers|)
+  // and later populated in the headers after CORS check.
+  // TODO(toyoshim): Remove it once PPAPI is deprecated.
+  std::string requested_with;
+
   // net::URLRequest load flags (0 by default).
   int load_flags = 0;
 

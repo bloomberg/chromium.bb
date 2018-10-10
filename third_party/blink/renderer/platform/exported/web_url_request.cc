@@ -416,12 +416,20 @@ const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
   return resource_request_->GetDevToolsToken();
 }
 
+const WebString WebURLRequest::GetOriginPolicy() const {
+  return resource_request_->GetOriginPolicy();
+}
+
 void WebURLRequest::SetOriginPolicy(const WebString& policy) {
   resource_request_->SetOriginPolicy(policy);
 }
 
-const WebString WebURLRequest::GetOriginPolicy() const {
-  return resource_request_->GetOriginPolicy();
+const WebString WebURLRequest::GetRequestedWith() const {
+  return resource_request_->GetRequestedWith();
+}
+
+void WebURLRequest::SetRequestedWith(const WebString& value) {
+  resource_request_->SetRequestedWith(value);
 }
 
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {

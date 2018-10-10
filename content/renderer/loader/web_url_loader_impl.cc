@@ -676,6 +676,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                  network::kDefaultAcceptHeader);
   }
+  resource_request->requested_with =
+      WebString(request.GetRequestedWith()).Utf8();
 
   if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
       resource_request->resource_type == RESOURCE_TYPE_FAVICON) {

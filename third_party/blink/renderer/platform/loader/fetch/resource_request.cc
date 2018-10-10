@@ -128,6 +128,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetInitiatorCSP(GetInitiatorCSP());
   request->SetUpgradeIfInsecure(UpgradeIfInsecure());
   request->SetIsAutomaticUpgrade(IsAutomaticUpgrade());
+  request->SetRequestedWith(GetRequestedWith());
 
   return request;
 }

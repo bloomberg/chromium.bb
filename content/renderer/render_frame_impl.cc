@@ -4908,12 +4908,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   // The request's extra data may indicate that we should set a custom user
   // agent. This needs to be done here, after WebKit is through with setting the
-  // user agent on its own. Similarly, it may indicate that we should set an
-  // X-Requested-With header. This must be done here to avoid breaking CORS
-  // checks.
-  // There may also be a stream url associated with the request.
+  // user agent on its own.
   WebString custom_user_agent;
-  WebString requested_with;
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
     RequestExtraData* old_extra_data =
@@ -4925,14 +4921,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
         request.ClearHTTPHeaderField("User-Agent");
       else
         request.SetHTTPHeaderField("User-Agent", custom_user_agent);
-    }
-
-    requested_with = old_extra_data->requested_with();
-    if (!requested_with.IsNull()) {
-      if (requested_with.IsEmpty())
-        request.ClearHTTPHeaderField("X-Requested-With");
-      else
-        request.SetHTTPHeaderField("X-Requested-With", requested_with);
     }
     response_override =
         old_extra_data->TakeNavigationResponseOverrideOwnership();
@@ -4951,7 +4939,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   auto* extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
   extra_data->set_visibility_state(VisibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
-  extra_data->set_requested_with(requested_with);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_allow_download(
