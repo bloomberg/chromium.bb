@@ -288,11 +288,11 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     viz::ContextProvider* context_provider =
         layer_tree_impl()->context_provider();
     gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+    GLuint mailbox_texture_id =
+        gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
 
     {
       ScopedGpuRaster gpu_raster(context_provider);
-      GLuint mailbox_texture_id =
-          gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
       viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
           context_provider->GrContext(), mailbox_texture_id,
           backing->texture_target, pool_resource.size(), pool_resource.format(),
@@ -303,9 +303,9 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         return;
       }
       DrawHudContents(surface->getCanvas());
-      gl->DeleteTextures(1, &mailbox_texture_id);
     }
 
+    gl->DeleteTextures(1, &mailbox_texture_id);
     backing->mailbox_sync_token =
         viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
   } else if (draw_mode == DRAW_MODE_HARDWARE) {
