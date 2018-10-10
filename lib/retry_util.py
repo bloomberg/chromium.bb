@@ -77,7 +77,7 @@ class WithRetry(object):
 
   Example:
 
-  @WithRetry(max_retry=3):
+  @WithRetry(max_retry=3)
   def _run():
     ... do something ...
   _run()
