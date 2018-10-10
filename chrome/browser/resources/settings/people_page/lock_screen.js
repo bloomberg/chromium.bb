@@ -448,4 +448,12 @@ Polymer({
       return this.i18n('lockScreenOptionsLoginLock');
     return this.i18n('lockScreenOptionsLock');
   },
+
+  /**
+   * @return {boolean} Whether Easy Unlock is available.
+   * @private
+   */
+  easyUnlockAvailable_: function(multiDeviceEnabled, easyUnlockAllowed) {
+    return !multiDeviceEnabled && easyUnlockAllowed;
+  },
 });
