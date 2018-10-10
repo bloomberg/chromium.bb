@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabWebContentsObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -729,6 +730,20 @@ public class ChromeTabUtils {
             Assert.assertTrue(backgroundActivity.getTabModelSelector().isIncognitoSelected());
         } else {
             Assert.assertFalse(backgroundActivity.getTabModelSelector().isIncognitoSelected());
+        }
+    }
+
+    /**
+     * Issues a fake notification about the renderer being killed.
+     *
+     * @param tab {@link Tab} instance where the target renderer resides.
+     * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
+     *                        (e.g. renderer for the currently selected tab)
+     */
+    public static void simulateRendererKilledForTesting(Tab tab, boolean wasOomProtected) {
+        TabWebContentsObserver observer = TabWebContentsObserver.get(tab);
+        if (observer != null) {
+            observer.simulateRendererKilledForTesting(wasOomProtected);
         }
     }
 }

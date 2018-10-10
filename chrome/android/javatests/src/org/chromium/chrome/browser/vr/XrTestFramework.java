@@ -15,6 +15,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.RenderFrameHostTestExt;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -527,7 +528,8 @@ public abstract class XrTestFramework {
 
     public void simulateRendererKilled() {
         final Tab tab = getRule().getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
 
         CriteriaHelper.pollUiThread(
                 () -> { return tab.isShowingSadTab(); }, "Renderer killed, but sad tab not shown");

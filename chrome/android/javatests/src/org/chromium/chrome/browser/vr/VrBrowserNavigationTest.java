@@ -553,7 +553,8 @@ public class VrBrowserNavigationTest {
         enterFullscreenOrFail(mVrBrowserTestFramework.getFirstTabWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(() -> tab.simulateRendererKilledForTesting(true));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
 
         mVrBrowserTestFramework.simulateRendererKilled();
 

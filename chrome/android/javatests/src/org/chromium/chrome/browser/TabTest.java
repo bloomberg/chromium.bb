@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -109,7 +110,8 @@ public class TabTest {
 
         // Stop the activity and simulate a killed renderer.
         ApplicationTestUtils.fireHomeScreenIntent(InstrumentationRegistry.getTargetContext());
-        ThreadUtils.runOnUiThreadBlocking(() -> mTab.simulateRendererKilledForTesting(false));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeTabUtils.simulateRendererKilledForTesting(mTab, false));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

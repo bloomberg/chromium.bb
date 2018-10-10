@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.ExecutionException;
@@ -174,7 +175,7 @@ public class SadTabTest {
             @Override
             public void run() {
                 if (!visible) tab.hide(TabHidingType.CHANGED_TABS);
-                tab.simulateRendererKilledForTesting(false);
+                ChromeTabUtils.simulateRendererKilledForTesting(tab, false);
             }
         });
     }
