@@ -171,13 +171,6 @@ bool DataReductionProxyBypassProtocol::HandleInvalidResponseHeadersCase(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(nullptr, request.response_info().headers.get());
 
-  // Handling of invalid response headers is enabled by default.
-  if (!GetFieldTrialParamByFeatureAsBool(
-          features::kDataReductionProxyRobustConnection,
-          "handle_invalid_respnse_headers", true)) {
-    return false;
-  }
-
   if (!data_reduction_proxy_type_info)
     return false;
 
