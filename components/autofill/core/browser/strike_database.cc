@@ -69,6 +69,8 @@ std::string StrikeDatabase::GetKeyForCreditCardSave(
   return CreateKey(GetKeyPrefixForCreditCardSave(), card_last_four_digits);
 }
 
+StrikeDatabase::StrikeDatabase() : db_(nullptr), weak_ptr_factory_(this) {}
+
 void StrikeDatabase::OnDatabaseInit(bool success) {}
 
 void StrikeDatabase::GetStrikeData(const std::string key,

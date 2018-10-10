@@ -37,7 +37,7 @@ identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
 }
 
 StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
-  return nullptr;
+  return test_strike_database_.get();
 }
 
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
@@ -104,13 +104,20 @@ void TestAutofillClient::ConfirmSaveAutofillProfile(
 
 void TestAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    base::OnceClosure callback) {}
+    bool show_prompt,
+    base::OnceClosure callback) {
+  confirm_save_credit_card_locally_called_ = true;
+  offer_to_save_credit_card_bubble_was_shown_ = show_prompt;
+  std::move(callback).Run();
+}
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool show_prompt,
     base::OnceCallback<void(const base::string16&)> callback) {
+  offer_to_save_credit_card_bubble_was_shown_ = show_prompt;
   std::move(callback).Run(base::string16());
 }
 

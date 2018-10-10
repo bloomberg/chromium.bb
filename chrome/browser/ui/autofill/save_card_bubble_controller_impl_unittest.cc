@@ -104,17 +104,17 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));
     std::unique_ptr<base::DictionaryValue> legal_message =
         dictionary->CreateDeepCopy();
-    controller()->ShowBubbleForUpload(CreditCard(), std::move(legal_message),
-                                      should_request_name_from_user,
-                                      base::BindOnce(&UploadSaveCardCallback));
+    controller()->OfferUploadSave(
+        CreditCard(), std::move(legal_message), should_request_name_from_user,
+        /*show_bubble=*/true, base::BindOnce(&UploadSaveCardCallback));
   }
 
   void ShowLocalBubble(CreditCard* card = nullptr) {
     // TODO(crbug.com/852562): Migrate this to BindOnce/OnceClosure.
-    controller()->ShowBubbleForLocalSave(
+    controller()->OfferLocalSave(
         card ? CreditCard(*card)
              : autofill::test::GetCreditCard(),  // Visa by default
-        base::BindOnce(&LocalSaveCardCallback));
+        /*show_bubble=*/true, base::BindOnce(&LocalSaveCardCallback));
   }
 
   void ShowUploadBubble(bool should_request_name_from_user = false) {

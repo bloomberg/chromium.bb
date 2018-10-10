@@ -59,8 +59,9 @@ SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
     save_card_bubble_view_->Hide();
 }
 
-void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
+void SaveCardBubbleControllerImpl::OfferLocalSave(
     const CreditCard& card,
+    bool show_bubble,
     base::OnceClosure save_card_callback) {
   // Don't show the bubble if it's already visible.
   if (save_card_bubble_view_)
@@ -71,23 +72,27 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
   should_request_name_from_user_ = false;
   legal_message_lines_.clear();
 
-  AutofillMetrics::LogSaveCardPromptMetric(
-      AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
-      is_reshow_, should_request_name_from_user_,
-      pref_service_->GetInteger(
-          prefs::kAutofillAcceptSaveCreditCardPromptState),
-      GetSecurityLevel());
-
   card_ = card;
   local_save_card_callback_ = std::move(save_card_callback);
   current_bubble_type_ = BubbleType::LOCAL_SAVE;
-  ShowBubble();
+  if (show_bubble) {
+    ShowBubble();
+    AutofillMetrics::LogSaveCardPromptMetric(
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
+        is_reshow_, should_request_name_from_user_,
+        pref_service_->GetInteger(
+            prefs::kAutofillAcceptSaveCreditCardPromptState),
+        GetSecurityLevel());
+  } else {
+    ShowIconOnly();
+  }
 }
 
-void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
+void SaveCardBubbleControllerImpl::OfferUploadSave(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool show_bubble,
     base::OnceCallback<void(const base::string16&)> save_card_callback) {
   // Don't show the bubble if it's already visible.
   if (save_card_bubble_view_)
@@ -100,12 +105,16 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
   is_upload_save_ = true;
   is_reshow_ = false;
   should_request_name_from_user_ = should_request_name_from_user;
-  AutofillMetrics::LogSaveCardPromptMetric(
-      AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
-      is_reshow_, should_request_name_from_user_,
-      pref_service_->GetInteger(
-          prefs::kAutofillAcceptSaveCreditCardPromptState),
-      GetSecurityLevel());
+  if (show_bubble) {
+    // Can't move this into the other "if (show_bubble)" below because an
+    // invalid legal message would skip it.
+    AutofillMetrics::LogSaveCardPromptMetric(
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
+        is_reshow_, should_request_name_from_user_,
+        pref_service_->GetInteger(
+            prefs::kAutofillAcceptSaveCreditCardPromptState),
+        GetSecurityLevel());
+  }
 
   if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
                                /*escape_apostrophes=*/true)) {
@@ -121,7 +130,11 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
   card_ = card;
   upload_save_card_callback_ = std::move(save_card_callback);
   current_bubble_type_ = BubbleType::UPLOAD_SAVE;
-  ShowBubble();
+
+  if (show_bubble)
+    ShowBubble();
+  else
+    ShowIconOnly();
 }
 
 void SaveCardBubbleControllerImpl::ShowBubbleForSignInPromo() {
@@ -541,6 +554,34 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
 
   if (observer_for_testing_) {
     observer_for_testing_->OnBubbleShown();
+  }
+}
+
+void SaveCardBubbleControllerImpl::ShowIconOnly() {
+  DCHECK(current_bubble_type_ != BubbleType::INACTIVE);
+  // Upload save callback should not be null for UPLOAD_SAVE state.
+  DCHECK(!(upload_save_card_callback_.is_null() &&
+           current_bubble_type_ == BubbleType::UPLOAD_SAVE));
+  // Local save callback should not be null for LOCAL_SAVE state.
+  DCHECK(!(local_save_card_callback_.is_null() &&
+           current_bubble_type_ == BubbleType::LOCAL_SAVE));
+  DCHECK(!save_card_bubble_view_);
+
+  // Show the icon only. The bubble can still be displayed if the user
+  // explicitly clicks the icon.
+  UpdateIcon();
+
+  timer_.reset(new base::ElapsedTimer());
+
+  switch (current_bubble_type_) {
+    case BubbleType::UPLOAD_SAVE:
+    case BubbleType::LOCAL_SAVE:
+      // TODO(crbug/884817): Log metrics for "bubble not shown".
+      break;
+    case BubbleType::MANAGE_CARDS:
+    case BubbleType::SIGN_IN_PROMO:
+    case BubbleType::INACTIVE:
+      NOTREACHED();
   }
 }
 

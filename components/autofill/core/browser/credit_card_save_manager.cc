@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -43,6 +44,11 @@
 namespace autofill {
 
 namespace {
+
+// If the Autofill StrikeDatabase returns this many strikes for a given card, it
+// will not show the offer-to-save bubble on Desktop or infobar on Android.
+// On Desktop, however, the omnibox icon will still be available.
+const int kMaxStrikesToPreventPoppingUpOfferToSavePrompt = 3;
 
 // If |name| consists of three whitespace-separated parts and the second of the
 // three parts is a single character or a single character followed by a period,
@@ -82,16 +88,24 @@ CreditCardSaveManager::CreditCardSaveManager(
 
 CreditCardSaveManager::~CreditCardSaveManager() {}
 
-void CreditCardSaveManager::OfferCardLocalSave(const CreditCard& card) {
-  if (card.HasFirstAndLastName())
-    AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(/*is_local=*/true);
-  if (observer_for_testing_)
-    observer_for_testing_->OnOfferLocalSave();
-  client_->ConfirmSaveCreditCardLocally(
-      card,
-      base::BindOnce(base::IgnoreResult(
-                         &PersonalDataManager::OnAcceptedLocalCreditCardSave),
-                     base::Unretained(personal_data_manager_), card));
+void CreditCardSaveManager::AttemptToOfferCardLocalSave(
+    const CreditCard& card) {
+  local_card_save_candidate_ = card;
+
+  // Query the Autofill StrikeDatabase on if we should pop up the offer-to-save
+  // prompt for this card.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystem)) {
+    StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    strike_database->GetStrikes(
+        strike_database->GetKeyForCreditCardSave(
+            base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
+        base::BindRepeating(&CreditCardSaveManager::OnDidGetStrikesForLocalSave,
+                            weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Skip retrieving data from the Autofill StrikeDatabase; assume 0 strikes.
+    OnDidGetStrikesForLocalSave(0);
+  }
 }
 
 void CreditCardSaveManager::AttemptToOfferCardUploadSave(
@@ -195,6 +209,21 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),
       payments::kUploadCardBillableServiceNumber);
+  // Query the Autofill StrikeDatabase on if we should pop up the offer-to-save
+  // prompt for this card.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystem)) {
+    StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    strike_database->GetStrikes(
+        strike_database->GetKeyForCreditCardSave(
+            base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
+        base::BindRepeating(
+            &CreditCardSaveManager::OnDidGetStrikesForUploadSave,
+            weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Skip retrieving data from the Autofill StrikeDatabase; assume 0 strikes.
+    OnDidGetStrikesForUploadSave(0);
+  }
 }
 
 bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
@@ -243,6 +272,25 @@ void CreditCardSaveManager::OnDidUploadCard(
   }
 }
 
+void CreditCardSaveManager::OnDidGetStrikesForLocalSave(const int num_strikes) {
+  show_save_prompt_ =
+      num_strikes < kMaxStrikesToPreventPoppingUpOfferToSavePrompt;
+
+  OfferCardLocalSave();
+}
+
+void CreditCardSaveManager::OnDidGetStrikesForUploadSave(
+    const int num_strikes) {
+  show_save_prompt_ =
+      num_strikes < kMaxStrikesToPreventPoppingUpOfferToSavePrompt;
+
+  // Only offer upload once both Payments and the Autofill StrikeDatabase have
+  // returned their decisions. Use population of |upload_request_.context_token|
+  // as an indicator of the Payments call returning successfully.
+  if (!upload_request_.context_token.empty())
+    OfferCardUploadSave();
+}
+
 void CreditCardSaveManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
@@ -253,23 +301,13 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
     upload_request_.context_token = context_token;
-    user_did_accept_upload_prompt_ = false;
-    client_->ConfirmSaveCreditCardToCloud(
-        upload_request_.card, std::move(legal_message),
-        should_request_name_from_user_,
-        base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
-                       weak_ptr_factory_.GetWeakPtr()));
-    client_->LoadRiskData(
-        base::BindOnce(&CreditCardSaveManager::OnDidGetUploadRiskData,
-                       weak_ptr_factory_.GetWeakPtr()));
-    upload_decision_metrics_ |= AutofillMetrics::UPLOAD_OFFERED;
-    AutofillMetrics::LogUploadOfferedCardOriginMetric(
-        uploading_local_card_ ? AutofillMetrics::OFFERING_UPLOAD_OF_LOCAL_CARD
-                              : AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD);
-    if (upload_request_.card.HasFirstAndLastName()) {
-      AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
-          /*is_local=*/false);
-    }
+    legal_message_ = std::move(legal_message);
+
+    // Only offer upload once both Payments and the Autofill StrikeDatabase have
+    // returned their decisions. Use presence of |show_save_prompt_| as an
+    // indicator of StrikeDatabase retrieving its data.
+    if (show_save_prompt_ != base::nullopt)
+      OfferCardUploadSave();
   } else {
     // If the upload details request failed and we *know* we have all possible
     // information (card number, expiration, cvc, name, and address), fall back
@@ -281,19 +319,90 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     // if there's a network breakdown or Payments outage, resulting in sometimes
     // showing upload and sometimes offering local save, but such cases should
     // be rare.)
+    //
+    // Note that calling AttemptToOfferCardLocalSave(~) pings the Autofill
+    // StrikeDatabase again, but A) the result should be cached so this
+    // shouldn't hit the disk, and B) the alternative would require hooking into
+    // the StrikeDatabase's GetStrikes() call already in progress, which would
+    // be hacky at worst and require additional class state variables at best.
     bool found_name_and_postal_code_and_cvc =
         (upload_request_.detected_values & DetectedValue::CARDHOLDER_NAME ||
          upload_request_.detected_values & DetectedValue::ADDRESS_NAME) &&
         upload_request_.detected_values & DetectedValue::POSTAL_CODE &&
         upload_request_.detected_values & DetectedValue::CVC;
     if (found_name_and_postal_code_and_cvc && !uploading_local_card_)
-      OfferCardLocalSave(upload_request_.card);
+      AttemptToOfferCardLocalSave(upload_request_.card);
     upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
+    LogCardUploadDecisions(upload_decision_metrics_);
   }
+}
 
+void CreditCardSaveManager::OfferCardLocalSave() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  bool is_mobile_build = true;
+#else
+  bool is_mobile_build = false;
+#endif  // #if defined(OS_ANDROID) || defined(OS_IOS)
+
+  // If |show_save_prompt_.value()| is false, desktop builds will still offer
+  // save in the omnibox without popping-up the bubble. Mobile builds, however,
+  // should not display the offer-to-save infobar at all.
+  if (!is_mobile_build || show_save_prompt_.value()) {
+    if (observer_for_testing_)
+      observer_for_testing_->OnOfferLocalSave();
+    client_->ConfirmSaveCreditCardLocally(
+        local_card_save_candidate_, show_save_prompt_.value(),
+        base::BindOnce(base::IgnoreResult(
+                           &PersonalDataManager::OnAcceptedLocalCreditCardSave),
+                       base::Unretained(personal_data_manager_),
+                       local_card_save_candidate_));
+
+    // Log metrics.
+    if (local_card_save_candidate_.HasFirstAndLastName())
+      AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
+          /*is_local=*/true);
+  }
+}
+
+void CreditCardSaveManager::OfferCardUploadSave() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  bool is_mobile_build = true;
+#else
+  bool is_mobile_build = false;
+#endif  // #if defined(OS_ANDROID) || defined(OS_IOS)
+
+  // If |show_save_prompt_.value()| is false, desktop builds will still offer
+  // save in the omnibox without popping-up the bubble. Mobile builds, however,
+  // should not display the offer-to-save infobar at all.
+  if (!is_mobile_build || show_save_prompt_.value()) {
+    user_did_accept_upload_prompt_ = false;
+    client_->ConfirmSaveCreditCardToCloud(
+        upload_request_.card, std::move(legal_message_),
+        should_request_name_from_user_, show_save_prompt_.value(),
+        base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
+                       weak_ptr_factory_.GetWeakPtr()));
+    client_->LoadRiskData(
+        base::BindOnce(&CreditCardSaveManager::OnDidGetUploadRiskData,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    // Log metrics.
+    AutofillMetrics::LogUploadOfferedCardOriginMetric(
+        uploading_local_card_ ? AutofillMetrics::OFFERING_UPLOAD_OF_LOCAL_CARD
+                              : AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD);
+    if (upload_request_.card.HasFirstAndLastName()) {
+      AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
+          /*is_local=*/false);
+    }
+    // Set that upload was offered.
+    upload_decision_metrics_ |= AutofillMetrics::UPLOAD_OFFERED;
+  } else {
+    // Set that upload was abandoned due to the Autofill StrikeDatabase
+    // returning too many strikes for a mobile infobar to be displayed.
+    upload_decision_metrics_ |=
+        AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE;
+  }
   LogCardUploadDecisions(upload_decision_metrics_);
-  pending_upload_request_origin_ = url::Origin();
 }
 
 void CreditCardSaveManager::SetProfilesForCreditCardUpload(
@@ -549,6 +658,7 @@ void CreditCardSaveManager::LogCardUploadDecisions(
   AutofillMetrics::LogCardUploadDecisionsUkm(
       client_->GetUkmRecorder(), client_->GetUkmSourceId(),
       pending_upload_request_origin_.GetURL(), upload_decision_metrics);
+  pending_upload_request_origin_ = url::Origin();
 }
 
 }  // namespace autofill

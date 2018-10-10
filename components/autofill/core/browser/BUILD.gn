@@ -367,6 +367,7 @@ jumbo_static_library("test_support") {
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/leveldb_proto:leveldb_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
     "//components/pref_registry",

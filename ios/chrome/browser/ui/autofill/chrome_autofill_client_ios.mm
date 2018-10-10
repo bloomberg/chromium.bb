@@ -168,7 +168,9 @@ void ChromeAutofillClientIOS::ConfirmSaveAutofillProfile(
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
+    bool show_prompt,
     base::OnceClosure callback) {
+  DCHECK(show_prompt);
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           false, card, std::unique_ptr<base::DictionaryValue>(nullptr),
@@ -193,7 +195,9 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool show_prompt,
     base::OnceCallback<void(const base::string16&)> callback) {
+  DCHECK(show_prompt);
   auto save_card_info_bar_delegate_mobile =
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           true, card, std::move(legal_message),

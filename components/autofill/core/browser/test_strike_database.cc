@@ -8,21 +8,47 @@
 
 namespace autofill {
 
-TestStrikeDatabase::TestStrikeDatabase(const base::FilePath& database_dir)
-    : StrikeDatabase(database_dir) {}
+TestStrikeDatabase::TestStrikeDatabase() {}
 
-void TestStrikeDatabase::AddEntries(
-    std::vector<std::pair<std::string, StrikeData>> entries_to_add,
-    const SetValueCallback& callback) {
-  std::unique_ptr<leveldb_proto::ProtoDatabase<StrikeData>::KeyEntryVector>
-      entries(new leveldb_proto::ProtoDatabase<StrikeData>::KeyEntryVector());
-  for (std::pair<std::string, StrikeData> entry : entries_to_add) {
-    entries->push_back(entry);
-  }
-  db_->UpdateEntries(
-      /*entries_to_save=*/std::move(entries),
-      /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(),
-      callback);
+TestStrikeDatabase::~TestStrikeDatabase() {}
+
+void TestStrikeDatabase::GetStrikes(const std::string key,
+                                    const StrikesCallback& outer_callback) {
+  std::unordered_map<std::string, StrikeData>::iterator it = db_.find(key);
+  if (it != db_.end())
+    outer_callback.Run(it->second.num_strikes());
+  else
+    outer_callback.Run(0);
+}
+
+void TestStrikeDatabase::AddStrike(const std::string key,
+                                   const StrikesCallback& outer_callback) {
+  std::unordered_map<std::string, StrikeData>::iterator it = db_.find(key);
+  StrikeData strike_data;
+  strike_data.set_last_update_timestamp(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  if (it != db_.end())
+    strike_data.set_num_strikes(it->second.num_strikes() + 1);
+  else
+    strike_data.set_num_strikes(1);
+  db_[key] = strike_data;
+  outer_callback.Run(strike_data.num_strikes());
+}
+
+void TestStrikeDatabase::ClearAllStrikesForKey(
+    const std::string& key,
+    const ClearStrikesCallback& outer_callback) {
+  db_.erase(key);
+  outer_callback.Run(/*success=*/true);
+}
+
+void TestStrikeDatabase::AddEntryWithNumStrikes(std::string key,
+                                                int num_strikes) {
+  StrikeData strike_data;
+  strike_data.set_num_strikes(num_strikes);
+  strike_data.set_last_update_timestamp(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  db_[key] = strike_data;
 }
 
 }  // namespace autofill

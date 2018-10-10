@@ -158,18 +158,25 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) = 0;
 
-  // Runs |callback| if the |card| should be imported as personal data.
-  // |metric_logger| can be used to log user actions.
+  // Runs |callback| if the |card| should be imported as personal data. On
+  // desktop, shows the offer-to-save bubble if |show_prompt| is true; otherwise
+  // only shows the omnibox icon. On mobile, shows the offer-to-save infobar if
+  // |show_prompt| is true; otherwise does not offer to save at all.
   virtual void ConfirmSaveCreditCardLocally(const CreditCard& card,
+                                            bool show_prompt,
                                             base::OnceClosure callback) = 0;
 
   // Runs |callback| if the |card| should be uploaded to Payments. Displays the
   // contents of |legal_message| to the user. Displays a cardholder name
-  // textfield in the bubble if |should_request_name_from_user| is true.
+  // textfield in the bubble if |should_request_name_from_user| is true. On
+  // desktop, shows the offer-to-save bubble if |show_prompt| is true; otherwise
+  // only shows the omnibox icon. On mobile, shows the offer-to-save infobar if
+  // |show_prompt| is true; otherwise does not offer to save at all.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool show_prompt,
       base::OnceCallback<void(const base::string16&)> callback) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.

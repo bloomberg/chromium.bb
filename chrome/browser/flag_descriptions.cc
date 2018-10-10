@@ -424,6 +424,12 @@ const char kEnableAutofillSaveCardSignInAfterLocalSaveDescription[] =
     "saves a card locally. This also introduces a Manage Cards bubble "
     "which you can access from the card icon after saving a card.";
 
+const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
+    "Enable limit on offering to save the same credit card repeatedly";
+const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
+    "If enabled, prevents popping up the credit card offer-to-save prompt if "
+    "it has repeatedly been ignored, declined, or failed.";
+
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
     "Send experiment flag IDs in calls to Google Payments";
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =

@@ -255,8 +255,10 @@ void ChromeAutofillClient::ConfirmSaveAutofillProfile(
 
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
+    bool show_prompt,
     base::OnceClosure callback) {
 #if defined(OS_ANDROID)
+  DCHECK(show_prompt);
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
@@ -270,7 +272,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
       web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForLocalSave(card, std::move(callback));
+  controller->OfferLocalSave(card, show_prompt, std::move(callback));
 #endif
 }
 
@@ -278,8 +280,10 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool show_prompt,
     base::OnceCallback<void(const base::string16&)> callback) {
 #if defined(OS_ANDROID)
+  DCHECK(show_prompt);
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
@@ -296,9 +300,9 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForUpload(card, std::move(legal_message),
-                                  should_request_name_from_user,
-                                  std::move(callback));
+  controller->OfferUploadSave(card, std::move(legal_message),
+                              should_request_name_from_user, show_prompt,
+                              std::move(callback));
 #endif
 }
 
