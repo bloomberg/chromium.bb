@@ -76,7 +76,7 @@ class MainThreadWorkletTest : public PageTestBase {
         &GetFrame(), std::move(creation_params), *reporting_proxy_);
   }
 
-  void TearDown() override { global_scope_->Terminate(); }
+  void TearDown() override { global_scope_->Dispose(); }
 
  protected:
   std::unique_ptr<MainThreadWorkletReportingProxyForTest> reporting_proxy_;

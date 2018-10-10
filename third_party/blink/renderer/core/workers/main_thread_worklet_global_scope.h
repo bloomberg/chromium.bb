@@ -34,8 +34,6 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   WorkerThread* GetThread() const final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
-  void Terminate();
-
   // ExecutionContext
   void AddConsoleMessage(ConsoleMessage*) final;
   void ExceptionThrown(ErrorEvent*) final;
