@@ -20363,6 +20363,7 @@ Called by update_net_error_codes.py.-->
   <int value="2585" label="CSSValueAppearancePushButtonForOthersRendered"/>
   <int value="2586" label="CSSValueAppearanceSquareButtonRendered"/>
   <int value="2587" label="CSSValueAppearanceSquareButtonForOthersRendered"/>
+  <int value="2588" label="GetComputedStyleForWebkitAppearance"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

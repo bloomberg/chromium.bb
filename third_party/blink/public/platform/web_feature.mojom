@@ -2038,6 +2038,7 @@ enum WebFeature {
   kCSSValueAppearancePushButtonForOthersRendered = 2585,
   kCSSValueAppearanceSquareButtonRendered = 2586,
   kCSSValueAppearanceSquareButtonForOthersRendered = 2587,
+  kGetComputedStyleForWebkitAppearance = 2588,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
