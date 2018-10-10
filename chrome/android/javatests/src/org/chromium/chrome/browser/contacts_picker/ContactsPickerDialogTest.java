@@ -194,6 +194,13 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(expectedAction, mLastActionRecorded);
     }
 
+    private void clickSearchButton() throws Exception {
+        ContactsPickerToolbar toolbar =
+                (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
+        View search = toolbar.findViewById(R.id.search);
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(), search);
+    }
+
     private void dismissDialog() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -320,5 +327,15 @@ public class ContactsPickerDialogTest
 
         clickActionButton(6, ContactsPickerAction.SELECT_ALL);
         clickActionButton(5, ContactsPickerAction.UNDO_SELECT_ALL);
+    }
+
+    @Test
+    @LargeTest
+    public void testNoSearchStringNoCrash() throws Throwable {
+        createDialog(/* multiselect = */ true, Arrays.asList("image/*"));
+        Assert.assertTrue(mDialog.isShowing());
+
+        clickSearchButton();
+        dismissDialog();
     }
 }
