@@ -175,6 +175,7 @@ class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
 
     options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_chrome_trace = True
+    options.config.enable_atrace_trace = True
     options.SetTimelineBasedMetrics([
         'tracingMetric',
         'androidStartupMetric',
