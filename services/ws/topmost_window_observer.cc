@@ -56,7 +56,7 @@ TopmostWindowObserver::~TopmostWindowObserver() {
   root_->RemovePreTargetHandler(this);
   if (topmost_)
     topmost_->RemoveObserver(this);
-  if (real_topmost_)
+  if (real_topmost_ && topmost_ != real_topmost_)
     real_topmost_->RemoveObserver(this);
 }
 
@@ -118,20 +118,22 @@ void TopmostWindowObserver::UpdateTopmostWindows() {
   if (topmost == topmost_ && real_topmost == real_topmost_)
     return;
 
-  if (topmost_ != topmost) {
-    if (topmost_)
-      topmost_->RemoveObserver(this);
-    topmost_ = topmost;
-    if (topmost_)
-      topmost_->AddObserver(this);
-  }
-  if (real_topmost_ != real_topmost) {
-    if (real_topmost_)
-      real_topmost_->RemoveObserver(this);
-    real_topmost_ = real_topmost;
-    if (real_topmost_)
-      real_topmost_->RemoveObserver(this);
-  }
+  // Since |topmost_| and |real_topmost_| could be same, updating observation
+  // for those windows is really complicated. To simplify the logic, here always
+  // removes this from the old windows and then adds to the new windows. This
+  // means removing and adding can happen on the same window when |topmost_| or
+  // |real_topmost_| are same. See topmost_window_observer_unittest.cc for the
+  // corner cases of the updates.
+  if (topmost_)
+    topmost_->RemoveObserver(this);
+  if (real_topmost_ && real_topmost_ != topmost_)
+    real_topmost_->RemoveObserver(this);
+  topmost_ = topmost;
+  real_topmost_ = real_topmost;
+  if (topmost_)
+    topmost_->AddObserver(this);
+  if (real_topmost_ && real_topmost_ != topmost_)
+    real_topmost_->AddObserver(this);
 
   std::vector<aura::Window*> windows;
   if (real_topmost_)
