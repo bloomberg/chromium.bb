@@ -210,8 +210,7 @@ public class Tab
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
 
-    // Content layer Observers and Delegates
-    private TabWebContentsObserver mWebContentsObserver;
+    // Content layer Delegates
     private TabWebContentsDelegateAndroid mWebContentsDelegate;
 
     /**
@@ -1762,7 +1761,7 @@ public class Tab
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
             updateInteractableState();
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-            mWebContentsObserver = new TabWebContentsObserver(mWebContents, this);
+            TabWebContentsObserver.from(this);
 
             int parentId = getParentId();
             if (parentId != INVALID_TAB_ID) {
@@ -1881,7 +1880,7 @@ public class Tab
      * @return Whether or not the sad tab is showing.
      */
     public boolean isShowingSadTab() {
-        return SadTab.isShowing(this);
+        return mIsInitialized ? SadTab.isShowing(this) : false;
     }
 
     /**
@@ -2088,19 +2087,6 @@ public class Tab
     }
 
     /**
-     * Issues a fake notification about the renderer being killed.
-     *
-     * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
-     *                        (e.g. renderer for the currently selected tab)
-     */
-    @VisibleForTesting
-    public void simulateRendererKilledForTesting(boolean wasOomProtected) {
-        if (mWebContentsObserver != null) {
-            mWebContentsObserver.renderProcessGone(wasOomProtected);
-        }
-    }
-
-    /**
      * Restores the WebContents from its saved state.  This should only be called if the tab is
      * frozen with a saved TabState, and NOT if it was frozen for a lazy load.
      * @return Whether or not the restoration was successful.
@@ -2281,11 +2267,6 @@ public class Tab
 
         mWebContents = null;
         mWebContentsDelegate = null;
-
-        if (mWebContentsObserver != null) {
-            mWebContentsObserver.destroy();
-            mWebContentsObserver = null;
-        }
 
         assert mNativeTabAndroid != 0;
         nativeDestroyWebContents(mNativeTabAndroid, deleteNativeWebContents);
