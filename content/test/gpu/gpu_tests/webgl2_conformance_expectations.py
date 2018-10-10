@@ -422,6 +422,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html', # ANGLE bug
+        ['win', 'passthrough', 'opengl', 'intel'], bug=2880)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
