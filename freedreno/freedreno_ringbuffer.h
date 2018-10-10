@@ -39,6 +39,15 @@
 struct fd_ringbuffer_funcs;
 struct fd_ringmarker;
 
+enum fd_ringbuffer_flags {
+
+	/* Ringbuffer is a "state object", which is potentially reused
+	 * many times, rather than being used in one-shot mode linked
+	 * to a parent ringbuffer.
+	 */
+	FD_RINGBUFFER_OBJECT = 0x1,
+};
+
 struct fd_ringbuffer {
 	int size;
 	uint32_t *cur, *end, *start, *last_start;
@@ -52,7 +61,7 @@ struct fd_ringbuffer {
 	 */
 	void *user;
 
-	uint32_t flags;
+	enum fd_ringbuffer_flags flags;
 
 	/* This is a bit gross, but we can't use atomic_t in exported
 	 * headers.  OTOH, we don't need the refcnt to be publicly
@@ -70,8 +79,11 @@ struct fd_ringbuffer {
 
 struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);
+will_be_deprecated
 struct fd_ringbuffer * fd_ringbuffer_new_object(struct fd_pipe *pipe,
 		uint32_t size);
+struct fd_ringbuffer * fd_ringbuffer_new_flags(struct fd_pipe *pipe,
+		uint32_t size, enum fd_ringbuffer_flags flags);
 
 struct fd_ringbuffer *fd_ringbuffer_ref(struct fd_ringbuffer *ring);
 void fd_ringbuffer_del(struct fd_ringbuffer *ring);

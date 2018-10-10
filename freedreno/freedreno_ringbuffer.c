@@ -32,11 +32,18 @@
 #include "freedreno_priv.h"
 #include "freedreno_ringbuffer.h"
 
-static struct fd_ringbuffer *
-ringbuffer_new(struct fd_pipe *pipe, uint32_t size,
+drm_public struct fd_ringbuffer *
+fd_ringbuffer_new_flags(struct fd_pipe *pipe, uint32_t size,
 		enum fd_ringbuffer_flags flags)
 {
 	struct fd_ringbuffer *ring;
+
+	/* we can't really support "growable" rb's in general for
+	 * stateobj's since we need a single gpu addr (ie. can't
+	 * do the trick of a chain of IB packets):
+	 */
+	if (flags & FD_RINGBUFFER_OBJECT)
+		assert(size);
 
 	ring = pipe->funcs->ringbuffer_new(pipe, size, flags);
 	if (!ring)
@@ -55,18 +62,13 @@ ringbuffer_new(struct fd_pipe *pipe, uint32_t size,
 drm_public struct fd_ringbuffer *
 fd_ringbuffer_new(struct fd_pipe *pipe, uint32_t size)
 {
-	return ringbuffer_new(pipe, size, 0);
+	return fd_ringbuffer_new_flags(pipe, size, 0);
 }
 
 drm_public struct fd_ringbuffer *
 fd_ringbuffer_new_object(struct fd_pipe *pipe, uint32_t size)
 {
-	/* we can't really support "growable" rb's in general for
-	 * stateobj's since we need a single gpu addr (ie. can't
-	 * do the trick of a chain of IB packets):
-	 */
-	assert(size);
-	return ringbuffer_new(pipe, size, FD_RINGBUFFER_OBJECT);
+	return fd_ringbuffer_new_flags(pipe, size, FD_RINGBUFFER_OBJECT);
 }
 
 drm_public void fd_ringbuffer_del(struct fd_ringbuffer *ring)

@@ -115,10 +115,6 @@ drm_private int fd_bo_cache_free(struct fd_bo_cache *cache, struct fd_bo *bo);
 /* for where @table_lock is already held: */
 drm_private void fd_device_del_locked(struct fd_device *dev);
 
-enum fd_ringbuffer_flags {
-	FD_RINGBUFFER_OBJECT = 0x1,
-};
-
 struct fd_pipe_funcs {
 	struct fd_ringbuffer * (*ringbuffer_new)(struct fd_pipe *pipe, uint32_t size,
 			enum fd_ringbuffer_flags flags);
