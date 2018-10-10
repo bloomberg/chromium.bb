@@ -138,8 +138,3 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
-
-    # TODO(zakerinasab): check generated reference images and remove these.
-    self.Fail('Pixel_CanvasDisplayLinearRGBAccelerated2D', bug=892281)
-    self.Fail('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
-        bug=892281)
