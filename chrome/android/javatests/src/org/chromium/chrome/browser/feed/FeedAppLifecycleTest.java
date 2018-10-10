@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.feed;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
@@ -29,7 +31,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -37,12 +38,12 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -52,8 +53,6 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
 public class FeedAppLifecycleTest {
-    @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Mock
@@ -66,12 +65,16 @@ public class FeedAppLifecycleTest {
     private FeedOfflineIndicator mOfflineIndicator;
     @Mock
     private AppLifecycleListener mAppLifecycleListener;
+    @Mock
+    private Map<String, Boolean> mMockFeatureList;
     private ChromeTabbedActivity mActivity;
     private FeedAppLifecycle mAppLifecycle;
 
     @Before
     public void setUp() throws InterruptedException, TimeoutException {
         MockitoAnnotations.initMocks(this);
+        when(mMockFeatureList.get(anyString())).thenReturn(true);
+        ChromeFeatureList.setTestFeatures(mMockFeatureList);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
@@ -83,12 +86,15 @@ public class FeedAppLifecycleTest {
 
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> { mAppLifecycle.registerListenersForTesting(); });
+        signalActivityStart(mActivity);
+        signalActivityResume(mActivity);
     }
 
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void construction_checks_active_tabbed_activities() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
     }
@@ -96,7 +102,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void activity_state_changes_increment_state_counters()
             throws InterruptedException, TimeoutException {
         assertEquals(0,
@@ -122,7 +127,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void ntp_opening_triggers_initialize_only_once() throws InterruptedException {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
@@ -141,7 +145,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void history_deletion_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onHistoryDeleted();
@@ -154,7 +157,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void cached_data_removal_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onCachedDataCleared();
@@ -167,7 +169,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void signout_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onSignedOut();
@@ -180,7 +181,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void signin_triggers_clear_all() throws InterruptedException {
         verify(mAppLifecycleListener, times(0)).onClearAll();
         mAppLifecycle.onSignedIn();
@@ -193,7 +193,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void second_window_does_not_trigger_foreground_or_background()
             throws InterruptedException, TimeoutException {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
@@ -219,7 +218,6 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void multi_window_does_not_cause_multiple_initialize() throws InterruptedException {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();
@@ -234,10 +232,8 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
-    @FlakyTest(message = "http://crbug.com/891419")
     public void resume_triggers_scheduler_foregrounded()
             throws InterruptedException, TimeoutException {
-        // Starting mActivity in setUp() triggers a resume.
         verify(mFeedScheduler, times(1)).onForegrounded();
         signalActivityResume(mActivity);
         verify(mFeedScheduler, times(2)).onForegrounded();
