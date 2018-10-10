@@ -36,8 +36,8 @@ WebAppProvider::WebAppProvider(Profile* profile)
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(
       profile, pending_app_manager_.get());
 
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<Profile>(profile));
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::Source<Profile>(profile));
 
   web_app::ScanForExternalWebApps(
       profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
