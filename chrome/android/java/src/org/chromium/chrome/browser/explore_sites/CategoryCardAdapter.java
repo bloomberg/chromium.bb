@@ -98,7 +98,7 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
             // Position - 1 because there is always title.
             view.setCategory(
                     mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).get(position - 1),
-                    mIconGenerator, mContextMenuManager, mNavDelegate, mProfile);
+                    position - 1, mIconGenerator, mContextMenuManager, mNavDelegate, mProfile);
         } else if (holder.getItemViewType() == ViewType.LOADING) {
             // Start spinner.
             LoadingView spinner = holder.itemView.findViewById(R.id.loading);

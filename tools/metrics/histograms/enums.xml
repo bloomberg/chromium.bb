@@ -15085,6 +15085,32 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="EXPECT_CT_HEADER_PROCESSED"/>
 </enum>
 
+<!-- This must be kept current with
+     //chrome/browser/android/explore_sites/catalog.proto's CategoryType. -->
+
+<enum name="ExploreSitesCategories">
+  <int value="0" label="Default"/>
+  <int value="1" label="Social"/>
+  <int value="2" label="Entertainment"/>
+  <int value="3" label="Sport"/>
+  <int value="4" label="News"/>
+  <int value="5" label="Shopping"/>
+  <int value="6" label="Reference"/>
+  <int value="7" label="Banking"/>
+  <int value="8" label="Government"/>
+  <int value="9" label="Travel"/>
+  <int value="10" label="Education"/>
+  <int value="11" label="Jobs"/>
+  <int value="12" label="Apps and Games"/>
+  <int value="13" label="Favorite"/>
+  <int value="14" label="Google"/>
+  <int value="15" label="Food"/>
+  <int value="16" label="Health"/>
+  <int value="17" label="Books"/>
+  <int value="18" label="Technology"/>
+  <int value="19" label="Science"/>
+</enum>
+
 <enum name="ExploreSitesStoreEvent">
   <int value="0" label="Store opened first time">
     Store was opened for this first time during this session.

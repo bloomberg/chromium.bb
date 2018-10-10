@@ -25,15 +25,15 @@ public class ExploreSitesCategory {
     // The ID to use when creating the More button, that should not scroll the ESP when clicked.
     public static final int MORE_BUTTON_ID = -1;
 
-    // These constants should be kept in sync with
-    // //chrome/browser/android/explore_sites/catalog.proto's CategoryType.
+    // This enum must match the numbering for ExploreSites.CategoryClick in histograms.xml.  Do not
+    // reorder or remove items, only add new items before COUNT.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({CategoryType.DEFAULT, CategoryType.SOCIAL, CategoryType.ENTERTAINMENT,
             CategoryType.SPORT, CategoryType.NEWS, CategoryType.SHOPPING, CategoryType.REFERENCE,
             CategoryType.BANKING, CategoryType.GOVERNMENT, CategoryType.TRAVEL,
             CategoryType.EDUCATION, CategoryType.JOBS, CategoryType.APPS_GAMES,
             CategoryType.FAVORITE, CategoryType.GOOGLE, CategoryType.FOOD, CategoryType.HEALTH,
-            CategoryType.BOOKS, CategoryType.TECHNOLOGY, CategoryType.SCIENCE})
+            CategoryType.BOOKS, CategoryType.TECHNOLOGY, CategoryType.SCIENCE, CategoryType.COUNT})
     public @interface CategoryType {
         int DEFAULT = 0;
         int SOCIAL = 1;
@@ -55,6 +55,8 @@ public class ExploreSitesCategory {
         int BOOKS = 17;
         int TECHNOLOGY = 18;
         int SCIENCE = 19;
+        // This must always be one higher than the last category number.
+        int COUNT = 20;
     }
 
     private int mCategoryId;

@@ -16,6 +16,7 @@ import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -35,6 +36,7 @@ import java.util.List;
  * View for a category name and site tiles.
  */
 public class ExploreSitesCategoryCardView extends LinearLayout {
+    private static final String TAG = "ExploreSitesCategoryCardView";
     private static final int MAX_TILE_COUNT = 8;
     private static final int TITLE_LINES = 1;
 
@@ -46,17 +48,23 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private Profile mProfile;
     private List<PropertyModelChangeProcessor<PropertyModel, ExploreSitesTileView, PropertyKey>>
             mModelChangeProcessors;
+    private int mCategoryCardIndex;
+    private int mCategoryType;
 
     private class CategoryCardInteractionDelegate
             implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
         private String mSiteUrl;
+        private int mTileIndex;
 
-        public CategoryCardInteractionDelegate(String siteUrl) {
+        public CategoryCardInteractionDelegate(String siteUrl, int tileIndex) {
             mSiteUrl = siteUrl;
+            mTileIndex = tileIndex;
         }
 
         @Override
         public void onClick(View view) {
+            recordCategoryClick(mCategoryType);
+            recordTileIndexClick(mCategoryCardIndex, mTileIndex);
             mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams(getUrl(), PageTransition.AUTO_BOOKMARK));
         }
@@ -106,7 +114,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
             } else if (key == ExploreSitesSite.URL_KEY) {
                 // Attach click handlers.
                 CategoryCardInteractionDelegate interactionDelegate =
-                        new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY));
+                        new CategoryCardInteractionDelegate(model.get(ExploreSitesSite.URL_KEY),
+                                model.get(ExploreSitesSite.TILE_INDEX_KEY));
                 view.setOnClickListener(interactionDelegate);
                 view.setOnCreateContextMenuListener(interactionDelegate);
             }
@@ -125,13 +134,15 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         mTileView = findViewById(R.id.category_sites);
     }
 
-    public void setCategory(ExploreSitesCategory category, RoundedIconGenerator iconGenerator,
-            ContextMenuManager contextMenuManager, NativePageNavigationDelegate navigationDelegate,
-            Profile profile) {
+    public void setCategory(ExploreSitesCategory category, int categoryCardIndex,
+            RoundedIconGenerator iconGenerator, ContextMenuManager contextMenuManager,
+            NativePageNavigationDelegate navigationDelegate, Profile profile) {
         mIconGenerator = iconGenerator;
         mContextMenuManager = contextMenuManager;
         mNavigationDelegate = navigationDelegate;
         mProfile = profile;
+        mCategoryCardIndex = categoryCardIndex;
+        mCategoryType = category.getType();
 
         updateTitle(category.getTitle());
         updateTileViews(category.getSites());
@@ -181,5 +192,26 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
                         (Bitmap icon) -> site.set(ExploreSitesSite.ICON_KEY, icon));
             }
         }
+    }
+
+    /**
+     * Records UMA data for which category when the user clicks a tile in that category.
+     * @param category The category the user picked.
+     */
+    public static void recordCategoryClick(int category) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "ExploreSites.CategoryClick", category, ExploreSitesCategory.CategoryType.COUNT);
+    }
+
+    /**
+     * Records UMA data for how far down the EoS page the picked tile was.
+     * @param cardNumber The number card (zero based) of the tile that was picked.
+     * @param tileNumber The number of the tile within the card.
+     */
+    public static void recordTileIndexClick(int cardIndex, int tileIndex) {
+        // TODO(petewil): Should I get the number of sites in this category from the model instead
+        // of using MAX_TILE_COUNT?
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "ExploreSites.SiteTilesClickIndex", cardIndex * MAX_TILE_COUNT + tileIndex);
     }
 }
