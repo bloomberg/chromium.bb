@@ -158,7 +158,7 @@ InputEvent::InputType InputTypeFromCommandType(
       return InputType::kDeleteHardLineBackward;
     case CommandType::kDeleteToEndOfParagraph:
       return InputType::kDeleteHardLineForward;
-    // TODO(chongz): Find appreciate InputType for following commands.
+    // TODO(editing-dev): Find appreciate InputType for following commands.
     case CommandType::kDeleteToMark:
       return InputType::kNone;
 
@@ -377,7 +377,7 @@ static void PerformDelete(LocalFrame& frame) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   frame.GetEditor().AddToKillRing(frame.GetEditor().SelectedRange());
-  // TODO(chongz): |Editor::performDelete()| has no direction.
+  // TODO(editing-dev): |Editor::performDelete()| has no direction.
   // https://github.com/w3c/editing/issues/130
   frame.GetEditor().DeleteSelectionWithSmartDelete(
       CanSmartCopyOrDelete(frame) ? DeleteMode::kSmart : DeleteMode::kSimple,
