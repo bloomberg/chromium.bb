@@ -30,7 +30,7 @@ public abstract class ListItemViewHolder extends ViewHolder {
     public static ListItemViewHolder create(ViewGroup parent, @ListUtils.ViewType int viewType) {
         switch (viewType) {
             case ListUtils.ViewType.IN_PROGRESS:
-                return InProgressViewHolder.create(parent);
+                return InProgressGenericViewHolder.create(parent);
             case ListUtils.ViewType.GENERIC:
                 return GenericViewHolder.create(parent);
             case ListUtils.ViewType.VIDEO:

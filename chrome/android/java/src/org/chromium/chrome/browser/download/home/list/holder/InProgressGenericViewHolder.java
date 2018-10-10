@@ -14,23 +14,23 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.download.R;
 
 /**
- * A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress video {@code
+ * A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress generic {@code
  * OfflineItem}.
  */
-public class InProgressVideoViewHolder extends InProgressViewHolder {
+public class InProgressGenericViewHolder extends InProgressViewHolder {
     private final TextView mTitle;
 
     /**
      * Creates a new {@link InProgressViewHolder} instance.
      */
-    public static InProgressVideoViewHolder create(ViewGroup parent) {
+    public static InProgressGenericViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.download_manager_in_progress_video_item, null);
-        return new InProgressVideoViewHolder(view);
+                            .inflate(R.layout.download_manager_in_progress_item, null);
+        return new InProgressGenericViewHolder(view);
     }
 
     /** Constructor. */
-    public InProgressVideoViewHolder(View view) {
+    public InProgressGenericViewHolder(View view) {
         super(view, false /* constrainCaption */);
         mTitle = view.findViewById(R.id.title);
     }
