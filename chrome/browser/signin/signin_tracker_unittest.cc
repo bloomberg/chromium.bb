@@ -4,26 +4,17 @@
 
 #include "components/signin/core/browser/signin_tracker.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_tracker_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/signin_switches.h"
+#include "components/signin/core/browser/test_signin_client.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -37,6 +28,12 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+using FakeSigninManagerForTesting = FakeSigninManagerBase;
+#else
+using FakeSigninManagerForTesting = FakeSigninManager;
+#endif  // OS_CHROMEOS
 
 class MockObserver : public SigninTracker::Observer {
  public:
@@ -52,47 +49,44 @@ class MockObserver : public SigninTracker::Observer {
 
 class SigninTrackerTest : public testing::Test {
  public:
-  SigninTrackerTest() {}
+  SigninTrackerTest()
+      : signin_client_(&pref_service_),
+        fake_oauth2_token_service_(&pref_service_),
+        fake_gaia_cookie_manager_service_(&fake_oauth2_token_service_,
+                                          "signin_tracker_unittest",
+                                          &signin_client_),
+#if defined(OS_CHROMEOS)
+        fake_signin_manager_(&signin_client_, &account_tracker_) {
+#else
+        fake_signin_manager_(&signin_client_,
+                             &fake_oauth2_token_service_,
+                             &account_tracker_,
+                             &fake_gaia_cookie_manager_service_) {
+#endif
+
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
+    SigninManagerBase::RegisterPrefs(pref_service_.registry());
+
+    account_tracker_.Initialize(&pref_service_, base::FilePath());
+  }
+
   void SetUp() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
-    profile_ = builder.Build();
-
-    fake_oauth2_token_service_ =
-        static_cast<FakeProfileOAuth2TokenService*>(
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()));
-
-    fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetForProfile(profile_.get()));
-
-    tracker_ =
-        SigninTrackerFactory::CreateForProfile(profile_.get(), &observer_);
+    tracker_ = std::make_unique<SigninTracker>(
+        &fake_oauth2_token_service_, &fake_signin_manager_,
+        &fake_gaia_cookie_manager_service_, &observer_);
   }
 
-  void TearDown() override {
-    tracker_.reset();
-    profile_.reset();
-  }
+  void TearDown() override { tracker_.reset(); }
 
-  // Seed the account tracker with information from logged in user.  Normally
-  // this is done by UI code before calling SigninManager.  Returns the string
-  // to use as the account_id.
-  std::string AddToAccountTracker(const std::string& gaia_id,
-                                  const std::string& email) {
-    AccountTrackerService* service =
-        AccountTrackerServiceFactory::GetForProfile(profile_.get());
-    return service->SeedAccountInfo(gaia_id, email);
-  }
-
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   std::unique_ptr<SigninTracker> tracker_;
-  std::unique_ptr<TestingProfile> profile_;
-  FakeSigninManagerForTesting* fake_signin_manager_;
-  FakeProfileOAuth2TokenService* fake_oauth2_token_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  AccountTrackerService account_tracker_;
+  TestSigninClient signin_client_;
+  FakeProfileOAuth2TokenService fake_oauth2_token_service_;
+  FakeGaiaCookieManagerService fake_gaia_cookie_manager_service_;
+  FakeSigninManagerForTesting fake_signin_manager_;
   MockObserver observer_;
 };
 
@@ -105,7 +99,7 @@ TEST_F(SigninTrackerTest, SignInFails) {
   EXPECT_CALL(observer_, SigninSuccess()).Times(0);
   EXPECT_CALL(observer_, SigninFailed(error));
 
-  fake_signin_manager_->FailSignin(error);
+  fake_signin_manager_.FailSignin(error);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -113,14 +107,11 @@ TEST_F(SigninTrackerTest, SignInSucceeds) {
   EXPECT_CALL(observer_, SigninSuccess());
   EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
 
-  AccountTrackerService* service =
-    AccountTrackerServiceFactory::GetForProfile(profile_.get());
   std::string gaia_id = "gaia_id";
   std::string email = "user@gmail.com";
-  std::string account_id = service->SeedAccountInfo(gaia_id, email);
-
-  fake_signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email);
-  fake_oauth2_token_service_->UpdateCredentials(account_id, "refresh_token");
+  std::string account_id = account_tracker_.SeedAccountInfo(gaia_id, email);
+  fake_signin_manager_.SetAuthenticatedAccountInfo(gaia_id, email);
+  fake_oauth2_token_service_.UpdateCredentials(account_id, "refresh_token");
 }
 
 #if !defined(OS_CHROMEOS)
@@ -128,12 +119,10 @@ TEST_F(SigninTrackerTest, SignInSucceedsWithExistingAccount) {
   EXPECT_CALL(observer_, SigninSuccess());
   EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
 
-  AccountTrackerService* service =
-      AccountTrackerServiceFactory::GetForProfile(profile_.get());
   std::string gaia_id = "gaia_id";
   std::string email = "user@gmail.com";
-  std::string account_id = service->SeedAccountInfo(gaia_id, email);
-  fake_oauth2_token_service_->UpdateCredentials(account_id, "refresh_token");
-  fake_signin_manager_->SignIn(gaia_id, email, std::string());
+  std::string account_id = account_tracker_.SeedAccountInfo(gaia_id, email);
+  fake_oauth2_token_service_.UpdateCredentials(account_id, "refresh_token");
+  fake_signin_manager_.SignIn(gaia_id, email, std::string());
 }
 #endif
