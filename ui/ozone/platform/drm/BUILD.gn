@@ -26,8 +26,6 @@ source_set("gbm") {
     "common/scoped_drm_types.h",
     "gpu/crtc_controller.cc",
     "gpu/crtc_controller.h",
-    "gpu/drm_console_buffer.cc",
-    "gpu/drm_console_buffer.h",
     "gpu/drm_device.cc",
     "gpu/drm_device.h",
     "gpu/drm_device_generator.cc",
