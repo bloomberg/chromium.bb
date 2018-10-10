@@ -907,8 +907,48 @@ void LockContentsView::OnFingerprintUnlockStateChanged(
   if (!big_view || !big_view->auth_user())
     return;
 
+  // TODO(crbug.com/893298): Re-enable animation once the error bubble supports
+  // being displayed on the left. This also requires that we dynamically
+  // track/update the position of the bubble, or alternatively we set the bubble
+  // location to the target animation position and not the current position.
+  bool animate = true;
+  if (user_state->fingerprint_state ==
+      mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
+    animate = false;
+  }
+
   big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
-  LayoutAuth(big_view, nullptr /*opt_to_hide*/, true /*animate*/);
+  LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
+
+  if (user_state->fingerprint_state ==
+      mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
+    base::string16 error_text = l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT_MESSAGE);
+    auto* label = new views::Label(error_text);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SK_ColorWHITE);
+    label->SetSubpixelRenderingEnabled(false);
+    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
+                                             gfx::Font::Weight::NORMAL));
+    label->SetMultiLine(true);
+    label->SetAllowCharacterBreak(true);
+    // Make sure to set a maximum label width, otherwise text wrapping will
+    // significantly increase width and layout may not work correctly if
+    // the input string is very long.
+    label->SetMaximumWidth(
+        big_view->auth_user()->password_view()->GetPreferredSize().width());
+
+    auto* container = new NonAccessibleView();
+    container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container->AddChildView(label);
+
+    auth_error_bubble_->ShowErrorBubble(
+        container, big_view->auth_user()->password_view() /*anchor_view*/,
+        LoginBubble::kFlagPersistent);
+  }
 }
 
 void LockContentsView::SetAvatarForUser(const AccountId& account_id,
