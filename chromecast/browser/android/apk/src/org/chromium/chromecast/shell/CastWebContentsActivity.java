@@ -135,7 +135,9 @@ public class CastWebContentsActivity extends Activity {
                 .map(CastWebContentsSurfaceHelper.StartParams::fromBundle)
                 // Use the duplicate-filtering functionality of Controller to drop duplicate params.
                 .subscribe(Observers.onEnter(startParamsState::set));
-        startParamsState.subscribe(Observers.onEnter(this ::notifyNewWebContents));
+        mSurfaceHelperState.and(startParamsState)
+                .subscribe(Observers.onEnter(
+                        Both.adapt(CastWebContentsSurfaceHelper::onNewStartParams)));
 
         mIsFinishingState.subscribe(Observers.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
@@ -154,8 +156,8 @@ public class CastWebContentsActivity extends Activity {
 
         Observable<?> stoppingBecauseUserLeftState =
                 Observable.not(mStartedState).and(mUserLeftState);
-        stoppingBecauseUserLeftState.subscribe(Observers.onEnter(
-                x -> { mIsFinishingState.set("User left and activity stopped."); }));
+        stoppingBecauseUserLeftState.subscribe(
+                Observers.onEnter(x -> mIsFinishingState.set("User left and activity stopped.")));
     }
 
     @Override
@@ -164,10 +166,6 @@ public class CastWebContentsActivity extends Activity {
         super.onCreate(savedInstanceState);
         mCreatedState.set(Unit.unit());
         mGotIntentState.set(getIntent());
-    }
-
-    private void notifyNewWebContents(CastWebContentsSurfaceHelper.StartParams params) {
-        if (mSurfaceHelper != null) mSurfaceHelper.onNewStartParams(params);
     }
 
     @Override
