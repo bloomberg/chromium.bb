@@ -572,10 +572,6 @@ const char kLogFile[] = "log-file";
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
 
-// Specifies the maximum disk cache size for the ApplicationCache. Default
-// value is 250MB.
-const char kMaxAppCacheDiskCacheSizeMb[] = "max-appcache-disk-cache-size-mb";
-
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
 
