@@ -96,14 +96,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // this way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
 
-  // Changes the bounds of the window and the hosted layer if present. The
-  // origin is a location in screen coordinates except for "child" windows,
-  // which are positioned relative to their parent(). SetBounds() considers a
-  // "child" window to be one initialized with InitParams specifying all of:
-  // a |parent| NSWindow, the |child| attribute, and a |type| that
-  // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
-  void SetBounds(const gfx::Rect& new_bounds);
-
   // Start moving the window, pinned to the mouse cursor, and monitor events.
   // Return true on mouse up or false on premature termination via EndMoveLoop()
   // or when window is destroyed during the drag.
@@ -204,10 +196,11 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void CloseWindow() override;
   void CloseWindowNow() override;
   void SetInitialBounds(const gfx::Rect& new_bounds,
-                        const gfx::Size& minimum_content_size,
-                        const gfx::Vector2d& parent_offset) override;
+                        const gfx::Size& minimum_content_size) override;
   void SetBounds(const gfx::Rect& new_bounds,
                  const gfx::Size& minimum_content_size) override;
+  void SetSizeAndCenter(const gfx::Size& content_size,
+                        const gfx::Size& minimum_content_size) override;
   void SetVisibilityState(
       views_bridge_mac::mojom::WindowVisibilityState new_state) override;
   void SetTransitionsToAnimate(
@@ -285,6 +278,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
   bool is_translucent_window_ = false;
   bool widget_is_top_level_ = false;
+  bool position_window_in_screen_coords_ = false;
 
   BridgedNativeWidgetImpl* parent_ = nullptr;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidgetImpl*> child_windows_;

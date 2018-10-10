@@ -156,6 +156,7 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
 }
 
 void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
+  Widget* widget = native_widget_mac_->GetWidget();
   // Tooltip Widgets shouldn't have their own tooltip manager, but tooltips are
   // native on Mac, so nothing should ever want one in Widget form.
   DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
@@ -165,12 +166,12 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
   // Initialize the window.
   {
     auto bridge_params = BridgedNativeWidgetInitParams::New();
-    bridge_params->modal_type =
-        native_widget_mac_->GetWidget()->widget_delegate()->GetModalType();
+    bridge_params->modal_type = widget->widget_delegate()->GetModalType();
     bridge_params->is_translucent =
         params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
-    bridge_params->widget_is_top_level =
-        native_widget_mac_->GetWidget()->is_top_level();
+    bridge_params->widget_is_top_level = widget->is_top_level();
+    bridge_params->position_window_in_screen_coords =
+        PositionWindowInScreenCoordinates(widget, widget_type_);
 
     // OSX likes to put shadows on most things. However, frameless windows (with
     // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
@@ -205,9 +206,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
   // set at all, the creator of the Widget is expected to call SetBounds()
   // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
   // (i.e. 1x1) window appearing.
-  bridge()->SetInitialBounds(params.bounds,
-                             native_widget_mac_->GetWidget()->GetMinimumSize(),
-                             GetBoundsOffsetForParent());
+  bridge()->SetInitialBounds(params.bounds, widget->GetMinimumSize());
 
   // TODO(ccameron): Correctly set these based |local_window_|.
   window_bounds_in_screen_ = params.bounds;
@@ -219,22 +218,8 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
 }
 
 void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
-  gfx::Rect adjusted_bounds = bounds;
-  adjusted_bounds.Offset(GetBoundsOffsetForParent());
-  bridge()->SetBounds(adjusted_bounds,
+  bridge()->SetBounds(bounds,
                       native_widget_mac_->GetWidget()->GetMinimumSize());
-}
-
-gfx::Vector2d BridgedNativeWidgetHostImpl::GetBoundsOffsetForParent() const {
-  gfx::Vector2d offset;
-  // TODO(ccameron): This function needs to be moved out of the host.
-  if (!bridge_impl_)
-    return offset;
-  Widget* widget = native_widget_mac_->GetWidget();
-  BridgedNativeWidgetImpl* parent = bridge_impl_->parent();
-  if (parent && !PositionWindowInScreenCoordinates(widget, widget_type_))
-    offset = parent->GetChildWindowOffset();
-  return offset;
 }
 
 void BridgedNativeWidgetHostImpl::SetFullscreen(bool fullscreen) {
