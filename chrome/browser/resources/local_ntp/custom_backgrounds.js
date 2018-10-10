@@ -186,6 +186,13 @@ customBackgrounds.dialogCollectionsSource = customBackgrounds.SOURCES.NONE;
  */
 customBackgrounds.showErrorNotification;
 
+/*
+ * Called when the custom link notification should be hidden.
+ * @type {?Function}
+ * @private
+ */
+customBackgrounds.hideCustomLinkNotification;
+
 /**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.
@@ -885,10 +892,13 @@ customBackgrounds.networkStateChanged = function(online) {
 /**
  * Initialize the settings menu, custom backgrounds dialogs, and custom links
  * menu items. Set the text and event handlers for the various elements.
- * @param {?Function} showErrorNotification Called when the error notification
- *                    should be displayed
+ * @param {!Function} showErrorNotification Called when the error notification
+ *                    should be displayed.
+ * @param {!Function} hideCustomLinkNotification Called when the custom link
+ *                    notification should be hidden.
  */
-customBackgrounds.init = function(showErrorNotification) {
+customBackgrounds.init = function(
+    showErrorNotification, hideCustomLinkNotification) {
   ntpApiHandle = window.chrome.embeddedSearch.newTabPage;
   let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
   let menu = $(customBackgrounds.IDS.MENU);
@@ -980,7 +990,7 @@ customBackgrounds.init = function(showErrorNotification) {
   };
 
   if (configData.isCustomLinksEnabled)
-    customBackgrounds.initCustomLinksItems();
+    customBackgrounds.initCustomLinksItems(hideCustomLinkNotification);
   if (configData.isCustomBackgroundsEnabled)
     customBackgrounds.initCustomBackgrounds(showErrorNotification);
 };
@@ -988,8 +998,12 @@ customBackgrounds.init = function(showErrorNotification) {
 /**
  * Initialize custom link items in the settings menu dialog. Set the text
  * and event handlers for the various elements.
+ * @param {!Function} hideCustomLinkNotification Called when the custom link
+ *                    notification should be hidden.
  */
-customBackgrounds.initCustomLinksItems = function() {
+customBackgrounds.initCustomLinksItems = function(hideCustomLinkNotification) {
+  customBackgrounds.hideCustomLinkNotification = hideCustomLinkNotification;
+
   let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
   let menu = $(customBackgrounds.IDS.MENU);
 
@@ -999,6 +1013,7 @@ customBackgrounds.initCustomLinksItems = function() {
   // Interactions with the "Restore default shortcuts" option.
   let customLinksRestoreDefaultInteraction = function() {
     editDialog.close();
+    customBackgrounds.hideCustomLinkNotification();
     window.chrome.embeddedSearch.newTabPage.resetCustomLinks();
     ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
                               .NTP_CUSTOMIZE_RESTORE_SHORTCUTS_CLICKED);
@@ -1034,8 +1049,8 @@ customBackgrounds.initCustomLinksItems = function() {
 /**
  * Initialize the settings menu and custom backgrounds dialogs. Set the
  * text and event handlers for the various elements.
- * @param {?Function} showErrorNotification Called when the error notification
- *                    should be displayed
+ * @param {!Function} showErrorNotification Called when the error notification
+ *                    should be displayed.
  */
 customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   customBackgrounds.showErrorNotification = showErrorNotification;

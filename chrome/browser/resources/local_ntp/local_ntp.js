@@ -1117,7 +1117,7 @@ function init() {
 
     if (configData.isCustomBackgroundsEnabled ||
         configData.isCustomLinksEnabled) {
-      customBackgrounds.init(showErrorNotification);
+      customBackgrounds.init(showErrorNotification, hideNotification);
     }
 
 
