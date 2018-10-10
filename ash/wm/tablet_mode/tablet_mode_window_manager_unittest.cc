@@ -22,6 +22,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -123,23 +124,16 @@ class TabletModeWindowManagerTest : public AshTestBase {
 
   // Create the tablet mode window manager.
   TabletModeWindowManager* CreateTabletModeWindowManager() {
-    EXPECT_FALSE(tablet_mode_window_manager());
+    EXPECT_FALSE(TabletModeControllerTestApi().tablet_mode_window_manager());
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-    return tablet_mode_window_manager();
+    return TabletModeControllerTestApi().tablet_mode_window_manager();
   }
 
   // Destroy the tablet mode window manager.
   void DestroyTabletModeWindowManager() {
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
         false);
-    EXPECT_FALSE(tablet_mode_window_manager());
-  }
-
-  // Get the tablet window manager.
-  TabletModeWindowManager* tablet_mode_window_manager() {
-    return Shell::Get()
-        ->tablet_mode_controller()
-        ->tablet_mode_window_manager_.get();
+    EXPECT_FALSE(TabletModeControllerTestApi().tablet_mode_window_manager());
   }
 
   // Resize our desktop.

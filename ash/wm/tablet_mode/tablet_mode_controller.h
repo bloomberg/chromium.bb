@@ -46,10 +46,8 @@ class Widget;
 namespace ash {
 
 class ScopedDisableInternalMouseAndKeyboard;
-class TabletModeControllerTest;
 class TabletModeObserver;
 class TabletModeWindowManager;
-class TabletModeWindowManagerTest;
 
 // TabletModeController listens to accelerometer events and automatically
 // enters and exits tablet mode when the lid is opened beyond the triggering
@@ -116,7 +114,7 @@ class ASH_EXPORT TabletModeController
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
 
   // Whether the events from the internal mouse/keyboard are blocked.
-  bool AreEventsBlocked() const;
+  bool AreInternalInputDeviceEventsBlocked() const;
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -144,11 +142,7 @@ class ASH_EXPORT TabletModeController
   void OnDeviceListsComplete() override;
 
  private:
-  friend class OverviewButtonTrayTest;
-  friend class TabletModeControllerTest;
-  friend class TabletModeWindowManagerTest;
-  friend class MultiUserWindowManagerChromeOSTest;
-  friend class VirtualKeyboardControllerTest;
+  friend class TabletModeControllerTestApi;
 
   // Used for recording metrics for intervals of time spent in
   // and out of TabletMode.
@@ -156,12 +150,6 @@ class ASH_EXPORT TabletModeController
     TABLET_MODE_INTERVAL_INACTIVE,
     TABLET_MODE_INTERVAL_ACTIVE
   };
-
-  // Set the TickClock. This is only to be used by tests that need to
-  // artificially and deterministically control the current time.
-  // This does not take the ownership of the tick_clock. |tick_clock| must
-  // outlive the TabletModeController instance.
-  void SetTickClockForTest(const base::TickClock* tick_clock);
 
   // Detect hinge rotation from base and lid accelerometers and automatically
   // start / stop tablet mode.

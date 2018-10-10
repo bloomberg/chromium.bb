@@ -17,6 +17,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/command_line.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -43,12 +44,6 @@ class VirtualKeyboardControllerTest : public AshTestBase {
  public:
   VirtualKeyboardControllerTest() = default;
   ~VirtualKeyboardControllerTest() override = default;
-
-  // Sets the event blocker on the maximized window controller.
-  void SetEventBlocker(
-      std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
-    Shell::Get()->tablet_mode_controller()->event_blocker_ = std::move(blocker);
-  }
 
   void SetUp() override {
     AshTestBase::SetUp();
@@ -106,7 +101,7 @@ TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
       new MockEventBlocker);
-  SetEventBlocker(std::move(blocker));
+  TabletModeControllerTestApi().set_event_blocker(std::move(blocker));
 }
 
 TEST_F(VirtualKeyboardControllerTest,
@@ -365,15 +360,15 @@ TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringTabletMode) {
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   // Toggle tablet mode on.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  TabletModeControllerTestApi().EnterTabletMode();
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   // Toggle tablet mode off.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  TabletModeControllerTestApi().LeaveTabletMode(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
 // Tests that keyboard gets suppressed in tablet mode.
-TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
+TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInTabletMode) {
   std::vector<ui::TouchscreenDevice> screens;
   screens.push_back(
       ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
@@ -386,7 +381,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
       2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "Keyboard"));
   ws::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
   // Toggle tablet mode on.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  TabletModeControllerTestApi().EnterTabletMode();
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
@@ -411,7 +406,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   ASSERT_TRUE(notified());
   ASSERT_FALSE(IsVirtualKeyboardSuppressed());
   // Toggle tablet mode oFF.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  TabletModeControllerTestApi().LeaveTabletMode(false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
 

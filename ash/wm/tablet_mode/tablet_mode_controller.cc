@@ -455,7 +455,7 @@ bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
   return true;
 }
 
-bool TabletModeController::AreEventsBlocked() const {
+bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
   return !!event_blocker_.get();
 }
 
@@ -593,12 +593,6 @@ bool TabletModeController::CanUseUnstableLidAngle() const {
   DCHECK(now >= first_unstable_lid_angle_time_);
   const base::TimeDelta elapsed_time = now - first_unstable_lid_angle_time_;
   return elapsed_time >= kUnstableLidAngleDuration;
-}
-
-void TabletModeController::SetTickClockForTest(
-    const base::TickClock* tick_clock) {
-  DCHECK(tick_clock_);
-  tick_clock_ = tick_clock;
 }
 
 }  // namespace ash

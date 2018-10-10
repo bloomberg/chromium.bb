@@ -167,7 +167,9 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
   SessionController* session_controller = Shell::Get()->session_controller();
-  SetVisible(Shell::Get()->tablet_mode_controller()->AreEventsBlocked() &&
+  SetVisible(Shell::Get()
+                 ->tablet_mode_controller()
+                 ->AreInternalInputDeviceEventsBlocked() &&
              session_controller->GetSessionState() ==
                  session_manager::SessionState::ACTIVE &&
              !session_controller->IsRunningInAppMode());

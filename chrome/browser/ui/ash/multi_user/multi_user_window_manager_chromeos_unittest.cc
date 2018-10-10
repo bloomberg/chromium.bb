@@ -16,6 +16,7 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -232,19 +233,6 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // Returns true if the given window covers the screen.
   bool CoversScreen(aura::Window* window) {
     return UserSwitchAnimatorChromeOS::CoversScreen(window);
-  }
-
-  // Create a tablet mode window manager.
-  TabletModeWindowManager* CreateTabletModeWindowManager() {
-    EXPECT_FALSE(tablet_mode_window_manager());
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-    return tablet_mode_window_manager();
-  }
-
-  TabletModeWindowManager* tablet_mode_window_manager() {
-    return Shell::Get()
-        ->tablet_mode_controller()
-        ->tablet_mode_window_manager_.get();
   }
 
  private:
@@ -837,7 +825,9 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TabletModeInteraction) {
   EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
 
-  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  TabletModeWindowManager* manager =
+      TabletModeControllerTestApi().tablet_mode_window_manager();
   ASSERT_TRUE(manager);
 
   EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
