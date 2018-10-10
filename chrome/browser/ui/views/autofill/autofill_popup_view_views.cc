@@ -153,10 +153,9 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
     if (controller_->GetSuggestionAt(i).frontend_id ==
         POPUP_ITEM_ID_SEPARATOR) {
-      canvas->FillRect(
-          line_rect,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_ResultsTableNormalDimmedText));
+      canvas->FillRect(line_rect,
+                       GetNativeTheme()->GetSystemColor(
+                           ui::NativeTheme::kColorId_ResultsTableDimmedText));
     } else {
       DrawAutofillEntry(canvas, i, line_rect);
     }
@@ -323,7 +322,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
         controller_->GetElidedLabelAt(index),
         controller_->layout_model().GetLabelFontListForRow(index),
         GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_ResultsTableNormalDimmedText),
+            ui::NativeTheme::kColorId_ResultsTableDimmedText),
         gfx::Rect(label_x_align_left, entry_rect.y(), label_width,
                   entry_rect.height()),
         text_align);
