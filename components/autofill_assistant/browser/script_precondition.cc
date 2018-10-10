@@ -162,10 +162,14 @@ bool ScriptPrecondition::MatchScriptStatus(
     bool has_same_status = status_match.status() == status;
     switch (status_match.comparator()) {
       case ScriptStatusMatchProto::DIFFERENT:
-        return !has_same_status;
+        if (has_same_status)
+          return false;
+        break;
       case ScriptStatusMatchProto::EQUAL:
       default:
-        return has_same_status;
+        if (!has_same_status)
+          return false;
+        break;
     }
   }
   return true;
