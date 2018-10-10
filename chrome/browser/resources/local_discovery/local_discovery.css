@@ -20,7 +20,7 @@ header {
 }
 
 .device {
-  background: url(device.png) no-repeat;
+  background: url(printer.png) no-repeat;
   margin: 23px 0;
   max-width: 695px;
   overflow: hidden;
@@ -33,10 +33,6 @@ html[dir='rtl'] .device {
 .device .device-info {
   float: left;
   padding-inline-start: 40px;
-}
-
-.printer {
-  background: url(printer.png) no-repeat;
 }
 
 html[dir='rtl'] .device .device-info {

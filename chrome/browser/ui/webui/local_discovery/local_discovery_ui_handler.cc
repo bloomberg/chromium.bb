@@ -55,8 +55,6 @@ namespace {
 const char kDictionaryKeyServiceName[] = "service_name";
 const char kDictionaryKeyDisplayName[] = "display_name";
 const char kDictionaryKeyDescription[] = "description";
-const char kDictionaryKeyType[] = "type";
-const char kDictionaryKeyIsWifi[] = "is_wifi";
 const char kDictionaryKeyID[] = "id";
 
 const char kKeyPrefixMDns[] = "MDns:";
@@ -73,7 +71,6 @@ std::unique_ptr<base::DictionaryValue> CreateDeviceInfo(
   return_value->SetString(kDictionaryKeyID, description.id);
   return_value->SetString(kDictionaryKeyDisplayName, description.display_name);
   return_value->SetString(kDictionaryKeyDescription, description.description);
-  return_value->SetString(kDictionaryKeyType, "printer");
 
   return return_value;
 }
@@ -376,8 +373,6 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     info.SetString(kDictionaryKeyServiceName, name);
     info.SetString(kDictionaryKeyDisplayName, description.name);
     info.SetString(kDictionaryKeyDescription, description.description);
-    info.SetString(kDictionaryKeyType, description.type);
-    info.SetBoolean(kDictionaryKeyIsWifi, false);
 
     web_ui()->CallJavascriptFunctionUnsafe(
         "local_discovery.onUnregisteredDeviceUpdate", service_key, info);
@@ -449,7 +444,6 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
   const DeviceDescription& device = it->second;
   base::DictionaryValue device_value;
 
-  device_value.SetString(kDictionaryKeyType, device.type);
   device_value.SetString(kDictionaryKeyID, device.id);
   device_value.SetString(kDictionaryKeyDisplayName, device.name);
   device_value.SetString(kDictionaryKeyDescription, device.description);

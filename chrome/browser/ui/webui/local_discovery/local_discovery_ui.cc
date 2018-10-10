@@ -42,7 +42,6 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_CONFIRM_REGISTRATION);
   source->AddLocalizedString("addingPrinter",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER);
-  source->AddLocalizedString("addingDevice", IDS_LOCAL_DISCOVERY_ADDING_DEVICE);
   source->AddLocalizedString("addingError",
                              IDS_LOCAL_DISCOVERY_ERROR_OCURRED);
   source->AddLocalizedString("addingErrorMessage",
@@ -55,12 +54,8 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE1);
   source->AddLocalizedString("addingPrinterMessage2",
                              IDS_LOCAL_DISCOVERY_ADDING_PRINTER_MESSAGE2);
-  source->AddLocalizedString("addingDeviceMessage1",
-                             IDS_LOCAL_DISCOVERY_ADDING_DEVICE_MESSAGE1);
   source->AddLocalizedString("devicesTitle",
                              IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE);
-  source->AddLocalizedString("noDescriptionDevice",
-                             IDS_LOCAL_DISCOVERY_NO_DESCRIPTION_DEVICE);
   source->AddLocalizedString("noDescriptionPrinter",
                              IDS_LOCAL_DISCOVERY_NO_DESCRIPTION_PRINTER);
   source->AddLocalizedString("printersOnNetworkZero",
