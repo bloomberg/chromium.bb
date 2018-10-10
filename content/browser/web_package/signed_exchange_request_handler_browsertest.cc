@@ -92,7 +92,15 @@ class AssertNavigationHandleFlagObserver : public WebContentsObserver {
 
 }  // namespace
 
-class SignedExchangeRequestHandlerBrowserTest : public CertVerifierBrowserTest {
+enum class SignedExchangeRequestHandlerBrowserTestPrefetchParam {
+  kPrefetchDisabled,
+  kPrefetchEnabled
+};
+
+class SignedExchangeRequestHandlerBrowserTest
+    : public CertVerifierBrowserTest,
+      public testing::WithParamInterface<
+          SignedExchangeRequestHandlerBrowserTestPrefetchParam> {
  public:
   SignedExchangeRequestHandlerBrowserTest() {
     // This installs "root_ca_cert.pem" from which our test certificates are
@@ -147,6 +155,21 @@ class SignedExchangeRequestHandlerBrowserTest : public CertVerifierBrowserTest {
     }
   }
 
+  bool PrefetchIsEnabled() {
+    return GetParam() == SignedExchangeRequestHandlerBrowserTestPrefetchParam::
+                             kPrefetchEnabled;
+  }
+
+  void TriggerPrefetch(const GURL& url, bool expect_success) {
+    const GURL prefetch_html_url = embedded_test_server()->GetURL(
+        std::string("/sxg/prefetch.html#") + url.spec());
+    base::string16 expected_title =
+        base::ASCIIToUTF16(expect_success ? "OK" : "FAIL");
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    NavigateToURL(shell(), prefetch_html_url);
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
   base::test::ScopedFeatureList feature_list_;
   const base::HistogramTester histogram_tester_;
 
@@ -174,7 +197,7 @@ class SignedExchangeRequestHandlerBrowserTest : public CertVerifierBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
@@ -194,6 +217,9 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, true);
+
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   RedirectObserver redirect_observer(shell()->web_contents());
@@ -222,12 +248,14 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
           original_cert->cert_buffer());
   EXPECT_EQ(original_fingerprint, fingerprint);
   histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
-                                       SignedExchangeLoadResult::kSuccess, 1);
+                                       SignedExchangeLoadResult::kSuccess,
+                                       PrefetchIsEnabled() ? 2 : 1);
   histogram_tester_.ExpectTotalCount(
-      "SignedExchange.Time.CertificateFetch.Success", 1);
+      "SignedExchange.Time.CertificateFetch.Success",
+      PrefetchIsEnabled() ? 2 : 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
@@ -251,6 +279,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL(
       "/sxg/test.example.org_test_invalid_content_type.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
 
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -260,10 +290,10 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(303, redirect_observer.response_code());
   histogram_tester_.ExpectUniqueSample(
       "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
-      1);
+      PrefetchIsEnabled() ? 2 : 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Expired) {
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
   SignedExchangeHandler::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
       base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1));
@@ -304,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Expired) {
       SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        RedirectBrokenSignedExchanges) {
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
@@ -323,21 +353,25 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
 
     GURL url = embedded_test_server()->GetURL(broken_exchange);
 
+    if (PrefetchIsEnabled())
+      TriggerPrefetch(url, false);
+
     base::string16 title = base::ASCIIToUTF16("Fallback URL response");
     TitleWatcher title_watcher(shell()->web_contents(), title);
     NavigateToURL(shell(), url);
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   }
-  histogram_tester_.ExpectTotalCount("SignedExchange.LoadResult", 2);
+  histogram_tester_.ExpectTotalCount("SignedExchange.LoadResult",
+                                     PrefetchIsEnabled() ? 4 : 2);
   histogram_tester_.ExpectBucketCount(
       "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
-      1);
+      PrefetchIsEnabled() ? 2 : 1);
   histogram_tester_.ExpectBucketCount(
       "SignedExchange.LoadResult", SignedExchangeLoadResult::kHeaderParseError,
-      1);
+      PrefetchIsEnabled() ? 2 : 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/sxg/404.msg");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
@@ -347,16 +381,28 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
 
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   histogram_tester_.ExpectUniqueSample(
       "SignedExchange.LoadResult", SignedExchangeLoadResult::kCertFetchError,
-      1);
+      PrefetchIsEnabled() ? 2 : 1);
   histogram_tester_.ExpectTotalCount(
-      "SignedExchange.Time.CertificateFetch.Failure", 1);
+      "SignedExchange.Time.CertificateFetch.Failure",
+      PrefetchIsEnabled() ? 2 : 1);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    SignedExchangeRequestHandlerBrowserTest,
+    SignedExchangeRequestHandlerBrowserTest,
+    testing::Values(
+        SignedExchangeRequestHandlerBrowserTestPrefetchParam::kPrefetchDisabled,
+        SignedExchangeRequestHandlerBrowserTestPrefetchParam::
+            kPrefetchEnabled));
 
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
     : public SignedExchangeRequestHandlerBrowserTest {
