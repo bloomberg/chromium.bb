@@ -23,7 +23,8 @@ class TracedValue;
 class LocalFrameView;
 class LayoutImage;
 
-struct ImageRecord {
+class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
+ public:
   DOMNodeId node_id = kInvalidDOMNodeId;
   double first_size = 0.0;
   // LastImagePaint uses the order of the first paints to determine the last
@@ -85,23 +86,23 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void RegisterNotifySwapTime();
   void InvokeCallback();
 
-  bool IsJustLoaded(const LayoutImage*, std::shared_ptr<ImageRecord>&&) const;
+  bool IsJustLoaded(const LayoutImage*, const ImageRecord&) const;
   void Analyze();
 
   base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>
       notify_swap_time_override_for_testing_;
 
   HashSet<DOMNodeId> size_zero_ids_;
-  HashMap<DOMNodeId, std::shared_ptr<ImageRecord>> id_record_map_;
-  std::priority_queue<std::shared_ptr<ImageRecord>,
-                      std::vector<std::shared_ptr<ImageRecord>>,
-                      std::function<bool(std::shared_ptr<ImageRecord>&,
-                                         std::shared_ptr<ImageRecord>&)>>
+  HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> id_record_map_;
+  std::priority_queue<base::WeakPtr<ImageRecord>,
+                      std::vector<base::WeakPtr<ImageRecord>>,
+                      bool (*)(const base::WeakPtr<ImageRecord>&,
+                               const base::WeakPtr<ImageRecord>&)>
       largest_image_heap_;
-  std::priority_queue<std::shared_ptr<ImageRecord>,
-                      std::vector<std::shared_ptr<ImageRecord>>,
-                      std::function<bool(std::shared_ptr<ImageRecord>&,
-                                         std::shared_ptr<ImageRecord>&)>>
+  std::priority_queue<base::WeakPtr<ImageRecord>,
+                      std::vector<base::WeakPtr<ImageRecord>>,
+                      bool (*)(const base::WeakPtr<ImageRecord>&,
+                               const base::WeakPtr<ImageRecord>&)>
       latest_image_heap_;
   unsigned recorded_node_count_ = 0;
 

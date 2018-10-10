@@ -22,19 +22,27 @@ namespace blink {
 // capped. Exceeding such limit will deactivate the algorithm.
 constexpr size_t kNodeNumberLimit = 5000;
 
-static bool LargeImageOnTop(const std::shared_ptr<ImageRecord>& a,
-                            const std::shared_ptr<ImageRecord>& b) {
-  return a->first_size < b->first_size;
+static bool LargeImageOnTop(const base::WeakPtr<ImageRecord>& a,
+                            const base::WeakPtr<ImageRecord>& b) {
+  // null value should be at the bottom of the priority queue, so:
+  // * When a == null && b!=null, we treat b as larger, return true.
+  // * When a != null && b==null, we treat b as no larger than a, return false.
+  // * When a == null && b==null, we treat b as no larger than a, return false.
+  return (a && b) ? (a->first_size < b->first_size) : bool(b);
 }
 
-static bool LateImageOnTop(const std::shared_ptr<ImageRecord>& a,
-                           const std::shared_ptr<ImageRecord>& b) {
-  return a->first_paint_index < b->first_paint_index;
+static bool LateImageOnTop(const base::WeakPtr<ImageRecord>& a,
+                           const base::WeakPtr<ImageRecord>& b) {
+  // null value should be at the bottom of the priority queue, so:
+  // * When a == null && b!=null, we treat b as larger, return true.
+  // * When a != null && b==null, we treat b as no larger than a, return false.
+  // * When a == null && b==null, we treat b as no larger than a, return false.
+  return (a && b) ? (a->first_paint_index < b->first_paint_index) : bool(b);
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : largest_image_heap_(LargeImageOnTop),
-      latest_image_heap_(LateImageOnTop),
+    : largest_image_heap_(&LargeImageOnTop),
+      latest_image_heap_(&LateImageOnTop),
       frame_view_(frame_view) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
@@ -167,7 +175,7 @@ void ImagePaintTimingDetector::ReportSwapTime(
       records_pending_timing_.pop();
       continue;
     }
-    auto&& record = id_record_map_.at(node_id);
+    ImageRecord* record = id_record_map_.at(node_id);
     if (record->frame_index > max_frame_index_to_time)
       break;
     record->first_paint_time_after_loaded = timestamp;
@@ -206,7 +214,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
         size_zero_ids_.insert(node_id);
         return;
       }
-      std::shared_ptr<ImageRecord> record = std::make_shared<ImageRecord>();
+      std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
       record->node_id = node_id;
       record->frame_index = frame_index_;
       record->first_size = rect_size;
@@ -214,9 +222,9 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       ImageResourceContent* cachedImg = image->CachedImage();
       record->image_url =
           !cachedImg ? "" : cachedImg->Url().StrippedForUseAsReferrer();
-      id_record_map_.insert(node_id, record);
-      largest_image_heap_.push(record);
-      latest_image_heap_.push(record);
+      largest_image_heap_.push(record->AsWeakPtr());
+      latest_image_heap_.push(record->AsWeakPtr());
+      id_record_map_.insert(node_id, std::move(record));
     } else {
       // for assessing whether kNodeNumberLimit is large enough for all
       // normal cases
@@ -227,46 +235,45 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   }
 
   if (id_record_map_.Contains(node_id) &&
-      IsJustLoaded(image, id_record_map_.at(node_id))) {
+      IsJustLoaded(image, *id_record_map_.at(node_id))) {
     records_pending_timing_.push(node_id);
     id_record_map_.at(node_id)->loaded = true;
   }
 }
 
-bool ImagePaintTimingDetector::IsJustLoaded(
-    const LayoutImage* image,
-    std::shared_ptr<ImageRecord>&& record) const {
+bool ImagePaintTimingDetector::IsJustLoaded(const LayoutImage* image,
+                                            const ImageRecord& record) const {
   ImageResourceContent* cachedImg = image->CachedImage();
-  return cachedImg && cachedImg->IsLoaded() && !record->loaded;
+  return cachedImg && cachedImg->IsLoaded() && !record.loaded;
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
-  while (!largest_image_heap_.empty() &&
-         !id_record_map_.Contains(largest_image_heap_.top()->node_id)) {
-    // If node_id_record_map_ doesn't have record.node_id, the node has been
-    // deleted. We discard the records of deleted node.
+  while (!largest_image_heap_.empty() && !largest_image_heap_.top()) {
+    // Discard the elements that have been removed from |id_record_map_|.
     largest_image_heap_.pop();
   }
   // We report the result as the first paint after the largest image finishes
   // loading. If the largest image is still loading, we report nothing and come
   // back later to see if the largest image by then has finished loading.
-  if (!largest_image_heap_.empty() && largest_image_heap_.top()->loaded)
+  if (!largest_image_heap_.empty() && largest_image_heap_.top()->loaded) {
+    DCHECK(id_record_map_.Contains(largest_image_heap_.top()->node_id));
     return largest_image_heap_.top().get();
+  }
   return nullptr;
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLastPaintCandidate() {
-  while (!latest_image_heap_.empty() &&
-         !id_record_map_.Contains(latest_image_heap_.top()->node_id)) {
-    // If node_id_record_map_ doesn't have record.node_id, the node has been
-    // deleted. We discard the records of deleted node.
+  while (!latest_image_heap_.empty() && !latest_image_heap_.top()) {
+    // Discard the elements that have been removed from |id_record_map_|.
     latest_image_heap_.pop();
   }
   // We report the result as the first paint after the latest image finishes
   // loading. If the latest image is still loading, we report nothing and come
   // back later to see if the latest image at that time has finished loading.
-  if (!latest_image_heap_.empty() && latest_image_heap_.top()->loaded)
+  if (!latest_image_heap_.empty() && latest_image_heap_.top()->loaded) {
+    DCHECK(id_record_map_.Contains(latest_image_heap_.top()->node_id));
     return latest_image_heap_.top().get();
+  }
   return nullptr;
 }
 
