@@ -698,10 +698,6 @@
     "dependencies": ["permission:signedInDevices"],
     "contexts": ["blessed_extension"]
   },
-  "syncFileSystem": {
-    "dependencies": ["permission:syncFileSystem"],
-    "contexts": ["blessed_extension"]
-  },
   "systemIndicator": {
     "dependencies": ["manifest:system_indicator"],
     "contexts": ["blessed_extension"]

@@ -40,8 +40,7 @@ namespace {
 class SyncFileSystemApiTest : public extensions::ExtensionApiTest {
  public:
   SyncFileSystemApiTest()
-      : mock_remote_service_(NULL),
-        real_default_quota_(0) {}
+      : mock_remote_service_(NULL), real_default_quota_(0) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -98,18 +97,13 @@ ACTION_P6(ReturnWithFakeFileAddedStatus,
           sync_action_taken,
           sync_direction) {
   FileSystemURL mock_url = sync_file_system::CreateSyncableFileSystemURL(
-      *origin,
-      base::FilePath(FILE_PATH_LITERAL("foo.txt")));
+      *origin, base::FilePath(FILE_PATH_LITERAL("foo.txt")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(arg0, sync_file_system::SYNC_STATUS_OK, mock_url));
   mock_remote_service->NotifyFileStatusChanged(
-      mock_url,
-      file_type,
-      sync_file_status,
-      sync_action_taken,
-      sync_direction);
+      mock_url, file_type, sync_file_status, sync_action_taken, sync_direction);
 }
 
 }  // namespace
@@ -144,9 +138,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
   EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(ReturnWithFakeFileAddedStatus(
-          &origin,
-          mock_remote_service(),
-          sync_file_system::SYNC_FILE_TYPE_FILE,
+          &origin, mock_remote_service(), sync_file_system::SYNC_FILE_TYPE_FILE,
           sync_file_system::SYNC_FILE_STATUS_SYNCED,
           sync_file_system::SYNC_ACTION_ADDED,
           sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL));
@@ -165,14 +157,12 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
   EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(ReturnWithFakeFileAddedStatus(
-          &origin,
-          mock_remote_service(),
-          sync_file_system::SYNC_FILE_TYPE_FILE,
+          &origin, mock_remote_service(), sync_file_system::SYNC_FILE_TYPE_FILE,
           sync_file_system::SYNC_FILE_STATUS_SYNCED,
           sync_file_system::SYNC_ACTION_DELETED,
           sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL));
-  ASSERT_TRUE(RunPlatformAppTest(
-      "sync_file_system/on_file_status_changed_deleted"))
+  ASSERT_TRUE(
+      RunPlatformAppTest("sync_file_system/on_file_status_changed_deleted"))
       << message_;
 }
 

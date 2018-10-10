@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
 
 #include <memory>
 
@@ -22,14 +22,15 @@ namespace sync_file_system {
 class SyncFileSystemService;
 }
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 // Observes changes in SyncFileSystem and relays events to JS Extension API.
 class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
-                                   public BrowserContextKeyedAPI {
+                                   public extensions::BrowserContextKeyedAPI {
  public:
-  static BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>*
-      GetFactoryInstance();
+  static extensions::BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>*
+  GetFactoryInstance();
 
   explicit ExtensionSyncEventObserver(content::BrowserContext* context);
   ~ExtensionSyncEventObserver() override;
@@ -52,13 +53,14 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
                     sync_file_system::SyncDirection direction) override;
 
  private:
-  friend class BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>;
+  friend class extensions::BrowserContextKeyedAPIFactory<
+      ExtensionSyncEventObserver>;
 
   // Returns an empty string if the extension |app_origin| cannot be found
   // in the installed extension list.
   std::string GetExtensionId(const GURL& app_origin);
 
-  // BrowserContextKeyedAPI implementation.
+  // extensions::BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionSyncEventObserver"; }
   static const bool kServiceIsCreatedWithBrowserContext = false;
 
@@ -67,18 +69,20 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
   // Not owned. If not null, then this is registered to SyncFileSystemService.
   sync_file_system::SyncFileSystemService* sync_service_;
 
-  void BroadcastOrDispatchEvent(const GURL& app_origin,
-                                events::HistogramValue histogram_value,
-                                const std::string& event_name,
-                                std::unique_ptr<base::ListValue> value);
+  void BroadcastOrDispatchEvent(
+      const GURL& app_origin,
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      std::unique_ptr<base::ListValue> value);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSyncEventObserver);
 };
 
+}  // namespace api
+}  // namespace chrome_apps
+
 template <>
-void BrowserContextKeyedAPIFactory<
-    ExtensionSyncEventObserver>::DeclareFactoryDependencies();
+void extensions::BrowserContextKeyedAPIFactory<
+    chrome_apps::api::ExtensionSyncEventObserver>::DeclareFactoryDependencies();
 
-}  // namespace extensions
-
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_SYNC_FILE_SYSTEM_EXTENSION_SYNC_EVENT_OBSERVER_H_
