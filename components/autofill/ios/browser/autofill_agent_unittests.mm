@@ -9,14 +9,18 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web/public/features.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,6 +39,28 @@ using autofill::POPUP_ITEM_ID_CLEAR_FORM;
 using autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
 using base::test::ios::WaitUntilCondition;
 
+// Subclass of web::FakeWebFrame that allow to set a callback before any
+// JavaScript call. This callback can be used to check the state of the page.
+class FakeWebFrameCallback : public web::FakeWebFrame {
+ public:
+  FakeWebFrameCallback(const std::string& frame_id,
+                       bool is_main_frame,
+                       GURL security_origin,
+                       std::function<void()> callback)
+      : web::FakeWebFrame(frame_id, is_main_frame, security_origin),
+        callback_(callback) {}
+
+  bool CallJavaScriptFunction(
+      const std::string& name,
+      const std::vector<base::Value>& parameters) override {
+    callback_();
+    return web::FakeWebFrame::CallJavaScriptFunction(name, parameters);
+  }
+
+ private:
+  std::function<void()> callback_;
+};
+
 // Test fixture for AutofillAgent testing.
 class AutofillAgentTests : public PlatformTest {
  public:
@@ -46,6 +72,7 @@ class AutofillAgentTests : public PlatformTest {
     // Mock CRWJSInjectionReceiver for verifying interactions.
     mock_js_injection_receiver_ =
         [OCMockObject mockForClass:[CRWJSInjectionReceiver class]];
+    test_web_state_.SetBrowserState(&test_browser_state_);
     test_web_state_.SetJSInjectionReceiver(mock_js_injection_receiver_);
     test_web_state_.SetContentIsHTML(true);
     GURL url("https://example.com");
@@ -68,8 +95,11 @@ class AutofillAgentTests : public PlatformTest {
     PlatformTest::TearDown();
   }
 
+  web::TestWebThreadBundle thread_bundle_;
+  web::TestBrowserState test_browser_state_;
   web::TestWebState test_web_state_;
   web::FakeWebFrame* fake_main_frame_ = nullptr;
+  autofill::TestAutofillClient client_;
   std::unique_ptr<PrefService> prefs_;
   AutofillAgent* autofill_agent_;
   id mock_js_injection_receiver_;
@@ -567,4 +597,195 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
             completion_handler_suggestions[1].identifier);
   EXPECT_EQ(123, completion_handler_suggestions[2].identifier);
   EXPECT_EQ(321, completion_handler_suggestions[3].identifier);
+}
+
+// Test that main frame is processed whatever is the order of pageloading
+// callbacks.
+TEST_F(AutofillAgentTests, FrameInitializationOrder) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> enabled_features;
+  std::vector<base::Feature> disabled_features;
+  disabled_features.push_back(
+      autofill::features::kAutofillEnableIFrameSupportOniOS);
+  disabled_features.push_back(web::features::kWebFrameMessaging);
+  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
+  test_web_state_.RemoveWebFrame(fake_main_frame_->GetFrameId());
+
+  // Add frame when page is loading.
+  auto main_frame_unique =
+      std::make_unique<web::FakeWebFrame>("main", true, GURL());
+  web::FakeWebFrame* main_frame = main_frame_unique.get();
+  autofill::AutofillDriverIOS* main_frame_driver =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
+                                                           main_frame);
+  test_web_state_.SetLoading(true);
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  test_web_state_.SetLoading(false);
+  // Toggle mutations.
+  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
+                                        completionHandler:[OCMArg any]];
+  // Toggle user edited field.
+  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
+                                        completionHandler:[OCMArg any]];
+  // Extract Forms
+  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
+                                        completionHandler:[OCMArg any]];
+
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
+  // Driver is in the WebState, so reset it manually.
+  main_frame_driver->set_processed(false);
+
+  // Add frame when page is loaded.
+  main_frame_unique = std::make_unique<web::FakeWebFrame>("main", true, GURL());
+  main_frame = main_frame_unique.get();
+  main_frame_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, main_frame);
+  test_web_state_.SetLoading(false);
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  // Toggle mutations.
+  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
+                                        completionHandler:[OCMArg any]];
+  // Toggle user edited field.
+  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
+                                        completionHandler:[OCMArg any]];
+  // Extract Forms
+  [[mock_js_injection_receiver_ expect] executeJavaScript:[OCMArg any]
+                                        completionHandler:[OCMArg any]];
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
+}
+
+// Test that every frames are processed whatever is the order of pageloading
+// callbacks. The main frame should always be processed first.
+TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::vector<base::Feature> enabled_features;
+  std::vector<base::Feature> disabled_features;
+  enabled_features.push_back(
+      autofill::features::kAutofillEnableIFrameSupportOniOS);
+  enabled_features.push_back(web::features::kWebFrameMessaging);
+  scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+  // Remove the current main frame
+  test_web_state_.RemoveWebFrame(fake_main_frame_->GetFrameId());
+
+  // Both frames available, then page loaded.
+  auto main_frame_unique =
+      std::make_unique<web::FakeWebFrame>("main", true, GURL());
+  web::FakeWebFrame* main_frame = main_frame_unique.get();
+  autofill::AutofillDriverIOS* main_frame_driver =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
+                                                           main_frame);
+  auto iframe_unique = std::make_unique<FakeWebFrameCallback>(
+      "iframe", false, GURL(), [main_frame_driver]() {
+        EXPECT_TRUE(main_frame_driver->is_processed());
+      });
+  FakeWebFrameCallback* iframe = iframe_unique.get();
+  autofill::AutofillDriverIOS* iframe_driver =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
+                                                           iframe);
+  test_web_state_.SetLoading(true);
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
+  test_web_state_.AddWebFrame(std::move(iframe_unique));
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.SetLoading(false);
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  EXPECT_TRUE(iframe_driver->is_processed());
+  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
+  test_web_state_.RemoveWebFrame(iframe->GetFrameId());
+
+  // Main frame available, then page loaded, then iframe available
+  main_frame_unique = std::make_unique<web::FakeWebFrame>("main", true, GURL());
+  main_frame = main_frame_unique.get();
+  main_frame_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, main_frame);
+  iframe_unique = std::make_unique<FakeWebFrameCallback>(
+      "iframe", false, GURL(), [main_frame_driver]() {
+        EXPECT_TRUE(main_frame_driver->is_processed());
+      });
+  iframe = iframe_unique.get();
+  iframe_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, iframe);
+  test_web_state_.SetLoading(true);
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.SetLoading(false);
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.AddWebFrame(std::move(iframe_unique));
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  EXPECT_TRUE(iframe_driver->is_processed());
+  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
+  test_web_state_.RemoveWebFrame(iframe->GetFrameId());
+
+  // Page loaded, then main frame, then iframe
+  main_frame_unique = std::make_unique<web::FakeWebFrame>("main", true, GURL());
+  main_frame = main_frame_unique.get();
+  main_frame_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, main_frame);
+  iframe_unique = std::make_unique<FakeWebFrameCallback>(
+      "iframe", false, GURL(), [main_frame_driver]() {
+        EXPECT_TRUE(main_frame_driver->is_processed());
+      });
+  iframe = iframe_unique.get();
+  iframe_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, iframe);
+  test_web_state_.SetLoading(true);
+  test_web_state_.SetLoading(false);
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.AddWebFrame(std::move(iframe_unique));
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  EXPECT_TRUE(iframe_driver->is_processed());
+  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
+  test_web_state_.RemoveWebFrame(iframe->GetFrameId());
+
+  // Page loaded, then iframe, then main frame
+  main_frame_unique = std::make_unique<web::FakeWebFrame>("main", true, GURL());
+  main_frame = main_frame_unique.get();
+  main_frame_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, main_frame);
+  iframe_unique = std::make_unique<FakeWebFrameCallback>(
+      "iframe", false, GURL(), [main_frame_driver]() {
+        EXPECT_TRUE(main_frame_driver->is_processed());
+      });
+  iframe = iframe_unique.get();
+  iframe_driver = autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+      &test_web_state_, iframe);
+  test_web_state_.SetLoading(true);
+  test_web_state_.SetLoading(false);
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.AddWebFrame(std::move(iframe_unique));
+  EXPECT_FALSE(main_frame_driver->is_processed());
+  EXPECT_FALSE(iframe_driver->is_processed());
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
+  EXPECT_TRUE(main_frame_driver->is_processed());
+  EXPECT_TRUE(iframe_driver->is_processed());
+  test_web_state_.RemoveWebFrame(main_frame->GetFrameId());
+  test_web_state_.RemoveWebFrame(iframe->GetFrameId());
 }

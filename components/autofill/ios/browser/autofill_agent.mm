@@ -549,11 +549,26 @@ autofillManagerFromWebState:(web::WebState*)webState
 - (void)webState:(web::WebState*)webState
     frameDidBecomeAvailable:(web::WebFrame*)web_frame {
   DCHECK(web_frame);
-  if (![self isAutofillEnabled] ||
-      !autofill::switches::IsAutofillIFrameMessagingEnabled() ||
-      webState->IsLoading())
+  if (![self isAutofillEnabled] || webState->IsLoading()) {
     return;
-
+  }
+  if (web_frame->IsMainFrame()) {
+    [self processPage:webState];
+    return;
+  }
+  if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
+    // iFrame support is disabled.
+    return;
+  }
+  // Check that the main frame has already been processed.
+  if (!web::GetMainWebFrame(webState)) {
+    return;
+  }
+  if (!autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+           webState, web::GetMainWebFrame(webState))
+           ->is_processed()) {
+    return;
+  }
   [self processFrame:web_frame inWebState:webState];
 }
 
@@ -586,10 +601,16 @@ autofillManagerFromWebState:(web::WebState*)webState
   web::WebFramesManager* framesManager =
       web::WebFramesManager::FromWebState(webState);
   DCHECK(framesManager);
-  if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
+  if (!framesManager->GetMainWebFrame()) {
+    return;
+  }
+  [self processFrame:framesManager->GetMainWebFrame() inWebState:webState];
+  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     [self processFrame:framesManager->GetMainWebFrame() inWebState:webState];
-  } else {
     for (auto* frame : framesManager->GetAllWebFrames()) {
+      if (frame->IsMainFrame()) {
+        continue;
+      }
       [self processFrame:frame inWebState:webState];
     }
   }
