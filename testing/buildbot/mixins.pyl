@@ -166,10 +166,10 @@
   },
   'limited_capacity_bot': {
     # Some FYI bot configurations have a limited number of bots in the swarming
-    # pool. Increase the default expiration time of 1 hour (3600 seconds) to
+    # pool. Increase the default expiration time from 1 hour to 6 hours to
     # prevent shards from timing out.
     'swarming': {
-      'expiration': 10800,
+      'expiration': 21600,
     },
   },
   'linux-rel-args': {
