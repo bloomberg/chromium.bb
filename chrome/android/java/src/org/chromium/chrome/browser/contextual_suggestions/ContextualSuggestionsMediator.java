@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -93,6 +94,7 @@ class ContextualSuggestionsMediator
      * down on the current page.
      */
     private boolean mHaveBrowserControlsFullyHidden;
+    private int mFullscreenToken = FullscreenManager.INVALID_TOKEN;
 
     private boolean mHasPeekDelayPassed;
 
@@ -513,8 +515,13 @@ class ContextualSuggestionsMediator
         }
         mHelpBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
+            mFullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
+                    mFullscreenToken);
+            mFullscreenToken = FullscreenManager.INVALID_TOKEN;
             mHelpBubble = null;
         });
+        mFullscreenToken =
+                mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
         mHelpBubble.show();
     }
 
