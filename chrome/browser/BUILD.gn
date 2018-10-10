@@ -4940,6 +4940,30 @@ grit("resources") {
     "//url/mojom:url_mojom_origin_js",
   ]
 
+  if (enable_plugins) {
+    # .json is not in the default sources_assignment_filter.
+    if (is_chromeos) {
+      inputs = [
+        "resources/plugin_metadata/plugins_chromeos.json",
+      ]
+    }
+    if (is_linux && !is_chromeos) {
+      inputs = [
+        "resources/plugin_metadata/plugins_linux.json",
+      ]
+    }
+    if (is_mac) {
+      inputs = [
+        "resources/plugin_metadata/plugins_mac.json",
+      ]
+    }
+    if (is_win) {
+      inputs = [
+        "resources/plugin_metadata/plugins_win.json",
+      ]
+    }
+  }
+
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     deps += [ "//chrome/browser/ui/webui/discards:mojo_bindings_js" ]
   }
