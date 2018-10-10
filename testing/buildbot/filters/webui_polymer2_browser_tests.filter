@@ -30,8 +30,6 @@
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
 -CrSettingsFingerprintProgressArcTest.All
--CrSettingsPeoplePageLockScreenTest.All
--CrSettingsPeoplePageQuickUnlockAuthenticateTest.All
 -CrSettingsPeoplePageSetupPinDialogTest.All
 -DemoSetupTest.OfflineSetupFlowError
 -DemoSetupTest.OnlineSetupFlowError
