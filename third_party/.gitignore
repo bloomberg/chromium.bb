@@ -113,7 +113,6 @@
 /jsr-305/src
 /junit/src
 /khronos_glcts
-/leakcanary/src
 /leveldatabase/src
 /leveldb
 /libaom/source/libaom

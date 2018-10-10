@@ -798,11 +798,6 @@ deps = {
       'condition': 'checkout_android',
   },
 
-  'src/third_party/leakcanary/src': {
-      'url': Var('chromium_git') + '/external/github.com/square/leakcanary.git' + '@' + '608ded739e036a3aa69db47ac43777dcee506f8e',
-      'condition': 'checkout_android',
-  },
-
   'src/third_party/leveldatabase/src':
     Var('chromium_git') + '/external/leveldb.git' + '@' + '73d5834eceee8efa9a8ccfec77dc096a9e8ba18a',
 

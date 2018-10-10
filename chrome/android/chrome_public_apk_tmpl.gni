@@ -10,7 +10,6 @@ import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/compiler/compiler.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
-import("//third_party/leakcanary/config.gni")
 import("channel.gni")
 
 declare_args() {
@@ -21,7 +20,6 @@ declare_args() {
 default_chrome_public_jinja_variables = [
   "channel=$android_channel",
   "enable_arcore=$enable_arcore",
-  "enable_leakcanary=$enable_leakcanary",
   "enable_vr=$enable_vr",
 ]
 

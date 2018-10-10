@@ -1129,39 +1129,6 @@ android:value="true" />
         <meta-data android:name="org.chromium.content.browser.SMART_CLIP_PROVIDER"
             android:value="org.chromium.content_public.browser.SmartClipProvider"/>
 
-        {% set enable_leakcanary = enable_leakcanary|default(0) %}
-        {% if enable_leakcanary == "true" %}
-        {# Entries for LeakCanary copied from (and then tweaked):
-               //third_party/leakcanary/src/leakcanary-android/src/main/AndroidManifest.xml #}
-          <service
-              android:name="com.squareup.leakcanary.internal.HeapAnalyzerService"
-              android:process=":leakcanary"
-              android:enabled="false" />
-          <activity
-              android:theme="@style/leak_canary_LeakCanary.Base"
-              android:name="com.squareup.leakcanary.internal.DisplayLeakActivity"
-              android:process=":leakcanary2"  {# Added to avoid StrictMode violations crashing the activity #}
-              android:label="@string/app_name"  {# Changed from "string/leak_canary_display_activity_label" to help distinguaish when multiple apps include leakcanary. #}
-              android:icon="@drawable/leak_canary_icon"
-              android:taskAffinity=".com.squareup.leakcanary">  {# Added leading "." for multi-app case. #}
-            <intent-filter>
-              <action android:name="android.intent.action.MAIN" />
-              <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-          </activity>
-          <service
-              android:name="com.squareup.leakcanary.DisplayLeakService"
-              android:process=":leakcanary2"  {# Added to minimize interaction with browser process. #}
-              android:enabled="false" />
-          <activity  {# This is just a toast-like overlay, so leaving in browser process #}
-              android:theme="@style/leak_canary_Theme.Transparent"
-              android:name="com.squareup.leakcanary.internal.RequestStoragePermissionActivity"
-              android:taskAffinity="com.squareup.leakcanary"
-              android:enabled="false"
-              android:icon="@drawable/leak_canary_icon"
-              android:label="@string/leak_canary_storage_permission_activity_label" />
-        {% endif %}
-
         {% block extra_application_definitions %}
 
         <!-- Media route controllers to use for remote playback (cast).
