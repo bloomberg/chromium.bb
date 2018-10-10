@@ -156,9 +156,6 @@
 # Enterprise keys tests.
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.Basic/*
 
-# Ash native views tests.
--ChromeNativeAppWindowViewsAuraAshBrowserTest.*
-
 # Flaky.  crbug.com/888188.
 -ChromeSessionManagerTest.LoginExistingUsers
 -ChromeSessionManagerTest.PRE_LoginExistingUsers
