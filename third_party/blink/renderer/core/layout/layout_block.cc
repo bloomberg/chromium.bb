@@ -1192,13 +1192,26 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
     child_hit_test = kHitTestChildBlockBackground;
   for (LayoutBox* child = LastChildBox(); child;
        child = child->PreviousSiblingBox()) {
+    if (child->HasSelfPaintingLayer() || child->IsColumnSpanAll() ||
+        (may_contain_rendered_legend && child->IsRenderedLegend()))
+      continue;
+
     LayoutPoint child_point =
         FlipForWritingModeForChild(child, scrolled_offset);
-    if (!child->HasSelfPaintingLayer() && !child->IsFloating() &&
-        !child->IsColumnSpanAll() &&
-        (!may_contain_rendered_legend || !child->IsRenderedLegend()) &&
-        child->NodeAtPoint(result, location_in_container, child_point,
-                           child_hit_test)) {
+
+    bool did_hit;
+    if (child->IsFloating()) {
+      if (hit_test_action != kHitTestFloat || !IsLayoutNGObject())
+        continue;
+      // Hit-test the floats in regular tree order if this is LayoutNG. Only
+      // legacy layout uses the FloatingObjects list.
+      did_hit =
+          child->HitTestAllPhases(result, location_in_container, child_point);
+    } else {
+      did_hit = child->NodeAtPoint(result, location_in_container, child_point,
+                                   child_hit_test);
+    }
+    if (did_hit) {
       UpdateHitTestResult(
           result, FlipForWritingMode(ToLayoutPoint(
                       location_in_container.Point() - accumulated_offset)));
