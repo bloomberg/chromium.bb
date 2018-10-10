@@ -60,44 +60,6 @@ constexpr char kPositionKey[] = "position";
 constexpr char kPinPositionKey[] = "pin_position";
 constexpr char kTypeKey[] = "type";
 
-void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
-                            AppListSyncableService::SyncItem* item) {
-  DCHECK_EQ(item->item_id, specifics.item_id());
-  item->item_type = specifics.item_type();
-  item->item_name = specifics.item_name();
-  item->parent_id = specifics.parent_id();
-  if (specifics.has_item_ordinal())
-    item->item_ordinal = syncer::StringOrdinal(specifics.item_ordinal());
-  if (specifics.has_item_pin_ordinal()) {
-    item->item_pin_ordinal =
-        syncer::StringOrdinal(specifics.item_pin_ordinal());
-  }
-}
-
-bool UpdateSyncItemFromAppItem(const ChromeAppListItem* app_item,
-                               AppListSyncableService::SyncItem* sync_item) {
-  DCHECK_EQ(sync_item->item_id, app_item->id());
-
-  // Page breaker should not be added in a folder.
-  DCHECK(!app_item->is_page_break() || app_item->folder_id().empty());
-
-  bool changed = false;
-  if (sync_item->parent_id != app_item->folder_id()) {
-    sync_item->parent_id = app_item->folder_id();
-    changed = true;
-  }
-  if (sync_item->item_name != app_item->name()) {
-    sync_item->item_name = app_item->name();
-    changed = true;
-  }
-  if (!sync_item->item_ordinal.IsValid() ||
-      !app_item->position().Equals(sync_item->item_ordinal)) {
-    sync_item->item_ordinal = app_item->position();
-    changed = true;
-  }
-  return changed;
-}
-
 void GetSyncSpecificsFromSyncItem(const AppListSyncableService::SyncItem* item,
                                   sync_pb::AppListSpecifics* specifics) {
   DCHECK(specifics);
@@ -1017,10 +979,13 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   }
   VLOG(2) << "ProcessExistingSyncItem: " << sync_item->ToString();
 
+  // The only place where sync can change an item's folder. Prevent moving OEM
+  // item to the folder, other than OEM folder.
+  const bool update_folder = !AppIsOem(sync_item->item_id);
   model_updater_->UpdateAppItemFromSyncItem(
       sync_item,
       sync_item->item_id != ash::kOemFolderId,  // Don't sync oem folder's name.
-      true);  // The only place where sync can change an item's folder.
+      update_folder);
 }
 
 bool AppListSyncableService::SyncStarted() {
@@ -1224,6 +1189,53 @@ void AppListSyncableService::InstallDefaultPageBreaks() {
     page_break_item->SetName("__default_page_break__");
     AddItem(std::move(page_break_item));
   }
+}
+
+void AppListSyncableService::UpdateSyncItemFromSync(
+    const sync_pb::AppListSpecifics& specifics,
+    AppListSyncableService::SyncItem* item) {
+  DCHECK_EQ(item->item_id, specifics.item_id());
+  item->item_type = specifics.item_type();
+  item->item_name = specifics.item_name();
+
+  // Ignore update to put item into the OEM folder in case app is not OEM. This
+  // can happen when app is installed on several devices where app is OEM on one
+  // device and not on another devices.
+  if (specifics.parent_id() != ash::kOemFolderId || AppIsOem(item->item_id))
+    item->parent_id = specifics.parent_id();
+  if (specifics.has_item_ordinal())
+    item->item_ordinal = syncer::StringOrdinal(specifics.item_ordinal());
+  if (specifics.has_item_pin_ordinal()) {
+    item->item_pin_ordinal =
+        syncer::StringOrdinal(specifics.item_pin_ordinal());
+  }
+}
+
+bool AppListSyncableService::UpdateSyncItemFromAppItem(
+    const ChromeAppListItem* app_item,
+    AppListSyncableService::SyncItem* sync_item) {
+  DCHECK_EQ(sync_item->item_id, app_item->id());
+
+  // Page breaker should not be added in a folder.
+  DCHECK(!app_item->is_page_break() || app_item->folder_id().empty());
+
+  bool changed = false;
+  // Allow sync changes for parent only for non OEM app.
+  if (sync_item->parent_id != app_item->folder_id() &&
+      !AppIsOem(app_item->id())) {
+    sync_item->parent_id = app_item->folder_id();
+    changed = true;
+  }
+  if (sync_item->item_name != app_item->name()) {
+    sync_item->item_name = app_item->name();
+    changed = true;
+  }
+  if (!sync_item->item_ordinal.IsValid() ||
+      !app_item->position().Equals(sync_item->item_ordinal)) {
+    sync_item->item_ordinal = app_item->position();
+    changed = true;
+  }
+  return changed;
 }
 
 }  // namespace app_list

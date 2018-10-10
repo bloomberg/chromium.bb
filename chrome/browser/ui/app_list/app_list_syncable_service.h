@@ -269,6 +269,14 @@ class AppListSyncableService : public syncer::SyncableService,
   // users.
   void InstallDefaultPageBreaks();
 
+  // Applies sync changes to the local item.
+  void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
+                              AppListSyncableService::SyncItem* item);
+
+  // Applies changes from the local item to sync item.
+  bool UpdateSyncItemFromAppItem(const ChromeAppListItem* app_item,
+                                 AppListSyncableService::SyncItem* sync_item);
+
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<AppListModelUpdater> model_updater_;
