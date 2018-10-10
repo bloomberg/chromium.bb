@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
@@ -320,14 +321,14 @@ bool TestPlugin::PrepareTransferableResource(
 
 TestPlugin::Primitive TestPlugin::ParsePrimitive(
     const blink::WebString& string) {
-  const CR_DEFINE_STATIC_LOCAL(blink::WebString, kPrimitiveNone, ("none"));
-  const CR_DEFINE_STATIC_LOCAL(blink::WebString, kPrimitiveTriangle,
-                               ("triangle"));
+  static const base::NoDestructor<blink::WebString> kPrimitiveNone("none");
+  static const base::NoDestructor<blink::WebString> kPrimitiveTriangle(
+      "triangle");
 
   Primitive primitive = PrimitiveNone;
-  if (string == kPrimitiveNone)
+  if (string == *kPrimitiveNone)
     primitive = PrimitiveNone;
-  else if (string == kPrimitiveTriangle)
+  else if (string == *kPrimitiveTriangle)
     primitive = PrimitiveTriangle;
   else
     NOTREACHED();
@@ -356,8 +357,8 @@ float TestPlugin::ParseOpacity(const blink::WebString& string) {
 }
 
 bool TestPlugin::ParseBoolean(const blink::WebString& string) {
-  const CR_DEFINE_STATIC_LOCAL(blink::WebString, kPrimitiveTrue, ("true"));
-  return string == kPrimitiveTrue;
+  static const base::NoDestructor<blink::WebString> kPrimitiveTrue("true");
+  return string == *kPrimitiveTrue;
 }
 
 bool TestPlugin::InitScene() {
@@ -602,16 +603,15 @@ TestPlugin* TestPlugin::Create(const blink::WebPluginParams& params,
 }
 
 const blink::WebString& TestPlugin::MimeType() {
-  const CR_DEFINE_STATIC_LOCAL(blink::WebString, kMimeType,
-                               ("application/x-webkit-test-webplugin"));
-  return kMimeType;
+  static const base::NoDestructor<blink::WebString> kMimeType(
+      "application/x-webkit-test-webplugin");
+  return *kMimeType;
 }
 
 const blink::WebString& TestPlugin::PluginPersistsMimeType() {
-  const CR_DEFINE_STATIC_LOCAL(
-      blink::WebString, kPluginPersistsMimeType,
-      ("application/x-webkit-test-webplugin-persistent"));
-  return kPluginPersistsMimeType;
+  static const base::NoDestructor<blink::WebString> kPluginPersistsMimeType(
+      "application/x-webkit-test-webplugin-persistent");
+  return *kPluginPersistsMimeType;
 }
 
 bool TestPlugin::IsSupportedMimeType(const blink::WebString& mime_type) {

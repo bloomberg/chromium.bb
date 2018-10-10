@@ -10,6 +10,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -937,19 +938,19 @@ gfx::NativeViewAccessible BrowserAccessibility::GetNativeViewAccessible() {
 // AXPlatformNodeDelegate.
 //
 const ui::AXNodeData& BrowserAccessibility::GetData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
+  static base::NoDestructor<ui::AXNodeData> empty_data;
   if (node_)
     return node_->data();
   else
-    return empty_data;
+    return *empty_data;
 }
 
 const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+  static base::NoDestructor<ui::AXTreeData> empty_data;
   if (manager())
     return manager()->GetTreeData();
   else
-    return empty_data;
+    return *empty_data;
 }
 
 gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {

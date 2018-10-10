@@ -10,6 +10,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
@@ -45,8 +46,8 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node10 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node11 /* = ui::AXNodeData() */,
     const ui::AXNodeData& node12 /* = ui::AXNodeData() */) {
-  CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
-  int32_t no_id = empty_data.id;
+  static base::NoDestructor<ui::AXNodeData> empty_data;
+  int32_t no_id = empty_data->id;
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
