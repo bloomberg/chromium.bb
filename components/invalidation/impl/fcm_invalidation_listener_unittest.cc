@@ -62,7 +62,7 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   ~FakeDelegate() override {}
 
   size_t GetInvalidationCount(const Topic& topic) const {
-    Map::const_iterator it = invalidations_.find(topic);
+    auto it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
       return 0;
     } else {
@@ -71,7 +71,7 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   }
 
   int64_t GetVersion(const Topic& topic) const {
-    Map::const_iterator it = invalidations_.find(topic);
+    auto it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
       ADD_FAILURE() << "No invalidations for topic " << topic;
       return 0;
@@ -81,7 +81,7 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   }
 
   std::string GetPayload(const Topic& topic) const {
-    Map::const_iterator it = invalidations_.find(topic);
+    auto it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
       ADD_FAILURE() << "No invalidations for topic " << topic;
       return nullptr;
@@ -91,7 +91,7 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   }
 
   bool IsUnknownVersion(const Topic& topic) const {
-    Map::const_iterator it = invalidations_.find(topic);
+    auto it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
       ADD_FAILURE() << "No invalidations for topic " << topic;
       return false;
@@ -101,7 +101,7 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
   }
 
   bool StartsWithUnknownVersion(const Topic& topic) const {
-    Map::const_iterator it = invalidations_.find(topic);
+    auto it = invalidations_.find(topic);
     if (it == invalidations_.end()) {
       ADD_FAILURE() << "No invalidations for topic " << topic;
       return false;
@@ -114,27 +114,27 @@ class FakeDelegate : public FCMInvalidationListener::Delegate {
 
   void AcknowledgeNthInvalidation(const Topic& topic, size_t n) {
     List& list = invalidations_[topic];
-    List::iterator it = list.begin() + n;
+    auto it = list.begin() + n;
     it->Acknowledge();
   }
 
   void AcknowledgeAll(const Topic& topic) {
     List& list = invalidations_[topic];
-    for (List::iterator it = list.begin(); it != list.end(); ++it) {
+    for (auto it = list.begin(); it != list.end(); ++it) {
       it->Acknowledge();
     }
   }
 
   void DropNthInvalidation(const Topic& topic, size_t n) {
     List& list = invalidations_[topic];
-    List::iterator it = list.begin() + n;
+    auto it = list.begin() + n;
     it->Drop();
     dropped_invalidations_map_.erase(topic);
     dropped_invalidations_map_.insert(std::make_pair(topic, *it));
   }
 
   void RecoverFromDropEvent(const Topic& topic) {
-    DropMap::iterator it = dropped_invalidations_map_.find(topic);
+    auto it = dropped_invalidations_map_.find(topic);
     if (it != dropped_invalidations_map_.end()) {
       it->second.Acknowledge();
       dropped_invalidations_map_.erase(it);
