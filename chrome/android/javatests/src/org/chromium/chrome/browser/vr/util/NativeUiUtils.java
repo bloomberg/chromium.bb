@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.vr.util;
 
+import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,14 +22,17 @@ import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.UiTestOperationResult;
 import org.chromium.chrome.browser.vr.UiTestOperationType;
 import org.chromium.chrome.browser.vr.UserFriendlyElementName;
+import org.chromium.chrome.browser.vr.VrBrowserTestFramework;
 import org.chromium.chrome.browser.vr.VrControllerTestAction;
 import org.chromium.chrome.browser.vr.VrDialog;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrViewContainer;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Class containing utility functions for interacting with the VR browser native UI, e.g. the
@@ -72,6 +78,45 @@ public class NativeUiUtils {
     public static void clickElement(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 elementName, VrControllerTestAction.CLICK, position);
+    }
+
+    /**
+     * Clicks on a DOM element/node as if done via a controller.
+     *
+     * @param nodeId The ID of the node to click on.
+     * @param position A PointF specifying where on the node to send the click relative to a unit
+     *        square centered at (0, 0).
+     * @param numClicks The number of times to click the element.
+     * @param testFramework The VrBrowserTestFramework to use to interact with the page.
+     */
+    public static void clickContentNode(String nodeId, PointF position, final int numClicks,
+            VrBrowserTestFramework testFramework) throws InterruptedException, TimeoutException {
+        Rect nodeBounds = DOMUtils.getNodeBounds(testFramework.getFirstTabWebContents(), nodeId);
+        int contentWidth = Integer.valueOf(
+                testFramework.runJavaScriptOrFail("window.innerWidth", POLL_TIMEOUT_SHORT_MS));
+        int contentHeight = Integer.valueOf(
+                testFramework.runJavaScriptOrFail("window.innerHeight", POLL_TIMEOUT_SHORT_MS));
+        // Convert the given PointF (native UI-style coordinates) into absolute content coordinates
+        // for the node.
+        // The coordinate systems are different (content has the origin in the top left, click
+        // coordinates have the "origin" in the bottom left), so be sure to account for that.
+        float nodeCoordX = (nodeBounds.right - nodeBounds.left) * (0.5f + position.x);
+        float nodeCoordY = (nodeBounds.bottom - nodeBounds.top) * (0.5f - position.y);
+        // Offset the click position within the node by the node's location to get the click
+        // position within the content.
+        PointF absClickCoord =
+                new PointF(nodeCoordX + nodeBounds.left, nodeCoordY + nodeBounds.top);
+
+        // Scale the coordinates between 0 and 1.
+        float contentCoordX = absClickCoord.x / contentWidth;
+        float contentCoordY = absClickCoord.y / contentHeight;
+        // Now convert back to the native UI-style coordinates.
+        final PointF clickCoordinates = new PointF(contentCoordX - 0.5f, 0.5f - contentCoordY);
+        performActionAndWaitForUiQuiescence(() -> {
+            for (int i = 0; i < numClicks; ++i) {
+                clickElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
+            }
+        });
     }
 
     /**
