@@ -397,6 +397,9 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       options_.preflight_policy);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  // |observer_| can be null if Cancel, DocumentDestroyed or
+  // ClientAdapterDone gets called between creating the loader and
+  // calling LoadAsynchronously.
   if (observer_) {
     task_runner = To<Document>(observer_->LifecycleContext())
                       ->GetTaskRunner(TaskType::kInternalLoading);
@@ -438,10 +441,12 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
           FetchInitiatorTypeNames::audio;
     }
 
-    Document& document = To<Document>(*observer_->LifecycleContext());
-    loader_ = new ThreadableLoader(document, client_adapter_.get(),
-                                   resource_loader_options);
-    loader_->Start(webcore_request);
+    if (observer_) {
+      Document& document = To<Document>(*observer_->LifecycleContext());
+      loader_ = new ThreadableLoader(document, client_adapter_.get(),
+                                     resource_loader_options);
+      loader_->Start(webcore_request);
+    }
   }
 
   if (!loader_) {
