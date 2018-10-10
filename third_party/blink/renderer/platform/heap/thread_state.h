@@ -458,7 +458,7 @@ class PLATFORM_EXPORT ThreadState final
     STACK_ALLOCATED();
 
    public:
-    GCSnapshotInfo(size_t num_object_types);
+    GCSnapshotInfo(wtf_size_t num_object_types);
 
     // Map from gcInfoIndex (vector-index) to count/size.
     Vector<int> live_count;

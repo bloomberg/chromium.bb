@@ -159,10 +159,8 @@ const char* StackStateString(BlinkGC::StackState state) {
 
 // Helper function to convert a byte count to a KB count, capping at
 // INT_MAX if the number is larger than that.
-constexpr size_t CappedSizeInKB(size_t size_in_bytes) {
-  const size_t size_in_kb = size_in_bytes / 1024;
-  const size_t limit = std::numeric_limits<int>::max();
-  return size_in_kb > limit ? limit : size_in_kb;
+constexpr base::Histogram::Sample CappedSizeInKB(size_t size_in_bytes) {
+  return base::saturated_cast<base::Histogram::Sample>(size_in_bytes / 1024);
 }
 
 }  // namespace
@@ -405,7 +403,7 @@ void ThreadState::VisitWeakPersistents(Visitor* visitor) {
   weak_persistent_region_->TracePersistentNodes(visitor);
 }
 
-ThreadState::GCSnapshotInfo::GCSnapshotInfo(size_t num_object_types)
+ThreadState::GCSnapshotInfo::GCSnapshotInfo(wtf_size_t num_object_types)
     : live_count(Vector<int>(num_object_types)),
       dead_count(Vector<int>(num_object_types)),
       live_size(Vector<size_t>(num_object_types)),
@@ -448,9 +446,9 @@ double ThreadState::HeapGrowingRate() {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadState::heapEstimatedSizeKB",
                  CappedSizeInKB(estimated_size));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadState::heapGrowingRate",
-                 static_cast<int>(100 * growing_rate));
+  TRACE_COUNTER1(
+      TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadState::heapGrowingRate",
+      base::saturated_cast<base::Histogram::Sample>(100 * growing_rate));
   return growing_rate;
 }
 
@@ -467,9 +465,10 @@ double ThreadState::PartitionAllocGrowingRate() {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadState::partitionAllocEstimatedSizeKB",
                  CappedSizeInKB(estimated_size));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadState::partitionAllocGrowingRate",
-                 static_cast<int>(100 * growing_rate));
+  TRACE_COUNTER1(
+      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+      "ThreadState::partitionAllocGrowingRate",
+      base::saturated_cast<base::Histogram::Sample>(100 * growing_rate));
   return growing_rate;
 }
 
@@ -1251,7 +1250,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     // Only update the counter for the maximum value.
     DEFINE_STATIC_LOCAL(EnumerationHistogram, commited_size_histogram,
                         ("BlinkGC.CommittedSize", kSupportedMaxSizeInMB));
-    commited_size_histogram.Count(size_in_mb);
+    commited_size_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(size_in_mb));
     max_committed_size_in_mb = size_in_mb;
   }
 }
@@ -1803,13 +1803,13 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, total_object_space_histogram,
       ("BlinkGC.TotalObjectSpace", 0, 4 * 1024 * 1024, 50));
-  total_object_space_histogram.Count(ProcessHeap::TotalAllocatedObjectSize() /
-                                     1024);
+  total_object_space_histogram.Count(
+      CappedSizeInKB(ProcessHeap::TotalAllocatedObjectSize()));
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, total_allocated_space_histogram,
       ("BlinkGC.TotalAllocatedSpace", 0, 4 * 1024 * 1024, 50));
-  total_allocated_space_histogram.Count(ProcessHeap::TotalAllocatedSpace() /
-                                        1024);
+  total_allocated_space_histogram.Count(
+      CappedSizeInKB(ProcessHeap::TotalAllocatedSpace()));
 }
 
 void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
