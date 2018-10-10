@@ -55,6 +55,12 @@ void JSBasedEventListener::handleEvent(
   DCHECK(execution_context_of_event_target);
   DCHECK(event);
 
+  // TODO(crbug.com/893449): Replace this early return by
+  // DCHECK(event->target()) and DCHECK(event->currentTarget) because they
+  // should not be null on dispatching event.
+  if (!event->target() || !event->currentTarget())
+    return;
+
   v8::Isolate* isolate = GetIsolate();
 
   // Don't reenter V8 if execution was terminated in this instance of V8.
