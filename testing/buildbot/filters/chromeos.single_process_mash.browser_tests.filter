@@ -208,9 +208,6 @@
 # Flaky https://crbug.com/887175
 -PrerenderBrowserTest.PrerenderHTML5VideoJs
 
-# Full screen button tests.
--PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
-
 # Service worker tests.
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.SWServedBackgroundPageReceivesEvent/*
 
