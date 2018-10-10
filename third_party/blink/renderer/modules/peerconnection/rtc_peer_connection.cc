@@ -2203,6 +2203,7 @@ void RTCPeerConnection::DidModifyTransceivers(
       remove_list;
   HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>> add_list;
   HeapVector<Member<RTCRtpTransceiver>> track_events;
+  MediaStreamVector previous_streams = getRemoteStreams();
   for (auto& web_transceiver : web_transceivers) {
     auto* it = FindTransceiver(*web_transceiver);
     bool previously_had_recv =
@@ -2222,6 +2223,7 @@ void RTCPeerConnection::DidModifyTransceivers(
       ProcessRemovalOfRemoteTrack(transceiver, &remove_list, &mute_tracks);
     }
   }
+  MediaStreamVector current_streams = getRemoteStreams();
 
   for (auto& track : mute_tracks) {
     // Mute the track. Fires "track.onmute" synchronously.
@@ -2250,6 +2252,20 @@ void RTCPeerConnection::DidModifyTransceivers(
     auto& track = pair.second;
     if (!stream->getTracks().Contains(track)) {
       stream->AddTrackAndFireEvents(track);
+    }
+  }
+
+  // Legacy APIs: "pc.onaddstream" and "pc.onremovestream".
+  for (const auto& current_stream : current_streams) {
+    if (!previous_streams.Contains(current_stream)) {
+      ScheduleDispatchEvent(
+          MediaStreamEvent::Create(EventTypeNames::addstream, current_stream));
+    }
+  }
+  for (const auto& previous_stream : previous_streams) {
+    if (!current_streams.Contains(previous_stream)) {
+      ScheduleDispatchEvent(MediaStreamEvent::Create(
+          EventTypeNames::removestream, previous_stream));
     }
   }
 
