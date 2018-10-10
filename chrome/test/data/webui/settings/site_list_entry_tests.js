@@ -27,7 +27,8 @@ suite('SiteListEntry', function() {
     assertEquals('none', tooltip.computedStyleMap().get('display').value);
     assertFalse(paperTooltip._showing);
     const wait = test_util.eventToPromise('show-tooltip', document);
-    icon.$.indicator.dispatchEvent(new MouseEvent('mouseenter'));
+    icon.$.indicator.dispatchEvent(
+        new MouseEvent('mouseenter', {bubbles: true, composed: true}));
     return wait.then(() => {
       assertTrue(paperTooltip._showing);
       assertEquals('none', tooltip.computedStyleMap().get('display').value);

@@ -425,8 +425,8 @@ Polymer({
    * @private
    */
   computeHasOtherError_: function() {
-    return !!this.syncStatus.hasError && !this.isSyncPaused_ &&
-        !this.hasPassphraseError_;
+    return this.syncStatus !== undefined && !!this.syncStatus.hasError &&
+        !this.isSyncPaused_ && !this.hasPassphraseError_;
   },
 
   /**
