@@ -42298,6 +42298,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="No Error"/>
   <int value="1" label="Invalid JSON"/>
   <int value="2" label="No App"/>
+  <int value="3" label="User already owns a Chromebook"/>
+  <int value="4" label="Unknown error code"/>
+  <int value="5" label="Invalid error code"/>
 </enum>
 
 <enum name="RecommendAppsScreenAction">
