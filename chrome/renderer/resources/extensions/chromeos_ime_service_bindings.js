@@ -11,6 +11,20 @@ mojo.config.autoLoadMojomDeps = false;
 
 loadScript('chromeos.ime.mojom.input_engine.mojom');
 
+/**
+ * Empty result to keep Mojo pipe from disconnection.
+ * @type {Promise}
+ * @const
+ */
+var IME_CHANNEL_EMPTY_RESULT = Promise.resolve({result: ""});
+
+/**
+ * Empty message to keep Mojo pipe from disconnection.
+ * @type {Uint8Array}
+ * @const
+ */
+var IME_CHANNEL_EMPTY_EXTRA = new Uint8Array(0);
+
 /*
  * Represents the js-side of the InputChannel.
  * Routes calls from IME service to the IME extension.
@@ -29,9 +43,6 @@ class ImeExtensionChannel {
      * @type {chromeos.ime.mojom.InputChannelPtr}
      */
     this.channelPtr_ = undefined;
-
-    /* Default result for calls without response. */
-    this.emptyResult_ = Promise.resolve({result: ""});
 
     /**
      * Handler for the text message.
@@ -86,6 +97,7 @@ class ImeExtensionChannel {
   /**
    * Process the text message from a connected input engine.
    *
+   * @type {function(string):Promise<string>}
    * @private
    * @param {string} message
    * @return {!Promise<string>} result.
@@ -94,32 +106,32 @@ class ImeExtensionChannel {
     if (this.textHandler_) {
       return Promise.resolve({result: this.textHandler_(message)});
     }
-    return this.emptyResult_;
+    return IME_CHANNEL_EMPTY_RESULT;
   }
 
   /**
    * Process the protobuf message from a connected input engine.
    *
-   * @private
    * @type {function(Uint8Array):Promise<Uint8Array>}
+   * @private
+   * @param {string} message
    * @return {!Promise<!Uint8Array>}
    */
   processMessage(message) {
     if (this.protobufHandler_) {
       return Promise.resolve({result: this.protobufHandler_(message)});
     }
-    return this.emptyResult_;
+    return IME_CHANNEL_EMPTY_RESULT;
   }
 
   /**
-   * Set the error handler when the Mojo pipe is disconnected.
-   * @param {function} handler.
+   * Set the error handler when the channel Mojo pipe is disconnected.
+   * @param {function():void} handler.
    */
-  onConnectionError(handler) {
+  setConnectionErrorHandler(handler) {
     if (typeof handler == 'function') {
       this.binding_.setConnectionErrorHandler(handler);
     }
-    return this;
   }
 }
 
@@ -138,6 +150,7 @@ class ImeService {
     this.manager_ = manager;
 
     /**
+     * TODO(crbug.com/837156): Build KeepAlive Mojo pipe.
      * Handle to a KeepAlive service object, which prevents the extension from
      * being suspended as long as it remains in scope.
      * @private
@@ -146,8 +159,8 @@ class ImeService {
     this.keepAlive_ = null;
 
     /**
-     * Current active IME Engine proxy. Allows extension code to make calls on
-     * the connected InputEngine that resides in the IME service.
+     * An active IME Engine proxy. Allows extension code to make calls on the
+     * connected InputEngine that resides in the IME service.
      * @private
      * @type {!chromeos.ime.mojom.InputChannelPtr}
      */
@@ -167,28 +180,40 @@ class ImeService {
     return this.manager_ && this.manager_.ptr.isBound();
   }
 
+  /**
+   * Set the error handler when the IME Mojo service is disconnected.
+   * @param {function():void} callback.
+   */
+  setConnectionErrorHandler(callback) {
+    if (typeof callback == 'function' && this.isConnected()) {
+      this.manager_.ptr.setConnectionErrorHandler(callback);
+    }
+  }
+
   /** @return {boolean} True if there is connected active IME engine. */
-  isEngineActive() {
+  hasActiveEngine() {
     return this.activeEngine_ && this.activeEngine_.ptr.isBound();
   }
 
   /**
    * Activates an input method based on its specification.
-   * @param {string} The specification of an IME (e.g. the engine ID).
-   * @param {?Uint8Array} The extra data (e.g. initial tasks to run).
-   * @param {function(Object):void} The callback function to invoke when
-   *     the IME activation is done.
+   * @param {string} imeSpec The specification of an IME (e.g. the engine ID).
+   * @param {!Uint8Array} extra The extra data (e.g. initial tasks to run).
+   * @param {function(boolean):void} onConnection The callback function to
+   *     invoke when the IME activation is done.
+   * @param {function():void} onConnectionError The callback function to
+   *     invoke when the Mojo pipe on the active engine is disconnected.
    */
-  activateIME(imeSpec, extra, callback) {
+  activateIME(imeSpec, extra, onConnection, onConnectionError) {
     if (this.isConnected()) {
 
-      // Disconnect the current active engine and make a new one.
       // TODO(crbug.com/837156): Try to reuse the current engine if possible.
-      if (this.isEngineActive()) {
-        this.activeEngine_.ptr.reset();
-        this.activeEngine_ = null;
-      }
+      // Disconnect the current active engine and make a new one.
+      this.deactivateIME();
       this.activeEngine_ = new chromeos.ime.mojom.InputChannelPtr;
+
+      // Null value will cause a disconnection on the Mojo pipe.
+      extra = extra ? extra : IME_CHANNEL_EMPTY_EXTRA;
 
       // Create a client side channel to receive data from service.
       if (!this.clientChannel_) {
@@ -199,8 +224,25 @@ class ImeService {
           imeSpec,
           mojo.makeRequest(this.activeEngine_),
           this.clientChannel_.getChannelPtr(),
-          extra).then(callback);
+          extra).then(
+              bound => {
+                if (bound && typeof onConnectionError == 'function') {
+                  this.activeEngine_.ptr.setConnectionErrorHandler(
+                      onConnectionError);
+                };
+                if (typeof onConnection == 'function') {
+                  onConnection(bound);
+                };
+              });
     }
+  }
+
+  /** Deactivate the IME engine if it is connected. */
+  deactivateIME() {
+    if (this.hasActiveEngine()) {
+      this.activeEngine_.ptr.reset();
+    }
+    this.activeEngine_ = null;
   }
 }
 
