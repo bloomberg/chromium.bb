@@ -108,8 +108,9 @@ HRESULT WinHttpUrlFetcher::Fetch(std::string* response) {
   // Add request headers.
 
   for (const auto& kv : request_headers_) {
-    base::string16 header =
-        base::StringPrintf(L"%S: %S", kv.first.c_str(), kv.second.c_str());
+    const wchar_t* key = A2CW(kv.first.c_str());
+    const wchar_t* value = A2CW(kv.second.c_str());
+    base::string16 header = base::StringPrintf(L"%ls: %ls", key, value);
     if (!::WinHttpAddRequestHeaders(
             request_.Get(), header.c_str(), header.length(),
             WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {

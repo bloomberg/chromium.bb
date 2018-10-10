@@ -10,12 +10,21 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 
+#include "base/at_exit.h"
+
+namespace base {
+class AtExitManager;
+}
+
 namespace credential_provider {
 
 // Declaration of Afx module class for this DLL.
 class CGaiaCredentialProviderModule
     : public ATL::CAtlDllModuleT<CGaiaCredentialProviderModule> {
  public:
+  CGaiaCredentialProviderModule();
+  ~CGaiaCredentialProviderModule() override;
+
   DECLARE_LIBID(LIBID_GaiaCredentialProviderLib)
 
   // This class implements UpdateRegistryAppId() directly instead of using the
@@ -24,6 +33,9 @@ class CGaiaCredentialProviderModule
   static HRESULT WINAPI UpdateRegistryAppId(BOOL do_register) throw();
 
   BOOL DllMain(HINSTANCE hinstance, DWORD reason, LPVOID reserved);
+
+ private:
+  std::unique_ptr<base::AtExitManager> exit_manager_;
 };
 
 }  // namespace credential_provider
