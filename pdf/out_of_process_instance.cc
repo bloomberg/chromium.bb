@@ -12,6 +12,7 @@
 #include <list>
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -39,13 +40,18 @@
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var_array.h"
+#include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "url/gurl.h"
 
 namespace chrome_pdf {
 
 namespace {
+
+const base::Feature kSaveEditedPDFFormExperiment{
+    "SaveEditedPDFForm", base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr char kChromePrint[] = "chrome://print/";
 constexpr char kChromeExtension[] =
@@ -98,6 +104,13 @@ constexpr char kJSPassword[] = "password";
 constexpr char kJSPrintType[] = "print";
 // Save (Page -> Plugin)
 constexpr char kJSSaveType[] = "save";
+constexpr char kJSToken[] = "token";
+// Save Data (Plugin -> Page)
+constexpr char kJSSaveDataType[] = "saveData";
+constexpr char kJSFileName[] = "fileName";
+constexpr char kJSDataToSave[] = "dataToSave";
+// Consume save token (Plugin -> Page)
+constexpr char kJSConsumeSaveTokenType[] = "consumeSaveToken";
 // Go to page (Plugin -> Page)
 constexpr char kJSGoToPageType[] = "goToPage";
 constexpr char kJSPageNumber[] = "page";
@@ -159,6 +172,10 @@ constexpr char kJSFieldFocusType[] = "formFocusChange";
 constexpr char kJSFieldFocus[] = "focused";
 
 constexpr int kFindResultCooldownMs = 100;
+
+// Do not save forms with over 100 MB. This cap should be kept in sync with and
+// is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
+constexpr size_t kMaximumSavedFileSize = 100u * 1000u * 1000u;
 
 // Same value as printing::COMPLETE_PREVIEW_DOCUMENT_INDEX.
 constexpr int kCompletePDFIndex = -1;
@@ -647,9 +664,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     }
   } else if (type == kJSPrintType) {
     Print();
-  } else if (type == kJSSaveType) {
-    engine_->KillFormFocus();
-    pp::PDF::SaveAs(this);
+  } else if (type == kJSSaveType && dict.Get(pp::Var(kJSToken)).is_string()) {
+    Save(dict.Get(pp::Var(kJSToken)).AsString());
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
@@ -1457,6 +1473,44 @@ void OutOfProcessInstance::GetDocumentPassword(
   PostMessage(message);
 }
 
+void OutOfProcessInstance::Save(const std::string& token) {
+  engine_->KillFormFocus();
+
+  if (!base::FeatureList::IsEnabled(kSaveEditedPDFFormExperiment) ||
+      !edit_mode_) {
+    ConsumeSaveToken(token);
+    pp::PDF::SaveAs(this);
+    return;
+  }
+
+  GURL url(url_);
+  std::string file_name = url.ExtractFileName();
+  file_name = net::UnescapeURLComponent(file_name, net::UnescapeRule::SPACES);
+  std::vector<uint8_t> data = engine_->GetSaveData();
+
+  if (data.size() == 0u || data.size() > kMaximumSavedFileSize) {
+    // TODO(thestig): Add feedback to the user that a failure occurred.
+    ConsumeSaveToken(token);
+    return;
+  }
+
+  pp::VarDictionary message;
+  message.Set(kType, kJSSaveDataType);
+  message.Set(kJSToken, pp::Var(token));
+  message.Set(kJSFileName, pp::Var(file_name));
+  pp::VarArrayBuffer buffer(data.size());
+  std::copy(data.begin(), data.end(), reinterpret_cast<char*>(buffer.Map()));
+  message.Set(kJSDataToSave, buffer);
+  PostMessage(message);
+}
+
+void OutOfProcessInstance::ConsumeSaveToken(const std::string& token) {
+  pp::VarDictionary message;
+  message.Set(kType, kJSConsumeSaveTokenType);
+  message.Set(kJSToken, pp::Var(token));
+  PostMessage(message);
+}
+
 void OutOfProcessInstance::Beep() {
   pp::VarDictionary message;
   message.Set(pp::Var(kType), pp::Var(kJSBeepType));
@@ -1894,8 +1948,7 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
 }
 
 void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
-  // TODO(hnakashima): Switch to saving the edited file, rather than the
-  // original file.
+  edit_mode_ = is_edit_mode;
 }
 
 float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {

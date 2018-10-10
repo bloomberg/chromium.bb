@@ -119,6 +119,7 @@ class PDFiumEngine : public PDFEngine,
   void AppendBlankPages(int num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
   std::string GetMetadata(const std::string& key) override;
+  std::vector<uint8_t> GetSaveData() override;
   void SetCaretPosition(const pp::Point& position) override;
   void MoveRangeSelectionExtent(const pp::Point& extent) override;
   void SetSelectionBounds(const pp::Point& base,
