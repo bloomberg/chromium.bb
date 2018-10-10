@@ -39,16 +39,13 @@ class PendingAppManager {
   struct AppInfo {
     static const bool kDefaultCreateShortcuts;
     static const bool kDefaultOverridePreviousUserUninstall;
-    static const bool kDefaultBypassServiceWorkerCheck;
 
-    AppInfo(
-        GURL url,
-        LaunchContainer launch_container,
-        InstallSource install_source,
-        bool create_shortcuts = kDefaultCreateShortcuts,
-        bool override_previous_user_uninstall =
-            kDefaultOverridePreviousUserUninstall,
-        bool bypass_service_worker_check = kDefaultBypassServiceWorkerCheck);
+    AppInfo(GURL url,
+            LaunchContainer launch_container,
+            InstallSource install_source,
+            bool create_shortcuts = kDefaultCreateShortcuts,
+            bool override_previous_user_uninstall =
+                kDefaultOverridePreviousUserUninstall);
     AppInfo(AppInfo&& other);
     ~AppInfo();
 
@@ -61,11 +58,6 @@ class PendingAppManager {
     const InstallSource install_source;
     const bool create_shortcuts;
     const bool override_previous_user_uninstall;
-
-    // This must only be used by pre-installed default apps that are valid PWAs
-    // if loading the real service worker is too costly to verify
-    // programmatically.
-    const bool bypass_service_worker_check;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(AppInfo);

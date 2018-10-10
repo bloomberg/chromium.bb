@@ -106,12 +106,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool create_shortcuts() const { return create_shortcuts_; }
 
-  // If called, the installability check won't test for a service worker.
-  void set_bypass_service_worker_check() {
-    DCHECK(is_default_app());
-    bypass_service_worker_check_ = true;
-  }
-
   // If called, the installed app will launch in |launch_type|. User might still
   // be able to change the launch type depending on the type of app.
   void set_forced_launch_type(LaunchType launch_type) {
@@ -188,8 +182,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
   bool is_system_app_ = false;
 
   bool create_shortcuts_ = true;
-
-  bool bypass_service_worker_check_ = false;
 
   // The mechanism via which the app creation was triggered.
   WebappInstallSource install_source_;
