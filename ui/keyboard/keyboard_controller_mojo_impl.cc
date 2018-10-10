@@ -33,9 +33,7 @@ class KeyboardControllerMojoImpl::ControllerObserver
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override {
     service_->NotifyKeyboardVisibleBoundsChanged(bounds);
   }
-  void OnKeyboardDisabled() override {
-    service_->NotifyKeyboardEnabledChanged(false);
-  }
+  void OnKeyboardDisabled() override { service_->NotifyKeyboardDisabled(); }
 
  private:
   KeyboardControllerMojoImpl* service_;
@@ -95,9 +93,9 @@ void KeyboardControllerMojoImpl::NotifyKeyboardVisibleBoundsChanged(
   });
 }
 
-void KeyboardControllerMojoImpl::NotifyKeyboardEnabledChanged(bool enabled) {
-  observers_.ForAllPtrs([enabled](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardEnabledChanged(enabled);
+void KeyboardControllerMojoImpl::NotifyKeyboardDisabled() {
+  observers_.ForAllPtrs([](mojom::KeyboardControllerObserver* observer) {
+    observer->OnKeyboardWindowDestroyed();
   });
 }
 

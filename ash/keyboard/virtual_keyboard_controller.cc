@@ -147,7 +147,7 @@ void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
 
 void VirtualKeyboardController::MoveKeyboardToDisplay(
     const display::Display& display) {
-  DCHECK(keyboard::KeyboardController::Get()->enabled());
+  DCHECK(keyboard::KeyboardController::Get()->IsEnabled());
   DCHECK(display.is_valid());
 
   TRACE_EVENT0("vk", "MoveKeyboardToDisplay");
@@ -165,7 +165,7 @@ void VirtualKeyboardController::MoveKeyboardToDisplay(
 }
 
 void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
-  DCHECK(keyboard::KeyboardController::Get()->enabled());
+  DCHECK(keyboard::KeyboardController::Get()->IsEnabled());
 
   TRACE_EVENT0("vk", "MoveKeyboardToTouchableDisplay");
 
@@ -264,7 +264,7 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
 void VirtualKeyboardController::ForceShowKeyboard() {
   // If the virtual keyboard is enabled, show the keyboard directly.
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled()) {
+  if (keyboard_controller->IsEnabled()) {
     keyboard_controller->ShowKeyboard(false /* locked */);
     return;
   }
@@ -273,9 +273,6 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   DCHECK(!keyboard::GetKeyboardEnabledFromShelf());
   keyboard::SetKeyboardEnabledFromShelf(true);
   Shell::Get()->EnableKeyboard();
-
-  keyboard_controller = keyboard::KeyboardController::Get();
-  DCHECK(keyboard_controller->enabled());
   keyboard_controller->ShowKeyboard(false);
 }
 

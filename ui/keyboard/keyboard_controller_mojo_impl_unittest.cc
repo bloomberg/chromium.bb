@@ -29,7 +29,7 @@ class TestObserver : public mojom::KeyboardControllerObserver {
   ~TestObserver() override = default;
 
   // mojom::KeyboardControllerObserver:
-  void OnKeyboardEnabledChanged(bool enabled) override {}
+  void OnKeyboardWindowDestroyed() override {}
   void OnKeyboardVisibilityChanged(bool visible) override {}
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override {}
   void OnKeyboardConfigChanged(mojom::KeyboardConfigPtr config) override {

@@ -355,7 +355,7 @@ ImeMenuTray::~ImeMenuTray() {
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
+  if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
 }
 
@@ -462,8 +462,7 @@ void ImeMenuTray::CloseBubble() {
 
 void ImeMenuTray::ShowBubble(bool show_by_click) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled() &&
-      keyboard_controller->IsKeyboardVisible()) {
+  if (keyboard_controller->IsKeyboardVisible()) {
     show_bubble_after_keyboard_hidden_ = true;
     keyboard_controller->AddObserver(this);
     keyboard_controller->HideKeyboardExplicitlyBySystem();

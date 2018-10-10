@@ -189,7 +189,7 @@ void MakeSectionBold(views::StyledLabel* label,
 keyboard::KeyboardController* GetKeyboardControllerForWidget(
     const views::Widget* widget) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->enabled())
+  if (!keyboard_controller->IsEnabled())
     return nullptr;
 
   aura::Window* keyboard_window = keyboard_controller->GetRootWindow();

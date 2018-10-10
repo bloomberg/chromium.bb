@@ -70,7 +70,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   // Keyboard may not always be enabled. https://crbug.com/749989
-  if (keyboard_controller->enabled()) {
+  if (keyboard_controller->IsEnabled()) {
     keyboard_controller->ShowKeyboardInDisplay(
         display::Screen::GetScreen()->GetDisplayNearestWindow(
             shelf_->GetWindow()));
@@ -114,13 +114,15 @@ void VirtualKeyboardTray::OnSessionStateChanged(
 
 void VirtualKeyboardTray::ObserveKeyboardController() {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled() && !keyboard_controller->HasObserver(this))
+  if (keyboard_controller->IsEnabled() &&
+      !keyboard_controller->HasObserver(this)) {
     keyboard_controller->AddObserver(this);
+  }
 }
 
 void VirtualKeyboardTray::UnobserveKeyboardController() {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
+  if (keyboard_controller->HasObserver(this))
     keyboard_controller->RemoveObserver(this);
 }
 

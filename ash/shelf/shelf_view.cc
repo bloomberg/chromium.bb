@@ -538,7 +538,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
     return;
 
   // Ensure the keyboard is hidden and stays hidden (as long as it isn't locked)
-  if (keyboard::KeyboardController::Get()->enabled())
+  if (keyboard::KeyboardController::Get()->IsEnabled())
     keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
 
   // Close the overflow bubble if an item on either shelf is clicked. Press

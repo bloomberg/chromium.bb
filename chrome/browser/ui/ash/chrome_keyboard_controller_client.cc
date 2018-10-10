@@ -125,10 +125,7 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
   router->BroadcastEvent(std::move(event));
 }
 
-void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
-  if (enabled)
-    return;  // This code only cares when the keyboard becomes disabled.
-
+void ChromeKeyboardControllerClient::OnKeyboardWindowDestroyed() {
   Profile* profile = GetProfile();
   extensions::EventRouter* router = extensions::EventRouter::Get(profile);
 

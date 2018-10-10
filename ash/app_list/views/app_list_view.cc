@@ -1602,8 +1602,7 @@ bool AppListView::CloseKeyboardIfVisible() {
   if (!keyboard::KeyboardController::HasInstance())
     return false;
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled() &&
-      keyboard_controller->IsKeyboardVisible()) {
+  if (keyboard_controller->IsKeyboardVisible()) {
     keyboard_controller->HideKeyboardByUser();
     return true;
   }

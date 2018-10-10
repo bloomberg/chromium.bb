@@ -148,7 +148,7 @@ void SearchBoxView::UpdateKeyboardVisibility() {
   if (!keyboard::KeyboardController::HasInstance())
     return;
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->enabled() ||
+  if (!keyboard_controller->IsEnabled() ||
       is_search_box_active() == keyboard_controller->IsKeyboardVisible()) {
     return;
   }

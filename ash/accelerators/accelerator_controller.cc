@@ -310,9 +310,7 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   // keyboard, but there's no easy way to do so, thus we block Alt+Tab when the
   // virtual keyboard is showing, even if it came from a real keyboard. See
   // http://crbug.com/638269
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  return !(keyboard_controller->enabled() &&
-           keyboard_controller->IsKeyboardVisible());
+  return !keyboard::KeyboardController::Get()->IsKeyboardVisible();
 }
 
 void HandleNextIme() {
