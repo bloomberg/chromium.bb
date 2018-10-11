@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_TEST_MOCK_PRODUCER_H_
-#define SERVICES_VIDEO_CAPTURE_TEST_MOCK_PRODUCER_H_
+#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PRODUCER_H_
+#define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PRODUCER_H_
 
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,4 +34,4 @@ class MockProducer : public mojom::Producer {
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_TEST_MOCK_PRODUCER_H_
+#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PRODUCER_H_

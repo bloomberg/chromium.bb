@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/test/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_receiver.h"
 
 namespace video_capture {
+
+MockReceiver::MockReceiver() : binding_(this) {}
 
 MockReceiver::MockReceiver(mojom::ReceiverRequest request)
     : binding_(this, std::move(request)) {}

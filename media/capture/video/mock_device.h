@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_H_
-#define SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_H_
+#ifndef MEDIA_CAPTURE_VIDEO_MOCK_DEVICE_H_
+#define MEDIA_CAPTURE_VIDEO_MOCK_DEVICE_H_
 
 #include "media/capture/video/video_capture_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace video_capture {
+namespace media {
 
 // To ensure correct operation, this mock device holds on to the |client|
 // that is passed to it in AllocateAndStart() and releases it on
@@ -50,6 +50,6 @@ class MockDevice : public media::VideoCaptureDevice {
   std::unique_ptr<Client> client_;
 };
 
-}  // namespace video_capture
+}  // namespace media
 
-#endif  // SERVICES_VIDEO_CAPTURE_TEST_MOCK_DEVICE_H_
+#endif  // MEDIA_CAPTURE_VIDEO_MOCK_DEVICE_H_

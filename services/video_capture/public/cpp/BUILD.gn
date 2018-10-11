@@ -24,3 +24,23 @@ source_set("cpp") {
     "//mojo/public/cpp/bindings:bindings",
   ]
 }
+
+source_set("mocks") {
+  testonly = true
+
+  sources = [
+    "mock_device_factory.cc",
+    "mock_device_factory.h",
+    "mock_device_factory_provider.cc",
+    "mock_device_factory_provider.h",
+    "mock_producer.cc",
+    "mock_producer.h",
+    "mock_receiver.cc",
+    "mock_receiver.h",
+  ]
+
+  public_deps = [
+    "//services/video_capture/public/mojom",
+    "//testing/gmock",
+  ]
+}

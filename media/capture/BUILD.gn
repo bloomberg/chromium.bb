@@ -281,9 +281,14 @@ jumbo_component("capture_lib") {
     ]
   }
 }
-
 source_set("test_support") {
+  testonly = true
+
   sources = [
+    "video/mock_device.cc",
+    "video/mock_device.h",
+    "video/mock_device_factory.cc",
+    "video/mock_device_factory.h",
     "video/mock_video_capture_device_client.cc",
     "video/mock_video_capture_device_client.h",
     "video/mock_video_frame_receiver.cc",

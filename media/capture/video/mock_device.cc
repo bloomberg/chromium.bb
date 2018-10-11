@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/test/mock_device.h"
+#include "media/capture/video/mock_device.h"
 
-namespace video_capture {
+namespace media {
 
 MockDevice::MockDevice() = default;
 
@@ -49,4 +49,4 @@ void MockDevice::TakePhoto(TakePhotoCallback callback) {
   DoTakePhoto(&callback);
 }
 
-}  // namespace video_capture
+}  // namespace media
