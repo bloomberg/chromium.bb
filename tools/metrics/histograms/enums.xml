@@ -2989,6 +2989,11 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="CVC fix flow dismissed, user clicked a legal message link"/>
 </enum>
 
+<enum name="AutofillSaveType">
+  <int value="0" label="Local"/>
+  <int value="1" label="Server"/>
+</enum>
+
 <enum name="AutofillScanCreditCardPrompt">
   <int value="0" label="Scan card shown"/>
   <int value="1" label="Scan card selected"/>

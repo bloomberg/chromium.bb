@@ -3768,6 +3768,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -3776,6 +3778,11 @@ TEST_F(CreditCardSaveManagerTest,
   // database flag was disabled.
   EXPECT_TRUE(
       autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  // Verify that no histogram entries were logged.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardSaved", 0);
 }
 
 // Tests that a card with max strikes should still show the save bubble/infobar
@@ -3812,6 +3819,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -3820,6 +3829,11 @@ TEST_F(CreditCardSaveManagerTest,
   // database flag was disabled.
   EXPECT_TRUE(
       autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  // Verify that no histogram entries were logged.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.StrikesPresentWhenServerCardSaved", 0);
 }
 
 // Tests that a card with some strikes (but not max strikes) should still show
@@ -3847,6 +3861,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -3855,6 +3871,9 @@ TEST_F(CreditCardSaveManagerTest,
   // not have too many strikes.
   EXPECT_TRUE(
       autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  // Verify that no histogram entry was logged.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes", 0);
 }
 
 // Tests that a card with some strikes (but not max strikes) should still show
@@ -3891,6 +3910,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -3899,6 +3920,9 @@ TEST_F(CreditCardSaveManagerTest,
   // not have too many strikes.
   EXPECT_TRUE(
       autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  // Verify that no histogram entry was logged.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes", 0);
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -3926,10 +3950,17 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   // No form of credit card save should be shown.
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Verify that the correct histogram entry was logged.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes",
+      AutofillMetrics::SaveTypeMetric::LOCAL, 1);
 }
 
 // Tests that a card with max strikes does not offer save on mobile at all.
@@ -3971,10 +4002,13 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesDisallowsSave) {
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
-  // Verify that the correct histogram entry was logged.
+  // Verify that the correct histogram entries were logged.
   ExpectCardUploadDecision(
       histogram_tester,
       AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes",
+      AutofillMetrics::SaveTypeMetric::SERVER, 1);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE);
@@ -4006,6 +4040,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -4014,6 +4050,10 @@ TEST_F(CreditCardSaveManagerTest,
   // many strikes.
   EXPECT_FALSE(
       autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  // Verify that the correct histogram entry was logged.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes",
+      AutofillMetrics::SaveTypeMetric::LOCAL, 1);
 }
 
 // Tests that a card with max strikes should still offer to save on Desktop via
@@ -4049,6 +4089,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesStillAllowsSave) {
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
+  base::HistogramTester histogram_tester;
+
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -4057,6 +4099,10 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesStillAllowsSave) {
   // many strikes.
   EXPECT_FALSE(
       autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  // Verify that the correct histogram entry was logged.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes",
+      AutofillMetrics::SaveTypeMetric::SERVER, 1);
 }
 #endif
 
@@ -4135,6 +4181,89 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearStrikesOnAdd) {
   // Verify that adding the card reset the strike count for that card.
   EXPECT_EQ(0, strike_database_->GetStrikesForTesting(
                    strike_database_->GetKeyForCreditCardSave("1111")));
+}
+
+// Tests that adding a card clears all strikes for that card.
+TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_NumStrikesLoggedOnAdd) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
+
+  // Add a couple of strikes for the card to be added.
+  strike_database_->AddEntryWithNumStrikes(
+      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
+  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
+                   strike_database_->GetKeyForCreditCardSave("1111")));
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+  ExpectFillableFormParsedUkm(1 /* num_fillable_forms_parsed */);
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Verify that adding the card logged the number of strikes it had previously.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardSaved",
+      /*sample=*/2, /*count=*/1);
+}
+
+// Tests that adding a card clears all strikes for that card.
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NumStrikesLoggedOnAdd) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCreditCardUsesStrikeSystem);
+
+  // Add a couple of strikes for the card to be added.
+  strike_database_->AddEntryWithNumStrikes(
+      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
+  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
+                   strike_database_->GetKeyForCreditCardSave("1111")));
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+  ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Verify that adding the card logged the number of strikes it had previously.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.StrikeDatabase.StrikesPresentWhenServerCardSaved",
+      /*sample=*/2, /*count=*/1);
 }
 
 }  // namespace autofill
