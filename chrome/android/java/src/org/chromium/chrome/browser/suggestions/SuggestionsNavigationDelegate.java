@@ -8,7 +8,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -43,12 +42,6 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
     public void navigateToBookmarks() {
         RecordUserAction.record("MobileNTPSwitchToBookmarks");
         BookmarkUtils.showBookmarkManager(mActivity);
-    }
-
-    /** Opens the recent tabs page in the current tab. */
-    public void navigateToRecentTabs() {
-        RecordUserAction.record("MobileNTPSwitchToOpenTabs");
-        mHost.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL), /* incognito = */ false);
     }
 
     /** Opens the Download Manager UI in the current tab. */

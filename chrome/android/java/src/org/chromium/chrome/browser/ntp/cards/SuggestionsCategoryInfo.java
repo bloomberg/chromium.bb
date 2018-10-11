@@ -133,9 +133,7 @@ public class SuggestionsCategoryInfo {
             case KnownCategories.DOWNLOADS:
                 navigationDelegate.navigateToDownloadManager();
                 break;
-            case KnownCategories.FOREIGN_TABS:
-                navigationDelegate.navigateToRecentTabs();
-                break;
+            case KnownCategories.FOREIGN_TABS_DEPRECATED:
             case KnownCategories.PHYSICAL_WEB_PAGES_DEPRECATED:
             case KnownCategories.RECENT_TABS_DEPRECATED:
             case KnownCategories.ARTICLES:
