@@ -87,8 +87,10 @@ void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
 void PasswordAccessoryViewAndroid::OnFaviconRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
+    jint desiredSizeInPx,
     const base::android::JavaParamRef<jobject>& j_callback) {
   controller_->GetFavicon(
+      desiredSizeInPx,
       base::BindOnce(&PasswordAccessoryViewAndroid::OnImageFetched,
                      base::Unretained(this),  // Outlives or cancels request.
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));

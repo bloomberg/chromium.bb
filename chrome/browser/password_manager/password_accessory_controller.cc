@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -264,6 +265,7 @@ void PasswordAccessoryController::DidNavigateMainFrame() {
 }
 
 void PasswordAccessoryController::GetFavicon(
+    int desired_size_in_pixel,
     base::OnceCallback<void(const gfx::Image&)> icon_callback) {
   url::Origin origin = current_origin_;  // Copy origin in case it changes.
   // Check whether this request can be immediately answered with a cached icon.
@@ -283,8 +285,10 @@ void PasswordAccessoryController::GetFavicon(
   if (icon_request->pending_requests.size() > 1)
     return;  // The favicon for this origin was already requested.
 
-  favicon_service_->GetFaviconImageForPageURL(
-      origin.GetURL(),
+  favicon_service_->GetRawFaviconForPageURL(
+      origin.GetURL(), {favicon_base::IconType::kFavicon},
+      desired_size_in_pixel,
+      /* fallback_to_host = */ false,
       base::BindRepeating(  // FaviconService doesn't support BindOnce yet.
           &PasswordAccessoryController::OnImageFetched,
           weak_factory_.GetWeakPtr(), origin),
@@ -417,8 +421,14 @@ std::vector<Item> PasswordAccessoryController::CreateViewItems(
 
 void PasswordAccessoryController::OnImageFetched(
     url::Origin origin,
-    const favicon_base::FaviconImageResult& image_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   FaviconRequestData* icon_request = &icons_request_data_[origin];
+
+  favicon_base::FaviconImageResult image_result;
+  if (bitmap_result.is_valid()) {
+    image_result.image = gfx::Image::CreateFrom1xPNGBytes(
+        bitmap_result.bitmap_data->front(), bitmap_result.bitmap_data->size());
+  }
   icon_request->cached_icon = image_result.image;
   // Only trigger all the callbacks if they still affect a displayed origin.
   if (origin == current_origin_) {

@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.Px;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
@@ -198,7 +199,7 @@ public class KeyboardAccessoryData {
              * synchronously (depending on whether the icon was cached).
              * @param favicon The icon to be used for this Item. If null, use the default icon.
              */
-            void fetchFavicon(Callback<Bitmap> favicon);
+            void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
         }
 
         /**
@@ -317,12 +318,12 @@ public class KeyboardAccessoryData {
             return mItemSelectedCallback;
         }
 
-        public void fetchFavicon(Callback<Bitmap> faviconCallback) {
+        public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {
             if (mFaviconProvider == null) {
                 faviconCallback.onResult(null); // Use default icon without provider.
                 return;
             }
-            mFaviconProvider.fetchFavicon(faviconCallback);
+            mFaviconProvider.fetchFavicon(desiredSize, faviconCallback);
         }
     }
 
