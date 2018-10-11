@@ -196,7 +196,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
           : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
 
   GetSmbProviderClient()->Mount(
-      mount_path, workgroup, username,
+      mount_path, IsNTLMAuthenticationEnabled(), workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,

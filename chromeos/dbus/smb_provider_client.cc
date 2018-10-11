@@ -56,6 +56,14 @@ bool ParseDeleteList(const base::ScopedFD& fd,
          delete_list->ParseFromArray(buffer.data(), buffer.size());
 }
 
+std::unique_ptr<smbprovider::MountConfigProto> CreateMountConfigProto(
+    bool enable_ntlm) {
+  auto mount_config = std::make_unique<smbprovider::MountConfigProto>();
+  mount_config->set_enable_ntlm(enable_ntlm);
+
+  return mount_config;
+}
+
 class SmbProviderClientImpl : public SmbProviderClient {
  public:
   SmbProviderClientImpl() = default;
@@ -63,6 +71,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
   ~SmbProviderClientImpl() override {}
 
   void Mount(const base::FilePath& share_path,
+             bool ntlm_enabled,
              const std::string& workgroup,
              const std::string& username,
              base::ScopedFD password_fd,
@@ -71,6 +80,10 @@ class SmbProviderClientImpl : public SmbProviderClient {
     options.set_path(share_path.value());
     options.set_workgroup(workgroup);
     options.set_username(username);
+
+    std::unique_ptr<smbprovider::MountConfigProto> config =
+        CreateMountConfigProto(ntlm_enabled);
+    options.set_allocated_mount_config(config.release());
 
     dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
                                  smbprovider::kMountMethod);

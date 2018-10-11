@@ -62,6 +62,7 @@ class CHROMEOS_EXPORT SmbProviderClient
   // credentials to access the mount. |callback| is called after getting (or
   // failing to get) D-BUS response.
   virtual void Mount(const base::FilePath& share_path,
+                     bool ntlm_enabled,
                      const std::string& workgroup,
                      const std::string& username,
                      base::ScopedFD password_fd,
