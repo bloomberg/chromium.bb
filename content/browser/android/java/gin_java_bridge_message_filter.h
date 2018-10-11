@@ -16,6 +16,7 @@
 #include "content/browser/android/java/gin_java_bound_object.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/render_process_host_observer.h"
 
 namespace base {
 class ListValue;
@@ -30,13 +31,18 @@ namespace content {
 class GinJavaBridgeDispatcherHost;
 class RenderFrameHost;
 
-class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
+class GinJavaBridgeMessageFilter : public BrowserMessageFilter,
+                                   public RenderProcessHostObserver {
  public:
   // BrowserMessageFilter
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
   base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) override;
+
+  // RenderProcessHostObserver
+  void RenderProcessExited(RenderProcessHost* rph,
+                           const ChildProcessTerminationInfo& info) override;
 
   // Called on the UI thread.
   void AddRoutingIdForHost(GinJavaBridgeDispatcherHost* host,
