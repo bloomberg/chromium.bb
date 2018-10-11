@@ -58,12 +58,10 @@ class AssistantManagerServiceImpl
       public assistant_client::DeviceStateListener {
  public:
   // |service| owns this class and must outlive this class.
-  AssistantManagerServiceImpl(
-      service_manager::Connector* connector,
-      device::mojom::BatteryMonitorPtr battery_monitor,
-      Service* service,
-      bool enable_hotword,
-      network::NetworkConnectionTracker* network_connection_tracker);
+  AssistantManagerServiceImpl(service_manager::Connector* connector,
+                              device::mojom::BatteryMonitorPtr battery_monitor,
+                              Service* service,
+                              bool enable_hotword);
 
   ~AssistantManagerServiceImpl() override;
 
