@@ -643,20 +643,6 @@ void SyncTest::DisableNotificationsForClient(int index) {
   fake_server_->RemoveObserver(fake_server_invalidation_services_[index]);
 }
 
-void SyncTest::SetEncryptionPassphraseForClient(int index,
-                                                const std::string& passphrase) {
-  // Must be called before client initialization.
-  DCHECK(clients_.empty());
-  client_encryption_passphrases_[index] = passphrase;
-}
-
-void SyncTest::SetDecryptionPassphraseForClient(int index,
-                                                const std::string& passphrase) {
-  // Must be called before client initialization.
-  DCHECK(clients_.empty());
-  client_decryption_passphrases_[index] = passphrase;
-}
-
 void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
   ChromeSigninClient* signin_client = static_cast<ChromeSigninClient*>(
       ChromeSigninClientFactory::GetForProfile(profile));
@@ -796,35 +782,8 @@ bool SyncTest::SetupSync() {
 
   // Sync each of the profiles.
   for (; clientIndex < num_clients_; clientIndex++) {
-    ProfileSyncServiceHarness* client = GetClient(clientIndex);
     DVLOG(1) << "Setting up " << clientIndex << " client";
-
-    auto decryption_passphrase_it =
-        client_decryption_passphrases_.find(clientIndex);
-    auto encryption_passphrase_it =
-        client_encryption_passphrases_.find(clientIndex);
-    bool decryption_passphrase_provided =
-        (decryption_passphrase_it != client_decryption_passphrases_.end());
-    bool encryption_passphrase_provided =
-        (encryption_passphrase_it != client_encryption_passphrases_.end());
-    if (decryption_passphrase_provided && encryption_passphrase_provided) {
-      LOG(FATAL) << "Both an encryption and decryption passphrase were "
-                    "provided for the client. This is disallowed.";
-      return false;
-    }
-
-    bool setup_succeeded;
-    if (encryption_passphrase_provided) {
-      setup_succeeded = client->SetupSyncWithEncryptionPassphrase(
-          syncer::UserSelectableTypes(), encryption_passphrase_it->second);
-    } else if (decryption_passphrase_provided) {
-      setup_succeeded = client->SetupSyncWithDecryptionPassphrase(
-          syncer::UserSelectableTypes(), decryption_passphrase_it->second);
-    } else {
-      setup_succeeded = client->SetupSync(syncer::UserSelectableTypes());
-    }
-
-    if (!setup_succeeded) {
+    if (!GetClient(clientIndex)->SetupSync()) {
       LOG(FATAL) << "SetupSync() failed.";
       return false;
     }

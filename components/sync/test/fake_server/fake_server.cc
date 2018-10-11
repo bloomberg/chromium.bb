@@ -306,18 +306,6 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
   return loopback_server_->GetSyncEntitiesByModelType(model_type);
 }
 
-std::vector<sync_pb::SyncEntity>
-FakeServer::GetPermanentSyncEntitiesByModelType(ModelType model_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return loopback_server_->GetPermanentSyncEntitiesByModelType(model_type);
-}
-
-std::string FakeServer::GetTopLevelPermanentItemId(
-    syncer::ModelType model_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return loopback_server_->GetTopLevelPermanentItemId(model_type);
-}
-
 void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA)
