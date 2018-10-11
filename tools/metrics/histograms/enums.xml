@@ -1758,6 +1758,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="19" label="Network is unavailable"/>
   <int value="20" label="Disabled"/>
   <int value="21" label="Already provisioned"/>
+  <int value="22" label="Unsupported account type"/>
 </enum>
 
 <enum name="ArcSdkVersionUpgradeType">

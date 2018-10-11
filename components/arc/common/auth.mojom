@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 16
+// Next MinVersion: 17
 
 module arc.mojom;
 
@@ -12,7 +12,7 @@ enum ArcSignInStatus {
   // Negative values are reserved for internal use.
   // The values are shuffled to keep the backward compatibility and don't match
   // ProvisioningResult in arc_optin_uma.h
-  // Next value: 19.
+  // Next value: 21.
   UNKNOWN_ERROR = 0,
 
   // Mojo errors:
@@ -75,6 +75,9 @@ enum ArcSignInStatus {
 
   // ARC was already provisioned.
   [MinVersion=11] SUCCESS_ALREADY_PROVISIONED = 19,
+
+  // Account type is not supported for authorization.
+  [MinVersion=16] UNSUPPORTED_ACCOUNT_TYPE = 20,
 };
 
 // These values describe account check status.
