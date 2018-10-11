@@ -10,7 +10,6 @@ If a source .bin is specified, the update is assumed to be a delta update.
 
 from __future__ import print_function
 
-import os
 import shutil
 import tempfile
 
@@ -20,116 +19,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
+from chromite.lib.paygen import partition_lib
+
 
 _DELTA_GENERATOR = 'delta_generator'
-
-
-# TODO(tbrindus): move this to paygen/filelib.py.
-def CopyFileSegment(in_file, in_mode, in_len, out_file, out_mode, in_seek=0):
-  """Simulates a `dd` operation with seeks."""
-  with open(in_file, in_mode) as in_stream, \
-       open(out_file, out_mode) as out_stream:
-    in_stream.seek(in_seek)
-    remaining = in_len
-    while remaining:
-      chunk = in_stream.read(min(8192 * 1024, remaining))
-      remaining -= len(chunk)
-      out_stream.write(chunk)
-
-
-# TODO(tbrindus): move this to paygen/filelib.py.
-def ExtractPartitionToTempFile(filename, partition, temp_file=None):
-  """Extracts |partition| from |filename| into |temp_file|.
-
-  If |temp_file| is not specified, an arbitrary file is used.
-
-  Returns the location of the extracted partition.
-  """
-  if temp_file is None:
-    temp_file = tempfile.mktemp(prefix='cros_generate_update_payload')
-
-  parts = cros_build_lib.GetImageDiskPartitionInfo(filename)
-  part_info = [p for p in parts if p.name == partition][0]
-
-  offset = int(part_info.start)
-  length = int(part_info.size)
-
-  CopyFileSegment(filename, 'r', length, temp_file, 'w', in_seek=offset)
-
-  return temp_file
-
-
-def PatchKernel(image, kern_file):
-  """Patches kernel |kern_file| with vblock from |image| stateful partition."""
-  state_out = ExtractPartitionToTempFile(image, constants.PART_STATE)
-  vblock = tempfile.mktemp(prefix='vmlinuz_hd.vblock')
-  cros_build_lib.RunCommand(['e2cp', '%s:/vmlinuz_hd.vblock' % state_out,
-                             vblock])
-
-  CopyFileSegment(vblock, 'r', os.path.getsize(vblock), kern_file, 'r+')
-
-  osutils.SafeUnlink(state_out)
-  osutils.SafeUnlink(vblock)
-
-
-def ExtractKernel(bin_file, kern_out):
-  """Extracts the kernel from the given |bin_file|, into |kern_out|."""
-  kern_out = ExtractPartitionToTempFile(bin_file, constants.PART_KERN_B,
-                                        kern_out)
-  with open(kern_out, 'r') as kern:
-    if not any(kern.read(65536)):
-      logging.warn('%s: Kernel B is empty, patching kernel A.', bin_file)
-      ExtractPartitionToTempFile(bin_file, constants.PART_KERN_A, kern_out)
-      PatchKernel(bin_file, kern_out)
-
-  return kern_out
-
-
-def Ext2FileSystemSize(rootfs):
-  """Return the size in bytes of the ext2 filesystem passed in |rootfs|."""
-  # dumpe2fs is normally installed in /sbin but doesn't require root.
-  dump = cros_build_lib.RunCommand(['/sbin/dumpe2fs', '-h', rootfs],
-                                   print_cmd=False, capture_output=True).output
-  fs_blocks = 0
-  fs_blocksize = 0
-  for line in dump.split('\n'):
-    if not line:
-      continue
-    label, data = line.split(':')[:2]
-    if label == 'Block count':
-      fs_blocks = int(data)
-    elif label == 'Block size':
-      fs_blocksize = int(data)
-
-  return fs_blocks * fs_blocksize
-
-
-def ExtractRoot(bin_file, root_out, root_pretruncate=None):
-  """Extract the rootfs partition from the gpt image |bin_file|.
-
-  Stores it in |root_out|. If |root_out| is empty, a new temp file will be used.
-  If |root_pretruncate| is non-empty, saves the pretruncated rootfs partition
-  there.
-  """
-  root_out = ExtractPartitionToTempFile(bin_file, constants.PART_ROOT_A,
-                                        root_out)
-
-  if root_pretruncate:
-    logging.info('Saving pre-truncated root as %s.', root_pretruncate)
-    shutil.copyfile(root_out, root_pretruncate)
-
-  # We only update the filesystem part of the partition, which is stored in the
-  # gpt script.
-  root_out_size = Ext2FileSystemSize(root_out)
-  if root_out_size:
-    with open(root_out, 'a') as root:
-      logging.info('Root size currently %d bytes.', os.path.getsize(root_out))
-      root.truncate(root_out_size)
-    logging.info('Truncated root to %d bytes.', root_out_size)
-  else:
-    raise IOError('Error truncating the rootfs to filesystem size.')
-
-  return root_out
 
 
 def GenerateUpdatePayload(opts):
@@ -150,13 +43,14 @@ def GenerateUpdatePayload(opts):
       if opts.src_image:
         src_kernel_path = opts.src_kern_path or 'old_kern.dat'
         src_root_path = opts.src_root_path or 'old_root.dat'
-        ExtractKernel(opts.src_image, src_kernel_path)
-        ExtractRoot(opts.src_image, src_root_path)
+        partition_lib.ExtractKernel(opts.src_image, src_kernel_path)
+        partition_lib.ExtractRoot(opts.src_image, src_root_path)
       if opts.image:
         dst_kernel_path = opts.kern_path or 'new_kern.dat'
         dst_root_path = opts.root_path or 'new_root.dat'
-        ExtractKernel(opts.image, dst_kernel_path)
-        ExtractRoot(opts.image, dst_root_path, opts.root_pretruncate_path)
+        partition_lib.ExtractKernel(opts.image, dst_kernel_path)
+        partition_lib.ExtractRoot(opts.image, dst_root_path,
+                                  opts.root_pretruncate_path)
       logging.info('Done extracting kernel/root')
       return
 
@@ -164,17 +58,24 @@ def GenerateUpdatePayload(opts):
 
     logging.info('Generating %s update', payload_type)
 
+    src_kernel_path = ''
+    src_root_path = ''
     if delta:
       if not opts.full_kernel:
-        src_kernel_path = ExtractKernel(opts.src_image, opts.src_kern_path)
+        src_kernel_path = (opts.src_kern_path or
+                           tempfile.NamedTemporaryFile().name)
+        partition_lib.ExtractKernel(opts.src_image, src_kernel_path)
       else:
         logging.info('Generating full kernel update')
 
-      src_root_path = ExtractRoot(opts.src_image, opts.src_root_path)
+      src_root_path = opts.src_root_path or tempfile.NamedTemporaryFile().name
+      partition_lib.ExtractRoot(opts.src_image, src_root_path)
 
-    dst_kernel_path = ExtractKernel(opts.image, opts.kern_path)
-    dst_root_path = ExtractRoot(opts.image, opts.root_path,
-                                opts.root_pretruncate_path)
+    dst_kernel_path = opts.kern_path or tempfile.NamedTemporaryFile().name
+    dst_root_path = opts.root_path or tempfile.NamedTemporaryFile().name
+    partition_lib.ExtractKernel(opts.image, dst_kernel_path)
+    partition_lib.ExtractRoot(opts.image, dst_root_path,
+                              opts.root_pretruncate_path)
 
     # In major version 2 we need to explicity mark the postinst on the root
     # partition to run.
