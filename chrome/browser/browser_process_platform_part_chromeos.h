@@ -13,6 +13,8 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 
+class BrowserProcessPlatformPartTestApi;
+
 namespace chromeos {
 class AccountManagerFactory;
 class ChromeSessionManager;
@@ -121,6 +123,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   chromeos::AccountManagerFactory* GetAccountManagerFactory();
 
  private:
+  friend class BrowserProcessPlatformPartTestApi;
+
   void CreateProfileHelper();
 
   std::unique_ptr<chromeos::ChromeSessionManager> session_manager_;
@@ -146,6 +150,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
+  // Whether cros_component_manager_ has been initialized for test. Set by
+  // BrowserProcessPlatformPartTestApi.
+  bool using_testing_cros_component_manager_ = false;
   std::unique_ptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 
