@@ -5,6 +5,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
@@ -118,6 +119,8 @@ void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
 void ExploreSitesServiceImpl::OnCatalogFetched(
     ExploreSitesRequestStatus status,
     std::unique_ptr<std::string> serialized_protobuf) {
+  UMA_HISTOGRAM_ENUMERATION("ExploreSites.RequestStatus", status);
+
   explore_sites_fetcher_.reset(nullptr);
 
   if (serialized_protobuf == nullptr) {

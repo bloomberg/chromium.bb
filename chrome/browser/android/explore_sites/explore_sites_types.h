@@ -67,6 +67,8 @@ using ImageJobFinishedCallback = base::OnceCallback<void(void)>;
 using BitmapCallback = base::OnceCallback<void(std::unique_ptr<SkBitmap>)>;
 
 // Status for sending request to the server.
+// Must be kept in sync with ExploreSitesRequestStatus enum in enums.xml.
+// This enum should be treated as append-only.
 enum class ExploreSitesRequestStatus {
   // Request completed successfully.
   kSuccess = 0,

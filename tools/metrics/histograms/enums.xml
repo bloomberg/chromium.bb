@@ -15125,6 +15125,21 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Science"/>
 </enum>
 
+<enum name="ExploreSitesRequestStatus">
+  <int value="0" label="Success">Request completed successfully.</int>
+  <int value="1" label="Failure">
+    Request failed even after all the retries.
+  </int>
+  <int value="2" label="ShouldSuspendBadRequest">
+    Request failed with error indicating that the request can not be serviced by
+    the server.
+  </int>
+  <int value="3" label="ShouldSuspendBlockedByAdministrator">
+    The request was blocked by a URL blacklist configured by the domain
+    administrator.
+  </int>
+</enum>
+
 <enum name="ExploreSitesStoreEvent">
   <int value="0" label="Store opened first time">
     Store was opened for this first time during this session.
