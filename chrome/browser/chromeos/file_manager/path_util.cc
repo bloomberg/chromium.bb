@@ -325,7 +325,8 @@ bool ReplacePrefix(std::string* s,
   return false;
 }
 
-std::string GetDownloadLocationText(Profile* profile, const std::string& path) {
+std::string GetPathDisplayTextForSettings(Profile* profile,
+                                          const std::string& path) {
   std::string result(path);
   auto* drive_integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
