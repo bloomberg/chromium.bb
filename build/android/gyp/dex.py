@@ -56,8 +56,14 @@ def _ParseArgs(args):
                     help='A JSON file containing multidex build configuration.')
   parser.add_option('--multi-dex', default=False, action='store_true',
                     help='Generate multiple dex files.')
-  parser.add_option('--d8-jar-path',
-                    help='Path to D8 jar.')
+  parser.add_option('--d8-jar-path', help='Path to D8 jar.')
+  parser.add_option('--release', action='store_true', default=False,
+                    help='Run D8 in release mode. Release mode maximises main '
+                    'dex and deletes non-essential line number information '
+                    '(vs debug which minimizes main dex and keeps all line '
+                    'number information, and then some.')
+  parser.add_option('--min-api',
+                    help='Minimum Android API level compatibility.')
 
   parser.add_option('--dexlayout-profile',
                     help=('Text profile for dexlayout. If present, a dexlayout '
@@ -314,9 +320,16 @@ def main(args):
   if options.multi_dex:
     input_paths.append(options.main_dex_list_path)
 
-  dex_cmd = ['java', '-jar', options.d8_jar_path]
+  dex_cmd = ['java', '-jar', options.d8_jar_path, '--no-desugaring']
   if options.multi_dex:
     dex_cmd += ['--main-dex-list', options.main_dex_list_path]
+  if options.release:
+    dex_cmd += ['--release']
+  if options.min_api:
+    # TODO(mheikal): Actually pass min-api once catapult/devil dexdump has been
+    # updated. see https://crbug.com/892644
+    # dex_cmd += ['--min-api', options.min_api]
+    pass
 
   is_dex = options.dex_path.endswith('.dex')
   is_jar = options.dex_path.endswith('.jar')
