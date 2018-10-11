@@ -1081,6 +1081,7 @@ sha512_block_data_order:
 .align	2
 #ifndef	__KERNEL__
 .comm	OPENSSL_armcap_P,4,4
+.hidden	OPENSSL_armcap_P
 #endif
 #endif
 #endif  // !OPENSSL_NO_ASM
