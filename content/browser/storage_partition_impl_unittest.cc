@@ -27,6 +27,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/fake_leveldb_database.h"
 #include "net/base/features.h"
 #include "net/base/test_completion_callback.h"
@@ -306,6 +307,9 @@ class RemoveCodeCacheTester {
     std::vector<uint8_t> data_vector(data.begin(), data.end());
     GetCache(cache)->WriteData(url, origin, base::Time::Now(), data_vector);
     base::RunLoop().RunUntilIdle();
+    // TODO(crbug.com/886892): Remove this once we update GeneratedCodeCache
+    // to serialize operations corresponding to each entry.
+    content::RunAllTasksUntilIdle();
   }
 
   std::string received_data() { return received_data_; }
@@ -1335,14 +1339,15 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
 }
 
 TEST_F(StoragePartitionImplTest, ClearCodeCache) {
-  // Run this test only when the IsolatedCodeCache feature is enabled
-  if (!base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache))
-    return;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   // Ensure code cache is initialized.
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(partition->GetGeneratedCodeCacheContext() != nullptr);
 
   RemoveCodeCacheTester tester(partition->GetGeneratedCodeCacheContext());
 
