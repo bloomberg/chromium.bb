@@ -93,13 +93,9 @@ void CrostiniRemover::DestroyDiskImageFinished(ConciergeClientResult result) {
 void CrostiniRemover::StopConciergeFinished(bool is_successful) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The is_successful parameter is never set by debugd.
-  auto* cros_component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
-  if (cros_component_manager) {
-    if (cros_component_manager->Unload("cros-termina")) {
-      profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
-      profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
-    }
+  if (CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
+    profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
+    profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
   }
   std::move(callback_).Run(ConciergeClientResult::SUCCESS);
 }
