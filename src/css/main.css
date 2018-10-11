@@ -370,17 +370,17 @@ body.mode-switching:not(.capturing) #camera-mode {
   visibility: visible;
 }
 
-#toggle-device {
-  background-image: url(../images/camera_button_toggle_device.svg);
+#switch-device {
+  background-image: url(../images/camera_button_switch_device.svg);
   width: 48px;
   height: 48px;
 }
 
-#toggle-device.animate {
-  animation: toggle-device-rotate 350ms ease-out;
+#switch-device.animate {
+  animation: switch-device-rotate 350ms ease-out;
 }
 
-@keyframes toggle-device-rotate {
+@keyframes switch-device-rotate {
   0% {
     transform: rotate(0deg);
   }

@@ -73,11 +73,11 @@ SRC_RESOURCES= \
 	src/images/camera_button_mic_on.svg \
 	src/images/camera_button_mirror_off.svg \
 	src/images/camera_button_mirror_on.svg \
+	src/images/camera_button_switch_device.svg \
 	src/images/camera_button_switch_photo.svg \
 	src/images/camera_button_switch_video.svg \
 	src/images/camera_button_timer_off.svg \
 	src/images/camera_button_timer_on.svg \
-	src/images/camera_button_toggle_device.svg \
 	src/images/camera_focus_aim.svg \
 	src/images/camera_mode_photo.svg \
 	src/images/camera_mode_recording.svg \
