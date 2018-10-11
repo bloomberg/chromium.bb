@@ -68,6 +68,9 @@ void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
 }
 
 void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
+  // The fallback should never move backwards.
+  DCHECK(!surface_range_.start() ||
+         !surface_range_.start()->IsNewerThan(surface_id));
   if (surface_range_.start() == surface_id)
     return;
   TRACE_EVENT_WITH_FLOW2(
