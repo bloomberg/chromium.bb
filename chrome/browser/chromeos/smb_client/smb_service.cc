@@ -109,10 +109,12 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
                        const std::string& username,
                        const std::string& password,
+                       bool use_chromad_kerberos,
                        MountResponse callback) {
   DCHECK(temp_file_manager_);
 
-  CallMount(options, share_path, username, password, std::move(callback));
+  CallMount(options, share_path, username, password, use_chromad_kerberos,
+            std::move(callback));
 }
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
@@ -125,26 +127,24 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const base::FilePath& share_path,
                            const std::string& username_input,
                            const std::string& password_input,
+                           bool use_chromad_kerberos,
                            MountResponse callback) {
   std::string username;
   std::string password;
   std::string workgroup;
 
-  bool is_kerberos_chromad = false;
-
-  if (username_input.empty()) {
-    // If no credentials were provided and the user is ChromAD, pass the users
-    // username and workgroup for their email address to be used for Kerberos
-    // authentication.
+  if (use_chromad_kerberos) {
+    // Get the user's username and workgroup from their email address to be used
+    // for Kerberos authentication.
     user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-    if (user && user->IsActiveDirectoryUser()) {
+    if (user) {
+      DCHECK(user->IsActiveDirectoryUser());
       ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
-      is_kerberos_chromad = true;
     }
   } else {
-    // Credentials were provided so use them and parse the username into
-    // username and workgroup if neccessary.
+    // Use provided credentials and parse the username into username and
+    // workgroup if necessary.
     username = username_input;
     password = password_input;
     if (ContainsAt(username)) {
@@ -165,7 +165,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
-                     is_kerberos_chromad));
+                     use_chromad_kerberos));
 }
 
 void SmbService::OnMountResponse(

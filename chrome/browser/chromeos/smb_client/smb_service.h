@@ -54,11 +54,14 @@ class SmbService : public KeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Starts the process of mounting an SMB file system.
+  // |use_kerberos| indicates whether the share should be mounted with a user's
+  // chromad kerberos tickets.
   // Calls SmbProviderClient::Mount().
   void Mount(const file_system_provider::MountOptions& options,
              const base::FilePath& share_path,
              const std::string& username,
              const std::string& password,
+             bool use_chromad_kerberos,
              MountResponse callback);
 
   // Completes the mounting of an SMB file system, passing |options| on to
@@ -85,6 +88,7 @@ class SmbService : public KeyedService,
                  const base::FilePath& share_path,
                  const std::string& username,
                  const std::string& password,
+                 bool use_chromad_kerberos,
                  MountResponse callback);
 
   // Calls file_system_provider::Service::UnmountFileSystem().

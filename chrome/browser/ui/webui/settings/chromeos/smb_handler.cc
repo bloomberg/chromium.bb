@@ -72,9 +72,10 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
 
   auto mount_response = base::BindOnce(&SmbHandler::HandleSmbMountResponse,
                                        weak_ptr_factory_.GetWeakPtr());
-  auto mount_call = base::BindOnce(
-      &smb_client::SmbService::Mount, base::Unretained(service), mo,
-      base::FilePath(mount_url), username, password, std::move(mount_response));
+  auto mount_call =
+      base::BindOnce(&smb_client::SmbService::Mount, base::Unretained(service),
+                     mo, base::FilePath(mount_url), username, password,
+                     use_kerberos, std::move(mount_response));
 
   if (host_discovery_done_) {
     std::move(mount_call).Run();
