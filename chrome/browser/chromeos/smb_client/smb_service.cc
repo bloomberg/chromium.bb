@@ -187,7 +187,13 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     return;
   }
 
-  const base::FilePath mount_path(share_finder_->GetResolvedUrl(parsed_url));
+  // If using kerberos, the hostname should not be resolved since kerberos
+  // service tickets are keyed on hosname.
+  const base::FilePath mount_path =
+      use_chromad_kerberos
+          ? share_path
+          : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
+
   GetSmbProviderClient()->Mount(
       mount_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
@@ -292,7 +298,12 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
     return;
   }
 
-  const base::FilePath mount_path(share_finder_->GetResolvedUrl(parsed_url));
+  // If using kerberos, the hostname should not be resolved since kerberos
+  // service tickets are keyed on hosname.
+  const base::FilePath mount_path =
+      is_kerberos_chromad
+          ? share_path
+          : base::FilePath(share_finder_->GetResolvedUrl(parsed_url));
 
   // An empty password is passed to Remount to conform with the credentials API
   // which expects username & workgroup strings along with a password file
