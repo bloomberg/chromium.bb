@@ -6574,9 +6574,12 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
 
   if (info) {
     loader_factories_->Update(
-        std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-            std::move(info), prefetch_loader_factory.PassInterface()),
+        std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info)),
         std::move(subresource_overrides));
+  }
+  if (prefetch_loader_factory) {
+    loader_factories_->SetPrefetchLoaderFactory(
+        std::move(prefetch_loader_factory));
   }
 }
 

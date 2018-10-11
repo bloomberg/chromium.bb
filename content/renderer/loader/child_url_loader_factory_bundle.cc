@@ -113,14 +113,12 @@ PassInterfacePtrMapToPtrInfoMap(
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo() = default;
 
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> base_info,
-    network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info)
+    std::unique_ptr<URLLoaderFactoryBundleInfo> base_info)
     : URLLoaderFactoryBundleInfo(
           std::move(base_info->default_factory_info()),
           std::move(base_info->scheme_specific_factory_infos()),
           std::move(base_info->initiator_specific_factory_infos()),
-          base_info->bypass_redirect_checks()),
-      prefetch_loader_factory_info_(std::move(prefetch_loader_factory_info)) {}
+          base_info->bypass_redirect_checks()) {}
 
 ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
@@ -255,6 +253,11 @@ void ChildURLLoaderFactoryBundle::Update(
       subresource_overrides_[element->url] = std::move(element);
     }
   }
+}
+
+void ChildURLLoaderFactoryBundle::SetPrefetchLoaderFactory(
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory) {
+  prefetch_loader_factory_ = std::move(prefetch_loader_factory);
 }
 
 bool ChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle() const {

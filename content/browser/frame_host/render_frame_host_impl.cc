@@ -170,6 +170,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -4312,15 +4313,32 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
+    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_prefetch;
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory;
     if (subresource_loader_factories) {
       SaveSubresourceFactories(std::move(subresource_loader_factories));
+      factory_bundle_for_prefetch = CloneSubresourceFactories();
+    } else if (base::FeatureList::IsEnabled(
+                   blink::features::kServiceWorkerServicification) &&
+               (!is_same_document || is_first_navigation)) {
+      DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+      factory_bundle_for_prefetch =
+          std::make_unique<URLLoaderFactoryBundleInfo>();
+      network::mojom::URLLoaderFactoryPtrInfo factory_info;
+      CreateNetworkServiceDefaultFactoryInternal(
+          url::Origin(), mojo::MakeRequest(&factory_info));
+      factory_bundle_for_prefetch->default_factory_info() =
+          std::move(factory_info);
+    }
 
+    if (factory_bundle_for_prefetch) {
       // Also set-up URLLoaderFactory for prefetch using the same loader
       // factories. TODO(kinuko): Consider setting this up only when prefetch
       // is used. Currently we have this here to make sure we have non-racy
       // situation (https://crbug.com/849929).
-      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+             base::FeatureList::IsEnabled(
+                 blink::features::kServiceWorkerServicification));
       auto* storage_partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
@@ -4330,7 +4348,7 @@ void RenderFrameHostImpl::CommitNavigation(
                          storage_partition->GetPrefetchURLLoaderService(),
                          mojo::MakeRequest(&prefetch_loader_factory),
                          frame_tree_node_->frame_tree_node_id(),
-                         CloneSubresourceFactories()));
+                         std::move(factory_bundle_for_prefetch)));
     }
 
     auto find_request = navigation_requests_.find(navigation_id);
