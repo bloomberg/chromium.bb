@@ -68,28 +68,8 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
 
 }  // namespace
 
-// AuthenticatorRequestDialogModel::AuthenticatorReference --------------------
-
-AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
-    base::StringPiece authenticator_id,
-    base::StringPiece16 authenticator_display_name,
-    device::FidoTransportProtocol transport,
-    bool is_in_pairing_mode)
-    : authenticator_id(authenticator_id),
-      authenticator_display_name(authenticator_display_name),
-      transport(transport),
-      is_in_pairing_mode(is_in_pairing_mode) {}
-AuthenticatorRequestDialogModel::AuthenticatorReference::AuthenticatorReference(
-    AuthenticatorReference&& data) = default;
-AuthenticatorRequestDialogModel::AuthenticatorReference&
-AuthenticatorRequestDialogModel::AuthenticatorReference::operator=(
-    AuthenticatorReference&& other) = default;
-AuthenticatorRequestDialogModel::AuthenticatorReference::
-    ~AuthenticatorReference() = default;
-
-// AuthenticatorRequestDialogModel --------------------------------------------
-
 AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel() {}
+
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)
     observer.OnModelDestroyed();
@@ -231,7 +211,7 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
   auto touch_id_authenticator_it =
       std::find_if(saved_authenticators_.begin(), saved_authenticators_.end(),
                    [](const auto& authenticator) {
-                     return authenticator.transport ==
+                     return authenticator->transport() ==
                             device::FidoTransportProtocol::kInternal;
                    });
 
@@ -240,7 +220,7 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
 
   static base::TimeDelta kTouchIdDispatchDelay =
       base::TimeDelta::FromMilliseconds(1250);
-  DispatchRequestAsync(&*touch_id_authenticator_it, kTouchIdDispatchDelay);
+  DispatchRequestAsync(touch_id_authenticator_it->get(), kTouchIdDispatchDelay);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
@@ -314,6 +294,34 @@ void AuthenticatorRequestDialogModel::SetBluetoothAdapterPowerOnCallback(
   bluetooth_adapter_power_on_callback_ = bluetooth_adapter_power_on_callback;
 }
 
+void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
+    base::StringPiece old_authenticator_id,
+    std::string new_authenticator_id) {
+  auto it = std::find_if(
+      saved_authenticators_.begin(), saved_authenticators_.end(),
+      [old_authenticator_id](const auto& authenticator) {
+        return authenticator->authenticator_id() == old_authenticator_id;
+      });
+  if (it != saved_authenticators_.end())
+    (*it)->SetAuthenticatorId(std::move(new_authenticator_id));
+}
+
+void AuthenticatorRequestDialogModel::AddAuthenticator(
+    const device::FidoAuthenticator& authenticator) {
+  saved_authenticators_.emplace_back(std::make_unique<AuthenticatorReference>(
+      authenticator.GetId(), authenticator.GetDisplayName(),
+      authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode()));
+}
+
+void AuthenticatorRequestDialogModel::RemoveAuthenticator(
+    base::StringPiece authenticator_id) {
+  base::EraseIf(saved_authenticators_,
+                [authenticator_id](const auto& authenticator_reference) {
+                  return authenticator_reference->authenticator_id() ==
+                         authenticator_id;
+                });
+}
+
 void AuthenticatorRequestDialogModel::DispatchRequestAsync(
     AuthenticatorReference* authenticator,
     base::TimeDelta delay) {
@@ -322,37 +330,25 @@ void AuthenticatorRequestDialogModel::DispatchRequestAsync(
 
   // Dispatching to the same authenticator twice may result in unexpected
   // behavior.
-  if (authenticator->dispatched)
+  if (authenticator->dispatched())
     return;
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(request_callback_, authenticator->authenticator_id),
+      base::BindOnce(request_callback_, authenticator->authenticator_id()),
       delay);
-  authenticator->dispatched = true;
-}
-
-void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
-    base::StringPiece old_authenticator_id,
-    std::string new_authenticator_id) {
-  auto it = std::find_if(
-      saved_authenticators_.begin(), saved_authenticators_.end(),
-      [old_authenticator_id](const auto& authenticator) {
-        return authenticator.authenticator_id == old_authenticator_id;
-      });
-  if (it != saved_authenticators_.end())
-    it->authenticator_id = std::move(new_authenticator_id);
+  authenticator->SetDispatched(true);
 }
 
 void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
     base::StringPiece authenticator_id) {
-  auto it =
-      std::find_if(saved_authenticators_.begin(), saved_authenticators_.end(),
-                   [authenticator_id](const auto& authenticator) {
-                     return authenticator.authenticator_id == authenticator_id;
-                   });
+  auto it = std::find_if(
+      saved_authenticators_.begin(), saved_authenticators_.end(),
+      [authenticator_id](const auto& authenticator) {
+        return authenticator->authenticator_id() == authenticator_id;
+      });
   if (it != saved_authenticators_.end())
-    it->is_in_pairing_mode = true;
+    (*it)->SetIsInPairingMode(true /* is_in_pairing_mode */);
 }
 
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(

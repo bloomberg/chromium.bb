@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
@@ -478,7 +479,7 @@ base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
   DCHECK(ble_authenticator);
   return l10n_util::GetStringFUTF16(
       IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
-      ble_authenticator->authenticator_display_name);
+      ble_authenticator->authenticator_display_name());
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepDescription() const {

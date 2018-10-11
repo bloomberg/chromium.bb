@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_
 #define CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
 #include "device/fido/fido_request_handler_base.h"
@@ -71,27 +73,6 @@ class AuthenticatorRequestDialogModel {
 
     // Phone as a security key.
     kCableActivate,
-  };
-
-  // Encapsulates information about authenticators that have been found and
-  // whose request is controlled by the UI embedder because we want to dispatch
-  // the requests after receiving confirmation from the user via the WebAuthN UI
-  // flow.
-  struct AuthenticatorReference {
-    AuthenticatorReference(base::StringPiece device_id,
-                           base::StringPiece16 authenticator_display_name,
-                           device::FidoTransportProtocol transport,
-                           bool is_in_pairing_mode);
-    AuthenticatorReference(AuthenticatorReference&& data);
-    AuthenticatorReference& operator=(AuthenticatorReference&& other);
-
-    ~AuthenticatorReference();
-
-    std::string authenticator_id;
-    base::string16 authenticator_display_name;
-    device::FidoTransportProtocol transport;
-    bool is_in_pairing_mode = false;
-    bool dispatched = false;
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -267,6 +248,8 @@ class AuthenticatorRequestDialogModel {
 
   void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
                                       std::string new_authenticator_id);
+  void AddAuthenticator(const device::FidoAuthenticator& authenticator);
+  void RemoveAuthenticator(base::StringPiece authenticator_id);
 
   void UpdateAuthenticatorReferencePairingMode(
       base::StringPiece authenticator_id);
@@ -274,7 +257,7 @@ class AuthenticatorRequestDialogModel {
   void SetSelectedAuthenticatorForTesting(
       AuthenticatorReference* authenticator);
 
-  std::vector<AuthenticatorReference>& saved_authenticators() {
+  std::vector<std::unique_ptr<AuthenticatorReference>>& saved_authenticators() {
     return saved_authenticators_;
   }
 
@@ -300,7 +283,7 @@ class AuthenticatorRequestDialogModel {
   // Transport type and id of Mac TouchId and BLE authenticators are cached so
   // that the WebAuthN request for the corresponding authenticators can be
   // dispatched lazily after the user interacts with the UI element.
-  std::vector<AuthenticatorReference> saved_authenticators_;
+  std::vector<std::unique_ptr<AuthenticatorReference>> saved_authenticators_;
 
   // Represents the Bluetooth authenticator that the user is trying to connect
   // to or conduct WebAuthN request to via the WebAuthN UI.
