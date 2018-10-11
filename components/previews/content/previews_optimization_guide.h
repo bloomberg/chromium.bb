@@ -64,6 +64,13 @@ class PreviewsOptimizationGuide
   bool MaybeLoadOptimizationHints(const GURL& url,
                                   ResourceLoadingHintsCallback callback);
 
+  // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
+  // guidance for |url|. This is useful for measuring the effectiveness of the
+  // page hints provided by Cacao.
+  void LogHintCacheMatch(const GURL& url,
+                         bool is_committed,
+                         net::EffectiveConnectionType ect) const;
+
   // optimization_guide::OptimizationGuideServiceObserver implementation:
   void OnHintsProcessed(
       const optimization_guide::proto::Configuration& config,

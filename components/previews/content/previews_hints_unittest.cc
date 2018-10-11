@@ -105,6 +105,66 @@ TEST_F(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
                             GURL("https://www.foo.org/bar/three.jpg"), hint1));
 }
 
+TEST_F(PreviewsHintsTest, LogHintCacheMatch) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/news/");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint1 =
+      optimization1->add_resource_loading_hints();
+  resource_loading_hint1->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint1->set_resource_pattern("news_cruft.js");
+  ParseConfig(config);
+
+  base::HistogramTester histogram_tester;
+
+  // First verify no histogram counts for non-matching URL host.
+  previews_hints()->LogHintCacheMatch(
+      GURL("https://someotherdomain.com/news/story.html"),
+      false /* is_committed */, net::EFFECTIVE_CONNECTION_TYPE_3G);
+  previews_hints()->LogHintCacheMatch(
+      GURL("https://someotherdomain.com/news/story2.html"),
+      true /* is_committed */, net::EFFECTIVE_CONNECTION_TYPE_4G);
+  histogram_tester.ExpectTotalCount(
+      "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "Previews.OptimizationGuide.HintCache.HintLoaded.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+
+  // Now verify do have histogram counts for matching URL host.
+  previews_hints()->LogHintCacheMatch(
+      GURL("https://somedomain.org/news/story.html"), false /* is_committed */,
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+  previews_hints()->LogHintCacheMatch(
+      GURL("https://somedomain.org/news/story2.html"), true /* is_committed */,
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+  histogram_tester.ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit",
+      4 /* EFFECTIVE_CONNECTION_TYPE_3G */, 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HasHint.AtCommit",
+      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit",
+      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit",
+      5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
+}
+
 TEST_F(PreviewsHintsTest, IsBlacklisted) {
   std::unique_ptr<PreviewsHints> previews_hints =
       PreviewsHints::CreateForTesting(

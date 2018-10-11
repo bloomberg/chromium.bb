@@ -406,6 +406,15 @@ void PreviewsDeciderImpl::LoadResourceHints(const GURL& url) {
                           weak_factory_.GetWeakPtr()));
 }
 
+void PreviewsDeciderImpl::LogHintCacheMatch(const GURL& url,
+                                            bool is_committed) const {
+  if (!previews_opt_guide_)
+    return;
+
+  previews_opt_guide_->LogHintCacheMatch(url, is_committed,
+                                         effective_connection_type_);
+}
+
 bool PreviewsDeciderImpl::IsURLAllowedForPreview(
     PreviewsUserData* previews_data,
     const GURL& url,

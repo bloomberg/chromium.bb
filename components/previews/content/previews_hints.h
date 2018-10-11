@@ -17,6 +17,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/host_filter.h"
 #include "components/url_matcher/url_matcher.h"
+#include "net/nqe/effective_connection_type.h"
 
 class GURL;
 
@@ -64,6 +65,13 @@ class PreviewsHints {
   // called if any applicable hint data is loaded and available for |url|.
   bool MaybeLoadOptimizationHints(const GURL& url,
                                   HintLoadedCallback callback) const;
+
+  // Logs UMA for whether the HintCache has a matching Hint and also a matching
+  // PageHint for |url|. Records the client's current |ect| as well. This is
+  // useful for measuring the effectiveness of the page hints provided by Cacao.
+  void LogHintCacheMatch(const GURL& url,
+                         bool is_committed,
+                         net::EffectiveConnectionType ect) const;
 
  private:
   friend class PreviewsHintsTest;

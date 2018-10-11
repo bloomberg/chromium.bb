@@ -55,6 +55,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
 
   void LoadResourceHints(const GURL& url) override {}
 
+  void LogHintCacheMatch(const GURL& url, bool is_committed) const override {}
+
  private:
   bool IsEnabled(PreviewsType type) const {
     switch (type) {
