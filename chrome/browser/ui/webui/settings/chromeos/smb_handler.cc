@@ -49,15 +49,17 @@ void SmbHandler::RegisterMessages() {
 }
 
 void SmbHandler::HandleSmbMount(const base::ListValue* args) {
-  CHECK_EQ(4U, args->GetSize());
+  CHECK_EQ(5U, args->GetSize());
   std::string mount_url;
   std::string mount_name;
   std::string username;
   std::string password;
+  bool use_kerberos;
   CHECK(args->GetString(0, &mount_url));
   CHECK(args->GetString(1, &mount_name));
   CHECK(args->GetString(2, &username));
   CHECK(args->GetString(3, &password));
+  CHECK(args->GetBoolean(4, &use_kerberos));
 
   smb_client::SmbService* const service = GetSmbService(profile_);
   if (!service) {
