@@ -185,7 +185,6 @@ bool LoopbackServer::CreateDefaultPermanentItems() {
     if (!top_level_entity) {
       return false;
     }
-    top_level_permanent_item_ids_[model_type] = top_level_entity->GetId();
     SaveEntity(std::move(top_level_entity));
 
     if (model_type == syncer::BOOKMARKS) {
@@ -199,15 +198,6 @@ bool LoopbackServer::CreateDefaultPermanentItems() {
   }
 
   return true;
-}
-
-std::string LoopbackServer::GetTopLevelPermanentItemId(
-    syncer::ModelType model_type) {
-  auto it = top_level_permanent_item_ids_.find(model_type);
-  if (it == top_level_permanent_item_ids_.end()) {
-    return std::string();
-  }
-  return it->second;
 }
 
 void LoopbackServer::UpdateEntityVersion(LoopbackServerEntity* entity) {
@@ -507,22 +497,6 @@ std::vector<sync_pb::SyncEntity> LoopbackServer::GetSyncEntitiesByModelType(
   for (const auto& kv : entities_) {
     const LoopbackServerEntity& entity = *kv.second;
     if (!(entity.IsDeleted() || entity.IsPermanent()) &&
-        entity.GetModelType() == model_type) {
-      sync_pb::SyncEntity sync_entity;
-      entity.SerializeAsProto(&sync_entity);
-      sync_entities.push_back(sync_entity);
-    }
-  }
-  return sync_entities;
-}
-
-std::vector<sync_pb::SyncEntity>
-LoopbackServer::GetPermanentSyncEntitiesByModelType(ModelType model_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<sync_pb::SyncEntity> sync_entities;
-  for (const auto& kv : entities_) {
-    const LoopbackServerEntity& entity = *kv.second;
-    if (!entity.IsDeleted() && entity.IsPermanent() &&
         entity.GetModelType() == model_type) {
       sync_pb::SyncEntity sync_entity;
       entity.SerializeAsProto(&sync_entity);
