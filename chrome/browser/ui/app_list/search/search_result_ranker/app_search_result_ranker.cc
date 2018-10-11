@@ -25,6 +25,9 @@ std::unique_ptr<AppLaunchPredictor> CreatePredictor(
   if (predictor_name == MrfuAppLaunchPredictor::kPredictorName)
     return std::make_unique<MrfuAppLaunchPredictor>();
 
+  if (predictor_name == SerializedMrfuAppLaunchPredictor::kPredictorName)
+    return std::make_unique<SerializedMrfuAppLaunchPredictor>();
+
   if (predictor_name == HourAppLaunchPredictor::kPredictorName)
     return std::make_unique<HourAppLaunchPredictor>();
 
