@@ -41,6 +41,11 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 
   menu_model->AddItemWithStringId(ash::MENU_NEW_WINDOW,
                                   IDS_APP_LIST_NEW_WINDOW);
+  if (item().id.app_id == crostini::kCrostiniTerminalId &&
+      crostini::IsCrostiniRunning(controller()->profile())) {
+    AddContextMenuOption(menu_model, ash::STOP_APP,
+                         IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
+  }
 
   if (controller()->IsOpen(item().id)) {
     menu_model->AddItemWithStringId(ash::MENU_CLOSE,
@@ -57,6 +62,14 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (ExecuteCommonCommand(command_id, event_flags))
     return;
+
+  if (command_id == ash::STOP_APP) {
+    if (item().id.app_id == crostini::kCrostiniTerminalId) {
+      crostini::CrostiniManager::GetForProfile(controller()->profile())
+          ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
+    }
+    return;
+  }
 
   if (command_id == ash::MENU_NEW_WINDOW) {
     crostini::LaunchCrostiniApp(controller()->profile(), item().id.app_id,
