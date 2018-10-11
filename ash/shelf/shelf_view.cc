@@ -2224,7 +2224,16 @@ bool ShelfView::CanPrepareForDrag(Pointer pointer,
 }
 
 void ShelfView::UpdateBackButton() {
+  const bool virtual_keyboard_visible =
+      Shell::Get()->system_tray_model()->virtual_keyboard()->visible();
+  gfx::Transform rotation;
+  // Rotate the back button when virtual keyboard is visible.
+  if (virtual_keyboard_visible) {
+    rotation.Rotate(270.0);
+    rotation.Translate(-GetBackButton()->height(), 0);
+  }
   GetBackButton()->layer()->SetOpacity(IsTabletModeEnabled() ? 1.f : 0.f);
+  GetBackButton()->layer()->SetTransform(rotation);
   GetBackButton()->SetFocusBehavior(
       IsTabletModeEnabled() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 }
