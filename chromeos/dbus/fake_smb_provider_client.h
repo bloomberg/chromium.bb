@@ -29,6 +29,7 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
 
   // SmbProviderClient override.
   void Mount(const base::FilePath& share_path,
+             bool ntlm_enabled,
              const std::string& workgroup,
              const std::string& username,
              base::ScopedFD password_fd,
