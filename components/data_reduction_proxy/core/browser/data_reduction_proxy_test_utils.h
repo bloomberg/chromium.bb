@@ -332,6 +332,10 @@ class DataReductionProxyTestContext {
     // owned by the caller.
     Builder& WithURLRequestContext(net::URLRequestContext* request_context);
 
+    // Specifies a |network::URLLoaderFactory| to use.
+    Builder& WithURLLoaderFactory(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
     // Specifies a |net::MockClientSocketFactory| to use. The
     // |mock_socket_factory| is owned by the caller. If a non-NULL
     // |request_context_| is also specified, then the caller is responsible for
@@ -373,6 +377,7 @@ class DataReductionProxyTestContext {
    private:
     Client client_;
     net::URLRequestContext* request_context_;
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
     net::MockClientSocketFactory* mock_socket_factory_;
 
     bool use_mock_config_;
