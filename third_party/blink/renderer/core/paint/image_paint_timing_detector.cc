@@ -20,7 +20,7 @@ namespace blink {
 
 // Set a big enough limit for the number of nodes to ensure memory usage is
 // capped. Exceeding such limit will deactivate the algorithm.
-constexpr size_t kNodeNumberLimit = 5000;
+constexpr size_t kImageNodeNumberLimit = 5000;
 
 static bool LargeImageOnTop(const base::WeakPtr<ImageRecord>& a,
                             const base::WeakPtr<ImageRecord>& b) {
@@ -197,7 +197,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   const LayoutImage* image = ToLayoutImage(&object);
   if (!id_record_map_.Contains(node_id)) {
     recorded_node_count_++;
-    if (recorded_node_count_ < kNodeNumberLimit) {
+    if (recorded_node_count_ < kImageNodeNumberLimit) {
       LayoutRect invalidated_rect = image->FirstFragment().VisualRect();
       // Do not record first size until invalidated_rect's size becomes
       // non-empty.
@@ -226,7 +226,7 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       latest_image_heap_.push(record->AsWeakPtr());
       id_record_map_.insert(node_id, std::move(record));
     } else {
-      // for assessing whether kNodeNumberLimit is large enough for all
+      // for assessing whether kImageNodeNumberLimit is large enough for all
       // normal cases
       TRACE_EVENT_INSTANT1("loading", "ImagePaintTimingDetector::OverNodeLimit",
                            TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",

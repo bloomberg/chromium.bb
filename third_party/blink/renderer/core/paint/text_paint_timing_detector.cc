@@ -20,7 +20,7 @@ namespace blink {
 
 // Calculate metrics candidate every 1 second after the first text pre-paint.
 static constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
-constexpr size_t kNodeNumberLimit = 5000;
+constexpr size_t kTextNodeNumberLimit = 5000;
 
 static bool LargeTextOnTop(const std::unique_ptr<TextRecord>& a,
                            const std::unique_ptr<TextRecord>& b) {
@@ -164,8 +164,8 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
 
   // We deactivate the algorithm if the number of nodes exceeds limitation.
   recorded_node_count_++;
-  if (recorded_node_count_ > kNodeNumberLimit) {
-    // for assessing whether kNodeNumberLimit is large enough for all
+  if (recorded_node_count_ > kTextNodeNumberLimit) {
+    // for assessing whether kTextNodeNumberLimit is large enough for all
     // normal cases
     TRACE_EVENT_INSTANT1("loading", "TextPaintTimingDetector::OverNodeLimit",
                          TRACE_EVENT_SCOPE_THREAD, "recorded_node_count",
