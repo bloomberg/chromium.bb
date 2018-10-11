@@ -11,6 +11,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/files/file.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "ppapi/cpp/logging.h"
@@ -73,7 +74,7 @@ void* CustomArchiveOpen(void* archive,
 int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unzip_size) {
   int64_t offset = archive->reader()->offset();
   if (archive->reader()->Seek(static_cast<int64_t>(offset),
-                              ZLIB_FILEFUNC_SEEK_SET) < 0) {
+                              base::File::FROM_BEGIN) < 0) {
     return -1 /* Error */;
   }
 
@@ -98,7 +99,7 @@ int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unzip_size) {
   } while (left_length > 0);
 
   if (archive->reader()->Seek(static_cast<int64_t>(offset),
-                              ZLIB_FILEFUNC_SEEK_SET) < 0) {
+                              base::File::FROM_BEGIN) < 0) {
     return -1 /* Error */;
   }
   archive->dynamic_cache_size_ = bytes_to_read - left_length;
@@ -122,7 +123,7 @@ uint32_t CustomArchiveRead(void* archive,
     memcpy(buffer, archive_minizip->static_cache_.get() + offset_in_cache,
            size);
     if (archive_minizip->reader()->Seek(static_cast<int64_t>(size),
-                                        ZLIB_FILEFUNC_SEEK_CUR) < 0) {
+                                        base::File::FROM_CURRENT) < 0) {
       return -1 /* Error */;
     }
     return size;
@@ -154,7 +155,7 @@ uint32_t CustomArchiveRead(void* archive,
     unzip_buffer_pointer += copy_length;
     left_length -= copy_length;
     if (archive_minizip->reader()->Seek(static_cast<int64_t>(copy_length),
-                                        ZLIB_FILEFUNC_SEEK_CUR) < 0) {
+                                        base::File::FROM_CURRENT) < 0) {
       return -1 /* Error */;
     }
   } while (left_length > 0);
@@ -182,8 +183,24 @@ long CustomArchiveSeek(void* archive,
   VolumeArchiveMinizip* archive_minizip =
       static_cast<VolumeArchiveMinizip*>(archive);
 
-  long return_value = static_cast<long>(archive_minizip->reader()->Seek(
-      static_cast<int64_t>(offset), static_cast<int64_t>(origin)));
+  base::File::Whence whence;
+  switch (origin) {
+    case ZLIB_FILEFUNC_SEEK_SET:
+      whence = base::File::FROM_BEGIN;
+      break;
+    case ZLIB_FILEFUNC_SEEK_CUR:
+      whence = base::File::FROM_CURRENT;
+      break;
+    case ZLIB_FILEFUNC_SEEK_END:
+      whence = base::File::FROM_END;
+      break;
+    default:
+      NOTREACHED();
+      return -1;
+  }
+
+  long return_value = static_cast<long>(
+      archive_minizip->reader()->Seek(static_cast<int64_t>(offset), whence));
   if (return_value >= 0)
     return 0 /* Success */;
   return -1 /* Error */;
@@ -251,7 +268,7 @@ bool VolumeArchiveMinizip::Init(const std::string& encoding) {
   int64_t left_length = static_cache_size_;
   static_cache_offset_ = std::max(reader()->archive_size() - static_cache_size_,
                                   static_cast<int64_t>(0));
-  if (reader()->Seek(static_cache_offset_, ZLIB_FILEFUNC_SEEK_SET) < 0) {
+  if (reader()->Seek(static_cache_offset_, base::File::FROM_BEGIN) < 0) {
     set_error_message(kArchiveOpenError);
     return false /* Error */;
   }
@@ -264,7 +281,7 @@ bool VolumeArchiveMinizip::Init(const std::string& encoding) {
   } while (left_length > 0);
 
   // Set the offset to the original position.
-  if (reader()->Seek(previous_offset, ZLIB_FILEFUNC_SEEK_SET) < 0) {
+  if (reader()->Seek(previous_offset, base::File::FROM_BEGIN) < 0) {
     set_error_message(kArchiveOpenError);
     return false /* Error */;
   }
