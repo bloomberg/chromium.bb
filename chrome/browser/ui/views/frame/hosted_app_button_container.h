@@ -148,7 +148,6 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   GetContentSettingViewsForTesting() const;
 
   SkColor GetIconColor() const;
-  SkColor GetIconInkDropColor() const;
   void UpdateChildrenColor();
 
   // Whether we're waiting for the widget to become visible.
