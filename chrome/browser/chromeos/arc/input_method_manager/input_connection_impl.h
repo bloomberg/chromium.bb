@@ -55,6 +55,8 @@ class InputConnectionImpl : public mojom::InputConnection {
   // starting timer is after API call, the timer won't be cancelled.
   void StartStateUpdateTimer();
 
+  void SendControlKeyEvent(const base::string16& text);
+
   chromeos::InputMethodEngine* const ime_engine_;  // Not owned
   ArcInputMethodManagerBridge* const imm_bridge_;  // Not owned
   const int input_context_id_;
