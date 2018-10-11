@@ -314,10 +314,10 @@ TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {
 TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
   EXPECT_FALSE(form_manager_->is_submitted());
   EXPECT_TRUE(
-      form_manager_->SetSubmittedFormIfIsManaged(observed_form_, &driver_));
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
   EXPECT_TRUE(form_manager_->is_submitted());
 
-  FormData another_form = observed_form_;
+  FormData another_form = submitted_form_;
   another_form.name += ASCIIToUTF16("1");
   // |another_form| is managed because the same |unique_renderer_id| as
   // |observed_form_|.
@@ -337,6 +337,14 @@ TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
   // driver) is also not considered managed.
   EXPECT_FALSE(
       form_manager_->SetSubmittedFormIfIsManaged(observed_form_, nullptr));
+  EXPECT_FALSE(form_manager_->is_submitted());
+
+  // Check if the subbmitted form can not be parsed then form manager does not
+  // became submitted.
+  FormData malformed_form = submitted_form_;
+  malformed_form.fields.clear();
+  EXPECT_FALSE(
+      form_manager_->SetSubmittedFormIfIsManaged(malformed_form, &driver_));
   EXPECT_FALSE(form_manager_->is_submitted());
 }
 
@@ -937,9 +945,9 @@ TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenSaving_ParsingFailed) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   fetcher_->SetNonFederated({&saved_match_}, 0u);
 
-  FormData malformed_form = observed_form_;
+  FormData malformed_form = submitted_form_;
   malformed_form.fields.clear();
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       form_manager_->SetSubmittedFormIfIsManaged(malformed_form, &driver_));
 
   // Destroy the form manager to destroy the UKM recorder it owns. The recorder
