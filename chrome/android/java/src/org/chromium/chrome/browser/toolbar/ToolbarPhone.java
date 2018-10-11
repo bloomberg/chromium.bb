@@ -1954,6 +1954,17 @@ public class ToolbarPhone extends ToolbarLayout
     protected void onAccessibilityStatusChanged(boolean enabled) {
         super.onAccessibilityStatusChanged(enabled);
         if (mNewTabButton != null) mNewTabButton.onAccessibilityStatusChanged();
+        if (mIncognitoToggleTabLayout != null) {
+            if (enabled) {
+                mIncognitoToggleTabLayout.setVisibility(View.GONE);
+                mTabSwitcherModeViews.remove(mIncognitoToggleTabLayout);
+            } else {
+                if (mTabSwitcherState != STATIC_TAB) {
+                    mIncognitoToggleTabLayout.setVisibility(View.VISIBLE);
+                }
+                mTabSwitcherModeViews.add(mIncognitoToggleTabLayout);
+            }
+        }
     }
 
     @Override

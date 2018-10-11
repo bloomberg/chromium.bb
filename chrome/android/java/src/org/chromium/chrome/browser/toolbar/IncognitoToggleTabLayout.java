@@ -52,19 +52,18 @@ public class IncognitoToggleTabLayout extends TabLayout {
         mStandardButtonIcon = new TintedImageView(getContext());
         mTabSwitcherDrawable = TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
         mStandardButtonIcon.setImageDrawable(mTabSwitcherDrawable);
+        mStandardButtonIcon.setContentDescription(
+                getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
         mIncognitoButtonIcon = new TintedImageView(getContext());
         mIncognitoButtonIcon.setImageResource(R.drawable.incognito_statusbar);
+        mIncognitoButtonIcon.setContentDescription(getResources().getString(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
+                        ? R.string.accessibility_tab_switcher_private_stack
+                        : R.string.accessibility_tab_switcher_incognito_stack));
 
-        mStandardButton =
-                newTab().setCustomView(mStandardButtonIcon)
-                        .setContentDescription(R.string.accessibility_tab_switcher_standard_stack);
+        mStandardButton = newTab().setCustomView(mStandardButtonIcon);
         addTab(mStandardButton);
-        mIncognitoButton =
-                newTab().setCustomView(mIncognitoButtonIcon)
-                        .setContentDescription(
-                                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                        ? R.string.accessibility_tab_switcher_private_stack
-                                        : R.string.accessibility_tab_switcher_incognito_stack);
+        mIncognitoButton = newTab().setCustomView(mIncognitoButtonIcon);
         addTab(mIncognitoButton);
 
         addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
