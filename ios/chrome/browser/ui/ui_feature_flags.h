@@ -31,6 +31,10 @@ extern const base::Feature kInfobarsUIReboot;
 // responder.
 extern const base::Feature kFirstResponderKeyWindow;
 
+// Feature to automatically switch to the regular tabs panel in tab grid after
+// closing the last incognito tab.
+extern const base::Feature kClosingLastIncognitoTab;
+
 // Feature to copy image to system pasteboard via context menu.
 extern const base::Feature kCopyImage;
 

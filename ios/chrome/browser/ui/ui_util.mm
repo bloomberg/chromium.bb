@@ -62,6 +62,11 @@ bool IsRefreshInfobarEnabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
+// TODO(crbug.com/893314) : Remove this flag.
+bool IsClosingLastIncognitoTabEnabled() {
+  return base::FeatureList::IsEnabled(kClosingLastIncognitoTab);
+}
+
 bool IsRefreshLocationBarEnabled() {
   // Refresh location bar requires UIRefreshPhase1 as well.
   return base::FeatureList::IsEnabled(kUIRefreshLocationBar) &&

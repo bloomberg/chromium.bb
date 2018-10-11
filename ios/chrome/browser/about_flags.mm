@@ -387,6 +387,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kToolbarContainerCustomViewDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerCustomViewEnabled)},
+    {"closing-last-incognito-tab",
+     flag_descriptions::kClosingLastIncognitoTabName,
+     flag_descriptions::kClosingLastIncognitoTabDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kClosingLastIncognitoTab)},
 };
 
 // Add all switches from experimental flags to |command_line|.

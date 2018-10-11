@@ -42,6 +42,10 @@ bool IsIPhoneX();
 // Returns whether the UI Refresh Infobar will be used.
 bool IsRefreshInfobarEnabled();
 
+// Returns whether the flag is enabled for switching to the regular tabs panel
+// in tab switcher when the last incognito tab is closed.
+bool IsClosingLastIncognitoTabEnabled();
+
 // Returns whether the UI Refresh Location Bar will be used.
 bool IsRefreshLocationBarEnabled();
 
