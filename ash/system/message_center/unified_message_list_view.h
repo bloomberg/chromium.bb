@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/views/message_view.h"
 #include "ui/views/view.h"
 
 namespace message_center {
@@ -22,7 +23,8 @@ class NewUnifiedMessageCenterView;
 // it's enclosed. This class is used only from NewUnifiedMessageCenterView.
 class ASH_EXPORT UnifiedMessageListView
     : public views::View,
-      public message_center::MessageCenterObserver {
+      public message_center::MessageCenterObserver,
+      public message_center::MessageView::SlideObserver {
  public:
   // |message_center_view| can be null in unit tests.
   explicit UnifiedMessageListView(
@@ -42,12 +44,18 @@ class ASH_EXPORT UnifiedMessageListView
   void OnNotificationRemoved(const std::string& id, bool by_user) override;
   void OnNotificationUpdated(const std::string& id) override;
 
+  // message_center::MessageView::SlideObserver:
+  void OnSlideChanged(const std::string& notification_id) override;
+
  protected:
   // Virtual for testing.
   virtual message_center::MessageView* CreateMessageView(
-      const message_center::Notification& notification) const;
+      const message_center::Notification& notification);
 
  private:
+  class MessageViewContainer;
+
+  MessageViewContainer* GetContainer(int index);
   void CollapseAllNotifications();
   void UpdateBorders();
 

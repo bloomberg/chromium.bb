@@ -52,7 +52,7 @@ class TestUnifiedMessageListView : public UnifiedMessageListView {
 
   // UnifiedMessageListView:
   message_center::MessageView* CreateMessageView(
-      const message_center::Notification& notification) const override {
+      const message_center::Notification& notification) override {
     auto* view = new TestNotificationView(notification);
     view->SetIsNested();
     return view;
@@ -104,7 +104,11 @@ class UnifiedMessageListViewTest : public AshTestBase,
 
   TestNotificationView* GetMessageViewAt(int index) const {
     return static_cast<TestNotificationView*>(
-        message_list_view()->child_at(index));
+        message_list_view()->child_at(index)->child_at(1));
+  }
+
+  gfx::Rect GetMessageViewBounds(int index) const {
+    return message_list_view()->child_at(index)->bounds();
   }
 
   UnifiedMessageListView* message_list_view() const {
@@ -137,10 +141,8 @@ TEST_F(UnifiedMessageListViewTest, Open) {
   EXPECT_FALSE(GetMessageViewAt(1)->IsExpanded());
   EXPECT_TRUE(GetMessageViewAt(2)->IsExpanded());
 
-  EXPECT_EQ(GetMessageViewAt(0)->bounds().bottom(),
-            GetMessageViewAt(1)->bounds().y());
-  EXPECT_EQ(GetMessageViewAt(1)->bounds().bottom(),
-            GetMessageViewAt(2)->bounds().y());
+  EXPECT_EQ(GetMessageViewBounds(0).bottom(), GetMessageViewBounds(1).y());
+  EXPECT_EQ(GetMessageViewBounds(1).bottom(), GetMessageViewBounds(2).y());
 
   EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(1)->top_radius());
@@ -168,7 +170,7 @@ TEST_F(UnifiedMessageListViewTest, AddNotifications) {
   int previous_height = message_list_view()->GetPreferredSize().height();
   EXPECT_LT(0, previous_height);
 
-  gfx::Rect previous_bounds = GetMessageViewAt(0)->bounds();
+  gfx::Rect previous_bounds = GetMessageViewBounds(0);
 
   auto id1 = AddNotification();
   EXPECT_EQ(2, size_changed_count());
@@ -178,9 +180,8 @@ TEST_F(UnifiedMessageListViewTest, AddNotifications) {
   EXPECT_LT(previous_height, message_list_view()->GetPreferredSize().height());
   // 1dip larger because now it has separator border.
   previous_bounds.Inset(gfx::Insets(0, 0, -1, 0));
-  EXPECT_EQ(previous_bounds, GetMessageViewAt(0)->bounds());
-  EXPECT_EQ(GetMessageViewAt(0)->bounds().bottom(),
-            GetMessageViewAt(1)->bounds().y());
+  EXPECT_EQ(previous_bounds, GetMessageViewBounds(0));
+  EXPECT_EQ(GetMessageViewBounds(0).bottom(), GetMessageViewBounds(1).y());
 
   EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(1)->top_radius());
@@ -199,10 +200,10 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->top_radius());
   EXPECT_EQ(0, GetMessageViewAt(0)->bottom_radius());
 
-  gfx::Rect previous_bounds = GetMessageViewAt(0)->bounds();
+  gfx::Rect previous_bounds = GetMessageViewBounds(0);
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
   EXPECT_EQ(1, size_changed_count());
-  EXPECT_EQ(previous_bounds.y(), GetMessageViewAt(0)->bounds().y());
+  EXPECT_EQ(previous_bounds.y(), GetMessageViewBounds(0).y());
   EXPECT_LT(0, message_list_view()->GetPreferredSize().height());
   EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
 
