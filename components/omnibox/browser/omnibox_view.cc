@@ -24,7 +24,7 @@
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
@@ -112,11 +112,11 @@ bool OmniboxView::IsEditingOrEmpty() const {
 gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
                                     SkColor color,
                                     IconFetchedCallback on_icon_fetched) const {
-#if defined(OS_IOS)
-  // OmniboxViewIOS provides its own icon logic. The iOS build also does not
-  // link in the vector icon rendering code.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // This is used on desktop only.
+  NOTREACHED();
   return gfx::ImageSkia();
-#else   // !defined(OS_IOS)
+#else
   if (!IsEditingOrEmpty()) {
     // Query in Omnibox.
     if (model_ &&
@@ -168,7 +168,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
       match.type, is_bookmarked, match.document_type);
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
-#endif  // defined(OS_IOS)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
 void OmniboxView::SetUserText(const base::string16& text) {
