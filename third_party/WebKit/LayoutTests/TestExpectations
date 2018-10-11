@@ -3089,7 +3089,6 @@ crbug.com/863355 [ Mac ] external/wpt/svg/shapes/reftests/pathlength-002.svg [ F
 crbug.com/366559 external/wpt/svg/shapes/reftests/pathlength-003.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-side-001.svg [ Failure ]
 crbug.com/366559 external/wpt/svg/text/reftests/textpath-shape-001.svg [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/rendering/order/z-index.svg [ Failure ]
 crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-send-events.html [ Timeout ]
 crbug.com/626703 external/wpt/console/console-timing-logging-manual.html [ Skip ]
@@ -5293,7 +5292,6 @@ crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experim
 
 # Sheriff 2018-09-13
 crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]
-crbug.com/883837 [ Win7 ] http/tests/performance-timing/resource_timing_buffer_full_250.html [ Timeout Pass ]
 
 # Sheriff 2018-09-18
 crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
