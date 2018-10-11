@@ -152,7 +152,8 @@ const char kDevicesProperty[] = "Devices";
 const char kCheckPortalListProperty[] = "CheckPortalList";
 const char kArpGatewayProperty[] = "ArpGateway";
 const char kCountryProperty[] = "Country";
-const char kPortalURLProperty[] = "PortalURL";
+const char kPortalHttpUrlProperty[] = "PortalHttpUrl";
+const char kPortalHttpsUrlProperty[] = "PortalHttpsUrl";
 const char kConnectionStateProperty[] = "ConnectionState";
 const char kClaimedDevicesProperty[] = "ClaimedDevices";
 
