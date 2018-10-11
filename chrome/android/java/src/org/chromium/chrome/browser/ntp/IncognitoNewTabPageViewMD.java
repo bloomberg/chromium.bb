@@ -8,14 +8,10 @@ import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
-import android.text.Layout;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
-import android.text.style.BulletSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -28,6 +24,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.widget.ChromeBulletSpan;
 
 /**
  * The Material Design New Tab Page for use in the Incognito profile. This is an extension
@@ -49,19 +46,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
     private static final int WIDE_LAYOUT_THRESHOLD_DP = 720;
-
-    private static class IncognitoBulletSpan extends BulletSpan {
-        public IncognitoBulletSpan() {
-            super(0 /* gapWidth */);
-        }
-
-        @Override
-        public void drawLeadingMargin(Canvas c, Paint p, int x, int dir, int top, int baseline,
-                int bottom, CharSequence text, int start, int end, boolean first, Layout l) {
-            // Do not draw the standard bullet point. We will include the Unicode bullet point
-            // symbol in the text instead.
-        }
-    }
 
     /** Default constructor needed to inflate via XML. */
     public IncognitoNewTabPageViewMD(Context context, AttributeSet attrs) {
@@ -132,12 +116,11 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
 
         // Format the bulletpoints:
         //   - Disambiguate the <li></li> spans for SpanApplier.
-        //   - Add the bulletpoint symbols (Unicode BULLET U+2022)
         //   - Remove leading whitespace (caused by formatting in the .grdp file)
         //   - Remove the trailing newline after the last bulletpoint.
-        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li1>     \u2022     $1</li1>");
-        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li2>     \u2022     $1</li2>");
-        text = text.replaceFirst(" +<li>([^<]*)</li>\n", "<li3>     \u2022     $1</li3>");
+        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li1>$1</li1>");
+        text = text.replaceFirst(" +<li>([^<]*)</li>", "<li2>$1</li2>");
+        text = text.replaceFirst(" +<li>([^<]*)</li>\n", "<li3>$1</li3>");
 
         // Remove the <ul></ul> tags which serve no purpose here, including the whitespace around
         // them.
@@ -147,9 +130,9 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                 new SpanApplier.SpanInfo("<em>", "</em>",
                         new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
                                 mContext.getResources(), R.color.incognito_emphasis))),
-                new SpanApplier.SpanInfo("<li1>", "</li1>", new IncognitoBulletSpan()),
-                new SpanApplier.SpanInfo("<li2>", "</li2>", new IncognitoBulletSpan()),
-                new SpanApplier.SpanInfo("<li3>", "</li3>", new IncognitoBulletSpan())));
+                new SpanApplier.SpanInfo("<li1>", "</li1>", new ChromeBulletSpan(mContext)),
+                new SpanApplier.SpanInfo("<li2>", "</li2>", new ChromeBulletSpan(mContext)),
+                new SpanApplier.SpanInfo("<li3>", "</li3>", new ChromeBulletSpan(mContext))));
     }
 
     /** Adjusts the paddings, margins, and the orientation of bulletpoints. */
