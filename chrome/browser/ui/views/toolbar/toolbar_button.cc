@@ -54,8 +54,6 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-
-  UpdateHighlightBackgroundAndInsets();
 }
 
 ToolbarButton::~ToolbarButton() {}
@@ -73,6 +71,9 @@ void ToolbarButton::SetHighlightColor(base::Optional<SkColor> color) {
 }
 
 void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
+  const int highlight_radius =
+      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+          views::EMPHASIS_MAXIMUM, size());
   if (!highlight_color_) {
     SetBackground(nullptr);
   } else {
@@ -82,8 +83,8 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
     const SkColor bg_color =
         SkColorSetA(*highlight_color_, kToolbarButtonBackgroundAlpha);
     SetBackground(views::CreateBackgroundFromPainter(
-        views::Painter::CreateSolidRoundRectPainter(
-            bg_color, ink_drop_large_corner_radius(), bg_insets)));
+        views::Painter::CreateSolidRoundRectPainter(bg_color, highlight_radius,
+                                                    bg_insets)));
     SetEnabledTextColors(*highlight_color_);
   }
 
@@ -91,7 +92,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
                                        : GetLayoutInsets(TOOLBAR_BUTTON)) +
                        gfx::Insets(0, leading_margin_, 0, 0);
   if (highlight_color_)
-    insets += gfx::Insets(0, ink_drop_large_corner_radius() / 2, 0, 0);
+    insets += gfx::Insets(0, highlight_radius / 2, 0, 0);
 
   SetBorder(views::CreateEmptyBorder(insets));
 }
@@ -119,7 +120,7 @@ bool ToolbarButton::IsMenuShowing() const {
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SetProperty(
       views::kHighlightPathKey,
-      CreateToolbarFocusRingPath(this, gfx::Insets(0, leading_margin_, 0, 0))
+      CreateToolbarHighlightPath(this, gfx::Insets(0, leading_margin_, 0, 0))
           .release());
 
   UpdateHighlightBackgroundAndInsets();
@@ -129,7 +130,7 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
   gfx::Insets insets =
-      GetInkDropInsets(this, gfx::Insets(0, leading_margin_, 0, 0));
+      GetToolbarInkDropInsets(this, gfx::Insets(0, leading_margin_, 0, 0));
   // If the button is extended, don't inset the leading edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).
@@ -231,10 +232,14 @@ std::unique_ptr<views::InkDropRipple> ToolbarButton::CreateInkDropRipple()
 std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
     const {
   if (highlight_color_) {
+    const int highlight_radius =
+        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+            views::EMPHASIS_MAXIMUM, size());
+
     // TODO(pbos): Unify with CreateToolbarInkDropHighlight which currently
     // assumes a square inkdrop and uses different bounds for the center point.
     auto highlight = std::make_unique<views::InkDropHighlight>(
-        size(), ink_drop_large_corner_radius(),
+        size(), highlight_radius,
         gfx::PointF(GetMirroredRect(GetLocalBounds()).CenterPoint()),
         GetInkDropBaseColor());
     highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
@@ -327,15 +332,6 @@ void ToolbarButton::OnMenuClosed() {
 
   menu_runner_.reset();
   menu_model_adapter_.reset();
-}
-
-void ToolbarButton::Layout() {
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
-  views::LabelButton::Layout();
 }
 
 const char* ToolbarButton::GetClassName() const {

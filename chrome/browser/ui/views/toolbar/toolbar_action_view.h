@@ -119,9 +119,6 @@ class ToolbarActionView : public views::MenuButton,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  // views::View:
-  void Layout() override;
-
   // Shows the context menu (if one exists) for the toolbar action.
   void DoShowContextMenu(ui::MenuSourceType source_type);
 

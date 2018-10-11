@@ -87,14 +87,21 @@ ToolbarActionView::~ToolbarActionView() {
 void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
   SetProperty(views::kHighlightPathKey,
-              CreateToolbarFocusRingPath(this, gfx::Insets()).release());
+              CreateToolbarHighlightPath(this, gfx::Insets()).release());
+  if (focus_ring()) {
+    // For extensions we can't use a circular focus ring path since it may
+    // obscure the extension icon.
+    gfx::Path path;
+    path.addRect(RectToSkRect(GetLocalBounds()));
+    focus_ring()->SetPath(path);
+  }
 
   MenuButton::OnBoundsChanged(previous_bounds);
 }
 
 gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
-  bounds.Inset(GetInkDropInsets(this, gfx::Insets()));
+  bounds.Inset(GetToolbarInkDropInsets(this, gfx::Insets()));
   return bounds;
 }
 
@@ -296,15 +303,6 @@ void ToolbarActionView::ShowContextMenuForView(
 
   // Otherwise, no other menu is showing, and we can proceed normally.
   DoShowContextMenu(source_type);
-}
-
-void ToolbarActionView::Layout() {
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
-  views::MenuButton::Layout();
 }
 
 void ToolbarActionView::DoShowContextMenu(
