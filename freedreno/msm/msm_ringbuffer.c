@@ -324,14 +324,6 @@ static void flush_reset(struct fd_ringbuffer *ring)
 		fd_bo_del(&msm_bo->base);
 	}
 
-	/* for each of the cmd buffers, clear their reloc's: */
-	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
-		struct msm_cmd *target_cmd = msm_ring->cmds[i];
-		if (!target_cmd)
-			continue;
-		target_cmd->nr_relocs = 0;
-	}
-
 	msm_ring->submit.nr_cmds = 0;
 	msm_ring->submit.nr_bos = 0;
 	msm_ring->nr_cmds = 0;

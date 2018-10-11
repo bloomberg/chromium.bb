@@ -102,6 +102,7 @@ struct fd_ringbuffer *fd_ringbuffer_ref(struct fd_ringbuffer *ring);
 void fd_ringbuffer_del(struct fd_ringbuffer *ring);
 void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *parent);
+will_be_deprecated
 void fd_ringbuffer_reset(struct fd_ringbuffer *ring);
 int fd_ringbuffer_flush(struct fd_ringbuffer *ring);
 /* in_fence_fd: -1 for no in-fence, else fence fd
