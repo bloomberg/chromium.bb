@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/hash.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "url/gurl.h"
@@ -139,7 +140,18 @@ void FeedOfflineHost::Initialize(
   trigger_get_known_content_ = trigger_get_known_content;
   notify_status_change_ = notify_status_change;
   offline_page_model_->AddObserver(this);
-  // TODO(skym): Post task to call PrefetchService::SetSuggestionProvider().
+  // The host guarantees that the two callbacks passed into this method will not
+  // be invoked until Initialize() has exited. To guarantee this, the host
+  // cannot call SetSuggestionProvider() in task, because that would give
+  // Prefetch the ability to run |trigger_get_known_content_| immediately.
+  // PostTask is used to delay when SetSuggestionProvider() is called.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FeedOfflineHost::SetSuggestionProvider,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void FeedOfflineHost::SetSuggestionProvider() {
+  prefetch_service_->SetSuggestionProvider(this);
 }
 
 base::Optional<int64_t> FeedOfflineHost::GetOfflineId(const std::string& url) {
@@ -166,11 +178,13 @@ void FeedOfflineHost::GetOfflineStatus(
 }
 
 void FeedOfflineHost::OnContentRemoved(std::vector<std::string> urls) {
-  // TODO(skym): Call PrefetchService::RemoveSuggestion().
+  for (const std::string& url : urls) {
+    prefetch_service_->RemoveSuggestion(GURL(url));
+  }
 }
 
 void FeedOfflineHost::OnNewContentReceived() {
-  // TODO(skym): Call PrefetchService::NewSuggestionsAvailable().
+  prefetch_service_->NewSuggestionsAvailable();
 }
 
 void FeedOfflineHost::OnNoListeners() {
