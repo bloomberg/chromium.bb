@@ -126,7 +126,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1938981467853765413">Feedback geben</translation>
 <translation id="194341124344773587">Berechtigung für Chrome in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
 <translation id="1943432128510653496">Passwörter speichern</translation>
-<translation id="1944384637046898011">Ab <ph name="TIME" /> alle Daten mit Google-Passwort verschlüsseln</translation>
 <translation id="1946005195648379376">Legen Sie fest, wie Google anhand des Browserverlaufs die Suche und andere Google-Dienste für Sie personalisieren soll.</translation>
 <translation id="1952172573699511566">Sofern dies möglich ist, wird Text auf Websites in Ihrer bevorzugten Sprache angezeigt.</translation>
 <translation id="195283394249132567">Personalisierte Google-Dienste</translation>
@@ -311,7 +310,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3522247891732774234">Update verfügbar. Weitere Optionen</translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB verfügbar</translation>
-<translation id="3549644494707163724">Alle synchronisierten Daten mit meiner eigenen Synchronisierungspassphrase verschlüsseln</translation>
 <translation id="3549657413697417275">Im Verlauf suchen</translation>
 <translation id="3552151358455404883">Chrome-Synchronisierung und -Personalisierung in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
 <translation id="3557336313807607643">Zu Kontakten hinzufügen</translation>
@@ -379,7 +377,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4084712963632273211">Von <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />bereitgestellt durch Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB heruntergeladen</translation>
 <translation id="4095146165863963773">App-Daten löschen?</translation>
-<translation id="4097739989936358050">Diese App wird in Chrome ausgeführt.</translation>
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4113030288477039509">Von Ihrem Administrator verwaltet</translation>
@@ -424,7 +421,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="447252321002412580">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
 <translation id="4479647676395637221">Nachfragen, bevor Websites Zugriff auf Ihre Kamera erhalten (empfohlen)</translation>
 <translation id="4487967297491345095">Alle App-Daten in Chrome werden dauerhaft gelöscht. Hierzu gehören alle Dateien, Einstellungen, Konten, Datenbanken.</translation>
-<translation id="4508440807153586353">Nur Personen mit Ihrer Passphrase können Ihre verschlüsselten Daten lesen. Die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen oder diese Einstellung ändern möchten, müssen Sie die Synchronisierung zurücksetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Vor # Tag}other{Vor # Tagen}}</translation>
 <translation id="451872707440238414">Lesezeichen durchsuchen</translation>
 <translation id="4521489764227272523">Die ausgewählten Daten wurden aus Chrome und von allen Ihren synchronisierten Geräten entfernt.
@@ -724,11 +720,11 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
+<translation id="6709133671862442373">Nachrichten</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6712388303105732168">Über die Schaltfläche "Weitere ähnliche" sehen Sie ähnliche Inhalte von Google</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6746124502594467657">Nach unten</translation>
-<translation id="6762156594045689028">Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>
 <translation id="6768277682697012280">AR-Modul wird installiert…</translation>
 <translation id="6776813977906306442">Mit der Download-Schaltfläche Videos herunterladen, um sie später anzusehen</translation>

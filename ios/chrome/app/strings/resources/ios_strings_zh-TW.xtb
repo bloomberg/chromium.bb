@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">過去 1 天</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3112556859945124369">標示…</translation>
-<translation id="3151924044251363314">只有知道您通關密語的使用者，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果您忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">全部標示…</translation>
 <translation id="3175081911749765310">網路服務</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
@@ -332,7 +331,6 @@
 <translation id="667999046851023355">文件</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">無法匯出密碼</translation>
-<translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">郵遞區號</translation>
 <translation id="6785453220513215166">正在傳送當機報告...</translation>
 <translation id="679325081238418596">您在任何裝置上都能取得自己的書籤、歷史記錄、密碼和其他設定</translation>

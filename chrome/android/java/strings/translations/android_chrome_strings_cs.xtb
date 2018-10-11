@@ -126,7 +126,6 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="1938981467853765413">Odeslat zpětnou vazbu</translation>
 <translation id="194341124344773587">Oprávnění pro Chrome zapnete v <ph name="BEGIN_LINK" />Nastavení pro Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
-<translation id="1944384637046898011">Zašifrovat vše pomocí hesla Google z <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Nastavte, jak má Google využívat vaši historii procházení k personalizaci Vyhledávání a dalších služeb Google.</translation>
 <translation id="1952172573699511566">Pokud to bude možné, budou weby zobrazovat text ve vašem preferovaném jazyce.</translation>
 <translation id="195283394249132567">Personalizované služby Google</translation>
@@ -311,7 +310,6 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="3522247891732774234">K dispozici je aktualizace. Další možnosti</translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3542235761944717775">Dostupné místo: <ph name="KILOBYTES" /> kB</translation>
-<translation id="3549644494707163724">Šifrovat synchronizovaná data pomocí vlastní heslové fráze pro synchronizaci.</translation>
 <translation id="3549657413697417275">Prohledávat historii</translation>
 <translation id="3552151358455404883">Synchronizaci a přizpůsobení Chromu můžete spravovat v <ph name="BEGIN_LINK1" />Nastavení<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Přidat do kontaktů</translation>
@@ -379,7 +377,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4084712963632273211">Zdroj: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />poskytováno společností Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Staženo: <ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">Vymazat data aplikace?</translation>
-<translation id="4097739989936358050">Tato aplikace je spuštěna v Chromu.</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="410351446219883937">Automatické přehrávání</translation>
 <translation id="4113030288477039509">Spravováno vaším administrátorem</translation>
@@ -424,7 +421,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
 <translation id="4479647676395637221">Pokud web bude chtít použít vaši kameru, zobrazit dotaz (doporučeno)</translation>
 <translation id="4487967297491345095">Všechna data aplikace Chrome budou trvale smazána. Zahrnuje to soubory, nastavení, účty, databáze apod.</translation>
-<translation id="4508440807153586353">Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslovou frázi. Heslová fráze se neodesílá do Googlu a není na Googlu uložena. Pokud heslovou frázi zapomenete nebo toto nastavení budete chtít změnit, bude synchronizaci potřeba resetovat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{před # dnem}few{před # dny}many{před # dne}other{před # dny}}</translation>
 <translation id="451872707440238414">Prohledat záložky</translation>
 <translation id="4521489764227272523">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna.
@@ -724,11 +720,11 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>
 <translation id="6697947395630195233">Chrome potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem.</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
+<translation id="6709133671862442373">Zprávy</translation>
 <translation id="6710213216561001401">Předchozí</translation>
 <translation id="6712388303105732168">Zobrazit podobné návrhy od Googlu pomocí tlačítka Další podobné návrhy</translation>
 <translation id="6738867403308150051">Stahování…</translation>
 <translation id="6746124502594467657">Posunout dolů</translation>
-<translation id="6762156594045689028">Chcete-li toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="6766622839693428701">Zavřete přejetím prstem dolů.</translation>
 <translation id="6768277682697012280">Instalace modulu rozšířené reality...</translation>
 <translation id="6776813977906306442">Pomocí tlačítka Stáhnout si můžete stáhnout videa k pozdějšímu zhlédnutí</translation>

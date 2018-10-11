@@ -126,7 +126,6 @@
 <translation id="1938981467853765413">의견 보내기</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="1943432128510653496">비밀번호 저장</translation>
-<translation id="1944384637046898011"><ph name="TIME" />에 Google 비밀번호로 전체 데이터 암호화</translation>
 <translation id="1946005195648379376">Google이 검색 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
 <translation id="1952172573699511566">가능한 경우 웹사이트에서 텍스트를 선호하는 언어로 표시합니다.</translation>
 <translation id="195283394249132567">나만의 Google 서비스</translation>
@@ -311,7 +310,6 @@
 <translation id="3522247891732774234">업데이트할 수 있습니다. 옵션 더보기</translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" />KB 사용 가능</translation>
-<translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
 <translation id="3549657413697417275">방문 기록 검색</translation>
 <translation id="3552151358455404883"><ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 Chrome 동기화 및 맞춤설정을 관리하세요.</translation>
 <translation id="3557336313807607643">주소록에 추가</translation>
@@ -379,7 +377,6 @@
 <translation id="4084712963632273211">발신자: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google 제공<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" />MB 다운로드됨</translation>
 <translation id="4095146165863963773">앱 데이터를 삭제하시겠습니까?</translation>
-<translation id="4097739989936358050">이 앱은 Chrome에서 실행 중입니다.</translation>
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
 <translation id="410351446219883937">자동재생</translation>
 <translation id="4113030288477039509">관리자가 관리합니다.</translation>
@@ -424,7 +421,6 @@
 <translation id="447252321002412580">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="4479647676395637221">사이트에서 카메라를 사용하도록 허용하기 전에 확인(권장)</translation>
 <translation id="4487967297491345095">모든 파일, 설정, 계정, 데이터베이스 등을 포함한 Chrome의 모든 앱 데이터가 완전히 삭제됩니다.</translation>
-<translation id="4508440807153586353">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 동기화를 재설정해야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{#일 전}other{#일 전}}</translation>
 <translation id="451872707440238414">북마크 검색</translation>
 <translation id="4521489764227272523">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다.
@@ -724,11 +720,11 @@
 <translation id="6697492270171225480">페이지를 찾을 수 없을 때 비슷한 페이지 제안 표시</translation>
 <translation id="6697947395630195233">Chrome이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="6698801883190606802">동기화된 데이터 관리</translation>
+<translation id="6709133671862442373">뉴스</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6712388303105732168">'비슷한 항목 더보기' 버튼을 사용하여 Google에서 비슷한 항목을 더 확인하세요.</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
 <translation id="6746124502594467657">아래로 이동</translation>
-<translation id="6762156594045689028">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6766622839693428701">닫으려면 아래로 스와이프하세요.</translation>
 <translation id="6768277682697012280">AR 모듈 설치 중...</translation>
 <translation id="6776813977906306442">다운로드 버튼을 사용하여 나중에 볼 동영상 다운로드</translation>

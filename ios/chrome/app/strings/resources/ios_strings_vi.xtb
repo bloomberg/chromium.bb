@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Ngày trước</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3112556859945124369">Đánh dấu...</translation>
-<translation id="3151924044251363314">Chỉ người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, bạn cần đặt lại đồng bộ hóa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Đánh dấu tất cả...</translation>
 <translation id="3175081911749765310">Dịch vụ web</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
@@ -332,7 +331,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="667999046851023355">Tài liệu</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Không thể xuất mật khẩu</translation>
-<translation id="6762156594045689028">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Mã zip</translation>
 <translation id="6785453220513215166">Đang gửi báo cáo lỗi...</translation>
 <translation id="679325081238418596">Nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn</translation>

@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Seneste døgn</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
 <translation id="3112556859945124369">Markér…</translation>
-<translation id="3151924044251363314">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkroniseringen. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Markér alle…</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
 <translation id="3207960819495026254">Bogmærket</translation>
@@ -332,7 +331,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Der kan ikke eksporteres adgangskoder</translation>
-<translation id="6762156594045689028">Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Postnummer</translation>
 <translation id="6785453220513215166">Der sendes en nedbrudsrapport...</translation>
 <translation id="679325081238418596">Få dine bogmærker, din historik, dine adgangskoder og dine indstillinger på alle dine enheder</translation>

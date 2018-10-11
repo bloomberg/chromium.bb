@@ -154,6 +154,7 @@
 <translation id="3454224730401036106">Your connection has switched to a more secure network</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
+<translation id="3510503721818156981">Chromebook connected to a new phone</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
 <translation id="3595596368722241419">Battery full</translation>
@@ -197,6 +198,7 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Assistant is loading...</translation>
+<translation id="435527878592612277">Select your photo</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4379531060876907730">These are your stylus tools</translation>
 <translation id="4421231901400348175">Sharing control of your screen with <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
@@ -341,6 +343,7 @@
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
 <translation id="7068360136237591149">Open files</translation>
+<translation id="7076293881109082629">Signing in</translation>
 <translation id="7092922358121866860">Show Night Light settings</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
 <translation id="7131634465328662194">You will automatically be signed out.</translation>

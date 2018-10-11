@@ -126,7 +126,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="1938981467853765413">Fornecer comentário</translation>
 <translation id="194341124344773587">Ative a autorização para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
-<translation id="1944384637046898011">Encriptar tudo com uma palavra-passe do Google a partir de <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Controle a forma como a Google utiliza o seu histórico de navegação para personalizar a Pesquisa Google e outros serviços Google.</translation>
 <translation id="1952172573699511566">Quando possível, os Websites apresentam o texto no seu idioma preferido.</translation>
 <translation id="195283394249132567">Serviços Google personalizados</translation>
@@ -311,7 +310,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB disponível(eis)</translation>
-<translation id="3549644494707163724">Encriptar todos os dados sincronizados com a sua própria frase de acesso de sincronização</translation>
 <translation id="3549657413697417275">Pesquisar no histórico</translation>
 <translation id="3552151358455404883">Gerir a Sincronização do Chrome e a personalização nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Adicionar aos contactos</translation>
@@ -379,7 +377,6 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />fornecido pela Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB transferido(s)</translation>
 <translation id="4095146165863963773">Pretende eliminar os dados da aplicação?</translation>
-<translation id="4097739989936358050">Esta aplicação está a ser executada no Chrome.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4113030288477039509">Gerido pelo gestor</translation>
@@ -424,7 +421,6 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="447252321002412580">Ajudar a melhorar as funcionalidades e o desempenho do Chrome</translation>
 <translation id="4479647676395637221">Perguntar antes de permitir que os sites utilizem a câmara (recomendado)</translation>
 <translation id="4487967297491345095">Todos os dados de aplicações do Chrome são eliminados permanentemente, incluindo todos os ficheiros, definições, contas, bases de dados, etc.</translation>
-<translation id="4508440807153586353">Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Há # dia}other{Há # dias}}</translation>
 <translation id="451872707440238414">Pesquisar os marcadores</translation>
 <translation id="4521489764227272523">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados.
@@ -724,11 +720,11 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6697492270171225480">Mostrar sugestões de páginas semelhantes se não for possível encontrar uma página</translation>
 <translation id="6697947395630195233">O Chrome precisa de acesso à sua localização para a partilhar com este site.</translation>
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>
+<translation id="6709133671862442373">Notícias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Ver mais conteúdos deste género no Google através do botão Mais deste género</translation>
 <translation id="6738867403308150051">A transferir...</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
-<translation id="6762156594045689028">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Deslize rapidamente para baixo para fechar.</translation>
 <translation id="6768277682697012280">A instalar o módulo de realidade aumentada…</translation>
 <translation id="6776813977906306442">Transferir vídeos para ver mais tarde através do botão Transferir</translation>

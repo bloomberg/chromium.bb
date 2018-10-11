@@ -126,7 +126,6 @@
 <translation id="1938981467853765413">แสดงความคิดเห็น</translation>
 <translation id="194341124344773587">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
-<translation id="1944384637046898011">เข้ารหัสทั้งหมดด้วยรหัสผ่าน Google ตั้งแต่วันที่ <ph name="TIME" /></translation>
 <translation id="1946005195648379376">ควบคุมวิธีที่ Google ใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหาในแบบของคุณและบริการอื่นๆ ของ Google</translation>
 <translation id="1952172573699511566">เมื่อเป็นไปได้ เว็บไซต์จะแสดงในภาษาที่คุณต้องการ</translation>
 <translation id="195283394249132567">บริการของ Google ที่ปรับเปลี่ยนในแบบของคุณ</translation>
@@ -311,7 +310,6 @@
 <translation id="3522247891732774234">มีการอัปเดตให้บริการ ตัวเลือกเพิ่มเติม</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3542235761944717775">ใช้ได้ <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">เข้ารหัสข้อมูลที่ซิงค์ทั้งหมดด้วยข้อความรหัสผ่านการซิงค์ของคุณเอง</translation>
 <translation id="3549657413697417275">ค้นหาประวัติการเข้าชม</translation>
 <translation id="3552151358455404883">จัดการการซิงค์ของ Chrome และการปรับเปลี่ยนในแบบของคุณใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">เพิ่มในรายชื่อติดต่อ</translation>
@@ -379,7 +377,6 @@
 <translation id="4084712963632273211">จาก <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />แสดงโดย Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">พื้นที่ที่ใช้ไปสำหรับการดาวน์โหลด <ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">ลบข้อมูลแอปไหม</translation>
-<translation id="4097739989936358050">แอปนี้กำลังทำงานใน Chrome</translation>
 <translation id="4099578267706723511">ช่วยให้ Chrome ทำงานได้ดีขึ้นโดยส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google</translation>
 <translation id="410351446219883937">เล่นอัตโนมัติ</translation>
 <translation id="4113030288477039509">มีการจัดการโดยผู้ดูแลระบบ</translation>
@@ -424,7 +421,6 @@
 <translation id="447252321002412580">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
 <translation id="4479647676395637221">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้กล้องถ่ายรูปของคุณ (แนะนำ)</translation>
 <translation id="4487967297491345095">ระบบจะลบข้อมูลแอปทั้งหมดของ Chrome อย่างถาวร ซึ่งรวมถึงไฟล์ทั้งหมด การตั้งค่า บัญชี ฐานข้อมูล และอื่นๆ</translation>
-<translation id="4508440807153586353">เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะสามารถอ่านข้อมูลที่เข้ารหัสของคุณได้ Google จะไม่ส่งหรือจัดเก็บรหัสผ่านนี้ หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ คุณจะต้องรีเซ็ตการซิงค์ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# วันที่ผ่านมา}other{# วันที่ผ่านมา}}</translation>
 <translation id="451872707440238414">ค้นหาบุ๊กมาร์ก</translation>
 <translation id="4521489764227272523">ระบบได้นำข้อมูลที่เลือกออกจาก Chrome และอุปกรณ์ที่ซิงค์แล้ว
@@ -724,11 +720,11 @@
 <translation id="6697492270171225480">แสดงคำแนะนำหน้าที่คล้ายกันเมื่อไม่พบหน้าเว็บ</translation>
 <translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
+<translation id="6709133671862442373">ข่าวสาร</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6712388303105732168">ดูคำแนะนำแบบนี้จาก Google อีกโดยใช้ปุ่ม "ดูคำแนะนำแบบนี้อีก"</translation>
 <translation id="6738867403308150051">กำลังดาวน์โหลด…</translation>
 <translation id="6746124502594467657">เลื่อนลง</translation>
-<translation id="6762156594045689028">หากต้องการเปลี่ยนการตั้งค่านี้ โปรด<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">เลื่อนลงเพื่อปิด</translation>
 <translation id="6768277682697012280">กำลังติดตั้งโมดูล AR...</translation>
 <translation id="6776813977906306442">ดาวน์โหลดวิดีโอไว้ดูภายหลังโดยใช้ปุ่ม "ดาวน์โหลด"</translation>

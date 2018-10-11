@@ -348,7 +348,7 @@
 <translation id="1503914375822320413">No se ha podido realizar la operación de copia porque se ha producido un error inesperado ($1).</translation>
 <translation id="150411034776756821">Quitar de <ph name="SITE" /></translation>
 <translation id="1505091014076919009">En esta página puedes gestionar todas tus cuentas de Google con las que hayas iniciado sesión en sitios web y aplicaciones.</translation>
-<translation id="1506061864768559482">Motor de búsqueda</translation>
+<translation id="1506061864768559482">Buscador</translation>
 <translation id="1507170440449692343">Esta página no tiene permiso para acceder a la cámara</translation>
 <translation id="1507246803636407672">&amp;Rechazar</translation>
 <translation id="1508491105858779599">Coloca el dedo sobre el sensor de huellas digitales para desbloquear el dispositivo.</translation>
@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Se ha interrumpido el flujo de aprovisionamiento. Vuelve a intentarlo más tarde o ponte en contacto con el propietario o el administrador del dispositivo.</translation>
 <translation id="1611649489706141841">adelante</translation>
 <translation id="1611704746353331382">Exportar marcadores a archivo HTML...</translation>
+<translation id="1614511179807650956">Es posible que hayas agotado los datos de tu plan de datos móviles. Visita el portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
 <translation id="161460670679785907">No se puede detectar tu teléfono</translation>
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1616298854599875024">No se ha podido importar la extensión "<ph name="IMPORT_NAME" />" porque no es un módulo compartido</translation>
@@ -596,7 +597,6 @@
 <translation id="1852799913675865625">Se ha producido un error al intentar leer el archivo: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="1856715684130786728">Añadir ubicación...</translation>
-<translation id="1856813161013948396">Sáltate la pantalla de bloqueo con solo tocar el sensor de huellas digitales. Haz clic para configurar esta función.</translation>
 <translation id="1858585891038687145">Confiar en este certificado para identificar a los fabricantes de software</translation>
 <translation id="1861262398884155592">Esta carpeta está vacía</translation>
 <translation id="1864111464094315414">Acceder</translation>
@@ -689,6 +689,7 @@
 <translation id="1999115740519098545">Al abrir el navegador...</translation>
 <translation id="2000419248597011803">Envía algunas cookies y búsquedas de la barra de direcciones y del cuadro de búsqueda a tu buscador predeterminado</translation>
 <translation id="2001796770603320721">Administrar en Drive</translation>
+<translation id="2003130567827682533">Para activar los datos de "<ph name="NAME" />", conéctate a una red Wi‑Fi</translation>
 <translation id="2004663115385769400">No se puede abrir con $1</translation>
 <translation id="200544492091181894">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="2006638907958895361">Abrir enlace en <ph name="APP" /></translation>
@@ -814,7 +815,7 @@
 <translation id="2200356397587687044">Chrome necesita permiso para continuar</translation>
 <translation id="220138918934036434">Ocultar botón</translation>
 <translation id="2202898655984161076">Se ha producido un error al mostrar las impresoras. Es posible que algunas impresoras no se hayan registrado correctamente en <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="2203682048752833055">Motor de búsqueda utilizado en la <ph name="BEGIN_LINK" />barra de direcciones<ph name="END_LINK" /></translation>
+<translation id="2203682048752833055">Buscador utilizado en la <ph name="BEGIN_LINK" />barra de direcciones<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Leer y modificar todo lo que escribas</translation>
 <translation id="2208158072373999562">Archivo zip</translation>
 <translation id="220858061631308971">Introduce este código PIN en "<ph name="DEVICE_NAME" />":</translation>
@@ -1104,7 +1105,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2643698698624765890">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Ventana.</translation>
 <translation id="2647142853114880570">volver a cargar</translation>
 <translation id="264810637653812429">No se han podido encontrar dispositivos compatibles.</translation>
-<translation id="2648831393319960979">El dispositivo se está añadiendo a tu cuenta. Esta acción puede tardar unos minutos...</translation>
 <translation id="2649045351178520408">ASCII codificado en Base64, cadena de certificados</translation>
 <translation id="2651353619134567122">Enviar datos del sistema. Este dispositivo envía a Google datos de diagnósticos y uso del dispositivo y las aplicaciones automáticamente. Puedes cambiar esta opción en cualquier momento en los <ph name="BEGIN_LINK1" />ajustes<ph name="END_LINK1" /> del dispositivo. Si has activado la opción Actividad en la Web y en Aplicaciones, esta información se almacenará en tu cuenta para que puedas gestionarla en la sección Mi Actividad. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">No se ha podido completar la búsqueda</translation>
@@ -1246,7 +1246,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2850124913210091882">Copia de seguridad</translation>
 <translation id="2850541429955027218">Añadir tema</translation>
 <translation id="2853916256216444076">Vídeo $1</translation>
-<translation id="2857608528410806398">Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido.</translation>
 <translation id="2860150991415616761">muy largo (4 s)</translation>
 <translation id="2861301611394761800">Se ha completado la actualización del sistema. Reinícialo.</translation>
 <translation id="2861941300086904918">Administrador de seguridad de cliente nativo</translation>
@@ -1289,7 +1288,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2908162660801918428">Añadir galería de archivos por directorio</translation>
 <translation id="2908789530129661844">Reducir pantalla</translation>
 <translation id="2910318910161511225">Conéctate a una red y vuelve a intentarlo</translation>
-<translation id="2911898792135283060">Generar contraseña...</translation>
 <translation id="2913331724188855103">Permitir que los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2916073183900451334">El tabulador permite destacar los enlaces de una página web, así como los campos de formulario.</translation>
 <translation id="2916745397441987255">Buscar extensiones</translation>
@@ -1687,6 +1685,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3541661933757219855">Pulsa Ctrl+Alt+/ o Esc para ocultar el teclado.</translation>
 <translation id="3543393733900874979">Se ha producido un error durante la actualización (error: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="3543597750097719865">Firma X9.62 ECDSA con SHA-512</translation>
+<translation id="3544879808695557954">Nombre de usuario (opcional)</translation>
 <translation id="354602065659584722">Se ha eliminado software dañino</translation>
 <translation id="3547495624659668105">Versión de PRL</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
@@ -1729,7 +1728,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3605780360466892872">Amancio</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Vista previa de imagen de usuario</translation>
-<translation id="3609446736023031597">Descarga las últimas actualizaciones y recomendaciones de aplicaciones de Play Store</translation>
 <translation id="3609785682760573515">Sincronizando...</translation>
 <translation id="3609895557594655134">Añadir VPN de Android...</translation>
 <translation id="361106536627977100">Datos de Flash</translation>
@@ -2389,7 +2387,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4648499713050786492">Desbloquea tu perfil antes de añadir a un usuario.</translation>
 <translation id="465499440663162826">No se ha podido establecer conexión con Chrome Web Store.</translation>
 <translation id="4656293982926141856">Este ordenador</translation>
-<translation id="4658312088164718891">Introduce tu contraseña para activar Smart Lock. La próxima vez, el teléfono desbloqueará tu <ph name="DEVICE_TYPE" />. Desactiva Smart Lock en Configuración.</translation>
 <translation id="4660476621274971848">Se esperaba la versión "<ph name="EXPECTED_VERSION" />", pero se ha detectado la versión "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">Compartir este marcador con tu iPhone</translation>
 <translation id="4663373278480897665">Cámara permitida</translation>
@@ -2490,6 +2487,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4821935166599369261">Perfiles &amp;habilitados</translation>
 <translation id="4823484602432206655">Leer y cambiar la configuración del dispositivo y del usuario</translation>
 <translation id="4823651846660089135">El dispositivo es de solo lectura</translation>
+<translation id="4827675678516992122">No se ha podido conectar</translation>
 <translation id="4828937774870308359">Australiano</translation>
 <translation id="4829768588131278040">Configurar PIN</translation>
 <translation id="4830502475412647084">Instalando actualización del SO</translation>
@@ -2515,7 +2513,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4856478137399998590">Tu servicio de datos móviles se ha activado y está listo para utilizarse.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Abrir todas en una &amp;ventana de incógnito}=1{Abrir en una &amp;ventana de incógnito}other{Abrir (#) en una &amp;ventana de incógnito}}</translation>
 <translation id="4858913220355269194">Balón</translation>
-<translation id="4862050643946421924">Añadiendo dispositivo...</translation>
 <translation id="4862642413395066333">Firma de respuestas de OCSP</translation>
 <translation id="4863769717153320198">Resolución de <ph name="WIDTH" />x<ph name="HEIGHT" /> (predeterminada)</translation>
 <translation id="4864369630010738180">Iniciando sesión...</translation>
@@ -2633,7 +2630,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> fotos nuevas</translation>
 <translation id="5010043101506446253">Entidad emisora de certificados</translation>
-<translation id="5010929733229908807">Todos los datos se cifraron con tu frase de contraseña de sincronización el <ph name="TIME" /></translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
 <translation id="5015762597229892204">Seleccionar una aplicación de controladores de impresora</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -2716,7 +2712,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="514575469079499857">Usar tu dirección IP para determinar la ubicación (opción predeterminada)</translation>
 <translation id="5150254825601720210">Nombre de servidor SSL de certificado de Netscape</translation>
 <translation id="5151354047782775295">Libera espacio en el disco o puede que se eliminen automáticamente ciertos datos</translation>
-<translation id="5153297660536091054">Función de desbloqueo con PIN</translation>
 <translation id="5154108062446123722">Configuración avanzada para <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Entidad receptora</translation>
@@ -2751,6 +2746,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5209320130288484488">No se ha encontrado ningún dispositivo.</translation>
 <translation id="5209518306177824490">Huella digital SHA-1</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
+<translation id="5213481667492808996">Ya puedes usar tu servicio de datos de "<ph name="NAME" />"</translation>
 <translation id="5213891612754844763">Mostrar configuración de proxy</translation>
 <translation id="521582610500777512">Se ha descartado la foto</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
@@ -2820,7 +2816,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5297082477358294722">Se ha guardado la contraseña. Consulta y gestiona las contraseñas guardadas en tu <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">Tema creado por</translation>
 <translation id="5299109548848736476">No realizar seguimiento</translation>
-<translation id="5299682071747318445">Los datos se han encriptado con tu frase de contraseña de sincronización.</translation>
 <translation id="5300287940468717207">¿Quieres restablecer los permisos de los sitios web?</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301751748813680278">Iniciando sesión de invitado</translation>
@@ -3416,7 +3411,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6144938890088808325">Ayúdanos a mejorar los Chromebooks</translation>
 <translation id="6146563240635539929">Vídeos</translation>
 <translation id="6147020289383635445">Error al obtener la vista previa de impresión</translation>
-<translation id="6148716538476291841">Borra el historial de este dispositivo.</translation>
 <translation id="614940544461990577">Prueba a:</translation>
 <translation id="6150853954427645995">Para guardar este archivo y poder usarlo sin conexión, vuelve a conectarte a Internet, haz clic con el botón derecho en el archivo y selecciona la opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pulsa <ph name="SEARCH_KEY" /> para buscar en <ph name="SITE_NAME" /></translation>
@@ -3499,7 +3493,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />información de aplicaciones y del sistema<ph name="END_LINK1" /></translation>
 <translation id="6272643420381259437">Se ha producido un error (<ph name="ERROR" />) al descargar el complemento</translation>
 <translation id="6273677812470008672">Calidad</translation>
-<translation id="6276301056778294989">Asegúrate de que se muestre el mismo código en el dispositivo.</translation>
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
 <translation id="6277518330158259200">H&amp;acer captura de pantalla</translation>
 <translation id="6278057325678116358">Utilizar GTK+</translation>
@@ -3565,7 +3558,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6374108032506706911">Configurar Smart Lock para Android</translation>
 <translation id="6374469231428023295">Volver a intentarlo</translation>
 <translation id="6380143666419481200">Aceptar y continuar</translation>
-<translation id="6383051423892982287">Cifrar los datos sincronizados con tu propia <ph name="BEGIN_LINK" />frase de contraseña de sincronización<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Cambiar configuración de búsqueda por: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Los sitios web pueden guardar y consultar datos de cookies</translation>
 <translation id="6388429472088318283">Buscar idiomas</translation>
@@ -3603,7 +3595,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6426200009596957090">Abrir la configuración de ChromeVox</translation>
 <translation id="6429384232893414837">Error de actualización</translation>
 <translation id="6430814529589430811">ASCII codificado en Base64, certificado único</translation>
-<translation id="6431217872648827691">Todos los datos se cifraron con tu contraseña de Google el <ph name="TIME" /></translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> configurará actualizaciones automáticas para todos los usuarios de este ordenador.</translation>
 <translation id="6434309073475700221">Rechazar</translation>
 <translation id="6436164536244065364">Ver en Web Store</translation>
@@ -3786,7 +3777,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6702639462873609204">&amp;Editar...</translation>
 <translation id="6706210727756204531">Alcance</translation>
 <translation id="6707389671160270963">Certificado de cliente SSL</translation>
-<translation id="6708029444764748914">Vuelve a introducir tu PIN para poder usarlo para iniciar sesión en tu dispositivo.</translation>
 <translation id="6708242697268981054">Origen:</translation>
 <translation id="6709357832553498500">Conectar con <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Anterior</translation>
@@ -3930,6 +3920,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="694592694773692225">Se ha bloqueado la redirección bloqueada en esta página.</translation>
 <translation id="6949306908218145636">Añadir páginas abiertas a marcadores...</translation>
+<translation id="6949434160682548041">Contraseña (opcional)</translation>
 <translation id="6950627417367801484">Restaurar aplicaciones</translation>
 <translation id="6950943362443484797">Vamos a instalarte la aplicación</translation>
 <translation id="6951153907720526401">Controladores de pago</translation>
@@ -4135,7 +4126,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7241389281993241388">Inicia sesión en <ph name="TOKEN_NAME" /> para importar el certificado de cliente.</translation>
 <translation id="7243632151880336635">Borrar y cerrar sesión</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (recomendado)</translation>
-<translation id="7246339268451149667">¿Habilitar el desbloqueo con huella digital?</translation>
 <translation id="7246947237293279874">Proxy de FTP</translation>
 <translation id="725109152065019550">Tu administrador ha inhabilitado el almacenamiento externo en tu cuenta.</translation>
 <translation id="7253521419891527137">&amp;Más información</translation>
@@ -4690,7 +4680,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8050038245906040378">Firma de código comercial de Microsoft</translation>
 <translation id="8053278772142718589">Archivos PKCS #12</translation>
 <translation id="8053390638574070785">Cargar página de nuevo</translation>
-<translation id="8054029954190364711">Función de desbloqueo con huella digital</translation>
 <translation id="8054517699425078995">Este tipo de archivo puede dañar tu dispositivo. ¿Quieres descargar <ph name="FILE_NAME" /> de todas formas?</translation>
 <translation id="8054563304616131773">Escribe una dirección de correo electrónico válida</translation>
 <translation id="8054921503121346576">Teclado USB conectado</translation>
@@ -4709,7 +4698,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8075191520954018715">Estado de la memoria</translation>
 <translation id="8076492880354921740">Pestañas</translation>
 <translation id="8076835018653442223">Tu administrador ha inhabilitado el acceso a los archivos locales de tu dispositivo</translation>
-<translation id="8077816382010018681">Título de la notificación de la función de desbloqueo rápido</translation>
 <translation id="8079530767338315840">Repetir</translation>
 <translation id="8079938625609335826">Activa la sincronización para ver tus extensiones en todos tus dispositivos.</translation>
 <translation id="8083739373364455075">Consigue 100 GB de espacio libre en Google Drive</translation>
@@ -5176,6 +5164,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8821045908425223359">Configurar la dirección IP automáticamente</translation>
 <translation id="882204272221080310">Actualizar firmware para mayor seguridad</translation>
 <translation id="8823514049557262177">Copiar te&amp;xto de enlace</translation>
+<translation id="8823704566850948458">Sugerir contraseña...</translation>
 <translation id="8824701697284169214">Añadir pá&amp;gina...</translation>
 <translation id="8827752199525959199">Más acciones (contraseña de <ph name="USERNAME" /> en <ph name="DOMAIN" />)</translation>
 <translation id="8828933418460119530">Nombre de DNS</translation>
@@ -5204,7 +5193,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8876215549894133151">Formato:</translation>
 <translation id="8876307312329369159">Este ajuste no se puede cambiar en una sesión de demostración.</translation>
-<translation id="8876309039915144086">Generar contraseña...</translation>
 <translation id="8877448029301136595">[directorio principal]</translation>
 <translation id="8879284080359814990">&amp;Mostrar como pestaña</translation>
 <translation id="8883847527783433352">Sincronizar con otra cuenta</translation>

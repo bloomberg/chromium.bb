@@ -550,7 +550,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această setare este dezactivată, utilizatorii nu pot să printeze din <ph name="PRODUCT_NAME" />. Printarea este dezactivată în meniul cheie, în extensii, în aplicațiile JavaScript etc. În momentul printării, utilizatorii pot printa din pluginuri care ocolesc <ph name="PRODUCT_NAME" />. De exemplu, anumite aplicații Flash au opțiunea de printare în propriul meniu contextual, care nu este inclus în această politică.</translation>
 <translation id="2518231489509538392">Permiteți redarea audio</translation>
 <translation id="2521581787935130926">Afișați comanda rapidă pentru aplicații în bara de marcaje</translation>
-<translation id="2529700525201305165">Restricționați utilizatorii care au permisiunea de a se conecta la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">Configurează lista aplicațiilor și a extensiilor cu instalare forțată</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2536525645274582300">Utilizatorul decide dacă să activeze serviciile de localizare Google</translation>
@@ -794,6 +793,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă nu configurezi politica, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="3205825995289802549">Maximizează prima fereastră din browser la prima rulare</translation>
+<translation id="3211426942294667684">Setări de conectare pentru browser</translation>
 <translation id="3213821784736959823">Stabilește dacă clientul DNS integrat este utilizat în <ph name="PRODUCT_NAME" />.
 
       Dacă această politică este activată, va fi utilizat clientul DNS integrat, atunci când este disponibil.
@@ -1065,6 +1065,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă nu setezi această politică, <ph name="PRODUCT_NAME" /> va utiliza directorul prestabilit obișnuit (specific platformei).
 
       Pentru o listă a variabilelor care pot fi utilizate, accesează https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3904459740090265495">Această politică stabilește comportamentul de conectare al browserului. Îți permite să specifici dacă utilizatorul poate să se conecteze la <ph name="PRODUCT_NAME" /> cu contul său și să folosească servicii conexe contului, cum ar fi Sincronizarea Chrome.
+
+      Dacă politica este setată la „Dezactivează conectarea la browser”, utilizatorul nu poate să se conecteze la browser și să folosească serviciile bazate pe cont. În acest caz, funcțiile la nivel de browser, cum ar fi Sincronizarea Chrome, nu pot fi folosite și vor fi indisponibile. Dacă utilizatorul era conectat, iar politica este setată ca „Dezactivată”, acesta va fi deconectat data viitoare când folosește Chrome, însă datele profilului său local, cum ar fi marcajele, parolele etc., se vor păstra. Utilizatorul va putea să se conecteze și să folosească serviciile web Google, cum ar fi Gmail.
+
+      Dacă politica este setată la „Activează conectarea la browser”, utilizatorul are permisiunea de a se conecta la browser și este conectat automat când este conectat la serviciile web Google, cum ar fi Gmail. Conectarea la browser înseamnă că informațiile contului utilizatorului vor fi păstrate de browser. Cu toate acestea, Sincronizarea Chrome nu va fi activată automat. Utilizatorul trebuie să activeze separat această funcție. Activând această politică, utilizatorul nu va dezactiva setarea care permite conectarea la browser. Pentru a controla disponibilitatea Sincronizării Chrome, folosiți politica „SyncDisabled”.
+
+      Dacă politica este setată la „Conectare obligatorie la browser”, utilizatorul va vedea un dialog de selectare a contului și trebuie să aleagă și să se conecteze la un cont pentru a folosi browserul. Astfel, se vor aplica politicile asociate contului pentru conturile gestionate. În mod prestabilit, Sincronizarea Chrome se va activa pentru acel cont, cu excepția cazului în care sincronizarea a fost dezactivată de administratorul domeniului sau prin politica „SyncDisabled”. Valoarea prestabilită pentru BrowserGuestModeEnabled va fi dezactivată. Reține că profilurile neconectate existente vor fi blocate și inaccesibile după activarea acestei politici. Pentru mai multe informații, consultă articolul din centrul de ajutor: https://support.google.com/chrome/a/answer/7572556.
+
+      Dacă această politică nu este setată, utilizatorul poate decide dacă să activeze opțiunea de conectare la browser și să o folosească după cum dorește.</translation>
 <translation id="3911737181201537215">Această politică nu afectează înregistrările în jurnal din Android.</translation>
 <translation id="391531815696899618">Dacă este activată, dezactivează sincronizarea cu Google Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" />. În acest caz, datele nu sunt încărcate în Google Drive.
 
@@ -1113,6 +1122,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Reține că politica este ignorată și serviciile de localizare Google sunt dezactivate întotdeauna atunci când politica <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> este setată la <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Permite interogările către un serviciu Google cu informații despre oră</translation>
+<translation id="408076456549153854">Activează conectarea la browser</translation>
 <translation id="4088589230932595924">Modul incognito a fost impus</translation>
 <translation id="4088983553732356374">Îți permite să setezi dacă site-urile au permisiunea de a seta date locale. Setarea datelor locale poate fi permisă sau refuzată în bloc pentru toate site-urile.
 
@@ -1378,11 +1388,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4816674326202173458">Permiteți ca utilizatorul din companie să fie atât principal, cât și secundar (comportamentul prestabilit pentru utilizatorii care nu sunt gestionați)</translation>
 <translation id="4826326557828204741">Acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează energia bateriei</translation>
 <translation id="4834526953114077364">Utilizatorii care nu s-au conectat în ultimele 3 luni sunt eliminați până când există suficient spațiu liber</translation>
-<translation id="4838572175671839397">Conține o expresie regulată care este utilizată pentru a stabili utilizatorii care se pot conecta la <ph name="PRODUCT_NAME" />.
-
-      Dacă un utilizator încearcă să se conecteze cu un nume de utilizator care nu se potrivește cu acest model, este afișată o eroare corespunzătoare.
-
-      Dacă această politică nu este setată sau este necompletată, atunci toți utilizatorii se pot conecta la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Activează modul ecran complet</translation>
 <translation id="4861767323695239729">Configurează metodele de introducere a textului permise într-o sesiune a utilizatorului</translation>
 <translation id="4869787217450099946">Specifică dacă este permisă blocarea activării ecranului. Blocarea activării ecranului poate fi solicitată de extensii prin intermediul API-ului pentru extensiile de gestionare a consumului de energie.
@@ -1415,6 +1420,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4962262530309732070">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite opțiunea Adaugă o persoană din managerul de utilizatori.
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea de profiluri noi din managerul de utilizatori.</translation>
+<translation id="4970855112942626932">Dezactivează conectarea la browser</translation>
 <translation id="4971529314808359013">Îți permite să specifici o listă de șabloane de adrese URL care stabilesc site-urile pentru care <ph name="PRODUCT_NAME" /> trebuie să selecteze automat un certificat de client, dacă site-ul solicită un astfel de certificat.
 
           Valoarea trebuie să fie o serie de dicționare JSON sub formă de șiruri de caractere. Fiecare dicționar trebuie să aibă forma { „pattern”: „$URL_PATTERN”, „filter” : $FILTER }, unde $URL_PATTERN este un șablon pentru setarea de conținut. Valoarea pentru $FILTER limitează din care certificate de client va selecta automat browserul. Indiferent de filtru, se vor selecta numai certificatele care se potrivesc cu solicitarea de certificat a serverului. Dacă $FILTER are forma { „ISSUER”: { „CN”: „$ISSUER_CN” } }, se vor selecta numai certificatele de client emise de o autoritate de certificare cu numele comun $ISSUER_CN. Dacă $FILTER este dicționarul gol {}, nu mai există alte restricții privind selectarea certificatelor de client.
@@ -1798,6 +1804,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică nu este configurată, lista de dispozitive USB detașabile este necompletată.</translation>
 <translation id="6083631234867522991">Windows (clienți Windows):</translation>
+<translation id="6091233616732024397">Obligă utilizatorii să se conecteze pentru a utiliza browserul</translation>
 <translation id="6093156968240188330">Permite utilizatorilor la distanță să interacționeze cu ferestrele cu privilegii superioare din sesiunile de asistență la distanță</translation>
 <translation id="6095999036251797924">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe c.a. sau pe baterie.
 
@@ -1870,6 +1877,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6368011194414932347">Configurează adresa URL a paginii de pornire</translation>
 <translation id="6368403635025849609">Permite JavaScript pe aceste site-uri</translation>
 <translation id="6376659517206731212">Poate fi obligatorie</translation>
+<translation id="6377355597423503887">Această politică este învechită, îți recomandăm să folosești BrowserSignin.
+
+      Permite utilizatorului să se conecteze la <ph name="PRODUCT_NAME" />.
+
+      Dacă setezi această politică, poți stabili dacă utilizatorul are permisiunea de a se conecta la <ph name="PRODUCT_NAME" />. Dacă dezactivezi această politică, aplicațiile și extensiile care folosesc API-ul chrome.identity nu vor putea funcționa. Prin urmare, îți recomandăm să folosești SyncDisabled.</translation>
 <translation id="6378076389057087301">Specificați dacă activitatea audio afectează gestionarea consumului de energie</translation>
 <translation id="637934607141010488">Raportează lista cu utilizatorii dispozitivului care s-au conectat recent.
 
@@ -2046,25 +2058,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6903814433019432303">Această politică este activă numai în modul Vânzare. 
 
       Stabilește setul de adrese URL de încărcat la pornirea sesiunii demonstrative. Această politică va înlocui orice alte mecanisme de stabilire a adresei URL inițiale și astfel poate fi aplicată unei sesiuni care nu este asociată cu un anumit utilizator.</translation>
-<translation id="6908347296939885026">Activează funcția de conectare restricționată la G Suite din <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
-
-      Dacă definești această setare, utilizatorul va putea accesa Google
-      Apps numai folosind conturi din domeniile specificate (reține că acest lucru nu
-      funcționează pentru gmail.com/googlemail.com).
-
-      Această setare NU va împiedica utilizatorul să se conecteze pe un dispozitiv
-      gestionat care necesită autentificarea cu un cont Google. Utilizatorul va avea în   continuare permisiunea să se
-      conecteze la conturi din alte domenii, dar i se va afișa o eroare
-      atunci când încearcă să folosească G Suite cu acele conturi.
-
-      Dacă lași această setare necompletată/neconfigurată, utilizatorul va putea să
-      acceseze G Suite cu orice cont.
-
-      Această politică determină anexarea antetului X-GoogApps-Allowed-Domains la toate solicitările
-      HTTP and HTTPS pentru toate domeniile google.com, așa cum se descrie la
-      https://support.google.com/a/answer/1668854.
-
-     Utilizatorii nu pot modifica sau anula această setare.</translation>
 <translation id="6908640907898649429">Configurează furnizorul de căutare prestabilit. Poți specifica furnizorul de căutare prestabilit pe care utilizatorul îl va folosi sau poți alege să dezactivezi căutarea prestabilită.</translation>
 <translation id="6913068954484253496">Permite ca <ph name="PRODUCT_NAME" /> să se conecteze la dispozitivele Google Cast folosind toate adresele IP.</translation>
 <translation id="6915442654606973733">Activați funcția de accesibilitate pentru feedback vocal.
@@ -2777,6 +2770,11 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8548832052135586762">Setează imprimarea la exclusiv color, exclusiv monocromă sau fără restricții privind modul de culoare. Politica nesetată este tratată ca lipsa oricărei restricții.</translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
+<translation id="857369585509260201">Această politică este învechită, îți recomandăm să folosești BrowserSignin.
+
+      Dacă această politică este activată, utilizatorul trebuie să se conecteze la <ph name="PRODUCT_NAME" /> cu profilul său înainte de a folosi browserul. Valoarea prestabilită a BrowserGuestModeEnabled va fi dezactivată. Reține că profilurile neconectate existente vor fi blocate și inaccesibile după activarea acestei politici. Pentru mai multe informații, consultă articolul din centrul de ajutor.
+
+      Dacă această politică este dezactivată sau nu este configurată, utilizatorul poate folosi browserul fără a se conecta la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Specifică imprimantele pe care nu le poate folosi un utilizator.
 
       Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_BLACKLIST" /> este aleasă pentru <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -2982,13 +2980,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Posibilitățile reale de revenire pot depinde și de modelul dispozitivului și de corecțiile de vulnerabilitate critice.</translation>
 <translation id="913195841488580904">Blocați accesul la o listă de adrese URL</translation>
 <translation id="9135033364005346124">Activează proxy-ul <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">O listă albă care stabilește ce moduri de deblocare rapidă pot să configureze și să folosească utilizatorii pentru a debloca ecranul de blocare.
-
-          Această valoare este o listă de șiruri. Intrările valide din listă sunt: „toate”, „PIN”. Dacă adaugi „toate” în listă, toate modurile de deblocare rapidă sunt disponibile utilizatorului, inclusiv cele implementate pe viitor. În caz contrar, vor fi disponibile numai modurile de deblocare rapidă prezente în listă.
-
-          De exemplu, pentru a permite toate modurile de deblocare rapidă, folosește [„toate”]. Pentru a permite numai deblocarea prin codul PIN, folosește [„PIN”]. Pentru a dezactiva toate modurile de deblocare rapidă, folosește [].
-
-          În mod prestabilit, nu sunt disponibile moduri de deblocare rapidă pentru dispozitivele gestionate.</translation>
 <translation id="9136399279941091445">Intervalele de inactivitate când politicile specificate ale dispozitivului sunt lansate</translation>
 <translation id="9147029539363974059">Trimite jurnalele de sistem pe serverul de gestionare, pentru ca administratorii
       să poată gestiona jurnalele de sistem.

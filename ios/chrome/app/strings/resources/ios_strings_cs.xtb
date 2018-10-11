@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Z uplynulého dne</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3112556859945124369">Označit…</translation>
-<translation id="3151924044251363314">Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslovou frázi. Heslová fráze se neodesílá do Googlu a není na Googlu uložena. Pokud ji zapomenete nebo toto nastavení budete chtít změnit, bude nutné synchronizaci resetovat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Označit vše…</translation>
 <translation id="3175081911749765310">Webové služby</translation>
 <translation id="3207960819495026254">Přidáno do záložek</translation>
@@ -332,7 +331,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Aplikace od Googlu</translation>
 <translation id="6730682669179532099">Hesla se nepodařilo exportovat</translation>
-<translation id="6762156594045689028">Chcete-li toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="6780034285637185932">PSČ</translation>
 <translation id="6785453220513215166">Odesílání zprávy o selhání...</translation>
 <translation id="679325081238418596">Synchronizujte záložky, historii, hesla a nastavení do všech svých zařízení</translation>

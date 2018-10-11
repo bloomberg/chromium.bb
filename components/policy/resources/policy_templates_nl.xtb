@@ -574,7 +574,6 @@
       Als deze instelling is uitgeschakeld, kunnen gebruikers niet afdrukken via <ph name="PRODUCT_NAME" />. Afdrukken is uitgeschakeld in het menu 'Gereedschap', extensies, JavaScript-applicaties, enzovoort. Het is nog steeds mogelijk af te drukken via plug-ins die <ph name="PRODUCT_NAME" /> omzeilen tijdens het afdrukken. Bij Flash-applicaties bevindt de afdrukoptie zich in het contextmenu, wat niet onder dit beleid valt.</translation>
 <translation id="2518231489509538392">Het afspelen van audio toestaan</translation>
 <translation id="2521581787935130926">De snelkoppeling voor apps weergeven op de bladwijzerbalk</translation>
-<translation id="2529700525201305165">Beperken welke gebruikers mogen inloggen bij <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2536525645274582300">De gebruiker beslist of Locatieservices van Google moeten worden ingeschakeld</translation>
@@ -1105,7 +1104,7 @@
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.</translation>
 <translation id="3904459740090265495">Met dit beleid wordt het inloggedrag van de browser beheerd. Hiermee kun je specificeren of de gebruiker kan inloggen bij <ph name="PRODUCT_NAME" /> met zijn account en accountgerelateerde services (zoals Chrome-synchronisatie) kan gebruiken.
 
-      Als het beleid is ingesteld op 'Inloggen bij browser uitschakelen', kan de gebruiker niet inloggen bij de browser en geen accountgebaseerde services gebruiken. Functies op browserniveau (zoals Chrome-synchronisatie) kunnen in dit geval niet worden gebruikt en zijn niet beschikbaar. Als de gebruiker was ingelogd en het beleid is ingesteld op 'Uitgeschakeld', wordt de gebruiker uitgelogd wanneer hij Chrome de volgende keer uitvoert. Zijn lokale profielgegevens (zoals bladwijzers, wachtwoorden, enzovoort) blijven behouden. De gebruiker kan nog steeds inloggen bij en gebruikmaken van Google-webservices zoals Gmail.
+      Als het beleid is ingesteld op 'Inloggen bij browser uitschakelen', kan de gebruiker niet inloggen bij de browser en geen accountgebaseerde services gebruiken. Functies op browserniveau (zoals Chrome-synchronisatie) kunnen in dit geval niet worden gebruikt en zijn niet beschikbaar. Als de gebruiker was ingelogd en het beleid is ingesteld op 'Uitgeschakeld', wordt de gebruiker uitgelogd wanneer hij Chrome de volgende keer gebruikt. Zijn lokale profielgegevens (zoals bladwijzers, wachtwoorden, enzovoort) blijven behouden. De gebruiker kan nog steeds inloggen bij en gebruikmaken van Google-webservices zoals Gmail.
 
       Als het beleid is ingesteld op 'Inloggen bij browser inschakelen', mag de gebruiker inloggen bij de browser en wordt deze automatisch ingelogd bij de browser wanneer hij is ingelogd bij Google-webservices zoals Gmail. Als een gebruiker wordt ingelogd bij de browser, betekent dit dat de accountgegevens van de gebruiker worden bewaard door de browser. Het betekent echter niet dat Chrome-synchronisatie standaard wordt ingeschakeld. De gebruiker moet zich afzonderlijk aanmelden voor gebruik van deze functie. Als dit beleid wordt ingeschakeld, kan de gebruiker de instelling die inloggen bij de browser toestaat, niet uitschakelen. Gebruik het beleid 'SyncDisabled' om de beschikbaarheid van Chrome-synchronisatie te beheren.
 
@@ -1435,7 +1434,6 @@
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
 <translation id="4834526953114077364">De gebruikers die het langst geleden gebruikt zijn en gedurende de laatste drie maanden niet zijn ingelogd, worden verwijderd totdat er voldoende vrije ruimte is</translation>
-<translation id="4838572175671839397">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" />. Er wordt een fout weergegeven als een gebruiker probeert in te loggen met een gebruikersnaam die niet overeenkomt met dit patroon. Als dit beleid niet wordt ingesteld of leeg blijft, kan elke gebruiker inloggen op <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Modus voor volledig scherm toestaan</translation>
 <translation id="4861767323695239729">De toegestane invoermethoden in een gebruikerssessie configureren</translation>
 <translation id="4869787217450099946">Geeft aan of schermactiveringsvergrendeling is toegestaan. Deze kan worden aangevraagd door extensies via de API voor de stroombeheerextensie.
@@ -2136,17 +2134,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6903814433019432303">Dit beleid is alleen ingeschakeld in de winkelmodus.
 
       Bepaalt welke serie URL's moet worden geladen als de demosessie wordt gestart. Dit beleid overschrijft alle andere procedures voor het instellen van de eerste URL en kan daarom alleen worden toegepast in een sessie die niet is toegewezen aan een specifieke gebruiker.</translation>
-<translation id="6908347296939885026">Hiermee wordt de beperkte inlogfunctie van <ph name="PRODUCT_NAME" /> in G Suite ingeschakeld en wordt voorkomen dat gebruikers deze instelling wijzigen.
-
-      Als je deze instelling definieert, kan de gebruiker G Suite alleen openen via accounts van de opgegeven domeinen (houd er rekening mee dat dit niet werkt voor gmail.com/googlemail.com).
-
-      Met deze instelling wordt NIET voorkomen dat de gebruiker kan inloggen op een beheerd apparaat waarvoor Google-verificatie is vereist. De gebruiker kan nog steeds inloggen op accounts van andere domeinen, maar krijgt een foutmelding wanneer hij probeert G Suite te gebruiken met die accounts.
-
-      Als je deze instelling leeg laat of niet instelt, kan de gebruiker G Suite via elk account openen.
-
-      Door dit beleid wordt de kop X-GoogApps-Allowed-Domains toegevoegd aan alle HTTP- en HTTPS-verzoeken voor alle google.com-domeinen, zoals beschreven in https://support.google.com/a/answer/1668854.
-
-      Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
 <translation id="6908640907898649429">Hiermee wordt de standaardzoekprovider geconfigureerd. Je kunt de standaardzoekprovider specificeren die de gebruiker gaat gebruiken, of je kunt ervoor kiezen de standaardzoekfunctie uit te schakelen.</translation>
 <translation id="6913068954484253496"><ph name="PRODUCT_NAME" /> toestaan om verbinding te maken met Cast-apparaten op alle IP-adressen.</translation>
 <translation id="6915442654606973733">De toegankelijkheidsfunctie voor gesproken feedback inschakelen.
@@ -3103,13 +3090,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Welke rollback precies mogelijk is, hangt ook samen met welke patches zijn geïnstalleerd voor het moederbord en voor kritieke risico's.</translation>
 <translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
 <translation id="9135033364005346124">Proxy voor <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
-<translation id="9136253551939494882">Een witte lijst die beheert welke modi voor snel ontgrendelen de gebruiker kan configureren en gebruiken om het vergrendelingsscherm te ontgrendelen.
-
-          Deze waarde bestaat uit een lijst met tekenreeksen. Geldige lijstvermeldingen zijn "all", "PIN". Als je "all" toevoegt aan de lijst, betekent dit dat elke modus voor snel ontgrendelen beschikbaar is voor de gebruiker, waaronder modi die in de toekomst worden geïmplementeerd. Anders zijn alleen de modi voor snel ontgrendelen in de lijst beschikbaar.
-
-          Als je bijvoorbeeld elke modus voor snel ontgrendelen wilt toestaan, gebruik je ['all"]. Als je alleen ontgrendelen via pincode wilt toestaan, gebruik je ["PIN"]. Als je alle modi voor snel ontgrendelen wilt uitschakelen, gebruik je [].
-
-          Standaard zijn er geen modi voor snel ontgrendelen beschikbaar voor beheerde apparaten.</translation>
 <translation id="9136399279941091445">Intervallen buiten gebruikstijd wanneer het gespecificeerde apparaatbeleid wordt vrijgegeven</translation>
 <translation id="9147029539363974059">Systeemlogboeken naar de beheerserver verzenden om
       beheerders in staat te stellen systeemlogboeken te controleren.

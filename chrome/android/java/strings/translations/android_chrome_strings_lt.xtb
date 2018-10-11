@@ -126,7 +126,6 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="1938981467853765413">Pateikti atsiliepimą</translation>
 <translation id="194341124344773587">Įjunkite „Chrome“ leidimą <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Slaptažodžių išsaugojimas</translation>
-<translation id="1944384637046898011">Šifruoti viską nuo <ph name="TIME" /> taikant „Google“ slaptažodį</translation>
 <translation id="1946005195648379376">Galite pasirinkti, kaip „Google“ turėtų naudoti jūsų naršymo istoriją, kad suasmenintų Paiešką ir kitas „Google“ paslaugas.</translation>
 <translation id="1952172573699511566">Kai bus įmanoma, svetainėje tekstas bus rodomas pasirinkta kalba.</translation>
 <translation id="195283394249132567">Suasmenintos „Google“ paslaugos</translation>
@@ -311,7 +310,6 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="3522247891732774234">Pasiekiamas naujinys. Daugiau parinkčių</translation>
 <translation id="3527085408025491307">Aplankas</translation>
 <translation id="3542235761944717775">Pasiekiama <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">Šifruoti visus sinchronizuotus duomenis naudojant sinchronizavimo slaptafrazę</translation>
 <translation id="3549657413697417275">Ieškokite savo istorijoje</translation>
 <translation id="3552151358455404883">Tvarkykite „Chrome“ sinchronizavimo ir suasmeninimo funkcijas skiltyje <ph name="BEGIN_LINK1" />„Nustatymai“<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Pridėti prie kontaktų</translation>
@@ -379,7 +377,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4084712963632273211">Nuo <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />pateikė „Google“<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Atsisiųsta <ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">Ištrinti programos duomenis?</translation>
-<translation id="4097739989936358050">Ši programa veikia naršyklėje „Chrome“.</translation>
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="410351446219883937">Automatinis paleidimas</translation>
 <translation id="4113030288477039509">Tvarko jūsų administratorius</translation>
@@ -424,7 +421,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="447252321002412580">Padėti tobulinti „Chrome“ funkcijas ir našumą</translation>
 <translation id="4479647676395637221">Pirmiausia klausti prieš leidžiant svetainėms naudoti kamerą (rekomenduojama)</translation>
 <translation id="4487967297491345095">Visi „Chrome“ duomenys bus ištrinti visam laikui. Tai apima visus failus, nustatymus, paskyras, duomenų bazes ir kt.</translation>
-<translation id="4508440807153586353">Tik jūsų slaptafrazę žinantis asmuo gali skaityti šifruotus duomenis. Slaptafrazė nesiunčiama į sistemą „Google“ ir joje nesaugoma. Pamiršę slaptafrazę arba norėdami pakeisti šį nustatymą turėsite iš naujo nustatyti sinchronizavimą. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Prieš # dieną}one{Prieš # dieną}few{Prieš # dienas}many{Prieš # dienos}other{Prieš # dienų}}</translation>
 <translation id="451872707440238414">Ieškoti žymėse</translation>
 <translation id="4521489764227272523">Pasirinkti duomenys pašalinti iš „Chrome“ ir sinchronizuojamų įrenginių.
@@ -724,11 +720,11 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6697492270171225480">Rodyti panašių puslapių pasiūlymus, kai nepavyksta rasti puslapio</translation>
 <translation id="6697947395630195233">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine.</translation>
 <translation id="6698801883190606802">Tvarkykite sinchronizuotus duomenis</translation>
+<translation id="6709133671862442373">Naujienos</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6712388303105732168">Žr. daugiau panašių pasiūlymų iš „Google“ naudodami mygtuką „Daugiau panašių“</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
 <translation id="6746124502594467657">Perkelti žemyn</translation>
-<translation id="6762156594045689028">Kad pakeistumėte šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatykite sinchronizavimą<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Perbraukite žemyn, kad uždarytumėte.</translation>
 <translation id="6768277682697012280">Įdiegiamas AR modulis...</translation>
 <translation id="6776813977906306442">Naudodami atsisiuntimo mygtuką atsisiųskite vaizdo įrašą, kad galėtumėte jį peržiūrėti vėliau.</translation>

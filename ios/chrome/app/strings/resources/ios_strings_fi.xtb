@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Viimeisen päivän ajalta</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
 <translation id="3112556859945124369">Merkitse…</translation>
-<translation id="3151924044251363314">Salattuja tietojasi voi lukea vain tunnuslauseesi avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, synkronointi täytyy nollata. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Merkitse kaikki…</translation>
 <translation id="3175081911749765310">Verkkopalvelut</translation>
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
@@ -332,7 +331,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="667999046851023355">Dokumentti</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Salasanojen vienti epäonnistui</translation>
-<translation id="6762156594045689028">Jos haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
 <translation id="6780034285637185932">Postinumero</translation>
 <translation id="6785453220513215166">Lähetetään virheraporttia…</translation>
 <translation id="679325081238418596">Käytä kirjanmerkkejäsi, historiaasi, salasanojasi ja muita asetuksiasi kaikilla laitteillasi.</translation>

@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Последния ден</translation>
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3112556859945124369">Означаване…</translation>
-<translation id="3151924044251363314">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Означаване на всички…</translation>
 <translation id="3175081911749765310">Уеб услуги</translation>
 <translation id="3207960819495026254">С отметка</translation>
@@ -332,7 +331,6 @@
 <translation id="667999046851023355">Документ</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Паролите не могат да бъдат експортирани</translation>
-<translation id="6762156594045689028">За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Пощенски код</translation>
 <translation id="6785453220513215166">Сигналите за сривове се изпращат...</translation>
 <translation id="679325081238418596">Получете отметките, историята, паролите и другите си настройки на всичките си устройства</translation>

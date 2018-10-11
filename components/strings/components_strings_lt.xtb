@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Pervadinti</translation>
 <translation id="1175364870820465910">&amp;Spausdinti...</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatiškai pateikti<ph name="END_WHITEPAPER_LINK" /> išsamią informaciją apie galimas saugos problemas sistemoje „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="1201895884277373915">Daugiau iš šios svetainės</translation>
 <translation id="1206967143813997005">Netinkamas pirminis parašas</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Užpildyti</translation>
 <translation id="2465655957518002998">Pasirinkti pristatymo metodą</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Paleistas įrankis „Windows Network Diagnostics“<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Išversti šį puslapį</translation>
 <translation id="2479410451996844060">Netinkamas paieškos URL.</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="2491120439723279231">Serverio sertifikate yra klaidų.</translation>
@@ -384,7 +384,6 @@
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mažiausiai 1 elementas sinchronizuotuose įrenginiuose}=1{1 elementas (ir daugiau sinchronizuotuose įrenginiuose)}one{# elementas (ir daugiau sinchronizuotuose įrenginiuose)}few{# elementai (ir daugiau sinchronizuotuose įrenginiuose)}many{# elemento (ir daugiau sinchronizuotuose įrenginiuose)}other{# elementų (ir daugiau sinchronizuotuose įrenginiuose)}}</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>
-<translation id="3549644494707163724">Šifruoti visus sinchronizuotus duomenis naudojant sinchronizavimo slaptafrazę</translation>
 <translation id="3556433843310711081">Jūsų valdytojas gali atblokuoti ją už jus</translation>
 <translation id="3566021033012934673">Jūsų ryšys nėra privatus</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -426,6 +425,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Galiojimo laikas baigiasi <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Žalingas turinys užblokuotas.</translation>
+<translation id="3810973564298564668">Valdyti</translation>
 <translation id="382518646247711829">Jei naudojate tarpinį serverį…</translation>
 <translation id="3828924085048779000">Neleidžiama naudoti tuščios slaptafrazės.</translation>
 <translation id="385051799172605136">Grįžti</translation>
@@ -535,7 +535,6 @@
 <translation id="4587425331216688090">Pašalinti adresą iš „Chrome“?</translation>
 <translation id="4592951414987517459">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant modernų šifravimo paketą.</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
-<translation id="4619615317237390068">Skirtukai iš kitų įrenginių</translation>
 <translation id="4646534391647090355">Eiti dabar</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikate yra klaidų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
@@ -549,6 +548,7 @@
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Iš naujo paleiskite „Chromium“</translation>
+<translation id="473775607612524610">Atnaujinti</translation>
 <translation id="4742407542027196863">Tvarkyti slaptažodžius…</translation>
 <translation id="4744603770635761495">Vykdomasis kelias</translation>
 <translation id="4750917950439032686">Į šią svetainę siunčiama informacija (pvz., slaptažodžiai arba kredito kortelių numeriai) yra privati.</translation>
@@ -748,7 +748,6 @@
 <translation id="6051221802930200923">Šiuo metu negalite apsilankyti <ph name="SITE" />, nes svetainėje naudojamas sertifikatų prisegimas. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="6059925163896151826">USB įrenginiai</translation>
 <translation id="6071091556643036997">Politikos tipas netinkamas.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Ši kortelė bus išsaugota „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}one{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}few{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}many{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}other{Šios kortelės bus išsaugotos „Google“ paskyroje, kad galėtumėte greičiau apdoroti mokėjimą naudodami įrenginius.}}</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
 <translation id="6096619198407627433">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros. Galite prarasti prieigą prie saugomo turinio iš <ph name="SITE" /> ir kelių kitų svetainių.</translation>
 <translation id="610911394827799129">„Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -927,7 +926,6 @@ Papildoma išsami informacija:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7453467225369441013">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="7455133967321480974">Naudoti visuotinį numatytąjį nustatymą (blokuoti)</translation>
-<translation id="7460163899615895653">Naujausi kitų įrenginių skirtukai rodomi čia</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
@@ -1011,6 +1009,7 @@ Papildoma išsami informacija:
 <translation id="7983301409776629893">Visada versti iš <ph name="ORIGINAL_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nenurodytas</translation>
 <translation id="800218591365569300">Pabandykite uždaryti skirtukus arba kitas programas, kad atlaisvintumėte atminties.</translation>
+<translation id="8009225694047762179">Tvarkyti slaptažodžius</translation>
 <translation id="8012647001091218357">Šiuo metu nepavyko susisiekti su jūsų tėvais. Bandykite dar kartą.</translation>
 <translation id="8025119109950072390">Šios svetainės užpuolėjai gali bandyti apgaulingai priversti atlikti pavojingus veiksmus, pvz., įdiegti programinę įrangą ar atskleisti asmens informaciją (pvz., slaptažodžius, telefonų numerius ar kredito kortelių informaciją).</translation>
 <translation id="8034522405403831421">Šis puslapis yra <ph name="SOURCE_LANGUAGE" /> k. Išversti į <ph name="TARGET_LANGUAGE" /> k.?</translation>
@@ -1072,6 +1071,7 @@ Papildoma išsami informacija:
 Papildoma išsami informacija:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Keisti</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8433057134996913067">Tai atlikę atsijungsite nuo daugumos svetainių.</translation>
 <translation id="8437238597147034694">&amp;Anuliuoti perkėlimą</translation>

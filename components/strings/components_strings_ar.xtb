@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">إعادة تسمية</translation>
 <translation id="1175364870820465910">ط&amp;باعة...</translation>
 <translation id="1181037720776840403">إزالة</translation>
-<translation id="1184214524891303587">‏<ph name="BEGIN_WHITEPAPER_LINK" />إبلاغ Google تلقائيًا<ph name="END_WHITEPAPER_LINK" /> بتفاصيل أي مخاطر أمنية محتملة. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1201895884277373915">المزيد من هذا الموقع</translation>
 <translation id="1206967143813997005">توقيع أوَّلي سيئ</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">ملء</translation>
 <translation id="2465655957518002998">اختيار طريقة التسليم للمستخدم</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />تشغيل بيانات تشخيص الشبكة<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">ترجم هذه الصفحة</translation>
 <translation id="2479410451996844060">‏عنوان URL للبحث غير صالح.</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
 <translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">شهادة الخادم غير موثوق فيها.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{عنصر واحد على الأقل على الأجهزة المتزامنة}=1{عنصر واحد (1) (وأكثر على الأجهزة المتزامنة)}two{عنصران (#) (وأكثر على الأجهزة المتزامنة)}few{# عناصر (وأكثر على الأجهزة المتزامنة)}many{# عنصرًا (وأكثر على الأجهزة المتزامنة)}other{# عنصر (وأكثر على الأجهزة المتزامنة)}}</translation>
 <translation id="3539171420378717834">الاحتفاظ بنسخة من هذه البطاقة على هذا الجهاز</translation>
-<translation id="3549644494707163724">تشفير جميع البيانات المتزامنة باستخدام عبارة مرور المزامنة</translation>
 <translation id="3556433843310711081">يمكن لمديرك إلغاء الحظر لك</translation>
 <translation id="3566021033012934673">اتصالك ليس خاصًا</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">تنتهي في <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">تم حظر المحتوى الضار.</translation>
+<translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="382518646247711829">إذا كنت تستخدم خادمًا وكيلاً...</translation>
 <translation id="3828924085048779000">غير مسموح باستخدام عبارة مرور فارغة.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">‏هل تريد إزالة العنوان من Chrome؟</translation>
 <translation id="4592951414987517459">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير حديثة.</translation>
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
-<translation id="4619615317237390068">علامات التبويب من الأجهزة الأخرى</translation>
 <translation id="4646534391647090355">الانتقال الآن</translation>
 <translation id="4668929960204016307">،</translation>
 <translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">إعادة تحميل السياسات</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="4736825316280949806">‏إعادة تشغيل Chromium</translation>
+<translation id="473775607612524610">تحديث</translation>
 <translation id="4742407542027196863">إدارة كلمات المرور…</translation>
 <translation id="4744603770635761495">المسار التنفيذي</translation>
 <translation id="4750917950439032686">إن معلوماتك (على سبيل المثال، كلمات المرور أو أرقام بطاقة الائتمان) تكون خاصة عندما يتم إرسالها إلى هذا الموقع.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع يستخدم أداة التحقق من صحة الشهادات. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت لاحق على الأرجح.</translation>
 <translation id="6059925163896151826">‏أجهزة USB</translation>
 <translation id="6071091556643036997">نوع السياسة غير صالح.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{‏سيتم حفظ هذه البطاقة في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}zero{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}two{‏سيتم حفظ هاتين البطاقتين في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}few{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}many{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}other{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}}</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN" />.</translation>
 <translation id="6096619198407627433">‏يُسجَّل خروجك من معظم المواقع الإلكترونية. ولن يُسجَّل خروجك من حسابك على Google. قد تفقد إمكانية الوصول إلى محتوى محمي من <ph name="SITE" /> وبعض المواقع الإلكترونية الأخرى.</translation>
 <translation id="610911394827799129">‏قد يتضمن حسابك على Google نماذج أخرى من سجل التصفح على <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -926,7 +925,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
 <translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7455133967321480974">استخدام الإعداد التلقائي العمومي (حظر)</translation>
-<translation id="7460163899615895653">تظهر علامات التبويب الأخيرة من الأجهزة الأخرى هنا</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7485870689360869515">لم يتم العثور على بيانات.</translation>
@@ -1010,6 +1008,7 @@
 <translation id="7983301409776629893">الترجمة من اللغة <ph name="ORIGINAL_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> دومًا</translation>
 <translation id="7995512525968007366">غير محدد</translation>
 <translation id="800218591365569300">جرّب إغلاق علامات التبويب أو البرامج الأخرى لتفريغ مساحة من الذاكرة.</translation>
+<translation id="8009225694047762179">إدارة كلمات المرور</translation>
 <translation id="8012647001091218357">لم نتمكن من الوصول إلى والديك في الوقت الحالي. يُرجى إعادة المحاولة مرة أخرى.</translation>
 <translation id="8025119109950072390">قد يحاول المهاجمون الموجودون على هذا الموقع فعل شيء خطير كتثبيت البرامج أو الكشف عن معلوماتك الشخصية (على سبيل المثال، كلمات المرور أو أرقام الهواتف أو بطاقات الائتمان).</translation>
 <translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" />. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
@@ -1071,6 +1070,7 @@
 التفاصيل الإضافية:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">تغيير</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8437238597147034694">تراجع عن ال&amp;نقل</translation>

@@ -126,7 +126,6 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="1938981467853765413">Magbigay ng feedback</translation>
 <translation id="194341124344773587">I-on ang pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
-<translation id="1944384637046898011">I-encrypt lahat gamit ang password ng Google simula sa <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang i-personalize ang Search at iba pang mga serbisyo ng Google.</translation>
 <translation id="1952172573699511566">Magpapakita ang mga website ng text sa iyong gustong wika, kung posible.</translation>
 <translation id="195283394249132567">Mga naka-personalize na serbisyo ng Google</translation>
@@ -311,7 +310,6 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="3522247891732774234">May available na update. Higit pang mga opsyon</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ang available</translation>
-<translation id="3549644494707163724">I-encrypt ang lahat ng naka-sync na data gamit ang sarili mong passphrase sa pag-sync</translation>
 <translation id="3549657413697417275">Hanapin sa iyong history</translation>
 <translation id="3552151358455404883">Pamahalaan ang Chrome Sync at pag-personalize sa <ph name="BEGIN_LINK1" />Mga Setting<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Idagdag sa mga contact</translation>
@@ -379,7 +377,6 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4084712963632273211">Mula sa <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />ihinatid ng Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB na mga na-download</translation>
 <translation id="4095146165863963773">I-delete ang data ng app?</translation>
-<translation id="4097739989936358050">Gumagana ang app na ito sa Chrome.</translation>
 <translation id="4099578267706723511">Tulungang mapahusay ang Chrome sa pamamagitan ng pagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash.</translation>
 <translation id="410351446219883937">I-autoplay</translation>
 <translation id="4113030288477039509">Pinamamahalaan ng iyong administrator</translation>
@@ -424,7 +421,6 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="447252321002412580">Tumulong sa pagpapahusay sa mga feature at performance ng Chrome</translation>
 <translation id="4479647676395637221">Magtanong muna bago payagan ang mga site na gamitin ang iyong camera (inirerekomenda)</translation>
 <translation id="4487967297491345095">Permanenteng ide-delete ang lahat ng data ng app ng Chrome. Kabilang dito ang lahat ng file, setting, account, database, atbp.</translation>
-<translation id="4508440807153586353">Ang taong may alam ng iyong passphrase lang ang makakabasa sa iyong naka-encrypt na data. Hindi ipinapadala sa o iniimbak ng Google ang passphrase. Kung makakalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, kakailanganin mong i-reset ang pag-sync. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# araw ang nakalipas}one{# araw ang nakalipas}other{# na araw ang nakalipas}}</translation>
 <translation id="451872707440238414">Maghanap sa iyong mga bookmark</translation>
 <translation id="4521489764227272523">Inalis ang napiling data sa Chrome at sa iyong mga naka-sync na device.
@@ -724,11 +720,11 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6697492270171225480">Magpakita ng mga mungkahi para sa mga katulad na page kapag hindi mahanap ang isang page</translation>
 <translation id="6697947395630195233">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito.</translation>
 <translation id="6698801883190606802">Pamahalaan ang na-sync na data</translation>
+<translation id="6709133671862442373">Balita</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="6712388303105732168">Makakita ng higit pang tulad nito mula sa Google gamit ang button na Higit Pang Tulad Nito</translation>
 <translation id="6738867403308150051">Nagda-download...</translation>
 <translation id="6746124502594467657">Ibaba</translation>
-<translation id="6762156594045689028">Upang baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Mag-swipe pababa para isara.</translation>
 <translation id="6768277682697012280">Ini-install ang module ng AR...</translation>
 <translation id="6776813977906306442">Mag-download ng mga video upang panoorin sa ibang pagkakataon gamit ang button na I-download</translation>

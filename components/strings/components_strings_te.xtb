@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">పేరుమార్చు</translation>
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
-<translation id="1184214524891303587">సంభావ్య భద్రతా సంఘటనల గురించిన వివరాలను Googleకి <ph name="BEGIN_WHITEPAPER_LINK" />స్వయంచాలకంగా నివేదిస్తుంది<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">తదుపరి</translation>
 <translation id="1201895884277373915">ఈ సైట్ నుండి మరింత</translation>
 <translation id="1206967143813997005">తప్పు ప్రారంభ సంతకం</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">పూరించు</translation>
 <translation id="2465655957518002998">బట్వాడా పద్ధతిని ఎంచుకోండి</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">ఈ పేజీని అనువదించండి</translation>
 <translation id="2479410451996844060">చెల్లని శోధన URL.</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2491120439723279231">సర్వర్ యొక్క ప్రమాణపత్రంలో లోపాలు ఉన్నాయి.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">సర్వర్ యొక్క ప్రమాణ పత్రం నమ్మదగినది కాదు.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{సమకాలీకరించిన పరికరాల్లో కనీసం 1 అంశం}=1{1 అంశం (మరియు సమకాలీకరించిన పరికరాల్లో మరిన్ని)}other{# అంశాలు (మరియు సమకాలీకరించిన పరికరాల్లో మరిన్ని)}}</translation>
 <translation id="3539171420378717834">ఈ పరికరంలో ఈ కార్డ్ కాపీని ఉంచు</translation>
-<translation id="3549644494707163724">మీ స్వంత సమకాలీకరణ రహస్య పదబంధంతో సమకాలీకరించబడిన డేటా మొత్తాన్ని గుప్తీకరించండి</translation>
 <translation id="3556433843310711081">మీ నిర్వాహకుడు మీ కోసం దీన్ని అన్‌బ్లాక్ చేయగలరు</translation>
 <translation id="3566021033012934673">మీ కనెక్షన్ ప్రైవేట్ కాదు</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">గడువు ముగింపు <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">హానికర కంటెంట్ బ్లాక్ చేయబడింది.</translation>
+<translation id="3810973564298564668">నిర్వహించు</translation>
 <translation id="382518646247711829">మీరు ప్రాక్సీ సర్వర్‌ను ఉపయోగిస్తే...</translation>
 <translation id="3828924085048779000">ఖాళీ పాస్‌ఫ్రేజ్ అనుమతించబడదు.</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Chrome నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />కి గల మీ కనెక్షన్ ఆధునిక సైఫర్ సూట్ ఉపయోగించి గుప్తీకరించబడింది.</translation>
 <translation id="4594403342090139922">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
-<translation id="4619615317237390068">ఇతర పరికరాల్లోని ట్యాబ్‌లు</translation>
 <translation id="4646534391647090355">ఇప్పుడు నన్ను అక్కడకు తీసుకు వెళ్లు</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రంలో లోపాలు ఉన్నాయి. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">విధానాలను మళ్లీ లోడ్ చేయి</translation>
 <translation id="4728558894243024398">ప్లాట్‌ఫారమ్</translation>
 <translation id="4736825316280949806">Chromiumని పునఃప్రారంభించండి</translation>
+<translation id="473775607612524610">నవీకరణ</translation>
 <translation id="4742407542027196863">పాస్‌వర్డ్‌లను నిర్వహించు…</translation>
 <translation id="4744603770635761495">అమలు చేయగల మార్గం</translation>
 <translation id="4750917950439032686">మీ సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు లేదా క్రెడిట్ కార్డ్ నంబర్‌లు) ఈ సైట్‌కి పంపినప్పుడు అది ప్రైవేట్‌గా ఉంచబడుతుంది.</translation>
@@ -746,7 +746,6 @@
 <translation id="6051221802930200923">ప్రమాణపత్రాన్ని పిన్ చేసే పద్ధతిని వెబ్‌సైట్ ఉపయోగిస్తుంది కనుక మీరు ప్రస్తుతానికి <ph name="SITE" />ని సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికమే, కనుక ఈ పేజీ తర్వాత పని చేయవచ్చు.</translation>
 <translation id="6059925163896151826">USB పరికరాలు</translation>
 <translation id="6071091556643036997">విధాన రకం చెల్లదు.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{అన్ని పరికరాలలోనూ చెక్అవుట్‌ను వేగవంతంగా పూర్తి చేయడానికి, ఈ కార్డ్‌ మీ Google ఖాతాకు సేవ్ చేయబడుతుంది.}other{అన్ని పరికరాలలోనూ చెక్అవుట్‌ను వేగవంతంగా పూర్తి చేయడానికి, ఈ కార్డ్‌లు మీ Google ఖాతాకు సేవ్ చేయబడతాయి.}}</translation>
 <translation id="6080696365213338172">మీరు నిర్వాహకుని ద్వారా అందించబడిన ప్రమాణపత్రాన్ని ఉపయోగించి కంటెంట్‌ను ప్రాప్యత చేసారు. మీరు <ph name="DOMAIN" />కు అందించే డేటాకు మీ నిర్వాహకుని ద్వారా అంతరాయం ఏర్పడవచ్చు.</translation>
 <translation id="6096619198407627433">చాలా సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది. మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు. మీరు <ph name="SITE" /> మరియు మరికొన్ని ఇతర సైట్‌ల నుండి రక్షిత కంటెంట్‌కి యాక్సెస్‌ను కోల్పోవచ్చు.</translation>
 <translation id="610911394827799129">మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు</translation>
@@ -925,7 +924,6 @@
 <translation id="7451311239929941790">ఈ సమస్య గురించి <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" />.</translation>
 <translation id="7453467225369441013">చాలా సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది. మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు.</translation>
 <translation id="7455133967321480974">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (బ్లాక్ చేయి)</translation>
-<translation id="7460163899615895653">ఇతర పరికరాల్లో మీ ఇటీవలి ట్యాబ్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7481312909269577407">ఫార్వార్డ్</translation>
 <translation id="7485870689360869515">డేటా కనుగొనబడలేదు.</translation>
@@ -1009,6 +1007,7 @@
 <translation id="7983301409776629893">ఎల్లప్పుడూ <ph name="ORIGINAL_LANGUAGE" />ను <ph name="TARGET_LANGUAGE" />కు అనువదించు</translation>
 <translation id="7995512525968007366">పేర్కొనబడలేదు</translation>
 <translation id="800218591365569300">మెమరీని ఖాళీ చేయడానికి ఇతర ట్యాబ్‌లు లేదా ప్రోగ్రామ్‌లను మూసివేయడాన్ని ప్రయత్నించండి.</translation>
+<translation id="8009225694047762179">పాస్‌వర్డ్‌లను నిర్వహించండి</translation>
 <translation id="8012647001091218357">మేము ప్రస్తుతం మీ తల్లిదండ్రులను సంప్రదించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="8025119109950072390">ఈ సైట్‌లోని దాడి చేసేవారు సాఫ్ట్‌వేర్‌ను ఇన్‌స్టాల్ చేయడం లేదా మీ వ్యక్తిగత సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు, ఫోన్ నంబర్‌లు లేదా క్రెడిట్ కార్డ్‌లు) వెల్లడించడం వంటి ప్రమాదకరమైన పనులు చేసేలా మిమ్మల్ని మాయ చేయవచ్చు.</translation>
 <translation id="8034522405403831421">ఈ పేజీ <ph name="SOURCE_LANGUAGE" />లో ఉంది. దీన్ని <ph name="TARGET_LANGUAGE" />లోకి అనువదించాలా?</translation>
@@ -1070,6 +1069,7 @@
 అదనపు వివరాలు:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">మార్చు</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>

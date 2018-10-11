@@ -553,7 +553,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Einstellung deaktiviert ist, können Nutzer nicht von <ph name="PRODUCT_NAME" /> aus drucken. Die Druckfunktion wird im Schraubenschlüssel-Menü, in den Erweiterungen, JavaScript-Anwendungen usw. deaktiviert. Es kann weiterhin über Plug-ins gedruckt werden, die <ph name="PRODUCT_NAME" /> während des Druckvorgangs umgehen. Bestimmte Flash-Anwendungen bieten beispielsweise die Druckoption in ihrem Kontextmenü, das von diesen Richtlinien nicht abgedeckt wird.</translation>
 <translation id="2518231489509538392">Wiedergabe von Audioinhalten zulassen</translation>
 <translation id="2521581787935130926">App-Verknüpfung in der Lesezeichenleiste anzeigen</translation>
-<translation id="2529700525201305165">Für die Anmeldung in <ph name="PRODUCT_NAME" /> zugelassene Nutzer einschränken</translation>
 <translation id="2529880111512635313">Liste der Apps und Erweiterungen konfigurieren, deren Installation erzwungen wurde</translation>
 <translation id="253135976343875019">Inaktivitätsspanne bis zur Warnung im Netzbetrieb</translation>
 <translation id="2536525645274582300">Der Nutzer entscheidet, ob die Standortdienste von Google aktiviert werden sollen</translation>
@@ -795,6 +794,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 
           Wenn die Richtlinie nicht konfiguriert ist, so können Nutzer die Proxy-Einstellungen selbst konfigurieren.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
+<translation id="3211426942294667684">Browser-Anmeldeeinstellungen</translation>
 <translation id="3213821784736959823">Legt fest, ob der integrierte DNS-Client von <ph name="PRODUCT_NAME" /> verwendet werden soll.
 
       Wenn diese Richtlinie auf "true" gesetzt wurde, wird, falls verfügbar, der integrierte DNS-Client verwendet.
@@ -1061,6 +1061,15 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Sollten Sie diese Richtlinie nicht festlegen, wird für <ph name="PRODUCT_NAME" /> das jeweilige plattformspezifische Verzeichnis verwendet.
 
       Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit allen Variablen, die verwendet werden können.</translation>
+<translation id="3904459740090265495">Diese Richtlinie steuert die Anmeldung bei diesem Browser. Sie können damit festlegen, ob sich der Nutzer bei <ph name="PRODUCT_NAME" /> über sein Konto anmelden und zugehörige Dienste nutzen kann, beispielsweise die Chrome-Synchronisierung.
+
+Wenn die Richtlinie auf "Browseranmeldung deaktivieren" gesetzt ist, kann der Nutzer sich nicht beim Browser anmelden und keine kontobasierten Dienste nutzen. In diesem Fall können Funktionen auf Browserebene wie die Chrome-Synchronisierung nicht verwendet werden und sind auch nicht verfügbar. Falls ein Nutzer angemeldet ist, wenn die Richtlinie auf "Deaktiviert" gesetzt wird, wird er beim nächsten Ausführen von Chrome automatisch abgemeldet. Seine lokalen Profildaten wie Lesezeichen und Passwörter bleiben jedoch erhalten. Der Nutzer kann sich auch weiterhin bei Google-Webdiensten wie Gmail anmelden und diese verwenden.
+
+Wenn die Richtlinie auf "Browseranmeldung aktivieren" gesetzt ist, kann der Nutzer sich beim Browser anmelden und wird auch automatisch beim Browser angemeldet, sobald er sich bei Google-Webdiensten wie Gmail anmeldet. Durch die Anmeldung beim Browser werden die Kontodaten des Nutzers im Browser gespeichert. Das bedeutet aber nicht, dass die Chrome-Synchronisierung standardmäßig aktiviert wird. Der Nutzer muss diese Funktion explizit aktivieren. Durch das Aktivieren dieser Richtlinie kann der Nutzer die Einstellung für die Browseranmeldung nicht mehr deaktivieren. Die Chrome-Synchronisierung lässt sich mithilfe der Richtlinie "SyncDisabled" steuern.
+
+Wenn die Richtlinie auf "Browseranmeldung erzwingen" gesetzt ist, wird dem Nutzer ein Dialogfeld zur Kontoauswahl angezeigt. Er muss dann ein Konto auswählen und sich anmelden, um den Browser verwenden zu können. So wird bei verwalteten Konten garantiert, dass die zu diesem Konto gehörigen Richtlinien erzwungen und angewendet werden. Standardmäßig wird hierbei die Chrome-Synchronisierung für das Konto aktiviert, es sei denn, sie wurde vom Administrator der Domain oder über die Richtlinie "SyncDisabled" deaktiviert. Der Standardwert für BrowserGuestModeEnabled wird außerdem auf "false" gesetzt. Beachten Sie, dass unsignierte Profile gesperrt werden und dass auf sie nach dem Aktivieren dieser Richtlinie nicht mehr zugegriffen werden kann. Weitere Informationen finden Sie in der Hilfe unter https://support.google.com/chrome/a/answer/7572556.
+
+Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden, ob er die Anmeldeoption des Browsers aktivieren und verwenden möchte.</translation>
 <translation id="3911737181201537215">Diese Richtlinie hat keine Auswirkung auf die Protokollierung durch Android.</translation>
 <translation id="391531815696899618">Bei Festlegung auf "true" wird die Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktiviert. Es werden dann keine Daten in Google Drive hochgeladen.
 
@@ -1111,6 +1120,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
       Bitte beachten Sie, dass diese Richtlinie ignoriert wird und die Standortdienste von Google immer deaktiviert bleiben, wenn die Richtlinie "<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />" auf "<ph name="BLOCK_GEOLOCATION_SETTING" />" gesetzt wird.</translation>
 <translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
+<translation id="408076456549153854">Browseranmeldung aktivieren</translation>
 <translation id="4088589230932595924">Inkognitomodus erzwungen</translation>
 <translation id="4088983553732356374">Mit dieser Richtlinie können Sie festlegen, welche Websites lokale Daten speichern dürfen. Das Speichern von lokalen Daten kann entweder für alle Websites zugelassen oder für alle Websites unterbunden werden.
 
@@ -1377,11 +1387,6 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
 <translation id="4834526953114077364">Die am längsten nicht verwendeten Nutzer, dich sich in den letzten 3 Monaten nicht angemeldet haben, werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
-<translation id="4838572175671839397">Enthält einen regulären Ausdruck, der festlegt, welche Nutzer sich in <ph name="PRODUCT_NAME" /> anmelden können.
-
-      Wenn sich ein Nutzer mit einem Nutzernamen anmelden möchte, der nicht diesem Muster entspricht, wird ein entsprechender Fehler ausgegeben.
-
-      Werden diese Richtlinien weder festgelegt noch ausgefüllt, kann sich jeder Nutzer in <ph name="PRODUCT_NAME" /> anmelden.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
 <translation id="4861767323695239729">In einer Nutzersitzung zulässige Eingabemethoden konfigurieren</translation>
 <translation id="4869787217450099946">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API angefordert werden.
@@ -1414,6 +1419,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="4962262530309732070">Wurde für diese Richtlinie "true" festgelegt oder nichts konfiguriert, ist in <ph name="PRODUCT_NAME" /> die Verwendung der Funktion "Person hinzufügen" über den Nutzermanager zulässig.
 
       Ist für die Richtlinie "false" festgelegt, können in <ph name="PRODUCT_NAME" /> keine neuen Profile im Nutzermanager erstellt werden.</translation>
+<translation id="4970855112942626932">Browseranmeldung deaktivieren</translation>
 <translation id="4971529314808359013">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die <ph name="PRODUCT_NAME" /> automatisch ein Clientzertifikat auswählen soll, wenn die Website ein Zertifikat anfordert.
 
           Der Wert muss ein Array von String-JSON-Wörterbüchern sein. Jedes Wörterbuch muss das Format { "pattern": "$URL_PATTERN", "filter" : $FILTER } haben, wobei $URL_PATTERN ein Muster zur Festlegung der Inhalte ist. $FILTER schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifizierungsanfrage des Servers übereinstimmen. Wenn $FILTER das Format { "ISSUER": { "CN": "$ISSUER_CN" } } hat, werden außerdem nur Clientzertifikate ausgewählt, die von einem Zertifikat mit dem CommonName $ISSUER_CN ausgestellt werden. Wenn $FILTER das leere Wörterbuch {} ist, wird die Auswahl an Clientzertifikaten nicht zusätzlich eingeschränkt.
@@ -1793,6 +1799,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Wenn diese Richtlinie nicht konfiguriert ist, ist die Liste der trennbaren USB-Geräte leer.</translation>
 <translation id="6083631234867522991">Windows (Windows-Clients):</translation>
+<translation id="6091233616732024397">Nutzer zwingen, sich zur Nutzung des Browsers anzumelden</translation>
 <translation id="6093156968240188330">Zulassen, dass Remote-Nutzer in Remote-Sitzungen mit geöffneten Fenstern arbeiten können</translation>
 <translation id="6095999036251797924">Gibt die Zeitdauer ohne Nutzeraktivität an, nach der der Bildschirm im Netz- oder Akkubetrieb gesperrt wird.
 
@@ -1865,6 +1872,11 @@ Ist die Richtlinie nicht festgelegt, findet keine automatische Anmeldung statt.<
 <translation id="6368011194414932347">Startseiten-URL konfigurieren</translation>
 <translation id="6368403635025849609">JavaScript auf diesen Websites zulassen</translation>
 <translation id="6376659517206731212">Kann verbindlich sein</translation>
+<translation id="6377355597423503887">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "BrowserSignin" verwenden.
+
+Die Richtlinie erlaubt dem Nutzer die Anmeldung in <ph name="PRODUCT_NAME" />.
+
+Durch Festlegen dieser Richtlinie bestimmen Sie, ob sich ein Nutzer in <ph name="PRODUCT_NAME" /> anmelden darf oder nicht. Wenn Sie für diese Richtlinie "False" festlegen, funktionieren Apps und Erweiterungen nicht mehr, die die chrome.identity API verwenden. Aus diesem Grund ist es empfehlenswert, stattdessen "SyncDisabled" zu verwenden.</translation>
 <translation id="6378076389057087301">Angaben zum Einfluss von Audioaktivitäten auf den Energiesparmodus</translation>
 <translation id="637934607141010488">Meldet eine Liste der Gerätenutzer, die sich kürzlich angemeldet haben
 
@@ -2042,27 +2054,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 <translation id="6903814433019432303">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Bestimmt, welche URLs beim Start der Demo-Sitzung geladen werden. Mit dieser Richtlinie werden alle anderen Mechanismen zum Festlegen der Start-URL außer Kraft gesetzt. Die Richtlinie kann darum nur auf eine Sitzung angewandt werden, die keinem bestimmten Nutzer zugeordnet ist.</translation>
-<translation id="6908347296939885026">Aktiviert die eingeschränkte Anmeldefunktion von <ph name="PRODUCT_NAME" /> in der G Suite und verhindert, dass Nutzer diese Einstellung ändern.
-
-      Wenn Sie diese Einstellung festlegen, können Nutzer nur über Konten der
-      angegebenen Domains auf Apps von Google zugreifen. Dies funktioniert
-      jedoch nicht für gmail.com/googlemail.com.
-
-      Diese Einstellung verhindert NICHT, dass Nutzer sich über ein verwaltetes
-      Gerät anmelden, für das eine Google-Authentifizierung erforderlich ist. Nutzer
-      dürfen sich weiterhin über andere Domains in Konten anmelden, erhalten
-      jedoch Fehlermeldungen, wenn sie versuchen, die G Suite mit diesen
-      Konten zu verwenden.
-
-      Wenn Sie diese Einstellung leer lassen bzw. nicht konfigurieren, können
-      Nutzer über beliebige Konten auf die G Suite zugreifen.
-
-      Durch diese Richtlinie wird der Header "X-GoogApps-Allowed-Domains" –
-      wie unter https://support.google.com/a/answer/1668854 beschrieben – an alle
-      HTTP- und HTTPS-Anforderungen angehängt, die an google.com-Domains
-      gesendet werden.
-
-      Nutzer können diese Einstellung weder ändern noch überschreiben.</translation>
 <translation id="6908640907898649429">Konfiguriert die Standardsuchmaschine. Sie können die Standardsuchmaschine für die Nutzer auswählen oder die Standardsuche deaktivieren.</translation>
 <translation id="6913068954484253496"><ph name="PRODUCT_NAME" /> erlauben, eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen herzustellen.</translation>
 <translation id="6915442654606973733">Hiermit wird die Bedienungshilfefunktion für das gesprochene Feedback aktiviert.
@@ -2768,6 +2759,11 @@ Die Richtlinie wird in M75 entfernt.</translation>
 <translation id="8548832052135586762">Damit wird festgelegt, ob nur in Farbe, nur in Schwarz-Weiß oder ohne Farbmodusbeschränkung gedruckt wird. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
+<translation id="857369585509260201">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "BrowserSignin" verwenden.
+
+Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Profil in <ph name="PRODUCT_NAME" /> anmelden, um den Browser zu nutzen. Außerdem wird der Standardwert von BrowserGuestModeEnabled auf "false" gesetzt. Beachten Sie, dass vorhandene, nicht signierte Profile gesperrt werden und nach Aktivieren dieser Richtlinie nicht mehr zugänglich sind. Weitere Informationen erhalten Sie im Hilfeartikel.
+
+Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer den Browser verwenden, ohne sich in <ph name="PRODUCT_NAME" /> anzumelden.</translation>
 <translation id="8586528890725660268">Gibt die Drucker an, die ein Nutzer nicht verwenden kann.
 
       Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_BLACKLIST" /> für <ph name="BULK_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
@@ -2986,13 +2982,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
       Die tatsächlichen Rollback-Optionen sind möglicherweise auch abhängig vom Board sowie von Patches für schwerwiegende Sicherheitslücken.</translation>
 <translation id="913195841488580904">Zugriff auf aufgelistete URLs blockieren</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" />-Proxy aktivieren</translation>
-<translation id="9136253551939494882">Eine weiße Liste, in der festgelegt wird, welche Modi für das schnelle Entsperren der Nutzer zum Entsperren des Bildschirms konfigurieren und verwenden kann.
-
-          Dieser Wert besteht aus einer Liste von Zeichenfolgen; gültige Listeneinträge sind: "alle", "PIN". Durch das Hinzufügen von "alle" zur Liste stehen dem Nutzer alle Modi für das schnelle Entsperren zur Verfügung. Dazu gehören auch die in Zukunft implementierten Modi. Wird "alle" nicht ausgewählt, stehen nur die in der Liste enthaltenen Modi für das schnelle Entsperren zur Verfügung.
-
-          Beispiel: Verwenden Sie ["alle"], um alle Modi für das schnelle Entsperren zu erlauben. Oder verwenden Sie ["PIN"], um nur das Entsperren mit der PIN zu erlauben. Wenn Sie alle Modi zum schnellen Entsperren deaktivieren möchten, verwenden Sie [].
-
-          Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsperren verfügbar.</translation>
 <translation id="9136399279941091445">Intervalle für Abwesenheitszeiten, wenn die angegebenen Geräterichtlinien veröffentlicht werden</translation>
 <translation id="9147029539363974059">Systemprotokolle an den Verwaltungsserver senden, um Administratoren die
       Überwachung von Systemprotokollen zu ermöglichen.

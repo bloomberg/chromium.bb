@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Temel hazırlık akışı kesildi. Lütfen tekrar deneyin veya cihaz sahibiyle ya da yöneticisiyle iletişime geçin.</translation>
 <translation id="1611649489706141841">ileri</translation>
 <translation id="1611704746353331382">Yer İşaretlerini HTML Dosyasına Aktar...</translation>
+<translation id="1614511179807650956">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME" /> etkinleştirme portalını ziyaret edin.</translation>
 <translation id="161460670679785907">Telefonunuz algılanamadı</translation>
 <translation id="1616206807336925449">Bu uzantı herhangi bir özel izin gerektirmiyor.</translation>
 <translation id="1616298854599875024">Paylaşılan bir modül olmadığından "<ph name="IMPORT_NAME" />" uzantısı içe aktarılamıyor</translation>
@@ -596,7 +597,6 @@
 <translation id="1852799913675865625">Dosya okunmaya çalışılırken bir hata oluştu: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="1856715684130786728">Konum ekle...</translation>
-<translation id="1856813161013948396">Parmak izi sensörüne dokunarak kilit ekranını atlayın. Yapılandırmak için tıklayın.</translation>
 <translation id="1858585891038687145">Yazılım üreticilerini tanımlamak için bu sertifikaya güvenin</translation>
 <translation id="1861262398884155592">Bu klasör boş</translation>
 <translation id="1864111464094315414">Oturum Aç</translation>
@@ -689,6 +689,7 @@
 <translation id="1999115740519098545">Başlangıçta</translation>
 <translation id="2000419248597011803">Adres çubuğundan ve arama kutusundan bazı çerezleri ve aramaları varsayılan arama motorunuza gönderir</translation>
 <translation id="2001796770603320721">Drive'da Yönet</translation>
+<translation id="2003130567827682533">"<ph name="NAME" />" veri hizmetini etkinleştirmek için ilk olarak kablosuz bir ağa bağlanın</translation>
 <translation id="2004663115385769400">$1 ile açılamıyor</translation>
 <translation id="200544492091181894">Bunu daha sonra ayarlarda değiştirebilirsiniz</translation>
 <translation id="2006638907958895361">Bağlantıyı <ph name="APP" /> uygulamasında aç</translation>
@@ -1104,7 +1105,6 @@
 <translation id="2643698698624765890">Pencere menüsünden Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
 <translation id="2647142853114880570">tekrar yükle</translation>
 <translation id="264810637653812429">Uyumlu cihaz bulunamadı.</translation>
-<translation id="2648831393319960979">Cihaz, hesabınıza ekleniyor; bu işlem biraz zaman alabilir...</translation>
 <translation id="2649045351178520408">Base64 kodlu ASCII, sertifika zinciri</translation>
 <translation id="2651353619134567122">Sistem verilerini gönderin. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanım verilerini otomatik olarak göndermektedir. Bu seçimi cihaz <ph name="BEGIN_LINK1" />ayarlarınızdan<ph name="END_LINK1" /> istediğiniz zaman değiştirebilirsiniz. Ayrıca Web ve Uygulama Etkinliği'ni etkinleştirdiyseniz bu bilgi, Etkinliğim sayfasında yönetebilmeniz için hesabınızda depolanır. <ph name="BEGIN_LINK2" />Daha Fazla Bilgi<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">Arama başarısız oldu</translation>
@@ -1246,7 +1246,6 @@
 <translation id="2850124913210091882">Yedekle</translation>
 <translation id="2850541429955027218">Tema ekle</translation>
 <translation id="2853916256216444076">$1 video</translation>
-<translation id="2857608528410806398">QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir. QU Özelliği ile ilgili bildirim metni burada gösterilir.</translation>
 <translation id="2860150991415616761">çok uzun (4 sn.)</translation>
 <translation id="2861301611394761800">Sistem güncellemesi tamamlandı. Lütfen sistemi yeniden başlatın.</translation>
 <translation id="2861941300086904918">Yerel İstemci güvenlik yöneticisi</translation>
@@ -1289,7 +1288,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Medya Galerisini Dizine Göre Ekle</translation>
 <translation id="2908789530129661844">Ekranı uzaklaştır</translation>
 <translation id="2910318910161511225">Bir ağa bağlanın ve tekrar deneyin</translation>
-<translation id="2911898792135283060">Şifre Oluştur...</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
 <translation id="2916073183900451334">Bir web sayfasında Sekme tuşuna basıldığında bağlantılar ve form alanları vurgulanır</translation>
 <translation id="2916745397441987255">Uzantılarda ara</translation>
@@ -1689,6 +1687,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3541661933757219855">Gizlemek için Ctrl+Alt+/ yazın veya Escape tuşuna basın</translation>
 <translation id="3543393733900874979">Güncelleme başarısız oldu (hata: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">SHA-512 ile X9.62 ECDSA İmzası</translation>
+<translation id="3544879808695557954">Kullanıcı adı (isteğe bağlı)</translation>
 <translation id="354602065659584722">Zararlı yazılım kaldırıldı</translation>
 <translation id="3547495624659668105">PRL Sürümü</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
@@ -1731,7 +1730,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3605780360466892872">İş adamı</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Kullanıcı resmi önizlemesi</translation>
-<translation id="3609446736023031597">Play Store uygulamalarıyla ilgili en son güncellemeleri ve önerileri al</translation>
 <translation id="3609785682760573515">Senkronize ediliyor...</translation>
 <translation id="3609895557594655134">Android VPN ekle...</translation>
 <translation id="361106536627977100">Flash verileri</translation>
@@ -2392,7 +2390,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4648499713050786492">Lütfen bir kişiyi eklemeden önce profilinizin kilidini açın.</translation>
 <translation id="465499440663162826">Chrome Web Mağazası'na bağlanamadı.</translation>
 <translation id="4656293982926141856">Bu bilgisayar</translation>
-<translation id="4658312088164718891">Smart Lock'u açmak için şifrenizi girin. Böylece, bir dahaki sefere telefonunuzu kullanarak <ph name="DEVICE_TYPE" /> cihazınızın kilidini açabilirsiniz. Ayarlar'dan Smart Lock'u kapatın.</translation>
 <translation id="4660476621274971848">Beklenen sürüm "<ph name="EXPECTED_VERSION" />" idi, ancak "<ph name="NEW_ID" />" sürümü belirlendi</translation>
 <translation id="4662788913887017617">Bu yer işaretini iPhone'unuzla paylaşın</translation>
 <translation id="4663373278480897665">Kameraya izin veriliyor</translation>
@@ -2493,6 +2490,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4821935166599369261">&amp;Profil Oluşturma Etkin</translation>
 <translation id="4823484602432206655">Kullanıcı ve cihaz ayarlarını okuma ve değiştirme</translation>
 <translation id="4823651846660089135">Cihaz salt okunur</translation>
+<translation id="4827675678516992122">Bağlanılamadı</translation>
 <translation id="4828937774870308359">Avustralya</translation>
 <translation id="4829768588131278040">PIN ayarla</translation>
 <translation id="4830502475412647084">OS güncellemesini yükleyin</translation>
@@ -2518,7 +2516,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4856478137399998590">Mobil veri hizmetiniz etkinleştirildi ve kullanıma hazır</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Tümünü &amp;Gizli Pencerede Aç}=1{&amp;Gizli Pencerede Aç}other{Tümünü (#) &amp;Gizli Pencerede Aç}}</translation>
 <translation id="4858913220355269194">Futbolcu</translation>
-<translation id="4862050643946421924">Cihaz ekleniyor...</translation>
 <translation id="4862642413395066333">İmza OCSP Yanıtları</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> şeklinde görünür (Varsayılan)</translation>
 <translation id="4864369630010738180">Oturum açılıyor...</translation>
@@ -2636,8 +2633,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> yeni fotoğraf</translation>
 <translation id="5010043101506446253">Sertifika yetkilisi</translation>
-<translation id="5010929733229908807">Tüm veriler şu tarihte senkronizasyon parolanızla şifrelendi:
-        <ph name="TIME" /></translation>
 <translation id="5015344424288992913">Proxy çözümleniyor...</translation>
 <translation id="5015762597229892204">Bir yazıcı sürücüsü uygulaması seçin</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -2720,7 +2715,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="514575469079499857">Konumu belirlemek için IP adresinizi kullanın (varsayılan)</translation>
 <translation id="5150254825601720210">Netscape Sertifikası SSL Sunucu Adı</translation>
 <translation id="5151354047782775295">Disk alanını boşaltmazsanız bazı veriler otomatik olarak silinebilir</translation>
-<translation id="5153297660536091054">PIN ile Kilit Açma Özelliği</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" /> için gelişmiş ayarlar</translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">Konu</translation>
@@ -2755,6 +2749,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5209320130288484488">Cihaz bulunamadı</translation>
 <translation id="5209518306177824490">SHA-1 Parmak İzi</translation>
 <translation id="5210365745912300556">Sekmeyi kapat</translation>
+<translation id="5213481667492808996">"<ph name="NAME" />" veri hizmetiniz kullanıma hazır</translation>
 <translation id="5213891612754844763">Proxy ayarlarını göster</translation>
 <translation id="521582610500777512">Fotoğraf silindi</translation>
 <translation id="5222676887888702881">Çıkış</translation>
@@ -2824,7 +2819,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5297082477358294722">Şifre kaydedildi. Kayıtlı şifrelerinizi <ph name="SAVED_PASSWORDS_STORE" /> üzerinde görüntüleyebilir ve yönetebilirsiniz.</translation>
 <translation id="5298219193514155779">Temayı oluşturan:</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
-<translation id="5299682071747318445">Tüm veriler senkronizasyon parolanızla şifrelendi</translation>
 <translation id="5300287940468717207">Site izinleri sıfırlansın mı?</translation>
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5301751748813680278">Misafir olarak giriliyor.</translation>
@@ -3421,7 +3415,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6144938890088808325">Chromebook'ları iyileştirmemize yardımcı olun</translation>
 <translation id="6146563240635539929">Videolar</translation>
 <translation id="6147020289383635445">Yazdırma önizleme başarısız oldu.</translation>
-<translation id="6148716538476291841">Geçmişi bu cihazdan temizler.</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6150853954427645995">Bu dosyayı çevrimdışı kullanım için kaydetmek üzere tekrar çevrimiçi olun, dosyayı sağ tıklayın ve <ph name="OFFLINE_CHECKBOX_NAME" /> seçeneğini belirleyin.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> sitesinde arama yapmak için <ph name="SEARCH_KEY" /> düğmesine basın</translation>
@@ -3504,7 +3497,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Sistem ve uygulama bilgilerini<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />metrikleri<ph name="END_LINK2" /> gönder</translation>
 <translation id="6272643420381259437">Eklenti indirilirken bir hata (<ph name="ERROR" />) oluştu</translation>
 <translation id="6273677812470008672">Kalite</translation>
-<translation id="6276301056778294989">Cihazın aynı kodu gösterdiğinden emin olun.</translation>
 <translation id="6277105963844135994">Ağ zaman aşımı</translation>
 <translation id="6277518330158259200">Ekr&amp;an Görüntüsü Al</translation>
 <translation id="6278057325678116358">GTK+ Temasını Kullan</translation>
@@ -3570,7 +3562,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6374108032506706911">Android için Smart Lock özelliğini kurun</translation>
 <translation id="6374469231428023295">Tekrar Dene</translation>
 <translation id="6380143666419481200">Kabul et ve devam et</translation>
-<translation id="6383051423892982287">Senkronize edilen verileri kendi <ph name="BEGIN_LINK" />senkronizasyon parolanızla<ph name="END_LINK" /> şifreleyin</translation>
 <translation id="6384275966486438344">Arama ayarlarınızı <ph name="SEARCH_HOST" /> olarak değiştirme</translation>
 <translation id="6385543213911723544">Siteler çerez verilerini kaydedebilir ve okuyabilir</translation>
 <translation id="6388429472088318283">Dil ara</translation>
@@ -3608,8 +3599,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6426200009596957090">ChromeVox ayarlarını aç</translation>
 <translation id="6429384232893414837">Güncelleme hatası</translation>
 <translation id="6430814529589430811">Base64 kodlu ASCII, tek sertifika</translation>
-<translation id="6431217872648827691">Tüm veriler şu tarihte Google şifrenizle şifrelendi:
-          <ph name="TIME" /></translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> bu bilgisayarın tüm kullanıcıları için otomatik güncellemeleri ayarlar.</translation>
 <translation id="6434309073475700221">Sil</translation>
 <translation id="6436164536244065364">Web Mağazasında Görüntüle</translation>
@@ -3792,7 +3781,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6702639462873609204">&amp;Düzenle...</translation>
 <translation id="6706210727756204531">Kapsam</translation>
 <translation id="6707389671160270963">SSL İstemci Sertifikası</translation>
-<translation id="6708029444764748914">PIN'inizi cihazınızda oturum açarken kullanabilmek için tekrar girin.</translation>
 <translation id="6708242697268981054">Kaynak:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> uzantısını kullanarak bağlan</translation>
 <translation id="6710213216561001401">Önceki</translation>
@@ -3936,6 +3924,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="694592694773692225">Yönlendirme bu sayfada engellendi.</translation>
 <translation id="6949306908218145636">Açık Sayfalara Yer İşareti Koy...</translation>
+<translation id="6949434160682548041">Şifre (isteğe bağlı)</translation>
 <translation id="6950627417367801484">Uygulamaları geri yükle</translation>
 <translation id="6950943362443484797">Söz konusu uygulamayı sizin için yükleyeceğiz</translation>
 <translation id="6951153907720526401">Ödeme İşleyiciler</translation>
@@ -4141,7 +4130,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7241389281993241388">Lütfen istemci sertifikasını içe aktarmak için <ph name="TOKEN_NAME" /> cihazında oturum açın.</translation>
 <translation id="7243632151880336635">Temizle ve Oturumu Kapat</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (En iyi)</translation>
-<translation id="7246339268451149667">Parmak iziyle kilit açma etkinleştirilsin mi?</translation>
 <translation id="7246947237293279874">FTP Proxy'si</translation>
 <translation id="725109152065019550">Maalesef, yöneticiniz hesabınızda harici depolama özelliğini devre dışı bıraktı.</translation>
 <translation id="7253521419891527137">&amp;Daha Fazla Bilgi Edinin</translation>
@@ -4695,7 +4683,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8050038245906040378">Microsoft Ticari Kod İmzalama</translation>
 <translation id="8053278772142718589">PKCS #12 Dosyaları</translation>
 <translation id="8053390638574070785">Bu Sayfayı Tekrar Yükle</translation>
-<translation id="8054029954190364711">Parmak İziyle Kilit Açma Özelliği</translation>
 <translation id="8054517699425078995">Bu türden dosyalar cihazınıza zarar verebilir. Yine de <ph name="FILE_NAME" /> adlı dosyayı saklamak istiyor musunuz?</translation>
 <translation id="8054563304616131773">Lütfen geçerli bir e-posta adresi girin</translation>
 <translation id="8054921503121346576">USB klavyesi bağlandı</translation>
@@ -4714,7 +4701,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8075191520954018715">Bellek durumu</translation>
 <translation id="8076492880354921740">Sekmeler</translation>
 <translation id="8076835018653442223">Cihazınızdaki yerel dosyalara erişim, yöneticiniz tarafından devre dışı bırakıldı</translation>
-<translation id="8077816382010018681">QU Özelliği ile ilgili bildirimin başlığı burada gösterilir</translation>
 <translation id="8079530767338315840">Tekrarla</translation>
 <translation id="8079938625609335826">Tüm uzantılarınıza tüm cihazlarınızda ulaşmak için senkronizasyonu açın.</translation>
 <translation id="8083739373364455075">Google Drive ile ücretsiz 100 GB alın</translation>
@@ -5181,6 +5167,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8821045908425223359">IP adresini otomatik olarak yapılandır</translation>
 <translation id="882204272221080310">Daha fazla güvenlik için donanım yazılımını güncelle.</translation>
 <translation id="8823514049557262177">&amp;Bağlantı metnini kopyala</translation>
+<translation id="8823704566850948458">Şifre öner...</translation>
 <translation id="8824701697284169214">Say&amp;fa Ekle...</translation>
 <translation id="8827752199525959199">Diğer işlemler, <ph name="USERNAME" /> adlı kullanıcı için <ph name="DOMAIN" /> alanındaki şifre</translation>
 <translation id="8828933418460119530">DNS Adı</translation>
@@ -5209,7 +5196,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8874184842967597500">Bağlı değil</translation>
 <translation id="8876215549894133151">Biçim:</translation>
 <translation id="8876307312329369159">Bu ayar demo oturumunda değiştirilemez.</translation>
-<translation id="8876309039915144086">Şifre oluştur...</translation>
 <translation id="8877448029301136595">[üst dizin]</translation>
 <translation id="8879284080359814990">&amp;Sekme Olarak Göster</translation>
 <translation id="8883847527783433352">Başka bir Hesapla Senkronize Et</translation>

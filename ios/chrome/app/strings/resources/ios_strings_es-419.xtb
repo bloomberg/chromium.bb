@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Ayer</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3112556859945124369">Marcar…</translation>
-<translation id="3151924044251363314">Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3175081911749765310">Servicios web</translation>
 <translation id="3207960819495026254">Agregada a favoritos</translation>
@@ -332,7 +331,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="667999046851023355">Documento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">No se pueden exportar las contraseñas</translation>
-<translation id="6762156594045689028">Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Código postal</translation>
 <translation id="6785453220513215166">Enviando informe de fallos…</translation>
 <translation id="679325081238418596">Accede a tus favoritos, historial, contraseñas y otras opciones de configuración en todos los dispositivos</translation>

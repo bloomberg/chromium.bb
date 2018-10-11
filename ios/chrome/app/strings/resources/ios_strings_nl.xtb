@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">De afgelopen dag</translation>
 <translation id="3037605927509011580">Helaas.</translation>
 <translation id="3112556859945124369">Markeren…</translation>
-<translation id="3151924044251363314">Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtwoordzin wordt niet verzonden naar of opgeslagen door Google. Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, moet je de synchronisatie opnieuw instellen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Alles markeren…</translation>
 <translation id="3175081911749765310">Webservices</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
@@ -332,7 +331,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Wachtwoorden kunnen niet worden geëxporteerd</translation>
-<translation id="6762156594045689028">Als je deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Postcode</translation>
 <translation id="6785453220513215166">Crashrapport verzenden...</translation>
 <translation id="679325081238418596">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen ophalen op al je apparaten</translation>

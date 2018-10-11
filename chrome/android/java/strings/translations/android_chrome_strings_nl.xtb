@@ -126,7 +126,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="1938981467853765413">Feedback geven</translation>
 <translation id="194341124344773587">Schakel het recht in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
-<translation id="1944384637046898011">Alles versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Beheer hoe Google je browsegeschiedenis gebruikt om Google Zoeken en andere Google-services te personaliseren.</translation>
 <translation id="1952172573699511566">Websites worden indien mogelijk weergegeven in je voorkeurstaal.</translation>
 <translation id="195283394249132567">Gepersonaliseerde Google-services</translation>
@@ -311,7 +310,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3522247891732774234">Update beschikbaar. Meer opties</translation>
 <translation id="3527085408025491307">Map</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB beschikbaar</translation>
-<translation id="3549644494707163724">Alle gesynchroniseerde gegevens versleutelen met je eigen wachtwoordzin voor synchronisatie</translation>
 <translation id="3549657413697417275">Je geschiedenis doorzoeken</translation>
 <translation id="3552151358455404883">Chrome-synchronisatie en -personalisatie beheren in <ph name="BEGIN_LINK1" />Instellingen<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Toevoegen aan contacten</translation>
@@ -379,7 +377,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4084712963632273211">Van <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />geleverd door Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB gedownload</translation>
 <translation id="4095146165863963773">App-gegevens verwijderen?</translation>
-<translation id="4097739989936358050">Deze app wordt uitgevoerd in Chrome.</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="4113030288477039509">Beheerd door je beheerder</translation>
@@ -424,7 +421,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="447252321002412580">Help de functies en prestaties van Chrome verbeteren</translation>
 <translation id="4479647676395637221">Eerst vragen voordat sites je camera mogen gebruiken (aanbevolen)</translation>
 <translation id="4487967297491345095">Alle app-gegevens voor Chrome worden definitief verwijderd. Dit omvat alle bestanden, instellingen, accounts, databases, enzovoort.</translation>
-<translation id="4508440807153586353">Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtwoordzin wordt niet verzonden naar of opgeslagen door Google. Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, moet je de synchronisatie opnieuw instellen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dag geleden}other{# dagen geleden}}</translation>
 <translation id="451872707440238414">Zoeken in je bladwijzers</translation>
 <translation id="4521489764227272523">De geselecteerde gegevens zijn verwijderd uit Chrome en van je gesynchroniseerde apparaten.
@@ -724,11 +720,11 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6697492270171225480">Suggesties voor vergelijkbare pagina's weergeven wanneer een pagina niet wordt gevonden</translation>
 <translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
+<translation id="6709133671862442373">Nieuws</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6712388303105732168">Bekijk meer zoals dit van Google met de knop 'Meer zoals dit'</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
 <translation id="6746124502594467657">Omlaag</translation>
-<translation id="6762156594045689028">Als je deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
 <translation id="6768277682697012280">AR-module installeren...</translation>
 <translation id="6776813977906306442">Gebruik de knop Downloaden om video's te downloaden zodat je ze later kunt bekijken</translation>

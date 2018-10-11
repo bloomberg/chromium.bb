@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">이름 바꾸기</translation>
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
 <translation id="1181037720776840403">삭제</translation>
-<translation id="1184214524891303587">발생 가능성이 있는 보안 문제의 세부정보를 Google에 <ph name="BEGIN_WHITEPAPER_LINK" />자동으로 보고<ph name="END_WHITEPAPER_LINK" />합니다. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1201895884277373915">이 사이트에서 더보기</translation>
 <translation id="1206967143813997005">잘못된 초기 서명</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">입력</translation>
 <translation id="2465655957518002998">배달 방법 선택</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">이 페이지 번역하기</translation>
 <translation id="2479410451996844060">검색 URL이 잘못됨</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2491120439723279231">서버 인증서에 오류가 있습니다.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
-<translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
 <translation id="3556433843310711081">관리자가 차단 해제할 수 있습니다.</translation>
 <translation id="3566021033012934673">연결이 비공개로 설정되어 있지 않습니다.</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" />, <ph name="CITY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">만료: <ph name="EXPIRATION_YEAR" />년 <ph name="EXPIRATION_MONTH" />월</translation>
 <translation id="3807873520724684969">유해한 콘텐츠 차단됨</translation>
+<translation id="3810973564298564668">관리</translation>
 <translation id="382518646247711829">프록시 서버를 사용하는 경우</translation>
 <translation id="3828924085048779000">암호를 빈 칸으로 두어서는 안 됩니다.</translation>
 <translation id="385051799172605136">뒤로</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Chrome에서 주소를 삭제하시겠습니까?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />에 대한 연결은 최신 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
-<translation id="4619615317237390068">다른 기기의 탭</translation>
 <translation id="4646534391647090355">지금 이동</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">정책 새로고침</translation>
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="4736825316280949806">Chromium 다시 시작</translation>
+<translation id="473775607612524610">업데이트</translation>
 <translation id="4742407542027196863">비밀번호 관리...</translation>
 <translation id="4744603770635761495">실행 가능 경로</translation>
 <translation id="4750917950439032686">비밀번호나 신용카드 번호 등의 정보는 비공개 상태로 이 사이트에 전송됩니다.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">현재 <ph name="SITE" />에서 인증서 고정을 사용하기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 나중에 이 페이지가 정상적으로 작동할 수 있습니다.</translation>
 <translation id="6059925163896151826">USB 기기</translation>
 <translation id="6071091556643036997">잘못된 정책 유형입니다.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{모든 기기에서 신속하게 결제하기 위해 이 카드가 Google 계정에 저장됩니다.}other{모든 기기에서 신속하게 결제하기 위해 이 카드가 Google 계정에 저장됩니다.}}</translation>
 <translation id="6080696365213338172">관리자 제공 인증서를 사용하여 콘텐츠에 액세스했습니다. 사용자가 <ph name="DOMAIN" />에 제공한 데이터가 관리자에 의해 차단될 수 있습니다.</translation>
 <translation id="6096619198407627433">대부분의 사이트에서 로그아웃됩니다. Google 계정에서는 로그아웃되지 않습니다. <ph name="SITE" /> 및 기타 일부 사이트의 보호된 콘텐츠에 액세스하지 못할 수 있습니다.</translation>
 <translation id="610911394827799129">Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 방문 기록이 다른 형식으로 남아 있을 수도 있습니다</translation>
@@ -925,7 +924,6 @@
 <translation id="7451311239929941790">이 문제를 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7453467225369441013">대부분의 사이트에서 로그아웃됩니다. Google 계정에서는 로그아웃되지 않습니다.</translation>
 <translation id="7455133967321480974">전체 기본값 사용(차단)</translation>
-<translation id="7460163899615895653">다른 기기에서 최근에 사용한 탭이 여기에 표시됩니다.</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
@@ -1009,6 +1007,7 @@
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" />를 항상 <ph name="TARGET_LANGUAGE" />로 번역</translation>
 <translation id="7995512525968007366">지정되지 않음</translation>
 <translation id="800218591365569300">다른 탭이나 프로그램을 종료하여 메모리를 확보하세요.</translation>
+<translation id="8009225694047762179">비밀번호 관리</translation>
 <translation id="8012647001091218357">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8025119109950072390">이 사이트의 공격자가 소프트웨어를 설치하거나 개인정보(예: 비밀번호, 전화번호, 신용카드)를 공개하는 등의 위험한 행동을 하도록 사용자를 속일 수 있습니다.</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
@@ -1070,6 +1069,7 @@
 추가 세부정보:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">변경</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433057134996913067">이 작업을 수행하면 대부분의 웹사이트에서 로그아웃됩니다.</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>

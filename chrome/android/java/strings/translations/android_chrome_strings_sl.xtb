@@ -126,7 +126,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="1938981467853765413">Povratne informacije</translation>
 <translation id="194341124344773587">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenje za Chrome.</translation>
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
-<translation id="1944384637046898011">Šifriranje vsega z geslom za Google Račun z dne <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Nadzirajte, kako Google na podlagi vaše zgodovine brskanja prilagaja Iskanje Google in druge Googlove storitve.</translation>
 <translation id="1952172573699511566">Spletna mesta bodo besedilo prikazala v izbranem jeziku, če je mogoče.</translation>
 <translation id="195283394249132567">Prilagojene Googlove storitve</translation>
@@ -311,7 +310,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="3522247891732774234">Posodobitev je na voljo. Več možnosti.</translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3542235761944717775">Na voljo: <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">Šifrirajte vse sinhronizirane podatke s svojim geslom</translation>
 <translation id="3549657413697417275">Iščite v svoji zgodovini</translation>
 <translation id="3552151358455404883">Upravljanje sinhronizacije za Chrome in prilagajanja v <ph name="BEGIN_LINK1" />Nastavitvah<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Dodaj med stike</translation>
@@ -379,7 +377,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="4084712963632273211">Vsebino objavil <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />prikazuje jo Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB prenesenih datotek</translation>
 <translation id="4095146165863963773">Izbris podatkov aplikacije?</translation>
-<translation id="4097739989936358050">Ta aplikacija se izvaja v Chromu.</translation>
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="4113030288477039509">Upravlja skrbnik</translation>
@@ -424,7 +421,6 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="447252321002412580">Pomagajte izboljšati funkcije in delovanje Chroma</translation>
 <translation id="4479647676395637221">Poziv, preden se spletnim mestom dovoli uporaba kamere (priporočeno)</translation>
 <translation id="4487967297491345095">Vsi podatki aplikacije Chrome bodo trajno izbrisani, vključno z vsemi datotekami, nastavitvami, računi, zbirkami podatkov ipd.</translation>
-<translation id="4508440807153586353">Vaše šifrirane podatke lahko bere samo oseba z vašim geslom. Geslo ni poslano Googlu in ni shranjeno v Googlu. Če ga pozabite ali če želite spremeniti to nastavitev, boste morali sinhronizacijo ponastaviti. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Pred # dnevom}one{Pred # dnevom}two{Pred # dnevoma}few{Pred # dnevi}other{Pred # dnevi}}</translation>
 <translation id="451872707440238414">Išči zaznamke</translation>
 <translation id="4521489764227272523">Izbrani podatki so bili odstranjeni iz Chroma in sinhroniziranih naprav.
@@ -723,11 +719,11 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6697492270171225480">Prikaz predlogov za podobne strani, ko strani ni mogoče najti</translation>
 <translation id="6697947395630195233">Chrome potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom.</translation>
 <translation id="6698801883190606802">Upravljanje sinhroniziranih podatkov</translation>
+<translation id="6709133671862442373">Novice</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6712388303105732168">Oglejte si več podobnega v Googlu z gumbom za več podobnega</translation>
 <translation id="6738867403308150051">Prenašanje ...</translation>
 <translation id="6746124502594467657">Premakni dol</translation>
-<translation id="6762156594045689028">Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Povlecite navzdol, da zaprete.</translation>
 <translation id="6768277682697012280">Nameščanje modula RR …</translation>
 <translation id="6776813977906306442">Z gumbom za prenos lahko prenesete videoposnetke za poznejši ogled</translation>

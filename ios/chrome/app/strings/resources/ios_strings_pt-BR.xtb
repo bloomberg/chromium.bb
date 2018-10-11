@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Do dia anterior</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3112556859945124369">Marcar...</translation>
-<translation id="3151924044251363314">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou quiser alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marcar tudo...</translation>
 <translation id="3175081911749765310">Serviços da Web</translation>
 <translation id="3207960819495026254">Adicionada aos favoritos</translation>
@@ -332,7 +331,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="667999046851023355">Documento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Não é possível exportar as senhas</translation>
-<translation id="6762156594045689028">Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">CEP</translation>
 <translation id="6785453220513215166">Enviando relatórios de erros...</translation>
 <translation id="679325081238418596">Tenha seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos</translation>

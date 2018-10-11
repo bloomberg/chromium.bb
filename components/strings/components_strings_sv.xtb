@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Ändra namn</translation>
 <translation id="1175364870820465910">Skriv &amp;ut...</translation>
 <translation id="1181037720776840403">Ta bort</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Rapportera uppgifter<ph name="END_WHITEPAPER_LINK" /> om möjliga säkerhetsincidenter till Google automatiskt. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1201895884277373915">Mer från den här webbplatsen</translation>
 <translation id="1206967143813997005">Felaktig första signatur</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Fyll i</translation>
 <translation id="2465655957518002998">Välj leveranssätt</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />att köra nätverksdiagnostik<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Översätt den här sidan</translation>
 <translation id="2479410451996844060">Ogiltig sökadress.</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2491120439723279231">Servercertifikatet innehåller fel.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">Servercertifikatet är inte tillförlitligt.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minst 1 objekt på synkroniserade enheter}=1{1 objekt (och fler på synkroniserade enheter)}other{# objekt (och fler på synkroniserade enheter)}}</translation>
 <translation id="3539171420378717834">Spara en kopia av kortet på enheten</translation>
-<translation id="3549644494707163724">Kryptera alla synkroniserade data med en egen lösenfras</translation>
 <translation id="3556433843310711081">En ansvarig kan ta bort blockeringen</translation>
 <translation id="3566021033012934673">Anslutningen är inte privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Utgångsdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Skadligt innehåll har blockerats.</translation>
+<translation id="3810973564298564668">Hantera</translation>
 <translation id="382518646247711829">Om du använder en proxyserver ...</translation>
 <translation id="3828924085048779000">Lösenfrasen får inte vara tom.</translation>
 <translation id="385051799172605136">Bakåt</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Vill du ta bort adressen från Chrome?</translation>
 <translation id="4592951414987517459">Anslutningen till <ph name="DOMAIN" /> är krypterad med en modern krypteringssvit.</translation>
 <translation id="4594403342090139922">&amp;Ångra Ta bort</translation>
-<translation id="4619615317237390068">Flikar från andra enheter</translation>
 <translation id="4646534391647090355">Gå dit nu</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat innehåller fel. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">Läs in policyer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4736825316280949806">Starta om Chromium</translation>
+<translation id="473775607612524610">Uppdatera</translation>
 <translation id="4742407542027196863">Hantera lösenord …</translation>
 <translation id="4744603770635761495">Sökväg till körbar fil</translation>
 <translation id="4750917950439032686">Dina uppgifter (till exempel lösenord eller kreditkortsnummer) är privata när de skickas till den här webbplatsen.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">Du kan inte besöka <ph name="SITE" /> just nu eftersom tekniken att fästa certifikat används på webbplatsen. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6071091556643036997">Ogiltig policytyp.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Kortet sparas i ditt Google-konto så att du kan betala snabbare på alla enheter.}other{Korten sparas i ditt Google-konto så att du kan betala snabbare på alla enheter.}}</translation>
 <translation id="6080696365213338172">Du har visat innehåll med hjälp av ett certifikat från en administratör. Det innebär att data som du har angett på <ph name="DOMAIN" /> även kan visas av administratören.</translation>
 <translation id="6096619198407627433">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot. Du kan förlora tillgången till skyddat innehåll från <ph name="SITE" /> och några andra webbplatser.</translation>
 <translation id="610911394827799129">Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -926,7 +925,6 @@ Mer information.
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />att läsa mer<ph name="END_LINK" /> om det här problemet.</translation>
 <translation id="7453467225369441013">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot.</translation>
 <translation id="7455133967321480974">Använd global standardinställning (Blockera)</translation>
-<translation id="7460163899615895653">De senaste flikarna från andra enheter visas här</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7485870689360869515">Ingen data hittades.</translation>
@@ -1010,6 +1008,7 @@ Mer information.
 <translation id="7983301409776629893">Översätt alltid <ph name="ORIGINAL_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Inte specificerad</translation>
 <translation id="800218591365569300">Testa att stänga andra flikar eller program för att frigöra minne.</translation>
+<translation id="8009225694047762179">Hantera Lösenord</translation>
 <translation id="8012647001091218357">Vi kunde inte nå dina föräldrar just nu. Försök igen.</translation>
 <translation id="8025119109950072390">Angripare på den här webbplatsen kan lura dig att göra något farligt, till exempel installera programvara eller lämna ut personliga uppgifter (som lösenord, telefonnummer eller kreditkortsuppgifter).</translation>
 <translation id="8034522405403831421">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE" />. Vill du översätta den till <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1071,6 +1070,7 @@ Mer information.
 Mer information:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Ändra</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
 <translation id="8437238597147034694">&amp;Ångra Flytta</translation>

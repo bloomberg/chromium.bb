@@ -126,7 +126,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="1938981467853765413">Fornisci feedback</translation>
 <translation id="194341124344773587">Abilita l'autorizzazione per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salva password</translation>
-<translation id="1944384637046898011">Cripta tutto con la password Google a partire dal <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Controlla il modo in cui Google utilizza la cronologia di navigazione per personalizzare la Ricerca e altri servizi Google.</translation>
 <translation id="1952172573699511566">Se possibile, il testo dei siti web verrà mostrato nella tua lingua preferita.</translation>
 <translation id="195283394249132567">Servizi Google personalizzati</translation>
@@ -311,7 +310,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="3522247891732774234">Aggiornamento disponibile. Altre opzioni</translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB disponibili</translation>
-<translation id="3549644494707163724">Cripta tutti i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
 <translation id="3549657413697417275">Cerca nella cronologia</translation>
 <translation id="3552151358455404883">Gestisci la funzione Sincronizzazione Chrome e la personalizzazione nelle <ph name="BEGIN_LINK1" />Impostazioni<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Aggiungi ai contatti</translation>
@@ -379,7 +377,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4084712963632273211">Di <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />pubblicata da Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB per i download</translation>
 <translation id="4095146165863963773">Eliminare i dati delle app?</translation>
-<translation id="4097739989936358050">Questa app è in esecuzione in Chrome.</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4113030288477039509">Gestito dall'amministratore</translation>
@@ -424,7 +421,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="447252321002412580">Contribuisci a migliorare le funzioni e le prestazioni di Chrome</translation>
 <translation id="4479647676395637221">Chiedi conferma prima di consentire ai siti di utilizzare la videocamera (opzione consigliata)</translation>
 <translation id="4487967297491345095">Tutti i dati delle app di Chrome saranno eliminati definitivamente. Sono inclusi tutti i file, le impostazioni, gli account, i database e così via.</translation>
-<translation id="4508440807153586353">Soltanto chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google né memorizzata. Se dimentichi la passphrase o vuoi modificare questa impostazione, dovrai reimpostare la sincronizzazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# giorno fa}other{# giorni fa}}</translation>
 <translation id="451872707440238414">Cerca nei Preferiti</translation>
 <translation id="4521489764227272523">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati.
@@ -724,11 +720,11 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6697492270171225480">Mostra suggerimenti per pagine simili quando una pagina non viene trovata</translation>
 <translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
 <translation id="6698801883190606802">Gestisci dati sincronizzati</translation>
+<translation id="6709133671862442373">Notizie</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6712388303105732168">Scopri altre pagine simili di Google usando il pulsante Altri contenuti simili</translation>
 <translation id="6738867403308150051">Download in corso…</translation>
 <translation id="6746124502594467657">Sposta giù</translation>
-<translation id="6762156594045689028">Per modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Fai scorrere verso il basso per chiudere.</translation>
 <translation id="6768277682697012280">Installazione modulo AR…</translation>
 <translation id="6776813977906306442">Usa il pulsante di download per scaricare video da guardare in seguito.</translation>

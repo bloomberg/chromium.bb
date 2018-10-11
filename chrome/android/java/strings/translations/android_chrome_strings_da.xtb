@@ -126,7 +126,6 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="1938981467853765413">Giv feedback</translation>
 <translation id="194341124344773587">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Gem adgangskoder</translation>
-<translation id="1944384637046898011">Kryptér alle med Google-adgangskoden fra <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning og andre Google-tjenester.</translation>
 <translation id="1952172573699511566">Websites viser tekst på dit foretrukne sprog, når det er muligt.</translation>
 <translation id="195283394249132567">Tilpassede Google-tjenester</translation>
@@ -311,7 +310,6 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3522247891732774234">Tilgængelig opdatering. Flere muligheder</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3542235761944717775">Der er <ph name="KILOBYTES" /> kB til rådighed</translation>
-<translation id="3549644494707163724">Krypter alle synkroniserede data med din egen adgangssætning til synkronisering</translation>
 <translation id="3549657413697417275">Søg i din historik</translation>
 <translation id="3552151358455404883">Administrer Chrome-synkronisering og -tilpasning i <ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Føj til kontaktpersoner</translation>
@@ -379,7 +377,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />leveret af Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB er downloadet</translation>
 <translation id="4095146165863963773">Vil du slette appdata?</translation>
-<translation id="4097739989936358050">Denne app kører i Chrome.</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4113030288477039509">Administreres af din administrator</translation>
@@ -424,7 +421,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
 <translation id="4479647676395637221">Spørg om tilladelse, inden websites bruger dit kamera (anbefales)</translation>
 <translation id="4487967297491345095">Alle Chromes appdata slettes permanent. Dette omfatter alle filer, indstillinger, konti, databaser osv.</translation>
-<translation id="4508440807153586353">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkroniseringen. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{For 1 dag siden}one{For # dag siden}other{For # dage siden}}</translation>
 <translation id="451872707440238414">Søg i dine bogmærker</translation>
 <translation id="4521489764227272523">De valgte data er fjernet fra Chrome og synkroniserede enheder.
@@ -724,11 +720,11 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
+<translation id="6709133671862442373">Nyheder</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6712388303105732168">Se mere indhold fra Google i stil med dette ved hjælp af knappen "Se lignende indhold"</translation>
 <translation id="6738867403308150051">Downloader…</translation>
 <translation id="6746124502594467657">Flyt ned</translation>
-<translation id="6762156594045689028">Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Stryg ned for at lukke.</translation>
 <translation id="6768277682697012280">Installerer AR-modulet...</translation>
 <translation id="6776813977906306442">Download videoer, som du vil se senere, ved hjælp af knappen Download</translation>

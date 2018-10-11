@@ -558,7 +558,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne innstillingen er deaktivert, kan ikke brukere skrive ut fra <ph name="PRODUCT_NAME" />. Utskrift deaktiveres i skiftenøkkelmenyen, utvidelser, JavaScript-apper osv. Det er fortsatt mulig å skrive ut fra programtillegg som ignorerer <ph name="PRODUCT_NAME" /> mens utskriften pågår. For eksempel er det visse Flash-apper som har alternativet for utskrift i kontekstmenyen, som ikke dekkes av denne innstillingen.</translation>
 <translation id="2518231489509538392">Tillat avspilling av lyd</translation>
 <translation id="2521581787935130926">Vis apper-snarveien i bokmerkefeltet</translation>
-<translation id="2529700525201305165">Begrens hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2536525645274582300">Brukeren avgjør om Googles posisjonstjenester skal aktiveres</translation>
@@ -806,6 +805,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3205825995289802549">Maksimer det første nettleservinduet ved den første kjøringen</translation>
+<translation id="3211426942294667684">Innstillinger for nettleserpålogging</translation>
 <translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME" />.
 
       Hvis denne innstillingen er angitt som «true», blir den innebygde DNS-klienten brukt, så sant den er tilgjengelig.
@@ -1079,6 +1079,15 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis du ikke angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den vanlige standardkatalogen (plattformspesifikk).
 
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.</translation>
+<translation id="3904459740090265495">Denne regelen styrer påloggingsatferden til nettleseren. Du kan spesifisere hvorvidt brukeren kan logge på <ph name="PRODUCT_NAME" /> med kontoen sin og bruke kontorelaterte tjenester som Chrome-synkronisering.
+
+      Hvis regelen er angitt som «Deaktiver nettleserpålogging», kan ikke brukeren logge på nettleseren og bruke kontobaserte tjenester. Da er det ikke mulig å bruke funksjoner på nettlesernivå, som Chrome-synkronisering, og disse vil være utilgjengelige. Hvis brukeren var pålogget da regelen ble deaktivert, logges vedkommende av neste gang Chrome startes, men lokale profildata som bokmerker, passord osv. beholdes. Brukeren kan fortsatt logge på og bruke Google-nettjenester som Gmail.
+
+      Hvis regelen er angitt som «Aktiver nettleserpålogging», kan brukeren logge på nettleseren og logges på nettleseren automatisk når vedkommende logger på Google-nettjenester som Gmail. Når brukeren er logget på nettleseren, lagrer nettleseren brukerens kontoinformasjon. Men dette betyr ikke at Chrome-synkronisering er på som standard. Brukeren må velge å bruke denne funskjonen. Når denne regelen aktiveres, kan ikke brukeren slå av innstillingen som styrer nettleserpålogging. For å styre hvorvidt Chrome-synkronisering skal være tilgjengelig, bruk regelen «SyncDisabled».
+
+      Hvis regelen er angitt som «Tving nettleserpålogging», vises brukeren en dialogboks for kontovalg og må velge og logge på en konto for å bruke nettleseren. Dette sikrer at reglene assosiert med kontoen brukes for administrerte kontoer. Dette slår på Chrome-synkronisering for kontoen som standard, med mindre synkronisering ble deaktivert av domeneadministrator eller med regelen «SyncDisabled». Standardverdien til BrowserGuestModeEnabled er satt til «False» (usann). Merk at eksisterende, usignerte profiler låses og gjøres utilgjengelige når denne regelen aktiveres. For mer informasjon, se denne brukerstøtteartikkelen: https://support.google.com/chrome/a/answer/7572556.
+
+      Hvis denne regelen ikke er satt, kan brukeren velge om alternativet for nettleserpålogging skal aktiveres og bruke det som vedkommende selv vil.</translation>
 <translation id="3911737181201537215">Denne regelen har ingen innvirkning på loggføring i Android.</translation>
 <translation id="391531815696899618">Slår av Google Disk-synkronisering i Filer-appen for <ph name="PRODUCT_OS_NAME" /> ved bruk av mobiltilkobling når den har verdien true (sann). I disse tilfellene lastes ikke noen data opp til Google Disk.
 
@@ -1130,6 +1139,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Merk at denne regelen ignoreres og Googles posisjonstjenester alltid deaktiveres nå <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />-regelen er angitt som <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Tillat forespørsler til en Google-tjeneste for klokkeslett</translation>
+<translation id="408076456549153854">Aktiver nettleserpålogging</translation>
 <translation id="4088589230932595924">Tvungen inkognitomodus</translation>
 <translation id="4088983553732356374">Gjør det mulig å velge om nettsteder kan angi lokale data. Dette kan enten tillates for alle nettsteder eller blokkeres for alle nettsteder.
 
@@ -1404,11 +1414,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="4816674326202173458">Tillat at bedriftsbrukeren er både primær- og sekundærbruker (standardatferd for ikke-administrerte brukere)</translation>
 <translation id="4826326557828204741">Handling som skal utføres når inaktivitetsforsinkelsen blir overgått mens maskinen kjører på batteriet</translation>
 <translation id="4834526953114077364">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt og ikke pålogget de siste tre månedene»</translation>
-<translation id="4838572175671839397">Inneholder et regeluttrykk som brukes for å avgjøre hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME" />.
-
-      Hvis en bruker forsøker å logge seg på med et brukernavn som ikke samsvarer med dette mønsteret, vises det en relatert feilmelding.
-
-      Hvis denne retningslinjen ikke angis eller står tom, kan alle brukere logge seg på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
 <translation id="4861767323695239729">Konfigurer tillatte inndatametoder i brukerøkter</translation>
 <translation id="4869787217450099946">Angir om det er tillatt med låser for skjermaktivering. Låser for skjermaktivering kan forespørres via utvidelses API-en for strømsparing.
@@ -1441,6 +1446,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="4962262530309732070">Hvis denne regelen angis som «true» (sann) eller ikke konfigureres, tillates «Legg til person» i brukeradministreringen for <ph name="PRODUCT_NAME" />.
 
       Hvis denne regelen angis som «false» (usann), tillates ikke oppretting av nye profiler via brukeradministreringen for <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4970855112942626932">Deaktiver nettleserpålogging</translation>
 <translation id="4971529314808359013">Gjør det mulig å spesifisere en liste over nettadressemønstre som spesifiserer nettsteder <ph name="PRODUCT_NAME" /> skal velge klientsertifikat for automatisk, hvis nettstedet krever sertifikat.
 
           Verdien må være en matrise med JSON-ordlister i strengformat. Hver ordliste må ha formen { "mønster": "$URL_PATTERN", "filter" : $FILTER }, der $URL_PATTERN er et mønster for spesifisering av innhold. $FILTER begrenser klientsertifikatene nettleseren automatisk velger fra. Uavhengig av hvilket filter som brukes, blir det bare valgt sertifikater som stemmer overens med tjenerens sertifikatforespørsel. Hvis $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } }, velges det bare klientsertifikater som er utstedt av et sertifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme katalogen {}, brukes det ikke ytterligere begrensninger for valg av klientsertifikater.
@@ -1842,6 +1848,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
+<translation id="6091233616732024397">Tving brukere til å logge på for å bruke nettleseren</translation>
 <translation id="6093156968240188330">Tillat at eksterne brukere kommuniserer via uthevede vinduer i fjernhjelpøkter.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
 
@@ -1920,6 +1927,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="6368011194414932347">Konfigurer nettadresse for startsiden</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>
 <translation id="6376659517206731212">Kan være obligatorisk</translation>
+<translation id="6377355597423503887">Denne regelen er avviklet. Vurder å bruke BrowserSignin i stedet.
+
+      Lar brukeren logge på <ph name="PRODUCT_NAME" />.
+
+      Hvis du angir denne regelen, kan du konfigurere hvorvidt en bruker kan logge på <ph name="PRODUCT_NAME" />. Setter du denne regelen til «False» (usann), kan ikke apper og utvidelser som bruker chrome.identity-API-en fungere, så du bør vurdere å bruke SyncDisabled i stedet.</translation>
 <translation id="6378076389057087301">Angi om lydaktivitet skal påvirke strømbehandling</translation>
 <translation id="637934607141010488">Rapportliste over enhetsbrukere som har logget på i det siste.
 
@@ -2097,25 +2109,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6903814433019432303">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør hvilket sett av nettadresser som blir lastet inn når demo-økten startes. Denne retningslinjen overstyrer enhver annen mekanisme for angivelse av den første nettadressen og kan således brukes bare for en økt som ikke er tilknyttet en viss bruker.</translation>
-<translation id="6908347296939885026">Aktiverer begrenset pålogging for <ph name="PRODUCT_NAME" /> i G Suite og hindrer brukere i å endre denne innstillingen.
-
-      Hvis du definerer denne innstillingen, har brukere bare tilgang til Google-apper
-      via kontoer fra de spesifiserte domenene (merk at dette ikke
-      fungerer for gmail.com/googlemail.com).
-
-      Denne innstillingen hindrer IKKE brukerne i å logge på administrerte enheter
-      som krever Google-autentisering. Brukere kan fremdeles
-      logge på kontoene sine fra andre domener, men de får opp en feil
-      når de prøver å bruke G Suite med disse kontoene.
-
-      Hvis du lar denne innstillingen stå tom / ikke konfigurert, har brukerne
-      tilgang til G Suite med hvilken som helst konto.
-
-      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til i
-      alle HTTP- og HTTPS-forespørsler for alle google.com-domener, som beskrevet i
-      https://support.google.com/a/answer/1668854.
-
-      Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="6908640907898649429">Konfigurerer standard søkeleverandør. Du kan angi hvilken søkeleverandør brukeren får som standard, eller velge å deaktivere standardsøk.</translation>
 <translation id="6913068954484253496">Gi <ph name="PRODUCT_NAME" /> tillatelse til å koble til Cast-enheter på alle IP-adresser.</translation>
 <translation id="6915442654606973733">Aktiver tilgjengelighetsfunksjon for muntlig tilbakemelding.
@@ -2813,7 +2806,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       alle PAC-skript, uansett opphav (inkludert de som er hentet via en usikker
       transportmetode, eller som er oppdaget uten sikkerhet via WPAD).
 
-      Standardverdien er True (usann), og sikkerhetsfunksjon er da aktivert.
+      Standardverdien er True (sann), og sikkerhetsfunksjon er da aktivert.
 
       Vi anbefaler at du angir verdien True (sann). Den eneste grunnen til å angi False (usann)
       er hvis dette er nødvendig for å unngå kompatibilitetsproblemer med
@@ -2855,6 +2848,11 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8548832052135586762">Konfigurerer utskrift i bare fargemodus, bare svart/hvitt eller uten begrensninger knyttet til fargemodus. Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
+<translation id="857369585509260201">Denne regelen er avviklet. Vurder å bruke BrowserSignin i stedet.
+
+      Hvis denne regelen er satt til «True» (sann), må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før nettleseren brukes. Standardverdien til BrowserGuestModeEnabled er satt til «False» (usann). Merk at eksisterende, usignerte profiler låses og gjøres utilgjengelige når denne regelen aktiveres. For mer informasjon, se brukerstøtteartikkelen.
+
+      Hvis denne regelen er satt til «False» (usann), eller ikke er konfigurert, kan brukeren bruke nettleseren uten å logge på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Angir skriverne som en bruker ikke kan bruke.
 
       Denne regelen brukes bare hvis <ph name="PRINTERS_BLACKLIST" /> er valgt for <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -3062,13 +3060,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
        De faktiske mulighetene for rollback kan også avhenge av modellen samt patcher av kritiske sårbarheter.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Denne godkjenningslisten kontrollerer hvilke moduser for hurtigopplåsing brukerne kan konfigurere og bruke til å låse opp låseskjermen.
-
-          Denne verdien er en liste med strenger. De gyldige listeoppføringene er «all» (alle) og «PIN». Hvis du legger til «all» i listen, blir alle modusene for hurtigopplåsing tilgjengelige for brukerne – inkludert moduser som implementeres i fremtiden. Hvis du ikke gjør det, er bare de modusene for hurtigopplåsing som finnes i listen, tilgjengelige.
-
-          Hvis du for eksempel vil tillate alle modusene for hurtigopplåsing, bruker du [«all»]. Hvis du bare vil tillate PIN-opplåsing, bruker du [«PIN»]. Hvis du vil slå av alle modusene for hurtigopplåsing, bruker du [].
-
-          Som standard er ingen moduser for hurtigopplåsing tilgjengelige for administrerte enheter.</translation>
 <translation id="9136399279941091445">Intervaller utenfor arbeidstiden når de spesifiserte enhetsinnstillingene er tilgjengelige</translation>
 <translation id="9147029539363974059">Sender systemlogger til administrasjonstjeneren for å la administratorer
       overvåke systemloggene.

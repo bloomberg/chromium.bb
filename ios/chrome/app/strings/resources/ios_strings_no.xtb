@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Det siste døgnet</translation>
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3112556859945124369">Merk…</translation>
-<translation id="3151924044251363314">Bare personer som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret. Hvis du glemmer den, må du tilbakestille synkroniseringen. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Merk alle…</translation>
 <translation id="3175081911749765310">Nettjenester</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
@@ -332,7 +331,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Kan ikke eksportere passordene</translation>
-<translation id="6762156594045689028">For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Postnummer</translation>
 <translation id="6785453220513215166">Sender programstopprapport …</translation>
 <translation id="679325081238418596">Få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker</translation>

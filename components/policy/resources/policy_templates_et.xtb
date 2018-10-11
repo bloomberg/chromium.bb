@@ -577,7 +577,6 @@
       Kui seade on keelatud, ei saa kasutajad rakendusest <ph name="PRODUCT_NAME" /> printida. Printimine on keelatud mutrivõtmemenüüs, laiendustes, JavaScripti rakendustes ja mujal. Siiski on võimalik printida pistikprogrammides, mis lähevad printimiseks rakendusest <ph name="PRODUCT_NAME" /> mööda. Näiteks on teatud Flash-rakenduste kontekstimenüüs printimisvalik, mida see reegel ei mõjuta.</translation>
 <translation id="2518231489509538392">Heli esitamise lubamine</translation>
 <translation id="2521581787935130926">Kuva rakenduste otsetee järjehoidjaribal</translation>
-<translation id="2529700525201305165">Piira kasutajaid, kes saavad logida sisse rakendusse <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Sunniviisiliselt installitud rakenduste ja laienduste loendi seadistamine</translation>
 <translation id="253135976343875019">Tegevusetuse hoiatuse viivitus vahelduvvoolutoite kasutamisel</translation>
 <translation id="2536525645274582300">Kasutaja otsustab, kas lubada Google'i asukohateenused</translation>
@@ -830,6 +829,7 @@
 
           Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seadeid määrata.</translation>
 <translation id="3205825995289802549">Esmasel käivitamisel esimese brauseriakna maksimeerimine</translation>
+<translation id="3211426942294667684">Brauserisse sisselogimise seaded</translation>
 <translation id="3213821784736959823">Määrab, kas rakenduses <ph name="PRODUCT_NAME" /> kasutatakse sisseehitatud DNS-i klienti.
 
       Kui reegel on lubatud, kasutatakse võimalusel sisseehitatud DNS-i klienti.
@@ -1104,6 +1104,15 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui te seda reeglit ei määra, kasutab brauser <ph name="PRODUCT_NAME" /> oma tavapärast kataloogi (platvormipõhine).
 
       Saidil https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables näete loendit kasutatavatest muutujatest.</translation>
+<translation id="3904459740090265495">See reegel juhib brauserisse sisselogimise käitumist. See võimaldab teil määrata, kas kasutaja saab teenusesse <ph name="PRODUCT_NAME" /> oma kontoga sisse logida ja kasutada kontoga seotud teenuseid, nagu Chrome'i sünkroonimine.
+
+      Kui reegli väärtuseks on määratud „Keela brauserisse sisselogimine”, siis ei saa kasutaja brauserisse sisse logida ega kasutada kontopõhiseid teenuseid. Sellisel juhul ei saa brauseri tasemel funktsioone (nt Chrome'i sünkroonimine) kasutada ja need pole saadaval. Kui kasutaja oli sisse logitud ja reegli väärtuseks määratakse „Keelatud”, logitakse ta Chrome'i järgmisel käivitamisel välja, kuid tema kohalikud profiili andmed (nt järjehoidjad, paroolid jm) jäävad alles. Kasutaja saab siiski sisse logida Google'i veebiteenustesse (nt Gmaili) ja neid kasutada.
+
+      Kui reegli väärtuseks on määratud „Luba brauserisse sisselogimine”, siis saab kasutaja brauserisse sisse logida ja ta logitakse automaatselt brauserisse sisse, kui ta logib sisse mõnda Google'i veebiteenusesse (nt Gmaili). Kui kasutaja on brauserisse sisse logitud, siis salvestab brauser tema kontoteabe. See aga ei tähenda, et Chrome'i sünkroonimine vaikimisi sisse lülitatakse. Kasutaja peab selle funktsiooni kasutamise eraldi lubama. Selle reegli lubamisel ei saa kasutaja välja lülitada seadet, mis lubab brauserisse sisselogimise. Chrome'i sünkroonimise kättesaadavuse juhtimiseks kasutage reeglit „SyncDisabled”.
+
+      Kui reegli väärtuseks on määratud „Brauserisse sisselogimise nõudmine”, siis kuvatakse kasutajale kontovaliku dialoog ja ta peab valima, millisele kontole brauseri kasutamiseks sisse logida. See tagab, et hallatud kontode puhul rakendatakse ja jõustatakse kontoga seotud reeglid. Vaikimisi lülitab see Chrome'i sünkroonimise sellel kontol sisse (v.a juhul, kui sünkroonimine on domeeni administraatori poolt või reegliga „SyncDisabled” välja lülitatud). Reegli BrowserGuestModeEnabled vaikeväärtuseks määratakse Väär. Pange tähele, et olemasolevad allkirjastamata profiilid lukustatakse ja nendele ei pääse pärast selle reegli lubamist juurde. Lisateabe saamiseks lugege abikeskuse artiklit: https://support.google.com/chrome/a/answer/7572556.
+
+      Kui see reegel jäetakse määramata, siis saab kasutaja otsustada, kas soovib brauserisse sisselogimise valiku lubada, ja seda kasutada siis, kui ise soovib.</translation>
 <translation id="3911737181201537215">See reegel ei mõjuta Androidi logimist.</translation>
 <translation id="391531815696899618">Keelab Google Drive'i sünkroonimise operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid, kui väärtuse olekuks on määratud Tõene. Sellisel juhul ei laadita Google Drive'i üles mingeid andmeid.
 
@@ -1154,6 +1163,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Pange tähele, et reeglit eiratakse ja asukohateenused on alati keelatud, kui reegel <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> on seatud väärtusele <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Google'i kellaajateenuses päringute lubamine</translation>
+<translation id="408076456549153854">Brauserisse sisselogimise lubamine</translation>
 <translation id="4088589230932595924">Inkognito režiim on jõustatud</translation>
 <translation id="4088983553732356374">Võimaldab teil seadistada, kas veebisaitidel on lubatud määrata kohalikke andmeid. Kohalike andmete määramise saab lubada või keelata kõigi veebisaitide jaoks.
 
@@ -1426,11 +1436,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="4816674326202173458">Luba ettevõtte kasutajal olla nii peamine kui ka teisene kasutaja (vaikekäitumine haldamata kasutajate puhul)</translation>
 <translation id="4826326557828204741">Toiming, mis rakendub siis, kui tegevusetuse viivitusaeg saab täis akutoite kasutamise ajal</translation>
 <translation id="4834526953114077364">Kõige kauem aega tagasi kasutanud kasutajad, kes ei ole viimase 3 kuu jooksul sisse loginud, eemaldatakse, kuni on piisavalt vaba ruumi</translation>
-<translation id="4838572175671839397">Sisaldab regulaaravaldist, mis määrab, millised kasutajad saavad teenusesse <ph name="PRODUCT_NAME" /> sisse logida.
-
-      Kui kasutaja üritab sisse logida kasutajanimega, mis ei kattu mustriga, kuvatakse vastav veasõnum.
-
-      Kui jätate eeskirjad määramata või tühjaks, siis saavad kõik kasutajad teenusesse <ph name="PRODUCT_NAME" /> sisse logida.</translation>
 <translation id="4858735034935305895">Täisekraanrežiimi lubamine</translation>
 <translation id="4861767323695239729">Kasutajaseansis lubatud sisestusmeetodite seadistamine</translation>
 <translation id="4869787217450099946">Määrab, kas ekraani aktiveerimise lukustamine on lubatud. Ekraani aktiveerimise lukustamist saab taotleda laiendustega energiahalduse laienduse API kaudu.
@@ -1464,6 +1469,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
 
       Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> kasutajahalduris uusi profiile luua.</translation>
+<translation id="4970855112942626932">Brauserisse sisselogimise keelamine</translation>
 <translation id="4971529314808359013">Võimaldab määrata URL-i mustrite loendi, mis täpsustab saidid, millele teenus <ph name="PRODUCT_NAME" /> peaks automaatselt valima kliendi sertifikaadi, kui sait sertifikaati taotleb.
 
           Väärtus peab olema rida stringideks jaotatud JSON-i sõnastikke. Igas sõnastikus peab olema vorm { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kus $URL_PATTERN on sisuseadete muster. $FILTER piirab seda, milliste kliendisertifikaatide hulgast brauser automaatselt valib. Olenemata filtrist, valitakse ainult sertifikaadid, mis ühtivad serveri sertifikaadi taotlusega. Kui $FILTER on vormis { "ISSUER": { "CN": "$ISSUER_CN" } }, valitakse lisaks ainult kliendisertifikaadid, mille on väljastanud sertifikaat mustriga CommonName $ISSUER_CN. Kui $FILTER on tühi sõnastik {}, ei ole kliendisertifikaatide valik täiendavalt piiratud.
@@ -1870,6 +1876,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Kui see reegel jäetakse seadistamata, on eemaldatavate USB-seadmete loend tühi.</translation>
 <translation id="6083631234867522991">Windows (Windowsi kliendid):</translation>
+<translation id="6091233616732024397">Brauseri kasutamiseks sisselogimise nõudmine</translation>
 <translation id="6093156968240188330">Lubab kaugkasutajatel kaugabiseanssides suhelda administraatoriõigusi nõudvate akendega</translation>
 <translation id="6095999036251797924">Määrab, kui palju aega võib mööduda kasutaja viimasest toimingust, enne kui ekraan lukustatakse, kui seade töötab vahelduvvoolu- või akutoitel.
 
@@ -1948,6 +1955,11 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6368011194414932347">Avalehe URL-i seadistamine</translation>
 <translation id="6368403635025849609">Luba JavaScript nendel saitidel</translation>
 <translation id="6376659517206731212">Võib olla kohustuslik</translation>
+<translation id="6377355597423503887">Selle reegli tugi on katkestatud, kaaluge selle asemel reegli BrowserSignin kasutamist.
+
+      Lubab kasutajal teenusesse <ph name="PRODUCT_NAME" /> sisse logida.
+
+      Selle reegli määramisel saate seadistada, kas kasutajal lubatakse teenusesse <ph name="PRODUCT_NAME" /> sisse logida. Kui määrate reegli väärtuseks „Väär”, ei tööta rakendused ja laiendused, mis kasutavad chrome.identity API-t, seetõttu soovitame selle asemel kasutada reeglit SyncDisabled.</translation>
 <translation id="6378076389057087301">Määrake, kas helitoimingud mõjutavad toitehaldust</translation>
 <translation id="637934607141010488">Saadab loendi seadme kasutajatest, kes on hiljuti sisse loginud.
 
@@ -2126,25 +2138,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6903814433019432303">See reegel on aktiivne vaid jaemüügirežiimis.
 
       Määrab URL-ide loendi, mis laaditakse demoseansi alguses. See reegel alistab muud algse URL-i määramise mehhanismid, mistõttu saab seda rakendada vaid seansile, mis ei ole seotud kindla kasutajaga.</translation>
-<translation id="6908347296939885026">Lubab rakenduse <ph name="PRODUCT_NAME" /> piiratud sisselogimise funktsiooni G Suite'is ja takistab kasutajaid seadet muutmast.
-
-      Kui määrate selle seade, pääseb kasutaja Google'i rakendustele
-      juurde ainult määratud domeenide kontodega (pange tähele, et see
-      ei tööta saidil gmail.com/googlemail.com).
-
-      Seade EI takista kasutajat sisse logimast hallatud seadmes,
-      mis nõuab Google'i autentimist. Kasutajal on lubatud muudelt
-      domeenidelt pärit kontodele sisse logida, ent nende kontodega
-      G Suite'i kasutades kuvatakse veateade.
-
-      Kui jätate seade tühjaks/seadistamata, on G Suite'i kasutamine
-      lubatud kõikide kontodega.
-
-      Reegli kasutamisel lisatakse kõigile google.com-i domeenidele edastatavate
-      HTTP- ja HTTPS-taotlustele päis X-GoogApps-Allowed-Domains, nagu on
-      kirjeldatud aadressil https://support.google.com/a/answer/1668854.
-
-      Kasutajad ei saa seadet muuta ega alistada.</translation>
 <translation id="6908640907898649429">Seadistab vaikeotsingupakkuja. Saate määrata kasutajate jaoks vaikeotsingupakkuja või vaikeotsingu keelata.</translation>
 <translation id="6913068954484253496">Teenuse <ph name="PRODUCT_NAME" /> ja Casti seadmete vahelise ühenduse lubamine kõigi IP-aadresside kaudu.</translation>
 <translation id="6915442654606973733">Suulise tagasiside hõlbustusfunktsiooni lubamine.
@@ -2893,6 +2886,11 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8548832052135586762">Lubab ainult värvilise või mustvalge printimise või eemaldab värvirežiimi piirangu. Määramata reeglit käsitletakse piirangu puudumisena.</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
 <translation id="8566842294717252664">Veebipoe peitmine uuel vahelehel ja rakenduste käivitajas</translation>
+<translation id="857369585509260201">Selle reegli tugi on katkestatud, kaaluge selle asemel reegli BrowserSignin kasutamist.
+
+      Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist teenusesse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse reegli BrowserGuestModeEnabled vaikeväärtuseks Väär. Pange tähele, et olemasolevad allkirjastamata profiilid lukustatakse ja nendele ei pääse pärast selle reegli lubamist juurde. Lisateavet leiate abikeskuse artiklist.
+
+      Kui reegel määratakse väärtusele Väär või jäetakse seadistamata, saab kasutaja brauserit kasutada teenusesse <ph name="PRODUCT_NAME" /> sisse logimata.</translation>
 <translation id="8586528890725660268">Määrab printerid, mida kasutaja ei saa kasutada.
 
       Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="BULK_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_BLACKLIST" />.
@@ -3119,13 +3117,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Tegelikud tagasimineku võimalused olenevad ka emaplaadist ja kriitiliste turvaaukude paikadest.</translation>
 <translation id="913195841488580904">URL-ide loendile juurdepääsu blokeerimine</translation>
 <translation id="9135033364005346124">Teenuse <ph name="CLOUD_PRINT_NAME" /> puhverserveri lubamine</translation>
-<translation id="9136253551939494882">Lubatute loend, mis juhib seda, milliseid kiiravamisrežiime kasutaja saab lukustuskuva avamiseks seadistada ja kasutada.
-
-          See väärtus on stringide loend; kehtivad loendikanded on „all”, „PIN”. Lisades loendile stringi „all", tähendab see, et kasutajale on saadaval kõik kiiravamisrežiimid (sh need, mis rakendatakse tulevikus). Muul juhul on saadaval ainult loendis olevad kiiravamisrežiimid.
-
-          Kui soovite lubada näiteks kõik kiiravamisrežiimid, kasutage stringi ["all"]. Kui soovite lubada ainult PIN-koodiga avamise, kasutage stringi ["PIN"]. Kõikide kiiravamisrežiimide keelamiseks kasutage stringi [].
-
-          Vaikimisi pole hallatud seadmetes saadaval ühtegi kiiravamisrežiimi.</translation>
 <translation id="9136399279941091445">Väljalülitatud aegade intervallid, kui määratud seadme reeglid avaldatakse</translation>
 <translation id="9147029539363974059">Saadab süsteemilogid haldusserverisse, et administraatorid
       saaksid süsteemilogisid jälgida.

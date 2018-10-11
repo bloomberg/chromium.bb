@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Naam wijzigen</translation>
 <translation id="1175364870820465910">&amp;Afdrukken...</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
-<translation id="1184214524891303587">Informatie over mogelijke beveiligingsincidenten <ph name="BEGIN_WHITEPAPER_LINK" />automatisch melden<ph name="END_WHITEPAPER_LINK" /> aan Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1201895884277373915">Meer van deze site</translation>
 <translation id="1206967143813997005">Onjuiste eerste handtekening</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Invullen</translation>
 <translation id="2465655957518002998">Bezorgingsmethode kiezen</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Deze pagina vertalen</translation>
 <translation id="2479410451996844060">Ongeldige zoek-URL.</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2491120439723279231">Het servercertificaat bevat fouten.</translation>
@@ -380,7 +380,6 @@
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ten minste één item op gesynchroniseerde apparaten}=1{1 item (en meer op gesynchroniseerde apparaten)}other{# items (en meer op gesynchroniseerde apparaten)}}</translation>
 <translation id="3539171420378717834">Een exemplaar van deze kaart op dit apparaat bewaren</translation>
-<translation id="3549644494707163724">Alle gesynchroniseerde gegevens versleutelen met je eigen wachtwoordzin voor synchronisatie</translation>
 <translation id="3556433843310711081">Je beheerder kan de blokkering van de site opheffen</translation>
 <translation id="3566021033012934673">Je verbinding is niet privé</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -421,6 +420,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Verloopt: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Schadelijke content geblokkeerd.</translation>
+<translation id="3810973564298564668">Beheren</translation>
 <translation id="382518646247711829">Als je een proxyserver gebruikt...</translation>
 <translation id="3828924085048779000">Een lege wachtwoordzin is niet toegestaan.</translation>
 <translation id="385051799172605136">Vorige</translation>
@@ -530,7 +530,6 @@
 <translation id="4587425331216688090">Adres verwijderen uit Chrome?</translation>
 <translation id="4592951414987517459">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een moderne Cipher Suite.</translation>
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
-<translation id="4619615317237390068">Tabbladen van andere apparaten</translation>
 <translation id="4646534391647090355">Breng me daar nu naartoe</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
@@ -544,6 +543,7 @@
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Chromium opnieuw starten</translation>
+<translation id="473775607612524610">Updaten</translation>
 <translation id="4742407542027196863">Wachtwoorden beheren…</translation>
 <translation id="4744603770635761495">Uitvoerbaar pad</translation>
 <translation id="4750917950439032686">Je gegevens (zoals wachtwoorden of creditcardnummers) zijn privé wanneer ze worden verzonden naar deze site.</translation>
@@ -743,7 +743,6 @@
 <translation id="6051221802930200923">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat de website gebruikmaakt van certificaatpinning. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="6059925163896151826">USB-apparaten</translation>
 <translation id="6071091556643036997">Het type beleid is ongeldig.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Deze kaart wordt opgeslagen in je Google-account, zodat je op verschillende apparaten sneller kunt betalen.}other{Deze kaarten worden opgeslagen in je Google-account, zodat je op verschillende apparaten sneller kunt betalen.}}</translation>
 <translation id="6080696365213338172">Je hebt toegang tot content gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN" />, kunnen door je beheerder worden onderschept.</translation>
 <translation id="6096619198407627433">Hiermee word je uitgelogd bij de meeste sites. Je wordt niet uitgelogd van je Google-account. Mogelijk heb je geen toegang meer tot beveiligde content van <ph name="SITE" /> en sommige andere sites.</translation>
 <translation id="610911394827799129">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -921,7 +920,6 @@ Aanvullende informatie:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
 <translation id="7453467225369441013">Hiermee word je uitgelogd van de meeste sites. Je wordt niet uitgelogd van je Google-account.</translation>
 <translation id="7455133967321480974">Algemene standaardinstelling gebruiken (Blokkeren)</translation>
-<translation id="7460163899615895653">Je recente tabbladen van andere apparaten worden hier weergegeven</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
@@ -1005,6 +1003,7 @@ Aanvullende informatie:
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> altijd vertalen in het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Niet opgegeven</translation>
 <translation id="800218591365569300">Probeer andere tabbladen en programma's te sluiten om geheugen vrij te maken.</translation>
+<translation id="8009225694047762179">Wachtwoorden beheren</translation>
 <translation id="8012647001091218357">We kunnen je ouders momenteel niet bereiken. Probeer het opnieuw.</translation>
 <translation id="8025119109950072390">Cybercriminelen op deze site proberen je mogelijk te misleiden om iets gevaarlijks te doen, zoals software installeren of je persoonlijke gegevens bekendmaken (bijvoorbeeld wachtwoorden, telefoonnummers of creditcards).</translation>
 <translation id="8034522405403831421">Deze pagina is in het <ph name="SOURCE_LANGUAGE" />. Vertalen naar het <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1066,6 +1065,7 @@ Aanvullende informatie:
 Aanvullende informatie:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433057134996913067">Hiermee word je uitgelogd van de meeste websites.</translation>
 <translation id="8437238597147034694">&amp;Verplaatsen ongedaan maken</translation>

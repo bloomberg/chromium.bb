@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Ostatni dzień</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
 <translation id="3112556859945124369">Oznacz…</translation>
-<translation id="3151924044251363314">Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, musisz zresetować synchronizację. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Oznacz wszystko…</translation>
 <translation id="3175081911749765310">Usługi internetowe</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
@@ -332,7 +331,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nie można wyeksportować haseł</translation>
-<translation id="6762156594045689028">Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Kod pocztowy</translation>
 <translation id="6785453220513215166">Wysyłam raport o awarii...</translation>
 <translation id="679325081238418596">Korzystaj z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
