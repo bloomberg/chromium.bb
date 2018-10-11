@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">O fluxo do fornecimento de dispositivos foi interrompido. Tente novamente ou contacte o proprietário ou o gestor do dispositivo.</translation>
 <translation id="1611649489706141841">avançar</translation>
 <translation id="1611704746353331382">Exportar Marcadores para Ficheiro HTML...</translation>
+<translation id="1614511179807650956">Poderá ter atingido o limite de utilização dos dados móveis. Visite o portal de ativação de <ph name="NAME" /> para comprar mais dados.</translation>
 <translation id="161460670679785907">Não é possível detetar o telemóvel.</translation>
 <translation id="1616206807336925449">Esta extensão não requer autorizações especiais.</translation>
 <translation id="1616298854599875024">Não é possível importar a extensão "<ph name="IMPORT_NAME" />" porque não é um módulo partilhado.</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">No arranque</translation>
 <translation id="2000419248597011803">Envia alguns cookies e pesquisas da barra de endereço e da caixa de pesquisa para o motor de pesquisa predefinido.</translation>
 <translation id="2001796770603320721">Gerir no Drive</translation>
+<translation id="2003130567827682533">Para ativar os dados de "<ph name="NAME" />", primeiro, ligue-se a uma rede Wi-Fi.</translation>
 <translation id="2004663115385769400">Não é possível abrir com o $1</translation>
 <translation id="200544492091181894">Pode alterar esta opção mais tarde nas definições.</translation>
 <translation id="2006638907958895361">Abrir link na aplicação <ph name="APP" /></translation>
@@ -2508,6 +2510,7 @@ Pretende pará-lo?</translation>
 <translation id="4823484602432206655">Ler e alterar definições do utilizador e do dispositivo</translation>
 <translation id="4823651846660089135">O dispositivo é apenas de leitura</translation>
 <translation id="4823955295535347797">Aceda ao Assistente sempre que disser "Ok Google" quando o ecrã estiver ligado.</translation>
+<translation id="4827675678516992122">Não foi possível ligar</translation>
 <translation id="4828937774870308359">Australiano</translation>
 <translation id="4829768588131278040">Configurar PIN</translation>
 <translation id="4830502475412647084">A instalar a atualização do SO…</translation>
@@ -2768,6 +2771,7 @@ Pretende pará-lo?</translation>
 <translation id="5209320130288484488">Não foram encontrados aparelhos</translation>
 <translation id="5209518306177824490">Impressão digital SHA-1</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
+<translation id="5213481667492808996">O serviço de dados de "<ph name="NAME" />" está pronto a ser utilizado.</translation>
 <translation id="5213891612754844763">Mostrar definições de proxy</translation>
 <translation id="521582610500777512">A foto foi rejeitada</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>

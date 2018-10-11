@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">Utaratibu wa utoaji umekatizwa. Tafadhali jaribu tena au uwasiliane na mmiliki au msimamizi wa kifaa chako.</translation>
 <translation id="1611649489706141841">sambaza</translation>
 <translation id="1611704746353331382">Hamisha Alamisho kwenye Faili ya HTML...</translation>
+<translation id="1614511179807650956">Huenda umetumia mgawo wako wote wa data ya mtandao wa simu. Tembelea tovuti ya urejeshaji ya <ph name="NAME" /> ili ununue data zaidi</translation>
 <translation id="161460670679785907">Imeshindwa kutambua simu yako</translation>
 <translation id="1616206807336925449">Kiendelezi hiki hakihitaji ruhusa maalum.</translation>
 <translation id="1616298854599875024">Imeshindwa kupakia kiendelezi "<ph name="IMPORT_NAME" />" kwa sababu si sehemu iliyoshirikiwa</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">Wakati wa kuanza</translation>
 <translation id="2000419248597011803">Hutuma baadhi ya vidakuzi na utafutaji kutoka kwenye sehemu ya anwani na kisanduku cha kutafutia kwenye mtambo wako chaguomsingi wa kutafuta</translation>
 <translation id="2001796770603320721">Dhibiti katika Hifadhi ya Google</translation>
+<translation id="2003130567827682533">Ili uweke data ya '<ph name="NAME" />', unganisha kwanza kwenye mtandao wa Wi-Fi</translation>
 <translation id="2004663115385769400">Imeshindwa kufungua kwa kutumia $1</translation>
 <translation id="200544492091181894">Unaweza kubadilisha hali hii baadaye katika mipangilio</translation>
 <translation id="2006638907958895361">Fungua Kiungo katika <ph name="APP" /></translation>
@@ -2498,6 +2500,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4823484602432206655">Soma na ubadilishe mipangilio ya mtumiaji na kifaa</translation>
 <translation id="4823651846660089135">Kifaa ni cha kusoma tu</translation>
 <translation id="4823955295535347797">Fikia programu ya Mratibu wakati wowote unaposema "Ok Google" ukiwa umewasha skrini yako.</translation>
+<translation id="4827675678516992122">Imeshindwa kuunganisha</translation>
 <translation id="4828937774870308359">Kiaustralia</translation>
 <translation id="4829768588131278040">Unda PIN</translation>
 <translation id="4830502475412647084">Inasasisha Mfumo wa Uendeshaji</translation>
@@ -2758,6 +2761,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5209320130288484488">Hakuna vifaa vilivyopatikana</translation>
 <translation id="5209518306177824490">Alama ya SHA-1</translation>
 <translation id="5210365745912300556">Funga kichupo</translation>
+<translation id="5213481667492808996">Huduma yako ya data ya '<ph name="NAME" />' iko tayari kutumiwa</translation>
 <translation id="5213891612754844763">Onyesha mipangilio ya seva mbadala</translation>
 <translation id="521582610500777512">Picha ilitupwa</translation>
 <translation id="5222676887888702881">Ondoka</translation>

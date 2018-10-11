@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Het registratieproces is onderbroken. Probeer het opnieuw of neem contact op met de eigenaar of beheerder van het apparaat.</translation>
 <translation id="1611649489706141841">vooruit</translation>
 <translation id="1611704746353331382">Bladwijzers exporteren naar HTML-bestand...</translation>
+<translation id="1614511179807650956">Je hebt mogelijk je quotum voor mobiele data verbruikt. Ga naar de activeringsportal van <ph name="NAME" /> om meer data te kopen.</translation>
 <translation id="161460670679785907">Je telefoon kan niet worden gedetecteerd</translation>
 <translation id="1616206807336925449">De extensie vereist geen speciale rechten.</translation>
 <translation id="1616298854599875024">Kan '<ph name="IMPORT_NAME" />' niet importeren, omdat dit geen gedeelde module is</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Bij opstarten</translation>
 <translation id="2000419248597011803">Hiermee worden bepaalde cookies en de zoekopdrachten in de adresbalk en in het zoekvak verzonden naar je standaard zoekmachine</translation>
 <translation id="2001796770603320721">Beheren in Drive</translation>
+<translation id="2003130567827682533">Als je data van '<ph name="NAME" />' wilt activeren, maak je eerst verbinding met een wifi-netwerk</translation>
 <translation id="2004663115385769400">Kan niet openen met $1</translation>
 <translation id="200544492091181894">Je kunt dit later altijd wijzigen via de instellingen</translation>
 <translation id="2006638907958895361">Link openen in <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">Gebruikers- en apparaatinstellingen lezen en wijzigen</translation>
 <translation id="4823651846660089135">Apparaat is alleen-lezen</translation>
 <translation id="4823955295535347797">Open de Assistent wanneer je scherm is ingeschakeld door 'Oké Google' te zeggen.</translation>
+<translation id="4827675678516992122">Kan geen verbinding maken</translation>
 <translation id="4828937774870308359">Australisch</translation>
 <translation id="4829768588131278040">Pincode instellen</translation>
 <translation id="4830502475412647084">OS-update installeren</translation>
@@ -2768,6 +2771,7 @@
 <translation id="5209320130288484488">Geen apparaten gevonden</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
+<translation id="5213481667492808996">Je dataservice '<ph name="NAME" />' is klaar voor gebruik</translation>
 <translation id="5213891612754844763">Proxyinstellingen weergeven</translation>
 <translation id="521582610500777512">Foto is geannuleerd</translation>
 <translation id="5222676887888702881">Uitloggen</translation>

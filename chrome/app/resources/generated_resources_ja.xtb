@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">プロビジョニング フローが中断されました。もう一度お試しになるか、端末の所有者または管理者にお問い合わせください。</translation>
 <translation id="1611649489706141841">進む</translation>
 <translation id="1611704746353331382">HTML ファイルにブックマークをエクスポート...</translation>
+<translation id="1614511179807650956">モバイルデータの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME" /> の有効化ポータルにアクセスしてください</translation>
 <translation id="161460670679785907">スマートフォンが見つかりません</translation>
 <translation id="1616206807336925449">この拡張機能は特別な権限を必要としません。</translation>
 <translation id="1616298854599875024">拡張機能「<ph name="IMPORT_NAME" />」は、共有モジュールではないためインポートできません</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">起動時</translation>
 <translation id="2000419248597011803">Cookie と、アドレスバーや検索ボックスに入力した検索語句を既定の検索エンジンに送信します</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
+<translation id="2003130567827682533">「<ph name="NAME" />」データサービスを有効にするには、まず Wi-Fi ネットワークに接続してください</translation>
 <translation id="2004663115385769400">「$1」で開くことができません</translation>
 <translation id="200544492091181894">これは後から [設定] で変更することもできます</translation>
 <translation id="2006638907958895361"><ph name="APP" /> でリンクを開く</translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">ユーザー設定とデバイス設定の読み取りと変更</translation>
 <translation id="4823651846660089135">デバイスは読み取り専用です</translation>
 <translation id="4823955295535347797">画面がオンの状態で「OK Google」と話すといつでもアシスタントにアクセスできます。</translation>
+<translation id="4827675678516992122">接続エラー</translation>
 <translation id="4828937774870308359">逆方向</translation>
 <translation id="4829768588131278040">PIN を設定</translation>
 <translation id="4830502475412647084">OS アップデートのインストール中</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">デバイスが見つかりませんでした</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="5210365745912300556">タブを閉じる</translation>
+<translation id="5213481667492808996">「<ph name="NAME" />」データサービスを使用できるようになりました</translation>
 <translation id="5213891612754844763">プロキシ設定を表示</translation>
 <translation id="521582610500777512">写真を破棄しました</translation>
 <translation id="5222676887888702881">ログアウト</translation>

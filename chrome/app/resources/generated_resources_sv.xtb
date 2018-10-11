@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Administrationsflödet avbröts. Försök igen eller kontakta enhetens ägare eller administratör.</translation>
 <translation id="1611649489706141841">framåt</translation>
 <translation id="1611704746353331382">Exportera bokmärken till HTML-fil ...</translation>
+<translation id="1614511179807650956">Du kan ha använt din tillåtna mängd mobildata. Besök aktiveringsportalen <ph name="NAME" /> om du vill köpa mer data</translation>
 <translation id="161460670679785907">Mobilen hittades inte</translation>
 <translation id="1616206807336925449">Det här tillägget kräver inga särskilda behörigheter.</translation>
 <translation id="1616298854599875024">Det gick inte att importera tillägget <ph name="IMPORT_NAME" /> eftersom det inte är en delad modul</translation>
@@ -690,6 +691,7 @@
 <translation id="1999115740519098545">Vid start</translation>
 <translation id="2000419248597011803">Skickar vissa cookies och sökningar från adressfältet och sökrutan till standardsökmotorn</translation>
 <translation id="2001796770603320721">Hantera i Drive</translation>
+<translation id="2003130567827682533">Om du vill aktivera data från <ph name="NAME" /> ansluter du först till ett Wi-Fi-nätverk</translation>
 <translation id="2004663115385769400">Det gick inte att öppna med $1</translation>
 <translation id="200544492091181894">Du kan alltid ändra detta senare i inställningarna</translation>
 <translation id="2006638907958895361">Öppna länken i <ph name="APP" /></translation>
@@ -2506,6 +2508,7 @@
 <translation id="4823484602432206655">Läsa och ändra användarinställningar och enhetsinställningar</translation>
 <translation id="4823651846660089135">Enheten är skrivskyddad</translation>
 <translation id="4823955295535347797">Starta assistenten när du säger ”Ok Google” och skärmen är aktiverad.</translation>
+<translation id="4827675678516992122">Det gick inte att ansluta</translation>
 <translation id="4828937774870308359">Australiensisk</translation>
 <translation id="4829768588131278040">Konfigurera pinkod</translation>
 <translation id="4830502475412647084">Uppdateringen för operativsystemet installeras</translation>
@@ -2766,6 +2769,7 @@
 <translation id="5209320130288484488">Det gick inte att hitta några enheter</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtryck</translation>
 <translation id="5210365745912300556">Stäng flik</translation>
+<translation id="5213481667492808996">Datatjänsten <ph name="NAME" /> är klar att använda</translation>
 <translation id="5213891612754844763">Visa proxyinställningar</translation>
 <translation id="521582610500777512">Bilden togs bort</translation>
 <translation id="5222676887888702881">Logga ut</translation>

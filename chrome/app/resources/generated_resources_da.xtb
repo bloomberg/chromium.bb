@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Provisioneringsflowet blev afbrudt. Prøv igen, eller kontakt enhedsejeren eller administratoren.</translation>
 <translation id="1611649489706141841">videresend</translation>
 <translation id="1611704746353331382">Eksportér bogmærker til HTML-fil...</translation>
+<translation id="1614511179807650956">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME" /> for at købe mere data.</translation>
 <translation id="161460670679785907">Din telefon kan ikke registreres</translation>
 <translation id="1616206807336925449">Denne udvidelse kræver ikke nogen særlige tilladelser.</translation>
 <translation id="1616298854599875024">Udvidelsen "<ph name="IMPORT_NAME" />" kan ikke importeres, da den ikke er delt</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">Ved opstart</translation>
 <translation id="2000419248597011803">Sender visse cookies og søgninger fra adresselinjen og søgefeltet til din standardsøgemaskine</translation>
 <translation id="2001796770603320721">Administrer i Drev</translation>
+<translation id="2003130567827682533">Hvis du vil aktivere data fra "<ph name="NAME" />", skal du først oprette forbindelse til et Wi-Fi-netværk</translation>
 <translation id="2004663115385769400">Der kunne ikke åbnes med $1</translation>
 <translation id="200544492091181894">Du kan altid ændre dette senere i Indstillinger</translation>
 <translation id="2006638907958895361">Åbn linket i <ph name="APP" /></translation>
@@ -2505,6 +2507,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4823484602432206655">Læs og rediger bruger- og enhedsindstillinger</translation>
 <translation id="4823651846660089135">Enheden er skrivebeskyttet</translation>
 <translation id="4823955295535347797">Få adgang til Google-assistenten, hver gang du siger "Ok Google", når skærmen er tændt.</translation>
+<translation id="4827675678516992122">Der kunne ikke oprettes forbindelse</translation>
 <translation id="4828937774870308359">Australsk</translation>
 <translation id="4829768588131278040">Konfiguration af pinkode</translation>
 <translation id="4830502475412647084">Installerer OS-opdateringen</translation>
@@ -2765,6 +2768,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5209320130288484488">Der blev ikke fundet nogen enheder</translation>
 <translation id="5209518306177824490">SHA-1-fingeraftryk</translation>
 <translation id="5210365745912300556">Luk fanen</translation>
+<translation id="5213481667492808996">Din datatjeneste fra "<ph name="NAME" />" er klar til brug</translation>
 <translation id="5213891612754844763">Vis proxyindstillinger</translation>
 <translation id="521582610500777512">Billede blev kasseret</translation>
 <translation id="5222676887888702881">Log ud</translation>

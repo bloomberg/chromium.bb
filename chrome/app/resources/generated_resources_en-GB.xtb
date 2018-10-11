@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Provisioning flow was interrupted. Please try again or contact your device owner or administrator.</translation>
 <translation id="1611649489706141841">forward</translation>
 <translation id="1611704746353331382">Export Bookmarks to HTML File...</translation>
+<translation id="1614511179807650956">You may have used up your mobile data allowance. Visit the <ph name="NAME" /> activation portal to buy more data</translation>
 <translation id="161460670679785907">Unable to detect your phone</translation>
 <translation id="1616206807336925449">This extension requires no special permissions.</translation>
 <translation id="1616298854599875024">Unable to import extension '<ph name="IMPORT_NAME" />' because it is not a shared module</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">On start-up</translation>
 <translation id="2000419248597011803">Sends some cookies and searches from the address bar and search box to your default search engine</translation>
 <translation id="2001796770603320721">Manage in Drive</translation>
+<translation id="2003130567827682533">To activate '<ph name="NAME" />' data, first connect to a Wi-Fi network</translation>
 <translation id="2004663115385769400">Unable to open with $1</translation>
 <translation id="200544492091181894">You can always change this later in settings</translation>
 <translation id="2006638907958895361">Open Link in <ph name="APP" /></translation>
@@ -2506,6 +2508,7 @@
 <translation id="4823484602432206655">Read and change user and device settings</translation>
 <translation id="4823651846660089135">Device is read-only</translation>
 <translation id="4823955295535347797">Access your Assistant any time that you say 'Ok Google' when your screen is on.</translation>
+<translation id="4827675678516992122">Couldn't connect</translation>
 <translation id="4828937774870308359">Australian</translation>
 <translation id="4829768588131278040">Set up PIN</translation>
 <translation id="4830502475412647084">Installing OS update</translation>
@@ -2766,6 +2769,7 @@
 <translation id="5209320130288484488">No devices found</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Close tab</translation>
+<translation id="5213481667492808996">Your '<ph name="NAME" />' data service is ready to use</translation>
 <translation id="5213891612754844763">Show proxy settings</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
 <translation id="5222676887888702881">Sign out</translation>

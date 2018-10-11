@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">กระบวนการการจัดสรรขัดข้อง โปรดลองอีกครั้ง หรือติดต่อเจ้าของอุปกรณ์หรือผู้ดูแลระบบ</translation>
 <translation id="1611649489706141841">ไปข้างหน้า</translation>
 <translation id="1611704746353331382">ส่งออกบุ๊กมาร์กไปยังไฟล์ HTML...</translation>
+<translation id="1614511179807650956">คุณอาจใช้เน็ตมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME" /> เพื่อซื้อเน็ตมือถือเพิ่มเติม</translation>
 <translation id="161460670679785907">ไม่พบโทรศัพท์ของคุณ</translation>
 <translation id="1616206807336925449">ส่วนขยายนี้ไม่จำเป็นต้องมีสิทธิ์พิเศษ</translation>
 <translation id="1616298854599875024">นำเข้าส่วนขยาย "<ph name="IMPORT_NAME" />" ไม่ได้เนื่องจากไม่ใช่โมดูลที่แชร์</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">เริ่มต้น</translation>
 <translation id="2000419248597011803">ส่งคุกกี้และการค้นหาบางรายการจากแถบที่อยู่และช่องค้นหาไปยังเครื่องมือค้นหาเริ่มต้น</translation>
 <translation id="2001796770603320721">จัดการใน Google ไดรฟ์</translation>
+<translation id="2003130567827682533">หากต้องการเปิดใช้งานเน็ตมือถือ "<ph name="NAME" />" ให้เชื่อมต่อกับเครือข่าย Wi-Fi ก่อน</translation>
 <translation id="2004663115385769400">เปิดด้วย $1 ไม่ได้</translation>
 <translation id="200544492091181894">คุณเปลี่ยนค่านี้ภายหลังได้ในการตั้งค่า</translation>
 <translation id="2006638907958895361">เปิดลิงก์ใน <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">อ่านและเปลี่ยนการตั้งค่าผู้ใช้และอุปกรณ์</translation>
 <translation id="4823651846660089135">อุปกรณ์เป็นแบบอ่านอย่างเดียว</translation>
 <translation id="4823955295535347797">เข้าถึง Assistant ได้ทุกเพียงแค่พูดว่า Ok Google เมื่อหน้าจอเปิดอยู่</translation>
+<translation id="4827675678516992122">เชื่อมต่อไม่ได้</translation>
 <translation id="4828937774870308359">ออสเตรเลีย</translation>
 <translation id="4829768588131278040">ตั้งค่า PIN</translation>
 <translation id="4830502475412647084">กำลังติดตั้งอัปเดตระบบปฏิบัติการ</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">ไม่พบอุปกรณ์</translation>
 <translation id="5209518306177824490">ลายนิ้วมือ SHA-1</translation>
 <translation id="5210365745912300556">ปิดแท็บ</translation>
+<translation id="5213481667492808996">บริการอินเทอร์เน็ต "<ph name="NAME" />" พร้อมใช้งานแล้ว</translation>
 <translation id="5213891612754844763">แสดงการตั้งค่าพร็อกซี</translation>
 <translation id="521582610500777512">รูปภาพถูกยกเลิกแล้ว</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>

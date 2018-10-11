@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Fluxul de provizionare a fost întrerupt. Încearcă din nou sau contactează proprietarul dispozitivului ori administratorul.</translation>
 <translation id="1611649489706141841">înainte</translation>
 <translation id="1611704746353331382">Exportați marcajele într-un fișier HTML...</translation>
+<translation id="1614511179807650956">Este posibil să fi epuizat datele mobile puse la dispoziție. Accesează portalul de activare <ph name="NAME" /> pentru a cumpăra mai multe date.</translation>
 <translation id="161460670679785907">Nu se poate detecta telefonul</translation>
 <translation id="1616206807336925449">Această extensie nu necesită permisiuni speciale.</translation>
 <translation id="1616298854599875024">Nu se poate importa extensia „<ph name="IMPORT_NAME" />”, deoarece nu este un modul folosit în comun</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">La pornire</translation>
 <translation id="2000419248597011803">Trimite anumite cookie-uri și căutări din bara de adrese și din caseta de căutare în motorul de căutare prestabilit</translation>
 <translation id="2001796770603320721">Gestionează în Drive</translation>
+<translation id="2003130567827682533">Pentru a activa datele „<ph name="NAME" />”, conectează-te mai întâi la o rețea Wi-Fi.</translation>
 <translation id="2004663115385769400">Nu se poate deschide cu $1</translation>
 <translation id="200544492091181894">Poți modifica ulterior această opțiune în Setări</translation>
 <translation id="2006638907958895361">Deschide linkul în <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4823484602432206655">Citește și modifică setările pentru dispozitiv și pentru utilizator</translation>
 <translation id="4823651846660089135">Dispozitivul este numai în citire</translation>
 <translation id="4823955295535347797">Accesează Asistentul rostind „Ok Google” când ecranul este pornit.</translation>
+<translation id="4827675678516992122">Nu s-a putut conecta</translation>
 <translation id="4828937774870308359">Inversă</translation>
 <translation id="4829768588131278040">Configurează codul PIN</translation>
 <translation id="4830502475412647084">Se instalează actualizarea sistemului de operare</translation>
@@ -2767,6 +2770,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5209320130288484488">Nu s-a găsit niciun dispozitiv</translation>
 <translation id="5209518306177824490">Amprentă digitală SHA-1</translation>
 <translation id="5210365745912300556">Închide fila</translation>
+<translation id="5213481667492808996">Serviciul de date „<ph name="NAME" />” este gata de utilizare.</translation>
 <translation id="5213891612754844763">Afișează setările de proxy</translation>
 <translation id="521582610500777512">Fotografia a fost ștearsă</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>

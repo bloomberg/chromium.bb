@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Quy trình cấp phép đã bị gián đoạn. Vui lòng thử lại hoặc liên hệ với chủ sở hữu hoặc quản trị viên thiết bị của bạn.</translation>
 <translation id="1611649489706141841">chuyển tiếp</translation>
 <translation id="1611704746353331382">Xuất dấu trang sang tệp HTML...</translation>
+<translation id="1614511179807650956">Bạn có thể đã dùng hết dữ liệu di động cho phép. Hãy truy cập vào cổng kích hoạt <ph name="NAME" /> để mua thêm dữ liệu</translation>
 <translation id="161460670679785907">Không phát hiện được điện thoại của bạn</translation>
 <translation id="1616206807336925449">Tiện ích này không yêu cầu quyền đặc biệt.</translation>
 <translation id="1616298854599875024">Không thể nhập tiện ích "<ph name="IMPORT_NAME" />" do tiện ích này không phải là mô-đun được chia sẻ</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Khi khởi động</translation>
 <translation id="2000419248597011803">Gửi một số cookie và nội dung tìm kiếm từ thanh địa chỉ cũng như hộp tìm kiếm tới công cụ tìm kiếm mặc định</translation>
 <translation id="2001796770603320721">Quản lý trong Drive</translation>
+<translation id="2003130567827682533">Để kích hoạt dữ liệu '<ph name="NAME" />', trước tiên hãy kết nối mạng Wi-Fi</translation>
 <translation id="2004663115385769400">Không thể mở bằng $1</translation>
 <translation id="200544492091181894">Bạn luôn có thể thay đổi tùy chọn này trong mục cài đặt</translation>
 <translation id="2006638907958895361">Mở liên kết trong <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">Đọc và thay đổi cài đặt người dùng và thiết bị</translation>
 <translation id="4823651846660089135">Thiết bị chỉ đọc</translation>
 <translation id="4823955295535347797">Nói "Ok Google" bất cứ lúc nào để sử dụng Trợ lý khi màn hình đang bật.</translation>
+<translation id="4827675678516992122">Không thể kết nối</translation>
 <translation id="4828937774870308359">Tiếng Úc</translation>
 <translation id="4829768588131278040">Thiết lập mã PIN</translation>
 <translation id="4830502475412647084">Đang cài đặt bản cập nhật hệ điều hành</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">Không tìm thấy thiết bị nào</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
+<translation id="5213481667492808996">Dịch vụ dữ liệu '<ph name="NAME" />' đã sẵn sàng cho bạn sử dụng</translation>
 <translation id="5213891612754844763">Hiển thị cài đặt proxy</translation>
 <translation id="521582610500777512">Đã hủy ảnh</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>

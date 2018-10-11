@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Aliran peruntukan terganggu. Sila cuba lagi atau hubungi pemilik atau pentadbir peranti anda.</translation>
 <translation id="1611649489706141841">ke hadapan</translation>
 <translation id="1611704746353331382">Eksport Penanda Halaman ke Fail HTML...</translation>
+<translation id="1614511179807650956">Anda mungkin telah menggunakan kesemua peruntukan data mudah alih anda. Lawati portal pengaktifan <ph name="NAME" /> untuk membeli lagi data</translation>
 <translation id="161460670679785907">Tidak dapat mengesan telefon anda</translation>
 <translation id="1616206807336925449">Sambungan ini tidak memerlukan kebenaran khas.</translation>
 <translation id="1616298854599875024">Tidak dapat mengimport sambungan "<ph name="IMPORT_NAME" />" kerana bukan modul kongsi</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Pada permulaan</translation>
 <translation id="2000419248597011803">Menghantar beberapa kuki dan carian daripada bar alamat dan kotak carian ke enjin carian lalai anda</translation>
 <translation id="2001796770603320721">Urus dalam Drive</translation>
+<translation id="2003130567827682533">Untuk mengaktifkan data '<ph name="NAME" />', sambung ke rangkaian Wi-Fi dahulu</translation>
 <translation id="2004663115385769400">Tidak dapat membuka dengan $1</translation>
 <translation id="200544492091181894">Anda boleh menukar ciri ini dalam tetapan pada bila-bila masa</translation>
 <translation id="2006638907958895361">Buka Pautan dalam <ph name="APP" /></translation>
@@ -2508,6 +2510,7 @@
 <translation id="4823484602432206655">Baca dan tukar pengguna dan tetapan peranti</translation>
 <translation id="4823651846660089135">Peranti dalam mod baca sahaja</translation>
 <translation id="4823955295535347797">Akses Assistant pada bila-bila masa anda menyebut "Ok Google" semasa skrin anda dihidupkan.</translation>
+<translation id="4827675678516992122">Tidak dapat menyambung</translation>
 <translation id="4828937774870308359">Australia</translation>
 <translation id="4829768588131278040">Sediakan PIN</translation>
 <translation id="4830502475412647084">Memasang kemas kini OS</translation>
@@ -2768,6 +2771,7 @@
 <translation id="5209320130288484488">Tiada peranti ditemui</translation>
 <translation id="5209518306177824490">Cap jari SHA-1</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
+<translation id="5213481667492808996">Perkhidmatan data '<ph name="NAME" />' anda sedia untuk digunakan</translation>
 <translation id="5213891612754844763">Tunjukkan tetapan proksi</translation>
 <translation id="521582610500777512">Foto telah dibuang</translation>
 <translation id="5222676887888702881">Log keluar</translation>

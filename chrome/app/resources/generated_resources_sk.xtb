@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Tok poskytovania bol prerušený. Skúste to znova alebo kontaktujte vlastníka či správcu zariadenia.</translation>
 <translation id="1611649489706141841">dopredu</translation>
 <translation id="1611704746353331382">Exportovať záložky do súboru HTML...</translation>
+<translation id="1614511179807650956">Možno ste dosiahli povolený limit mobilných dát. Ďalšie dáta si môžete zakúpiť na aktivačnom portáli <ph name="NAME" /></translation>
 <translation id="161460670679785907">Telefón sa nedarí nájsť</translation>
 <translation id="1616206807336925449">Toto rozšírenie nevyžaduje žiadne špeciálne povolenia.</translation>
 <translation id="1616298854599875024">Rozšírenie <ph name="IMPORT_NAME" /> sa nepodarilo importovať, pretože nie je zdieľaným modulom</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Pri spustení</translation>
 <translation id="2000419248597011803">Odošle niektoré súbory cookie a vyhľadávania z panela s adresou a vyhľadávacieho poľa do vášho predvoleného vyhľadávača</translation>
 <translation id="2001796770603320721">Spravovať na Disku</translation>
+<translation id="2003130567827682533">Ak chcete aktivovať dáta v sieti <ph name="NAME" />, najprv sa pripojte k sieti Wi-Fi</translation>
 <translation id="2004663115385769400">Nedá sa otvoriť pomocou aplikácie $1</translation>
 <translation id="200544492091181894">Svoju voľbu môžete kedykoľvek neskôr zmeniť v nastaveniach</translation>
 <translation id="2006638907958895361">Otvoriť odkaz v aplikácii <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@ dotyku</translation>
 <translation id="4823484602432206655">Čítať a meniť nastavenia používateľa a zariadenia</translation>
 <translation id="4823651846660089135">Zariadenie je len na čítanie</translation>
 <translation id="4823955295535347797">Keď je zapnutá obrazovka, Asistenta môžete kedykoľvek aktivovať vyslovením výrazu „Ok Google“.</translation>
+<translation id="4827675678516992122">Nepodarilo sa pripojiť</translation>
 <translation id="4828937774870308359">Opačné</translation>
 <translation id="4829768588131278040">Nastaviť kód PIN</translation>
 <translation id="4830502475412647084">Inštaluje sa aktualizácia operačného systému</translation>
@@ -2767,6 +2770,7 @@ dotyku</translation>
 <translation id="5209320130288484488">Nenašli sa žiadne zariadenia</translation>
 <translation id="5209518306177824490">Odtlačok SHA-1</translation>
 <translation id="5210365745912300556">Zatvoriť kartu</translation>
+<translation id="5213481667492808996">Dátová služba <ph name="NAME" /> je pripravená na použitie</translation>
 <translation id="5213891612754844763">Zobraziť nastavenia proxy servera</translation>
 <translation id="521582610500777512">Fotka bola zahodená</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>

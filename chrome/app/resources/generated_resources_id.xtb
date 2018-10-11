@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Proses provisioning terganggu. Harap coba lagi atau hubungi administrator atau pemilik perangkat.</translation>
 <translation id="1611649489706141841">maju</translation>
 <translation id="1611704746353331382">Ekspor Bookmark ke file HTML...</translation>
+<translation id="1614511179807650956">Kuota Anda yang diizinkan mungkin telah habis. Kunjungi portal aktivasi <ph name="NAME" /> untuk membeli kuota lagi</translation>
 <translation id="161460670679785907">Tidak dapat mendeteksi ponsel Anda</translation>
 <translation id="1616206807336925449">Ekstensi ini tidak memerlukan izin khusus.</translation>
 <translation id="1616298854599875024">Tidak dapat mengimpor ekstensi "<ph name="IMPORT_NAME" />" karena bukan modul yang dibagikan</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Saat memulai</translation>
 <translation id="2000419248597011803">Mengirimkan beberapa cookie dan penelusuran dari kolom URL dan kotak penelusuran ke mesin telusur default</translation>
 <translation id="2001796770603320721">Kelola di Drive</translation>
+<translation id="2003130567827682533">Untuk mengaktifkan kuota '<ph name="NAME" />', sambungan ke jaringan Wi-Fi terlebih dahulu</translation>
 <translation id="2004663115385769400">Tidak dapat membuka dengan $1</translation>
 <translation id="200544492091181894">Anda dapat mengubah ini nanti di Setelan</translation>
 <translation id="2006638907958895361">Buka Link di <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">Membaca dan mengubah setelan perangkat dan pengguna</translation>
 <translation id="4823651846660089135">Perangkat berstatus hanya-baca</translation>
 <translation id="4823955295535347797">Akses Asisten setiap kali Anda mengatakan "Ok Google" saat layar aktif.</translation>
+<translation id="4827675678516992122">Tidak dapat tersambung</translation>
 <translation id="4828937774870308359">Australia</translation>
 <translation id="4829768588131278040">Siapkan PIN</translation>
 <translation id="4830502475412647084">Menginstal update OS</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">Perangkat tidak ditemukan</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
+<translation id="5213481667492808996">Layanan data '<ph name="NAME" />' Anda sudah siap digunakan</translation>
 <translation id="5213891612754844763">Tampilkan setelan proxy</translation>
 <translation id="521582610500777512">Foto dibuang</translation>
 <translation id="5222676887888702881">Logout</translation>

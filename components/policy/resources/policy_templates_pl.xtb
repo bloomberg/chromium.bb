@@ -1104,7 +1104,7 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Listę zmiennych, których można użyć, znajdziesz na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables</translation>
 <translation id="3904459740090265495">Ta zasada kontroluje mechanizm logowania w przeglądarce. Umożliwia określenie, czy użytkownik może zalogować się w <ph name="PRODUCT_NAME" /> przy użyciu swojego konta i używać usług związanych z kontem, na przykład synchronizacji Chrome.
 
-      Jeśli zasada ma wartość „Wyłącz logowanie w przeglądarce”, użytkownik nie może zalogować się w przeglądarce ani używać usług związanych z kontem. Funkcje przeglądarki, takie jak synchronizacja Chrome, będą niedostępne. Jeśli użytkownik był wcześniej zalogowany, a zasada ma wartość „Wyłącz”, użytkownik zostanie wylogowany po najbliższym uruchomieniu Chrome, ale dane z jego profilu lokalnego, takie jak zakładki, hasła itd., zostaną zachowane. Użytkownik nadal będzie mógł logować się w usługach internetowych Google takich jak Gmail i ich używać.
+      Jeśli zasada ma wartość „Wyłącz logowanie w przeglądarce”, użytkownik nie może zalogować się w przeglądarce ani używać usług związanych z kontem. Funkcje przeglądarki, takie jak synchronizacja Chrome, będą niedostępne. Jeśli użytkownik był wcześniej zalogowany, a zasada jest wyłączona, użytkownik zostanie wylogowany po najbliższym uruchomieniu Chrome, ale dane z jego profilu lokalnego, takie jak zakładki, hasła itd., zostaną zachowane. Użytkownik nadal będzie mógł logować się w usługach internetowych Google takich jak Gmail i ich używać.
 
       Jeśli zasada ma wartość „Włącz logowanie w przeglądarce”, użytkownik może zalogować się w przeglądarce i jest logowany w niej automatycznie po zalogowaniu się w usługach internetowych Google takich jak Gmail. Zalogowanie w przeglądarce oznacza, że przeglądarka będzie przechowywać dane z konta użytkownika. Nie oznacza to jednak, że domyślnie włączona zostanie synchronizacja Chrome – użytkownik musi zgodzić się na jej używanie oddzielnie. Włączenie tej zasady uniemożliwi użytkownikowi wyłączenie logowania w przeglądarce w ustawieniach. Do określania dostępności synchronizacji Chrome służy zasada „SyncDisabled”.
 
@@ -1923,7 +1923,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Pozwala użytkownikowi zalogować się w <ph name="PRODUCT_NAME" />.
 
-      Jeśli ustawisz tę zasadę, możesz określić, czy zezwalasz użytkownikowi na logowanie się w <ph name="PRODUCT_NAME" />. Po wyłączeniu tej zasady aplikacje i rozszerzenia, które używają interfejsu API chrome.identity, nie będą działać. Dlatego zamiast niej możesz użyć SyncDisabled.</translation>
+      Jeśli ustawisz tę zasadę, możesz określić, czy zezwalasz użytkownikowi na logowanie się w <ph name="PRODUCT_NAME" />. Jeśli zasada będzie miała wartość false, aplikacje i rozszerzenia, które używają interfejsu API chrome.identity, nie będą działać. Dlatego zamiast niej możesz użyć SyncDisabled.</translation>
 <translation id="6378076389057087301">Określ, czy aktywność związana z dźwiękiem wpływa na zarządzanie energią</translation>
 <translation id="637934607141010488">Zgłasza listę użytkowników urządzenia, którzy niedawno się zalogowali.
 
@@ -2844,7 +2844,7 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 
       Jeśli włączysz tę zasadę, użytkownik będzie musiał logować się w <ph name="PRODUCT_NAME" /> przy użyciu swojego profilu, by skorzystać z przeglądarki. Domyślnie wartość zasady BrowserGuestModeEnabled zostanie przy tym ustawiona na fałsz. Pamiętaj, że po włączeniu tej zasady istniejące niepodpisane profile zostaną zablokowane i staną się niedostępne. Więcej informacji znajdziesz w artykule w Centrum pomocy.
 
-      Jeśli nie włączysz tej zasady lub jej nie skonfigurujesz, użytkownik będzie mógł używać przeglądarki bez logowania się w <ph name="PRODUCT_NAME" />.</translation>
+      Jeśli ustawisz tę zasadę na fałsz lub jej nie skonfigurujesz, użytkownik będzie mógł używać przeglądarki bez logowania się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Określa drukarki, z których użytkownik nie może korzystać.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_BLACKLIST" />.

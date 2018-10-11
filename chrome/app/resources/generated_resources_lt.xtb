@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Pertraukta aprūpinimo eiga. Bandykite dar kartą arba susisiekite su įrenginio savininku ar administratoriumi.</translation>
 <translation id="1611649489706141841">persiųsti</translation>
 <translation id="1611704746353331382">Eksportuoti žymes į HTML failą...</translation>
+<translation id="1614511179807650956">Gali būti, kad pasiekėte mobiliojo ryšio duomenų apribojimą. Apsilankykite „<ph name="NAME" />“ suaktyvinimo portale, kad įsigytumėte daugiau duomenų</translation>
 <translation id="161460670679785907">Nepavyko aptikti telefono</translation>
 <translation id="1616206807336925449">Šiam plėtiniui nereikalingi jokie specialūs leidimai.</translation>
 <translation id="1616298854599875024">Nepavyko importuoti plėtinio „<ph name="IMPORT_NAME" />“, nes tai nėra bendrinamas modulis</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Paleidžiant</translation>
 <translation id="2000419248597011803">Numatytajam paieškos varikliui siunčiami kai kurie slapukai ir į adreso juostą bei paieškos laukelį įvestos paieškos</translation>
 <translation id="2001796770603320721">Tvarkyti Diske</translation>
+<translation id="2003130567827682533">Norėdami suaktyvinti „<ph name="NAME" />“ duomenis, pirmiausia prisijunkite prie „Wi-Fi“ tinklo</translation>
 <translation id="2004663115385769400">Nepavyko atidaryti naudojant „$1“</translation>
 <translation id="200544492091181894">Tai vėliau galėsite pakeisti nustatymuose</translation>
 <translation id="2006638907958895361">Atidaryti nuorodą programoje „<ph name="APP" />“</translation>
@@ -2507,6 +2509,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4823484602432206655">Skaityti ir keisti naudotojo bei įrenginio nustatymus</translation>
 <translation id="4823651846660089135">Įrenginys yra tik skaitomas</translation>
 <translation id="4823955295535347797">Pasiekite Padėjėją bet kuriuo metu pasakę „Ok Google“, kai ekranas įjungtas.</translation>
+<translation id="4827675678516992122">Nepavyko prisijungti</translation>
 <translation id="4828937774870308359">Australiškas</translation>
 <translation id="4829768588131278040">Nustatyti PIN kodą</translation>
 <translation id="4830502475412647084">Įdiegiamas OS naujinys</translation>
@@ -2767,6 +2770,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5209320130288484488">Įrenginių nerasta</translation>
 <translation id="5209518306177824490">SHA-1 piršto atspaudas</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
+<translation id="5213481667492808996">„<ph name="NAME" />“ duomenų paslauga paruošta naudoti</translation>
 <translation id="5213891612754844763">Rodyti tarpinio serverio nustatymus</translation>
 <translation id="521582610500777512">Nuotrauka buvo atmesta</translation>
 <translation id="5222676887888702881">Atsijungti</translation>

@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">配置流程中断了。请重试，或与您的设备所有者/管理员联系。</translation>
 <translation id="1611649489706141841">前进</translation>
 <translation id="1611704746353331382">将书签导出到 HTML 文件...</translation>
+<translation id="1614511179807650956">您原有的移动数据流量可能已用完。若想购买更多流量，请前往“<ph name="NAME" />”激活门户网站</translation>
 <translation id="161460670679785907">检测不到您的手机</translation>
 <translation id="1616206807336925449">此扩展程序无需任何特殊权限。</translation>
 <translation id="1616298854599875024">无法导入扩展程序“<ph name="IMPORT_NAME" />”，因为它不是共享模块</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">启动时</translation>
 <translation id="2000419248597011803">将一些 Cookie 以及地址栏和搜索框中的搜索字词发送给您的默认搜索引擎</translation>
 <translation id="2001796770603320721">在云端硬盘中管理</translation>
+<translation id="2003130567827682533">若想激活“<ph name="NAME" />”的数据流量服务，请先连接到 Wi-Fi 网络</translation>
 <translation id="2004663115385769400">无法使用$1打开</translation>
 <translation id="200544492091181894">以后，您随时可在“设置”中更改此设置</translation>
 <translation id="2006638907958895361">在<ph name="APP" />中打开链接</translation>
@@ -2500,6 +2502,7 @@
 <translation id="4823484602432206655">读取和更改用户设置与设备设置</translation>
 <translation id="4823651846660089135">设备目前处于只读模式</translation>
 <translation id="4823955295535347797">当屏幕处于开启状态时，您可以随时访问自己的 Google 助理，只需说“Ok Google”即可。</translation>
+<translation id="4827675678516992122">无法连接</translation>
 <translation id="4828937774870308359">澳大利亚</translation>
 <translation id="4829768588131278040">设置 PIN 码</translation>
 <translation id="4830502475412647084">正在安装操作系统更新</translation>
@@ -2759,6 +2762,7 @@
 <translation id="5209320130288484488">未找到任何设备</translation>
 <translation id="5209518306177824490">SHA-1 指纹</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
+<translation id="5213481667492808996">您可以使用“<ph name="NAME" />”的数据流量服务了</translation>
 <translation id="5213891612754844763">显示代理设置</translation>
 <translation id="521582610500777512">照片已被舍弃</translation>
 <translation id="5222676887888702881">退出</translation>

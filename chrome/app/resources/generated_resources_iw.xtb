@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">תהליך הקצאת הגישה הופסק. יש לנסות שוב, או לפנות לבעלי המכשיר או למנהל המערכת.</translation>
 <translation id="1611649489706141841">קדימה</translation>
 <translation id="1611704746353331382">‏יצוא סימניות לקובץ HTML...</translation>
+<translation id="1614511179807650956">ייתכן שניצלת את כל חבילת הגלישה שלך. בפורטל ההפעלה של <ph name="NAME" /> ניתן לשלם על הרחבת החבילה</translation>
 <translation id="161460670679785907">לא ניתן לזהות את הטלפון שלך</translation>
 <translation id="1616206807336925449">אין צורך בהרשאות מיוחדות כדי להשתמש בתוסף זה.</translation>
 <translation id="1616298854599875024">לא ניתן לייבא את התוסף "<ph name="IMPORT_NAME" />" כי הוא לא מודול משותף</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">בעת ההפעלה</translation>
 <translation id="2000419248597011803">‏שליחה של חלק מקובצי ה-Cookie והחיפושים מסרגל הכתובות ומתיבת החיפוש אל מנוע החיפוש שהוגדר כברירת מחדל</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
+<translation id="2003130567827682533">‏כדי להפעיל נתונים של '<ph name="NAME" />', יש להתחבר תחילה לרשת Wi-Fi</translation>
 <translation id="2004663115385769400">לא ניתן לפתוח עם $1</translation>
 <translation id="200544492091181894">ניתן לשנות את האפשרות הזו מאוחר יותר בהגדרות</translation>
 <translation id="2006638907958895361">פתח את הקישור ב-<ph name="APP" /></translation>
@@ -2504,6 +2506,7 @@
 <translation id="4823484602432206655">קריאה ושינוי של הגדרות המשתמש והמכשיר</translation>
 <translation id="4823651846660089135">המכשיר מוגדר לקריאה בלבד</translation>
 <translation id="4823955295535347797">‏כדי לגשת ל-Assistant צריך לומר "OK Google" כשהמסך מופעל.</translation>
+<translation id="4827675678516992122">לא ניתן להתחבר</translation>
 <translation id="4828937774870308359">אוסטרלית</translation>
 <translation id="4829768588131278040">‏הגדר PIN</translation>
 <translation id="4830502475412647084">‏מתקין עדכון OS</translation>
@@ -2764,6 +2767,7 @@
 <translation id="5209320130288484488">לא נמצאו מכשירים</translation>
 <translation id="5209518306177824490">‏טביעת אצבע SHA-1</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
+<translation id="5213481667492808996">שירות הנתונים של '<ph name="NAME" />' מוכן לשימוש</translation>
 <translation id="5213891612754844763">‏הצג את ההגדרות של שרת ה-proxy</translation>
 <translation id="521582610500777512">התצלום נמחק</translation>
 <translation id="5222676887888702881">יציאה</translation>
@@ -4176,7 +4180,7 @@
 <translation id="7280877790564589615">התבקשה הרשאה</translation>
 <translation id="7282992757463864530">סרגל מידע</translation>
 <translation id="7283041136720745563">‏המכסה שלך ב-Google Drive לא גדולה מספיק.</translation>
-<translation id="7287143125007575591">הגישה נדחתה.</translation>
+<translation id="7287143125007575591">אין גישה</translation>
 <translation id="7287411021188441799">שחזור רקע ברירת מחדל</translation>
 <translation id="7288676996127329262">‏<ph name="HORIZONTAL_DPI" />‏x‏<ph name="VERTICAL_DPI" /> dpi</translation>
 <translation id="7289225569524511578">פתח את אפליקציית הטפט</translation>

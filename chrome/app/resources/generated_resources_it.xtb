@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Il flusso di provisioning è stato interrotto. Riprova oppure contatta l'amministratore o il proprietario del dispositivo.</translation>
 <translation id="1611649489706141841">avanti</translation>
 <translation id="1611704746353331382">Esporta i preferiti in file HTML...</translation>
+<translation id="1614511179807650956">Potresti aver esaurito la tua quota di dati mobili. Visita il portale di attivazione <ph name="NAME" /> per acquistare altri dati.</translation>
 <translation id="161460670679785907">Impossibile rilevare il tuo telefono</translation>
 <translation id="1616206807336925449">Questa estensione non richiede autorizzazioni speciali.</translation>
 <translation id="1616298854599875024">Impossibile importare l'estensione "<ph name="IMPORT_NAME" />" perché non è un modulo condiviso</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">All'avvio</translation>
 <translation id="2000419248597011803">Invia al tuo motore di ricerca predefinito alcune ricerche dalla barra degli indirizzi e dalla casella di ricerca, nonché alcuni cookie</translation>
 <translation id="2001796770603320721">Gestisci in Drive</translation>
+<translation id="2003130567827682533">Per poter attivare i dati "<ph name="NAME" />", collegati a una rete Wi-Fi.</translation>
 <translation id="2004663115385769400">Impossibile aprire con $1</translation>
 <translation id="200544492091181894">Puoi modificare questa scelta in seguito nelle Impostazioni</translation>
 <translation id="2006638907958895361">Apri link in <ph name="APP" /></translation>
@@ -2504,6 +2506,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4823484602432206655">Lettura e modifica delle impostazioni utente e dispositivo</translation>
 <translation id="4823651846660089135">Il dispositivo è in sola lettura</translation>
 <translation id="4823955295535347797">Accedi all'assistente ogni volta che dici "Ok Google" quando lo schermo è attivo.</translation>
+<translation id="4827675678516992122">Impossibile collegarsi</translation>
 <translation id="4828937774870308359">Australiano</translation>
 <translation id="4829768588131278040">Imposta il codice PIN</translation>
 <translation id="4830502475412647084">Installazione dell'aggiornamento del sistema operativo in corso</translation>
@@ -2764,6 +2767,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5209320130288484488">Nessun dispositivo trovato</translation>
 <translation id="5209518306177824490">Impronta digitale SHA-1</translation>
 <translation id="5210365745912300556">Chiudi scheda</translation>
+<translation id="5213481667492808996">Il tuo servizio dati "<ph name="NAME" />" è pronto all'uso</translation>
 <translation id="5213891612754844763">Mostra impostazioni proxy</translation>
 <translation id="521582610500777512">La foto è stata eliminata</translation>
 <translation id="5222676887888702881">Esci</translation>

@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">Bereitstellungsverfahren unterbrochen. Bitte wenden Sie sich an den Eigentümer Ihres Geräts oder an den Administrator oder versuchen Sie es noch einmal.</translation>
 <translation id="1611649489706141841">Weiter</translation>
 <translation id="1611704746353331382">Lesezeichen in HTML-Datei exportieren...</translation>
+<translation id="1614511179807650956">Sie haben eventuell Ihr mobiles Datenkontingent aufgebraucht. Besuchen Sie das <ph name="NAME" />-Aktivierungsportal, um weiteres Datenkontingent zu kaufen.</translation>
 <translation id="161460670679785907">Ihr Smartphone wurde nicht erkannt</translation>
 <translation id="1616206807336925449">Diese Erweiterung erfordert keine speziellen Berechtigungen.</translation>
 <translation id="1616298854599875024">Die Erweiterung "<ph name="IMPORT_NAME" />" konnte nicht importiert werden, da es sich nicht um ein freigegebenes Modul handelt</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">Beim Start</translation>
 <translation id="2000419248597011803">Suchanfragen, die in die Adressleiste und das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
+<translation id="2003130567827682533">Damit Sie "<ph name="NAME" />"-Daten aktivieren können, müssen Sie zuerst eine Verbindung zu einem WLAN herstellen</translation>
 <translation id="2004663115385769400">Öffnen mit "$1" nicht möglich</translation>
 <translation id="200544492091181894">Dies kann jederzeit in den Einstellungen geändert werden</translation>
 <translation id="2006638907958895361">Link in <ph name="APP" /> öffnen</translation>
@@ -2503,6 +2505,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4823484602432206655">Nutzer- und Geräteeinstellungen lesen und ändern</translation>
 <translation id="4823651846660089135">Gerät ist schreibgeschützt</translation>
 <translation id="4823955295535347797">Bei eingeschaltetem Bildschirm steht Ihnen Google Assistant jederzeit zur Verfügung, wenn Sie "Ok Google" sagen.</translation>
+<translation id="4827675678516992122">Verbindung nicht möglich</translation>
 <translation id="4828937774870308359">Australisch</translation>
 <translation id="4829768588131278040">PIN erstellen</translation>
 <translation id="4830502475412647084">Betriebssystem-Update wird installiert</translation>
@@ -2763,6 +2766,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5209320130288484488">Keine Geräte gefunden</translation>
 <translation id="5209518306177824490">SHA-1-Fingerabdruck</translation>
 <translation id="5210365745912300556">Schließen</translation>
+<translation id="5213481667492808996">Der "<ph name="NAME" />"-Datendienst kann nun verwendet werden</translation>
 <translation id="5213891612754844763">Proxyeinstellungen anzeigen</translation>
 <translation id="521582610500777512">Das Foto wurde verworfen.</translation>
 <translation id="5222676887888702881">Abmelden</translation>

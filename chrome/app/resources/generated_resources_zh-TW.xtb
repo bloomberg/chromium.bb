@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">佈建作業中斷。請再試一次，或是與裝置擁有者或管理員聯絡。</translation>
 <translation id="1611649489706141841">往前</translation>
 <translation id="1611704746353331382">將書籤匯出為 HTML 檔案...</translation>
+<translation id="1614511179807650956">你的行動數據配額可能已經用完。造訪 <ph name="NAME" /> 啟用入口網站即可購買更多數據量。</translation>
 <translation id="161460670679785907">偵測不到你的手機</translation>
 <translation id="1616206807336925449">這個擴充功能不需要特殊權限。</translation>
 <translation id="1616298854599875024">「<ph name="IMPORT_NAME" />」擴充功能不是共用模組，因此無法匯入</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">起始畫面</translation>
 <translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
 <translation id="2001796770603320721">在雲端硬碟中管理</translation>
+<translation id="2003130567827682533">如要啟用「<ph name="NAME" />」的數據服務，請先連上 Wi-Fi 網路</translation>
 <translation id="2004663115385769400">無法使用「$1」開啟</translation>
 <translation id="200544492091181894">日後你隨時可以在設定中進行變更</translation>
 <translation id="2006638907958895361">在「<ph name="APP" />」中開啟連結</translation>
@@ -2506,6 +2508,7 @@
 <translation id="4823484602432206655">讀取及變更使用者和裝置設定</translation>
 <translation id="4823651846660089135">裝置目前是唯讀模式</translation>
 <translation id="4823955295535347797">只要在螢幕開啟狀態下說出「Ok Google」，就能隨時存取 Google 助理。</translation>
+<translation id="4827675678516992122">無法連線</translation>
 <translation id="4828937774870308359">澳洲式</translation>
 <translation id="4829768588131278040">設定 PIN 碼</translation>
 <translation id="4830502475412647084">正在安裝作業系統更新</translation>
@@ -2765,6 +2768,7 @@
 <translation id="5209320130288484488">找不到裝置</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
+<translation id="5213481667492808996">現在可以使用「<ph name="NAME" />」的數據服務了</translation>
 <translation id="5213891612754844763">顯示 Proxy 設定</translation>
 <translation id="521582610500777512">已捨棄相片</translation>
 <translation id="5222676887888702881">登出</translation>

@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">프로비저닝 플로가 중단되었습니다. 다시 시도하거나 기기 소유자 또는 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="1611649489706141841">앞으로</translation>
 <translation id="1611704746353331382">HTML 파일로 북마크 내보내기...</translation>
+<translation id="1614511179807650956">할당된 모바일 데이터를 모두 사용한 것 같습니다. 추가 데이터를 구입하려면 <ph name="NAME" /> 활성화 포털을 방문하세요.</translation>
 <translation id="161460670679785907">휴대전화를 인식할 수 없습니다</translation>
 <translation id="1616206807336925449">이 확장 프로그램은 특별한 권한이 필요하지 않습니다.</translation>
 <translation id="1616298854599875024">확장 프로그램 '<ph name="IMPORT_NAME" />'은(는) 공유 모듈이 아니므로 가져올 수 없습니다</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">시작 그룹</translation>
 <translation id="2000419248597011803">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
 <translation id="2001796770603320721">드라이브에서 관리</translation>
+<translation id="2003130567827682533">'<ph name="NAME" />' 데이터를 활성화하려면 먼저 Wi-Fi 네트워크에 연결하세요.</translation>
 <translation id="2004663115385769400">$1(으)로 열 수 없음</translation>
 <translation id="200544492091181894">나중에 언제든지 설정에서 변경 가능</translation>
 <translation id="2006638907958895361"><ph name="APP" />에서 링크 열기</translation>
@@ -2505,6 +2507,7 @@
 <translation id="4823484602432206655">사용자와 기기 설정 확인 및 변경</translation>
 <translation id="4823651846660089135">읽기 전용 기기</translation>
 <translation id="4823955295535347797">화면이 켜져 있을 때 "Ok Google"이라고 말하면 어시스턴트를 이용할 수 있습니다.</translation>
+<translation id="4827675678516992122">연결할 수 없음</translation>
 <translation id="4828937774870308359">오스트레일리아</translation>
 <translation id="4829768588131278040">PIN 설정</translation>
 <translation id="4830502475412647084">OS 업데이트 설치 중</translation>
@@ -2765,6 +2768,7 @@
 <translation id="5209320130288484488">기기를 찾을 수 없음</translation>
 <translation id="5209518306177824490">SHA-1 지문</translation>
 <translation id="5210365745912300556">탭 닫기</translation>
+<translation id="5213481667492808996">'<ph name="NAME" />' 데이터 서비스를 사용할 수 있습니다.</translation>
 <translation id="5213891612754844763">프록시 설정 표시</translation>
 <translation id="521582610500777512">사진이 삭제되었습니다.</translation>
 <translation id="5222676887888702881">로그아웃</translation>

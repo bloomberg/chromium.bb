@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">Se interrumpió el flujo de aprovisionamiento. Vuelve a intentarlo o comunícate con el administrador o propietario de tu dispositivo.</translation>
 <translation id="1611649489706141841">adelante</translation>
 <translation id="1611704746353331382">Exportar favoritos a un archivo HTML...</translation>
+<translation id="1614511179807650956">Es posible que hayas agotado los datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
 <translation id="161460670679785907">No se puede detectar tu teléfono</translation>
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1616298854599875024">No se puede importar la extensión "<ph name="IMPORT_NAME" />" porque no es un módulo compartido</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">En inicio</translation>
 <translation id="2000419248597011803">Envía algunas cookies y búsquedas de la barra de direcciones y del cuadro de búsqueda a tu motor de búsqueda predeterminado</translation>
 <translation id="2001796770603320721">Administrar en Drive</translation>
+<translation id="2003130567827682533">Para activar los datos de "<ph name="NAME" />", debes conectarte a una red Wi-Fi</translation>
 <translation id="2004663115385769400">No se puede abrir con $1</translation>
 <translation id="200544492091181894">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="2006638907958895361">Abrir vínculo en <ph name="APP" /></translation>
@@ -2504,6 +2506,7 @@
 <translation id="4823484602432206655">Leer y cambiar la configuración del dispositivo y del usuario</translation>
 <translation id="4823651846660089135">El dispositivo es de solo lectura</translation>
 <translation id="4823955295535347797">Di "Ok Google" con la pantalla activada para acceder al Asistente en cualquier momento.</translation>
+<translation id="4827675678516992122">No se pudo establecer conexión</translation>
 <translation id="4828937774870308359">Australiano</translation>
 <translation id="4829768588131278040">Configurar PIN</translation>
 <translation id="4830502475412647084">Instalando la actualización del SO</translation>
@@ -2764,6 +2767,7 @@
 <translation id="5209320130288484488">No se encontraron dispositivos.</translation>
 <translation id="5209518306177824490">Huella digital SHA-1</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
+<translation id="5213481667492808996">Ya puedes usar tu servicio de datos de "<ph name="NAME" />"</translation>
 <translation id="5213891612754844763">Mostrar la configuración de proxy</translation>
 <translation id="521582610500777512">Se descartó la foto.</translation>
 <translation id="5222676887888702881">Salir</translation>

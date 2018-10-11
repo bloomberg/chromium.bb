@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Przepływ obsługi administracyjnej został przerwany. Spróbuj ponownie lub skontaktuj się z właścicielem lub administratorem urządzenia.</translation>
 <translation id="1611649489706141841">do przodu</translation>
 <translation id="1611704746353331382">Eksportuj zakładki do pliku HTML</translation>
+<translation id="1614511179807650956">Możliwe, że masz już wykorzystany limit mobilnej transmisji danych. Odwiedź portal aktywacji <ph name="NAME" />, by kupić dodatkowy pakiet danych.</translation>
 <translation id="161460670679785907">Nie można wykryć telefonu</translation>
 <translation id="1616206807336925449">To rozszerzenie nie wymaga specjalnych uprawnień.</translation>
 <translation id="1616298854599875024">Nie można zaimportować rozszerzenia „<ph name="IMPORT_NAME" />”, ponieważ nie jest to moduł udostępniany</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Po uruchomieniu</translation>
 <translation id="2000419248597011803">Niektóre pliki cookie oraz zapytania wpisane na pasku adresu i w polu wyszukiwania zostaną wysłane do domyślnej wyszukiwarki</translation>
 <translation id="2001796770603320721">Zarządzaj na Dysku</translation>
+<translation id="2003130567827682533">Aby włączyć usługę transmisji danych „<ph name="NAME" />”, najpierw połącz się z siecią Wi-Fi</translation>
 <translation id="2004663115385769400">Nie można otworzyć w: $1</translation>
 <translation id="200544492091181894">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="2006638907958895361">Otwórz link w aplikacji <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">Odczyt i zmiana ustawień użytkownika oraz urządzenia</translation>
 <translation id="4823651846660089135">Urządzenie tylko do odczytu</translation>
 <translation id="4823955295535347797">Uruchamiaj Asystenta, mówiąc „OK Google”, gdy ekran jest włączony.</translation>
+<translation id="4827675678516992122">Nie udało się połączyć</translation>
 <translation id="4828937774870308359">Australijskie</translation>
 <translation id="4829768588131278040">Ustaw kod PIN</translation>
 <translation id="4830502475412647084">Instaluję aktualizację systemu operacyjnego</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">Nie znaleziono urządzeń</translation>
 <translation id="5209518306177824490">Odcisk cyfrowy SHA-1</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
+<translation id="5213481667492808996">Usługa transmisji danych „<ph name="NAME" />” jest gotowa do użycia</translation>
 <translation id="5213891612754844763">Pokaż ustawienia serwera proxy</translation>
 <translation id="521582610500777512">Zdjęcie zostało odrzucone</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>

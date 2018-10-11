@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Omogočanje uporabe je bilo prekinjeno. Poskusite znova ali se obrnite na lastnika ali skrbnika naprave.</translation>
 <translation id="1611649489706141841">naprej</translation>
 <translation id="1611704746353331382">Izvoz zaznamkov v datoteko HTML ...</translation>
+<translation id="1614511179807650956">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME" />.</translation>
 <translation id="161460670679785907">Ni mogoče zaznati vašega telefona</translation>
 <translation id="1616206807336925449">Za to razširitev so potrebna posebna dovoljenja.</translation>
 <translation id="1616298854599875024">Razširitve »<ph name="IMPORT_NAME" />« ni mogoče uvoziti, ker ni modul v skupni rabi.</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Ob zagonu</translation>
 <translation id="2000419248597011803">Pošilja nekatere piškotke in iskanja iz naslovne vrstice ter iskalnega polja privzetemu iskalniku</translation>
 <translation id="2001796770603320721">Upravljanje v Googlu Drive</translation>
+<translation id="2003130567827682533">Če želite aktivirati podatke omrežja »<ph name="NAME" />«, se najprej povežite z omrežjem Wi-Fi.</translation>
 <translation id="2004663115385769400">Ni mogoče odpreti z aplikacijo $1</translation>
 <translation id="200544492091181894">To lahko pozneje spremenite v nastavitvah</translation>
 <translation id="2006638907958895361">Odpiranje povezave v aplikaciji <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">Branje in spreminjanje nastavitev funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="4823651846660089135">Naprava je samo za branje</translation>
 <translation id="4823955295535347797">Do Pomočnika lahko dostopate, kadar koli izgovorite »OK Google«, ko je zaslon vklopljen.</translation>
+<translation id="4827675678516992122">Povezava ni mogoča</translation>
 <translation id="4828937774870308359">Avstralsko</translation>
 <translation id="4829768588131278040">Nastavi kodo PIN</translation>
 <translation id="4830502475412647084">Nameščanje posodobitve operacijskega sistema</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">Najti ni mogoče nobene naprave</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Zapri zavihek</translation>
+<translation id="5213481667492808996">Podatkovno storitev omrežja »<ph name="NAME" />« lahko začnete uporabljati</translation>
 <translation id="5213891612754844763">Prikaži nastavitve strežnika proxy</translation>
 <translation id="521582610500777512">Fotografija je bila zavržena</translation>
 <translation id="5222676887888702881">Odjava</translation>

@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Tijek pružanja niza usluga prekinut je. Pokušajte ponovo ili se obratite vlasniku ili administratoru uređaja.</translation>
 <translation id="1611649489706141841">prosljeđivanje</translation>
 <translation id="1611704746353331382">Izvoz oznaka u HTML datoteku...</translation>
+<translation id="1614511179807650956">Vjerojatno ste potrošili dopuštenu količinu mobilnih podataka. Posjetite aktivacijski portal <ph name="NAME" /> kako biste platili dodatni prijenos podataka.</translation>
 <translation id="161460670679785907">Nije moguće otkriti vaš telefon</translation>
 <translation id="1616206807336925449">To proširenje ne zahtijeva nikakva posebna dopuštenja.</translation>
 <translation id="1616298854599875024">Nije moguće uvesti proširenje "<ph name="IMPORT_NAME" />" jer nije dijeljeni modul</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Prilikom pokretanja</translation>
 <translation id="2000419248597011803">Zadanoj tražilici šalje neke kolačiće i pretraživanja iz adresne trake i okvira za pretraživanje</translation>
 <translation id="2001796770603320721">Upravljaj na Disku</translation>
+<translation id="2003130567827682533">Da biste aktivirali podatke na usluzi "<ph name="NAME" />", povežite se s Wi-Fi mrežom</translation>
 <translation id="2004663115385769400">Otvaranje pomoću aplikacije $1 nije moguće</translation>
 <translation id="200544492091181894">To možete promijeniti kasnije u postavkama</translation>
 <translation id="2006638907958895361">Otvori vezu u aplikaciji <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">čitati i mijenjati korisničke postavke i postavke uređaja</translation>
 <translation id="4823651846660089135">Uređaj je samo za čitanje</translation>
 <translation id="4823955295535347797">Pristupite svojem Asistentu svaki put kad izgovorite "Ok Google", a zaslon je uključen.</translation>
+<translation id="4827675678516992122">Povezivanje nije uspjelo</translation>
 <translation id="4828937774870308359">Australsko (obrnuto)</translation>
 <translation id="4829768588131278040">Postavi PIN</translation>
 <translation id="4830502475412647084">Instaliranje ažuriranja OS-a</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">Nije pronađen nijedan uređaj</translation>
 <translation id="5209518306177824490">SHA-1 otisak prsta</translation>
 <translation id="5210365745912300556">Zatvori karticu</translation>
+<translation id="5213481667492808996">Vaša podatkovna usluga "<ph name="NAME" />" spremna je za upotrebu</translation>
 <translation id="5213891612754844763">Prikaži postavke proxyja</translation>
 <translation id="521582610500777512">Fotografija je odbačena</translation>
 <translation id="5222676887888702881">Odjava</translation>

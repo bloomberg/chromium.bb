@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">የማቅረቢያ ፍሰቱ ተቋርጧል። እባክዎ እንደገና ይሞክሩ ወይም የመሣሪያዎን ባለቤት ወይም አስተዳዳሪ ያነጋግሩ።</translation>
 <translation id="1611649489706141841">ወደ ፊት</translation>
 <translation id="1611704746353331382">ዕልባቶችን ወደ ኤች ቲ ኤም ኤል ፋይል ላክ...</translation>
+<translation id="1614511179807650956">የተሰጠዎት ሞባይል ውሂብ ጨርሰው ሊሆኑ ይችላሉ። ተጨማሪ ውሂብ ለመግዛት የ<ph name="NAME" /> ማስገበሪያ መግቢያ ይጎብኙ።</translation>
 <translation id="161460670679785907">ስልክዎን ማግኘት አልተቻለም</translation>
 <translation id="1616206807336925449">ይህ ቅጥያ ምንም ልዩ ፈቃዶችን አይፈልግም።</translation>
 <translation id="1616298854599875024">የ«<ph name="IMPORT_NAME" />» ቅጥያ የተጋራ ሞዱል ስላልሆነ እሱን ማስመጣት አልተቻለም</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">በሚነሳበት ጊዜ</translation>
 <translation id="2000419248597011803">ፍለጋዎችን ከአድራሻ አሞሌው እና ከፍለጋ ሳጥኑ እና አንዳንድ ኩኪዎችን ወደ ነባሪው የፍለጋ ፕሮግራምዎ ይልካል</translation>
 <translation id="2001796770603320721">በDrive ውስጥ ያስተዳድሩ</translation>
+<translation id="2003130567827682533">የ«<ph name="NAME" />» ውሂብን ለማግበር መጀመሪያ ከWi-Fi አውታረ መረብ ጋር ይገናኙ</translation>
 <translation id="2004663115385769400">በ$1 መክፈት አልተቻለም</translation>
 <translation id="200544492091181894">ይሄንን በኋላ ቅንብሮች ውስጥ ሊለውጡት ይችላሉ</translation>
 <translation id="2006638907958895361">አገናኝን በ<ph name="APP" /> ውስጥ ይክፈቱ</translation>
@@ -2505,6 +2507,7 @@
 <translation id="4823484602432206655">የተጠቃሚ እና የመሣሪያ ቅንብሮችን ያንብቡ እና ይለውጡ</translation>
 <translation id="4823651846660089135">መሣሪያው ተነባቢ-ብቻ ነው</translation>
 <translation id="4823955295535347797">የእርስዎ ማያ ገጽ በሚበራበት ጊዜ እርስዎ በማናቸውም ጊዜ «Ok Google» ሲሉ የእርስዎን ረዳት ይድረሱበት።</translation>
+<translation id="4827675678516992122">መገናኘት አልተቻለም</translation>
 <translation id="4828937774870308359">የአውስትራሊያ</translation>
 <translation id="4829768588131278040">ፒን ያዋቅሩ</translation>
 <translation id="4830502475412647084">የስርዓተ ክወና ዝማኔን በመጫን ላይ</translation>
@@ -2765,6 +2768,7 @@
 <translation id="5209320130288484488">ምንም መሣሪያዎች አልተገኙም</translation>
 <translation id="5209518306177824490">SHA-1 የጣት አሻራ</translation>
 <translation id="5210365745912300556">ትር ዝጋ</translation>
+<translation id="5213481667492808996">የእርስዎ የ«<ph name="NAME" />» ውሂብ አገልግሎት ጥቅም ላይ ለመዋል ዝግጁ ነው</translation>
 <translation id="5213891612754844763">የተኪ ቅንብሮችን አሳይ</translation>
 <translation id="521582610500777512">ፎቶ ተጥሏል</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>

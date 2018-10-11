@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">Nagambala ang daloy ng provisioning. Pakisubukang muli o makipag-ugnayan sa may-ari o administrator ng iyong device.</translation>
 <translation id="1611649489706141841">susunod</translation>
 <translation id="1611704746353331382">Mag-export ng Mga Bookmark sa HTML File...</translation>
+<translation id="1614511179807650956">Maaaring naubos mo na ang iyong allowance sa mobile data. Bisitahin ang portal sa pag-activate ng <ph name="NAME" /> para bumili ng higit pang data</translation>
 <translation id="161460670679785907">Hindi makita ang iyong telepono</translation>
 <translation id="1616206807336925449">Hindi nangangailangan ang extension na ito ng mga espesyal na pahintulot.</translation>
 <translation id="1616298854599875024">Hindi ma-import ang extension na "<ph name="IMPORT_NAME" />" dahil hindi ito nakabahaging module</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">Sa startup</translation>
 <translation id="2000419248597011803">Nagpapadala ng ilang cookies at paghahanap mula sa address bar at box para sa paghahanap sa iyong default na search engine</translation>
 <translation id="2001796770603320721">Pamahalaan sa Drive</translation>
+<translation id="2003130567827682533">Para i-activate ang data ng '<ph name="NAME" />,' kumonekta muna sa Wi-Fi network</translation>
 <translation id="2004663115385769400">Hindi mabuksan gamit ang $1</translation>
 <translation id="200544492091181894">Maaari mo itong baguhin sa mga setting sa ibang pagkakataon, anumang oras</translation>
 <translation id="2006638907958895361">Buksan ang Link sa <ph name="APP" /></translation>
@@ -2507,6 +2509,7 @@
 <translation id="4823484602432206655">Basahin at baguhin ang mga setting ng user at device</translation>
 <translation id="4823651846660089135">Read-only ang device</translation>
 <translation id="4823955295535347797">I-access ang iyong Assistant anumang oras na sasabihin mo ang "Ok Google" kapag naka-on ang screen mo.</translation>
+<translation id="4827675678516992122">Hindi makakonekta</translation>
 <translation id="4828937774870308359">Australian</translation>
 <translation id="4829768588131278040">Mag-set up ng PIN</translation>
 <translation id="4830502475412647084">Ini-install ang update sa OS</translation>
@@ -2767,6 +2770,7 @@
 <translation id="5209320130288484488">Walang nahanap na mga device</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
+<translation id="5213481667492808996">Magagamit na ang iyong serbisyo ng data ng '<ph name="NAME" />'</translation>
 <translation id="5213891612754844763">Ipakita ang mga setting ng proxy</translation>
 <translation id="521582610500777512">Na-discard ang larawan</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>

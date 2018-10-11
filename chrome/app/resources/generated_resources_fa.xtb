@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">جریان ارائه مجوز قطع شد. لطفاً دوباره امتحان کنید یا با مالک یا سرپرست دستگاه تماس بگیرید.</translation>
 <translation id="1611649489706141841">هدایت</translation>
 <translation id="1611704746353331382">‏صادر کردن نشانک‌ها به فایل HTML...</translation>
+<translation id="1614511179807650956">ممکن است حجم مجاز داده دستگاه همراهتان را مصرف کرده باشید. برای خرید داده بیشتر، از پورتال فعال‌سازی <ph name="NAME" /> بازدید کنید</translation>
 <translation id="161460670679785907">تلفن شناسایی نشد</translation>
 <translation id="1616206807336925449">این برنامه افزودنی به مجوز خاصی نیاز ندارد.</translation>
 <translation id="1616298854599875024">نمی‌توان افزونه «<ph name="IMPORT_NAME" />» را وارد کرد زیرا مدول هم‌رسانی‌شده‌ای نیست.</translation>
@@ -688,6 +689,7 @@
 <translation id="1999115740519098545">هنگام شروع به کار</translation>
 <translation id="2000419248597011803">برخی کوکی‌ها و جستجوها را از نوار نشانی و جعبه جستجو به موتور جستجوی پیش‌فرض ارسال می‌کند</translation>
 <translation id="2001796770603320721">مدیریت در درایو</translation>
+<translation id="2003130567827682533">‏برای فعال کردن داده «<ph name="NAME" />»، ابتدا به شبکه Wi-Fi متصل شوید</translation>
 <translation id="2004663115385769400">باز کردن با $1 ممکن نیست</translation>
 <translation id="200544492091181894">همیشه می‌توانید این مورد را بعداً در تنظیمات تغییر دهید</translation>
 <translation id="2006638907958895361">باز کردن پیوند در <ph name="APP" /></translation>
@@ -2503,6 +2505,7 @@
 <translation id="4823484602432206655">تغییر و خواندن تنظیمات کاربر و دستگاه</translation>
 <translation id="4823651846660089135">دستگاه فقط خواندنی است</translation>
 <translation id="4823955295535347797">‏هرزمان که صفحه‌نمایش روشن است با گفتن «Ok Google» به «دستیار» دسترسی داشته باشید.</translation>
+<translation id="4827675678516992122">متصل نشد</translation>
 <translation id="4828937774870308359">استرالیایی</translation>
 <translation id="4829768588131278040">تنظیم پین</translation>
 <translation id="4830502475412647084">درحال نصب به‌روزرسانی سیستم‌عامل</translation>
@@ -2763,6 +2766,7 @@
 <translation id="5209320130288484488">دستگاهی یافت نشد</translation>
 <translation id="5209518306177824490">‏اثر انگشت SHA-1</translation>
 <translation id="5210365745912300556">بستن برگه</translation>
+<translation id="5213481667492808996">سرویس داده «<ph name="NAME" />» شما آماده استفاده است</translation>
 <translation id="5213891612754844763">نمایش تنظیمات پروکسی</translation>
 <translation id="521582610500777512">عکس صرف‌ نظر شد</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>

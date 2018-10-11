@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">تمت مقاطعة سير إدارة الحسابات. يُرجى المحاولة مرة أخرى أو الاتصال بمالك أو مشرف الجهاز.</translation>
 <translation id="1611649489706141841">للأمام</translation>
 <translation id="1611704746353331382">‏تصدير الإشارات المرجعية إلى ملف HTML...</translation>
+<translation id="1614511179807650956">يبدو أنك قد استنفدت القدر المتاح لك من بيانات الجوّال. يُمكنك الانتقال إلى منفذ تفعيل <ph name="NAME" /> لشراء مزيد من البيانات.</translation>
 <translation id="161460670679785907">يتعذَّر رصد هاتفك.</translation>
 <translation id="1616206807336925449">لا تتطلب هذه الإضافة أذونات خاصة.</translation>
 <translation id="1616298854599875024">تعذَّر استيراد الإضافة "<ph name="IMPORT_NAME" />" لأنها ليست وحدة مشتركة.</translation>
@@ -691,6 +692,7 @@
 <translation id="1999115740519098545">عند بدء التشغيل</translation>
 <translation id="2000419248597011803">يُرسِل بعض ملفات تعريف الارتباط وعمليات البحث من شريط العناوين ومربّع البحث إلى محرِّك البحث التلقائي.</translation>
 <translation id="2001796770603320721">‏الإدارة في Drive</translation>
+<translation id="2003130567827682533">‏لتفعيل بيانات "<ph name="NAME" />"، يمكنك أولاً الاتصال بشبكة Wi-Fi.</translation>
 <translation id="2004663115385769400">يتعذَّر الفتح باستخدام دولار واحد</translation>
 <translation id="200544492091181894">يمكنك تغيير هذا الخيار من الإعدادات متى شئت.</translation>
 <translation id="2006638907958895361">فتح الرابط في <ph name="APP" /></translation>
@@ -2502,6 +2504,7 @@
 <translation id="4823484602432206655">قراءة إعدادات المستخدم والجهاز وتغييرها</translation>
 <translation id="4823651846660089135">الجهاز للقراءة فقط</translation>
 <translation id="4823955295535347797">‏يمكنك الوصول إلى "مساعد Google" في أي وقت تقول فيه "OK Google" عندما تكون شاشتك في وضع التشغيل.</translation>
+<translation id="4827675678516992122">تعذّر الاتصال</translation>
 <translation id="4828937774870308359">أسترالي</translation>
 <translation id="4829768588131278040">إعداد رقم التعريف الشخصي</translation>
 <translation id="4830502475412647084">جارٍ تثبيت تحديث لنظام التشغيل</translation>
@@ -2761,6 +2764,7 @@
 <translation id="5209320130288484488">لم يتم العثور على أي أجهزة</translation>
 <translation id="5209518306177824490">‏بصمة أصبع SHA-1</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
+<translation id="5213481667492808996">خدمة بيانات "<ph name="NAME" />" جاهزة للاستخدام</translation>
 <translation id="5213891612754844763">عرض إعدادات الخادم الوكيل</translation>
 <translation id="521582610500777512">تم تجاهل الصورة</translation>
 <translation id="5222676887888702881">الخروج</translation>
