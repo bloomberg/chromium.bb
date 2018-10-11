@@ -191,9 +191,7 @@ void PasswordAccessoryController::SavePasswordsForOrigin(
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
     suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
-                              form->username_value.empty()
-                                  ? Item::Type::NON_INTERACTIVE_SUGGESTION
-                                  : Item::Type::SUGGESTION);
+                              Item::Type::NON_INTERACTIVE_SUGGESTION);
   }
 }
 
