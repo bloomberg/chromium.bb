@@ -21,6 +21,9 @@ class MockActionDelegate : public ActionDelegate {
   MockActionDelegate();
   ~MockActionDelegate() override;
 
+  MOCK_METHOD0(CreateBatchElementChecker,
+               std::unique_ptr<BatchElementChecker>());
+
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
   MOCK_METHOD2(ClickElement,
                void(const std::vector<std::string>& selectors,
@@ -77,16 +80,6 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(HighlightElement,
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback));
-
-  void GetFieldValue(
-      const std::vector<std::string>& selectors,
-      base::OnceCallback<void(const std::string&)> callback) override {
-    OnGetFieldValue(selectors, callback);
-  }
-
-  MOCK_METHOD2(OnGetFieldValue,
-               void(const std::vector<std::string>& selectors,
-                    base::OnceCallback<void(const std::string&)>& callback));
 
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,

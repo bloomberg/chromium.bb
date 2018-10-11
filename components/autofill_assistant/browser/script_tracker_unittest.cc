@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
@@ -79,7 +78,8 @@ class ScriptTrackerTest : public testing::Test,
     response.SerializeToString(&response_str);
     std::vector<std::unique_ptr<Script>> scripts;
     ProtocolUtils::ParseScripts(response_str, &scripts);
-    tracker_.SetAndCheckScripts(std::move(scripts));
+    tracker_.SetScripts(std::move(scripts));
+    tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
   }
 
   static SupportedScriptProto* AddScript(SupportsScriptResponseProto* response,
@@ -135,8 +135,9 @@ class ScriptTrackerTest : public testing::Test,
 };
 
 TEST_F(ScriptTrackerTest, NoScripts) {
-  tracker_.SetAndCheckScripts({});
+  tracker_.SetScripts({});
   EXPECT_EQ(0, runnable_scripts_changed_);
+  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
   EXPECT_THAT(runnable_scripts(), IsEmpty());
 }
 
@@ -239,7 +240,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
               Run(Field(&ScriptExecutor::Result::success, true)));
 
   tracker_.ExecuteScript("script1", execute_callback.Get());
-  tracker_.CheckScripts();
+  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
 
   // The 2nd time the scripts are checked, automatically after the script runs,
   // 'script1' isn't runnable anymore, because it's already been run.
@@ -263,7 +264,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   EXPECT_CALL(mock_web_controller_,
               OnElementExists(ElementsAre("maybe_exists"), _))
       .WillOnce(RunOnceCallback<1>(true));
-  tracker_.CheckScripts();
+  tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
 
   // The script can now run
   ASSERT_THAT(runnable_script_paths(), ElementsAre("script path"));
@@ -283,7 +284,7 @@ TEST_F(ScriptTrackerTest, DuplicateCheckCalls) {
   // progress. The three calls to CheckScripts will trigger one call to
   // CheckScript right after first_call has run.
   for (int i = 0; i < 3; i++) {
-    tracker_.CheckScripts();
+    tracker_.CheckScripts(base::TimeDelta::FromSeconds(0));
   }
 
   EXPECT_THAT(runnable_scripts(), IsEmpty());

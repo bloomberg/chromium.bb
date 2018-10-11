@@ -49,11 +49,10 @@ class ScriptExecutor : public ActionDelegate {
   void Run(RunScriptCallback callback);
 
   // Override ActionDelegate:
+  std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
   void ShowStatusMessage(const std::string& message) override;
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
-  void ElementExists(const std::vector<std::string>& selectors,
-                     base::OnceCallback<void(bool)> callback) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
   void FillAddressForm(const std::string& guid,
@@ -72,9 +71,6 @@ class ScriptExecutor : public ActionDelegate {
                         base::OnceCallback<void(bool)> callback) override;
   void FocusElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
-  void GetFieldValue(
-      const std::vector<std::string>& selectors,
-      base::OnceCallback<void(const std::string&)> callback) override;
   void SetFieldValue(const std::vector<std::string>& selectors,
                      const std::string& value,
                      base::OnceCallback<void(bool)> callback) override;

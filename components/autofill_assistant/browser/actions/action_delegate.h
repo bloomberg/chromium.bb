@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_DELEGATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/autofill_assistant/browser/batch_element_checker.h"
 
 class GURL;
 
@@ -33,13 +35,12 @@ class ActionDelegate {
   // Show status message on the bottom bar.
   virtual void ShowStatusMessage(const std::string& message) = 0;
 
+  // Create a helper for checking element existence and field value.
+  virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() = 0;
+
   // Click the element given by |selectors| on the web page.
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
-
-  // Check whether the element given by |selectors| exists on the web page.
-  virtual void ElementExists(const std::vector<std::string>& selectors,
-                             base::OnceCallback<void(bool)> callback) = 0;
 
   // Ask user to choose an address in personal data manager. GUID of the chosen
   // address will be returned through callback, otherwise empty string if the
@@ -79,12 +80,6 @@ class ActionDelegate {
   // Highlight the element given by |selectors|.
   virtual void HighlightElement(const std::vector<std::string>& selectors,
                                 base::OnceCallback<void(bool)> callback) = 0;
-
-  // Get the value of |selectors| and return the result through |callback|. The
-  // returned value will be the empty string in case of error or empty value.
-  virtual void GetFieldValue(
-      const std::vector<std::string>& selectors,
-      base::OnceCallback<void(const std::string&)> callback) = 0;
 
   // Set the |value| of field |selectors| and return the result through
   // |callback|.

@@ -43,12 +43,13 @@ class MockWebController : public WebController {
 
   void GetFieldValue(
       const std::vector<std::string>& selectors,
-      base::OnceCallback<void(const std::string&)> callback) override {
+      base::OnceCallback<void(bool, const std::string&)> callback) override {
     OnGetFieldValue(selectors, callback);
   }
-  MOCK_METHOD2(OnGetFieldValue,
-               void(const std::vector<std::string>& selectors,
-                    base::OnceCallback<void(const std::string&)>& callback));
+  MOCK_METHOD2(
+      OnGetFieldValue,
+      void(const std::vector<std::string>& selectors,
+           base::OnceCallback<void(bool, const std::string&)>& callback));
 };
 
 }  // namespace autofill_assistant

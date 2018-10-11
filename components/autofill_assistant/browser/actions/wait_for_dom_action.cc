@@ -6,90 +6,61 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace {
-int kCheckPeriodInMilliseconds = 100;
-
-// So it takes about 150*100 milliseconds.
-int kDefaultCheckRounds = 150;
+static constexpr base::TimeDelta kDefaultCheckDuration =
+    base::TimeDelta::FromSeconds(15);
 }  // namespace
 
 namespace autofill_assistant {
 
-WaitForDomAction::WaitForDomAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {}
+WaitForDomAction::WaitForDomAction(const ActionProto& proto) : Action(proto) {}
 
 WaitForDomAction::~WaitForDomAction() {}
 
 void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
                                      ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-
-  // Fail the action if selectors is empty.
-  if (proto_.wait_for_dom().selectors().empty()) {
+  std::vector<std::string> selectors;
+  for (const auto& selector : proto_.wait_for_dom().selectors()) {
+    selectors.emplace_back(selector);
+  }
+  if (selectors.empty()) {
     UpdateProcessedAction(OTHER_ACTION_STATUS);
     DLOG(ERROR) << "Empty selector, failing action.";
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }
 
-  int check_rounds = kDefaultCheckRounds;
+  batch_element_checker_ = delegate->CreateBatchElementChecker();
+  batch_element_checker_->AddElementExistenceCheck(selectors,
+                                                   base::DoNothing());
 
+  base::TimeDelta duration = kDefaultCheckDuration;
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
   if (timeout_ms > 0)
-    check_rounds = std::max(
-        1,
-        static_cast<int>(std::ceil(timeout_ms / kCheckPeriodInMilliseconds)));
+    duration = base::TimeDelta::FromMilliseconds(timeout_ms);
 
-  CheckElementExists(delegate, check_rounds, std::move(callback));
+  batch_element_checker_->Run(
+      duration,
+      /* try_done= */ base::DoNothing(),
+      /* all_done= */
+      base::BindOnce(&WaitForDomAction::OnCheckDone,
+                     // batch_element_checker_ is owned by this
+                     base::Unretained(this), std::move(callback)));
 }
 
-void WaitForDomAction::CheckElementExists(ActionDelegate* delegate,
-                                          int rounds,
-                                          ProcessActionCallback callback) {
-  DCHECK_GT(rounds, 0);
-  std::vector<std::string> selectors;
-  for (const auto& selector : proto_.wait_for_dom().selectors()) {
-    selectors.emplace_back(selector);
-  }
-  delegate->ElementExists(
-      selectors, base::BindOnce(&WaitForDomAction::OnCheckElementExists,
-                                weak_ptr_factory_.GetWeakPtr(), delegate,
-                                rounds, std::move(callback)));
+void WaitForDomAction::OnCheckDone(ProcessActionCallback callback) {
+  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+  UpdateProcessedAction(batch_element_checker_->all_found()
+                            ? ACTION_APPLIED
+                            : ELEMENT_RESOLUTION_FAILED);
+  std::move(callback).Run(std::move(processed_action_proto_));
 }
-
-void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
-                                            int rounds,
-                                            ProcessActionCallback callback,
-                                            bool result) {
-  if (result) {
-    UpdateProcessedAction(ACTION_APPLIED);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-
-  --rounds;
-  if (rounds <= 0) {
-    DCHECK_EQ(rounds, 0);
-    UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&WaitForDomAction::CheckElementExists,
-                     weak_ptr_factory_.GetWeakPtr(), delegate, rounds,
-                     std::move(callback)),
-      base::TimeDelta::FromMilliseconds(kCheckPeriodInMilliseconds));
-}
-
 }  // namespace autofill_assistant

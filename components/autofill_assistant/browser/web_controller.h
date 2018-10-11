@@ -99,10 +99,11 @@ class WebController {
                             base::OnceCallback<void(bool)> callback);
 
   // Get the value of |selectors| and return the result through |callback|. The
-  // returned value will be the empty string in case of error or empty value.
+  // returned value might be false, if the element cannot be found, true and the
+  // empty string in case of error or empty value.
   virtual void GetFieldValue(
       const std::vector<std::string>& selectors,
-      base::OnceCallback<void(const std::string&)> callback);
+      base::OnceCallback<void(bool, const std::string&)> callback);
 
   // Set the |value| of field |selectors| and return the result through
   // |callback|.
@@ -202,8 +203,9 @@ class WebController {
       FindElementCallback callback,
       std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
-  void OnResult(const std::string& result,
-                base::OnceCallback<void(const std::string&)> callback);
+  void OnResult(bool exists,
+                const std::string& result,
+                base::OnceCallback<void(bool, const std::string&)> callback);
   void OnFindElementForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
       const std::vector<std::string>& selectors,
@@ -239,10 +241,10 @@ class WebController {
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
-      base::OnceCallback<void(const std::string&)> callback,
+      base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<FindElementResult> element_result);
   void OnGetValueAttribute(
-      base::OnceCallback<void(const std::string&)> callback,
+      base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSetFieldValue(
       const std::string& value,
@@ -254,9 +256,6 @@ class WebController {
   void OnFindElementForGetOuterHtml(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<FindElementResult> element_result);
-  void OnResult(bool successful,
-                const std::string& result,
-                base::OnceCallback<void(bool, const std::string&)> callback);
   void OnGetOuterHtml(
       base::OnceCallback<void(bool, const std::string&)> callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);

@@ -22,6 +22,7 @@ class RE2;
 }  // namespace re2
 
 namespace autofill_assistant {
+class BatchElementChecker;
 
 // Class represents a set of preconditions for a script to be executed.
 class ScriptPrecondition {
@@ -45,8 +46,12 @@ class ScriptPrecondition {
   ~ScriptPrecondition();
 
   // Check whether the conditions satisfied and return the result through
-  // |callback|. |web_controller| must remain valid until the callback is run.
-  void Check(WebController* web_controller,
+  // |callback|. |batch_checks| must remain valid until the callback is run.
+  //
+  // Calling Check() while another check is in progress cancels the previously
+  // running check.
+  void Check(const GURL& url,
+             BatchElementChecker* batch_checks,
              const std::map<std::string, std::string>& parameters,
              const std::map<std::string, ScriptStatusProto>& executed_scripts,
              base::OnceCallback<void(bool)> callback);
@@ -59,17 +64,11 @@ class ScriptPrecondition {
   bool MatchScriptStatus(
       const std::map<std::string, ScriptStatusProto>& executed_scripts) const;
 
-  void RunChecksSequentially(WebController* web_controller,
-                             size_t check_precondition_count);
-  void OnCheckElementExists(WebController* web_controller,
-                            size_t check_precondition_count,
-                            bool result);
-  void OnGetFieldValue(WebController* web_controller,
-                       size_t check_precondition_count,
-                       const std::string& value);
+  void OnCheckElementExists(bool exists);
+  void OnGetFieldValue(bool exists, const std::string& value);
+  void ReportCheckResult(bool success);
 
   std::vector<std::vector<std::string>> elements_exist_;
-  base::OnceCallback<void(bool)> check_preconditions_callback_;
 
   // Domain (exact match) excluding the last '/' character.
   std::set<std::string> domain_match_;
@@ -85,6 +84,13 @@ class ScriptPrecondition {
 
   // Conditions regarding the execution status of passed scripts.
   std::vector<ScriptStatusMatchProto> status_match_;
+
+  // Number of checks for which there's still no result.
+  int pending_check_count_;
+
+  // A callback called as soon as an element or field check fails or, failing
+  // that, when |pending_check_count_| reaches 0.
+  base::OnceCallback<void(bool)> check_preconditions_callback_;
 
   base::WeakPtrFactory<ScriptPrecondition> weak_ptr_factory_;
 
