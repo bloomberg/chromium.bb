@@ -197,7 +197,6 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
 
 std::unique_ptr<SourceLocation>
 JSEventHandlerForContentAttribute::GetSourceLocation(EventTarget& target) {
-  v8::HandleScope(GetIsolate());
   auto source_location = JSEventHandler::GetSourceLocation(target);
   if (source_location)
     return source_location;
