@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -434,10 +435,6 @@ BubbleType SaveCardBubbleControllerImpl::GetBubbleType() const {
   return current_bubble_type_;
 }
 
-base::TimeDelta SaveCardBubbleControllerImpl::Elapsed() const {
-  return timer_->Elapsed();
-}
-
 void SaveCardBubbleControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -453,7 +450,9 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
 
   // Don't do anything if a navigation occurs before a user could reasonably
   // interact with the bubble.
-  if (Elapsed() < kCardBubbleSurviveNavigationTime)
+  const base::TimeDelta elapsed_time =
+      AutofillClock::Now() - bubble_shown_timestamp_;
+  if (elapsed_time < kCardBubbleSurviveNavigationTime)
     return;
 
   // Otherwise, get rid of the bubble and icon.
@@ -530,7 +529,7 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
   // its "toggled on" state.
   UpdateIcon();
 
-  timer_.reset(new base::ElapsedTimer());
+  bubble_shown_timestamp_ = AutofillClock::Now();
 
   switch (current_bubble_type_) {
     case BubbleType::UPLOAD_SAVE:
@@ -571,7 +570,7 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
   // explicitly clicks the icon.
   UpdateIcon();
 
-  timer_.reset(new base::ElapsedTimer());
+  bubble_shown_timestamp_ = AutofillClock::Now();
 
   switch (current_bubble_type_) {
     case BubbleType::UPLOAD_SAVE:
