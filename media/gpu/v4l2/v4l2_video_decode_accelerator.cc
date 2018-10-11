@@ -1452,15 +1452,7 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
         return false;
       }
     } else {
-      output_record.state = kAtClient;
-      decoder_frames_at_client_++;
-      // TODO(hubbe): Insert correct color space. http://crbug.com/647725
-      const Picture picture(output_record.picture_id, bitstream_buffer_id,
-                            gfx::Rect(visible_size_), gfx::ColorSpace(), false);
-      pending_picture_ready_.push(
-          PictureRecord(output_record.cleared, picture));
-      SendPictureReady();
-      output_record.cleared = true;
+      SendBufferToClient(buf->BufferId(), bitstream_buffer_id);
     }
   }
   if (buf->IsLast()) {
@@ -2546,6 +2538,24 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   return success;
 }
 
+void V4L2VideoDecodeAccelerator::SendBufferToClient(
+    size_t buffer_index,
+    int32_t bitstream_buffer_id) {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_GE(bitstream_buffer_id, 0);
+  OutputRecord& output_record = output_buffer_map_[buffer_index];
+
+  output_record.state = kAtClient;
+  decoder_frames_at_client_++;
+  // TODO(hubbe): Insert correct color space. http://crbug.com/647725
+  const Picture picture(output_record.picture_id, bitstream_buffer_id,
+                        gfx::Rect(visible_size_), gfx::ColorSpace(), false);
+  pending_picture_ready_.emplace(output_record.cleared, picture);
+  SendPictureReady();
+  // This picture will be cleared next time we see it.
+  output_record.cleared = true;
+}
+
 void V4L2VideoDecodeAccelerator::SendPictureReady() {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
@@ -2614,16 +2624,8 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   DCHECK_EQ(output_record.state, kAtProcessor);
   DCHECK_NE(output_record.picture_id, -1);
 
-  // Send the processed frame to render.
-  output_record.state = kAtClient;
-  decoder_frames_at_client_++;
   image_processor_bitstream_buffer_ids_.pop();
-  // TODO(hubbe): Insert correct color space. http://crbug.com/647725
-  const Picture picture(output_record.picture_id, bitstream_buffer_id,
-                        gfx::Rect(visible_size_), gfx::ColorSpace(), false);
-  pending_picture_ready_.push(PictureRecord(output_record.cleared, picture));
-  SendPictureReady();
-  output_record.cleared = true;
+  SendBufferToClient(output_buffer_index, bitstream_buffer_id);
   // Flush or resolution change may be waiting image processor to finish.
   if (image_processor_bitstream_buffer_ids_.empty()) {
     NotifyFlushDoneIfNeeded();

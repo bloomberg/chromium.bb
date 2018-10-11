@@ -394,6 +394,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // output buffer is |output_buffer_index| and its id is |bitstream_buffer_id|.
   bool ProcessFrame(int32_t bitstream_buffer_id, int output_buffer_index);
 
+  void SendBufferToClient(size_t buffer_index, int32_t bitstream_buffer_id);
+
   //
   // Methods run on child thread.
   //
