@@ -140,7 +140,7 @@ void RGBtoBGRA(const unsigned char* bgra, int pixel_width, unsigned char* rgb) {
 #endif  // !defined(JCS_EXTENSIONS)
 
 // jpeg_decompress_struct Deleter.
-struct JpegDecompressStructDeleter {
+struct JpegRobustDecompressStructDeleter {
   void operator()(jpeg_decompress_struct* ptr) {
     jpeg_destroy_decompress(ptr);
     delete ptr;
@@ -155,8 +155,8 @@ bool JPEGCodecRobustSlow::Decode(const unsigned char* input,
                                  std::vector<unsigned char>* output,
                                  int* w,
                                  int* h) {
-  std::unique_ptr<jpeg_decompress_struct, JpegDecompressStructDeleter> cinfo(
-      new jpeg_decompress_struct);
+  std::unique_ptr<jpeg_decompress_struct, JpegRobustDecompressStructDeleter>
+      cinfo(new jpeg_decompress_struct);
   output->clear();
 
   // We set up the normal JPEG error routines, then override error_exit.
