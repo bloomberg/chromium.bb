@@ -59,14 +59,17 @@ bool ResolveHost(const std::string& host,
 
 }  // namespace
 
-WebSocket::WebSocket(const GURL& url, WebSocketListener* listener)
+WebSocket::WebSocket(const GURL& url,
+                     WebSocketListener* listener,
+                     size_t read_buffer_size)
     : url_(url),
       listener_(listener),
       state_(INITIALIZED),
       write_buffer_(base::MakeRefCounted<net::DrainableIOBuffer>(
           base::MakeRefCounted<net::IOBuffer>(0),
           0)),
-      read_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(4096)) {}
+      read_buffer_(
+          base::MakeRefCounted<net::IOBufferWithSize>(read_buffer_size)) {}
 
 WebSocket::~WebSocket() {
   CHECK(thread_checker_.CalledOnValidThread());
