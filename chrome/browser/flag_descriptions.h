@@ -1628,6 +1628,9 @@ extern const char kSiteExplorationUiDescription[];
 extern const char kSpannableInlineAutocompleteName[];
 extern const char kSpannableInlineAutocompleteDescription[];
 
+extern const char kTranslateAndroidManualTriggerName[];
+extern const char kTranslateAndroidManualTriggerDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 

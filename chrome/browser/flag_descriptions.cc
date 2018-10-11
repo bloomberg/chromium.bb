@@ -2694,6 +2694,11 @@ const char kSiteExplorationUiName[] = "Site Exploration UI";
 const char kSiteExplorationUiDescription[] =
     "Show site suggestions in the Exploration UI";
 
+const char kTranslateAndroidManualTriggerName[] =
+    "Enable manual translate trigger";
+const char kTranslateAndroidManualTriggerDescription[] =
+    "Show a menu item in the main menu that triggers page translation.";
+
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
     "When enabled, an update badge will be shown on the app menu button.";

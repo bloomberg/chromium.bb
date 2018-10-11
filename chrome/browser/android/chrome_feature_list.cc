@@ -27,6 +27,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/toolbar/toolbar_field_trial.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/common/content_features.h"
 #include "jni/ChromeFeatureList_jni.h"
@@ -168,6 +169,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kQueryInOmnibox,
     &password_manager::features::kPasswordSearchMobile,
     &password_manager::features::kPasswordsKeyboardAccessory,
+    &translate::kTranslateAndroidManualTrigger,
     &unified_consent::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &toolbar::features::kHideSteadyStateUrlScheme,
