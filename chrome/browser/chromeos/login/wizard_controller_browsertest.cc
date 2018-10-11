@@ -2393,8 +2393,9 @@ class WizardControllerDemoSetupDeviceDisabledTest
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupDeviceDisabledTest);
 };
 
+// Flaky https://crbug.com/894384.
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
-                       OnlineDemoSetup) {
+                       DISABLED_OnlineDemoSetup) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
   WaitUntilJSIsReady();
