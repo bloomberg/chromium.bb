@@ -6,13 +6,9 @@ package org.chromium.chrome.browser.tab;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.text.Layout;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.text.style.BulletSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,6 +29,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.widget.ChromeBulletSpan;
 
 /**
  * Represent the sad tab displayed in place of a crashed renderer. Instantiated on the first
@@ -279,7 +276,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
      */
     private static SpannableString generateBulletedString(Context context, int stringResId) {
         SpannableString bullet = new SpannableString(context.getString(stringResId));
-        bullet.setSpan(new SadTabBulletSpan(context), 0, bullet.length(), 0);
+        bullet.setSpan(new ChromeBulletSpan(context), 0, bullet.length(), 0);
         return bullet;
     }
 
@@ -295,25 +292,6 @@ public class SadTab extends EmptyTabObserver implements UserData {
         } else {
             RecordHistogram.recordEnumeratedHistogram(
                     "Tabs.SadTab.Reload.Event", event, SadTabEvent.MAX_SAD_TAB_EVENT);
-        }
-    }
-
-    private static class SadTabBulletSpan extends BulletSpan {
-        private int mXOffset;
-
-        public SadTabBulletSpan(Context context) {
-            super(context.getResources().getDimensionPixelSize(R.dimen.sad_tab_bullet_gap));
-            mXOffset = context.getResources().getDimensionPixelSize(
-                    R.dimen.sad_tab_bullet_leading_offset);
-        }
-
-        @Override
-        public void drawLeadingMargin(Canvas c, Paint p, int x, int dir, int top, int baseline,
-                int bottom, CharSequence text, int start, int end, boolean first, Layout l) {
-            // Android cuts off the bullet points. Adjust the x-position so that the bullets aren't
-            // cut off.
-            super.drawLeadingMargin(
-                    c, p, x + mXOffset, dir, top, baseline, bottom, text, start, end, first, l);
         }
     }
 

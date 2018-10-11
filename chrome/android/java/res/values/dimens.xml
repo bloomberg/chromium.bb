@@ -502,8 +502,6 @@
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="clear_text_button_end_padding">10dp</dimen>
     <dimen name="sync_promo_view_padding">16dp</dimen>
-    <dimen name="sad_tab_bullet_gap">12dp</dimen>
-    <dimen name="sad_tab_bullet_leading_offset">1dp</dimen>
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
     <dimen name="bottom_sheet_peek_height">56dp</dimen>
 

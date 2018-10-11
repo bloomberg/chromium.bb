@@ -23,6 +23,9 @@
 
     <dimen name="button_compat_corner_radius">4dp</dimen>
 
+    <dimen name="chrome_bullet_gap">12dp</dimen>
+    <dimen name="chrome_bullet_leading_offset">1dp</dimen>
+
     <!-- Divider Dimensions -->
     <dimen name="divider_height">1dp</dimen>
 
