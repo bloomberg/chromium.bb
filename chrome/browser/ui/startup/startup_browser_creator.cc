@@ -91,7 +91,7 @@
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
-#include "chrome/browser/notifications/notification_platform_bridge_win.h"
+#include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #endif
 
@@ -965,9 +965,8 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
 // all others.
 #if defined(OS_WIN)
   if (command_line.HasSwitch(switches::kNotificationLaunchId)) {
-    std::string profile_id =
-        NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
-            command_line.GetSwitchValueNative(switches::kNotificationLaunchId));
+    std::string profile_id = NotificationLaunchId::GetProfileIdFromLaunchId(
+        command_line.GetSwitchValueNative(switches::kNotificationLaunchId));
     if (!profile_id.empty()) {
       return user_data_dir.Append(
           base::FilePath(base::UTF8ToUTF16(profile_id)));
