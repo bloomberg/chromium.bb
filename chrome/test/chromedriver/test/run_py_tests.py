@@ -2984,6 +2984,14 @@ class SupportIPv4AndIPv6(ChromeDriverBaseTest):
       self.CreateDriver('http://[::1]:' +
                                  str(chromedriver_server.GetPort()))
 
+
+# 'Z' in the beginning is to make test executed in the end of suite.
+class ZChromeStartRetryCountTest(unittest.TestCase):
+
+  def testChromeStartRetryCount(self):
+    self.assertEquals(0, chromedriver.ChromeDriver.retry_count,
+                      "Chrome was retried to start during suite execution")
+
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option(
