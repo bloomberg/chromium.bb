@@ -4,7 +4,6 @@
 
 import json
 import logging
-import optparse
 
 from blinkpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
@@ -22,11 +21,8 @@ class RebaselineTest(AbstractRebaseliningCommand):
             self.port_name_option,
             self.builder_option,
             self.build_number_option,
+            self.step_name_option,
             self.results_directory_option,
-            optparse.make_option(
-                '--step-name',
-                help=('Name of the step which ran the actual tests, and which '
-                      'should be used to retrieve results from.'))
         ])
 
     def execute(self, options, args, tool):

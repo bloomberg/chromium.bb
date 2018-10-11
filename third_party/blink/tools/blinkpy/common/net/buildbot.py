@@ -72,6 +72,8 @@ class BuildBot(object):
         if build_number:
             assert str(build_number).isdigit(), 'expected numeric build number, got %s' % build_number
             url_base = self.builder_results_url_base(builder_name)
+            if step_name is None:
+                step_name = self.get_layout_test_step_name(Build(builder_name, build_number))
             if step_name:
                 return '%s/%s/%s/layout-test-results' % (
                     url_base, build_number, urllib.quote(step_name))
@@ -120,7 +122,7 @@ class BuildBot(object):
             'buildnumber': build.build_number,
             'name': 'full_results.json',
             # This forces the server to gives us JSON rather than an HTML page.
-            'callback': 'ADD_RESULTS',
+            'callback': json_results_generator.JSON_CALLBACK,
         }))
         data = NetworkTransaction(return_none_on_404=True).run(
             lambda: self.fetch_file(url))
