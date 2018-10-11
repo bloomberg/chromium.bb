@@ -84,7 +84,7 @@ source_set("autofill_ui") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/image_util",
-    "//ios/chrome/browser/ui/infobars",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",

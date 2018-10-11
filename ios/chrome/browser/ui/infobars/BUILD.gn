@@ -5,6 +5,26 @@
 source_set("infobars") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "infobar_coordinator.h",
+    "infobar_coordinator.mm",
+  ]
+  deps = [
+    ":public",
+    "//base",
+    "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+
+source_set("public") {
+  sources = [
+    "infobar_positioner.h",
+  ]
+}
+
+source_set("infobars_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
     "confirm_infobar_view.h",
     "confirm_infobar_view.mm",
     "infobar_constants.h",
@@ -45,7 +65,7 @@ source_set("unit_tests") {
     "confirm_infobar_view_unittest.mm",
   ]
   deps = [
-    ":infobars",
+    ":infobars_ui",
     "//testing/gtest",
   ]
 }
