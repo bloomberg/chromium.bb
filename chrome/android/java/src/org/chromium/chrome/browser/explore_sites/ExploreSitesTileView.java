@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.widget.tile.TileWithTextView;
  */
 public class ExploreSitesTileView extends TileWithTextView {
     private final int mIconSizePx;
+
+    // Used to generate textual icons.
     private RoundedIconGenerator mIconGenerator;
 
     public ExploreSitesTileView(Context ctx, AttributeSet attrs) {
@@ -39,6 +41,7 @@ public class ExploreSitesTileView extends TileWithTextView {
         if (image == null) {
             return new BitmapDrawable(getResources(), mIconGenerator.generateIconForText(text));
         }
-        return ViewUtils.createRoundedBitmapDrawable(image, mIconSizePx / 2);
+        return ViewUtils.createRoundedBitmapDrawable(
+                image, ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
     }
 }
