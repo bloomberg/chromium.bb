@@ -131,10 +131,10 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
           &FeedHistoryHelper::CheckURL, std::move(history_helper)));
 
   return new FeedHostService(
-      std::move(image_manager), std::move(networking_host),
-      std::move(scheduler_host), std::move(content_database),
-      std::move(journal_database), std::move(offline_host),
-      std::move(logging_metrics));
+      std::move(logging_metrics), std::move(image_manager),
+      std::move(networking_host), std::move(scheduler_host),
+      std::move(content_database), std::move(journal_database),
+      std::move(offline_host));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(

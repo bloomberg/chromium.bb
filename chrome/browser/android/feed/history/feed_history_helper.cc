@@ -17,7 +17,7 @@ FeedHistoryHelper::FeedHistoryHelper(history::HistoryService* history_service)
 FeedHistoryHelper::~FeedHistoryHelper() = default;
 
 void FeedHistoryHelper::CheckURL(
-    GURL url,
+    const GURL& url,
     FeedLoggingMetrics::CheckURLVisitCallback callback) {
   DCHECK(history_service_);
   history_service_->QueryURL(
@@ -25,10 +25,6 @@ void FeedHistoryHelper::CheckURL(
       base::BindOnce(&FeedHistoryHelper::OnCheckURLDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
       &tracker_);
-}
-
-base::WeakPtr<FeedHistoryHelper> FeedHistoryHelper::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void FeedHistoryHelper::OnCheckURLDone(

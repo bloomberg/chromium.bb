@@ -17,15 +17,20 @@ class URLRow;
 
 namespace feed {
 
-// This class is help feed components to check history service.
+// This class helps components/feed to check history service without directly
+// depends on components/history. This class holds a raw pointer of history
+// service, which means |history_service_| should outlive of this class. Whoever
+// instantiates this class needs to guarantee the history service outlives this
+// helper class.
 class FeedHistoryHelper {
  public:
   explicit FeedHistoryHelper(history::HistoryService* history_service);
   ~FeedHistoryHelper();
 
-  void CheckURL(GURL url, FeedLoggingMetrics::CheckURLVisitCallback callback);
-
-  base::WeakPtr<FeedHistoryHelper> AsWeakPtr();
+  // Check if |url| is visited by querying history service, and return the
+  // result to |callback|.
+  void CheckURL(const GURL& url,
+                FeedLoggingMetrics::CheckURLVisitCallback callback);
 
  private:
   history::HistoryService* history_service_;
