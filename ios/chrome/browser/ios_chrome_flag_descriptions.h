@@ -135,6 +135,10 @@ extern const char kNewClearBrowsingDataUIDescription[];
 extern const char kExternalSearchName[];
 extern const char kExternalSearchDescription[];
 
+// Title and description for the flag to enable invaliations delivery via FCM.
+extern const char kFCMInvalidationsName[];
+extern const char kFCMInvalidationsDescription[];
+
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenViewportAdjustmentExperimentName[];

@@ -65,6 +65,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -4442,6 +4443,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidSiteSettingsUIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidSiteSettingsUI)},
 #endif
+    {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
+     flag_descriptions::kFCMInvalidationsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
+
 };
 
 class FlagsStateSingleton {

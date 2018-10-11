@@ -29069,6 +29069,7 @@ from previous Chrome versions.
       label="ServiceWorkerImportedScriptUpdateCheck:disabled"/>
   <int value="-1365503870" label="enable-simplified-fullscreen-ui"/>
   <int value="-1363709707" label="MaterialDesignHistory:disabled"/>
+  <int value="-1361493814" label="FCMInvalidations:disabled"/>
   <int value="-1358669137" label="enable-supervised-user-blacklist"/>
   <int value="-1357778876" label="ExplicitLanguageAsk:enabled"/>
   <int value="-1357655121" label="enable-iframe-based-signin"/>
@@ -29896,6 +29897,7 @@ from previous Chrome versions.
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
+  <int value="300095239" label="FCMInvalidations:enabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>
