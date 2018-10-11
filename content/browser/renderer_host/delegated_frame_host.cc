@@ -96,6 +96,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  DCHECK(CanCopyFromCompositingSurface());
+
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
@@ -111,23 +113,11 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
   if (!output_size.IsEmpty())
     request->set_result_selection(gfx::Rect(output_size));
 
-  // If there is enough information to populate the copy output request fields,
-  // then process it now. Otherwise, wait until the information becomes
-  // available.
-  if (CanCopyFromCompositingSurface() &&
-      active_local_surface_id_ == pending_local_surface_id_)
-    ProcessCopyOutputRequest(std::move(request));
-  else
-    pending_first_frame_requests_.push_back(std::move(request));
-}
-
-void DelegatedFrameHost::ProcessCopyOutputRequest(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
   if (!request->has_area())
     request->set_area(gfx::Rect(pending_surface_dip_size_));
 
-  request->set_area(
-      gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
+  request->set_area(gfx::ScaleToRoundedRect(request->area(),
+                                            client_->GetDeviceScaleFactor()));
 
   if (request->has_result_selection()) {
     const gfx::Rect& area = request->area();
@@ -149,7 +139,7 @@ void DelegatedFrameHost::ProcessCopyOutputRequest(
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return active_device_scale_factor_ != 0.f;
+  return pending_local_surface_id_.is_valid();
 }
 
 bool DelegatedFrameHost::TransformPointToLocalCoordSpaceLegacy(
@@ -323,20 +313,12 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   active_local_surface_id_ = surface_info.id().local_surface_id();
-  active_device_scale_factor_ = surface_info.device_scale_factor();
 
   // This is used by macOS' unique resize path.
   client_->OnFirstSurfaceActivation(surface_info);
 
   frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   // Note: the frame may have been evicted immediately.
-
-  if (!pending_first_frame_requests_.empty()) {
-    DCHECK(CanCopyFromCompositingSurface());
-    for (auto& request : pending_first_frame_requests_)
-      ProcessCopyOutputRequest(std::move(request));
-    pending_first_frame_requests_.clear();
-  }
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
