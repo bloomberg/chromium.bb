@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home.list;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.Calendar;
@@ -77,15 +78,21 @@ public abstract class ListItem {
         public boolean showDate;
         public boolean showTitle;
         public boolean showMenu;
+        public boolean isJustNow;
         public List<OfflineItem> items;
 
         /**
          * Creates a {@link SectionHeaderListItem} instance for a given {@code filter} and
          * {@code timestamp}.
          */
-        public SectionHeaderListItem(int filter, long timestamp) {
-            super(generateStableId(timestamp, filter), new Date(timestamp));
+        public SectionHeaderListItem(
+                int filter, long timestamp, boolean showDate, boolean isJustNow) {
+            super(isJustNow && showDate ? StableIds.JUST_NOW_SECTION
+                                        : generateStableId(timestamp, filter),
+                    new Date(timestamp));
             this.filter = filter;
+            this.showDate = showDate;
+            this.isJustNow = isJustNow;
         }
 
         @VisibleForTesting

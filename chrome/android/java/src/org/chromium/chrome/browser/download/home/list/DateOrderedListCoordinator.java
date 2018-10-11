@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.home.PrefetchStatusProvider;
+import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -111,9 +112,9 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         mFilterCoordinator.addObserver(mEmptyCoordinator);
 
         decoratedModel.addHeader(
-                new ViewListItem(Long.MAX_VALUE - 1L, mStorageCoordinator.getView()));
+                new ViewListItem(StableIds.STORAGE_HEADER, mStorageCoordinator.getView()));
         decoratedModel.addHeader(
-                new ViewListItem(Long.MAX_VALUE - 2L, mFilterCoordinator.getView()));
+                new ViewListItem(StableIds.FILTERS_HEADER, mFilterCoordinator.getView()));
         initializeView(context);
     }
 
