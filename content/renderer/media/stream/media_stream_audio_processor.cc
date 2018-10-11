@@ -48,7 +48,8 @@ namespace {
 using webrtc::AudioProcessing;
 using webrtc::NoiseSuppression;
 
-const int kAudioProcessingNumberOfChannels = 1;
+constexpr int kAudioProcessingNumberOfChannels = 1;
+constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
 
 AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
   switch (media_layout) {
@@ -276,6 +277,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const AudioProcessingProperties& properties,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
+      audio_delay_stats_reporter_(kBuffersPerSecond),
       playout_data_source_(playout_data_source),
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
@@ -755,12 +757,15 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                "capture_delay_ms", capture_delay_ms, "render_delay_ms",
                render_delay_ms);
 
-  int total_delay_ms =  capture_delay_ms + render_delay_ms;
+  const int total_delay_ms = capture_delay_ms + render_delay_ms;
   if (total_delay_ms > 300 && large_delay_log_count_ < 10) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
                  << "ms; render delay: " << render_delay_ms << "ms";
     ++large_delay_log_count_;
   }
+
+  audio_delay_stats_reporter_.ReportDelay(
+      capture_delay, base::TimeDelta::FromMilliseconds(render_delay_ms));
 
   webrtc::AudioProcessing* ap = audio_processing_.get();
   ap->set_stream_delay_ms(total_delay_ms);

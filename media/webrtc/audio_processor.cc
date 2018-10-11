@@ -22,6 +22,8 @@ namespace media {
 
 namespace {
 
+constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
+
 webrtc::AudioProcessing::ChannelLayout MediaLayoutToWebRtcLayout(
     ChannelLayout media_layout) {
   switch (media_layout) {
@@ -36,6 +38,7 @@ webrtc::AudioProcessing::ChannelLayout MediaLayoutToWebRtcLayout(
       return webrtc::AudioProcessing::kMono;
   }
 }
+
 }  // namespace
 
 AudioProcessor::ProcessingResult::ProcessingResult(
@@ -50,7 +53,8 @@ AudioProcessor::AudioProcessor(const AudioParameters& audio_parameters,
                                const AudioProcessingSettings& settings)
     : audio_parameters_(audio_parameters),
       settings_(settings),
-      output_bus_(AudioBus::Create(audio_parameters_)) {
+      output_bus_(AudioBus::Create(audio_parameters_)),
+      audio_delay_stats_reporter_(kBuffersPerSecond) {
   DCHECK(audio_parameters.IsValid());
   DCHECK_EQ(audio_parameters_.GetBufferDuration(),
             base::TimeDelta::FromMilliseconds(10));
@@ -315,7 +319,11 @@ void AudioProcessor::UpdateDelayEstimate(base::TimeTicks capture_time) {
   // Note: this delay calculation doesn't make sense, but it's how it's done
   // right now. Instead, the APM should probably attach the playout time to each
   // reference buffer it gets and store that internally?
-  base::TimeDelta total_delay = capture_delay + render_delay_.load();
+  const base::TimeDelta render_delay = render_delay_.load();
+
+  audio_delay_stats_reporter_.ReportDelay(capture_delay, render_delay);
+
+  const base::TimeDelta total_delay = capture_delay + render_delay;
   audio_processing_->set_stream_delay_ms(total_delay.InMilliseconds());
   if (total_delay > base::TimeDelta::FromMilliseconds(300)) {
     DLOG(WARNING) << "Large audio delay, capture delay: "
