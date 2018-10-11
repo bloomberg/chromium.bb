@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -44,11 +43,12 @@ import java.util.Map;
 class ManualFillingMediator
         extends EmptyTabObserver implements KeyboardAccessoryCoordinator.VisibilityDelegate {
     private WindowAndroid mWindowAndroid;
-    private @Px int mPreviousControlHeight;
     private final WindowAndroid.KeyboardVisibilityListener mVisibilityListener =
             this::onKeyboardVisibilityChanged;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
     private boolean mShouldShow = false;
+    private final KeyboardExtensionSizeManager mKeyboardExtensionSizeManager =
+            new KeyboardExtensionSizeManager();
 
     /**
      * Provides a cache for a given Provider which can repeat the last notification to all
@@ -147,8 +147,6 @@ class ManualFillingMediator
     void initialize(KeyboardAccessoryCoordinator keyboardAccessory,
             AccessorySheetCoordinator accessorySheet, WindowAndroid windowAndroid) {
         assert windowAndroid.getActivity().get() != null;
-        // Abort initialization for PWAs: https://crbug.com/881536.
-        if (windowAndroid.getActivity().get() instanceof WebappActivity) return;
         mWindowAndroid = windowAndroid;
         mKeyboardAccessory = keyboardAccessory;
         mAccessorySheet = accessorySheet;
@@ -161,7 +159,6 @@ class ManualFillingMediator
             @Override
             public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
                 mActiveBrowserTab = tab;
-                mPreviousControlHeight = mActivity.getFullscreenManager().getBottomControlsHeight();
                 restoreCachedState(tab);
             }
 
@@ -286,11 +283,15 @@ class ManualFillingMediator
             return;
         }
         mKeyboardAccessory.requestShowing();
-        mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
+        mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(calculateAccessoryBarHeight());
         mKeyboardAccessory.closeActiveTab();
         updateInfobarState(true);
         mKeyboardAccessory.setBottomOffset(0);
         mAccessorySheet.hide();
+    }
+
+    KeyboardExtensionSizeManager getKeyboardExtensionSizeManager() {
+        return mKeyboardExtensionSizeManager;
     }
 
     @Override
@@ -314,7 +315,7 @@ class ManualFillingMediator
         if (mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(mActivity, contentView)) {
             return; // If the keyboard is showing or is starting to show, the sheet closes gently.
         }
-        mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
+        mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(0);
         mKeyboardAccessory.closeActiveTab();
         updateInfobarState(false);
         mKeyboardAccessory.setBottomOffset(0);
@@ -331,7 +332,7 @@ class ManualFillingMediator
     @Override
     public void onOpenKeyboard() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";
-        mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
+        mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(calculateAccessoryBarHeight());
         if (mActivity.getCurrentFocus() != null) {
             mWindowAndroid.getKeyboardDelegate().showKeyboard(mActivity.getCurrentFocus());
         }
@@ -346,8 +347,9 @@ class ManualFillingMediator
             newControlsOffset += mAccessorySheet.getHeight();
         }
         mKeyboardAccessory.setBottomOffset(newControlsOffset);
-        mActivity.getFullscreenManager().setBottomControlsHeight(
-                mKeyboardAccessory.isShown() ? newControlsHeight : mPreviousControlHeight);
+        mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(
+                mKeyboardAccessory.isShown() ? newControlsHeight : 0);
+        mActivity.getFullscreenManager().updateViewportSize();
     }
 
     /**

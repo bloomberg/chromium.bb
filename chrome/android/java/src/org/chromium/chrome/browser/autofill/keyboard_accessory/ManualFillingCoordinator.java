@@ -115,6 +115,16 @@ public class ManualFillingCoordinator {
         mMediator.pause();
     }
 
+    /**
+     * Returns a size manager that allows to access the combined height of
+     * {@link KeyboardAccessoryCoordinator} and {@link AccessorySheetCoordinator}, and to be
+     * notified when it changes.
+     * @return A {@link KeyboardExtensionSizeManager}.
+     */
+    public KeyboardExtensionSizeManager getKeyboardExtensionSizeManager() {
+        return mMediator.getKeyboardExtensionSizeManager();
+    }
+
     // TODO(fhorschig): Should be @VisibleForTesting.
     /**
      * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of
