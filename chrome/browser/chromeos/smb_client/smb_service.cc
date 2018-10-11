@@ -38,6 +38,10 @@ namespace smb_client {
 
 namespace {
 
+const char kShareUrlKey[] = "share_url";
+const char kModeKey[] = "mode";
+const char kModeDropDownValue[] = "drop_down";
+
 bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
 }
@@ -139,6 +143,7 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
                                        GatherSharesResponse shares_callback) {
+  shares_callback.Run(GetPreconfiguredSharePathsForDropDown());
   share_finder_->GatherSharesInNetwork(std::move(discovery_callback),
                                        std::move(shares_callback));
 }
@@ -439,6 +444,26 @@ bool SmbService::IsNetBiosDiscoveryEnabled() const {
 bool SmbService::IsNTLMAuthenticationEnabled() const {
   return profile_->GetPrefs()->GetBoolean(
       prefs::kNTLMShareAuthenticationEnabled);
+}
+
+std::vector<SmbUrl> SmbService::GetPreconfiguredSharePathsForDropDown() const {
+  std::vector<SmbUrl> preconfigured_urls;
+
+  const base::Value* preconfigured_shares = profile_->GetPrefs()->GetList(
+      prefs::kNetworkFileSharesPreconfiguredShares);
+
+  for (const base::Value& info : preconfigured_shares->GetList()) {
+    // |info| is a dictionary with entries for |share_url| and |mode|.
+    const base::Value* share_url = info.FindKey(kShareUrlKey);
+    const base::Value* mode = info.FindKey(kModeKey);
+
+    DCHECK(mode->GetString() == kModeDropDownValue);
+
+    if (mode->GetString() == kModeDropDownValue) {
+      preconfigured_urls.emplace_back(share_url->GetString());
+    }
+  }
+  return preconfigured_urls;
 }
 
 void SmbService::RecordMountCount() const {
