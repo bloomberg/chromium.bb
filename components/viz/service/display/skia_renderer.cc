@@ -451,11 +451,10 @@ void SkiaRenderer::ClearCanvas(SkColor color) {
     return;
 
   if (is_scissor_enabled_) {
-    // The same paint used by SkCanvas::clear, but applied to the scissor rect.
-    SkPaint clear_paint;
-    clear_paint.setColor(color);
-    clear_paint.setBlendMode(SkBlendMode::kSrc);
-    current_canvas_->drawRect(gfx::RectToSkRect(scissor_rect_), clear_paint);
+    // Limit the clear with the scissor rect.
+    SkAutoCanvasRestore autoRestore(current_canvas_, true /* do_save */);
+    current_canvas_->clipRect(gfx::RectToSkRect(scissor_rect_));
+    current_canvas_->clear(color);
   } else {
     current_canvas_->clear(color);
   }
