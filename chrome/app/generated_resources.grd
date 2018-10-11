@@ -9031,6 +9031,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_VIDEO_AUDIO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress" formatter_data="android_java">
         Accessing audio and video input
       </message>
+      <message name="IDS_VIDEO_CALL_INCOGNITO_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress in incognito mode." formatter_data="android_java">
+        A site is accessing video input
+      </message>
+      <message name="IDS_AUDIO_CALL_INCOGNITO_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC audio call is in progress in incognito mode." formatter_data="android_java">
+        A site is accessing audio input
+      </message>
+      <message name="IDS_VIDEO_AUDIO_CALL_INCOGNITO_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress in incognito mode." formatter_data="android_java">
+        A site is accessing audio and video input
+      </message>
     </if>
 
     <!-- Download open confirmation dialog -->
