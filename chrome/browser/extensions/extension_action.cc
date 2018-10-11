@@ -236,6 +236,10 @@ gfx::Image ExtensionAction::GetDefaultIconImage() const {
   if (default_icon_image_)
     return default_icon_image_->image();
 
+  return GetPlaceholderIconImage();
+}
+
+gfx::Image ExtensionAction::GetPlaceholderIconImage() const {
   if (placeholder_icon_image_.IsEmpty()) {
     // For extension actions, we use a special placeholder icon (with the first
     // letter of the extension name) rather than the default (puzzle piece).
