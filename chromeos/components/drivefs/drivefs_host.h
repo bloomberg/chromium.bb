@@ -51,6 +51,19 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual void AcceptMojoConnection(base::ScopedFD handle) = 0;
   };
 
+  class MountObserver {
+   public:
+    MountObserver() = default;
+    virtual ~MountObserver() = default;
+    virtual void OnMounted(const base::FilePath& mount_path) = 0;
+    virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
+    virtual void OnMountFailed(
+        base::Optional<base::TimeDelta> remount_delay) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MountObserver);
+  };
+
   class Delegate {
    public:
     Delegate() = default;
@@ -69,17 +82,13 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual std::unique_ptr<MojoConnectionDelegate>
     CreateMojoConnectionDelegate();
 
-    virtual void OnMounted(const base::FilePath& mount_path) = 0;
-    virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
-    virtual void OnMountFailed(
-        base::Optional<base::TimeDelta> remount_delay) = 0;
-
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   DriveFsHost(const base::FilePath& profile_path,
               Delegate* delegate,
+              MountObserver* mount_observer,
               std::unique_ptr<base::OneShotTimer> timer);
   ~DriveFsHost();
 
@@ -112,6 +121,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
   const base::FilePath profile_path_;
 
   Delegate* const delegate_;
+  MountObserver* const mount_observer_;
 
   std::unique_ptr<base::OneShotTimer> timer_;
 

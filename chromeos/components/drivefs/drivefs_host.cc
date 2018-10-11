@@ -176,14 +176,14 @@ class DriveFsHost::MountState
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
     drivefs_has_terminated_ = true;
-    host_->delegate_->OnMountFailed(std::move(remount_delay));
+    host_->mount_observer_->OnMountFailed(std::move(remount_delay));
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
     drivefs_has_terminated_ = true;
-    host_->delegate_->OnUnmounted(std::move(remount_delay));
+    host_->mount_observer_->OnUnmounted(std::move(remount_delay));
   }
 
   void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
@@ -216,9 +216,9 @@ class DriveFsHost::MountState
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (!drivefs_has_terminated_) {
       if (mounted())
-        host_->delegate_->OnUnmounted({});
+        host_->mount_observer_->OnUnmounted({});
       else
-        host_->delegate_->OnMountFailed({});
+        host_->mount_observer_->OnMountFailed({});
       drivefs_has_terminated_ = true;
     }
   }
@@ -231,7 +231,7 @@ class DriveFsHost::MountState
   void MaybeNotifyDelegateOnMounted() {
     if (mounted()) {
       host_->timer_->Stop();
-      host_->delegate_->OnMounted(mount_path());
+      host_->mount_observer_->OnMounted(mount_path());
     }
   }
 
@@ -296,7 +296,7 @@ class DriveFsHost::MountState
       return;
     }
     if (error_code != chromeos::MOUNT_ERROR_NONE) {
-      host_->delegate_->OnMountFailed({});
+      host_->mount_observer_->OnMountFailed({});
       host_->Unmount();
       return;
     }
@@ -342,10 +342,14 @@ class DriveFsHost::MountState
 
 DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
                          DriveFsHost::Delegate* delegate,
+                         DriveFsHost::MountObserver* mount_observer,
                          std::unique_ptr<base::OneShotTimer> timer)
     : profile_path_(profile_path),
       delegate_(delegate),
+      mount_observer_(mount_observer),
       timer_(std::move(timer)) {
+  DCHECK(delegate_);
+  DCHECK(mount_observer_);
 }
 
 DriveFsHost::~DriveFsHost() {

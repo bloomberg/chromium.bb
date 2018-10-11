@@ -107,7 +107,8 @@ class ForwardingOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   MockOAuth2MintTokenFlow* mock_;
 };
 
-class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
+class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
+                                   public DriveFsHost::MountObserver {
  public:
   TestingDriveFsHostDelegate(
       std::unique_ptr<service_manager::Connector> connector,
@@ -120,7 +121,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
     pending_bootstrap_ = std::move(pending_bootstrap);
   }
 
-  // DriveFsHost::Delegate:
+  // DriveFsHost::MountObserver:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
   MOCK_METHOD1(OnMountFailed, void(base::Optional<base::TimeDelta>));
   MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
@@ -268,8 +269,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
         connector_factory_->CreateConnector(), account_id_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
-    host_ = std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get(),
-                                          std::move(timer));
+    host_ =
+        std::make_unique<DriveFsHost>(profile_path_, host_delegate_.get(),
+                                      host_delegate_.get(), std::move(timer));
   }
 
   void TearDown() override {
@@ -598,7 +600,7 @@ TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
     host_delegate_ = std::make_unique<TestingDriveFsHostDelegate>(
         connector_factory_->CreateConnector(), account);
     host_ = std::make_unique<DriveFsHost>(
-        profile_path_, host_delegate_.get(),
+        profile_path_, host_delegate_.get(), host_delegate_.get(),
         std::make_unique<base::MockOneShotTimer>());
     EXPECT_FALSE(host_->Mount());
     EXPECT_FALSE(host_->IsMounted());

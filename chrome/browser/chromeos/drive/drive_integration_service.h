@@ -55,6 +55,15 @@ class ResourceMetadata;
 class ResourceMetadataStorage;
 }  // namespace internal
 
+// Mounting status. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class DriveMountStatus {
+  kSuccess = 0,
+  kUnknownFailure = 1,
+  kTemporaryUnavailable = 2,
+  kMaxValue = kTemporaryUnavailable,
+};
+
 // Interface for classes that need to observe events from
 // DriveIntegrationService.  All events are notified on UI thread.
 class DriveIntegrationServiceObserver {
@@ -81,7 +90,8 @@ class DriveIntegrationServiceObserver {
 // created per-profile.
 class DriveIntegrationService : public KeyedService,
                                 public DriveNotificationObserver,
-                                public content::NotificationObserver {
+                                public content::NotificationObserver,
+                                public drivefs::DriveFsHost::MountObserver {
  public:
   class PreferenceWatcher;
   using DriveFsMojoConnectionDelegateFactory = base::RepeatingCallback<
@@ -135,6 +145,11 @@ class DriveIntegrationService : public KeyedService,
   void OnNotificationTimerFired() override;
   void OnPushNotificationEnabled(bool enabled) override;
 
+  // MountObserver implementation.
+  void OnMounted(const base::FilePath& mount_path) override;
+  void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override;
+  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override;
+
   EventLogger* event_logger() { return logger_.get(); }
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
   DebugInfoCollector* debug_info_collector() {
@@ -180,7 +195,7 @@ class DriveIntegrationService : public KeyedService,
   void AddDriveMountPoint();
 
   // Registers remote file system for drive mount point.
-  void AddDriveMountPointAfterMounted();
+  bool AddDriveMountPointAfterMounted();
 
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
@@ -252,6 +267,8 @@ class DriveIntegrationService : public KeyedService,
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
   bool remount_when_online_ = false;
+
+  base::TimeTicks mount_start_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
