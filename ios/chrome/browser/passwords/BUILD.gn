@@ -25,6 +25,8 @@ source_set("passwords") {
     "ios_chrome_save_password_infobar_delegate.mm",
     "ios_chrome_update_password_infobar_delegate.h",
     "ios_chrome_update_password_infobar_delegate.mm",
+    "ios_password_infobar_controller.h",
+    "ios_password_infobar_controller.mm",
     "js_credential_manager.h",
     "js_credential_manager.mm",
     "notify_auto_signin_view_controller.h",

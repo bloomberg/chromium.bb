@@ -113,11 +113,79 @@ UIImage* InfoBarCloseImage() {
 
 }  // namespace
 
-// UIView containing a switch and a label.
-@interface SwitchView : BidiContainerView
+// UIView containing a label.
+@interface InfobarFooterView : BidiContainerView
+
+@property(nonatomic, readonly) UILabel* label;
+@property(nonatomic) CGFloat preferredLabelWidth;
 
 // Initialize the view's label with |labelText|.
-- (id)initWithLabel:(NSString*)labelText isOn:(BOOL)isOn;
+- (instancetype)initWithText:(NSString*)labelText NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+
+// Returns the height taken by the view constrained by a width of |width|.
+// If |layout| is yes, it sets the frame of the view to fit |width|.
+- (CGFloat)heightRequiredForFooterWithWidth:(CGFloat)width layout:(BOOL)layout;
+
+// Returns the preferred width. A smaller width requires eliding the text.
+- (CGFloat)preferredWidth;
+@end
+
+@implementation InfobarFooterView
+
+- (instancetype)initWithText:(NSString*)labelText {
+  // Creates label.
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+  label.textAlignment = NSTextAlignmentNatural;
+  label.font = InfoBarSwitchLabelFont();
+  label.text = labelText;
+  label.textColor = [UIColor darkGrayColor];
+  label.backgroundColor = [UIColor clearColor];
+  label.lineBreakMode = NSLineBreakByWordWrapping;
+  label.numberOfLines = 0;
+  label.adjustsFontSizeToFitWidth = NO;
+  [label sizeToFit];
+
+  self = [super initWithFrame:label.frame];
+  if (!self)
+    return nil;
+  _label = label;
+  _preferredLabelWidth = CGRectGetMaxX(_label.frame);
+  [self addSubview:_label];
+  return self;
+}
+
+- (CGFloat)heightRequiredForFooterWithWidth:(CGFloat)width layout:(BOOL)layout {
+  CGFloat widthLeftForLabel = width;
+  CGSize maxSize = CGSizeMake(widthLeftForLabel, CGFLOAT_MAX);
+  CGSize labelSize =
+      [[self.label text] cr_boundingSizeWithSize:maxSize
+                                            font:[self.label font]];
+  CGFloat viewHeight = labelSize.height;
+  if (layout) {
+    // Lays out the label and the switch to fit in {width, viewHeight}.
+    CGRect newLabelFrame = CGRectMake(0, 0, labelSize.width, labelSize.height);
+    newLabelFrame = AlignRectOriginAndSizeToPixels(newLabelFrame);
+    [self.label setFrame:newLabelFrame];
+  }
+  return viewHeight;
+}
+
+- (CGFloat)preferredWidth {
+  return self.preferredLabelWidth;
+}
+
+@end
+
+// UIView containing a switch and a label.
+@interface SwitchView : InfobarFooterView
+
+// Initialize the view's label with |labelText|.
+- (instancetype)initWithText:(NSString*)labelText
+                        isOn:(BOOL)isOn NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithText:(NSString*)labelText NS_UNAVAILABLE;
 
 // Specifies the object, action, and tag used when the switch is toggled.
 - (void)setTag:(NSInteger)tag target:(id)target action:(SEL)action;
@@ -125,7 +193,7 @@ UIImage* InfoBarCloseImage() {
 // Returns the height taken by the view constrained by a width of |width|.
 // If |layout| is yes, it sets the frame of the label and the switch to fit
 // |width|.
-- (CGFloat)heightRequiredForSwitchWithWidth:(CGFloat)width layout:(BOOL)layout;
+- (CGFloat)heightRequiredForFooterWithWidth:(CGFloat)width layout:(BOOL)layout;
 
 // Returns the preferred width. A smaller width requires eliding the text.
 - (CGFloat)preferredWidth;
@@ -133,46 +201,34 @@ UIImage* InfoBarCloseImage() {
 @end
 
 @implementation SwitchView {
-  UILabel* label_;
   UISwitch* switch_;
   CGFloat preferredTotalWidth_;
-  CGFloat preferredLabelWidth_;
   // Layout metrics for calculating item placement.
   const LayoutMetrics* metrics_;
 }
 
-- (id)initWithLabel:(NSString*)labelText isOn:(BOOL)isOn {
+- (instancetype)initWithText:(NSString*)labelText isOn:(BOOL)isOn {
   metrics_ = &kLayoutMetrics;
 
-  // Creates switch and label.
-  UILabel* tempLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-  [tempLabel setTextAlignment:NSTextAlignmentNatural];
-  [tempLabel setFont:InfoBarSwitchLabelFont()];
-  [tempLabel setText:labelText];
-  [tempLabel setBackgroundColor:[UIColor clearColor]];
-  [tempLabel setLineBreakMode:NSLineBreakByWordWrapping];
-  [tempLabel setNumberOfLines:0];
-  [tempLabel setAdjustsFontSizeToFitWidth:NO];
-  UISwitch* tempSwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
-  [tempSwitch setExclusiveTouch:YES];
-  [tempSwitch setAccessibilityLabel:labelText];
-  [tempSwitch setOnTintColor:[[MDCPalette cr_bluePalette] tint500]];
-  [tempSwitch setOn:isOn];
+  self = [super initWithText:labelText];
+  if (!self)
+    return nil;
+
+  self.label.textColor = [UIColor blackColor];
+  switch_ = [[UISwitch alloc] initWithFrame:CGRectZero];
+  switch_.exclusiveTouch = YES;
+  switch_.accessibilityLabel = labelText;
+  switch_.onTintColor = [[MDCPalette cr_bluePalette] tint500];
+  switch_.on = isOn;
 
   // Computes the size and initializes the view.
-  CGSize maxSize = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
-  CGSize labelSize =
-      [[tempLabel text] cr_boundingSizeWithSize:maxSize font:[tempLabel font]];
-  CGSize switchSize = [tempSwitch frame].size;
+  CGSize labelSize = self.label.frame.size;
+  CGSize switchSize = switch_.frame.size;
   CGRect frameRect = CGRectMake(
       0, 0,
       labelSize.width + metrics_->space_between_widgets + switchSize.width,
       std::max(labelSize.height, switchSize.height));
-  self = [super initWithFrame:frameRect];
-  if (!self)
-    return nil;
-  label_ = tempLabel;
-  switch_ = tempSwitch;
+  [self setFrame:frameRect];
 
   // Sets the position of the label and the switch. The label is left aligned
   // and the switch is right aligned. Both are vertically centered.
@@ -187,12 +243,12 @@ UIImage* InfoBarCloseImage() {
   labelFrame = AlignRectOriginAndSizeToPixels(labelFrame);
   switchFrame = AlignRectOriginAndSizeToPixels(switchFrame);
 
-  [label_ setFrame:labelFrame];
+  [self.label setFrame:labelFrame];
   [switch_ setFrame:switchFrame];
   preferredTotalWidth_ = CGRectGetMaxX(switchFrame);
-  preferredLabelWidth_ = CGRectGetMaxX(labelFrame);
+  self.preferredLabelWidth = CGRectGetMaxX(labelFrame);
 
-  [self addSubview:label_];
+  [self addSubview:self.label];
   [self addSubview:switch_];
   return self;
 }
@@ -204,12 +260,13 @@ UIImage* InfoBarCloseImage() {
       forControlEvents:UIControlEventValueChanged];
 }
 
-- (CGFloat)heightRequiredForSwitchWithWidth:(CGFloat)width layout:(BOOL)layout {
+- (CGFloat)heightRequiredForFooterWithWidth:(CGFloat)width layout:(BOOL)layout {
   CGFloat widthLeftForLabel =
       width - [switch_ frame].size.width - metrics_->space_between_widgets;
   CGSize maxSize = CGSizeMake(widthLeftForLabel, CGFLOAT_MAX);
   CGSize labelSize =
-      [[label_ text] cr_boundingSizeWithSize:maxSize font:[label_ font]];
+      [[self.label text] cr_boundingSizeWithSize:maxSize
+                                            font:[self.label font]];
   CGFloat viewHeight = std::max(labelSize.height, [switch_ frame].size.height);
   if (layout) {
     // Lays out the label and the switch to fit in {width, viewHeight}.
@@ -218,7 +275,7 @@ UIImage* InfoBarCloseImage() {
     newLabelFrame.origin.y = (viewHeight - labelSize.height) / 2;
     newLabelFrame.size = labelSize;
     newLabelFrame = AlignRectOriginAndSizeToPixels(newLabelFrame);
-    [label_ setFrame:newLabelFrame];
+    [self.label setFrame:newLabelFrame];
     CGRect newSwitchFrame;
     newSwitchFrame.origin.x =
         CGRectGetMaxX(newLabelFrame) + metrics_->space_between_widgets;
@@ -282,8 +339,8 @@ UIImage* InfoBarCloseImage() {
   UIImageView* imageView_;
   // Close button.
   UIButton* closeButton_;
-  // View containing the switch and its label.
-  SwitchView* switchView_;
+  // View containing the label and maybe switch.
+  InfobarFooterView* InfobarFooterView_;
   // We are using a LabelLinkController with an UILabel to be able to have
   // parts of the label underlined and clickable. This label_ may be nil if
   // the delegate returns an empty string for GetMessageText().
@@ -386,14 +443,14 @@ UIImage* InfoBarCloseImage() {
 
 // Returns the width needed for the switch.
 - (CGFloat)preferredWidthOfSwitch {
-  return [switchView_ preferredWidth];
+  return [InfobarFooterView_ preferredWidth];
 }
 
 // Returns the space required to separate the left aligned widgets (label) from
 // the right aligned widgets (switch, buttons), assuming they fit on one line.
 - (CGFloat)widthToSeparateRightAndLeftWidgets {
   BOOL leftWidgetsArePresent = (label_ != nil);
-  BOOL rightWidgetsArePresent = button1_ || button2_ || switchView_;
+  BOOL rightWidgetsArePresent = button1_ || button2_ || InfobarFooterView_;
   if (!leftWidgetsArePresent || !rightWidgetsArePresent)
     return 0;
   return metrics_->minimum_space_between_right_and_left_aligned_widgets;
@@ -402,7 +459,7 @@ UIImage* InfoBarCloseImage() {
 // Returns the space required to separate the switch and the buttons.
 - (CGFloat)widthToSeparateSwitchAndButtons {
   BOOL buttonsArePresent = button1_ || button2_;
-  BOOL switchIsPresent = (switchView_ != nil);
+  BOOL switchIsPresent = (InfobarFooterView_ != nil);
   if (!buttonsArePresent || !switchIsPresent)
     return 0;
   return metrics_->space_between_widgets;
@@ -564,15 +621,15 @@ UIImage* InfoBarCloseImage() {
         [button2_ setFrame:frame];
       }
       // Lays out the switch view to the left of the buttons.
-      if (switchView_) {
-        frame =
-            CGRectMake(widthOfScreen - buttonMargin - widthOfButtonAndSwitch,
-                       (metrics_->minimum_infobar_height -
-                        [switchView_ frame].size.height) /
-                           2.0,
-                       preferredWidthOfSwitch, [switchView_ frame].size.height);
+      if (InfobarFooterView_) {
+        frame = CGRectMake(
+            widthOfScreen - buttonMargin - widthOfButtonAndSwitch,
+            (metrics_->minimum_infobar_height -
+             [InfobarFooterView_ frame].size.height) /
+                2.0,
+            preferredWidthOfSwitch, [InfobarFooterView_ frame].size.height);
         frame = AlignRectOriginAndSizeToPixels(frame);
-        [switchView_ setFrame:frame];
+        [InfobarFooterView_ setFrame:frame];
       }
     }
   } else {
@@ -598,13 +655,15 @@ UIImage* InfoBarCloseImage() {
                        [self widthOfLabelOnASingleLine], labelHeight);
         labelFrame = AlignRectOriginAndSizeToPixels(labelFrame);
         [label_ setFrame:labelFrame];
-        if (switchView_) {
+        if (InfobarFooterView_) {
           CGRect switchRect = CGRectMake(
               widthOfScreen - rightMarginOnFirstLine - preferredWidthOfSwitch,
-              (heightOfLabelAndSwitch - [switchView_ frame].size.height) / 2,
-              preferredWidthOfSwitch, [switchView_ frame].size.height);
+              (heightOfLabelAndSwitch -
+               [InfobarFooterView_ frame].size.height) /
+                  2,
+              preferredWidthOfSwitch, [InfobarFooterView_ frame].size.height);
           switchRect = AlignRectOriginAndSizeToPixels(switchRect);
-          [switchView_ setFrame:switchRect];
+          [InfobarFooterView_ setFrame:switchRect];
         }
       }
     } else {
@@ -632,14 +691,14 @@ UIImage* InfoBarCloseImage() {
       // Computes the height of the switch view (if any), and optionally lays it
       // out.
       CGFloat heightOfSwitchWithPadding = 0;
-      if (switchView_ != nil) {
+      if (InfobarFooterView_ != nil) {
         // The switch view is aligned with the first line's label, hence the
         // call to |leftMarginOnFirstLine|.
         CGFloat widthAvailableForSwitchView = [self frame].size.width -
                                               [self leftMarginOnFirstLine] -
                                               metrics_->right_margin;
-        CGFloat heightOfSwitch = [switchView_
-            heightRequiredForSwitchWithWidth:widthAvailableForSwitchView
+        CGFloat heightOfSwitch = [InfobarFooterView_
+            heightRequiredForFooterWithWidth:widthAvailableForSwitchView
                                       layout:layout];
         // If there are buttons underneath the switch, add padding.
         if (button1_ || button2_) {
@@ -654,7 +713,7 @@ UIImage* InfoBarCloseImage() {
               CGRectMake([self leftMarginOnFirstLine], heightOfLabelWithPadding,
                          widthAvailableForSwitchView, heightOfSwitch);
           switchRect = AlignRectOriginAndSizeToPixels(switchRect);
-          [switchView_ setFrame:switchRect];
+          [InfobarFooterView_ setFrame:switchRect];
         }
       }
       heightOfLabelAndSwitch =
@@ -749,9 +808,15 @@ UIImage* InfoBarCloseImage() {
                        tag:(NSInteger)tag
                     target:(id)target
                     action:(SEL)action {
-  switchView_ = [[SwitchView alloc] initWithLabel:label isOn:isOn];
-  [switchView_ setTag:tag target:target action:action];
-  [self addSubview:switchView_];
+  SwitchView* switchView = [[SwitchView alloc] initWithText:label isOn:isOn];
+  [switchView setTag:tag target:target action:action];
+  InfobarFooterView_ = switchView;
+  [self addSubview:InfobarFooterView_];
+}
+
+- (void)addFooterLabel:(NSString*)label {
+  InfobarFooterView_ = [[InfobarFooterView alloc] initWithText:label];
+  [self addSubview:InfobarFooterView_];
 }
 
 - (void)addLeftIcon:(UIImage*)image {
