@@ -27,14 +27,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "third_party/blink/renderer/platform/fonts/mac/font_family_matcher_mac.h"
+#import "third_party/blink/renderer/platform/fonts/mac/font_matcher_mac.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/mac/version_util_mac.h"
 #import "third_party/blink/renderer/platform/wtf/hash_set.h"
+#import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #import "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 @interface NSFont (YosemiteAdditions)
@@ -60,7 +62,7 @@ static CGFloat toYosemiteFontWeight(blink::FontSelectionValue font_weight) {
 
   size_t select_weight = roundf(font_weight / 100) - 1;
   DCHECK_GE(select_weight, 0ul);
-  DCHECK_LE(select_weight, arraysize(ns_font_weights));
+  DCHECK_LE(select_weight, base::size(ns_font_weights));
   CGFloat* return_weight =
       reinterpret_cast<CGFloat*>(&ns_font_weights[select_weight]);
   return *return_weight;
@@ -74,9 +76,7 @@ const NSFontTraitMask SYNTHESIZED_FONT_TRAITS =
 
 const NSFontTraitMask IMPORTANT_FONT_TRAITS =
     (NSCompressedFontMask | NSCondensedFontMask | NSExpandedFontMask |
-     NSItalicFontMask |
-     NSNarrowFontMask |
-     NSPosterFontMask |
+     NSItalicFontMask | NSNarrowFontMask | NSPosterFontMask |
      NSSmallCapsFontMask);
 
 static BOOL AcceptableChoice(NSFontTraitMask desired_traits,
@@ -125,6 +125,43 @@ static BOOL BetterChoice(NSFontTraitMask desired_traits,
 
   // Otherwise, prefer the one closer to the desired weight.
   return candidate_weight_delta_magnitude < chosen_weight_delta_magnitude;
+}
+
+NSFont* MatchUniqueFont(const AtomicString& unique_font_name, float size) {
+  // Testing with a large list of fonts available on Mac OS shows that matching
+  // for kCTFontNameAttribute matches postscript name as well as full font name.
+  WTF::RetainPtr<CFMutableDictionaryRef> attributes(
+      CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL));
+  WTF::RetainPtr<NSString> desired_name(unique_font_name);
+  CFDictionarySetValue(attributes.Get(), kCTFontNameAttribute,
+                       desired_name.Get());
+  WTF::RetainPtr<CFNumberRef> font_size =
+      CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &size);
+  CFDictionarySetValue(attributes.Get(), kCTFontSizeAttribute, font_size.Get());
+  WTF::RetainPtr<CTFontDescriptorRef> descriptor(
+      CTFontDescriptorCreateWithAttributes(attributes.Get()));
+  WTF::RetainPtr<CTFontRef> matched_font(
+      CTFontCreateWithFontDescriptor(descriptor.Get(), 0, nullptr));
+  // CoreText will usually give us *something* but not always an exactly
+  // matched font.
+  DCHECK(matched_font.Get());
+  WTF::RetainPtr<CFStringRef> matched_font_ps_name(
+      CTFontCopyName(matched_font.Get(), kCTFontPostScriptNameKey));
+  WTF::RetainPtr<CFStringRef> matched_font_full_font_name(
+      CTFontCopyName(matched_font.Get(), kCTFontFullNameKey));
+  // If the found font does not match in postscript name or full font name, it's
+  // not the exact match that is required, so return nullptr.
+  if ((kCFCompareEqualTo !=
+       CFStringCompare(matched_font_ps_name.Get(),
+                       (__bridge CFStringRef)desired_name.Get(),
+                       kCFCompareCaseInsensitive)) &&
+      (kCFCompareEqualTo !=
+       CFStringCompare(matched_font_full_font_name.Get(),
+                       (__bridge CFStringRef)desired_name.Get(),
+                       kCFCompareCaseInsensitive))) {
+    return nullptr;
+  }
+  return (__bridge NSFont*)matched_font.LeakRef();
 }
 
 // Family name is somewhat of a misnomer here.  We first attempt to find an
@@ -308,7 +345,7 @@ int ToAppKitFontWeight(FontSelectionValue font_weight) {
       12,  // FontWeight900
   };
   DCHECK_GE(select_weight, 0ul);
-  DCHECK_LE(select_weight, arraysize(app_kit_font_weights));
+  DCHECK_LE(select_weight, base::size(app_kit_font_weights));
   return app_kit_font_weights[select_weight];
 }
 

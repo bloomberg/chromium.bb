@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_FAMILY_MATCHER_MAC_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_FAMILY_MATCHER_MAC_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_MATCHER_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_MATCHER_MAC_H_
 
 #include <AppKit/NSFontManager.h>
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
@@ -39,9 +39,12 @@ PLATFORM_EXPORT NSFont* MatchNSFontFamily(const AtomicString& desired_family,
                                           FontSelectionValue desired_weight,
                                           float size);
 
+PLATFORM_EXPORT NSFont* MatchUniqueFont(const AtomicString& unique_font_name,
+                                        float size);
+
 // Converts ablink::FontSelectionValue to the nearest AppKit font weight if
 // possible, otherwise returns the default font weight.
 int ToAppKitFontWeight(FontSelectionValue);
-}
+}  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_FAMILY_MATCHER_MAC_H_
