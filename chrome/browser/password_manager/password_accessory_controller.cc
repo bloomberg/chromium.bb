@@ -264,6 +264,14 @@ void PasswordAccessoryController::DidNavigateMainFrame() {
   origin_suggestions_.clear();
 }
 
+void PasswordAccessoryController::ShowWhenKeyboardIsVisible() {
+  view_->ShowWhenKeyboardIsVisible();
+}
+
+void PasswordAccessoryController::Hide() {
+  view_->Hide();
+}
+
 void PasswordAccessoryController::GetFavicon(
     int desired_size_in_pixel,
     base::OnceCallback<void(const gfx::Image&)> icon_callback) {

@@ -99,6 +99,14 @@ public class ManualFillingCoordinator {
         mMediator.registerPasswordProvider(itemProvider);
     }
 
+    public void showWhenKeyboardIsVisible() {
+        mMediator.showWhenKeyboardIsVisible();
+    }
+
+    public void hide() {
+        mMediator.hide();
+    }
+
     public void onResume() {
         mMediator.resume();
     }

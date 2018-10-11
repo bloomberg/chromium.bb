@@ -71,6 +71,16 @@ class PasswordAccessoryBridge {
     }
 
     @CalledByNative
+    void showWhenKeyboardIsVisible() {
+        mManualFillingCoordinator.showWhenKeyboardIsVisible();
+    }
+
+    @CalledByNative
+    void hide() {
+        mManualFillingCoordinator.hide();
+    }
+
+    @CalledByNative
     private void closeAccessorySheet() {
         mManualFillingCoordinator.closeAccessorySheet();
     }

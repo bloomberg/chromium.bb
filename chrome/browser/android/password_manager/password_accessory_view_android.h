@@ -31,6 +31,8 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void CloseAccessorySheet() override;
   void SwapSheetWithKeyboard() override;
+  void ShowWhenKeyboardIsVisible() override;
+  void Hide() override;
 
   // Called from Java via JNI:
   void OnFaviconRequested(

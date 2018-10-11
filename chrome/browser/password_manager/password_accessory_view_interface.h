@@ -81,6 +81,12 @@ class PasswordAccessoryViewInterface {
   // Opens a keyboard which dismisses the sheet. NoOp without open sheet.
   virtual void SwapSheetWithKeyboard() = 0;
 
+  // Shows the accessory bar when the keyboard is also shown.
+  virtual void ShowWhenKeyboardIsVisible() = 0;
+
+  // Hides the accessory bar and the accessory sheet (if open).
+  virtual void Hide() = 0;
+
  private:
   friend class PasswordAccessoryController;
   // Factory function used to create a concrete instance of this view.

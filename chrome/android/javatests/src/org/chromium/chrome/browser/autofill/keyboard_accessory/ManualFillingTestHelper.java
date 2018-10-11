@@ -168,11 +168,13 @@ public class ManualFillingTestHelper {
 
     public void clickPasswordField() throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mWebContentsRef.get(), "password");
+        requestShowKeyboardAccessory();
         mKeyboard.showKeyboard(null);
     }
 
     public void clickEmailField() throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mWebContentsRef.get(), "email");
+        requestShowKeyboardAccessory();
         mKeyboard.showKeyboard(null);
     }
 
@@ -275,6 +277,19 @@ public class ManualFillingTestHelper {
     public void waitToBeHidden(Matcher<View> matcher) {
         onView(isRoot()).check((r, e) -> {
             waitForView((ViewGroup) r, matcher, VIEW_INVISIBLE | VIEW_NULL | VIEW_GONE);
+        });
+    }
+
+    /**
+     * In order to make sure the keyboard accessory is only shown on appropriate fields, a request
+     * to show is usually sent from the native side. This method simulates that request.
+     */
+    private void requestShowKeyboardAccessory() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity()
+                    .getManualFillingController()
+                    .getMediatorForTesting()
+                    .showWhenKeyboardIsVisible();
         });
     }
 }

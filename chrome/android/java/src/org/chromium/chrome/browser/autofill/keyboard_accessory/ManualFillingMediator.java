@@ -48,6 +48,7 @@ class ManualFillingMediator
     private final WindowAndroid.KeyboardVisibilityListener mVisibilityListener =
             this::onKeyboardVisibilityChanged;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
+    private boolean mShouldShow = false;
 
     /**
      * Provides a cache for a given Provider which can repeat the last notification to all
@@ -193,18 +194,9 @@ class ManualFillingMediator
     void onKeyboardVisibilityChanged(boolean isShowing) {
         if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
-            // Don't open the accessory inside the contextual search panel.
-            ContextualSearchManager contextualSearchManager =
-                    mActivity.getContextualSearchManager();
-            if (contextualSearchManager != null && contextualSearchManager.isSearchPanelOpened()) {
-                return;
+            if (mShouldShow) {
+                displayKeyboardAccessory();
             }
-            mKeyboardAccessory.requestShowing();
-            mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
-            mKeyboardAccessory.closeActiveTab();
-            updateInfobarState(true);
-            mKeyboardAccessory.setBottomOffset(0);
-            mAccessorySheet.hide();
         } else {
             mKeyboardAccessory.close();
             onBottomControlSpaceChanged();
@@ -262,6 +254,20 @@ class ManualFillingMediator
         mPopup = popup;
     }
 
+    void showWhenKeyboardIsVisible() {
+        if (!isInitialized() || !mKeyboardAccessory.hasContents() || mShouldShow) return;
+        mShouldShow = true;
+        ViewGroup contentView = getContentView();
+        if (mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(mActivity, contentView)) {
+            displayKeyboardAccessory();
+        }
+    }
+
+    void hide() {
+        mShouldShow = false;
+        pause();
+    }
+
     public void pause() {
         if (!isInitialized()) return;
         mKeyboardAccessory.dismiss();
@@ -271,6 +277,20 @@ class ManualFillingMediator
     void resume() {
         if (!isInitialized()) return;
         restoreCachedState(mActiveBrowserTab);
+    }
+
+    private void displayKeyboardAccessory() {
+        // Don't open the accessory inside the contextual search panel.
+        ContextualSearchManager contextualSearchManager = mActivity.getContextualSearchManager();
+        if (contextualSearchManager != null && contextualSearchManager.isSearchPanelOpened()) {
+            return;
+        }
+        mKeyboardAccessory.requestShowing();
+        mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
+        mKeyboardAccessory.closeActiveTab();
+        updateInfobarState(true);
+        mKeyboardAccessory.setBottomOffset(0);
+        mAccessorySheet.hide();
     }
 
     @Override
