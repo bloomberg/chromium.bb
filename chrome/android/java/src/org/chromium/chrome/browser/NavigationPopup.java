@@ -105,7 +105,7 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
 
         mAdapter = new NavigationAdapter();
 
-        mPopup = new ListPopupWindow(context);
+        mPopup = new ListPopupWindow(context, null, 0, R.style.NavigationPopupDialog);
         mPopup.setOnDismissListener(this::onDismiss);
         mPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
                 resources, anchorToBottom ? R.drawable.popup_bg_bottom : R.drawable.popup_bg));
