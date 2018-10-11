@@ -340,6 +340,16 @@ static void flush_reset(struct fd_ringbuffer *ring)
 		fd_bo_del(&msm_bo->base);
 	}
 
+	for (i = 0; i < msm_ring->nr_cmds; i++) {
+		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
+
+		if (msm_cmd->ring == ring)
+			continue;
+
+		if (msm_cmd->ring->flags & FD_RINGBUFFER_OBJECT)
+			fd_ringbuffer_del(msm_cmd->ring);
+	}
+
 	msm_ring->submit.nr_cmds = 0;
 	msm_ring->submit.nr_bos = 0;
 	msm_ring->nr_cmds = 0;
@@ -426,6 +436,24 @@ handle_stateobj_relocs(struct fd_ringbuffer *parent, struct fd_ringbuffer *state
 		relocs[i].reloc_idx = bo2idx(parent, bo, flags);
 	}
 
+	/* stateobj rb's could have reloc's to other stateobj rb's which didn't
+	 * get propagated to the parent rb at _emit_reloc_ring() time (because
+	 * the parent wasn't known then), so fix that up now:
+	 */
+	for (i = 0; i < msm_ring->nr_cmds; i++) {
+		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
+		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
+
+		if (msm_ring->cmds[i]->ring == stateobj)
+			continue;
+
+		assert(msm_cmd->ring->flags & FD_RINGBUFFER_OBJECT);
+
+		if (get_cmd(parent, msm_cmd, cmd->submit_offset, cmd->size, cmd->type)) {
+			fd_ringbuffer_ref(msm_cmd->ring);
+		}
+	}
+
 	return relocs;
 }
 
@@ -456,7 +484,6 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 
 	/* for each of the cmd's fix up their reloc's: */
 	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
-		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
 		struct drm_msm_gem_submit_reloc *relocs = msm_cmd->relocs;
 		unsigned nr_relocs = msm_cmd->nr_relocs;
@@ -472,6 +499,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 					relocs, nr_relocs);
 		}
 
+		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 		cmd->relocs = VOID2U64(relocs);
 		cmd->nr_relocs = nr_relocs;
 	}
@@ -506,9 +534,6 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
 		if (msm_cmd->ring->flags & FD_RINGBUFFER_OBJECT) {
-			/* we could have dropped last reference: */
-			msm_ring->cmds[i] = NULL;
-			fd_ringbuffer_del(msm_cmd->ring);
 			free(U642VOID(cmd->relocs));
 		}
 	}
