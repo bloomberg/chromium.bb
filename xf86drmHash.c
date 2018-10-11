@@ -110,12 +110,7 @@ drm_public void *drmHashCreate(void)
     table           = drmMalloc(sizeof(*table));
     if (!table) return NULL;
     table->magic    = HASH_MAGIC;
-    table->entries  = 0;
-    table->hits     = 0;
-    table->partials = 0;
-    table->misses   = 0;
 
-    for (i = 0; i < HASH_SIZE; i++) table->buckets[i] = NULL;
     return table;
 }
 
