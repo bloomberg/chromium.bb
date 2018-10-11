@@ -32511,6 +32511,12 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="MediaStream"/>
 </enum>
 
+<enum name="MediaMetadataEvent">
+  <int value="0" label="Metadata request started"/>
+  <int value="1" label="Metadata request failed"/>
+  <int value="2" label="Metadata request completed"/>
+</enum>
+
 <enum name="MediaNotificationClickSource">
   <int value="0" label="Media"/>
   <int value="1" label="Presentation"/>
@@ -32521,6 +32527,18 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MediaParserEvent">
+  <int value="0" label="Initialize"/>
+  <int value="1" label="Unsupported mime type"/>
+  <int value="2" label="Read file error"/>
+  <int value="3" label="Utility connection error"/>
+  <int value="4" label="Gpu connection error"/>
+  <int value="5" label="Fail to parse metadata"/>
+  <int value="6" label="Fail to retrieve video thumbnail"/>
+  <int value="7" label="Failed to parse media file"/>
+  <int value="8" label="Successfully parsed media file"/>
 </enum>
 
 <enum name="MediaPlayerExitStatus">
@@ -51070,6 +51088,13 @@ Full version information for the fingerprint enum values:
   <int value="1" label="VIDEO_ROTATION_90"/>
   <int value="2" label="VIDEO_ROTATION_180"/>
   <int value="3" label="VIDEO_ROTATION_270"/>
+</enum>
+
+<enum name="VideoThumbnailEvent">
+  <int value="0" label="Video thumbnail request started"/>
+  <int value="1" label="Video frame extraction failed"/>
+  <int value="2" label="Video frame decode failed"/>
+  <int value="3" label="Video thumbnail request completed"/>
 </enum>
 
 <enum name="ViewFileType">
