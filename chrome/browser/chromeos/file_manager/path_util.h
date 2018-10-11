@@ -84,7 +84,7 @@ void ConvertToContentUrls(
     const std::vector<storage::FileSystemURL>& file_system_urls,
     ConvertToContentUrlsCallback callback);
 
-// Convert download location path into a string suitable for display.
+// Convert path into a string suitable for display in settings.
 // Replacements:
 // * /home/chronos/user/Downloads                => Downloads
 // * /home/chronos/u-<hash>/Downloads            => Downloads
@@ -93,7 +93,8 @@ void ConvertToContentUrls(
 // * /run/arc/sdcard/write/emulated/0            => Play files
 // * /media/fuse/crostini_<hash>_termina_penguin => Linux files
 // * '/' with ' \u203a ' (angled quote sign) for display purposes.
-std::string GetDownloadLocationText(Profile* profile, const std::string& path);
+std::string GetPathDisplayTextForSettings(Profile* profile,
+                                          const std::string& path);
 
 }  // namespace util
 }  // namespace file_manager

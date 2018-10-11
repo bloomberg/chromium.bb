@@ -47,22 +47,22 @@ const char kLsbRelease[] =
     "CHROMEOS_RELEASE_NAME=Chrome OS\n"
     "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
-TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
+TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   content::TestBrowserThreadBundle thread_bundle;
   content::TestServiceManagerContext service_manager_context;
 
   TestingProfile profile(base::FilePath("/home/chronos/u-0123456789abcdef"));
 
+  EXPECT_EQ("Downloads", GetPathDisplayTextForSettings(
+                             &profile, "/home/chronos/user/Downloads"));
   EXPECT_EQ("Downloads",
-            GetDownloadLocationText(&profile, "/home/chronos/user/Downloads"));
-  EXPECT_EQ("Downloads",
-            GetDownloadLocationText(
+            GetPathDisplayTextForSettings(
                 &profile, "/home/chronos/u-0123456789abcdef/Downloads"));
   EXPECT_EQ("Play files \u203a foo \u203a bar",
-            GetDownloadLocationText(
+            GetPathDisplayTextForSettings(
                 &profile, "/run/arc/sdcard/write/emulated/0/foo/bar"));
   EXPECT_EQ("Linux files \u203a foo",
-            GetDownloadLocationText(
+            GetPathDisplayTextForSettings(
                 &profile,
                 "/media/fuse/crostini_0123456789abcdef_termina_penguin/foo"));
 
@@ -71,11 +71,11 @@ TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
     features.InitAndDisableFeature(chromeos::features::kDriveFs);
     drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
     EXPECT_EQ("Google Drive \u203a foo",
-              GetDownloadLocationText(
+              GetPathDisplayTextForSettings(
                   &profile, "/special/drive-0123456789abcdef/root/foo"));
     EXPECT_EQ(
         "Team Drives \u203a A Team Drive \u203a foo",
-        GetDownloadLocationText(
+        GetPathDisplayTextForSettings(
             &profile,
             "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
   }
@@ -99,11 +99,11 @@ TEST(FileManagerPathUtilTest, GetDownloadLocationText) {
     drive::DriveIntegrationServiceFactory::GetForProfile(&profile2);
     EXPECT_EQ(
         "Google Drive \u203a foo",
-        GetDownloadLocationText(
+        GetPathDisplayTextForSettings(
             &profile2,
             "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
     EXPECT_EQ("Team Drives \u203a A Team Drive \u203a foo",
-              GetDownloadLocationText(
+              GetPathDisplayTextForSettings(
                   &profile2,
                   "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
                   "team_drives/A Team Drive/foo"));

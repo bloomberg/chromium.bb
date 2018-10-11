@@ -64,8 +64,8 @@ void CrostiniHandler::HandleGetCrostiniSharedPathsDisplayText(
 
   base::ListValue texts;
   for (auto it = paths->begin(); it != paths->end(); ++it) {
-    texts.AppendString(
-        file_manager::util::GetDownloadLocationText(profile_, it->GetString()));
+    texts.AppendString(file_manager::util::GetPathDisplayTextForSettings(
+        profile_, it->GetString()));
   }
   ResolveJavascriptCallback(base::Value(callback_id), texts);
 }
