@@ -147,6 +147,9 @@
         "load:news:cnn": {
             "DEFAULT": "system_health_mobile_006.wprgo"
         },
+        "load:news:cnn:2018": {
+            "DEFAULT": "system_health_mobile_f70e9f436d.wprgo"
+        },
         "load:news:flipboard": {
             "DEFAULT": "system_health_mobile_024.wprgo"
         },

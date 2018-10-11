@@ -177,6 +177,12 @@ class LoadCnnStory(_LoadingStory):
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2016]
 
 
+class LoadCnnStory2018(_LoadingStory):
+  NAME = 'load:news:cnn:2018'
+  URL = 'https://edition.cnn.com'
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
+
+
 class LoadFlipboardDesktopStory(_LoadingStory):
   NAME = 'load:news:flipboard'
   URL = 'https://flipboard.com/explore'
