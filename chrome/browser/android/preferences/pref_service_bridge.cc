@@ -433,7 +433,7 @@ static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingManaged(
     const JavaParamRef<jobject>& obj) {
   PrefService* pref_service = GetPrefService();
   return pref_service->IsManagedPreference(
-      safe_browsing::GetExtendedReportingPrefName(*pref_service));
+      prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingEnabled(

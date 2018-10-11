@@ -169,16 +169,11 @@ const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
-  return prefs.HasPrefPath(GetExtendedReportingPrefName(prefs));
+  return prefs.HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs) {
   return IsExtendedReportingEnabled(prefs) ? SBER_LEVEL_SCOUT : SBER_LEVEL_OFF;
-}
-
-const char* GetExtendedReportingPrefName(const PrefService& prefs) {
-  // TODO(lpz): Remove this method, use the pref directly in calling code.
-  return prefs::kSafeBrowsingScoutReportingEnabled;
 }
 
 bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
@@ -186,11 +181,11 @@ bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
 }
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(GetExtendedReportingPrefName(prefs));
+  return prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 bool IsExtendedReportingPolicyManaged(const PrefService& prefs) {
-  return prefs.IsManagedPreference(GetExtendedReportingPrefName(prefs));
+  return prefs.IsManagedPreference(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 void RecordExtendedReportingMetrics(const PrefService& prefs) {
@@ -262,12 +257,12 @@ void SetExtendedReportingPrefAndMetric(
     PrefService* prefs,
     bool value,
     ExtendedReportingOptInLocation location) {
-  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
+  prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
   RecordExtendedReportingPrefChanged(*prefs, location);
 }
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {
-  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
+  prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
 }
 
 void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
