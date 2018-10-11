@@ -208,6 +208,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
         kv.second.get(),
         PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(), PageLoad::kMainFrameResource_DNSDelayName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(), PageLoad::kMainFrameResource_ConnectDelayName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kMainFrameResource_RequestStartToSendStartName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kMainFrameResource_SendStartToReceiveHeadersEndName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kMainFrameResource_RequestStartToReceiveHeadersEndName));
   }
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics

@@ -2994,6 +2994,39 @@ be describing additional metrics about the same event.
       meaningful input with longest queuing delay per navigation. In ms.
     </summary>
   </metric>
+  <metric name="MainFrameResource.ConnectDelay">
+    <summary>
+      The duration between the start of the connection establishment to the end
+      of the connection establishment to the origin of the main frame request.
+      In ms.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.DNSDelay">
+    <summary>
+      The duration between the start of the DNS resolution to the end for the
+      origin of the main frame request. In ms.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.RequestStartToReceiveHeadersEnd">
+    <summary>
+      The duration from when the request was started to the time when its
+      response headers were received. Recorded only for the main frame request.
+      In ms.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.RequestStartToSendStart">
+    <summary>
+      The duration from when the request was started to the time when its
+      request headers were sent. Recorded only for the main frame request. In
+      ms.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.SendStartToReceiveHeadersEnd">
+    <summary>
+      The duration from when the request headers were sent to when its response
+      headers were received. Recorded only for the main frame request. In ms.
+    </summary>
+  </metric>
   <metric name="Navigation.PageEndReason">
     <summary>
       The |page_load_metrics::PageEndReason| for the main frame navigation of
