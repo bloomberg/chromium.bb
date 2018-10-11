@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
+#include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -87,37 +88,6 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
 
-// All WebAppDataRetriever operations are async, so this class posts tasks
-// when running callbacks to simulate async behavior in tests as well.
-class TestDataRetriever : public web_app::WebAppDataRetriever {
- public:
-  explicit TestDataRetriever(std::unique_ptr<WebApplicationInfo> web_app_info)
-      : web_app_info_(std::move(web_app_info)) {}
-
-  ~TestDataRetriever() override = default;
-
-  void GetWebApplicationInfo(content::WebContents* web_contents,
-                             GetWebApplicationInfoCallback callback) override {
-    DCHECK(web_contents);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::move(web_app_info_)));
-  }
-
-  void GetIcons(const GURL& app_url,
-                const std::vector<GURL>& icon_urls,
-                GetIconsCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  std::vector<WebApplicationInfo::IconInfo>()));
-  }
-
- private:
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
-};
-
 class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
  public:
   BookmarkAppInstallationTaskTest() = default;
@@ -145,8 +115,9 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
     WebApplicationInfo info;
     info.app_url = app_url;
     info.title = base::UTF8ToUTF16(kWebAppTitle);
-    task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
-        std::make_unique<WebApplicationInfo>(std::move(info))));
+    task->SetDataRetrieverForTesting(
+        std::make_unique<web_app::TestDataRetriever>(
+            std::make_unique<WebApplicationInfo>(std::move(info))));
     task->SetBookmarkAppHelperFactoryForTesting(helper_factory());
   }
 
@@ -212,7 +183,7 @@ class TestInstaller : public BookmarkAppInstaller {
 TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_Delete) {
   auto task = std::make_unique<BookmarkAppShortcutInstallationTask>(profile());
   task->SetDataRetrieverForTesting(
-      std::make_unique<TestDataRetriever>(nullptr));
+      std::make_unique<web_app::TestDataRetriever>(nullptr));
 
   base::RunLoop run_loop;
   task->InstallFromWebContents(
@@ -228,7 +199,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_Delete) {
 TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoWebAppInfo) {
   auto task = std::make_unique<BookmarkAppShortcutInstallationTask>(profile());
   task->SetDataRetrieverForTesting(
-      std::make_unique<TestDataRetriever>(nullptr));
+      std::make_unique<web_app::TestDataRetriever>(nullptr));
 
   base::RunLoop run_loop;
   task->InstallFromWebContents(
@@ -249,7 +220,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoManifest) {
   WebApplicationInfo info;
   info.app_url = GURL(kWebAppUrl);
   info.title = base::UTF8ToUTF16(kWebAppTitle);
-  task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
+  task->SetDataRetrieverForTesting(std::make_unique<web_app::TestDataRetriever>(
       std::make_unique<WebApplicationInfo>(std::move(info))));
 
   auto installer =
@@ -278,7 +249,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
   WebApplicationInfo info;
   info.app_url = GURL(kWebAppUrl);
   info.title = base::UTF8ToUTF16(kWebAppTitle);
-  task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
+  task->SetDataRetrieverForTesting(std::make_unique<web_app::TestDataRetriever>(
       std::make_unique<WebApplicationInfo>(std::move(info))));
   task->SetInstallerForTesting(
       std::make_unique<TestInstaller>(profile(), false /* succeeds */));

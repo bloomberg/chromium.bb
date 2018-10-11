@@ -42,6 +42,9 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    # TODO(loyso): Extract it into web_applications_test_support set.
+    "../test/test_data_retriever.cc",
+    "../test/test_data_retriever.h",
     "bookmark_app_installation_task_unittest.cc",
     "bookmark_app_installer_unittest.cc",
     "pending_bookmark_app_manager_unittest.cc",
