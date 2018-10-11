@@ -67,7 +67,7 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
    * @type {HTMLButtonElement}
    * @private
    */
-  this.toggleDevice_ = document.querySelector('#toggle-device');
+  this.switchDevice_ = document.querySelector('#switch-device');
 
   /**
    * @type {HTMLButtonElement}
@@ -140,8 +140,8 @@ camera.views.camera.Options = function(router, onNewStreamNeeded) {
       'click', this.onSwitchRecordVideoClicked_.bind(this));
   this.switchTakePhoto_.addEventListener(
       'click', this.onSwitchTakePhotoClicked_.bind(this));
-  this.toggleDevice_.addEventListener(
-      'click', this.onToggleDeviceClicked_.bind(this));
+  this.switchDevice_.addEventListener(
+      'click', this.onSwitchDeviceClicked_.bind(this));
   this.toggleMirror_.addEventListener(
       'click', this.onToggleMirrorClicked_.bind(this));
   this.toggleGrid_.addEventListener(
@@ -225,7 +225,7 @@ camera.views.camera.Options.prototype.updateControls = function(
   this.toggleMic_.disabled = disabled;
 
   disabled = disabled || taking;
-  this.toggleDevice_.disabled = disabled;
+  this.switchDevice_.disabled = disabled;
   this.switchRecordVideo_.disabled = disabled;
   this.switchTakePhoto_.disabled = disabled;
 };
@@ -264,13 +264,13 @@ camera.views.camera.Options.prototype.onSwitchTakePhotoClicked_ = function(
 };
 
 /**
- * Handles clicking on the toggle camera device switch.
+ * Handles clicking on the camera device switch.
  * @param {Event} event Click event.
  * @private
  */
-camera.views.camera.Options.prototype.onToggleDeviceClicked_ = function(event) {
+camera.views.camera.Options.prototype.onSwitchDeviceClicked_ = function(event) {
   this.videoDeviceIds_.then(deviceIds => {
-    camera.util.animateOnce(this.toggleDevice_);
+    camera.util.animateOnce(this.switchDevice_);
     var index = deviceIds.indexOf(this.videoDeviceId_);
     if (index == -1) {
       index = 0;
@@ -497,10 +497,10 @@ camera.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
 
   // Update UI options.
   this.videoDeviceIds_.then(deviceIds => {
-    this.toggleDevice_.hidden = deviceIds.length < 2;
+    this.switchDevice_.hidden = deviceIds.length < 2;
   }).catch(error => {
     console.error(error);
-    this.toggleDevice_.hidden = true;
+    this.switchDevice_.hidden = true;
   }).finally(() => {
     this.refreshingVideoDeviceIds_ = false;
   });

@@ -89,13 +89,9 @@
     "message": "Stop recording",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Toggle timer",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Toggle camera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Switch to next camera",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
    "message": "Switch to record video",
@@ -105,17 +101,21 @@
    "message": "Switch to take photo",
    "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Timer",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Toggle mirroring",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Mirroring",
+    "description": "Label for the checkbox to toggle the preview mirroring."
   },
   "toggleGridButton": {
-    "message": "Toggle grid",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Grid",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Toggle microphone",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Microphone",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
