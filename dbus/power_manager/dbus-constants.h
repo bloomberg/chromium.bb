@@ -17,8 +17,6 @@ const char kSetScreenBrightnessMethod[] = "SetScreenBrightness";
 const char kDecreaseScreenBrightnessMethod[] = "DecreaseScreenBrightness";
 const char kIncreaseScreenBrightnessMethod[] = "IncreaseScreenBrightness";
 const char kGetScreenBrightnessPercentMethod[] = "GetScreenBrightnessPercent";
-// TODO(derat): Delete this after callers are using SetScreenBrightness.
-const char kSetScreenBrightnessPercentMethod[] = "SetScreenBrightnessPercent";
 const char kGetKeyboardBrightnessPercentMethod[] =
     "GetKeyboardBrightnessPercent";
 const char kDecreaseKeyboardBrightnessMethod[] = "DecreaseKeyboardBrightness";
