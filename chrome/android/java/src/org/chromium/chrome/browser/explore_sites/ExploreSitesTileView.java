@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.widget.tile.TileWithTextView;
  * View for a category name and site tiles.
  */
 public class ExploreSitesTileView extends TileWithTextView {
+    private static final int TITLE_LINES = 2;
+
     private final int mIconSizePx;
 
     // Used to generate textual icons.
@@ -35,6 +37,10 @@ public class ExploreSitesTileView extends TileWithTextView {
 
     public void updateIcon(Bitmap iconImage, String text) {
         setIconDrawable(getDrawableForBitmap(iconImage, text));
+    }
+
+    public void setTitle(String titleText) {
+        setTitle(titleText, TITLE_LINES);
     }
 
     public Drawable getDrawableForBitmap(Bitmap image, String text) {

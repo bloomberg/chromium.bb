@@ -38,7 +38,6 @@ import java.util.List;
 public class ExploreSitesCategoryCardView extends LinearLayout {
     private static final String TAG = "ExploreSitesCategoryCardView";
     private static final int MAX_TILE_COUNT = 8;
-    private static final int TITLE_LINES = 1;
 
     private TextView mTitleView;
     private GridLayout mTileView;
@@ -115,7 +114,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
                 view.updateIcon(model.get(ExploreSitesSite.ICON_KEY),
                         model.get(ExploreSitesSite.TITLE_KEY));
             } else if (key == ExploreSitesSite.TITLE_KEY) {
-                view.setTitle(model.get(ExploreSitesSite.TITLE_KEY), TITLE_LINES);
+                view.setTitle(model.get(ExploreSitesSite.TITLE_KEY));
             } else if (key == ExploreSitesSite.URL_KEY) {
                 // Attach click handlers.
                 CategoryCardInteractionDelegate interactionDelegate =
