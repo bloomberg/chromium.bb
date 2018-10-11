@@ -426,11 +426,9 @@ void HTMLCanvasElement::FinalizeFrame() {
       const SkIRect damage_rect = SkIRect::MakeXYWH(
           int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
       const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
-      frame_dispatcher_->DispatchFrameSync(std::move(canvas_resource),
-                                           start_time, damage_rect,
-                                           needs_vertical_flip, IsOpaque());
-      (void)start_time;
-      (void)damage_rect;
+      frame_dispatcher_->DispatchFrame(std::move(canvas_resource), start_time,
+                                       damage_rect, needs_vertical_flip,
+                                       IsOpaque());
       dirty_rect_ = FloatRect();
     }
   }
