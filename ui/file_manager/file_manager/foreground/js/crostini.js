@@ -11,6 +11,19 @@ const Crostini = {};
 Crostini.IS_CROSTINI_FILES_ENABLED = false;
 
 /**
+ * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
+ * histogram_suffix.
+ * @private {!Array<VolumeManagerCommon.RootType>}
+ */
+Crostini.UMA_VALID_ROOT_TYPES = [
+  VolumeManagerCommon.RootType.DOWNLOADS,
+  VolumeManagerCommon.RootType.DRIVE,
+];
+
+/** @private {string} */
+Crostini.UMA_ROOT_TYPE_OTHER = 'other';
+
+/**
  * Maintains a list of paths shared with the crostini container.
  * Keyed by VolumeManagerCommon.RootType, with boolean set values
  * of string paths.  e.g. {'Downloads': {'/foo': true, '/bar': true}}.
@@ -33,6 +46,14 @@ Crostini.registerSharedPath = function(entry, volumeManager) {
     Crostini.SHARED_PATHS_[info.rootType] = paths;
   }
   paths[entry.fullPath] = true;
+
+  // Record UMA.
+  let suffix = info.rootType;
+  if (!Crostini.UMA_VALID_ROOT_TYPES.includes(info.rootType))
+    suffix = Crostini.UMA_ROOT_TYPE_OTHER;
+  metrics.recordSmallCount(
+      'CrostiniSharedPaths.Depth.' + suffix,
+      entry.fullPath.split('/').length - 1);
 };
 
 /**

@@ -167,6 +167,7 @@ crostini.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
     executeTaskCalled = true;
     oldExecuteTask(taskId, entries, callback);
   };
+  chrome.metricsPrivate.values_ = [];
 
   test.setupAndWaitUntilReady([], [], [])
       .then(() => {
@@ -225,6 +226,12 @@ crostini.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         });
       })
       .then(() => {
+        // Validate UMAs.
+        const lastEnumUma = chrome.metricsPrivate.values_.pop();
+        assertEquals(
+            'FileBrowser.CrostiniShareDialog', lastEnumUma[0].metricName);
+        assertEquals(1 /* ShareBeforeOpen */, lastEnumUma[1]);
+
         // Restore fmp.*.
         chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
         chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
@@ -288,9 +295,14 @@ crostini.testSharePathCrostiniSuccess = (done) => {
   const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
   let sharePathCalled = false;
   chrome.fileManagerPrivate.sharePathWithCrostini = (entry, callback) => {
-    sharePathCalled = true;
-    oldSharePath(entry, callback);
+    oldSharePath(entry, () => {
+      sharePathCalled = true;
+      callback();
+    });
   };
+  chrome.metricsPrivate.smallCounts_ = [];
+  chrome.metricsPrivate.values_ = [];
+
   test.setupAndWaitUntilReady()
       .then(() => {
         // Right-click 'photos' directory.
@@ -308,11 +320,22 @@ crostini.testSharePathCrostiniSuccess = (done) => {
             test.fakeMouseClick(
                 '#file-context-menu [command="#share-with-linux"]'),
             'Share with Linux');
-        return test.waitForElement('#file-context-menu[hidden]');
+        // Check sharePathWithCrostini is called.
+        return test.repeatUntil(() => {
+          return sharePathCalled || test.pending('wait for sharePathCalled');
+        });
       })
       .then(() => {
-        // Check sharePathWithCrostini is called.
-        assertTrue(sharePathCalled);
+        // Validate UMAs.
+        assertEquals(1, chrome.metricsPrivate.smallCounts_.length);
+        assertArrayEquals(
+            ['FileBrowser.CrostiniSharedPaths.Depth.downloads', 1],
+            chrome.metricsPrivate.smallCounts_[0]);
+        const lastEnumUma = chrome.metricsPrivate.values_.pop();
+        assertEquals('FileBrowser.MenuItemSelected', lastEnumUma[0].metricName);
+        assertEquals(12 /* Share with Linux */, lastEnumUma[1]);
+
+        // Restore fmp.*.
         chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
         done();
       });

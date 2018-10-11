@@ -394,6 +394,7 @@ CommandHandler.MenuCommandsForUMA = {
   SHOW_GOOGLE_DOCS_FILES_ON: 'drive-hosted-settings-enabled',
   HIDDEN_ANDROID_FOLDERS_SHOW: 'toggle-hidden-android-folders-on',
   HIDDEN_ANDROID_FOLDERS_HIDE: 'toggle-hidden-android-folders-off',
+  SHARE_WITH_LINUX: 'share-with-linux',
 };
 
 /**
@@ -418,6 +419,7 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE,
+  CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -1653,6 +1655,8 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
               Crostini.registerSharedPath(dir, fileManager.volumeManager);
             }
           });
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX);
     }
   },
   /**

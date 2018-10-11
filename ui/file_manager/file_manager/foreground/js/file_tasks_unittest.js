@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 window.metrics = {
-  recordEnum: function() {}
+  recordEnum: function() {},
+  recordSmallCount: function() {},
 };
 
 var mockTaskHistory = {

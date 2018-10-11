@@ -377,6 +377,39 @@ FileTasks.recordZipHandlerUMA_ = function(taskId) {
 };
 
 /**
+ * Crostini Share Dialog types.
+ * Keep in sync with enums.xml FileManagerCrostiniShareDialogType.
+ * @enum {string}
+ */
+FileTasks.CrostiniShareDialogType = {
+  None: 'None',
+  ShareBeforeOpen: 'ShareBeforeOpen',
+  UnableToOpen: 'UnableToOpen',
+};
+
+/**
+ * The indexes of these types must match with the values of
+ * FileManagerCrostiniShareDialogType in enums.xml, and should not change.
+ */
+FileTasks.UMA_CROSTINI_SHARE_DIALOG_TYPES_ = Object.freeze([
+  FileTasks.CrostiniShareDialogType.None,
+  FileTasks.CrostiniShareDialogType.ShareBeforeOpen,
+  FileTasks.CrostiniShareDialogType.UnableToOpen,
+]);
+
+
+/**
+ * Records the type of dialog shown when using a crostini app to open a file.
+ * @param {!FileTasks.CrostiniShareDialogType} dialogType
+ * @private
+ */
+FileTasks.recordCrostiniShareDialogTypeUMA_ = function(dialogType) {
+  metrics.recordEnum(
+      'CrostiniShareDialog', dialogType,
+      FileTasks.UMA_CROSTINI_SHARE_DIALOG_TYPES_);
+};
+
+/**
  * Returns true if the taskId is for an internal task.
  *
  * @param {string} taskId Task identifier.
@@ -556,6 +589,8 @@ FileTasks.prototype.maybeShowCrostiniShareDialog_ = function(task) {
     this.ui_.alertDialog.showHtml(
         strf('UNABLE_TO_OPEN_CROSTINI_TITLE', task.title),
         strf('UNABLE_TO_OPEN_CROSTINI', task.title));
+    FileTasks.recordCrostiniShareDialogTypeUMA_(
+        FileTasks.CrostiniShareDialogType.UnableToOpen);
     return true;
   }
 
@@ -571,10 +606,14 @@ FileTasks.prototype.maybeShowCrostiniShareDialog_ = function(task) {
                 'SHARE_BEFORE_OPEN_CROSTINI_SINGLE',
                 `<b>${firstEntryNotShared.name}</b>`),
         this.sharePathWithCrostiniAndExecute_.bind(this, task), () => {});
+    FileTasks.recordCrostiniShareDialogTypeUMA_(
+        FileTasks.CrostiniShareDialogType.ShareBeforeOpen);
     return true;
   }
 
   // No dialogs.
+  FileTasks.recordCrostiniShareDialogTypeUMA_(
+      FileTasks.CrostiniShareDialogType.None);
   return false;
 };
 
@@ -592,11 +631,7 @@ FileTasks.prototype.sharePathWithCrostiniAndExecute_ = function(task) {
                 'Error sharing with linux to execute: ' +
                 chrome.runtime.lastError.message);
           } else {
-            // Register path as shared, and execute. This will be the 2nd
-            // time we have gone through executeInternal_().  The first time,
-            // we showed the share dialog, and did not execute, now we
-            // should detect that paths are already shared, and it is OK to
-            // execute.
+            // Register path as shared, and now we are ready to execute.
             Crostini.registerSharedPath(dir, this.volumeManager_);
             this.executeInternal_(task);
           }
@@ -633,6 +668,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   var callback = opt_callback || function(arg1, arg2) {};
 
   if (this.defaultTask_ !== null) {
+    if (this.maybeShowCrostiniShareDialog_(this.defaultTask_))
+      return;
     this.executeInternal_(this.defaultTask_);
     callback(true, this.entries_);
     return;
@@ -754,6 +791,8 @@ FileTasks.prototype.execute = function(task) {
   FileTasks.recordViewingFileTypeUMA_(this.entries_);
   FileTasks.recordViewingRootTypeUMA_(
       this.directoryModel_.getCurrentRootType());
+  if (this.maybeShowCrostiniShareDialog_(task))
+    return;
   this.executeInternal_(task);
 };
 
@@ -768,8 +807,6 @@ FileTasks.prototype.executeInternal_ = function(task) {
     this.taskHistory_.recordTaskExecuted(task.taskId);
     if (FileTasks.isInternalTask_(task.taskId)) {
       this.executeInternalTask_(task.taskId);
-    } else if (this.maybeShowCrostiniShareDialog_(task)) {
-      // Nothing to do, dialog will be shown.
     } else {
       FileTasks.recordZipHandlerUMA_(task.taskId);
       chrome.fileManagerPrivate.executeTask(
