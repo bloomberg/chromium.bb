@@ -163,6 +163,11 @@ const char kNewClearBrowsingDataUIDescription[] =
 const char kExternalSearchName[] = "External Search";
 const char kExternalSearchDescription[] = "Enable support for External Search.";
 
+const char kFCMInvalidationsName[] =
+    "Enable invalidations delivery via new FCM based protocol";
+const char kFCMInvalidationsDescription[] =
+    "Use the new FCM-based protocol for deliveling invalidations";
+
 const char kFullscreenViewportAdjustmentExperimentName[] =
     "Fullscreen Viewport Adjustment Mode";
 const char kFullscreenViewportAdjustmentExperimentDescription[] =

@@ -87,6 +87,7 @@ source_set("browser") {
     "//components/flags_ui",
     "//components/flags_ui:switches",
     "//components/handoff",
+    "//components/invalidation/impl:impl",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/metrics",

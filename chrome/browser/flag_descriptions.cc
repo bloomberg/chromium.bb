@@ -217,6 +217,11 @@ const char kCloudPrinterHandlerDescription[] =
     "print server, instead of the cloud print interface in the Print "
     "Preview WebUI.";
 
+const char kFCMInvalidationsName[] =
+    "Enable invalidations delivery via new FCM based protocol";
+const char kFCMInvalidationsDescription[] =
+    "Use the new FCM-based protocol for deliveling invalidations";
+
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
