@@ -1601,10 +1601,12 @@ class Port(object):
                 for json_config in test_suite_json:
                     vts = VirtualTestSuite(**json_config)
                     if vts in self._virtual_test_suites:
-                        raise ValueError('LayoutTests/VirtualTestSuites contains duplicate definition: %r' % json_config)
+                        raise ValueError('{} contains duplicate definition: {!r}'.format(
+                            path_to_virtual_test_suites, json_config))
                     self._virtual_test_suites.append(vts)
             except ValueError as error:
-                raise ValueError('LayoutTests/VirtualTestSuites is not a valid JSON file: %s' % error)
+                raise ValueError('{} is not a valid JSON file: {}'.format(
+                    path_to_virtual_test_suites, error))
         return self._virtual_test_suites
 
     def _all_virtual_tests(self, suites):
