@@ -38,7 +38,7 @@ class HostDeviceTimestampManagerImplTest : public testing::Test {
     test_clock_ = std::make_unique<base::SimpleTestClock>();
     SetNow(kTestTime);
 
-    recorder_ = HostDeviceTimestampManagerImpl::Factory::Get()->BuildInstance(
+    manager_ = HostDeviceTimestampManagerImpl::Factory::Get()->BuildInstance(
         fake_host_status_provider_.get(), test_pref_service_.get(),
         test_clock_.get());
   }
@@ -61,7 +61,7 @@ class HostDeviceTimestampManagerImplTest : public testing::Test {
 
   void SetNow(const base::Time now) { test_clock_->SetNow(now); }
 
-  HostDeviceTimestampManager* recorder() { return recorder_.get(); }
+  HostDeviceTimestampManager* manager() { return manager_.get(); }
 
  private:
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
@@ -69,36 +69,60 @@ class HostDeviceTimestampManagerImplTest : public testing::Test {
   std::unique_ptr<FakeHostStatusProvider> fake_host_status_provider_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
 
-  std::unique_ptr<HostDeviceTimestampManager> recorder_;
+  std::unique_ptr<HostDeviceTimestampManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDeviceTimestampManagerImplTest);
 };
 
-TEST_F(HostDeviceTimestampManagerImplTest, RecordsCorrectCompletionTime) {
-  EXPECT_FALSE(recorder()->GetLatestSetupFlowCompletionTimestamp());
+TEST_F(HostDeviceTimestampManagerImplTest,
+       RecordsWhetherHostWasSetFromThisChromebook) {
+  EXPECT_FALSE(manager()->WasHostSetFromThisChromebook());
+  // Discover potential host.
+  SetHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet);
+
+  // Set up host.
   SetHostStatus(
       mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation);
-  EXPECT_EQ(kTestTime, recorder()->GetLatestSetupFlowCompletionTimestamp());
+  EXPECT_TRUE(manager()->WasHostSetFromThisChromebook());
+
+  // Verify host.
+  SetHostStatus(mojom::HostStatus::kHostVerified);
+  EXPECT_TRUE(manager()->WasHostSetFromThisChromebook());
+
+  // Forget the host.
+  SetHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet);
+  EXPECT_FALSE(manager()->WasHostSetFromThisChromebook());
+
+  // Set verified host from a different Chromebook
+  SetHostStatus(mojom::HostStatus::kHostVerified);
+  EXPECT_FALSE(manager()->WasHostSetFromThisChromebook());
+}
+
+TEST_F(HostDeviceTimestampManagerImplTest, RecordsCorrectCompletionTime) {
+  EXPECT_FALSE(manager()->GetLatestSetupFlowCompletionTimestamp());
+  SetHostStatus(
+      mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation);
+  EXPECT_EQ(kTestTime, manager()->GetLatestSetupFlowCompletionTimestamp());
   // Forget the host.
   SetHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet);
   // Set up later and check that the new time replaces the old.
   SetNow(kLaterTime);
   SetHostStatus(
       mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation);
-  EXPECT_EQ(kLaterTime, recorder()->GetLatestSetupFlowCompletionTimestamp());
+  EXPECT_EQ(kLaterTime, manager()->GetLatestSetupFlowCompletionTimestamp());
 }
 
 TEST_F(HostDeviceTimestampManagerImplTest, RecordsCorrectVerificationTime) {
-  EXPECT_FALSE(recorder()->GetLatestVerificationTimestamp());
+  EXPECT_FALSE(manager()->GetLatestVerificationTimestamp());
   // Update with verified host.
   SetHostStatus(mojom::HostStatus::kHostVerified);
-  EXPECT_EQ(kTestTime, recorder()->GetLatestVerificationTimestamp());
+  EXPECT_EQ(kTestTime, manager()->GetLatestVerificationTimestamp());
   // Forget the host.
   SetHostStatus(mojom::HostStatus::kEligibleHostExistsButNoHostSet);
   // Set up later and check that the new time replaces the old.
   SetNow(kLaterTime);
   SetHostStatus(mojom::HostStatus::kHostVerified);
-  EXPECT_EQ(kLaterTime, recorder()->GetLatestVerificationTimestamp());
+  EXPECT_EQ(kLaterTime, manager()->GetLatestVerificationTimestamp());
 }
 
 TEST_F(HostDeviceTimestampManagerImplTest,
@@ -107,8 +131,8 @@ TEST_F(HostDeviceTimestampManagerImplTest,
       mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation);
   SetNow(kLaterTime);
   SetHostStatus(mojom::HostStatus::kHostVerified);
-  EXPECT_EQ(kTestTime, recorder()->GetLatestSetupFlowCompletionTimestamp());
-  EXPECT_EQ(kLaterTime, recorder()->GetLatestVerificationTimestamp());
+  EXPECT_EQ(kTestTime, manager()->GetLatestSetupFlowCompletionTimestamp());
+  EXPECT_EQ(kLaterTime, manager()->GetLatestVerificationTimestamp());
 }
 }  // namespace multidevice_setup
 

@@ -232,10 +232,12 @@ void AccountStatusChangeDelegateNotifierImpl::
       !verified_host_device_id_before_update) {
     return;
   }
+
   // If the host stayed the same, there was no switch.
   if (*verified_host_device_id_from_most_recent_update_ ==
-      *verified_host_device_id_before_update)
+      *verified_host_device_id_before_update) {
     return;
+  }
 
   delegate()->OnConnectedHostSwitchedForExistingUser(
       host_status_with_device.host_device()->name());
@@ -252,7 +254,12 @@ void AccountStatusChangeDelegateNotifierImpl::
   // update, i.e. there was no verified host before the host status update but
   // afterward there was a verified host.
   if (!verified_host_device_id_from_most_recent_update_ ||
-      verified_host_device_id_before_update)
+      verified_host_device_id_before_update) {
+    return;
+  }
+
+  // This event is specific to setup taking place on a different Chromebook.
+  if (host_device_timestamp_manager_->WasHostSetFromThisChromebook())
     return;
 
   delegate()->OnNewChromebookAddedForExistingUser(
