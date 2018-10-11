@@ -311,7 +311,8 @@ public class FeedNewTabPage extends NewTabPage {
         Runnable consumptionObserver =
                 () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed();
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
-                consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile));
+                consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile),
+                mLoggingBridge);
 
         FeedStreamScope streamScope =
                 feedProcessScope

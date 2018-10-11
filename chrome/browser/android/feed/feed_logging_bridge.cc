@@ -95,4 +95,14 @@ void FeedLoggingBridge::OnOpenedWithNoContent(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this) {}
 
+void FeedLoggingBridge::OnContentTargetVisited(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jlong visit_time) {}
+
+void FeedLoggingBridge::OnOfflinePageVisited(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jlong visit_time) {}
+
 }  // namespace feed
