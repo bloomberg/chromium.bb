@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -23,8 +22,11 @@ import android.widget.TextView;
 
 import org.chromium.base.Promise;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.profiles.Profile;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -36,13 +38,16 @@ import java.util.Locale;
 
 /** Delegate to interact with the assistant UI. */
 class AutofillAssistantUiDelegate {
+    private static final String FEEDBACK_CATEGORY_TAG =
+            "com.android.chrome.USER_INITIATED_FEEDBACK_REPORT_AUTOFILL_ASSISTANT";
+
     // TODO(crbug.com/806868): Use correct user locale.
     private static final SimpleDateFormat sDetailsTimeFormat =
             new SimpleDateFormat("H:mma", Locale.getDefault());
     private static final SimpleDateFormat sDetailsDateFormat =
             new SimpleDateFormat("EEE, MMM d", Locale.getDefault());
 
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
     private final Client mClient;
     private final View mFullContainer;
     private final View mOverlay;
@@ -160,10 +165,10 @@ class AutofillAssistantUiDelegate {
     /**
      * Constructs an assistant UI delegate.
      *
-     * @param activity The Activity
+     * @param activity The ChromeActivity
      * @param client The client to forward events to
      */
-    public AutofillAssistantUiDelegate(Activity activity, Client client) {
+    public AutofillAssistantUiDelegate(ChromeActivity activity, Client client) {
         mActivity = activity;
         mClient = client;
 
@@ -178,9 +183,9 @@ class AutofillAssistantUiDelegate {
         mBottomBar.findViewById(R.id.close_button).setOnClickListener(unusedView -> shutdown());
         mBottomBar.findViewById(R.id.feedback_button)
                 .setOnClickListener(unusedView
-                        -> {
-                                // TODO(crbug.com/806868): Send feedback.
-                        });
+                        -> HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity,
+                                Profile.getLastUsedProfile(), mActivity.getActivityTab().getUrl(),
+                                FEEDBACK_CATEGORY_TAG));
         mChipsViewContainer = mBottomBar.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
 
