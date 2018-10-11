@@ -146,11 +146,6 @@ void BrowserAppMenuButton::Layout() {
     image()->SetBoundsRect(GetContentsBounds());
   }
 
-  const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
-  set_ink_drop_corner_radii(radii, radii);
-
   AppMenuButton::Layout();
 }
 
@@ -291,7 +286,7 @@ void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
   SetProperty(
       views::kHighlightPathKey,
-      CreateToolbarFocusRingPath(this, gfx::Insets(0, 0, 0, margin_trailing_))
+      CreateToolbarHighlightPath(this, gfx::Insets(0, 0, 0, margin_trailing_))
           .release());
   AppMenuButton::OnBoundsChanged(previous_bounds);
 }
@@ -299,7 +294,7 @@ void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
   gfx::Insets insets =
-      GetInkDropInsets(this, gfx::Insets(0, 0, 0, margin_trailing_));
+      GetToolbarInkDropInsets(this, gfx::Insets(0, 0, 0, margin_trailing_));
   // If the button is extended, don't inset the trailing edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).
