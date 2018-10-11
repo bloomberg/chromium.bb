@@ -168,6 +168,23 @@ void JNI_ExploreSitesBridge_UpdateCatalogFromNetwork(
                      ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
+void JNI_ExploreSitesBridge_BlacklistSite(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_url) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  std::string url = ConvertJavaStringToUTF8(env, j_url);
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    return;
+  }
+
+  service->BlacklistSite(url);
+}
+
 // static
 void ExploreSitesBridge::ScheduleDailyTask() {
   JNIEnv* env = base::android::AttachCurrentThread();

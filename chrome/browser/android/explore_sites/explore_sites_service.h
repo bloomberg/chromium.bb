@@ -39,6 +39,9 @@ class ExploreSitesService : public KeyedService {
   virtual void UpdateCatalogFromNetwork(bool is_immediate_fetch,
                                         const std::string& accept_languages,
                                         BooleanCallback callback) = 0;
+
+  // Add the url to the blacklist.
+  virtual void BlacklistSite(const std::string& url) = 0;
 };
 
 }  // namespace explore_sites

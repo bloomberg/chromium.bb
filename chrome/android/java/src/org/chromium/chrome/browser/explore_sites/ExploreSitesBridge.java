@@ -52,6 +52,12 @@ public class ExploreSitesBridge {
             Profile profile, boolean isImmediateFetch, Callback<Boolean> finishedCallback) {
         nativeUpdateCatalogFromNetwork(profile, isImmediateFetch, finishedCallback);
     }
+    /**
+     * Adds a site to the blacklist when the user chooses "remove" from the long press menu.
+     */
+    public static void blacklistSite(Profile profile, String url) {
+        nativeBlacklistSite(profile, url);
+    }
 
     /**
      * Gets the current Finch variation that is configured by flag or experiment.
@@ -93,4 +99,6 @@ public class ExploreSitesBridge {
 
     private static native void nativeGetCategoryImage(
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback);
+
+    private static native void nativeBlacklistSite(Profile profile, String url);
 }

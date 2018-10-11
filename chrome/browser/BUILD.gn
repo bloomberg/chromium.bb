@@ -2145,6 +2145,8 @@ jumbo_split_static_library("browser") {
       "android/download/service/download_background_task.cc",
       "android/download/service/download_task_scheduler.cc",
       "android/download/service/download_task_scheduler.h",
+      "android/explore_sites/blacklist_site_task.cc",
+      "android/explore_sites/blacklist_site_task.h",
       "android/explore_sites/catalog.cc",
       "android/explore_sites/catalog.h",
       "android/explore_sites/explore_sites_bridge.cc",
