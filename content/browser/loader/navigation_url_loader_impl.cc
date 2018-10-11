@@ -29,6 +29,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
@@ -417,6 +418,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       storage::FileSystemContext* upload_file_system_context,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
       bool was_request_intercepted) const {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -439,7 +442,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                 ? nullptr
                 : service_worker_navigation_handle_core),
         base::Unretained(was_request_intercepted ? nullptr
-                                                 : appcache_handle_core));
+                                                 : appcache_handle_core),
+        std::move(signed_exchange_prefetch_metric_recorder));
   }
 
   void CreateNonNetworkServiceURLLoader(
@@ -448,6 +452,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationRequestInfo> request_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
       const network::ResourceRequest& /* resource_request */,
       network::mojom::URLLoaderRequest url_loader,
       network::mojom::URLLoaderClientPtr url_loader_client) {
@@ -482,7 +488,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               resource_context_, url_request_context_getter),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this))));
+              base::Unretained(this)),
+          std::move(signed_exchange_prefetch_metric_recorder)));
     }
 
     uint32_t options = GetURLLoaderOptions(request_info->is_main_frame);
@@ -520,6 +527,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       storage::FileSystemContext* upload_file_system_context,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -544,7 +553,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Unretained(this), base::Unretained(url_request_context_getter),
         base::Unretained(upload_file_system_context),
         base::Unretained(service_worker_navigation_handle_core),
-        base::Unretained(appcache_handle_core));
+        base::Unretained(appcache_handle_core),
+        base::RetainedRef(signed_exchange_prefetch_metric_recorder));
 
     // Requests to Blob scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
@@ -608,6 +618,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           network_loader_factory_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
@@ -696,7 +708,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           request_info->begin_params->load_flags, network_loader_factory_,
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this))));
+              base::Unretained(this)),
+          signed_exchange_prefetch_metric_recorder));
     }
 
     std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
@@ -1545,6 +1558,12 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       request_info.get(), frame_tree_node_id, allow_download_);
   new_request->transition_type = request_info->common_params.transition;
 
+  auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
+  scoped_refptr<SignedExchangePrefetchMetricRecorder>
+      signed_exchange_prefetch_metric_recorder =
+          partition->GetPrefetchURLLoaderService()
+              ->signed_exchange_prefetch_metric_recorder();
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);
     request_controller_ = std::make_unique<URLLoaderRequestController>(
@@ -1564,8 +1583,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
             base::RetainedRef(storage_partition->GetURLRequestContext()),
             base::Unretained(storage_partition->GetFileSystemContext()),
             base::Unretained(service_worker_navigation_handle_core),
-            base::Unretained(appcache_handle_core), std::move(request_info),
-            std::move(navigation_ui_data)));
+            base::Unretained(appcache_handle_core),
+            base::RetainedRef(signed_exchange_prefetch_metric_recorder),
+            std::move(request_info), std::move(navigation_ui_data)));
     return;
   }
 
@@ -1584,7 +1604,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
   network::mojom::URLLoaderFactoryRequest proxied_factory_request;
   bool bypass_redirect_checks = false;
-  auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   if (frame_tree_node) {
     // |frame_tree_node| may be null in some unit test environments.
     GetContentClient()
@@ -1657,6 +1676,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           base::Unretained(request_controller_.get()),
           partition->url_loader_factory_getter()->GetNetworkFactoryInfo(),
           service_worker_navigation_handle_core, appcache_handle_core,
+          std::move(signed_exchange_prefetch_metric_recorder),
           std::move(request_info), std::move(navigation_ui_data),
           std::move(factory_for_webui), frame_tree_node_id,
           ServiceManagerConnection::GetForProcess()->GetConnector()->Clone()));

@@ -15,9 +15,11 @@
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
+#include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
@@ -105,7 +107,8 @@ SignedExchangeLoader::SignedExchangeLoader(
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
     : outer_request_url_(outer_request_url),
       outer_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(outer_response)),
@@ -121,6 +124,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
+      metric_recorder_(std::move(metric_recorder)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_url_.is_valid());
@@ -278,6 +282,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+
+  if (load_flags_ & net::LOAD_PREFETCH) {
+    metric_recorder_->OnSignedExchangePrefetchFinished(request_url, error);
+  }
 
   if (error) {
     if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||

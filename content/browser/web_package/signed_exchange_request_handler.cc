@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
+#include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
@@ -38,7 +39,8 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     bool report_raw_headers,
     int load_flags,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    URLLoaderThrottlesGetter url_loader_throttles_getter)
+    URLLoaderThrottlesGetter url_loader_throttles_getter,
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
     : request_initiator_(std::move(request_initiator)),
       url_(url),
       url_loader_options_(url_loader_options),
@@ -49,6 +51,7 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
       load_flags_(load_flags),
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
+      metric_recorder_(std::move(metric_recorder)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
@@ -104,7 +107,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
           devtools_navigation_token_, report_raw_headers_),
       url_loader_factory_, url_loader_throttles_getter_,
-      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_));
+      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
+      metric_recorder_);
   return true;
 }
 

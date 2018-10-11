@@ -31,6 +31,7 @@ namespace content {
 class SignedExchangeDevToolsProxy;
 class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
+class SignedExchangePrefetchMetricRecorder;
 class URLLoaderThrottle;
 class SourceStreamToDataPipe;
 
@@ -60,7 +61,8 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
   ~SignedExchangeLoader() override;
 
   bool HasRedirectedToFallbackURL() const {
@@ -154,6 +156,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
 
   base::Optional<net::SSLInfo> ssl_info_;
 

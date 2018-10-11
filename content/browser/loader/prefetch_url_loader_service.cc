@@ -36,7 +36,9 @@ struct PrefetchURLLoaderService::BindContext {
   scoped_refptr<network::SharedURLLoaderFactory> factory;
 };
 
-PrefetchURLLoaderService::PrefetchURLLoaderService() = default;
+PrefetchURLLoaderService::PrefetchURLLoaderService()
+    : signed_exchange_prefetch_metric_recorder_(
+          base::MakeRefCounted<SignedExchangePrefetchMetricRecorder>()) {}
 
 void PrefetchURLLoaderService::InitializeResourceContext(
     ResourceContext* resource_context,
@@ -89,7 +91,8 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id_getter),
-          resource_context_, request_context_getter_),
+          resource_context_, request_context_getter_,
+          signed_exchange_prefetch_metric_recorder_),
       std::move(request));
 }
 

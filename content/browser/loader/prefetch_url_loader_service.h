@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory_bundle.h"
 #include "content/public/browser/browser_thread.h"
@@ -70,6 +71,11 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
     prefetch_load_callback_for_testing_ = prefetch_load_callback;
   }
 
+  scoped_refptr<SignedExchangePrefetchMetricRecorder>
+  signed_exchange_prefetch_metric_recorder() {
+    return signed_exchange_prefetch_metric_recorder_;
+  }
+
  private:
   friend class base::DeleteHelper<content::PrefetchURLLoaderService>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
@@ -103,6 +109,9 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       loader_factory_bindings_;
 
   base::RepeatingClosure prefetch_load_callback_for_testing_;
+
+  scoped_refptr<SignedExchangePrefetchMetricRecorder>
+      signed_exchange_prefetch_metric_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoaderService);
 };
