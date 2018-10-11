@@ -262,6 +262,23 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
   NotifyOnNewDevicesSynced();
 }
 
+void DeviceSyncImpl::Shutdown() {
+  software_feature_manager_.reset();
+  remote_device_provider_.reset();
+  cryptauth_device_manager_.reset();
+  cryptauth_enrollment_manager_.reset();
+  cryptauth_client_factory_.reset();
+  cryptauth_gcm_manager_.reset();
+  pref_connection_delegate_.reset();
+
+  identity_manager_ = nullptr;
+  gcm_driver_ = nullptr;
+  connector_ = nullptr;
+  gcm_device_info_provider_ = nullptr;
+  url_loader_factory_ = nullptr;
+  clock_ = nullptr;
+}
+
 void DeviceSyncImpl::ProcessPrimaryAccountInfo(
     const AccountInfo& primary_account_info) {
   // Note: We cannot use |primary_account_info.IsValid()| here because
