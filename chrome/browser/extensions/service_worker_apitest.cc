@@ -474,7 +474,11 @@ class ServiceWorkerBackgroundSyncTest : public ServiceWorkerTest {
 class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
  public:
   ServiceWorkerPushMessagingTest()
-      : gcm_driver_(nullptr), push_service_(nullptr) {}
+      : scoped_testing_factory_installer_(
+            base::BindRepeating(&gcm::FakeGCMProfileService::Build)),
+        gcm_driver_(nullptr),
+        push_service_(nullptr) {}
+
   ~ServiceWorkerPushMessagingTest() override {}
 
   void GrantNotificationPermissionForTest(const GURL& url) {
@@ -500,12 +504,6 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
     ServiceWorkerTest::SetUpCommandLine(command_line);
   }
 
-  void SetUp() override {
-    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-        base::BindRepeating(&gcm::FakeGCMProfileService::Build));
-    ServiceWorkerTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(
         profile(),
@@ -521,18 +519,15 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
     ServiceWorkerTest::SetUpOnMainThread();
   }
 
-  void TearDown() override {
-    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-        BrowserContextKeyedServiceFactory::TestingFactory());
-    ServiceWorkerTest::TearDown();
-  }
-
   instance_id::FakeGCMDriverForInstanceID* gcm_driver() const {
     return gcm_driver_;
   }
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
  private:
+  gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
+      scoped_testing_factory_installer_;
+
   instance_id::FakeGCMDriverForInstanceID* gcm_driver_;
   PushMessagingServiceImpl* push_service_;
 

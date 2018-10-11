@@ -76,6 +76,17 @@ BrowserContextKeyedServiceFactory::TestingFactory& GetTestingFactory() {
 
 }  // namespace
 
+GCMProfileServiceFactory::ScopedTestingFactoryInstaller::
+    ScopedTestingFactoryInstaller(TestingFactory testing_factory) {
+  DCHECK(!GetTestingFactory());
+  GetTestingFactory() = std::move(testing_factory);
+}
+
+GCMProfileServiceFactory::ScopedTestingFactoryInstaller::
+    ~ScopedTestingFactoryInstaller() {
+  GetTestingFactory() = BrowserContextKeyedServiceFactory::TestingFactory();
+}
+
 // static
 GCMProfileService* GCMProfileServiceFactory::GetForProfile(
     content::BrowserContext* profile) {
@@ -90,12 +101,6 @@ GCMProfileService* GCMProfileServiceFactory::GetForProfile(
 // static
 GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
   return base::Singleton<GCMProfileServiceFactory>::get();
-}
-
-// static
-void GCMProfileServiceFactory::SetGlobalTestingFactory(
-    BrowserContextKeyedServiceFactory::TestingFactory factory) {
-  GetTestingFactory() = std::move(factory);
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()
