@@ -29393,6 +29393,7 @@ from previous Chrome versions.
   <int value="-856915246" label="enable-new-audio-rendering-mixing-strategy"/>
   <int value="-856016114" label="NTPOfflinePages:disabled"/>
   <int value="-855130893" label="enable-touch-calibration-setting"/>
+  <int value="-854716639" label="TranslateAndroidManualTrigger:enabled"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
   <int value="-847651283" label="new-password-form-parsing:disabled"/>
@@ -29836,6 +29837,7 @@ from previous Chrome versions.
       label="AutofillSaveCardDialogUnlabeledExpirationDate:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
   <int value="37045987" label="AutofillPreviewStyleExperiment:disabled"/>
+  <int value="42098736" label="TranslateAndroidManualTrigger:disabled"/>
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>

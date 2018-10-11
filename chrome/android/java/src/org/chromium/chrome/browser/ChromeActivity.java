@@ -136,6 +136,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -2153,6 +2154,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
             RecordUserAction.record("MobileMenuHistory");
             HistoryManagerUtils.showHistoryManager(this, currentTab);
+        } else if (id == R.id.translate_id) {
+            TranslateBridge.translateTab(getActivityTab());
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,
                     getCurrentTabModel().isIncognito());

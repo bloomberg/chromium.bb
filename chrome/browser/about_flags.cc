@@ -4439,6 +4439,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"android-site-settings-ui", flag_descriptions::kAndroidSiteSettingsUIName,
      flag_descriptions::kAndroidSiteSettingsUIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidSiteSettingsUI)},
+    {"translate-android-manual-trigger",
+     flag_descriptions::kTranslateAndroidManualTriggerName,
+     flag_descriptions::kTranslateAndroidManualTriggerDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(translate::kTranslateAndroidManualTrigger)},
 #endif
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, kOsAll,

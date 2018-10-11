@@ -176,6 +176,13 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.find_in_page_id).setVisible(
                     !currentTab.isNativePage() && currentTab.getWebContents() != null);
 
+            menu.findItem(R.id.translate_id)
+                    .setVisible(!isChromeScheme && !isFileScheme && !isContentScheme
+                            && !TextUtils.isEmpty(url) && currentTab.getWebContents() != null
+                            && ChromeFeatureList.isInitialized()
+                            && ChromeFeatureList.isEnabled(
+                                       ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER));
+
             // Hide 'Add to homescreen' for the following:
             // * chrome:// pages - Android doesn't know how to direct those URLs.
             // * incognito pages - To avoid problems where users create shortcuts in incognito
