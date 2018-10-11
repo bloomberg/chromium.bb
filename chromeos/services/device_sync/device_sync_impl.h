@@ -141,6 +141,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
       base::Clock* clock,
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
+  // DeviceSyncBase:
+  void Shutdown() override;
+
   void ProcessPrimaryAccountInfo(const AccountInfo& primary_account_info);
   void ConnectToPrefStore();
   void OnConnectedToPrefService(std::unique_ptr<PrefService> pref_service);

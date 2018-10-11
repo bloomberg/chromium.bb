@@ -31,10 +31,16 @@ class DeviceSyncBase : public mojom::DeviceSync {
  protected:
   DeviceSyncBase();
 
+  // Derived types should override this function to remove references to any
+  // dependencies.
+  virtual void Shutdown() {}
+
   void NotifyOnEnrollmentFinished();
   void NotifyOnNewDevicesSynced();
 
  private:
+  void OnDisconnection();
+
   mojo::InterfacePtrSet<mojom::DeviceSyncObserver> observers_;
   mojo::BindingSet<mojom::DeviceSync> bindings_;
 
