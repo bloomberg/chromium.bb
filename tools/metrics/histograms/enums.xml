@@ -29032,6 +29032,8 @@ from previous Chrome versions.
   <int value="-1426150007" label="ignore-previews-blacklist"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
   <int value="-1423348289" label="NupPrinting:disabled"/>
+  <int value="-1423193305"
+      label="AutofillRationalizeRepeatedServerPredictions:enabled"/>
   <int value="-1420542268" label="AutofillEnableAccountWalletStorage:disabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1417122729"
@@ -29301,6 +29303,8 @@ from previous Chrome versions.
   <int value="-933377608"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
+  <int value="-929944930"
+      label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
   <int value="-920204598" label="ScrollAnchorSerialization:enabled"/>

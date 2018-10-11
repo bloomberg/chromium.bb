@@ -147,7 +147,7 @@ const base::Feature kAutofillRationalizeFieldTypePredictions{
 // Controls whether Autofill should rationalize repeated server type
 // predictions.
 const base::Feature kAutofillRationalizeRepeatedServerPredictions{
-    "kAutofillRationalizeRepeatedServerPredictions",
+    "AutofillRationalizeRepeatedServerPredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether Full Server credit cards should be reset when the sync
@@ -204,7 +204,7 @@ const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
 // "upload" resources.
 // i.e., https://other.autofill.server:port/tbproxy/af/
 const base::Feature kAutofillServerCommunication{
-    "kAutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether autofill suggestions are filtered by field values previously
 // filled by website.
