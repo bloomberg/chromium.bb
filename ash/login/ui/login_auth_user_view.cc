@@ -73,8 +73,6 @@ constexpr SkColor kOnlineSignInMessageColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
 constexpr SkColor kDisabledAuthMessageBubbleColor =
     SkColorSetRGB(0x20, 0x21, 0x24);
 
-constexpr SkColor kFingerprintTextColor =
-    SkColorSetARGB(0x8A, 0xFF, 0xFF, 0xFF);
 constexpr int kFingerprintIconSizeDp = 32;
 constexpr int kResetToDefaultIconDelayMs = 1300;
 constexpr int kFingerprintIconTopSpacingDp = 20;
@@ -179,7 +177,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE));
     label_->SetSubpixelRenderingEnabled(false);
     label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetEnabledColor(kFingerprintTextColor);
+    label_->SetEnabledColor(login_constants::kAuthMethodsTextColor);
     AddChildView(label_);
   }
 

@@ -57,9 +57,6 @@ constexpr int kSubmitButtonSizeDp = 20;
 // Size (width/height) of the caps lock hint icon.
 constexpr int kCapsLockIconSizeDp = 20;
 
-// Color of the password field text.
-constexpr SkColor kTextColor = SkColorSetARGB(0xAB, 0xFF, 0xFF, 0xFF);
-
 // Width and height of the easy unlock icon.
 constexpr const int kEasyUnlockIconSizeDp = 20;
 
@@ -364,11 +361,12 @@ LoginPasswordView::LoginPasswordView() {
   textfield_ = new LoginTextfield();
   textfield_->set_controller(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  textfield_->SetTextColor(kTextColor);
+  textfield_->SetTextColor(login_constants::kAuthMethodsTextColor);
   textfield_->SetFontList(views::Textfield::GetDefaultFontList().Derive(
       5, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   textfield_->set_placeholder_font_list(views::Textfield::GetDefaultFontList());
-  textfield_->set_placeholder_text_color(kTextColor);
+  textfield_->set_placeholder_text_color(
+      login_constants::kAuthMethodsTextColor);
   textfield_->SetGlyphSpacing(6);
   textfield_->SetBorder(nullptr);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
