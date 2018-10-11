@@ -286,6 +286,11 @@ deps = {
       'condition': 'checkout_ios',
   },
 
+  'src/ios/third_party/earl_grey2/src': {
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + 'f9ae5c477b3b1f8e38559867ca21dfb034c21d92',
+      'condition': 'checkout_ios',
+  },
+
   'src/ios/third_party/gtx/src': {
       'url': Var('chromium_git') + '/external/github.com/google/GTXiLib.git' + '@' + '3e09baa61b2c13fe98029d53b1783f4ca9edaabf',
       'condition': 'checkout_ios',
