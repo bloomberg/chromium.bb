@@ -696,7 +696,6 @@
       'win_mojo': 'release_trybot_x86',
       'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_x86',
       'win_upload_clang': 'release_bot',
-      'win_chrome_official': 'official_goma_x86',
     },
 
     'tryserver.chrome.win': {
