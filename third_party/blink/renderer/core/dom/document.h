@@ -377,6 +377,15 @@ class CORE_EXPORT Document : public ContainerNode,
                                     const CSSStyleSheetInit&,
                                     ExceptionState&);
 
+  CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
+                                         const String&,
+                                         const CSSStyleSheetInit&,
+                                         ExceptionState&);
+
+  CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
+                                         const String&,
+                                         ExceptionState&);
+
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;
   Range* caretRangeFromPoint(int x, int y);
