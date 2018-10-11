@@ -236,6 +236,11 @@ bool ContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
   return true;
 }
 
+base::Optional<std::string>
+ContentRendererClient::WebRTCPlatformSpecificAudioProcessingConfiguration() {
+  return base::Optional<std::string>();
+}
+
 GURL ContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return GURL();
 }
