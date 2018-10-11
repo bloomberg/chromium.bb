@@ -39,7 +39,10 @@ WorkletGlobalScope::WorkletGlobalScope(
       document_secure_context_(creation_params->starter_secure_context),
       module_responses_map_(creation_params->module_responses_map),
       // Step 4. "Let inheritedHTTPSState be outsideSettings's HTTPS state."
-      https_state_(creation_params->starter_https_state) {
+      https_state_(creation_params->starter_https_state),
+      agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
+                            ? base::UnguessableToken::Create()
+                            : creation_params->agent_cluster_id) {
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.
 
