@@ -281,6 +281,18 @@ void Controller::OnRunnableScriptsChanged(
     }
   }
 
+  // Clear the status message or show the specified prompt.
+  std::string prompt;
+  for (const auto& script : runnable_scripts) {
+    // runnable_scripts is ordered by priority.
+    if (!script.initial_prompt.empty()) {
+      prompt = script.initial_prompt;
+      break;
+    }
+  }
+  GetUiController()->ShowStatusMessage(prompt);
+
+  // Update the set of scripts.
   GetUiController()->UpdateScripts(runnable_scripts);
 }
 

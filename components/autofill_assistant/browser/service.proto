@@ -48,6 +48,11 @@ message SupportedScriptProto {
     // be executed. No precondition means that a script can run in any case.
     optional ScriptPreconditionProto precondition = 3;
 
+    // Text display at the same time as the script is proposed. If more than one
+    // script has an initial prompt, the prompt of the highest-priority script
+    // wins.
+    optional string initial_prompt = 4;
+
     // Display priority of the script. Lowest number has highest priority, which
     // means a script with priority 0 should be displayed before a script with
     // priority 1.

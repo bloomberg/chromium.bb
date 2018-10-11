@@ -8,6 +8,8 @@ namespace autofill_assistant {
 
 ScriptHandle::ScriptHandle() : autostart(false) {}
 
+ScriptHandle::ScriptHandle(const ScriptHandle& orig) = default;
+
 ScriptHandle::~ScriptHandle() = default;
 
 Script::Script() : priority(0) {}

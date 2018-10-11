@@ -187,6 +187,35 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
+TEST_F(ControllerTest, ShowFirstInitialPrompt) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script1");
+
+  SupportedScriptProto* script2 =
+      AddRunnableScript(&script_response, "script2");
+  script2->mutable_presentation()->set_initial_prompt("script2 prompt");
+  script2->mutable_presentation()->set_priority(10);
+
+  SupportedScriptProto* script3 =
+      AddRunnableScript(&script_response, "script3");
+  script3->mutable_presentation()->set_initial_prompt("script3 prompt");
+  script3->mutable_presentation()->set_priority(5);
+
+  SupportedScriptProto* script4 =
+      AddRunnableScript(&script_response, "script4");
+  script4->mutable_presentation()->set_initial_prompt("script4 prompt");
+  script4->mutable_presentation()->set_priority(8);
+
+  SetNextScriptResponse(script_response);
+
+  // Script3, with higher priority (lower number), wins.
+  EXPECT_CALL(*mock_ui_controller_, ShowStatusMessage("script3 prompt"));
+  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(4)));
+
+  // Start the flow.
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
 TEST_F(ControllerTest, Stop) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_stop();
