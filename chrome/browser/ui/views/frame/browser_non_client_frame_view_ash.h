@@ -221,6 +221,8 @@ class BrowserNonClientFrameViewAsh
   // Returns whether this window is currently in the overview list.
   bool IsInOverviewMode() const;
 
+  void StartWindowMove(const ui::LocatedEvent& event);
+
   void OnWindowMoveDone(bool success);
 
   // Returns the top level aura::Window for this browser window.
