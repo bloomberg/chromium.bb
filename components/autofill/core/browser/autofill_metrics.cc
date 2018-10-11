@@ -661,6 +661,14 @@ void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
 }
 
 // static
+void AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
+    SaveTypeMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes",
+      metric);
+}
+
+// static
 void AutofillMetrics::LogUploadDisallowedForNetworkMetric(
     const std::string& network) {
   UploadDisallowedForNetworkMetric metric;

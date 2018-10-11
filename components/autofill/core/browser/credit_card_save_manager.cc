@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -271,8 +272,16 @@ void CreditCardSaveManager::OnDidUploadCard(
     }
     if (base::FeatureList::IsEnabled(
             features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-      // Clear all strikes for this card, in case it is later removed.
       StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+      // Log how many strikes the card had when it was saved.
+      strike_database->GetStrikes(
+          strike_database->GetKeyForCreditCardSave(
+              base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
+          base::BindRepeating(
+              &CreditCardSaveManager::LogStrikesPresentWhenCardSaved,
+              weak_ptr_factory_.GetWeakPtr(),
+              /*is_local=*/false));
+      // Clear all strikes for this card, in case it is later removed.
       strike_database->ClearAllStrikesForKey(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
@@ -370,6 +379,10 @@ void CreditCardSaveManager::OfferCardLocalSave() {
       AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
           /*is_local=*/true);
   }
+  if (!show_save_prompt_.value()) {
+    AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
+        AutofillMetrics::SaveTypeMetric::LOCAL);
+  }
 }
 
 void CreditCardSaveManager::OfferCardUploadSave() {
@@ -410,6 +423,10 @@ void CreditCardSaveManager::OfferCardUploadSave() {
         AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE;
   }
   LogCardUploadDecisions(upload_decision_metrics_);
+  if (!show_save_prompt_.value()) {
+    AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
+        AutofillMetrics::SaveTypeMetric::SERVER);
+  }
 }
 
 void CreditCardSaveManager::OnUserDidAcceptLocalSave() {
@@ -418,8 +435,16 @@ void CreditCardSaveManager::OnUserDidAcceptLocalSave() {
 
   if (base::FeatureList::IsEnabled(
           features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-    // Clear all strikes for this card, in case it is later removed.
     StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+    // Log how many strikes the card had when it was saved.
+    strike_database->GetStrikes(
+        strike_database->GetKeyForCreditCardSave(
+            base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
+        base::BindRepeating(
+            &CreditCardSaveManager::LogStrikesPresentWhenCardSaved,
+            weak_ptr_factory_.GetWeakPtr(),
+            /*is_local=*/true));
+    // Clear all strikes for this card, in case it is later removed.
     strike_database->ClearAllStrikesForKey(
         strike_database->GetKeyForCreditCardSave(
             base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
@@ -428,6 +453,15 @@ void CreditCardSaveManager::OnUserDidAcceptLocalSave() {
 
   personal_data_manager_->OnAcceptedLocalCreditCardSave(
       local_card_save_candidate_);
+}
+
+void CreditCardSaveManager::LogStrikesPresentWhenCardSaved(
+    bool is_local,
+    const int num_strikes) {
+  std::string suffix = is_local ? "StrikesPresentWhenLocalCardSaved"
+                                : "StrikesPresentWhenServerCardSaved";
+  base::UmaHistogramCounts1000("Autofill.StrikeDatabase." + suffix,
+                               num_strikes);
 }
 
 void CreditCardSaveManager::SetProfilesForCreditCardUpload(

@@ -135,6 +135,9 @@ class CreditCardSaveManager {
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message);
 
+  // Logs the number of strikes that a card had when save succeeded.
+  void LogStrikesPresentWhenCardSaved(bool is_local, const int num_strikes);
+
   // Examines |card| and the stored profiles and if a candidate set of profiles
   // is found that matches the client-side validation rules, assigns the values
   // to |upload_request.profiles|. If any problems are found when determining
