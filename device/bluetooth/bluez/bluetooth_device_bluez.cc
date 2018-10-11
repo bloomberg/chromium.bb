@@ -200,6 +200,14 @@ BluetoothDeviceBlueZ::~BluetoothDeviceBlueZ() {
     adapter()->NotifyGattServiceRemoved(
         static_cast<BluetoothRemoteGattServiceBlueZ*>(iter.second.get()));
   }
+
+  // We pause discovery when trying to connect. Ensure discovery is unpaused if
+  // we get destroyed during a pending connection.
+  if (IsConnecting()) {
+    BLUETOOTH_LOG(EVENT) << object_path_.value()
+                         << ": Unpausing discovery. Device removed.";
+    UnpauseDiscovery();
+  }
 }
 
 uint32_t BluetoothDeviceBlueZ::GetBluetoothClass() const {
