@@ -68,15 +68,21 @@ bool ImmersiveGestureHandlerClassic::CanDrag(ui::GestureEvent* event) {
   if (window != immersive_fullscreen_controller_->widget()->GetNativeWindow())
     return false;
 
-  // Maximized, fullscreened and snapped none BROWSER windows in tablet mode are
-  // allowed to be dragged.
+  // Maximized, fullscreened and snapped windows in tablet mode are allowed to
+  // be dragged.
   wm::WindowState* window_state = wm::GetWindowState(window);
   if (!window_state ||
       (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
        !window_state->IsSnapped()) ||
       !Shell::Get()
            ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled() ||
+           ->IsTabletModeWindowManagerEnabled()) {
+    return false;
+  }
+
+  // Fullscreen browser windows are not draggable. Dragging from top should show
+  // the frame.
+  if (window_state->IsFullscreen() &&
       window->GetProperty(aura::client::kAppType) ==
           static_cast<int>(AppType::BROWSER)) {
     return false;
