@@ -425,25 +425,25 @@ class OmniboxFieldTrial {
   // ---------------------------------------------------------
   // For tab switch suggestions related experiments.
 
-  // Returns true if the rich entities flag and the refresh UI is enabled.
+  // Returns true if the rich entities flag is enabled.
   static bool IsRichEntitySuggestionsEnabled();
 
-  // Returns true if either (the new answer layout flag and the refresh UI) or
-  // the #upcoming-ui-features flag is enabled.
+  // Returns true if either the new answer layout flag or the
+  // #upcoming-ui-features flag is enabled.
   static bool IsNewAnswerLayoutEnabled();
 
-  // Returns true if either (the reverse answers flag and the refresh UI) or
-  // the #upcoming-ui-features flag is enabled.
+  // Returns true if either the reverse answers flag or the
+  // #upcoming-ui-features flag is enabled.
   static bool IsReverseAnswersEnabled();
 
-  // Returns true if either (the tab switch suggestions flag and the refresh UI)
-  // or the #upcoming-ui-features flag is enabled.
+  // Returns true if either the tab switch suggestions flag or the
+  // #upcoming-ui-features flag is enabled.
   static bool IsTabSwitchSuggestionsEnabled();
 
   // Returns the #omnibox-pedal-suggestions feature's mode parameter as enum.
   static PedalSuggestionMode GetPedalSuggestionMode();
 
-  // Returns true if the jog textfield flag and refresh UI are both enabled.
+  // Returns true if the jog textfield flag is enabled.
   static bool IsJogTextfieldOnPopupEnabled();
 
   // Returns true if either the show suggestion favicons flag or the

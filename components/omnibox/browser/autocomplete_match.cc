@@ -19,16 +19,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
-#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
-#include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -201,28 +198,14 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   return *this;
 }
 
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 // static
 const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
     Type type,
     bool is_bookmark,
-    bool is_tab_match,
     DocumentType document_type) {
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-#if !defined(OS_ANDROID)
-  const bool is_refresh_ui = ui::MaterialDesignController::IsRefreshUi();
-  const bool is_touch_ui =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-#else
-  const bool is_refresh_ui = true;
-  const bool is_touch_ui = false;
-#endif
-
-  if (is_bookmark) {
-    if (is_refresh_ui || is_touch_ui)
-      return omnibox::kTouchableBookmarkIcon;
-    else
-      return omnibox::kStarIcon;
-  }
+  if (is_bookmark)
+    return omnibox::kBookmarkIcon;
 
   switch (type) {
     case Type::URL_WHAT_YOU_TYPED:
@@ -237,12 +220,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
-      if (is_refresh_ui)
-        return omnibox::kMdPageIcon;
-      else if (is_touch_ui)
-        return omnibox::kTouchablePageIcon;
-      else
-        return omnibox::kHttpIcon;
+      return omnibox::kPageIcon;
 
     case Type::DOCUMENT_SUGGESTION:
       switch (document_type) {
@@ -257,7 +235,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
         case DocumentType::DRIVE_OTHER:
           return omnibox::kDriveLogoIcon;
         default:
-          return omnibox::kMdPageIcon;
+          return omnibox::kPageIcon;
       }
 
     case Type::SEARCH_WHAT_YOU_TYPED:
@@ -269,10 +247,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
     case Type::VOICE_SUGGEST:
-      if (is_touch_ui && !is_refresh_ui)
-        return omnibox::kTouchableSearchIcon;
-      else
-        return vector_icons::kSearchIcon;
+      return vector_icons::kSearchIcon;
 
     case Type::EXTENSION_APP_DEPRECATED:
       return omnibox::kExtensionAppIcon;
@@ -287,17 +262,13 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
       return omnibox::kPedalIcon;
 
     case Type::NUM_TYPES:
-      NOTREACHED();
       break;
   }
   NOTREACHED();
-  return omnibox::kHttpIcon;
-#else
-  NOTREACHED();
   static const gfx::VectorIcon dummy = {};
   return dummy;
-#endif
 }
+#endif
 
 // static
 bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
