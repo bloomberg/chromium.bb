@@ -52,6 +52,7 @@ TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
   auto* presentation = script->mutable_presentation();
   presentation->set_name("name");
   presentation->set_autostart(true);
+  presentation->set_initial_prompt("prompt");
   presentation->mutable_precondition()->add_domain("www.example.com");
 
   std::vector<std::unique_ptr<Script>> scripts;
@@ -61,6 +62,7 @@ TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
   EXPECT_EQ("name", scripts[0]->handle.name);
+  EXPECT_EQ("prompt", scripts[0]->handle.initial_prompt);
   EXPECT_TRUE(scripts[0]->handle.autostart);
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
