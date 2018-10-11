@@ -248,4 +248,8 @@ UIEdgeInsets SafeAreaInsetsForView(UIView* view);
 // more than 99 tabs open.
 NSString* TextForTabCount(long count);
 
+// Helper check if |category| is an accessibility category. For iOS 11+ it is a
+// wrapper around UIContentSizeCategoryIsAccessibilityCategory.
+BOOL ContentSizeCategoryIsAccessibilityCategory(UIContentSizeCategory category);
+
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
