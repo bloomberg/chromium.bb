@@ -25,6 +25,7 @@ namespace blink {
 class IceTransportProxy;
 class QuicStreamProxy;
 class QuicTransportHost;
+class P2PQuicTransportFactory;
 
 // This class allows the QUIC implementation (P2PQuicTransport) to run on a
 // thread different from the thread from which it is controlled. All
@@ -66,7 +67,8 @@ class QuicTransportProxy final {
       Delegate* delegate,
       IceTransportProxy* ice_transport_proxy,
       quic::Perspective perspective,
-      const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates);
+      const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates,
+      std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory);
   ~QuicTransportProxy();
 
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;

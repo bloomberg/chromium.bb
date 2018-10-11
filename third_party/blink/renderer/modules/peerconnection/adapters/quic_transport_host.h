@@ -45,7 +45,9 @@ class QuicTransportProxy;
 // must be called on the host thread.
 class QuicTransportHost final : public P2PQuicTransport::Delegate {
  public:
-  QuicTransportHost(base::WeakPtr<QuicTransportProxy> transport_proxy);
+  QuicTransportHost(
+      base::WeakPtr<QuicTransportProxy> transport_proxy,
+      std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory);
   ~QuicTransportHost() override;
 
   void Initialize(

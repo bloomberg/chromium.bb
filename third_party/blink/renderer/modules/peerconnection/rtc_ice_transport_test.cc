@@ -7,12 +7,10 @@
 // Everything is run on a single thread but with separate TestSimpleTaskRunners
 // for the main thread / worker thread.
 
-#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport_test.h"
 
-#include "base/test/test_simple_task_runner.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
-#include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_ice_transport_adapter.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_ice_transport_adapter_cross_thread_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
@@ -35,26 +33,8 @@ using testing::Mock;
 using testing::StrEq;
 using testing::StrNe;
 
-class MockEventListener final : public EventListener {
- public:
-  MockEventListener() : EventListener(ListenerType::kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
-  MOCK_METHOD2(handleEvent, void(ExecutionContext*, Event*));
-};
-
 constexpr char kRemoteUsernameFragment1[] = "usernameFragment";
 constexpr char kRemotePassword1[] = "password";
-
-RTCIceParameters CreateRemoteRTCIceParameters1() {
-  RTCIceParameters ice_parameters;
-  ice_parameters.setUsernameFragment(kRemoteUsernameFragment1);
-  ice_parameters.setPassword(kRemotePassword1);
-  return ice_parameters;
-}
 
 constexpr char kRemoteUsernameFragment2[] = "secondUsernameFragment";
 constexpr char kRemotePassword2[] = "secondPassword";
@@ -91,101 +71,74 @@ cricket::Candidate CricketCandidateFromString(
   return candidate;
 }
 
-class MockIceTransportAdapterCrossThreadFactory
-    : public IceTransportAdapterCrossThreadFactory {
- public:
-  MockIceTransportAdapterCrossThreadFactory(
-      std::unique_ptr<MockIceTransportAdapter> mock_adapter,
-      IceTransportAdapter::Delegate** delegate_out)
-      : mock_adapter_(std::move(mock_adapter)), delegate_out_(delegate_out) {}
-
-  void InitializeOnMainThread() override {}
-
-  std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
-      IceTransportAdapter::Delegate* delegate) override {
-    DCHECK(mock_adapter_);
-    if (delegate_out_) {
-      *delegate_out_ = delegate;
-    }
-    return std::move(mock_adapter_);
-  }
-
- private:
-  std::unique_ptr<MockIceTransportAdapter> mock_adapter_;
-  IceTransportAdapter::Delegate** delegate_out_;
-};
-
 }  // namespace
 
-class RTCIceTransportTest : public testing::Test {
- public:
-  RTCIceTransportTest()
-      : main_thread_(new base::TestSimpleTaskRunner()),
-        worker_thread_(new base::TestSimpleTaskRunner()) {}
+// static
+RTCIceParameters RTCIceTransportTest::CreateRemoteRTCIceParameters1() {
+  RTCIceParameters ice_parameters;
+  ice_parameters.setUsernameFragment(kRemoteUsernameFragment1);
+  ice_parameters.setPassword(kRemotePassword1);
+  return ice_parameters;
+}
 
-  ~RTCIceTransportTest() override {
-    // When the V8TestingScope is destroyed at the end of a test, it will call
-    // ContextDestroyed on the RTCIceTransport which will queue a task to delete
-    // the IceTransportAdapter. RunUntilIdle() here ensures that the task will
-    // be executed and the IceTransportAdapter deleted before finishing the
-    // test.
-    RunUntilIdle();
+RTCIceTransportTest::RTCIceTransportTest()
+    : main_thread_(new base::TestSimpleTaskRunner()),
+      worker_thread_(new base::TestSimpleTaskRunner()) {}
 
-    // Explicitly verify expectations of garbage collected mock objects.
-    for (auto mock : mock_event_listeners_) {
-      Mock::VerifyAndClear(mock);
-    }
+RTCIceTransportTest::~RTCIceTransportTest() {
+  // When the V8TestingScope is destroyed at the end of a test, it will call
+  // ContextDestroyed on the RTCIceTransport which will queue a task to delete
+  // the IceTransportAdapter. RunUntilIdle() here ensures that the task will
+  // be executed and the IceTransportAdapter deleted before finishing the
+  // test.
+  RunUntilIdle();
+
+  // Explicitly verify expectations of garbage collected mock objects.
+  for (auto mock : mock_event_listeners_) {
+    Mock::VerifyAndClear(mock);
   }
+}
 
-  // Run the main thread and worker thread until both are idle.
-  void RunUntilIdle() {
-    while (worker_thread_->HasPendingTask() || main_thread_->HasPendingTask()) {
-      worker_thread_->RunPendingTasks();
-      main_thread_->RunPendingTasks();
-    }
+void RTCIceTransportTest::RunUntilIdle() {
+  while (worker_thread_->HasPendingTask() || main_thread_->HasPendingTask()) {
+    worker_thread_->RunPendingTasks();
+    main_thread_->RunPendingTasks();
   }
+}
 
-  // Construct a new RTCIceTransport with a mock IceTransportAdapter.
-  RTCIceTransport* CreateIceTransport(
-      V8TestingScope& scope,
-      IceTransportAdapter::Delegate** delegate_out) {
-    return CreateIceTransport(
-        scope, std::make_unique<MockIceTransportAdapter>(), delegate_out);
+RTCIceTransport* RTCIceTransportTest::CreateIceTransport(
+    V8TestingScope& scope) {
+  return CreateIceTransport(
+      scope, std::make_unique<MockIceTransportAdapter>(
+                 std::make_unique<MockP2PQuicPacketTransport>()));
+}
+
+RTCIceTransport* RTCIceTransportTest::CreateIceTransport(
+    V8TestingScope& scope,
+    IceTransportAdapter::Delegate** delegate_out) {
+  return CreateIceTransport(scope, std::make_unique<MockIceTransportAdapter>(),
+                            delegate_out);
+}
+
+RTCIceTransport* RTCIceTransportTest::CreateIceTransport(
+    V8TestingScope& scope,
+    std::unique_ptr<MockIceTransportAdapter> mock,
+    IceTransportAdapter::Delegate** delegate_out) {
+  if (delegate_out) {
+    // Ensure the caller has not left the delegate_out value floating.
+    DCHECK_EQ(nullptr, *delegate_out);
   }
+  return RTCIceTransport::Create(
+      scope.GetExecutionContext(), main_thread_, worker_thread_,
+      std::make_unique<MockIceTransportAdapterCrossThreadFactory>(
+          std::move(mock), delegate_out));
+}
 
-  // Construct a new RTCIceTransport with the given mock IceTransportAdapter.
-  // |delegate_out|, if non-null, will be populated once the IceTransportAdapter
-  // is constructed on the worker thread.
-  RTCIceTransport* CreateIceTransport(
-      V8TestingScope& scope,
-      std::unique_ptr<MockIceTransportAdapter> mock,
-      IceTransportAdapter::Delegate** delegate_out = nullptr) {
-    if (delegate_out) {
-      // Ensure the caller has not left the delegate_out value floating.
-      DCHECK_EQ(nullptr, *delegate_out);
-    }
-    return RTCIceTransport::Create(
-        scope.GetExecutionContext(), main_thread_, worker_thread_,
-        std::make_unique<MockIceTransportAdapterCrossThreadFactory>(
-            std::move(mock), delegate_out));
-  }
-
-  // Use this method to construct a MockEventListener so that the expectations
-  // can be explicitly checked at the end of the test. Normally the expectations
-  // would be verified in the mock destructor, but since MockEventListener is
-  // garbage collected this may happen after the test has finished, improperly
-  // letting it pass.
-  MockEventListener* CreateMockEventListener() {
-    MockEventListener* event_listener = new MockEventListener();
-    mock_event_listeners_.push_back(event_listener);
-    return event_listener;
-  }
-
- private:
-  scoped_refptr<base::TestSimpleTaskRunner> main_thread_;
-  scoped_refptr<base::TestSimpleTaskRunner> worker_thread_;
-  std::vector<Persistent<MockEventListener>> mock_event_listeners_;
-};
+MockEventListener* RTCIceTransportTest::CreateMockEventListener() {
+  MockEventListener* event_listener = new MockEventListener();
+  mock_event_listeners_.push_back(event_listener);
+  return event_listener;
+}
 
 // Test that calling gather({}) calls StartGathering with non-empty local
 // parameters.
