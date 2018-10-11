@@ -708,9 +708,6 @@ _norootfs_verification_boards = frozenset([
 
 _base_layout_boards = _lakitu_boards | _termina_boards
 
-_no_unittest_boards = frozenset((
-))
-
 _vmtest_boards = frozenset([
     # Full VMTest support on ChromeOS is currently limited to devices derived
     # from betty & co.
@@ -1613,8 +1610,6 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(rootfs_verification=False)
     if board in _base_layout_boards:
       board_config.apply(disk_layout='base')
-    if board in _no_unittest_boards:
-      board_config.apply(site_config.templates.no_unittest_builder)
     if board in _beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
     if board == 'moblab-generic-vm':
