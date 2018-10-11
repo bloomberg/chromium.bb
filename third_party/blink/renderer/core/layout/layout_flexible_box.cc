@@ -60,8 +60,6 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
       has_definite_height_(SizeDefiniteness::kUnknown),
       in_layout_(false) {
   DCHECK(!ChildrenInline());
-  if (!IsAnonymous())
-    UseCounter::Count(GetDocument(), WebFeature::kCSSFlexibleBox);
 }
 
 LayoutFlexibleBox::~LayoutFlexibleBox() = default;
