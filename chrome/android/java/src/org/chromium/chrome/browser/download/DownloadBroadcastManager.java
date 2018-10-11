@@ -174,8 +174,6 @@ public class DownloadBroadcastManager extends Service {
                 // Delay the stop of the service by WAIT_TIME_MS after native library is loaded.
                 mHandler.postDelayed(mStopSelfRunnable, WAIT_TIME_MS);
 
-                // Make sure the OfflineContentAggregator bridge is initialized.
-                OfflineContentAggregatorNotificationBridgeUiFactory.instance();
                 propagateInteraction(intent);
             }
 
