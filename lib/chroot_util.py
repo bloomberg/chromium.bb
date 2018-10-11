@@ -7,12 +7,15 @@
 
 from __future__ import print_function
 
+import contextlib
 import os
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import sysroot_lib
 
 if cros_build_lib.IsInsideChroot():
@@ -175,3 +178,24 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
   command += list(packages)
 
   cros_build_lib.SudoRunCommand(command, extra_env=env, mute_output=False)
+
+
+@contextlib.contextmanager
+def TempDirInChroot(**kwargs):
+  """A context to create and use a tempdir inside the chroot.
+
+  Args:
+    prefix: See tempfile.mkdtemp documentation.
+    base_dir: The directory to place the temporary directory in the chroot.
+    set_global: See osutils.TempDir documentation.
+    delete: See osutils.TempDir documentation.
+    sudo_rm: See osutils.TempDir documentation.
+
+  Yields:
+    A host path (not chroot path) to a tempdir inside the chroot. This tempdir
+    is cleaned up when exiting the context.
+  """
+  base_dir = kwargs.pop('base_dir', '/tmp')
+  kwargs['base_dir'] = path_util.FromChrootPath(base_dir)
+  tempdir = osutils.TempDir(**kwargs)
+  yield tempdir.tempdir

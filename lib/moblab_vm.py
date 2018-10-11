@@ -14,6 +14,7 @@ import os
 import random
 import shutil
 
+from chromite.lib import chroot_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -451,7 +452,7 @@ def _CreateVMImage(src_dir, dest_dir):
   # are missing).
   # So, create a tempdir reachable from chroot, copy everything to that path,
   # create vm image there and finally move it all to dest_dir.
-  with _TempDirInChroot() as tempdir:
+  with chroot_util.TempDirInChroot() as tempdir:
     logging.debug('Copying images from %s to %s.', src_dir, tempdir)
     osutils.CopyDirContents(src_dir, tempdir)
     # image_to_vm.sh doesn't let us provide arbitrary names for the input image.
@@ -610,23 +611,3 @@ def _RunIgnoringErrors(cmd):
     logging.error('Cleanup operation failed. Please run "%s" manually.',
                   ' '.join(cmd))
     logging.debug('Encountered error: %s', e)
-
-
-@contextlib.contextmanager
-def _TempDirInChroot():
-  """A context to create and use a tempdir inside the chroot.
-
-  Yields:
-    A host path (not chroot path) to a tempdir inside the chroot. This tempdir
-    is cleaned up when exiting the context.
-  """
-  chroot_tempdir = cros_build_lib.RunCommand(
-      ['mktemp', '-d'],
-      capture_output=True,
-      enter_chroot=True,
-  ).output.strip()
-  tempdir = path_util.FromChrootPath(chroot_tempdir)
-  try:
-    yield tempdir
-  finally:
-    osutils.RmDir(tempdir, ignore_missing=True)

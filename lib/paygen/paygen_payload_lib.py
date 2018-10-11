@@ -14,6 +14,7 @@ import os
 import shutil
 import tempfile
 
+from chromite.lib import chroot_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
@@ -721,12 +722,7 @@ def CreateAndUploadPayload(payload, cache, sign=True, verify=True,
   """
   # We need to create a temp directory inside the chroot so be able to access
   # from both inside and outside the chroot.
-  temp_dir = path_util.FromChrootPath(cros_build_lib.RunCommand(
-      ['mktemp', '-d'],
-      capture_output=True,
-      enter_chroot=True).output.strip())
-
-  with osutils.TempDir(prefix='paygen_payload.', base_dir=temp_dir) as work_dir:
+  with chroot_util.TempDirInChroot() as work_dir:
     logging.info('* Starting payload generation')
     start_time = datetime.datetime.now()
 
