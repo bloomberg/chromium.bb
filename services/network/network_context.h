@@ -251,6 +251,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                          base::Time expiry,
                          bool include_subdomains,
                          AddHSTSForTestingCallback callback) override;
+  void EnableStaticKeyPinningForTesting(
+      EnableStaticKeyPinningForTestingCallback callback) override;
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override;

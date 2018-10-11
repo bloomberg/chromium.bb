@@ -60,6 +60,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -78,7 +79,10 @@
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_test_job.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
@@ -112,27 +116,25 @@ const GURL kURL("http://foo.com");
 const GURL kOtherURL("http://other.com");
 constexpr char kMockHost[] = "mock.host";
 
-// Sends an HttpResponse for requests for "/" that result in sending an HPKP
-// report.  Ignores other paths to avoid catching the subsequent favicon
-// request.
-std::unique_ptr<net::test_server::HttpResponse> SendReportHttpResponse(
-    const GURL& report_url,
-    const net::test_server::HttpRequest& request) {
-  if (request.relative_url == "/") {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response(
-        new net::test_server::BasicHttpResponse());
-    std::string header_value = base::StringPrintf(
-        "max-age=50000;"
-        "pin-sha256=\"9999999999999999999999999999999999999999999=\";"
-        "pin-sha256=\"9999999999999999999999999999999999999999998=\";"
-        "report-uri=\"%s\"",
-        report_url.spec().c_str());
-    response->AddCustomHeader("Public-Key-Pins-Report-Only", header_value);
-    return std::move(response);
+class PkpReportResponseHandler : public net::URLRequestInterceptor {
+ public:
+  PkpReportResponseHandler(bool* intercepted_request)
+      : intercepted_request_(intercepted_request) {}
+  ~PkpReportResponseHandler() override = default;
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    *intercepted_request_ = true;
+    return nullptr;
   }
 
-  return nullptr;
-}
+ private:
+  bool* intercepted_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(PkpReportResponseHandler);
+};
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
@@ -884,28 +886,25 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
   }
 }
 
-// Test that HPKP failures are reported if and only if certificate reporting is
+// Test that PKP failures are reported if and only if certificate reporting is
 // enabled.
 TEST_F(NetworkContextTest, CertReporting) {
-  const char kReportPath[] = "/report";
+  const char kPreloadedPKPHost[] = "with-report-uri-pkp.preloaded.test";
+  const char kReportHost[] = "report-uri.preloaded.test";
+
+  // Configure the TransportSecurityStateSource so that kPreloadedPKPHost will
+  // have static PKP pins set, with a report URI on kReportHost.
+  net::ScopedTransportSecurityStateSource scoped_security_state_source;
 
   for (bool reporting_enabled : {false, true}) {
-    // Server that HPKP reports are sent to.
-    net::test_server::EmbeddedTestServer report_test_server;
-    net::test_server::ControllableHttpResponse controllable_response(
-        &report_test_server, kReportPath);
-    ASSERT_TRUE(report_test_server.Start());
-
-    // Server that sends an HPKP report when its root document is fetched.
-    net::test_server::EmbeddedTestServer hpkp_test_server(
+    // Configure a test HTTPS server.
+    net::test_server::EmbeddedTestServer pkp_test_server(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
-    hpkp_test_server.SetSSLConfig(
+    pkp_test_server.SetSSLConfig(
         net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-    hpkp_test_server.RegisterRequestHandler(base::BindRepeating(
-        &SendReportHttpResponse, report_test_server.GetURL(kReportPath)));
-    ASSERT_TRUE(hpkp_test_server.Start());
+    ASSERT_TRUE(pkp_test_server.Start());
 
-    // Configure mock cert verifier to cause the HPKP check to fail.
+    // Configure mock cert verifier to cause the PKP check to fail.
     net::CertVerifyResult result;
     result.verified_cert = net::CreateCertificateChainFromFile(
         net::GetTestCertsDirectory(), "ok_cert.pem",
@@ -915,9 +914,23 @@ TEST_F(NetworkContextTest, CertReporting) {
     result.public_key_hashes.push_back(net::HashValue(hash));
     result.is_issued_by_known_root = true;
     net::MockCertVerifier mock_verifier;
-    mock_verifier.AddResultForCert(hpkp_test_server.GetCertificate(), result,
+    mock_verifier.AddResultForCert(pkp_test_server.GetCertificate(), result,
                                    net::OK);
     NetworkContext::SetCertVerifierForTesting(&mock_verifier);
+
+    // Configure a MockHostResolver to map requests to kPreloadedPKPHost to the
+    // HTTPS test server:
+    net::AddressList address_list;
+    ASSERT_TRUE(pkp_test_server.GetAddressList(&address_list));
+    scoped_refptr<net::RuleBasedHostResolverProc> mock_resolver_proc =
+        base::MakeRefCounted<net::RuleBasedHostResolverProc>(nullptr);
+    for (auto& address : address_list) {
+      mock_resolver_proc->AddRule(kPreloadedPKPHost,
+                                  address.ToStringWithoutPort());
+    }
+    mock_resolver_proc->AddSimulatedFailure(kReportHost);
+    net::ScopedDefaultHostResolverProc scoped_default_host_resolver(
+        mock_resolver_proc.get());
 
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     EXPECT_FALSE(context_params->enable_certificate_reporting);
@@ -925,8 +938,19 @@ TEST_F(NetworkContextTest, CertReporting) {
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 
+    // Enable static pins so that requests made to kPreloadedPKPHost will check
+    // the pins, and send a report if the pinning check fails.
+    network_context->url_request_context()
+        ->transport_security_state()
+        ->EnableStaticPinsForTesting();
+
+    bool pkp_report_sent = false;
+    std::unique_ptr<PkpReportResponseHandler> handler(
+        std::make_unique<PkpReportResponseHandler>(&pkp_report_sent));
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", kReportHost, std::move(handler));
     ResourceRequest request;
-    request.url = hpkp_test_server.base_url();
+    request.url = pkp_test_server.GetURL(kPreloadedPKPHost, "/");
 
     mojom::URLLoaderFactoryPtr loader_factory;
     mojom::URLLoaderFactoryParamsPtr params =
@@ -945,19 +969,14 @@ TEST_F(NetworkContextTest, CertReporting) {
 
     client.RunUntilComplete();
     EXPECT_TRUE(client.has_received_completion());
-    EXPECT_EQ(net::OK, client.completion_status().error_code);
+    EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+              client.completion_status().error_code);
 
-    if (reporting_enabled) {
-      // If reporting is enabled, wait to see the request from the ReportSender.
-      // Don't respond to the request, effectively making it a hung request.
-      controllable_response.WaitForRequest();
-    } else {
-      // Otherwise, there should be no pending URLRequest.
-      // |controllable_response| will cause requests to hang, so if there's no
-      // URLRequest, then either a reporting request was never started. This
-      // relies on reported being sent immediately for correctness.
-      network_context->url_request_context()->AssertNoURLRequests();
-    }
+    network_context->url_request_context()->AssertNoURLRequests();
+    EXPECT_EQ(pkp_report_sent, reporting_enabled);
+
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
+                                                                kReportHost);
 
     // Destroy the network context. This serves to check the case that reporting
     // requests are alive when a NetworkContext is torn down.

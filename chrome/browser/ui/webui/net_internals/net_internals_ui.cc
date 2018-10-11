@@ -504,8 +504,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
       bool found_sts_dynamic = transport_security_state->GetDynamicSTSState(
           domain, &dynamic_sts_state);
 
-      bool found_pkp_dynamic = transport_security_state->GetDynamicPKPState(
-          domain, &dynamic_pkp_state);
       if (found_sts_dynamic) {
         result->SetInteger("dynamic_upgrade_mode",
                            static_cast<int>(dynamic_sts_state.upgrade_mode));
@@ -518,20 +516,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
         result->SetString("dynamic_sts_domain", dynamic_sts_state.domain);
       }
 
-      if (found_pkp_dynamic) {
-        result->SetBoolean("dynamic_pkp_include_subdomains",
-                           dynamic_pkp_state.include_subdomains);
-        result->SetDouble("dynamic_pkp_observed",
-                          dynamic_pkp_state.last_observed.ToDoubleT());
-        result->SetDouble("dynamic_pkp_expiry",
-                          dynamic_pkp_state.expiry.ToDoubleT());
-        result->SetString("dynamic_spki_hashes",
-                          HashesToBase64String(dynamic_pkp_state.spki_hashes));
-        result->SetString("dynamic_pkp_domain", dynamic_pkp_state.domain);
-      }
-
-      result->SetBoolean(
-          "result", found_static || found_sts_dynamic || found_pkp_dynamic);
+      result->SetBoolean("result", found_static || found_sts_dynamic);
     } else {
       result->SetString("error", "no TransportSecurityState active");
     }
