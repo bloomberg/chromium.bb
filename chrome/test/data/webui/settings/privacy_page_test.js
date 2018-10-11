@@ -146,6 +146,19 @@ cr.define('settings_privacy_page', function() {
         return test_util.whenAttributeIs(
             dialog.$$('#clearBrowsingDataDialog'), 'open', '');
       });
+
+      if (!cr.isChromeOS) {
+        test('signinAllowedToggle', function() {
+          const toggle = page.$.signinAllowedToggle;
+          page.syncStatus = {signedIn: false};
+          // When the user is signed out, the toggle is enabled.
+          assertFalse(toggle.disabled);
+
+          page.syncStatus = {signedIn: true};
+          // When the user is signed in, the toggle is disabled.
+          assertTrue(toggle.disabled);
+        });
+      }
     });
   }
 

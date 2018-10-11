@@ -36,6 +36,12 @@ Polymer({
     },
 
     /**
+     * The current sync status, supplied by SyncBrowserProxy.
+     * @type {?settings.SyncStatus}
+     */
+    syncStatus: Object,
+
+    /**
      * Dictionary defining page visibility.
      * @type {!PrivacyPageVisibility}
      */
@@ -184,6 +190,20 @@ Polymer({
     this.addWebUIListener(
         'onBlockAutoplayStatusChanged',
         this.onBlockAutoplayStatusChanged_.bind(this));
+
+    settings.SyncBrowserProxyImpl.getInstance().getSyncStatus().then(
+        this.handleSyncStatus_.bind(this));
+    this.addWebUIListener(
+        'sync-status-changed', this.handleSyncStatus_.bind(this));
+  },
+
+  /**
+   * Handler for when the sync state is pushed from the browser.
+   * @param {?settings.SyncStatus} syncStatus
+   * @private
+   */
+  handleSyncStatus_: function(syncStatus) {
+    this.syncStatus = syncStatus;
   },
 
   /** @protected */
