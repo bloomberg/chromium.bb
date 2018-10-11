@@ -51,6 +51,11 @@ HostDeviceTimestampManagerImpl::Factory::BuildInstance(
 }
 
 // static
+const char
+    HostDeviceTimestampManagerImpl::kWasHostSetFromThisChromebookPrefName[] =
+        "multidevice_setup.was_host_set_from_this_chromebook";
+
+// static
 const char HostDeviceTimestampManagerImpl::kSetupFlowCompletedPrefName[] =
     "multidevice_setup.setup_flow_completed";
 
@@ -62,6 +67,7 @@ const char
 // static
 void HostDeviceTimestampManagerImpl::RegisterPrefs(
     PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kWasHostSetFromThisChromebookPrefName, false);
   registry->RegisterInt64Pref(kSetupFlowCompletedPrefName, kTimestampNotSet);
   registry->RegisterInt64Pref(kHostVerifiedUpdateReceivedPrefName,
                               kTimestampNotSet);
@@ -79,6 +85,10 @@ HostDeviceTimestampManagerImpl::HostDeviceTimestampManagerImpl(
       pref_service_(pref_service),
       clock_(clock) {
   host_status_provider_->AddObserver(this);
+}
+
+bool HostDeviceTimestampManagerImpl::WasHostSetFromThisChromebook() {
+  return pref_service_->GetBoolean(kWasHostSetFromThisChromebookPrefName);
 }
 
 base::Optional<base::Time>
@@ -104,11 +114,13 @@ void HostDeviceTimestampManagerImpl::OnHostStatusChange(
   // to use a host status update with the status
   // kHostSetLocallyButWaitingForBackendConfirmation as a proxy for completing
   // setup flow because the Chromebook sets a host locally (i.e. enters this
-  // state) exactly when it successfully completes the flow.
+  // state) exactly when it successfully completes the flow. Note that this is
+  // equivalent to a host being set on the Chromebook.
   if (host_status_with_device.host_status() ==
       mojom::HostStatus::kHostSetLocallyButWaitingForBackendConfirmation) {
     pref_service_->SetInt64(kSetupFlowCompletedPrefName,
                             clock_->Now().ToJavaTime());
+    pref_service_->SetBoolean(kWasHostSetFromThisChromebookPrefName, true);
     PA_LOG(INFO) << "HostDeviceTimestampManagerImpl::OnHostStatusChange(): "
                  << "Setup flow successfully completed. Recording timestamp "
                  << pref_service_->GetInt64(kSetupFlowCompletedPrefName) << ".";
@@ -123,6 +135,15 @@ void HostDeviceTimestampManagerImpl::OnHostStatusChange(
                  << "New host verified. Recording timestamp "
                  << pref_service_->GetInt64(kHostVerifiedUpdateReceivedPrefName)
                  << ".";
+  }
+
+  // If there is no host set, set the "was host set form this Chromebook" bit to
+  // false.
+  if (host_status_with_device.host_status() ==
+          mojom::HostStatus::kNoEligibleHosts ||
+      host_status_with_device.host_status() ==
+          mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
+    pref_service_->SetBoolean(kWasHostSetFromThisChromebookPrefName, false);
   }
 }
 

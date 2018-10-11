@@ -46,10 +46,12 @@ class HostDeviceTimestampManagerImpl : public HostDeviceTimestampManager,
   ~HostDeviceTimestampManagerImpl() override;
 
   // HostDeviceTimestampManager:
+  bool WasHostSetFromThisChromebook() override;
   base::Optional<base::Time> GetLatestSetupFlowCompletionTimestamp() override;
   base::Optional<base::Time> GetLatestVerificationTimestamp() override;
 
  private:
+  static const char kWasHostSetFromThisChromebookPrefName[];
   static const char kSetupFlowCompletedPrefName[];
   static const char kHostVerifiedUpdateReceivedPrefName[];
 

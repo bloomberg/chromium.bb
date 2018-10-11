@@ -18,6 +18,10 @@ class HostDeviceTimestampManager {
  public:
   virtual ~HostDeviceTimestampManager() = default;
 
+  // Returns true when there is a host set (not necessarily verified) for the
+  // logged in GAIA account and that host was set from this Chromebook.
+  virtual bool WasHostSetFromThisChromebook() = 0;
+
   // If the logged in GAIA account has completed the MultiDevice setup flow on
   // this device, this returns the time at which the flow was completed. If the
   // flow was completed more than once, it records the most recent time of

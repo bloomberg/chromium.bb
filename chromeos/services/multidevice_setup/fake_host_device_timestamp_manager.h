@@ -18,14 +18,18 @@ class FakeHostDeviceTimestampManager : public HostDeviceTimestampManager {
   FakeHostDeviceTimestampManager();
   ~FakeHostDeviceTimestampManager() override;
 
+  void set_was_host_set_from_this_chromebook(
+      bool was_host_set_from_this_chromebook);
   void set_completion_timestamp(const base::Time& timestamp);
   void set_verification_timestamp(const base::Time& timestamp);
 
  private:
   // HostDeviceTimestampManager:
+  bool WasHostSetFromThisChromebook() override;
   base::Optional<base::Time> GetLatestSetupFlowCompletionTimestamp() override;
   base::Optional<base::Time> GetLatestVerificationTimestamp() override;
 
+  bool was_host_set_from_this_chromebook_;
   base::Optional<base::Time> completion_time_;
   base::Optional<base::Time> verification_time_;
 };

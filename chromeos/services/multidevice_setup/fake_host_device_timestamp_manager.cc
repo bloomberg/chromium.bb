@@ -8,9 +8,16 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-FakeHostDeviceTimestampManager::FakeHostDeviceTimestampManager() = default;
+FakeHostDeviceTimestampManager::FakeHostDeviceTimestampManager() {
+  was_host_set_from_this_chromebook_ = false;
+}
 
 FakeHostDeviceTimestampManager::~FakeHostDeviceTimestampManager() = default;
+
+void FakeHostDeviceTimestampManager::set_was_host_set_from_this_chromebook(
+    bool was_host_set_from_this_chromebook) {
+  was_host_set_from_this_chromebook_ = was_host_set_from_this_chromebook;
+}
 
 void FakeHostDeviceTimestampManager::set_completion_timestamp(
     const base::Time& timestamp) {
@@ -20,6 +27,10 @@ void FakeHostDeviceTimestampManager::set_completion_timestamp(
 void FakeHostDeviceTimestampManager::set_verification_timestamp(
     const base::Time& timestamp) {
   verification_time_ = timestamp;
+}
+
+bool FakeHostDeviceTimestampManager::WasHostSetFromThisChromebook() {
+  return was_host_set_from_this_chromebook_;
 }
 
 base::Optional<base::Time>
