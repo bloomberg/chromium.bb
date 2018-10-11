@@ -709,7 +709,7 @@ namespace spv {
         langInfo.push_back(std::make_pair(ELangJSON,    "spirv.json"));
         langInfo.push_back(std::make_pair(ELangLua,     "spirv.lua"));
         langInfo.push_back(std::make_pair(ELangPython,  "spirv.py"));
-        langInfo.push_back(std::make_pair(ELangCSharp,  "SpirV.cs"));
+        langInfo.push_back(std::make_pair(ELangCSharp,  "spirv.cs"));
 
         for (const auto& lang : langInfo) {
             std::ofstream out(lang.second, std::ios::out);
