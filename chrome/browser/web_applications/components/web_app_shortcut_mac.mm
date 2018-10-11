@@ -791,6 +791,8 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kCrAppModeProfileNameKey];
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kLSHasLocalizedDisplayNameKey];
+  [plist setObject:[NSNumber numberWithBool:YES]
+            forKey:app_mode::kNSHighResolutionCapableKey];
   if (info_->extension_id == app_mode::kAppListModeId) {
     // Prevent the app list from bouncing in the dock, and getting a run light.
     [plist setObject:[NSNumber numberWithBool:YES] forKey:kLSUIElement];
