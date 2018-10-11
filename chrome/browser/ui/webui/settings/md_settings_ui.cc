@@ -206,7 +206,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::ChangePictureHandler>());
   if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
     AddSettingsPageUIHandler(
-        std::make_unique<chromeos::settings::CrostiniHandler>());
+        std::make_unique<chromeos::settings::CrostiniHandler>(profile));
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::CupsPrintersHandler>(web_ui));

@@ -1231,6 +1231,12 @@
         <structure name="IDR_SETTINGS_CROSTINI_SUBPAGE_JS"
                    file="crostini_page/crostini_subpage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_CROSTINI_SHARED_PATHS_HTML"
+                   file="crostini_page/crostini_shared_paths.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CROSTINI_SHARED_PATHS_JS"
+                   file="crostini_page/crostini_shared_paths.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CROSTINI_BROWSER_PROXY_JS"
                    file="crostini_page/crostini_browser_proxy.js"
                    type="chrome_html"
