@@ -2014,27 +2014,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   if (HatsNotificationController::ShouldShowSurveyToProfile(profile))
     hats_notification_controller_ = new HatsNotificationController(profile);
 
-  if (quick_unlock::QuickUnlockNotificationController::
-          ShouldShowPinNotification(profile) &&
-      pin_unlock_notification_handler_.find(profile) ==
-          pin_unlock_notification_handler_.end()) {
-    auto* pin_feature_notification_controller =
-        quick_unlock::QuickUnlockNotificationController::CreateForPin(profile);
-    pin_unlock_notification_handler_.insert(
-        std::make_pair(profile, pin_feature_notification_controller));
-  }
-
-  if (quick_unlock::QuickUnlockNotificationController::
-          ShouldShowFingerprintNotification(profile) &&
-      fingerprint_unlock_notification_handler_.find(profile) ==
-          fingerprint_unlock_notification_handler_.end()) {
-    auto* fingerprint_feature_notification_controller =
-        quick_unlock::QuickUnlockNotificationController::CreateForFingerprint(
-            profile);
-    fingerprint_unlock_notification_handler_.insert(
-        std::make_pair(profile, fingerprint_feature_notification_controller));
-  }
-
   base::OnceClosure login_host_finalized_callback = base::BindOnce(
       [] { session_manager::SessionManager::Get()->SessionStarted(); });
 
