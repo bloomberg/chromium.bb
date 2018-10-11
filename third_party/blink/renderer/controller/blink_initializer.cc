@@ -134,6 +134,12 @@ void InitializeCommon(Platform* platform,
     if (task_runner)
       MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
   }
+
+#if defined(OS_ANDROID)
+  // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
+  // allocation does not happen in OnOOMCallback.
+  CrashMemoryMetricsReporterImpl::Instance();
+#endif
 }
 
 }  // namespace
