@@ -81,24 +81,24 @@ bool StopWatchingNetworkChange(EventWaiterPtr waiter) {
 }
 
 int WaitForEvents(EventWaiterPtr waiter, Events* events) {
-  int nfds = -1;
+  int max_fd = -1;
   fd_set readfds;
   fd_set writefds;
   FD_ZERO(&readfds);
   FD_ZERO(&writefds);
   for (const auto* read_socket : waiter->read_sockets) {
     FD_SET(read_socket->fd, &readfds);
-    nfds = std::max(nfds, read_socket->fd);
+    max_fd = std::max(max_fd, read_socket->fd);
   }
   for (const auto* write_socket : waiter->write_sockets) {
     FD_SET(write_socket->fd, &writefds);
-    nfds = std::max(nfds, write_socket->fd);
+    max_fd = std::max(max_fd, write_socket->fd);
   }
-  if (nfds == -1)
+  if (max_fd == -1)
     return 0;
 
   struct timeval tv = {};
-  const int rv = select(nfds, &readfds, &writefds, nullptr, &tv);
+  const int rv = select(max_fd + 1, &readfds, &writefds, nullptr, &tv);
   if (rv == -1 || rv == 0)
     return rv;
 
