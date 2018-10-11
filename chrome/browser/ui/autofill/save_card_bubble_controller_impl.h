@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/autofill/save_card_ui.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
@@ -117,10 +116,6 @@ class SaveCardBubbleControllerImpl
   // Opens the Payments settings page.
   virtual void ShowPaymentsSettingsPage();
 
-  // Returns the time elapsed since |timer_| was initialized.
-  // Exists for testing.
-  virtual base::TimeDelta Elapsed() const;
-
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -198,9 +193,9 @@ class SaveCardBubbleControllerImpl
   // If no legal message should be shown then this variable is an empty vector.
   LegalMessageLines legal_message_lines_;
 
-  // Used to measure the amount of time on a page; if it's less than some
-  // reasonable limit, then don't close the bubble upon navigation.
-  std::unique_ptr<base::ElapsedTimer> timer_;
+  // The time at which the bubble was shown. If it has been visible for less
+  // time than some reasonable limit, don't close the bubble upon navigation.
+  base::Time bubble_shown_timestamp_;
 
   // The security level for the current context.
   security_state::SecurityLevel security_level_;
