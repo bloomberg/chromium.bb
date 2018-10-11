@@ -4,8 +4,12 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
 
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/fragment_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -77,10 +81,13 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   SetContainerLayerState(mapping->DecorationOutlineLayer());
   SetContainerLayerState(mapping->ChildClippingMaskLayer());
 
+  bool is_root_scroller =
+      CompositingReasonFinder::RequiresCompositingForRootScroller(*paint_layer);
+
   auto SetContainerLayerStateForScrollbars =
-      [&fragment_data, &snapped_paint_offset, &container_layer_state](
-          GraphicsLayer* graphics_layer,
-          ScrollbarOrCorner scrollbar_or_corner) {
+      [&object, &is_root_scroller, &fragment_data, &snapped_paint_offset,
+       &container_layer_state](GraphicsLayer* graphics_layer,
+                               ScrollbarOrCorner scrollbar_or_corner) {
         if (!graphics_layer)
           return;
         PropertyTreeState scrollbar_layer_state =
@@ -108,6 +115,21 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
               scrollbar_layer_state.SetEffect(effect);
           }
         }
+
+        if (is_root_scroller) {
+          // The root scrollbar needs to use a transform node above the
+          // overscroll elasticity layer because the root scrollbar should not
+          // bounce with overscroll.
+          const auto* frame_view = object.GetFrameView();
+          DCHECK(frame_view);
+          const auto* page = frame_view->GetPage();
+          const auto& viewport = page->GetVisualViewport();
+          if (viewport.GetOverscrollElasticityTransformNode()) {
+            scrollbar_layer_state.SetTransform(
+                viewport.GetOverscrollElasticityTransformNode()->Parent());
+          }
+        }
+
         graphics_layer->SetLayerState(
             scrollbar_layer_state,
             snapped_paint_offset + graphics_layer->OffsetFromLayoutObject());
