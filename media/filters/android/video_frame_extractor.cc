@@ -76,6 +76,11 @@ void VideoFrameExtractor::Start(VideoFrameCallback video_frame_callback) {
   }
 
   auto packet = ReadVideoFrame();
+  if (!packet) {
+    OnError();
+    return;
+  }
+
   ConvertPacket(packet.get());
   NotifyComplete(
       std::vector<uint8_t>(packet->data, packet->data + packet->size),
