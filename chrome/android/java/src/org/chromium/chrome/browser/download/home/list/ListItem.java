@@ -142,7 +142,7 @@ public abstract class ListItem {
 
     /** A {@link ListItem} that involves a {@link OfflineItem}. */
     public static class OfflineItemListItem extends DateListItem {
-        public final OfflineItem item;
+        public OfflineItem item;
         public boolean spanFullWidth;
 
         /** Creates an {@link OfflineItemListItem} wrapping {@code item}. */

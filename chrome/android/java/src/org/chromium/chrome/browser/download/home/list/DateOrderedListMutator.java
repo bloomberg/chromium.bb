@@ -119,9 +119,10 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 if (listItem instanceof SectionHeaderListItem) sectionHeaderIndex = i;
                 if (!(listItem instanceof OfflineItemListItem)) continue;
 
-                OfflineItem offlineListItem = ((OfflineItemListItem) listItem).item;
-                if (item.id.equals(offlineListItem.id)) {
-                    mModel.update(i, new OfflineItemListItem(item));
+                OfflineItemListItem existingItem = (OfflineItemListItem) listItem;
+                if (item.id.equals(existingItem.item.id)) {
+                    existingItem.item = item;
+                    mModel.update(i, existingItem);
                     if (oldItem.state != item.state) updateSectionHeader(sectionHeaderIndex, i);
                     break;
                 }
