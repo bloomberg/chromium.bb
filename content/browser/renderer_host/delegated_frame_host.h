@@ -44,14 +44,13 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
 
   virtual ui::Layer* DelegatedFrameHostGetLayer() const = 0;
   virtual bool DelegatedFrameHostIsVisible() const = 0;
-
   // Returns the color that the resize gutters should be drawn with.
   virtual SkColor DelegatedFrameHostGetGutterColor() const = 0;
-
   virtual void OnFirstSurfaceActivation(
       const viz::SurfaceInfo& surface_info) = 0;
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
+  virtual float GetDeviceScaleFactor() const = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -199,9 +198,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
 
-  void ProcessCopyOutputRequest(
-      std::unique_ptr<viz::CopyOutputRequest> request);
-
   const viz::FrameSinkId frame_sink_id_;
   DelegatedFrameHostClient* const client_;
   const bool enable_viz_;
@@ -211,8 +207,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // The surface id that was most recently activated by
   // OnFirstSurfaceActivation.
   viz::LocalSurfaceId active_local_surface_id_;
-  // The scale factor of the above surface.
-  float active_device_scale_factor_ = 0.f;
 
   // The local surface id as of the most recent call to
   // EmbedSurface or WasShown. This is the surface that we expect
@@ -243,9 +237,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
-
-  std::vector<std::unique_ptr<viz::CopyOutputRequest>>
-      pending_first_frame_requests_;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 

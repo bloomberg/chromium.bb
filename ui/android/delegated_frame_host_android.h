@@ -203,14 +203,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Only used when surface synchronization is on.
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
 
-  std::vector<std::unique_ptr<viz::CopyOutputRequest>>
-      pending_first_frame_requests_;
-
   // The surface id that was most recently activated by
   // OnFirstSurfaceActivation.
   viz::LocalSurfaceId active_local_surface_id_;
-  // The scale factor of the above surface.
-  float active_device_scale_factor_ = 0.f;
 
   // The local surface id as of the most recent call to
   // EmbedSurface. This is the surface that we expect future frames to
