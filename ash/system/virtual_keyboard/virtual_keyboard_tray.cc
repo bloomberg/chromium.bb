@@ -39,16 +39,14 @@ VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
   if (Shell::HasInstance()) {
     Shell::Get()->accessibility_controller()->AddObserver(this);
     Shell::Get()->AddShellObserver(this);
+    keyboard::KeyboardController::Get()->AddObserver(this);
   }
-  // Try observing keyboard controller, in case it is already constructed.
-  ObserveKeyboardController();
 }
 
 VirtualKeyboardTray::~VirtualKeyboardTray() {
-  // Try unobserving keyboard controller, in case it still exists.
-  UnobserveKeyboardController();
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
+    keyboard::KeyboardController::Get()->RemoveObserver(this);
     Shell::Get()->RemoveShellObserver(this);
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   }
@@ -88,14 +86,6 @@ void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
   bool new_enabled =
       Shell::Get()->accessibility_controller()->IsVirtualKeyboardEnabled();
   SetVisible(new_enabled);
-  if (new_enabled) {
-    // Observe keyboard controller to detect when the virtual keyboard is
-    // shown/hidden.
-    ObserveKeyboardController();
-  } else {
-    // Try unobserving keyboard controller, in case it is not yet destroyed.
-    UnobserveKeyboardController();
-  }
 }
 
 void VirtualKeyboardTray::OnKeyboardVisibilityStateChanged(
@@ -103,27 +93,9 @@ void VirtualKeyboardTray::OnKeyboardVisibilityStateChanged(
   SetIsActive(is_visible);
 }
 
-void VirtualKeyboardTray::OnKeyboardControllerCreated() {
-  ObserveKeyboardController();
-}
-
 void VirtualKeyboardTray::OnSessionStateChanged(
     session_manager::SessionState state) {
   UpdateIcon();
-}
-
-void VirtualKeyboardTray::ObserveKeyboardController() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->IsEnabled() &&
-      !keyboard_controller->HasObserver(this)) {
-    keyboard_controller->AddObserver(this);
-  }
-}
-
-void VirtualKeyboardTray::UnobserveKeyboardController() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->HasObserver(this))
-    keyboard_controller->RemoveObserver(this);
 }
 
 void VirtualKeyboardTray::UpdateIcon() {

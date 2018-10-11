@@ -27,7 +27,6 @@
 #include "ui/keyboard/keyboard_ukm_recorder.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/public/keyboard_config.mojom.h"
-#include "ui/keyboard/public/keyboard_controller.mojom.h"
 #include "ui/keyboard/queued_container_type.h"
 #include "ui/keyboard/queued_display_change.h"
 
@@ -42,7 +41,6 @@ class TextInputClient;
 namespace keyboard {
 
 class CallbackAnimationObserver;
-class KeyboardControllerMojoImpl;
 class KeyboardControllerObserver;
 class KeyboardUI;
 
@@ -133,8 +131,6 @@ class KEYBOARD_EXPORT KeyboardController
   void AddObserver(KeyboardControllerObserver* observer);
   bool HasObserver(KeyboardControllerObserver* observer) const;
   void RemoveObserver(KeyboardControllerObserver* observer);
-
-  KeyboardControllerMojoImpl* mojo_impl() { return mojo_impl_.get(); }
 
   // Gets the currently focused text input client.
   ui::TextInputClient* GetTextInputClient();
@@ -358,7 +354,6 @@ class KEYBOARD_EXPORT KeyboardController
   // keyboard is loaded.
   void MarkKeyboardLoadFinished();
 
-  std::unique_ptr<KeyboardControllerMojoImpl> mojo_impl_;
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_ = nullptr;
   ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_;

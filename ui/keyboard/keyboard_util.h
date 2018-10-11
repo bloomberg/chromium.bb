@@ -9,7 +9,6 @@
 
 #include "base/strings/string16.h"
 #include "ui/keyboard/keyboard_export.h"
-#include "ui/keyboard/public/keyboard_controller.mojom.h"
 
 // Global utility functions for the virtual keyboard.
 // TODO(stevenjb/shuchen/shend): Many of these are accessed from both Chrome

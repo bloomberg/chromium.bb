@@ -19,6 +19,7 @@
 #include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/media_controller.h"
@@ -47,7 +48,6 @@
 #include "base/single_thread_task_runner.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_mojo_impl.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -136,9 +136,8 @@ void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
 }
 
 void BindKeyboardControllerRequestOnMainThread(
-    keyboard::mojom::KeyboardControllerRequest request) {
-  Shell::Get()->keyboard_controller()->mojo_impl()->BindRequest(
-      std::move(request));
+    mojom::KeyboardControllerRequest request) {
+  Shell::Get()->ash_keyboard_controller()->BindRequest(std::move(request));
 }
 
 void BindLocaleNotificationControllerOnMainThread(
