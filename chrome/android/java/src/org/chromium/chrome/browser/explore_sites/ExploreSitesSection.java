@@ -78,11 +78,11 @@ public class ExploreSitesSection {
     private List<ExploreSitesCategory> createDefaultCategoryTiles() {
         List<ExploreSitesCategory> categoryList = new ArrayList<>();
 
-        // Sport category.
+        // News category.
         ExploreSitesCategory category =
-                new ExploreSitesCategory(-1 /* category_id */, CategoryType.SPORT,
-                        getContext().getString(R.string.explore_sites_default_category_sports));
-        category.setDrawable(getVectorDrawable(R.drawable.ic_directions_run_blue_24dp));
+                new ExploreSitesCategory(-1 /* category_id */, CategoryType.NEWS,
+                        getContext().getString(R.string.explore_sites_default_category_news));
+        category.setDrawable(getVectorDrawable(R.drawable.ic_article_blue_24dp));
         categoryList.add(category);
 
         // Shopping category.
@@ -91,11 +91,12 @@ public class ExploreSitesSection {
         category.setDrawable(getVectorDrawable(R.drawable.ic_shopping_basket_blue_24dp));
         categoryList.add(category);
 
-        // Food category.
-        category = new ExploreSitesCategory(-1 /* category_id */, CategoryType.FOOD,
-                getContext().getString(R.string.explore_sites_default_category_cooking));
-        category.setDrawable(getVectorDrawable(R.drawable.ic_restaurant_menu_blue_24dp));
+        // Sport category.
+        category = new ExploreSitesCategory(-1 /* category_id */, CategoryType.SPORT,
+                getContext().getString(R.string.explore_sites_default_category_sports));
+        category.setDrawable(getVectorDrawable(R.drawable.ic_directions_run_blue_24dp));
         categoryList.add(category);
+
         return categoryList;
     }
 
