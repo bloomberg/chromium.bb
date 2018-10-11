@@ -125,6 +125,43 @@ void SetEmptyValidityIfEmpty(AutofillProfile* profile) {
                               AutofillProfile::CLIENT);
 }
 
+void MaybeApplyValidToFields(AutofillProfile* profile) {
+  // The metadata works from top to bottom. Therefore, a so far UNVALIDATED
+  // subregion can only be validated if its super-region is VALID. In  this
+  // case, it's VALID if it has not been marked as INVALID or EMPTY.
+
+  if (profile->GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT) ==
+      AutofillProfile::UNVALIDATED) {
+    profile->SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::VALID,
+                              AutofillProfile::CLIENT);
+  }
+
+  if (profile->GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT) ==
+          AutofillProfile::UNVALIDATED &&
+      profile->GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT) ==
+          AutofillProfile::VALID) {
+    profile->SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::VALID,
+                              AutofillProfile::CLIENT);
+  }
+
+  if (profile->GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                AutofillProfile::CLIENT) ==
+          AutofillProfile::UNVALIDATED &&
+      profile->GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT) ==
+          AutofillProfile::VALID) {
+    profile->SetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                              AutofillProfile::VALID, AutofillProfile::CLIENT);
+  }
+
+  // ZIP only depends on COUNTRY. If it's not so far marked as INVALID or EMPTY,
+  // then it's VALID.
+  if (profile->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT) ==
+      AutofillProfile::UNVALIDATED) {
+    profile->SetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::VALID,
+                              AutofillProfile::CLIENT);
+  }
+}
+
 }  // namespace
 
 namespace profile_validation_util {
@@ -143,44 +180,38 @@ void ValidateAddress(AutofillProfile* profile,
   DCHECK(address_validator);
   DCHECK(profile);
 
+  SetAllAddressValidityStates(profile, AutofillProfile::UNVALIDATED);
+
   if (!base::ContainsValue(
           CountryDataMap::GetInstance()->country_codes(),
           base::UTF16ToUTF8(profile->GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
     // If the country code is not in the database, the country code and the
     // profile are invalid, and other fields cannot be validated, because it is
     // unclear which, if any, rule should apply.
-    SetAllAddressValidityStates(profile, AutofillProfile::UNVALIDATED);
     SetValidityStateForAddressField(profile, COUNTRY, AutofillProfile::INVALID);
     SetEmptyValidityIfEmpty(profile);
     return;
   }
 
+  // The COUNTRY was already listed in the CountryDataMap, therefore it's valid.
+  SetValidityStateForAddressField(profile, COUNTRY, AutofillProfile::VALID);
+
   AddressData address;
   InitializeAddressFromProfile(*profile, &address);
-
   FieldProblemMap problems;
   // status denotes if the rule was successfully loaded before validation.
   AddressValidator::Status status =
       address_validator->ValidateAddress(address, GetFilter(), &problems);
 
-  if (status == AddressValidator::SUCCESS) {
-    // The rules were found and applied. Initialize all fields to VALID here and
-    // update the fields with problems below.
-    SetAllAddressValidityStates(profile, AutofillProfile::VALID);
-  } else {
-    // If the rules are not yet available, ValidateAddress can still check for
-    // MISSING_REQUIRED_FIELD. In this case, the address fields will be either
-    // UNVALIDATED or INVALID.
-    SetAllAddressValidityStates(profile, AutofillProfile::UNVALIDATED);
-    SetValidityStateForAddressField(profile, COUNTRY, AutofillProfile::VALID);
-  }
-
-  for (auto problem : problems) {
+  for (auto problem : problems)
     SetValidityStateForAddressField(profile, problem.first,
                                     AutofillProfile::INVALID);
-  }
 
   SetEmptyValidityIfEmpty(profile);
+
+  // Fields (except COUNTRY) could be VALID, only if the rules were available.
+  if (status == AddressValidator::SUCCESS)
+    MaybeApplyValidToFields(profile);
 }
 
 void ValidateEmailAddress(AutofillProfile* profile) {

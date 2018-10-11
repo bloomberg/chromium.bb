@@ -191,7 +191,7 @@ TEST_F(AutofillProfileValidationUtilTest, ValidateAddress_AdminAreaNotExists) {
       AutofillProfile::INVALID,
       profile.GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT));
   EXPECT_EQ(
-      AutofillProfile::VALID,
+      AutofillProfile::UNVALIDATED,
       profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
   EXPECT_EQ(AutofillProfile::EMPTY,
             profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -213,7 +213,7 @@ TEST_F(AutofillProfileValidationUtilTest, ValidateAddress_EmptyAdminArea) {
       AutofillProfile::EMPTY,
       profile.GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT));
   EXPECT_EQ(
-      AutofillProfile::VALID,
+      AutofillProfile::UNVALIDATED,
       profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
   EXPECT_EQ(AutofillProfile::EMPTY,
             profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -505,7 +505,7 @@ TEST_F(AutofillProfileValidationUtilTest,
   EXPECT_EQ(
       AutofillProfile::INVALID,
       profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
             profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
                                      AutofillProfile::CLIENT));
   EXPECT_EQ(
@@ -532,7 +532,7 @@ TEST_F(AutofillProfileValidationUtilTest,
   EXPECT_EQ(
       AutofillProfile::INVALID,
       profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
             profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
                                      AutofillProfile::CLIENT));
   EXPECT_EQ(
@@ -934,6 +934,164 @@ TEST_F(AutofillProfileValidationUtilTest,
                                      AutofillProfile::CLIENT));
   EXPECT_EQ(AutofillProfile::INVALID,
             profile.GetValidityState(EMAIL_ADDRESS, AutofillProfile::CLIENT));
+}
+
+TEST_F(AutofillProfileValidationUtilTest,
+       ValidateProfile_TopToBottomValidationCanada) {
+  // This is a full valid profile, with the wrong country:
+  // Address Line 1: "666 Notre-Dame Ouest",
+  // Address Line 2: "Apt 8", City: "Montreal", Province: "QC",
+  // Postal Code: "H3B 2T9", Country Code: "CN",
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16("CN"));
+
+  ValidateProfileTest(&profile);
+  // The country is validated independently, so it's considered as valid.
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::CLIENT));
+  // The state is not a Chinese state, so it's considered as invalid.
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profile.GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::UNVALIDATED,
+      profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
+
+  EXPECT_EQ(AutofillProfile::EMPTY,
+            profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                     AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_STREET_ADDRESS,
+                                     AutofillProfile::CLIENT));
+  // The zip is not a Chinese one, therefore it's invalid.
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profile.GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  // Phone number is validated regardless of the country.
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                     AutofillProfile::CLIENT));
+}
+
+TEST_F(AutofillProfileValidationUtilTest,
+       ValidateProfile_TopToBottomValidationChina) {
+  // This is a full valid profile, with the wrong country:
+  // Address Address: "100 Century Avenue",
+  // District: "赫章县", City: "毕节地区", Province: "贵州省",
+  // Postal Code: "200120", Country Code: "CA",
+  AutofillProfile profile(autofill::test::GetFullValidProfileForChina());
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16("CA"));
+
+  ValidateProfileTest(&profile);
+
+  // The country is validated independently, so it's considered as valid.
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::CLIENT));
+  // The state is not a Canadian state, so it's considered as invalid.
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profile.GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT));
+  // We can't validate city, because state is not valid.
+  EXPECT_EQ(
+      AutofillProfile::UNVALIDATED,
+      profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
+  // The dependent locality is not a Canadian field, so it's considered as
+  // invalid.
+  EXPECT_EQ(AutofillProfile::INVALID,
+            profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                     AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_STREET_ADDRESS,
+                                     AutofillProfile::CLIENT));
+
+  // The zip is not a Canadian one, therefore it's invalid.
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profile.GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  // Phone number is validated regardless of the country.
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                     AutofillProfile::CLIENT));
+}
+
+TEST_F(AutofillProfileValidationUtilTest,
+       ValidateProfile_TopToBottomValidationChina_StateWrong) {
+  // This is a full valid profile, with the wrong province:
+  // Address Address: "100 Century Avenue",
+  // District: "赫章县", City: "毕节地区", Province: "海南省",
+  // Postal Code: "200120", Country Code: "CN",
+  AutofillProfile profile(autofill::test::GetFullValidProfileForChina());
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("海南省"));
+
+  ValidateProfileTest(&profile);
+
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::CLIENT));
+  // Considered as valid because of the top to bottom approach.
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT));
+  // The city is in another province.
+  EXPECT_EQ(
+      AutofillProfile::INVALID,
+      profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
+  // The dependent locality can't be validated, because the city value is not
+  // valid.
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                     AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_STREET_ADDRESS,
+                                     AutofillProfile::CLIENT));
+
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  // Phone number is validated regardless of the country.
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                     AutofillProfile::CLIENT));
+}
+
+TEST_F(AutofillProfileValidationUtilTest,
+       ValidateProfile_TopToBottomValidationChina_StateMissing) {
+  // This is a full valid profile, with the wrong province:
+  // Address Address: "100 Century Avenue",
+  // District: "赫章县", City: "毕节地区", Province: "",
+  // Postal Code: "200120", Country Code: "CN",
+  AutofillProfile profile(autofill::test::GetFullValidProfileForChina());
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16(""));
+
+  ValidateProfileTest(&profile);
+
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::CLIENT));
+  EXPECT_EQ(
+      AutofillProfile::EMPTY,
+      profile.GetValidityState(ADDRESS_HOME_STATE, AutofillProfile::CLIENT));
+  // City can't be validated, because the state is missing.
+  EXPECT_EQ(
+      AutofillProfile::UNVALIDATED,
+      profile.GetValidityState(ADDRESS_HOME_CITY, AutofillProfile::CLIENT));
+  // The dependent locality can't be validated, because we don't know the city.
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
+            profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                                     AutofillProfile::CLIENT));
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_STREET_ADDRESS,
+                                     AutofillProfile::CLIENT));
+
+  EXPECT_EQ(
+      AutofillProfile::VALID,
+      profile.GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
+  // Phone number is validated regardless of the country.
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                                     AutofillProfile::CLIENT));
 }
 
 }  // namespace autofill
