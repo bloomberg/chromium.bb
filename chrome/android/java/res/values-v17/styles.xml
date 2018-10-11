@@ -718,8 +718,6 @@
         <item name="android:textAppearance">@style/BlueButtonText1</item>
         <item name="android:padding">16dp</item>
       </style>
-    <!-- TODO(https://crbug.com/850138): Confirm with UX whether this should be a one-off text
-         appearance or a pre-defined text appearance. -->
     <style name="TextAppearance.IncognitoNewTabLearnMoreLinkModern">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>

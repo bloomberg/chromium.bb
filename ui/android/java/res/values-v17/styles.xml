@@ -110,10 +110,6 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/headline_size</item>
     </style>
-    <style name="WhiteHeadlineIncognito" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/modern_grey_300</item>
-        <item name="android:textSize">@dimen/headline_size</item>
-    </style>
     <style name="WhiteBodyIncognito" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/white_alpha_70</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
