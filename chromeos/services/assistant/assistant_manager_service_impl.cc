@@ -62,7 +62,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
-    bool enable_hotword)
+    bool enable_hotword,
+    network::NetworkConnectionTracker* network_connection_tracker)
     : enable_hotword_(enable_hotword),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -76,7 +77,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
       connector, std::move(battery_monitor), enable_hotword,
-      background_thread_.task_runner());
+      background_thread_.task_runner(), network_connection_tracker);
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
   connector->BindInterface(ash::mojom::kServiceName,

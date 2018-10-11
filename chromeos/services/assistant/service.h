@@ -33,6 +33,10 @@ namespace base {
 class OneShotTimer;
 }
 
+namespace network {
+class NetworkConnectionTracker;
+}  // namespace network
+
 namespace chromeos {
 namespace assistant {
 
@@ -45,7 +49,8 @@ class Service : public service_manager::Service,
                 public mojom::AssistantPlatform,
                 public ash::mojom::VoiceInteractionObserver {
  public:
-  Service();
+  explicit Service(
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~Service() override;
 
   mojom::Client* client() { return client_.get(); }
@@ -153,6 +158,8 @@ class Service : public service_manager::Service,
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
+
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 
