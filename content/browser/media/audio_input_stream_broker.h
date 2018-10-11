@@ -7,12 +7,13 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/base/audio_parameters.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"

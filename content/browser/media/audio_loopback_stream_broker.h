@@ -5,18 +5,25 @@
 #ifndef CONTENT_BROWSER_MEDIA_AUDIO_LOOPBACK_STREAM_BROKER_H_
 #define CONTENT_BROWSER_MEDIA_AUDIO_LOOPBACK_STREAM_BROKER_H_
 
+#include <cstdint>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/sequence_checker.h"
 #include "content/browser/media/audio_muting_session.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
+
+namespace audio {
+namespace mojom {
+class StreamFactory;
+}
+}  // namespace audio
 
 namespace content {
 
@@ -46,7 +53,7 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
   void DidStartRecording() final;
 
   // AudioStreamBroker::LoopbackSink
-  void OnSourceGone() override;
+  void OnSourceGone() final;
 
  private:
   void StreamCreated(media::mojom::AudioInputStreamPtr stream,

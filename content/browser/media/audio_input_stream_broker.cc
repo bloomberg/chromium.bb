@@ -6,23 +6,24 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/media_observer.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_client.h"
 #include "media/audio/audio_logging.h"
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_CHROMEOS)
@@ -82,7 +83,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
       renderer_factory_client_(std::move(renderer_factory_client)),
       observer_binding_(this),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(renderer_factory_client_);
   DCHECK(deleter_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "AudioInputStreamBroker", this);
@@ -91,11 +92,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
   renderer_factory_client_.set_connection_error_handler(base::BindOnce(
       &AudioInputStreamBroker::ClientBindingLost, base::Unretained(this)));
 
-  // Notify RenderProcessHost about input stream so the renderer is not
-  // background.
-  auto* process_host = RenderProcessHost::FromID(render_process_id);
-  if (process_host)
-    process_host->OnMediaStreamAdded();
+  NotifyProcessHostOfStartedStream(render_process_id);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {
@@ -111,7 +108,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
 }
 
 AudioInputStreamBroker::~AudioInputStreamBroker() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if defined(OS_CHROMEOS)
   if (params_.channel_layout() ==
@@ -125,9 +122,7 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
   if (user_input_monitor_)
     user_input_monitor_->DisableKeyPressMonitoring();
 
-  auto* process_host = RenderProcessHost::FromID(render_process_id());
-  if (process_host)
-    process_host->OnMediaStreamRemoved();
+  NotifyProcessHostOfStoppedStream(render_process_id());
 
   // TODO(https://crbug.com/829317) update tab recording indicator.
 
@@ -145,7 +140,7 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
 
 void AudioInputStreamBroker::CreateStream(
     audio::mojom::StreamFactory* factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!observer_binding_.is_bound());
   DCHECK(!client_request_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("audio", "CreateStream", this, "device id",
@@ -175,8 +170,6 @@ void AudioInputStreamBroker::CreateStream(
   // Note that the component id for AudioLog is used to differentiate between
   // several users of the same audio log. Since this audio log is for a single
   // stream, the component id used doesn't matter.
-  // TODO(https://crbug.com/836226) pass valid user input monitor handle when
-  // switching to audio service input streams.
   constexpr int log_component_id = 0;
   factory->CreateInputStream(
       std::move(stream_request), std::move(client), std::move(observer_ptr),
@@ -191,7 +184,7 @@ void AudioInputStreamBroker::CreateStream(
 }
 
 void AudioInputStreamBroker::DidStartRecording() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(https://crbug.com/829317) update tab recording indicator.
 }
 
@@ -200,7 +193,7 @@ void AudioInputStreamBroker::StreamCreated(
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted,
     const base::Optional<base::UnguessableToken>& stream_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   awaiting_created_ = false;
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "CreateStream", this, "success",
                                   !!data_pipe);
@@ -221,7 +214,7 @@ void AudioInputStreamBroker::StreamCreated(
 void AudioInputStreamBroker::ObserverBindingLost(
     uint32_t reason,
     const std::string& description) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const uint32_t maxValidReason = static_cast<uint32_t>(
       media::mojom::AudioInputStreamObserver::DisconnectReason::kMaxValue);
@@ -238,13 +231,14 @@ void AudioInputStreamBroker::ObserverBindingLost(
 }
 
 void AudioInputStreamBroker::ClientBindingLost() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   disconnect_reason_ = media::mojom::AudioInputStreamObserver::
       DisconnectReason::kTerminatedByClient;
   Cleanup();
 }
 
 void AudioInputStreamBroker::Cleanup() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::move(deleter_).Run(this);
 }

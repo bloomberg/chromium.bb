@@ -6,9 +6,15 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/task/post_task.h"
 #include "content/browser/media/audio_input_stream_broker.h"
 #include "content/browser/media/audio_loopback_stream_broker.h"
 #include "content/browser/media/audio_output_stream_broker.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
@@ -81,6 +87,28 @@ AudioStreamBroker::AudioStreamBroker(int render_process_id, int render_frame_id)
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id) {}
 AudioStreamBroker::~AudioStreamBroker() {}
+
+// static
+void AudioStreamBroker::NotifyProcessHostOfStartedStream(
+    int render_process_id) {
+  auto impl = [](int id) {
+    if (auto* process_host = RenderProcessHost::FromID(id))
+      process_host->OnMediaStreamAdded();
+  };
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(impl, render_process_id));
+}
+
+// static
+void AudioStreamBroker::NotifyProcessHostOfStoppedStream(
+    int render_process_id) {
+  auto impl = [](int id) {
+    if (auto* process_host = RenderProcessHost::FromID(id))
+      process_host->OnMediaStreamRemoved();
+  };
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(impl, render_process_id));
+}
 
 AudioStreamBrokerFactory::AudioStreamBrokerFactory() {}
 AudioStreamBrokerFactory::~AudioStreamBrokerFactory() {}
