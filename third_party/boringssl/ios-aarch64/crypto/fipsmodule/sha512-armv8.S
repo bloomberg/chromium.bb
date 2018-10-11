@@ -1080,5 +1080,6 @@ LOPENSSL_armcap_P:
 .align	2
 #ifndef	__KERNEL__
 .comm	_OPENSSL_armcap_P,4,4
+.private_extern	_OPENSSL_armcap_P
 #endif
 #endif  // !OPENSSL_NO_ASM

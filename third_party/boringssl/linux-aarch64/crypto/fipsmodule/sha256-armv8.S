@@ -1209,6 +1209,7 @@ sha256_block_armv8:
 #endif
 #ifndef	__KERNEL__
 .comm	OPENSSL_armcap_P,4,4
+.hidden	OPENSSL_armcap_P
 #endif
 #endif
 #endif  // !OPENSSL_NO_ASM
