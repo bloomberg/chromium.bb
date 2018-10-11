@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -190,6 +191,16 @@ bool IsPinDifficultEnough(const std::string& pin) {
   return true;
 }
 
+Profile* GetActiveProfile(content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  // When OOBE continues in-session as Furst Run UI, it is still executed
+  // under Sign-In profile.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+    return ProfileManager::GetPrimaryUserProfile();
+
+  return profile;
+}
+
 }  // namespace
 
 // quickUnlockPrivate.getAuthToken
@@ -218,7 +229,7 @@ QuickUnlockPrivateGetAuthTokenFunction::Run() {
 
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
-          chrome_details_.GetProfile());
+          GetActiveProfile(browser_context()));
   chromeos::UserContext user_context(*user);
   user_context.SetKey(chromeos::Key(params->account_password));
 
@@ -265,7 +276,7 @@ void QuickUnlockPrivateGetAuthTokenFunction::OnAuthSuccess(
     const chromeos::UserContext& user_context) {
   auto result = std::make_unique<quick_unlock_private::TokenInfo>();
 
-  Profile* profile = Profile::FromBrowserContext(browser_context());
+  Profile* profile = GetActiveProfile(browser_context());
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
   result->token = quick_unlock_storage->CreateAuthToken(user_context);
@@ -294,7 +305,7 @@ ExtensionFunction::ResponseAction
 QuickUnlockPrivateSetLockScreenEnabledFunction::Run() {
   auto params =
       quick_unlock_private::SetLockScreenEnabled::Params::Create(*args_);
-  Profile* profile = Profile::FromBrowserContext(browser_context());
+  Profile* profile = GetActiveProfile(browser_context());
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
   if (quick_unlock_storage->GetAuthTokenExpired())
@@ -322,7 +333,7 @@ ExtensionFunction::ResponseAction
 QuickUnlockPrivateGetAvailableModesFunction::Run() {
   QuickUnlockModeList modes;
   if (!chromeos::quick_unlock::IsPinDisabledByPolicy(
-          Profile::FromBrowserContext(browser_context())->GetPrefs())) {
+          GetActiveProfile(browser_context())->GetPrefs())) {
     modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
   }
 
@@ -341,7 +352,7 @@ QuickUnlockPrivateGetActiveModesFunction::
 ExtensionFunction::ResponseAction
 QuickUnlockPrivateGetActiveModesFunction::Run() {
   ComputeActiveModes(
-      chrome_details_.GetProfile(),
+      GetActiveProfile(browser_context()),
       base::BindOnce(
           &QuickUnlockPrivateGetActiveModesFunction::OnGetActiveModes, this));
   return RespondLater();
@@ -374,7 +385,7 @@ QuickUnlockPrivateCheckCredentialFunction::Run() {
 
   const std::string& credential = params_->credential;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context());
+  Profile* profile = GetActiveProfile(browser_context());
   PrefService* pref_service = profile->GetPrefs();
   bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
 
@@ -412,7 +423,7 @@ QuickUnlockPrivateGetCredentialRequirementsFunction::Run() {
   auto result = std::make_unique<CredentialRequirements>();
   std::tie(result->min_length, result->max_length) =
       GetSanitizedPolicyPinMinMaxLength(
-          Profile::FromBrowserContext(browser_context())->GetPrefs());
+          GetActiveProfile(browser_context())->GetPrefs());
 
   return RespondNow(
       ArgumentList(GetCredentialRequirements::Results::Create(*result)));
@@ -441,7 +452,7 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   if (params_->modes.size() > 1)
     return RespondNow(Error(kMultipleModesNotSupported));
 
-  Profile* profile = Profile::FromBrowserContext(browser_context());
+  Profile* profile = GetActiveProfile(browser_context());
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
   if (quick_unlock_storage->GetAuthTokenExpired())
@@ -450,8 +461,7 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
     return RespondNow(Error(kAuthTokenInvalid));
 
   // Verify every credential is valid based on policies.
-  PrefService* pref_service =
-      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  PrefService* pref_service = GetActiveProfile(browser_context())->GetPrefs();
 
   // Do not allow setting a PIN if it is disabled by policy. It is disabled
   // on the UI, but users can still reach here via dev tools.
@@ -484,7 +494,7 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   }
 
   ComputeActiveModes(
-      chrome_details_.GetProfile(),
+      GetActiveProfile(browser_context()),
       base::BindOnce(&QuickUnlockPrivateSetModesFunction::OnGetActiveModes,
                      this));
 
@@ -519,7 +529,7 @@ void QuickUnlockPrivateSetModesFunction::OnGetActiveModes(
 
   // Apply changes.
   if (update_pin) {
-    Profile* profile = chrome_details_.GetProfile();
+    Profile* profile = GetActiveProfile(browser_context());
     user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (pin_credential.empty()) {
@@ -543,7 +553,7 @@ void QuickUnlockPrivateSetModesFunction::OnGetActiveModes(
 
 void QuickUnlockPrivateSetModesFunction::PinBackendCallComplete(bool result) {
   ComputeActiveModes(
-      chrome_details_.GetProfile(),
+      GetActiveProfile(browser_context()),
       base::BindOnce(&QuickUnlockPrivateSetModesFunction::ModeChangeComplete,
                      this));
 }
@@ -555,9 +565,9 @@ void QuickUnlockPrivateSetModesFunction::ModeChangeComplete(
 
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
-          chrome_details_.GetProfile());
+          GetActiveProfile(browser_context()));
   const chromeos::UserContext user_context(*user);
-  chromeos::EasyUnlockService::Get(chrome_details_.GetProfile())
+  chromeos::EasyUnlockService::Get(GetActiveProfile(browser_context()))
       ->HandleUserReauth(user_context);
 
   Respond(ArgumentList(SetModes::Results::Create()));
