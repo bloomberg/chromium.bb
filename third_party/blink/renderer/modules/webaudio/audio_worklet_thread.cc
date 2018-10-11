@@ -52,24 +52,6 @@ WorkerBackingThread& AudioWorkletThread::GetWorkerBackingThread() {
   return *WorkletThreadHolder<AudioWorkletThread>::GetInstance()->GetThread();
 }
 
-void CollectAllGarbageOnAudioWorkletThread(WaitableEvent* done_event) {
-  blink::ThreadState::Current()->CollectAllGarbage();
-  done_event->Signal();
-}
-
-void AudioWorkletThread::CollectAllGarbage() {
-  DCHECK(IsMainThread());
-  WaitableEvent done_event;
-  WorkletThreadHolder<AudioWorkletThread>* worklet_thread_holder =
-      WorkletThreadHolder<AudioWorkletThread>::GetInstance();
-  if (!worklet_thread_holder)
-    return;
-  worklet_thread_holder->GetThread()->BackingThread().PostTask(
-      FROM_HERE, CrossThreadBind(&CollectAllGarbageOnAudioWorkletThread,
-                                 CrossThreadUnretained(&done_event)));
-  done_event.Wait();
-}
-
 void AudioWorkletThread::EnsureSharedBackingThread() {
   DCHECK(IsMainThread());
   WorkletThreadHolder<AudioWorkletThread>::EnsureInstance(
