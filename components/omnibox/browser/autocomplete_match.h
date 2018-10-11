@@ -221,22 +221,30 @@ struct AutocompleteMatch {
   // Returns |url| altered by stripping off "www.", converting https protocol
   // to http, and stripping excess query parameters.  These conversions are
   // merely to allow comparisons to remove likely duplicates; these URLs are
-  // not used as actual destination URLs.  If |template_url_service| is not
-  // NULL, it is used to get a template URL corresponding to this match.  If
-  // the match's keyword is known, it can be passed in.  Otherwise, it can be
-  // left empty and the template URL (if any) is determined from the
-  // destination's hostname.  The template URL is used to strip off query args
-  // other than the search terms themselves that would otherwise prevent doing
-  // proper deduping.  |input| is used to decide if the scheme is allowed to
-  // be altered during stripping.  If this URL, minus the scheme and separator,
-  // starts with any the terms in input.terms_prefixed_by_http_or_https(), we
-  // avoid converting an HTTPS scheme to HTTP.  This means URLs that differ
-  // only by these schemes won't be marked as dupes, since the distinction
-  // seems to matter to the user.
-  static GURL GURLToStrippedGURL(const GURL& url,
-                                 const AutocompleteInput& input,
-                                 const TemplateURLService* template_url_service,
-                                 const base::string16& keyword);
+  // not used as actual destination URLs.
+  // - |input| is used to decide if the scheme is allowed to be altered during
+  //   stripping.  If this URL, minus the scheme and separator, starts with any
+  //   the terms in input.terms_prefixed_by_http_or_https(), we avoid converting
+  //   an HTTPS scheme to HTTP.  This means URLs that differ only by these
+  //   schemes won't be marked as dupes, since the distinction seems to matter
+  //   to the user.
+  // - If |template_url_service| is not NULL, it is used to get a template URL
+  //   corresponding to this match, which is used to strip off query args other
+  //   than the search terms themselves that would otherwise prevent doing
+  //   proper deduping.
+  // - If the match's keyword is known, it can be provided in |keyword|.
+  //   Otherwise, it can be left empty and the template URL (if any) is
+  //   determined from the destination's hostname.
+  // - If |additional_query_params| is provided, these will be added to the
+  //   resulting URL in the cases where a template URL is used. This is used to
+  //   distinguish cases such as entity suggestions where the response contains
+  //   additional meaningful parameters beyond the search terms themselves.
+  static GURL GURLToStrippedGURL(
+      const GURL& url,
+      const AutocompleteInput& input,
+      const TemplateURLService* template_url_service,
+      const base::string16& keyword,
+      const std::string& additional_query_params = "");
 
   // Sets the |match_in_scheme|, |match_in_subdomain|, and |match_after_host|
   // flags based on the provided |url| and list of substring |match_positions|.
