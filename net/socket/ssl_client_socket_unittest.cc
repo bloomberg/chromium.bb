@@ -45,7 +45,6 @@
 #include "net/der/tag.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
-#include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
@@ -95,17 +94,6 @@ namespace net {
 class NetLogWithSource;
 
 namespace {
-
-// When passed to |MakeHashValueVector|, this will generate a key pin that is
-// sha256/AA...=, and hence will cause pin validation success with the TestSPKI
-// pin from transport_security_state_static.pins. ("A" is the 0th element of the
-// base-64 alphabet.)
-const uint8_t kGoodHashValueVectorInput = 0;
-
-// When passed to |MakeHashValueVector|, this will generate a key pin that is
-// not sha256/AA...=, and hence will cause pin validation failure with the
-// TestSPKI pin.
-const uint8_t kBadHashValueVectorInput = 3;
 
 // ReadBufferingStreamSocket is a wrapper for an existing StreamSocket that
 // will ensure a certain amount of data is internally buffered before
@@ -900,22 +888,16 @@ class SSLClientSocketTest : public PlatformTest,
         std::move(connection), host_and_port, ssl_config, context_);
   }
 
-  // Create an SSLClientSocket object and use it to connect to a test server,
-  // then wait for connection results. This must be called after a successful
-  // StartTestServer() call.
-  //
-  // |ssl_config| The SSL configuration to use.
-  // |host_port_pair| The hostname and port to use at the SSL layer. (The
-  //     socket connection will still be made to |spawned_test_server_|.)
+  // Create an SSLClientSocket object and use it to connect to a test
+  // server, then wait for connection results. This must be called after
+  // a successful StartTestServer() call.
+  // |ssl_config| the SSL configuration to use.
   // |result| will retrieve the ::Connect() result value.
-  //
-  // Returns true on success, false otherwise. Success means that the SSL
-  // socket could be created and its Connect() was called, not that the
-  // connection itself was a success.
-  bool CreateAndConnectSSLClientSocketWithHost(
-      const SSLConfig& ssl_config,
-      const HostPortPair& host_port_pair,
-      int* result) {
+  // Returns true on success, false otherwise. Success means that the SSL socket
+  // could be created and its Connect() was called, not that the connection
+  // itself was a success.
+  bool CreateAndConnectSSLClientSocket(const SSLConfig& ssl_config,
+                                       int* result) {
     std::unique_ptr<StreamSocket> transport(
         new TCPClientSocket(addr_, NULL, &log_, NetLogSource()));
     int rv = callback_.GetResult(transport->Connect(callback_.callback()));
@@ -924,18 +906,13 @@ class SSLClientSocketTest : public PlatformTest,
       return false;
     }
 
-    sock_ =
-        CreateSSLClientSocket(std::move(transport), host_port_pair, ssl_config);
+    sock_ = CreateSSLClientSocket(std::move(transport),
+                                  spawned_test_server_->host_port_pair(),
+                                  ssl_config);
     EXPECT_FALSE(sock_->IsConnected());
 
     *result = callback_.GetResult(sock_->Connect(callback_.callback()));
     return true;
-  }
-
-  bool CreateAndConnectSSLClientSocket(const SSLConfig& ssl_config,
-                                       int* result) {
-    return CreateAndConnectSSLClientSocketWithHost(
-        ssl_config, spawned_test_server()->host_port_pair(), result);
   }
 
   // Adds the server certificate with provided cert status.
@@ -3536,19 +3513,19 @@ TEST_F(SSLClientSocketTest, PKPBypassedSet) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = false;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kBadHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  context_.transport_security_state->EnableStaticPinsForTesting();
-  ScopedTransportSecurityStateSource scoped_security_state_source;
+  // Set up HPKP
+  HashValueVector expected_hashes = MakeHashValueVector(1);
+  context_.transport_security_state->AddHPKP(
+      spawned_test_server()->host_port_pair().host(),
+      base::Time::Now() + base::TimeDelta::FromSeconds(10000), true,
+      expected_hashes, GURL());
 
   SSLConfig ssl_config;
   int rv;
-  HostPortPair host_port_pair("example.test",
-                              spawned_test_server()->host_port_pair().port());
-  ASSERT_TRUE(
-      CreateAndConnectSSLClientSocketWithHost(ssl_config, host_port_pair, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   SSLInfo ssl_info;
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
@@ -3570,19 +3547,19 @@ TEST_F(SSLClientSocketTest, PKPEnforced) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kBadHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  context_.transport_security_state->EnableStaticPinsForTesting();
-  ScopedTransportSecurityStateSource scoped_security_state_source;
+  // Set up HPKP
+  HashValueVector expected_hashes = MakeHashValueVector(1);
+  context_.transport_security_state->AddHPKP(
+      spawned_test_server()->host_port_pair().host(),
+      base::Time::Now() + base::TimeDelta::FromSeconds(10000), true,
+      expected_hashes, GURL());
 
   SSLConfig ssl_config;
   int rv;
-  HostPortPair host_port_pair("example.test",
-                              spawned_test_server()->host_port_pair().port());
-  ASSERT_TRUE(
-      CreateAndConnectSSLClientSocketWithHost(ssl_config, host_port_pair, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   SSLInfo ssl_info;
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
@@ -3605,8 +3582,7 @@ TEST_F(SSLClientSocketTest, CTIsRequired) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up CT
@@ -3723,8 +3699,7 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramCompliant) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the Expect-CT opt-in.
@@ -3768,8 +3743,7 @@ TEST_F(SSLClientSocketTest, CTNotRequiredHistogram) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = false;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
@@ -3808,8 +3782,7 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliant) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the Expect-CT opt-in.
@@ -3851,8 +3824,7 @@ TEST_F(SSLClientSocketTest, CTRequirementsFlagNotMet) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the Expect-CT opt-in.
@@ -3886,8 +3858,7 @@ TEST_F(SSLClientSocketTest, CTRequirementsFlagMet) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the Expect-CT opt-in.
@@ -3928,8 +3899,7 @@ TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliantLocalRoot) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = false;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the CT requirement and failure to comply.
@@ -3973,8 +3943,7 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kGoodHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Set up the Expect-CT opt-in.
@@ -4054,8 +4023,8 @@ TEST_F(SSLClientSocketTest, CTIsRequiredByExpectCT) {
   EXPECT_EQ(2u, reporter.num_failures());
 }
 
-// When both PKP and CT are required for a host, and both fail, the more
-// serious error is that the pin validation failed.
+// When both HPKP and CT are required for a host, and both fail, the more
+// serious error is that the HPKP pin validation failed.
 TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
   SpawnedTestServer::SSLOptions ssl_options;
   ASSERT_TRUE(StartTestServer(ssl_options));
@@ -4067,14 +4036,15 @@ TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
   CertVerifyResult verify_result;
   verify_result.is_issued_by_known_root = true;
   verify_result.verified_cert = server_cert;
-  verify_result.public_key_hashes =
-      MakeHashValueVector(kBadHashValueVectorInput);
+  verify_result.public_key_hashes = MakeHashValueVector(0);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  context_.transport_security_state->EnableStaticPinsForTesting();
-  ScopedTransportSecurityStateSource scoped_security_state_source;
-
-  const char kCTHost[] = "pkp-expect-ct.preloaded.test";
+  // Set up HPKP.
+  HashValueVector expected_hashes = MakeHashValueVector(1);
+  context_.transport_security_state->AddHPKP(
+      spawned_test_server()->host_port_pair().host(),
+      base::Time::Now() + base::TimeDelta::FromSeconds(10000), true,
+      expected_hashes, GURL());
 
   // Set up CT.
   MockRequireCTDelegate require_ct_delegate;
@@ -4082,7 +4052,9 @@ TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
   EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::NOT_REQUIRED));
-  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kCTHost, _, _))
+  EXPECT_CALL(
+      require_ct_delegate,
+      IsCTRequiredForHost(spawned_test_server()->host_port_pair().host(), _, _))
       .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
                                  CTRequirementLevel::REQUIRED));
   EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
@@ -4091,10 +4063,7 @@ TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
 
   SSLConfig ssl_config;
   int rv;
-  HostPortPair host_port_pair(kCTHost,
-                              spawned_test_server()->host_port_pair().port());
-  ASSERT_TRUE(
-      CreateAndConnectSSLClientSocketWithHost(ssl_config, host_port_pair, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   SSLInfo ssl_info;
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
