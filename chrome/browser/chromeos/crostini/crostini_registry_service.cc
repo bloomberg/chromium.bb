@@ -425,7 +425,9 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
   // If an app had StartupWMClass set to the given WM class, use that,
   // otherwise look for a desktop file id matching the WM class.
   base::StringPiece key = suffix.substr(strlen(kWMClassPrefix));
-  FindAppIdResult result = FindAppId(apps, kAppStartupWMClassKey, key, &app_id);
+  FindAppIdResult result = FindAppId(apps, kAppStartupWMClassKey, key, &app_id,
+                                     false /* require_startup_notification */,
+                                     true /* need_display */);
   if (result == FindAppIdResult::UniqueMatch)
     return app_id;
   if (result == FindAppIdResult::NonUniqueMatch)
