@@ -219,10 +219,13 @@ bool OutputController::Create(bool is_for_device_change) {
     // Ensure new monitors know that we're active.
     stream_monitor_coordinator_->AddObserver(processing_id_, this);
     // Ensure existing monitors do as well.
-    for (StreamMonitor* monitor :
-         stream_monitor_coordinator_->GetCurrentMembers(processing_id_)) {
-      monitor->OnStreamActive(this);
-    }
+    stream_monitor_coordinator_->ForEachMemberInGroup(
+        processing_id_,
+        base::BindRepeating(
+            [](OutputController* controller, StreamMonitor* monitor) {
+              monitor->OnStreamActive(controller);
+            },
+            this));
   }
 
   return true;
@@ -444,10 +447,13 @@ void OutputController::StopCloseAndClearStream() {
       // Don't send out activation messages for now.
       stream_monitor_coordinator_->RemoveObserver(processing_id_, this);
       // Ensure everyone monitoring us knows we're no-longer active.
-      for (StreamMonitor* monitor :
-           stream_monitor_coordinator_->GetCurrentMembers(processing_id_)) {
-        monitor->OnStreamInactive(this);
-      }
+      stream_monitor_coordinator_->ForEachMemberInGroup(
+          processing_id_,
+          base::BindRepeating(
+              [](OutputController* controller, StreamMonitor* monitor) {
+                monitor->OnStreamInactive(controller);
+              },
+              this));
     }
 
     StopStream();
