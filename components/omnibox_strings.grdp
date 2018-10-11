@@ -61,6 +61,9 @@
   <message name="IDS_DRIVE_SUGGESTION_DOCUMENT" desc="Google Docs product name, for use in omnibox Docs result descriptions.">
     Google Docs
   </message>
+  <message name="IDS_DRIVE_SUGGESTION_FORM" desc="Google Docs product name, for use in omnibox Form result descriptions.">
+    Google Forms
+  </message>
   <message name="IDS_DRIVE_SUGGESTION_SPREADSHEET" desc="Google Sheets product name, for use in omnibox Sheets result descriptions.">
     Google Sheets
   </message>
