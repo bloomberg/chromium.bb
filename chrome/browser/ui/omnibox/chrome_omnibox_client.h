@@ -80,6 +80,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
+  void PromptPageTranslation() override;
 
  private:
   // Performs prerendering for |match|.

@@ -8,7 +8,6 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 OmniboxPedal::LabelStrings::LabelStrings(int id_hint,

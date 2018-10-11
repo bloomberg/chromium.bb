@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/strings/grit/components_strings.h"
 
@@ -148,6 +149,29 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedalCommon {
 
 // =============================================================================
 
+class OmniboxPedalTranslate : public OmniboxPedalCommon {
+ public:
+  OmniboxPedalTranslate()
+      : OmniboxPedalCommon(
+            LabelStrings(IDS_OMNIBOX_PEDAL_TRANSLATE_HINT,
+                         IDS_OMNIBOX_PEDAL_TRANSLATE_HINT_SHORT,
+                         IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS),
+            GURL(),
+            {
+                "how to change language in google chrome",
+                "change language chrome", "change chrome language",
+                "change language in chrome", "switch chrome language",
+                "translate language", "translate in chrome",
+                "translate on page", "translate language chrome",
+            }) {}
+
+  void Execute(ExecutionContext& context) const override {
+    context.client_.PromptPageTranslation();
+  }
+};
+
+// =============================================================================
+
 std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   std::vector<std::unique_ptr<OmniboxPedal>> pedals;
   const auto add = [&](OmniboxPedal* pedal) {
@@ -158,5 +182,6 @@ std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   add(new OmniboxPedalManagePasswords());
   add(new OmniboxPedalChangeHomePage());
   add(new OmniboxPedalUpdateCreditCard());
+  add(new OmniboxPedalTranslate());
   return pedals;
 }
