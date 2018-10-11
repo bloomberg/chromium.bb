@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp;
 import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.annotation.IdRes;
@@ -17,7 +18,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.BulletSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -35,7 +35,6 @@ import org.chromium.ui.text.SpanApplier;
  */
 public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
     private final Context mContext;
-    private final DisplayMetrics mMetrics;
 
     private int mWidthDp;
     private int mHeightDp;
@@ -68,20 +67,14 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
     public IncognitoNewTabPageViewMD(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
-        mMetrics = mContext.getResources().getDisplayMetrics();
-    }
-
-    private int pxToDp(int px) {
-        return (int) Math.ceil(px / mMetrics.density);
-    }
-
-    private int spToPx(int sp) {
-        return (int) Math.ceil(sp * mMetrics.scaledDensity);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
+        mWidthDp = mContext.getResources().getConfiguration().screenWidthDp;
+        mHeightDp = mContext.getResources().getConfiguration().screenHeightDp;
 
         populateBulletpoints(R.id.new_tab_incognito_features, R.string.new_tab_otr_not_saved);
         populateBulletpoints(R.id.new_tab_incognito_warning, R.string.new_tab_otr_visible);
@@ -95,21 +88,28 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                         (TextView) findViewById(R.id.new_tab_incognito_warning), mLearnMore};
         mBulletpointsContainer =
                 (LinearLayout) findViewById(R.id.new_tab_incognito_bulletpoints_container);
+
+        adjustView();
+    }
+
+    private void adjustView() {
+        adjustIcon();
+        adjustLayout();
+        adjustLearnMore();
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-
-        if (changed) {
-            mWidthDp = pxToDp(getMeasuredWidth());
-            mHeightDp = pxToDp(getMeasuredHeight());
-
-            adjustTypography();
-            adjustIcon();
-            adjustLayout();
-            adjustLearnMore();
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // View#onConfigurationChanged() doesn't get called when resizing this view in
+        // multi-window mode, so #onMeasure() is used instead.
+        Configuration config = getContext().getResources().getConfiguration();
+        if (mWidthDp != config.screenWidthDp || mHeightDp != config.screenHeightDp) {
+            mWidthDp = config.screenWidthDp;
+            mHeightDp = config.screenHeightDp;
+            adjustView();
         }
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     /**
@@ -152,25 +152,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                 new SpanApplier.SpanInfo("<li3>", "</li3>", new IncognitoBulletSpan())));
     }
 
-    /** Adjusts the font settings. */
-    private void adjustTypography() {
-        if (mWidthDp <= 240 || mHeightDp <= 320) {
-            // Small text on small screens.
-            mHeader.setTextSize(20 /* sp */);
-            mHeader.setLineSpacing(spToPx(4) /* add */, 1 /* mult */); // 20sp + 4sp = 24sp
-
-            for (TextView paragraph : mParagraphs) paragraph.setTextSize(12 /* sp */);
-        } else {
-            // Large text on large screens.
-            mHeader.setTextSize(24 /* sp */);
-            mHeader.setLineSpacing(spToPx(8) /* add */, 1 /* mult */); // 24sp + 8sp = 32sp
-
-            for (TextView paragraph : mParagraphs) paragraph.setTextSize(14 /* sp */);
-        }
-
-        // Paragraph line spacing is constant +6sp, defined in R.layout.new_tab_page_incognito_md.
-    }
-
     /** Adjusts the paddings, margins, and the orientation of bulletpoints. */
     private void adjustLayout() {
         int paddingHorizontalDp;
@@ -187,8 +168,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
             mContainer.setGravity(Gravity.START);
 
             // Decide the bulletpoints orientation.
-            // TODO (thildebr): This is never set to anything but false, check if we can remove
-            // related code.
             bulletpointsArrangedHorizontally = false;
 
             // The subtitle is sized automatically, but not wider than CONTENT_WIDTH_DP.
@@ -212,16 +191,9 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
             mContainer.setGravity(Gravity.CENTER_HORIZONTAL);
 
             // Decide the bulletpoints orientation.
-            int totalBulletpointsWidthDp = pxToDp(mBulletpointsContainer.getChildAt(0).getWidth())
-                    + pxToDp(mBulletpointsContainer.getChildAt(1).getWidth())
-                    + BULLETPOINTS_HORIZONTAL_SPACING_DP;
-            bulletpointsArrangedHorizontally = totalBulletpointsWidthDp <= CONTENT_WIDTH_DP;
+            bulletpointsArrangedHorizontally = true;
 
-            // The subtitle width is equal to the two sets of bulletpoints if they are arranged
-            // horizontally. If not, use the default CONTENT_WIDTH_DP.
-            int contentWidthPx = bulletpointsArrangedHorizontally
-                    ? dpToPx(mContext, totalBulletpointsWidthDp)
-                    : dpToPx(mContext, CONTENT_WIDTH_DP);
+            int contentWidthPx = dpToPx(mContext, CONTENT_WIDTH_DP);
             mSubtitle.setLayoutParams(new LinearLayout.LayoutParams(
                     contentWidthPx, LinearLayout.LayoutParams.WRAP_CONTENT));
             mBulletpointsContainer.setLayoutParams(new LinearLayout.LayoutParams(
