@@ -3306,6 +3306,9 @@ void RenderFrameImpl::CommitNavigation(
       WebURLRequest request = CreateURLRequestForCommit(
           common_params, request_params, std::move(url_loader_client_endpoints),
           head);
+      // Note: we cannot use base::AutoReset here, since |this| can be deleted
+      // in the next call and auto reset will introduce use-after-free bug.
+      committing_main_request_ = true;
       frame_->CommitNavigation(
           request, load_type, item_for_history_navigation, is_client_redirect,
           devtools_navigation_token,
@@ -3320,7 +3323,7 @@ void RenderFrameImpl::CommitNavigation(
       // otherwise it will result in a use-after-free bug.
       if (!weak_this)
         return;
-
+      committing_main_request_ = false;
       RequestExtraData* extra_data =
           static_cast<RequestExtraData*>(request.GetExtraData());
       continue_navigation =
@@ -4874,8 +4877,13 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  // TODO(ahemery): We should skip the processing for the main resource, it has
-  // been done before sending the request to the browser.
+  if (committing_main_request_ &&
+      request.GetFrameType() !=
+          network::mojom::RequestContextFrameType::kNone) {
+    // We should not process this request, as it was already processed
+    // as part of BeginNavigation.
+    return;
+  }
 
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
@@ -6525,6 +6533,9 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
   request.SetFrameType(IsTopLevelNavigation(frame_)
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);
+  request.SetRequestorID(render_view_->GetRoutingID());
+  static_cast<RequestExtraData*>(request.GetExtraData())
+      ->set_render_frame_id(routing_id_);
 
 #if defined(OS_ANDROID)
   request.SetHasUserGesture(common_params.has_user_gesture);
