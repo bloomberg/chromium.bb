@@ -9,7 +9,6 @@
 // This is a GNU header that is not present on Apple platforms
 #include <features.h>
 #endif
-#include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
 
