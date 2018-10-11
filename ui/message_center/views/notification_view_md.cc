@@ -36,6 +36,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -1237,6 +1238,8 @@ void NotificationViewMD::UpdateCornerRadius(int top_radius, int bottom_radius) {
   action_buttons_row_->SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(
           0, bottom_radius, kActionsRowBackgroundColor)));
+  top_radius_ = top_radius;
+  bottom_radius_ = bottom_radius;
 }
 
 NotificationControlButtonsView* NotificationViewMD::GetControlButtonsView()
@@ -1341,6 +1344,16 @@ std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
   return std::make_unique<views::FloodFillInkDropRipple>(
       ink_drop_container_->size(), GetInkDropCenterBasedOnLastEvent(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
+}
+
+std::unique_ptr<views::InkDropMask> NotificationViewMD::CreateInkDropMask()
+    const {
+  gfx::Path path;
+  SkScalar radii[8] = {top_radius_,    top_radius_,    top_radius_,
+                       top_radius_,    bottom_radius_, bottom_radius_,
+                       bottom_radius_, bottom_radius_};
+  path.addRoundRect(gfx::RectToSkRect(gfx::Rect(size())), radii);
+  return std::make_unique<views::PathInkDropMask>(size(), path);
 }
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {

@@ -182,6 +182,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
 
   // Overridden from MessageView:
@@ -264,6 +265,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
+
+  int top_radius_ = 0;
+  int bottom_radius_ = 0;
 
   // Container views directly attached to this view.
   NotificationHeaderView* header_row_ = nullptr;
