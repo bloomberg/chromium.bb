@@ -298,17 +298,17 @@ void AssistantController::OnAccessibilityStatusChanged() {
       Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
 }
 
-void AssistantController::OpenUrl(const GURL& url) {
+void AssistantController::OpenUrl(const GURL& url, bool from_server) {
   if (assistant::util::IsDeepLinkUrl(url)) {
     NotifyDeepLinkReceived(url);
     return;
   }
 
   // The new tab should be opened with a user activation since the user
-  // interacted with the assistant to open the url.
+  // interacted with the Assistant to open the url.
   Shell::Get()->new_window_controller()->NewTabWithUrl(
-      url, true /* from_user_interaction */);
-  NotifyUrlOpened(url);
+      url, /*from_user_interaction=*/true);
+  NotifyUrlOpened(url, from_server);
 }
 
 void AssistantController::NotifyConstructed() {
@@ -333,9 +333,9 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
     observer.OnDeepLinkReceived(type, params);
 }
 
-void AssistantController::NotifyUrlOpened(const GURL& url) {
+void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
   for (AssistantControllerObserver& observer : observers_)
-    observer.OnUrlOpened(url);
+    observer.OnUrlOpened(url, from_server);
 }
 
 void AssistantController::OnVoiceInteractionStatusChanged(
