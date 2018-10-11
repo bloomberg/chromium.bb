@@ -161,7 +161,9 @@ void PropertyTreeManager::SetCurrentEffectState(
     const ClipPaintPropertyNode* clip) {
   current_.effect_id = cc_effect_node.id;
   current_.effect_type = effect_type;
+  DCHECK(!effect->IsParentAlias() || !effect->Parent());
   current_.effect = effect;
+  DCHECK(!clip->IsParentAlias() || !clip->Parent());
   current_.clip = clip;
   if (cc_effect_node.has_render_surface)
     current_.render_surface_transform = effect->LocalTransformSpace();
@@ -566,7 +568,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode* target_clip,
     SkBlendMode delegated_blend,
     bool effect_is_newly_built) {
-  target_clip = target_clip->Unalias();
+  auto* unaliased_target_clip = target_clip->Unalias();
   if (delegated_blend != SkBlendMode::kSrcOver) {
     // Exit all synthetic effect node if the next child has exotic blending mode
     // because it has to access the backdrop of enclosing effect.
@@ -581,7 +583,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     // Exit synthetic effects until there are no more synthesized clips below
     // our lowest common ancestor.
     const auto& lca =
-        *LowestCommonAncestor(*current_.clip, *target_clip).Unalias();
+        *LowestCommonAncestor(*current_.clip, *unaliased_target_clip).Unalias();
     while (current_.clip != &lca) {
       DCHECK(IsCurrentCcEffectSynthetic());
       const auto* pre_exit_clip = current_.clip;
@@ -603,18 +605,18 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       SetCurrentEffectHasRenderSurface();
   }
 
-  DCHECK(current_.clip->IsAncestorOf(*target_clip));
+  DCHECK(current_.clip->IsAncestorOf(*unaliased_target_clip));
 
   struct PendingClip {
     const ClipPaintPropertyNode* clip;
     CcEffectType type;
   };
   Vector<PendingClip> pending_clips;
-  for (; target_clip != current_.clip;
-       target_clip = target_clip->Parent()->Unalias()) {
-    DCHECK(target_clip);
-    if (auto type = NeedsSyntheticEffect(*target_clip))
-      pending_clips.emplace_back(PendingClip{target_clip, *type});
+  for (; unaliased_target_clip != current_.clip;
+       unaliased_target_clip = unaliased_target_clip->Parent()->Unalias()) {
+    DCHECK(unaliased_target_clip);
+    if (auto type = NeedsSyntheticEffect(*unaliased_target_clip))
+      pending_clips.emplace_back(PendingClip{unaliased_target_clip, *type});
   }
 
   for (size_t i = pending_clips.size(); i--;) {
@@ -664,7 +666,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
 
 bool PropertyTreeManager::BuildEffectNodesRecursively(
     const EffectPaintPropertyNode* next_effect) {
-  next_effect = next_effect ? next_effect->Unalias() : nullptr;
+  next_effect = SafeUnalias(next_effect);
   if (next_effect == current_.effect)
     return false;
   DCHECK(next_effect);
@@ -681,7 +683,7 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
 
   SkBlendMode used_blend_mode;
   int output_clip_id;
-  const auto* output_clip = next_effect->OutputClip();
+  const auto* output_clip = SafeUnalias(next_effect->OutputClip());
   if (output_clip) {
     used_blend_mode = SynthesizeCcEffectsForClipsIfNeeded(
         output_clip, next_effect->BlendMode(), newly_built);
