@@ -155,33 +155,23 @@ UIFont* InfoBarMessageFont() {
 }
 
 - (void)layoutSubviews {
+  // Set a bottom margin equal to the height of the secondary toolbar, if any.
+  // Deduct the bottom safe area inset as it is already included in the height
+  // of the secondary toolbar.
+  // TODO(crbug.com/894449): This won't update the infobar's position after the
+  // secondary toolbar reappears. Consider adding a constraint to the
+  // |layoutGuide| in |didMoveToSuperview|.
+  NamedGuide* layoutGuide =
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
+  self.footerViewBottomAnchorConstraint.constant =
+      layoutGuide.layoutFrame.size.height;
+
   [super layoutSubviews];
 
   [self.sizingDelegate didSetInfoBarTargetHeight:CGRectGetHeight(self.frame)];
 }
 
-- (void)setFrame:(CGRect)frame {
-  [super setFrame:frame];
-
-  // Updates layout of subviews immediately, if layout updates are pending,
-  // rather than waiting for the next update cycle. Otherwise, the layout breaks
-  // on iPhone X.
-  // TODO(crbug.com/862688): Investigate why this is happening.
-  [self layoutIfNeeded];
-}
-
 - (CGSize)sizeThatFits:(CGSize)size {
-  // Set a bottom margin equal to the height of the secondary toolbar, if any.
-  // Deduct the bottom safe area inset as it is already included in the height
-  // of the secondary toolbar.
-  NamedGuide* layoutGuide =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
-  CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
-  self.footerViewBottomAnchorConstraint.constant =
-      layoutGuide.constrained
-          ? layoutGuide.layoutFrame.size.height - bottomSafeAreaInset
-          : 0;
-
   CGSize computedSize = [self systemLayoutSizeFittingSize:size];
   return CGSizeMake(size.width, computedSize.height);
 }
@@ -326,8 +316,8 @@ UIFont* InfoBarMessageFont() {
         UIEdgeInsetsMake(kButtonsTopPadding, kPadding, kPadding, kPadding);
     [self addSubview:footerView];
 
-    self.footerViewBottomAnchorConstraint = [safeAreaLayoutGuide.bottomAnchor
-        constraintEqualToAnchor:footerView.bottomAnchor];
+    self.footerViewBottomAnchorConstraint =
+        [self.bottomAnchor constraintEqualToAnchor:footerView.bottomAnchor];
     [NSLayoutConstraint activateConstraints:@[
       [safeAreaLayoutGuide.leadingAnchor
           constraintEqualToAnchor:footerView.leadingAnchor],
