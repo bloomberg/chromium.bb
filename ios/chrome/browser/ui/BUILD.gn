@@ -369,6 +369,8 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/image_util",
+    "//ios/chrome/browser/ui/infobars",
+    "//ios/chrome/browser/ui/infobars:public",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/location_bar:toolbar_model_delegate",
     "//ios/chrome/browser/ui/main:tab_switcher",

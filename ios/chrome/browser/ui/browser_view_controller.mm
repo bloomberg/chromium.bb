@@ -71,10 +71,6 @@
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
-#include "ios/chrome/browser/infobars/infobar_container_delegate_ios.h"
-#include "ios/chrome/browser/infobars/infobar_container_ios.h"
-#import "ios/chrome/browser/infobars/infobar_container_state_delegate.h"
-#include "ios/chrome/browser/infobars/infobar_container_view.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -160,6 +156,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
+#import "ios/chrome/browser/ui/infobars/infobar_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #include "ios/chrome/browser/ui/location_bar/toolbar_model_delegate_ios.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
@@ -426,7 +424,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     DialogPresenterDelegate,
                                     FormInputAccessoryCoordinatorDelegate,
                                     FullscreenUIElement,
-                                    InfobarContainerStateDelegate,
+                                    InfobarPositioner,
                                     KeyCommandsPlumbing,
                                     MainContentUI,
                                     ManageAccountsDelegate,
@@ -523,14 +521,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // The time at which |_lastTapPoint| was most recently set.
   CFTimeInterval _lastTapTime;
-
-  // A single infobar container handles all infobars in all tabs. It keeps
-  // track of infobars for current tab (accessed via infobar helper of
-  // the current tab).
-  std::unique_ptr<InfoBarContainerIOS> _infoBarContainer;
-
-  // Bridge class to deliver container change notifications to BVC.
-  std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
 
   // The image fetcher used to save images and perform image-based searches.
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
@@ -657,6 +647,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong) ChromeCoordinator* recentTabsCoordinator;
 // Coordinator for tablet tab strip.
 @property(nonatomic, strong) TabStripLegacyCoordinator* tabStripCoordinator;
+// Coordinator for Infobars.
+@property(nonatomic, strong) InfobarCoordinator* infoBarCoordinator;
 // A weak reference to the view of the tab strip on tablet.
 @property(nonatomic, weak) UIView* tabStripView;
 // Helper for saving images.
@@ -1584,7 +1576,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _downloadManagerCoordinator = nil;
   self.toolbarInterface = nil;
   self.tabStripView = nil;
-  _infoBarContainer = nil;
+  self.infoBarCoordinator = nil;
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   if (_voiceSearchController)
@@ -1753,8 +1745,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   // Restore hidden infobars.
-  if (IsIPadIdiom() && _infoBarContainer) {
-    _infoBarContainer->RestoreInfobars();
+  if (IsIPadIdiom()) {
+    [self.infoBarCoordinator restoreInfobars];
   }
 
   // If the controller is suspended, or has been paged out due to low memory,
@@ -1776,8 +1768,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (activeWebState)
     activeWebState->WasHidden();
   [_bookmarkInteractionController dismissSnackbar];
-  if (IsIPadIdiom() && _infoBarContainer) {
-    _infoBarContainer->SuspendInfobars();
+  if (IsIPadIdiom()) {
+    [self.infoBarCoordinator suspendInfobars];
   }
   [super viewWillDisappear:animated];
 }
@@ -2161,11 +2153,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.tabStripCoordinator start];
   }
 
-  // Create infobar container.
-  if (!_infoBarContainerDelegate) {
-    _infoBarContainerDelegate.reset(new InfoBarContainerDelegateIOS(self));
-    _infoBarContainer.reset(
-        new InfoBarContainerIOS(_infoBarContainerDelegate.get()));
+  // Create infobar Coordinator.
+  if (!self.infoBarCoordinator) {
+    self.infoBarCoordinator =
+        [[InfobarCoordinator alloc] initWithBaseViewController:self
+                                                  browserState:_browserState];
+    self.infoBarCoordinator.positioner = self;
   }
 }
 
@@ -2320,7 +2313,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     infoBarManager =
         InfoBarManagerImpl::FromWebState(_model.currentTab.webState);
   }
-  _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+  [self.infoBarCoordinator setInfobarManager:infoBarManager];
 
   // Create child coordinators.
   _activityServiceCoordinator = [[ActivityServiceLegacyCoordinator alloc]
@@ -2419,7 +2412,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   // Place the infobar container above the content area.
-  InfoBarContainerView* infoBarContainerView = _infoBarContainer->view();
+  UIView* infoBarContainerView = [self.infoBarCoordinator view];
   if (initialLayout) {
     [self.view insertSubview:infoBarContainerView
                 aboveSubview:self.contentArea];
@@ -3165,8 +3158,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     infobars::InfoBarManager* infoBarManager =
         InfoBarManagerImpl::FromWebState(currentTab.webState);
     if (infoBarManager->infobar_count() > 0) {
-      DCHECK(_infoBarContainer);
-      return _infoBarContainer->view();
+      DCHECK(self.infoBarCoordinator);
+      return [self.infoBarCoordinator view];
     }
   }
   return nil;
@@ -3174,7 +3167,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 // Returns a vertical infobar offset relative to the tab content.
 - (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab {
-  if (tab != [_model currentTab] || !_infoBarContainer) {
+  if (tab != [_model currentTab] || !self.infoBarCoordinator) {
     // There is no UI representation for non-current tabs or there is
     // no _infoBarContainer instantiated yet.
     // Return offset outside of tab.
@@ -3186,7 +3179,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // The infobars on iPhone are displayed at the bottom of a tab.
     CGRect visibleFrame = [self visibleFrameForTab:_model.currentTab];
     return CGRectGetMaxY(visibleFrame) -
-           CGRectGetHeight(_infoBarContainer->view().frame);
+           CGRectGetHeight([self.infoBarCoordinator view].frame);
   }
 }
 
@@ -3952,7 +3945,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.secondaryToolbarContainerView layoutIfNeeded];
 
   // Resize the infobars to take into account the changes in the toolbar.
-  [self infoBarContainerStateDidChangeAnimated:NO];
+  [self.infoBarCoordinator updateInfobarContainer];
 
   // Resize the NTP's contentInset.bottom to be above the secondary toolbar.
   id nativeController = [self nativeControllerForTab:[_model currentTab]];
@@ -4771,11 +4764,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Currently this observer method is always called with a non-nil |newTab|,
   // but that may change in the future.  Remove this DCHECK when it does.
   DCHECK(newTab);
-  if (_infoBarContainer) {
+  if (self.infoBarCoordinator) {
     DCHECK(newTab.webState);
     infobars::InfoBarManager* infoBarManager =
         InfoBarManagerImpl::FromWebState(newTab.webState);
-    _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+    [self.infoBarCoordinator setInfobarManager:infoBarManager];
 
     // Dismiss the language selector, if any; this is a no-op when there's
     // no language selector presented.
@@ -4898,13 +4891,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self uninstallDelegatesForTab:oldTab];
   [self installDelegatesForTab:newTab];
 
-  if (_infoBarContainer) {
+  if (self.infoBarCoordinator) {
     infobars::InfoBarManager* infoBarManager = nullptr;
     if (newTab) {
       DCHECK(newTab.webState);
       infoBarManager = InfoBarManagerImpl::FromWebState(newTab.webState);
     }
-    _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+    [self.infoBarCoordinator setInfobarManager:infoBarManager];
   }
 
   // Add |newTab|'s view to the hierarchy if it's the current Tab.
@@ -5096,32 +5089,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-#pragma mark - InfobarContainerStateDelegate
+#pragma mark - InfobarPositioner
 
-- (void)infoBarContainerStateDidChangeAnimated:(BOOL)animated {
-  InfoBarContainerView* infoBarContainerView = _infoBarContainer->view();
-  DCHECK(infoBarContainerView);
-  CGRect containerFrame = infoBarContainerView.frame;
-  CGFloat height = [infoBarContainerView topmostVisibleInfoBarHeight];
-  containerFrame.origin.y = CGRectGetMaxY(self.contentArea.frame) - height;
-  containerFrame.size.height = height;
+- (UIView*)parentView {
+  return self.contentArea;
+}
 
-  BOOL isViewVisible = self.visible;
-  ProceduralBlock animation = ^{
-    [infoBarContainerView setFrame:containerFrame];
-  };
-  void (^completion)(BOOL) = ^(BOOL finished) {
-    if (!isViewVisible)
-      return;
-    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                    infoBarContainerView);
-  };
-  if (animated) {
-    [UIView animateWithDuration:0.1 animations:animation completion:completion];
-  } else {
-    animation();
-    completion(YES);
-  }
+- (BOOL)isParentViewVisible {
+  return self.visible;
 }
 
 #pragma mark - UIGestureRecognizerDelegate
@@ -5158,7 +5133,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
   [self.sideSwipeController setInSwipe:NO];
-  [_infoBarContainer->view() setHidden:NO];
+  [[self.infoBarCoordinator view] setHidden:NO];
 }
 
 - (UIView*)sideSwipeContentView {
@@ -5185,12 +5160,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)updateAccessoryViewsForSideSwipeWithVisibility:(BOOL)visible {
   if (visible) {
     [self updateToolbar];
-    [_infoBarContainer->view() setHidden:NO];
+    [[self.infoBarCoordinator view] setHidden:NO];
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
     [self hideFindBarWithAnimation:NO];
-    [_infoBarContainer->view() setHidden:YES];
+    [[self.infoBarCoordinator view] setHidden:YES];
   }
 }
 
@@ -5203,7 +5178,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   BOOL seenInfoBarContainer = NO;
   BOOL seenContentArea = NO;
   for (UIView* view in views.subviews) {
-    if (view == _infoBarContainer->view())
+    if (view == [self.infoBarCoordinator view])
       seenInfoBarContainer = YES;
     else if (view == self.contentArea)
       seenContentArea = YES;
