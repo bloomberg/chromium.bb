@@ -4,23 +4,78 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
+#include "net/quic/quic_chromium_alarm_factory.h"
+#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
 
 namespace blink {
+namespace {
+
+// This class wraps a P2PQuicTransportFactoryImpl but does not construct it
+// until CreateQuicTransport is called for the first time. This ensures that it
+// is executed on the WebRTC worker thread.
+class DefaultP2PQuicTransportFactory : public P2PQuicTransportFactory {
+ public:
+  explicit DefaultP2PQuicTransportFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread)
+      : host_thread_(std::move(host_thread)) {
+    DCHECK(host_thread_);
+  }
+
+  // P2PQuicTransportFactory overrides.
+  std::unique_ptr<P2PQuicTransport> CreateQuicTransport(
+      P2PQuicTransportConfig config) override {
+    DCHECK(host_thread_->RunsTasksInCurrentSequence());
+    return GetFactory()->CreateQuicTransport(std::move(config));
+  }
+
+ private:
+  P2PQuicTransportFactory* GetFactory() {
+    DCHECK(host_thread_->RunsTasksInCurrentSequence());
+    if (!factory_impl_) {
+      quic::QuicClock* clock = quic::QuicChromiumClock::GetInstance();
+      auto alarm_factory = std::make_unique<net::QuicChromiumAlarmFactory>(
+          host_thread_.get(), clock);
+      factory_impl_ = std::make_unique<P2PQuicTransportFactoryImpl>(
+          clock, std::move(alarm_factory));
+    }
+    return factory_impl_.get();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
+  std::unique_ptr<P2PQuicTransportFactory> factory_impl_;
+};
+
+}  // namespace
 
 RTCQuicTransport* RTCQuicTransport::Create(
     ExecutionContext* context,
     RTCIceTransport* transport,
     const HeapVector<Member<RTCCertificate>>& certificates,
     ExceptionState& exception_state) {
+  return Create(context, transport, certificates, exception_state,
+                std::make_unique<DefaultP2PQuicTransportFactory>(
+                    Platform::Current()->GetWebRtcWorkerThread()));
+}
+
+RTCQuicTransport* RTCQuicTransport::Create(
+    ExecutionContext* context,
+    RTCIceTransport* transport,
+    const HeapVector<Member<RTCCertificate>>& certificates,
+    ExceptionState& exception_state,
+    std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory) {
+  DCHECK(context);
+  DCHECK(transport);
+  DCHECK(p2p_quic_transport_factory);
   if (transport->IsClosed()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -41,18 +96,20 @@ RTCQuicTransport* RTCQuicTransport::Create(
       return nullptr;
     }
   }
-  return new RTCQuicTransport(context, transport, certificates,
-                              exception_state);
+  return new RTCQuicTransport(context, transport, certificates, exception_state,
+                              std::move(p2p_quic_transport_factory));
 }
 
 RTCQuicTransport::RTCQuicTransport(
     ExecutionContext* context,
     RTCIceTransport* transport,
     const HeapVector<Member<RTCCertificate>>& certificates,
-    ExceptionState& exception_state)
+    ExceptionState& exception_state,
+    std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory)
     : ContextLifecycleObserver(context),
       transport_(transport),
-      certificates_(certificates) {
+      certificates_(certificates),
+      p2p_quic_transport_factory_(std::move(p2p_quic_transport_factory)) {
   transport->ConnectConsumer(this);
 }
 
@@ -172,7 +229,7 @@ void RTCQuicTransport::StartConnection() {
   IceTransportProxy* transport_proxy = transport_->ConnectConsumer(this);
   proxy_.reset(new QuicTransportProxy(
       this, transport_proxy, QuicPerspectiveFromIceRole(transport_->GetRole()),
-      rtc_certificates));
+      rtc_certificates, std::move(p2p_quic_transport_factory_)));
 
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
   for (const RTCDtlsFingerprint& fingerprint :

@@ -18,6 +18,7 @@ class ExceptionState;
 class RTCCertificate;
 class RTCIceTransport;
 class RTCQuicStream;
+class P2PQuicTransportFactory;
 
 enum class RTCQuicTransportState {
   kNew,
@@ -41,6 +42,12 @@ class MODULES_EXPORT RTCQuicTransport final
       RTCIceTransport* transport,
       const HeapVector<Member<RTCCertificate>>& certificates,
       ExceptionState& exception_state);
+  static RTCQuicTransport* Create(
+      ExecutionContext* context,
+      RTCIceTransport* transport,
+      const HeapVector<Member<RTCCertificate>>& certificates,
+      ExceptionState& exception_state,
+      std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory);
 
   ~RTCQuicTransport() override;
 
@@ -79,10 +86,12 @@ class MODULES_EXPORT RTCQuicTransport final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  RTCQuicTransport(ExecutionContext* context,
-                   RTCIceTransport* transport,
-                   const HeapVector<Member<RTCCertificate>>& certificates,
-                   ExceptionState& exception_state);
+  RTCQuicTransport(
+      ExecutionContext* context,
+      RTCIceTransport* transport,
+      const HeapVector<Member<RTCCertificate>>& certificates,
+      ExceptionState& exception_state,
+      std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory);
 
   // QuicTransportProxy::Delegate overrides;
   void OnConnected() override;
@@ -106,6 +115,7 @@ class MODULES_EXPORT RTCQuicTransport final
   HeapVector<Member<RTCCertificate>> certificates_;
   HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
   base::Optional<RTCQuicParameters> remote_parameters_;
+  std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory_;
   std::unique_ptr<QuicTransportProxy> proxy_;
   HeapHashSet<Member<RTCQuicStream>> streams_;
 };

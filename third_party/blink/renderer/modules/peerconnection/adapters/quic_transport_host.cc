@@ -6,10 +6,8 @@
 
 #include <utility>
 
-#include "net/quic/quic_chromium_alarm_factory.h"
-#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
-#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_proxy.h"
@@ -19,9 +17,13 @@
 
 namespace blink {
 
-QuicTransportHost::QuicTransportHost(base::WeakPtr<QuicTransportProxy> proxy)
-    : proxy_(std::move(proxy)) {
+QuicTransportHost::QuicTransportHost(
+    base::WeakPtr<QuicTransportProxy> proxy,
+    std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory)
+    : quic_transport_factory_(std::move(quic_transport_factory)),
+      proxy_(std::move(proxy)) {
   DETACH_FROM_THREAD(thread_checker_);
+  DCHECK(quic_transport_factory_);
   DCHECK(proxy_);
 }
 
@@ -42,11 +44,6 @@ void QuicTransportHost::Initialize(
   DCHECK(ice_transport_host);
   DCHECK(!ice_transport_host_);
   ice_transport_host_ = ice_transport_host;
-  quic::QuicClock* clock = quic::QuicChromiumClock::GetInstance();
-  auto alarm_factory = std::make_unique<net::QuicChromiumAlarmFactory>(
-      host_thread().get(), clock);
-  quic_transport_factory_.reset(
-      new P2PQuicTransportFactoryImpl(clock, std::move(alarm_factory)));
   P2PQuicTransportConfig config(
       this, ice_transport_host->ConnectConsumer(this)->packet_transport(),
       certificates);

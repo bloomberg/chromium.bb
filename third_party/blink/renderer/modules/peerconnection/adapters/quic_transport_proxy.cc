@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_host.h"
@@ -19,7 +20,8 @@ QuicTransportProxy::QuicTransportProxy(
     Delegate* delegate,
     IceTransportProxy* ice_transport_proxy,
     quic::Perspective perspective,
-    const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates)
+    const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates,
+    std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory)
     : host_(nullptr,
             base::OnTaskRunnerDeleter(ice_transport_proxy->host_thread())),
       delegate_(delegate),
@@ -34,7 +36,8 @@ QuicTransportProxy::QuicTransportProxy(
   // The QuicTransportHost is constructed on the proxy thread but should only be
   // interacted with via PostTask to the host thread. The OnTaskRunnerDeleter
   // (configured above) will ensure it gets deleted on the host thread.
-  host_.reset(new QuicTransportHost(weak_ptr_factory_.GetWeakPtr()));
+  host_.reset(new QuicTransportHost(weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(quic_transport_factory)));
   // Connect to the IceTransportProxy. This gives us a reference to the
   // underlying IceTransportHost that should be connected by the
   // QuicTransportHost on the host thread. It is safe to post it unretained
