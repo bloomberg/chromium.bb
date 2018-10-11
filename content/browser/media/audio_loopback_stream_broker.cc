@@ -6,9 +6,14 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
+#include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace content {
 
@@ -29,7 +34,7 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
       renderer_factory_client_(std::move(renderer_factory_client)),
       observer_binding_(this),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(source_);
   DCHECK(renderer_factory_client_);
   DCHECK(deleter_);
@@ -45,25 +50,21 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
   // Notify the source that we are capturing from it.
   source_->AddLoopbackSink(this);
 
-  // Notify RenderProcessHost about the input stream, so that the destination
-  // renderer does not get background.
-  if (auto* process_host = RenderProcessHost::FromID(render_process_id))
-    process_host->OnMediaStreamAdded();
+  NotifyProcessHostOfStartedStream(render_process_id);
 }
 
 AudioLoopbackStreamBroker::~AudioLoopbackStreamBroker() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (source_)
     source_->RemoveLoopbackSink(this);
 
-  if (auto* process_host = RenderProcessHost::FromID(render_process_id()))
-    process_host->OnMediaStreamRemoved();
+  NotifyProcessHostOfStoppedStream(render_process_id());
 }
 
 void AudioLoopbackStreamBroker::CreateStream(
     audio::mojom::StreamFactory* factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!observer_binding_.is_bound());
   DCHECK(!client_request_);
   DCHECK(source_);
@@ -93,20 +94,20 @@ void AudioLoopbackStreamBroker::CreateStream(
 }
 
 void AudioLoopbackStreamBroker::OnSourceGone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // No further access to |source_| is allowed.
   source_ = nullptr;
   Cleanup();
 }
 
 void AudioLoopbackStreamBroker::DidStartRecording() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void AudioLoopbackStreamBroker::StreamCreated(
     media::mojom::AudioInputStreamPtr stream,
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!data_pipe) {
     Cleanup();
@@ -121,7 +122,7 @@ void AudioLoopbackStreamBroker::StreamCreated(
 }
 
 void AudioLoopbackStreamBroker::Cleanup() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::move(deleter_).Run(this);
 }
 

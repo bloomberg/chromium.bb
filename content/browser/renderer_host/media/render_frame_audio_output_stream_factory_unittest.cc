@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -69,6 +70,7 @@ class RenderFrameAudioOutputStreamFactoryTest
     // Set up the ForwardingAudioStreamFactory.
     service_manager::Connector::TestApi connector_test_api(
         ForwardingAudioStreamFactory::ForFrame(main_rfh())
+            ->core()
             ->get_connector_for_testing());
     connector_test_api.OverrideBinderForTesting(
         service_manager::Identity(audio::mojom::kServiceName),
@@ -155,7 +157,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1u, factory.current_number_of_providers_for_testing());
+  EXPECT_EQ(1u, factory.CurrentNumberOfProvidersForTesting());
 }
 
 TEST_F(
@@ -178,7 +180,7 @@ TEST_F(
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0u, factory.current_number_of_providers_for_testing());
+  EXPECT_EQ(0u, factory.CurrentNumberOfProvidersForTesting());
 }
 
 TEST_F(
@@ -200,7 +202,7 @@ TEST_F(
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0u, factory.current_number_of_providers_for_testing());
+  EXPECT_EQ(0u, factory.CurrentNumberOfProvidersForTesting());
 }
 
 TEST_F(RenderFrameAudioOutputStreamFactoryTest,
@@ -228,7 +230,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(!!audio_service_stream_factory_.last_created_callback);
-  EXPECT_EQ(0u, factory.current_number_of_providers_for_testing());
+  EXPECT_EQ(0u, factory.CurrentNumberOfProvidersForTesting());
 }
 
 TEST_F(RenderFrameAudioOutputStreamFactoryTest,

@@ -272,9 +272,10 @@ TEST_F(ForwardingAudioStreamFactoryTest, CreateInputStream_CreatesInputStream) {
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
-  factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                            kSharedMemoryCount, kEnableAgc, nullptr,
-                            std::move(client));
+  factory.core()->CreateInputStream(main_rfh()->GetProcess()->GetID(),
+                                    main_rfh()->GetRoutingID(), kInputDeviceId,
+                                    kParams, kSharedMemoryCount, kEnableAgc,
+                                    nullptr, std::move(client));
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest,
@@ -284,19 +285,23 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   base::WeakPtr<MockBroker> broker =
       ExpectLoopbackBrokerConstruction(main_rfh());
 
+  std::unique_ptr<service_manager::Connector> other_connector =
+      connector_->Clone();
+
   ForwardingAudioStreamFactory factory(
       web_contents(), nullptr /*user_input_monitor*/, std::move(connector_),
       std::move(broker_factory_));
 
   ForwardingAudioStreamFactory source_factory(
       source_contents.get(), nullptr /*user_input_monitor*/,
-      std::move(connector_), std::make_unique<MockBrokerFactory>());
+      std::move(other_connector), std::make_unique<MockBrokerFactory>());
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
-  factory.CreateLoopbackStream(main_rfh(), &source_factory, kParams,
-                               kSharedMemoryCount, kMuteSource,
-                               std::move(client));
+  factory.core()->CreateLoopbackStream(
+      main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+      source_factory.core(), kParams, kSharedMemoryCount, kMuteSource,
+      std::move(client));
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest,
@@ -310,8 +315,9 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
-  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                             base::nullopt, std::move(client));
+  factory.core()->CreateOutputStream(
+      main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+      kOutputDeviceId, kParams, base::nullopt, std::move(client));
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest,
@@ -329,17 +335,19 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   {
     EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc, nullptr,
-                              std::move(client));
+    factory.core()->CreateInputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kInputDeviceId, kParams, kSharedMemoryCount, kEnableAgc, nullptr,
+        std::move(client));
     testing::Mock::VerifyAndClear(&*main_rfh_broker);
   }
   {
     EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateInputStream(other_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc, nullptr,
-                              std::move(client));
+    factory.core()->CreateInputStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        kInputDeviceId, kParams, kSharedMemoryCount, kEnableAgc, nullptr,
+        std::move(client));
     testing::Mock::VerifyAndClear(&*other_rfh_broker);
   }
 
@@ -358,28 +366,33 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   base::WeakPtr<MockBroker> other_rfh_broker =
       ExpectLoopbackBrokerConstruction(other_rfh());
 
+  std::unique_ptr<service_manager::Connector> other_connector =
+      connector_->Clone();
+
   ForwardingAudioStreamFactory factory(
       web_contents(), nullptr /*user_input_monitor*/, std::move(connector_),
       std::move(broker_factory_));
 
   ForwardingAudioStreamFactory source_factory(
       source_contents.get(), nullptr /*user_input_monitor*/,
-      std::move(connector_), std::make_unique<MockBrokerFactory>());
+      std::move(other_connector), std::make_unique<MockBrokerFactory>());
 
   {
     EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateLoopbackStream(main_rfh(), &source_factory, kParams,
-                                 kSharedMemoryCount, kMuteSource,
-                                 std::move(client));
+    factory.core()->CreateLoopbackStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        source_factory.core(), kParams, kSharedMemoryCount, kMuteSource,
+        std::move(client));
     testing::Mock::VerifyAndClear(&*main_rfh_broker);
   }
   {
     EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateLoopbackStream(other_rfh(), &source_factory, kParams,
-                                 kSharedMemoryCount, kMuteSource,
-                                 std::move(client));
+    factory.core()->CreateLoopbackStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        source_factory.core(), kParams, kSharedMemoryCount, kMuteSource,
+        std::move(client));
     testing::Mock::VerifyAndClear(&*other_rfh_broker);
   }
 
@@ -404,15 +417,17 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   {
     EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(client));
+    factory.core()->CreateOutputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(client));
     testing::Mock::VerifyAndClear(&*main_rfh_broker);
   }
   {
     EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateOutputStream(other_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(client));
+    factory.core()->CreateOutputStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(client));
     testing::Mock::VerifyAndClear(&*other_rfh_broker);
   }
 
@@ -442,60 +457,69 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
   base::WeakPtr<MockBroker> other_rfh_output_broker =
       ExpectOutputBrokerConstruction(other_rfh());
 
+  std::unique_ptr<service_manager::Connector> other_connector =
+      connector_->Clone();
+
   ForwardingAudioStreamFactory factory(
       web_contents(), nullptr /*user_input_monitor*/, std::move(connector_),
       std::move(broker_factory_));
 
   ForwardingAudioStreamFactory source_factory(
       source_contents.get(), nullptr /*user_input_monitor*/,
-      std::move(connector_), std::make_unique<MockBrokerFactory>());
+      std::move(other_connector), std::make_unique<MockBrokerFactory>());
 
   {
     EXPECT_CALL(*main_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc, nullptr,
-                              std::move(input_client));
+    factory.core()->CreateInputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kInputDeviceId, kParams, kSharedMemoryCount, kEnableAgc, nullptr,
+        std::move(input_client));
     testing::Mock::VerifyAndClear(&*main_rfh_input_broker);
   }
   {
     EXPECT_CALL(*other_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateInputStream(other_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc, nullptr,
-                              std::move(input_client));
+    factory.core()->CreateInputStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        kInputDeviceId, kParams, kSharedMemoryCount, kEnableAgc, nullptr,
+        std::move(input_client));
     testing::Mock::VerifyAndClear(&*other_rfh_input_broker);
   }
 
   {
     EXPECT_CALL(*main_rfh_loopback_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateLoopbackStream(main_rfh(), &source_factory, kParams,
-                                 kSharedMemoryCount, kMuteSource,
-                                 std::move(input_client));
+    factory.core()->CreateLoopbackStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        source_factory.core(), kParams, kSharedMemoryCount, kMuteSource,
+        std::move(input_client));
     testing::Mock::VerifyAndClear(&*main_rfh_loopback_broker);
   }
   {
     EXPECT_CALL(*other_rfh_loopback_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateLoopbackStream(other_rfh(), &source_factory, kParams,
-                                 kSharedMemoryCount, kMuteSource,
-                                 std::move(input_client));
+    factory.core()->CreateLoopbackStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        source_factory.core(), kParams, kSharedMemoryCount, kMuteSource,
+        std::move(input_client));
     testing::Mock::VerifyAndClear(&*other_rfh_loopback_broker);
   }
 
   {
     EXPECT_CALL(*main_rfh_output_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&output_client);
-    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(output_client));
+    factory.core()->CreateOutputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
     testing::Mock::VerifyAndClear(&*main_rfh_output_broker);
   }
   {
     EXPECT_CALL(*other_rfh_output_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&output_client);
-    factory.CreateOutputStream(other_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(output_client));
+    factory.core()->CreateOutputStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
     testing::Mock::VerifyAndClear(&*other_rfh_output_broker);
   }
 
@@ -528,14 +552,16 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyWebContents_DestroysStreams) {
 
   EXPECT_CALL(*input_broker, CreateStream(NotNull()));
   mojo::MakeRequest(&input_client);
-  factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                            kSharedMemoryCount, kEnableAgc, nullptr,
-                            std::move(input_client));
+  factory.core()->CreateInputStream(main_rfh()->GetProcess()->GetID(),
+                                    main_rfh()->GetRoutingID(), kInputDeviceId,
+                                    kParams, kSharedMemoryCount, kEnableAgc,
+                                    nullptr, std::move(input_client));
 
   EXPECT_CALL(*output_broker, CreateStream(NotNull()));
   mojo::MakeRequest(&output_client);
-  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                             base::nullopt, std::move(output_client));
+  factory.core()->CreateOutputStream(
+      main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+      kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
 
   DeleteContents();
   base::RunLoop().RunUntilIdle();
@@ -566,32 +592,36 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
   {
     EXPECT_CALL(*main_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc, nullptr,
-                              std::move(input_client));
+    factory.core()->CreateInputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kInputDeviceId, kParams, kSharedMemoryCount, kEnableAgc, nullptr,
+        std::move(input_client));
     testing::Mock::VerifyAndClear(&*main_rfh_input_broker);
   }
   {
     EXPECT_CALL(*other_rfh_input_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateInputStream(other_rfh(), kInputDeviceId, kParams,
-                              kSharedMemoryCount, kEnableAgc, nullptr,
-                              std::move(input_client));
+    factory.core()->CreateInputStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        kInputDeviceId, kParams, kSharedMemoryCount, kEnableAgc, nullptr,
+        std::move(input_client));
     testing::Mock::VerifyAndClear(&*other_rfh_input_broker);
   }
 
   {
     EXPECT_CALL(*main_rfh_output_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&output_client);
-    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(output_client));
+    factory.core()->CreateOutputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
     testing::Mock::VerifyAndClear(&*main_rfh_output_broker);
   }
   {
     EXPECT_CALL(*other_rfh_output_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&output_client);
-    factory.CreateOutputStream(other_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(output_client));
+    factory.core()->CreateOutputStream(
+        other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
     testing::Mock::VerifyAndClear(&*other_rfh_output_broker);
   }
 
@@ -644,8 +674,9 @@ TEST_F(ForwardingAudioStreamFactoryTest, MuteWithOutputStream_ConnectsMuter) {
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
-  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                             base::nullopt, std::move(client));
+  factory.core()->CreateOutputStream(
+      main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+      kOutputDeviceId, kParams, base::nullopt, std::move(client));
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClear(&*broker);
 
@@ -684,8 +715,9 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
-  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                             base::nullopt, std::move(client));
+  factory.core()->CreateOutputStream(
+      main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+      kOutputDeviceId, kParams, base::nullopt, std::move(client));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(factory.IsMuted());
   EXPECT_TRUE(stream_factory_.IsConnected());
@@ -713,8 +745,9 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   {
     EXPECT_CALL(*broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(client));
+    factory.core()->CreateOutputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(client));
     base::RunLoop().RunUntilIdle();
     testing::Mock::VerifyAndClear(&*broker);
   }
@@ -730,8 +763,9 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   {
     EXPECT_CALL(*another_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
-                               base::nullopt, std::move(client));
+    factory.core()->CreateOutputStream(
+        main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
+        kOutputDeviceId, kParams, base::nullopt, std::move(client));
     base::RunLoop().RunUntilIdle();
     testing::Mock::VerifyAndClear(&*another_broker);
   }
@@ -762,10 +796,11 @@ TEST_F(ForwardingAudioStreamFactoryTest,
         web_contents(), nullptr /*user_input_monitor*/, std::move(connector_),
         std::move(broker_factory_));
 
-    factory.AddLoopbackSink(&sink1);
-    factory.AddLoopbackSink(&sink2);
-    factory.RemoveLoopbackSink(&sink1);
+    factory.core()->AddLoopbackSink(&sink1);
+    factory.core()->AddLoopbackSink(&sink2);
+    factory.core()->RemoveLoopbackSink(&sink1);
   }
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content

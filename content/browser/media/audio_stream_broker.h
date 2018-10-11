@@ -5,12 +5,13 @@
 #ifndef CONTENT_BROWSER_MEDIA_AUDIO_STREAM_BROKER_H_
 #define CONTENT_BROWSER_MEDIA_AUDIO_STREAM_BROKER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
@@ -36,7 +37,8 @@ namespace content {
 
 // An AudioStreamBroker is used to broker a connection between a client
 // (typically renderer) and the audio service. It also sets up all objects
-// used for monitoring the stream.
+// used for monitoring the stream. All AudioStreamBrokers are used on the IO
+// thread.
 class CONTENT_EXPORT AudioStreamBroker {
  public:
   class CONTENT_EXPORT LoopbackSink {
@@ -68,6 +70,13 @@ class CONTENT_EXPORT AudioStreamBroker {
 
   virtual void CreateStream(audio::mojom::StreamFactory* factory) = 0;
 
+  // Thread-safe utility that notifies the process host identified by
+  // |render_process_id| of a started stream to ensure that the renderer is not
+  // backgrounded. Must be paired with a later call to
+  // NotifyRenderProcessOfStoppedStream()
+  static void NotifyProcessHostOfStartedStream(int render_process_id);
+  static void NotifyProcessHostOfStoppedStream(int render_process_id);
+
   int render_process_id() const { return render_process_id_; }
   int render_frame_id() const { return render_frame_id_; }
 
@@ -79,7 +88,8 @@ class CONTENT_EXPORT AudioStreamBroker {
   DISALLOW_COPY_AND_ASSIGN(AudioStreamBroker);
 };
 
-// Used for dependency injection into ForwardingAudioStreamFactory.
+// Used for dependency injection into ForwardingAudioStreamFactory. Used on the
+// IO thread.
 class CONTENT_EXPORT AudioStreamBrokerFactory {
  public:
   static std::unique_ptr<AudioStreamBrokerFactory> CreateImpl();
