@@ -131,10 +131,6 @@ constexpr base::TimeDelta kMaxProgressivePaintTime =
 constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
     base::TimeDelta::FromMilliseconds(250);
 
-// Flag to turn edit mode tracking on.
-// Do not flip until form saving is completely functional.
-constexpr bool kIsEditModeTracked = true;
-
 PDFiumEngine* g_engine_for_fontmapper = nullptr;
 
 #if defined(OS_LINUX)
@@ -3548,7 +3544,7 @@ void PDFiumEngine::SetSelecting(bool selecting) {
 }
 
 void PDFiumEngine::SetEditMode(bool edit_mode) {
-  if (!kIsEditModeTracked || edit_mode_ == edit_mode)
+  if (edit_mode_ == edit_mode)
     return;
 
   edit_mode_ = edit_mode;
