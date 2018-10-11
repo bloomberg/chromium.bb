@@ -30,7 +30,6 @@ static const char *monochrome_colorspace(unsigned int bit_depth) {
 // image format.
 const char *colorspace8(aom_chroma_sample_position_t csp, aom_img_fmt_t fmt) {
   switch (fmt) {
-    case AOM_IMG_FMT_444A: return "C444alpha";
     case AOM_IMG_FMT_I444: return "C444";
     case AOM_IMG_FMT_I422: return "C422";
     default:
