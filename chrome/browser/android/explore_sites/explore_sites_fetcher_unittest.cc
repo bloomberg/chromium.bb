@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
@@ -100,6 +101,10 @@ class ExploreSitesFetcherTest : public testing::Test {
     return task_runner_.get();
   }
 
+  const base::HistogramTester* histograms() const {
+    return histogram_tester_.get();
+  }
+
  private:
   ExploreSitesFetcher::Callback StoreResult();
   network::TestURLLoaderFactory::PendingRequest* GetLastPendingRequest();
@@ -117,6 +122,7 @@ class ExploreSitesFetcherTest : public testing::Test {
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 ExploreSitesFetcher::Callback ExploreSitesFetcherTest::StoreResult() {
@@ -153,6 +159,11 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcherWithNetError(
                                 base::Unretained(this), net_error),
                  &data_received);
   EXPECT_TRUE(data_received.empty());
+
+  histograms()->ExpectUniqueSample("ExploreSites.FetcherNetErrorCode",
+                                   -net_error, 1);
+  histograms()->ExpectTotalCount("ExploreSites.FetcherHttpResponseCode", 0);
+
   return status;
 }
 
@@ -164,15 +175,23 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcherWithHttpError(
                                 base::Unretained(this), http_error),
                  &data_received);
   EXPECT_TRUE(data_received.empty());
+
+  histograms()->ExpectUniqueSample("ExploreSites.FetcherNetErrorCode",
+                                   -net::ERR_FAILED, 1);
+  histograms()->ExpectUniqueSample("ExploreSites.FetcherHttpResponseCode",
+                                   http_error, 1);
+
   return status;
 }
 
 ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcherWithData(
     const std::string& response_data,
     std::string* data_received) {
-  return RunFetcher(base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
-                                   base::Unretained(this), response_data),
-                    data_received);
+  ExploreSitesRequestStatus status =
+      RunFetcher(base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
+                                base::Unretained(this), response_data),
+                 data_received);
+  return status;
 }
 
 void ExploreSitesFetcherTest::RespondWithNetError(int net_error) {
@@ -213,6 +232,7 @@ ExploreSitesFetcherTest::GetLastPendingRequest() {
 ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
   std::unique_ptr<ExploreSitesFetcher> fetcher =
       CreateFetcher(true /* disable_retry*/, true /*is_immediate_fetch*/);
 

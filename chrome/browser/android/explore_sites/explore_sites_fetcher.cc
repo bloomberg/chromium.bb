@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -234,16 +235,23 @@ void ExploreSitesFetcher::OnSimpleLoaderComplete(
 
 ExploreSitesRequestStatus ExploreSitesFetcher::HandleResponseCode() {
   int response_code = -1;
+  int net_error = url_loader_->NetError();
+  base::UmaHistogramSparse("ExploreSites.FetcherNetErrorCode", -net_error);
+
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
     response_code = url_loader_->ResponseInfo()->headers->response_code();
 
   if (response_code == -1) {
-    int net_error = url_loader_->NetError();
     DVLOG(1) << "Net error: " << net_error;
     return (net_error == net::ERR_BLOCKED_BY_ADMINISTRATOR)
                ? ExploreSitesRequestStatus::kShouldSuspendBlockedByAdministrator
                : ExploreSitesRequestStatus::kFailure;
-  } else if (response_code < 200 || response_code > 299) {
+  }
+
+  base::UmaHistogramSparse("ExploreSites.FetcherHttpResponseCode",
+                           response_code);
+
+  if (response_code < 200 || response_code > 299) {
     DVLOG(1) << "HTTP status: " << response_code;
     switch (response_code) {
       case net::HTTP_BAD_REQUEST:
