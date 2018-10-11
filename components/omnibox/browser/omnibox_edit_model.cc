@@ -644,6 +644,13 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   const bool button_pressed =
       disposition == WindowOpenDisposition::SWITCH_TO_TAB;
   if (match.pedal && match.pedal->ShouldExecute(button_pressed)) {
+    {
+      // This block resets omnibox to unedited state and closes popup, which
+      // may not seem necessary in cases of navigation but makes sense for
+      // taking Pedal actions in general.
+      base::AutoReset<bool> tmp(&in_revert_, true);
+      view_->RevertAll();
+    }
     OmniboxPedal::ExecutionContext context(*client_, *controller_,
                                            match_selection_timestamp);
     match.pedal->Execute(context);
