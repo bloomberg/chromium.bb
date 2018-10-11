@@ -203,6 +203,7 @@ cr.define('multidevice_setup', function() {
             }
 
             this.visiblePageName_ = PageName.SUCCESS;
+            this.fire('forward-button-focus-requested');
           })
           .catch((error) => {
             console.warn('Mojo service failure: ' + error);

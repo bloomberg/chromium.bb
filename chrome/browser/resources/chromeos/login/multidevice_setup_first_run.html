@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://oobe/custom_elements.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup_shared_css.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <!--
   UI for the MultiDevice setup flow when displayed after OOBE or during the
   user's first login on this Chromebook. Note that this flow is
@@ -32,7 +33,7 @@
       <oobe-text-button slot="backward-button">
         <div>[[backwardButtonText_]]</div>
       </oobe-text-button>
-      <oobe-next-button slot="forward-button"
+      <oobe-next-button id="next-button" slot="forward-button"
           disabled$="[[forwardButtonDisabled_]]">
         <div>[[forwardButtonText_]]</div>
       </oobe-next-button>
