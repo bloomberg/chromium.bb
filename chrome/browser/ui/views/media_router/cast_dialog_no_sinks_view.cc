@@ -90,7 +90,7 @@ views::View* CastDialogNoSinksView::CreateHelpIconView() {
   help_icon->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
   help_icon->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_DESTINATION_MISSING));
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_NO_DEVICES_FOUND_BUTTON));
   HoverButton* view =
       new HoverButton(/* button_listener */ nullptr, std::move(help_icon),
                       title, base::string16());
