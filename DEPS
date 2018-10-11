@@ -1010,7 +1010,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '54ca2cd59219aab637e7a5e1e6d0f383a36df192',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '6272edcb53d3c8705f57df3b46b1f92e646e30bc',
 
   'src/third_party/r8': {
       'packages': [
