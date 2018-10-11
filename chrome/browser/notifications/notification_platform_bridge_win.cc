@@ -876,16 +876,6 @@ bool NotificationPlatformBridgeWin::HandleActivation(
 }
 
 // static
-std::string NotificationPlatformBridgeWin::GetProfileIdFromLaunchId(
-    const base::string16& launch_id_str) {
-  NotificationLaunchId launch_id(base::UTF16ToUTF8(launch_id_str));
-
-  // The launch_id_invalid failure is logged via HandleActivation(). We don't
-  // re-log it here, which would skew the UMA failure metrics.
-  return launch_id.is_valid() ? launch_id.profile_id() : std::string();
-}
-
-// static
 bool NotificationPlatformBridgeWin::NativeNotificationEnabled() {
   // Windows 10 native notification seems to have memory leak issues on OS
   // builds older than 17134 (i.e., VERSION_WIN10_RS4). This seems to be a

@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 namespace base {
@@ -45,10 +44,6 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   // Returns false if |command_line| does not contain a valid
   // notification-launch-id switch.
   static bool HandleActivation(const base::CommandLine& command_line);
-
-  // Extracts the profile ID from |launch_id_str|.
-  static std::string GetProfileIdFromLaunchId(
-      const base::string16& launch_id_str);
 
   // Checks if native notification is enabled.
   static bool NativeNotificationEnabled();
