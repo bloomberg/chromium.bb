@@ -91,7 +91,7 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
 
 NotificationCounterView::NotificationCounterView() : TrayItemView(nullptr) {
   CreateImageView();
-  image_view()->SetTooltipText(
+  image_view()->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
   SetVisible(false);
   Shell::Get()->session_controller()->AddObserver(this);

@@ -186,7 +186,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       ui::ResourceBundle::GetSharedInstance()
           .GetImageNamed(CreditCard::IconResourceId(card.network()))
           .AsImageSkia());
-  card_type_icon->SetTooltipText(card.NetworkForDisplay());
+  card_type_icon->set_tooltip_text(card.NetworkForDisplay());
   description_view->AddChildView(card_type_icon);
 
   description_view->AddChildView(
