@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
+#include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -33,7 +34,9 @@ PrefetchURLLoader::PrefetchURLLoader(
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<SignedExchangePrefetchMetricRecorder>
+        signed_exchange_prefetch_metric_recorder)
     : frame_tree_node_id_getter_(frame_tree_node_id_getter),
       url_(resource_request.url),
       report_raw_headers_(resource_request.report_raw_headers),
@@ -44,7 +47,9 @@ PrefetchURLLoader::PrefetchURLLoader(
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
       resource_context_(resource_context),
-      request_context_getter_(std::move(request_context_getter)) {
+      request_context_getter_(std::move(request_context_getter)),
+      signed_exchange_prefetch_metric_recorder_(
+          std::move(signed_exchange_prefetch_metric_recorder)) {
   DCHECK(network_loader_factory_);
 
   if (resource_request.request_initiator)
@@ -139,7 +144,8 @@ void PrefetchURLLoader::OnReceiveResponse(
             throttling_profile_id_, response, std::move(loader_),
             client_binding_.Unbind(), network_loader_factory_,
             request_initiator_, url_, url_loader_throttles_getter_,
-            resource_context_, request_context_getter_, this);
+            resource_context_, request_context_getter_, this,
+            signed_exchange_prefetch_metric_recorder_);
     return;
   }
   forwarding_client_->OnReceiveResponse(response);
