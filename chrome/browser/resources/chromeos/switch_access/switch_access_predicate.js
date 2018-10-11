@@ -33,8 +33,8 @@ const SwitchAccessPredicate = {
    * @return {function(!chrome.automation.AutomationNode): boolean}
    */
   leaf: function(scope) {
-    return (node) => (node !== scope &&
-                      SwitchAccessPredicate.isSubtreeLeaf(node, scope)) ||
+    return (node) => node.state[StateType.INVISIBLE] ||
+        (node !== scope && SwitchAccessPredicate.isSubtreeLeaf(node, scope)) ||
         !SwitchAccessPredicate.isInterestingSubtree(node);
   },
 
@@ -115,6 +115,8 @@ const SwitchAccessPredicate = {
   isGroup: (node, scope) => {
     if (node !== scope && SwitchAccessPredicate.hasSameLocation_(node, scope))
       return false;
+    if (node.state[StateType.INVISIBLE])
+      return false;
 
     // Work around for client nested in client. No need to have user select both
     // clients for a window. Once locations for outer client updates correctly,
@@ -161,8 +163,9 @@ const SwitchAccessPredicate = {
     const role = node.role;
     const state = node.state;
 
-    // Skip things that are offscreen.
-    if (state[StateType.OFFSCREEN] || loc.top < 0 || loc.left < 0)
+    // Skip things that are offscreen or invisible.
+    if (state[StateType.OFFSCREEN] || loc.top < 0 || loc.left < 0 ||
+        state[StateType.INVISIBLE])
       return false;
 
     // Skip things that are disabled.
