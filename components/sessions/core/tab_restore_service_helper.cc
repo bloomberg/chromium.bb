@@ -252,6 +252,7 @@ TabRestoreServiceHelper::RemoveTabEntryById(SessionID id) {
 
   auto tab = std::unique_ptr<Tab>(static_cast<Tab*>(it->release()));
   entries_.erase(it);
+  NotifyTabsChanged();
   return tab;
 }
 

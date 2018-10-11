@@ -291,15 +291,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
       [self recordActionSwitchingToPage:_currentPage];
-
-      // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
-      // does not notify observers when entries are removed. When close all tabs
-      // removes entries, the remote tabs page in the tab grid are not updated.
-      // This ensures that the table is updated whenever scrolling to it.
-      if (_currentPage == TabGridPageRemoteTabs) {
-        [self.remoteTabsViewController loadModel];
-        [self.remoteTabsViewController.tableView reloadData];
-      }
     }
   }
 }
@@ -336,15 +327,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     self.currentPageViewController.view.accessibilityElementsHidden = NO;
     [self broadcastIncognitoContentVisibility];
     [self configureButtonsForActiveAndCurrentPage];
-
-    // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
-    // does not notify observers when entries are removed. When close all tabs
-    // removes entries, the remote tabs page in the tab grid are not updated.
-    // This ensures that the table is updated whenever scrolling to it.
-    if (_currentPage == TabGridPageRemoteTabs) {
-      [self.remoteTabsViewController loadModel];
-      [self.remoteTabsViewController.tableView reloadData];
-    }
   }
 }
 
