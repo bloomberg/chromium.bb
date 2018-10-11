@@ -620,12 +620,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
-  if (reset_pending_) {
-    FinishReset();
-  }
-
   int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
   if (image_processor_device_ && !image_processor_) {
+    DCHECK_EQ(kAwaitingPictureBuffers, decoder_state_);
     // This is the first buffer import. Create the image processor and change
     // the decoder state. The client may adjust the coded width. We don't have
     // the final coded size in AssignPictureBuffers yet. Use the adjusted coded
@@ -636,9 +633,12 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     egl_image_size_.set_width(adjusted_coded_width);
     if (!CreateImageProcessor())
       return;
-    DCHECK_EQ(kAwaitingPictureBuffers, decoder_state_);
   }
   DCHECK_EQ(egl_image_size_.width(), adjusted_coded_width);
+
+  if (reset_pending_) {
+    FinishReset();
+  }
 
   if (decoder_state_ == kAwaitingPictureBuffers) {
     decoder_state_ = kDecoding;
