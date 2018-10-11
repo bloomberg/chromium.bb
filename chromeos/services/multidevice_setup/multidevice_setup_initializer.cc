@@ -86,6 +86,10 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
       android_sms_pairing_state_tracker_(
           std::move(android_sms_pairing_state_tracker)),
       gcm_device_info_provider_(gcm_device_info_provider) {
+  // If |device_sync_client_| is null, this interface cannot perform its tasks.
+  if (!device_sync_client_)
+    return;
+
   if (device_sync_client_->is_ready()) {
     InitializeImplementation();
     return;

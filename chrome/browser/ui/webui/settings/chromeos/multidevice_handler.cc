@@ -93,11 +93,13 @@ void MultideviceHandler::RegisterMessages() {
 }
 
 void MultideviceHandler::OnJavascriptAllowed() {
-  multidevice_setup_observer_.Add(multidevice_setup_client_);
+  if (multidevice_setup_client_)
+    multidevice_setup_observer_.Add(multidevice_setup_client_);
 }
 
 void MultideviceHandler::OnJavascriptDisallowed() {
-  multidevice_setup_observer_.Remove(multidevice_setup_client_);
+  if (multidevice_setup_client_)
+    multidevice_setup_observer_.Remove(multidevice_setup_client_);
 
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -237,9 +239,9 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
   auto page_content_dictionary = std::make_unique<base::DictionaryValue>();
 
   multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
-      host_status_with_device = multidevice_setup_client_->GetHostStatus();
+      host_status_with_device = GetHostStatusWithDevice();
   multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap feature_states =
-      multidevice_setup_client_->GetFeatureStates();
+      GetFeatureStatesMap();
 
   page_content_dictionary->SetInteger(
       kPageContentDataModeKey,
@@ -293,6 +295,24 @@ bool MultideviceHandler::IsAuthTokenValid(const std::string& auth_token) {
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
   return !quick_unlock_storage->GetAuthTokenExpired() &&
          auth_token == quick_unlock_storage->GetAuthToken();
+}
+
+multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
+MultideviceHandler::GetHostStatusWithDevice() {
+  if (multidevice_setup_client_)
+    return multidevice_setup_client_->GetHostStatus();
+
+  return multidevice_setup::MultiDeviceSetupClient::
+      GenerateDefaultHostStatusWithDevice();
+}
+
+multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
+MultideviceHandler::GetFeatureStatesMap() {
+  if (multidevice_setup_client_)
+    return multidevice_setup_client_->GetFeatureStates();
+
+  return multidevice_setup::MultiDeviceSetupClient::
+      GenerateDefaultFeatureStatesMap();
 }
 
 }  // namespace settings
