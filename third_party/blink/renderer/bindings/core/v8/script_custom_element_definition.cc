@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
