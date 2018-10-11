@@ -176,6 +176,22 @@ Status ChromeDesktopImpl::GetAutomationExtension(
     if (status.IsError())
       return Status(kUnknownError, "cannot get automation extension", status);
 
+    // The automation extension page has been loaded, but it might not be
+    // initialized yet. Wait for up to 10 seconds for a function on the page
+    // to become defined, as a signal that the page is initialized.
+    base::TimeTicks deadline =
+        base::TimeTicks::Now() + base::TimeDelta::FromSeconds(10);
+    while (base::TimeTicks::Now() < deadline) {
+      std::unique_ptr<base::Value> result;
+      status = web_view->EvaluateScript(
+          std::string(), "typeof launchApp === 'function'", &result);
+      if (status.IsError())
+        return Status(kUnknownError, "cannot get automation extension", status);
+      if (result->is_bool() && result->GetBool())
+        break;
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+    }
+
     automation_extension_.reset(new AutomationExtension(std::move(web_view)));
   }
   *extension = automation_extension_.get();
