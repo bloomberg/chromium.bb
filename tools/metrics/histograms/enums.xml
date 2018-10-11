@@ -21316,6 +21316,12 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Error"/>
 </enum>
 
+<enum name="FileManagerCrostiniShareDialogType">
+  <int value="0" label="None"/>
+  <int value="1" label="Share before open"/>
+  <int value="2" label="Unable to open"/>
+</enum>
+
 <enum name="FileManagerListType">
   <int value="0" label="Uninitialized"/>
   <int value="1" label="List view (detail)"/>
@@ -21335,6 +21341,7 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="Toggle Show Google Docs files (off)"/>
   <int value="10" label="Toggle show hidden Android folders (on)"/>
   <int value="11" label="Toggle show hidden Android folders (off)"/>
+  <int value="12" label="Share with Linux"/>
 </enum>
 
 <enum name="FileManagerQuickViewWayToOpen">
