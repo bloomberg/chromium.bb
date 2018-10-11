@@ -1770,6 +1770,8 @@ crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/fieldset-ali
 crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-after-margin-with-before-border-horizontal-mode.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-small-after-margin-before-border-horizontal-mode.html [ Failure ]
 
+crbug.com/894457 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/dynamic-bsize-change.html [ Crash ]
+
 # ====== LayoutNG-only failures until here ======
 
 ### sheriff 2018-05-28
