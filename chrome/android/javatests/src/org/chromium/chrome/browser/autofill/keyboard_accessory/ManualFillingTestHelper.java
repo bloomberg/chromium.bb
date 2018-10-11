@@ -24,7 +24,6 @@ import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -172,9 +171,14 @@ public class ManualFillingTestHelper {
         mKeyboard.showKeyboard(null);
     }
 
-    public void clickEmailField() throws TimeoutException, InterruptedException {
+    public void clickEmailField(boolean forceAccessory)
+            throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mWebContentsRef.get(), "email");
-        requestShowKeyboardAccessory();
+        if (forceAccessory) {
+            requestShowKeyboardAccessory();
+        } else {
+            requestHideKeyboardAccessory();
+        }
         mKeyboard.showKeyboard(null);
     }
 
@@ -222,15 +226,17 @@ public class ManualFillingTestHelper {
     }
 
     /**
-     * Creates and adds an empty tab without listener to keyboard accessory and sheet.
+     * Creates and adds a password tab to keyboard accessory and sheet.
      */
     public void createTestTab() {
-        mActivityTestRule.getActivity().getManualFillingController().getMediatorForTesting().addTab(
-                new KeyboardAccessoryData.Tab(
-                        AppCompatResources.getDrawable(InstrumentationRegistry.getContext(),
-                                android.R.drawable.ic_lock_lock),
-                        "TestTabDescription", R.layout.empty_accessory_sheet, AccessoryTabType.ALL,
-                        null));
+        KeyboardAccessoryData.Provider<KeyboardAccessoryData.Item> provider =
+                new KeyboardAccessoryData.PropertyProvider<>();
+        mActivityTestRule.getActivity().getManualFillingController().registerPasswordProvider(
+                provider);
+        provider.notifyObservers(new KeyboardAccessoryData.Item[] {
+                KeyboardAccessoryData.Item.createSuggestion("TestName", "", false, null, null),
+                KeyboardAccessoryData.Item.createSuggestion(
+                        "TestPassword", "", false, (item) -> {}, null)});
     }
 
     /**
@@ -290,6 +296,19 @@ public class ManualFillingTestHelper {
                     .getManualFillingController()
                     .getMediatorForTesting()
                     .showWhenKeyboardIsVisible();
+        });
+    }
+
+    /**
+     * In order to make sure the keyboard accessory is only shown on appropriate fields, a request
+     * from the native side can request to hide it. This method simulates that request.
+     */
+    private void requestHideKeyboardAccessory() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity()
+                    .getManualFillingController()
+                    .getMediatorForTesting()
+                    .hide();
         });
     }
 }

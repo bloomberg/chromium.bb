@@ -214,8 +214,9 @@ public class ManualFillingIntegrationTest {
                 "", "80666", "", "Disneyland", "1", "a.turing@enigma.com", "DE"));
         mHelper.createTestTab();
 
-        // Focus the field to bring up the accessory.
-        mHelper.clickEmailField();
+        // Focus the field to bring up the autofill popup. We force a accessory here because the
+        // autofill popup doesn't trigger on password fields.
+        mHelper.clickEmailField(true);
         mHelper.waitForKeyboard();
 
         DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
@@ -228,6 +229,24 @@ public class ManualFillingIntegrationTest {
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
 
         assertThat(popup.isShowing(), is(false));
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
+    public void testSelectingNonPasswordInputDismissesAccessory()
+            throws InterruptedException, TimeoutException, ExecutionException {
+        mHelper.loadTestPage(false);
+        mHelper.createTestTab();
+
+        // Focus the password field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        whenDisplayed(withId(R.id.tabs));
+
+        // Clicking the email field hides the accessory again.
+        mHelper.clickEmailField(false);
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
     }
 
     @Test
@@ -285,7 +304,7 @@ public class ManualFillingIntegrationTest {
                 () -> { mActivityTestRule.getActivity().onResumeWithNative(); });
 
         // Clicking the field should bring the accessory back up.
-        mHelper.clickEmailField();
+        mHelper.clickPasswordField();
         mHelper.waitForKeyboard();
 
         // Click the tab to show the sheet and hide the keyboard.
