@@ -62,6 +62,19 @@ bool IsEnabledByFlag() {
 }
 
 // Metric recording functions.
+
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
+enum class AuthMethod {
+  kNoCredentials = 0,
+  kUsernameOnly = 1,
+  kUsernameAndPassword = 2,
+  kSSOKerberos = 3,
+  kMaxValue = kSSOKerberos,
+};
+
 void RecordMountResult(SmbMountResult result) {
   DCHECK_LE(result, SmbMountResult::kMaxValue);
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.MountResult", result);
@@ -70,6 +83,11 @@ void RecordMountResult(SmbMountResult result) {
 void RecordRemountResult(SmbMountResult result) {
   DCHECK_LE(result, SmbMountResult::kMaxValue);
   UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.RemountResult", result);
+}
+
+void RecordAuthenticationMethod(AuthMethod method) {
+  DCHECK_LE(method, AuthMethod::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.AuthenticationMethod", method);
 }
 
 std::unique_ptr<TempFileManager> CreateTempFileManager() {
@@ -134,6 +152,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
   std::string workgroup;
 
   if (use_chromad_kerberos) {
+    RecordAuthenticationMethod(AuthMethod::kSSOKerberos);
     // Get the user's username and workgroup from their email address to be used
     // for Kerberos authentication.
     user_manager::User* user =
@@ -143,6 +162,15 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
     }
   } else {
+    // Record authentication method metrics.
+    if (!username_input.empty() && !password_input.empty()) {
+      RecordAuthenticationMethod(AuthMethod::kUsernameAndPassword);
+    } else if (!username_input.empty()) {
+      RecordAuthenticationMethod(AuthMethod::kUsernameOnly);
+    } else {
+      RecordAuthenticationMethod(AuthMethod::kNoCredentials);
+    }
+
     // Use provided credentials and parse the username into username and
     // workgroup if necessary.
     username = username_input;
