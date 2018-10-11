@@ -137,6 +137,11 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
     return;
   }
 
+  // Track and update host status.
+  base::Optional<mojom::HostStatus> host_status_before_update =
+      host_status_from_most_recent_update_;
+  host_status_from_most_recent_update_ = host_status_with_device.host_status();
+
   // Track and update verified host info.
   base::Optional<std::string> verified_host_device_id_before_update =
       verified_host_device_id_from_most_recent_update_;
@@ -157,6 +162,8 @@ void AccountStatusChangeDelegateNotifierImpl::CheckForMultiDeviceEvents(
   }
 
   CheckForNewUserPotentialHostExistsEvent(host_status_with_device);
+  CheckForNoLongerNewUserEvent(host_status_with_device,
+                               host_status_before_update);
   CheckForExistingUserHostSwitchedEvent(host_status_with_device,
                                         verified_host_device_id_before_update);
   CheckForExistingUserChromebookAddedEvent(
@@ -190,6 +197,28 @@ void AccountStatusChangeDelegateNotifierImpl::
   delegate()->OnPotentialHostExistsForNewUser();
   pref_service_->SetInt64(kNewUserPotentialHostExistsPrefName,
                           clock_->Now().ToJavaTime());
+}
+
+void AccountStatusChangeDelegateNotifierImpl::CheckForNoLongerNewUserEvent(
+    const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
+    const base::Optional<mojom::HostStatus> host_status_before_update) {
+  // We are only looking for the case when the host status switched from
+  // kEligibleHostExistsButNoHostSet to something else.
+  if (host_status_with_device.host_status() ==
+          mojom::HostStatus::kEligibleHostExistsButNoHostSet ||
+      host_status_before_update !=
+          mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
+    return;
+  }
+
+  // If the user has ever had a verified host, they have already left the 'new
+  // user' state.
+  if (pref_service_->GetInt64(kExistingUserChromebookAddedPrefName) !=
+      kTimestampNotSet) {
+    return;
+  }
+
+  delegate()->OnNoLongerNewUser();
 }
 
 void AccountStatusChangeDelegateNotifierImpl::

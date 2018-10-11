@@ -175,6 +175,12 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
     InvokePendingMojoCalls();
   }
 
+  void TriggerNoLongerNewUserEvent() {
+    EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
+    fake_multidevice_setup_->delegate()->OnNoLongerNewUser();
+    InvokePendingMojoCalls();
+  }
+
   void ShowExistingUserHostSwitchedNotification() {
     EXPECT_TRUE(fake_multidevice_setup_->delegate().is_bound());
     fake_multidevice_setup_->delegate()->OnConnectedHostSwitchedForExistingUser(
@@ -350,6 +356,20 @@ TEST_F(MultiDeviceNotificationPresenterTest,
 
   EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 1);
   AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationClicked", 1);
+  AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationShown", 1);
+}
+
+TEST_F(MultiDeviceNotificationPresenterTest, TestNoLongerNewUserEvent) {
+  SignIntoAccount();
+
+  ShowNewUserNotification();
+  VerifyNewUserPotentialHostExistsNotificationIsVisible();
+
+  TriggerNoLongerNewUserEvent();
+  VerifyNoNotificationIsVisible();
+
+  EXPECT_EQ(test_open_ui_delegate_->open_multi_device_setup_ui_count(), 0);
+  AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationClicked", 0);
   AssertPotentialHostBucketCount("MultiDeviceSetup_NotificationShown", 1);
 }
 

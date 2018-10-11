@@ -917,8 +917,8 @@ TEST_F(MultiDeviceSetupImplTest, AccountStatusChangeDelegate) {
   // All debug trigger events should now succeed.
   EXPECT_TRUE(CallTriggerEventForDebugging(
       mojom::EventTypeForDebugging::kNewUserPotentialHostExists));
-  EXPECT_EQ(
-      1u, fake_account_status_change_delegate()->num_new_user_events_handled());
+  EXPECT_EQ(1u, fake_account_status_change_delegate()
+                    ->num_new_user_potential_host_events_handled());
 
   EXPECT_TRUE(CallTriggerEventForDebugging(
       mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched));
