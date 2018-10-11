@@ -375,6 +375,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // we can't simply fallback to the network here. It is because the CORS
   // preflight logic is implemented in Blink. So we return a "fallback required"
   // response to Blink.
+  // TODO(falken): Remove this mechanism after OOB-CORS ships.
   if ((resource_request_.fetch_request_mode ==
            network::mojom::FetchRequestMode::kCORS ||
        resource_request_.fetch_request_mode ==
@@ -385,6 +386,11 @@ void ServiceWorkerSubresourceLoader::OnFallback(
     TRACE_EVENT_WITH_FLOW0(
         "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback", this,
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+    //  Add "Service Worker Fallback Required" which DevTools knows means to not
+    //  show the response in the Network tab as it's just an internal
+    //  implementation mechanism.
+    response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        "HTTP/1.1 400 Service Worker Fallback Required");
     response_head_.was_fetched_via_service_worker = true;
     response_head_.was_fallback_required_by_service_worker = true;
     CommitResponseHeaders();

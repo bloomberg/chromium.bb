@@ -1265,6 +1265,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
               info.was_fetched_via_service_worker);
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
               info.was_fallback_required_by_service_worker);
+    if (info.was_fallback_required_by_service_worker) {
+      EXPECT_EQ("HTTP/1.1 400 Service Worker Fallback Required",
+                info.headers->GetStatusLine());
+    }
   }
 }
 
