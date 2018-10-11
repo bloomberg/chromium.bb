@@ -60,7 +60,7 @@ enum KioskLaunchType {
 };
 
 // Application install splash screen minimum show time in milliseconds.
-constexpr int kAppInstallSplashScreenMinTimeMS = 3000;
+constexpr int kAppInstallSplashScreenMinTimeMS = 10000;
 
 // Parameters for test:
 bool skip_splash_wait = false;
