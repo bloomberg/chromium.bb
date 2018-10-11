@@ -174,11 +174,14 @@ function launchDownloadsPage() {
 
 // Populates a summary of suggested offline content.
 function offlineContentSummaryAvailable(summary) {
+  // Note: See AvailableContentSummaryToValue in
+  // available_offline_content_helper.cc for the data contained in |summary|.
   if (!summary || summary.total_items == 0 ||
       !loadTimeData.valueExists('offlineContentSummary')) {
     return;
   }
-
+  // TODO(https://crbug.com/852872): Customize presented icons based on the
+  // types of available offline content.
   document.getElementById('offline-content-summary').hidden = false;
 }
 
@@ -190,14 +193,14 @@ function getIconForSuggestedItem(item) {
       return 'image-video';
     case 2:  // kAudio
       return 'image-music-note';
-    case 0:  // kPrefetchedUnopenedPage
+    case 0:  // kPrefetchedPage
     case 3:  // kOtherPage
       return 'image-earth';
   }
   return 'image-file';
 }
 
-function getSuggestedContentDiv(item) {
+function getSuggestedContentDiv(item, index) {
   // Note: See AvailableContentToValue in available_offline_content_helper.cc
   // for the data contained in an |item|.
   var visual = '';
@@ -221,12 +224,12 @@ function getSuggestedContentDiv(item) {
   <div class="offline-content-suggestion ${extraContainerClasses.join(' ')}"
     onclick="launchOfflineItem('${item.ID}', '${item.name_space}')">
       <div class="offline-content-suggestion-texts">
-        <div class="offline-content-suggestion-title">
-          ${item.title}
+        <div id="offline-content-suggestion-title-${index}"
+             class="offline-content-suggestion-title">
         </div>
         <div class="offline-content-suggestion-attribution-freshness">
-          <div class="offline-content-suggestion-attribution">
-            ${item.attribution}
+          <div id="offline-content-suggestion-attribution-${index}"
+               class="offline-content-suggestion-attribution">
           </div>
           <div class="offline-content-suggestion-freshness">
             ${item.date_modified}
@@ -242,20 +245,34 @@ function getSuggestedContentDiv(item) {
 }
 
 // Populates a list of suggested offline content.
+// Note: For security reasons all content downloaded from the web is considered
+// unsafe and must be securely handled to be presented on the dino page. The
+// image content is already safely re-encoded after being downloaded but the
+// textual content, like title and attribution, must be properly handled here.
 function offlineContentAvailable(suggestions) {
   if (!suggestions || !loadTimeData.valueExists('offlineContentList'))
     return;
 
   var suggestionsHTML = [];
-  for (var item of suggestions)
-    suggestionsHTML.push(getSuggestedContentDiv(item));
+  for (var index = 0; index < suggestions.length; index++)
+    suggestionsHTML.push(getSuggestedContentDiv(suggestions[index], index));
+
   document.getElementById('offline-content-suggestions').innerHTML =
       suggestionsHTML.join('\n');
 
-  var contentListElement = document.getElementById('offline-content-list')
-  contentListElement.hidden = false;
+  // Sets textual web content using |textContent| to make sure it's handled as
+  // plain text.
+  for (var index = 0; index < suggestions.length; index++) {
+    document.getElementById(`offline-content-suggestion-title-${index}`)
+        .textContent = suggestions[index].title;
+    document.getElementById(`offline-content-suggestion-attribution-${index}`)
+        .textContent = suggestions[index].attribution;
+  }
+
+  var contentListElement = document.getElementById('offline-content-list');
   if (document.dir == 'rtl')
     contentListElement.classList.add('is-rtl');
+  contentListElement.hidden = false;
 }
 
 function onDocumentLoad() {

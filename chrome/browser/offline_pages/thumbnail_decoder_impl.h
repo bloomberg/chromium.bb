@@ -12,6 +12,10 @@
 
 namespace offline_pages {
 
+// Decodes the downloaded JPEG image, crops it and re-encode it as a PNG
+// file to be used as the thumbnail of an offlined suggested article.
+// Note: the local decoding in a separate process and local re-encoding as a PNG
+// are important security measures as these downloaded images are web content.
 class ThumbnailDecoderImpl : public ThumbnailDecoder {
  public:
   explicit ThumbnailDecoderImpl(
