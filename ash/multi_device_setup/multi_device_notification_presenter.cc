@@ -117,6 +117,12 @@ void MultiDeviceNotificationPresenter::OnPotentialHostExistsForNewUser() {
   ShowNotification(Status::kNewUserNotificationVisible, title, message);
 }
 
+void MultiDeviceNotificationPresenter::OnNoLongerNewUser() {
+  if (notification_status_ != Status::kNewUserNotificationVisible)
+    return;
+  RemoveMultiDeviceSetupNotification();
+}
+
 void MultiDeviceNotificationPresenter::OnConnectedHostSwitchedForExistingUser(
     const std::string& new_host_device_name) {
   base::string16 title = l10n_util::GetStringFUTF16(

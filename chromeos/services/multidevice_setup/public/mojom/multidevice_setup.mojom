@@ -91,6 +91,14 @@ interface AccountStatusChangeDelegate {
   // called if the current user has not yet set up MultiDevice features.
   OnPotentialHostExistsForNewUser();
 
+  // Callback which indicates that the account left the state of having a
+  // potential host ready for setup. Note that it is called both when a host is
+  // set and when there are simply no host devices (i.e. neither potential nor
+  // set) on the account anymore. This function is only called if the current
+  // user has not yet set up MultiDevice features and received backend
+  // confirmation.
+  OnNoLongerNewUser();
+
   // Callback which indicates that the currently-connected MultiDevice host has
   // changed. This likely means that the user has changed MultiDevice settings
   // on another device. This function is only called if the current user has

@@ -83,6 +83,9 @@ class AccountStatusChangeDelegateNotifierImpl
 
   void CheckForNewUserPotentialHostExistsEvent(
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device);
+  void CheckForNoLongerNewUserEvent(
+      const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
+      const base::Optional<mojom::HostStatus> host_status_before_update);
   void CheckForExistingUserHostSwitchedEvent(
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device,
       const base::Optional<std::string>& verified_host_device_id_before_update);
@@ -96,6 +99,9 @@ class AccountStatusChangeDelegateNotifierImpl
   // Set to base::nullopt if there was no enabled host in the most recent
   // host status update.
   base::Optional<std::string> verified_host_device_id_from_most_recent_update_;
+
+  // Set to base::nullopt until the first host status update.
+  base::Optional<mojom::HostStatus> host_status_from_most_recent_update_;
 
   mojom::AccountStatusChangeDelegatePtr delegate_ptr_;
   HostStatusProvider* host_status_provider_;
