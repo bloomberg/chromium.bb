@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
+#include "components/autofill_assistant/browser/batch_element_checker.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -67,12 +68,9 @@ class AutofillAction : public Action {
                                        bool allow_fallback,
                                        int required_fields_index);
 
-  // Process the result of all field checks and continue the flow with
-  // OnCheckRequiredFieldsDone.
-  void OnGetRequiredFieldValue(const std::string& guid,
-                               ActionDelegate* delegate,
-                               bool allow_fallback,
-                               int required_fields_index,
+  // Updates |required_fields_value_status_|.
+  void OnGetRequiredFieldValue(int required_fields_index,
+                               bool exists,
                                const std::string& value);
 
   // Called when all required fields have been checked.
@@ -109,6 +107,8 @@ class AutofillAction : public Action {
   // True if autofilling a card, otherwise we are autofilling an address.
   bool is_autofill_card_;
   std::vector<FieldValueStatus> required_fields_value_status_;
+
+  std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   ProcessActionCallback process_action_callback_;
   base::WeakPtrFactory<AutofillAction> weak_ptr_factory_;

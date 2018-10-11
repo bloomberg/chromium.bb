@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -18,6 +19,7 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "content/public/browser/web_contents.h"
 
@@ -262,51 +264,43 @@ void AutofillAction::CheckRequiredFields(const std::string& guid,
     return;
   }
 
-  CheckRequiredFieldsSequentially(guid, delegate, allow_fallback, 0);
+  DCHECK(!batch_element_checker_);
+  batch_element_checker_ = delegate->CreateBatchElementChecker();
+  for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
+    auto& required_address_field = proto_.use_address().required_fields(i);
+    std::vector<std::string> selectors;
+    for (const auto& selector : required_address_field.element().selectors()) {
+      selectors.emplace_back(selector);
+    }
+    DCHECK(!selectors.empty());
+
+    batch_element_checker_->AddFieldValueCheck(
+        selectors, base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
+                                  // this instance owns batch_element_checker_
+                                  base::Unretained(this), i));
+  }
+  batch_element_checker_->Run(
+      base::TimeDelta::FromSeconds(0),
+      /* try_done= */ base::DoNothing(),
+      /* all_done= */
+      base::BindOnce(
+          &AutofillAction::OnCheckRequiredFieldsDone,
+          base::Unretained(this),  // this instance owns batch_element_checker_
+          guid, base::Unretained(delegate), allow_fallback));
 }
 
-void AutofillAction::CheckRequiredFieldsSequentially(
-    const std::string& guid,
-    ActionDelegate* delegate,
-    bool allow_fallback,
-    int required_fields_index) {
-  DCHECK_GE(required_fields_index, 0);
-  if (required_fields_index >= proto_.use_address().required_fields_size()) {
-    DCHECK_EQ(required_fields_index,
-              proto_.use_address().required_fields_size());
-    OnCheckRequiredFieldsDone(guid, delegate, allow_fallback);
-    return;
-  }
-
-  const auto& required_address_field =
-      proto_.use_address().required_fields(required_fields_index);
-  DCHECK(required_address_field.has_address_field());
-  DCHECK(!required_address_field.element().selectors().empty());
-  std::vector<std::string> selectors;
-  for (const auto& selector : required_address_field.element().selectors()) {
-    selectors.emplace_back(selector);
-  }
-  delegate->GetFieldValue(
-      selectors, base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
-                                weak_ptr_factory_.GetWeakPtr(), guid, delegate,
-                                allow_fallback, required_fields_index));
-}
-
-void AutofillAction::OnGetRequiredFieldValue(const std::string& guid,
-                                             ActionDelegate* delegate,
-                                             bool allow_fallback,
-                                             int required_fields_index,
+void AutofillAction::OnGetRequiredFieldValue(int required_fields_index,
+                                             bool exists,
                                              const std::string& value) {
-  DCHECK(!is_autofill_card_);
   required_fields_value_status_[required_fields_index] =
       value.empty() ? EMPTY : NOT_EMPTY;
-  CheckRequiredFieldsSequentially(guid, delegate, allow_fallback,
-                                  ++required_fields_index);
 }
 
 void AutofillAction::OnCheckRequiredFieldsDone(const std::string& guid,
                                                ActionDelegate* delegate,
                                                bool allow_fallback) {
+  batch_element_checker_.reset();
+
   // We process all fields with an empty value in order to perform the fallback
   // on all those fields, if any.
   bool validation_successful = true;

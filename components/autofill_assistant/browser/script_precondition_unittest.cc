@@ -5,9 +5,11 @@
 #include "components/autofill_assistant/browser/script_precondition.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -60,19 +62,14 @@ class ScriptPreconditionTest : public testing::Test {
         .WillByDefault(RunOnceCallback<1>(false));
 
     SetUrl("http://www.example.com/path");
-    ON_CALL(mock_web_controller_, GetUrl())
-        .WillByDefault(Invoke(this, &ScriptPreconditionTest::GetUrl));
     ON_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("exists"), _))
-        .WillByDefault(RunOnceCallback<1>("foo"));
+        .WillByDefault(RunOnceCallback<1>(true, "foo"));
     ON_CALL(mock_web_controller_,
             OnGetFieldValue(ElementsAre("does_not_exist"), _))
-        .WillByDefault(RunOnceCallback<1>(""));
+        .WillByDefault(RunOnceCallback<1>(false, ""));
   }
 
  protected:
-  // Implements WebController::GetUrl
-  const GURL& GetUrl() { return url_; }
-
   void SetUrl(const std::string& url) { url_ = GURL(url); }
 
   // Runs the preconditions and returns the result.
@@ -82,8 +79,12 @@ class ScriptPreconditionTest : public testing::Test {
       return false;
 
     DirectCallback callback;
-    precondition->Check(&mock_web_controller_, parameters_, executed_scripts_,
+    BatchElementChecker batch_checks(&mock_web_controller_);
+    precondition->Check(url_, &batch_checks, parameters_, executed_scripts_,
                         callback.Get());
+    batch_checks.Run(base::TimeDelta::FromSeconds(0),
+                     /* try_done=*/base::DoNothing(),
+                     /* all_done=*/base::DoNothing());
     return callback.GetResultOrDie();
   }
 

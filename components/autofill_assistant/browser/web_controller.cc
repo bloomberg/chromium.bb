@@ -424,10 +424,11 @@ void WebController::OnResult(bool result,
 }
 
 void WebController::OnResult(
-    const std::string& result,
-    base::OnceCallback<void(const std::string&)> callback) {
+    bool exists,
+    const std::string& value,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
   devtools_client_->GetDOM()->Disable();
-  std::move(callback).Run(result);
+  std::move(callback).Run(exists, value);
 }
 
 void WebController::OnFindElementForFocusElement(
@@ -677,7 +678,7 @@ void WebController::FocusElement(const std::vector<std::string>& selectors,
 
 void WebController::GetFieldValue(
     const std::vector<std::string>& selectors,
-    base::OnceCallback<void(const std::string&)> callback) {
+    base::OnceCallback<void(bool, const std::string&)> callback) {
   FindElement(
       selectors,
       base::BindOnce(&WebController::OnFindElementForGetFieldValue,
@@ -685,11 +686,11 @@ void WebController::GetFieldValue(
 }
 
 void WebController::OnFindElementForGetFieldValue(
-    base::OnceCallback<void(const std::string&)> callback,
+    base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<FindElementResult> element_result) {
   const std::string object_id = element_result->object_id;
   if (object_id.empty()) {
-    OnResult("", std::move(callback));
+    OnResult(/* exists= */ false, "", std::move(callback));
     return;
   }
 
@@ -705,17 +706,18 @@ void WebController::OnFindElementForGetFieldValue(
 }
 
 void WebController::OnGetValueAttribute(
-    base::OnceCallback<void(const std::string&)> callback,
+    base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
-    OnResult("", std::move(callback));
+    OnResult(/* exists= */ true, "", std::move(callback));
     return;
   }
 
   // Read the result returned from Javascript code.
   DCHECK(result->GetResult()->GetValue()->is_string());
-  OnResult(result->GetResult()->GetValue()->GetString(), std::move(callback));
+  OnResult(/* exists= */ true, result->GetResult()->GetValue()->GetString(),
+           std::move(callback));
 }
 
 void WebController::SetFieldValue(const std::vector<std::string>& selectors,
@@ -767,14 +769,6 @@ void WebController::GetOuterHtml(
       selectors,
       base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebController::OnResult(
-    bool successful,
-    const std::string& result,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
-  devtools_client_->GetDOM()->Disable();
-  std::move(callback).Run(successful, result);
 }
 
 void WebController::OnFindElementForGetOuterHtml(

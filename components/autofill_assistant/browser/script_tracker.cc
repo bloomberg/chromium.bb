@@ -17,8 +17,6 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
     : delegate_(delegate),
       listener_(listener),
-      running_checks_(false),
-      must_recheck_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
@@ -26,23 +24,50 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
 
 ScriptTracker::~ScriptTracker() = default;
 
-void ScriptTracker::SetAndCheckScripts(
-    std::vector<std::unique_ptr<Script>> scripts) {
+void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
   ClearAvailableScripts();
   for (auto& script : scripts) {
     available_scripts_[script.get()] = std::move(script);
   }
-  CheckScripts();
 }
 
-void ScriptTracker::CheckScripts() {
-  if (running_checks_) {
-    must_recheck_ = true;
+void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
+  if (pending_checks_) {
+    // It should be possible to just call pending_checks_.reset() to give up on
+    // all checks. This doesn't work, however, because it ends up running
+    // multiple checks in parallel, which fails.
+    //
+    // StopTrying() tells BatchElementChecker to give up early and call
+    // OnCheckDone as soon as possible, which is a safe point for deleting the
+    // checker and starting a new check.
+    //
+    // TODO(crbug.com/806868): Figure out why checks run in parallel don't work
+    // and simplify this logic.
+    pending_checks_->StopTrying();
+    must_recheck_ = base::BindOnce(&ScriptTracker::CheckScripts,
+                                   base::Unretained(this), max_duration);
     return;
   }
-  running_checks_ = true;
+  DCHECK(pending_runnable_scripts_.empty());
 
-  RunPreconditionChecksSequentially(available_scripts_.begin());
+  pending_checks_ =
+      std::make_unique<BatchElementChecker>(delegate_->GetWebController());
+  for (const auto& entry : available_scripts_) {
+    Script* script = entry.first;
+    script->precondition->Check(
+        delegate_->GetWebController()->GetUrl(), pending_checks_.get(),
+        delegate_->GetParameters(), executed_scripts_,
+        base::BindOnce(&ScriptTracker::OnPreconditionCheck,
+                       weak_ptr_factory_.GetWeakPtr(), script));
+  }
+  pending_checks_->Run(
+      max_duration,
+      /* try_done= */
+      base::BindRepeating(&ScriptTracker::UpdateRunnableScriptsIfNecessary,
+                          base::Unretained(this)),
+      /* all_done= */
+      base::BindOnce(&ScriptTracker::OnCheckDone, base::Unretained(this)));
+  // base::Unretained(this) is safe since this instance owns pending_checks_.
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
@@ -75,33 +100,35 @@ void ScriptTracker::OnScriptRun(
 }
 
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
-  bool runnables_changed = RunnablesHaveChanged();
-  if (runnables_changed) {
-    runnable_scripts_.clear();
-    std::sort(pending_runnable_scripts_.begin(),
-              pending_runnable_scripts_.end(),
-              [](const Script* a, const Script* b) {
-                // Runnable scripts with lowest priority value are displayed
-                // first. The display order of scripts with the same priority is
-                // arbitrary. Fallback to ordering by name, arbitrarily, for the
-                // behavior to be consistent.
-                return std::tie(a->priority, a->handle.name) <
-                       std::tie(b->priority, b->handle.name);
-              });
-    for (Script* script : pending_runnable_scripts_) {
-      runnable_scripts_.push_back(script->handle);
-    }
-  }
-  pending_runnable_scripts_.clear();
+  if (!RunnablesHaveChanged())
+    return;
 
-  running_checks_ = false;
-  if (runnables_changed) {
-    listener_->OnRunnableScriptsChanged(runnable_scripts_);
+  runnable_scripts_.clear();
+  std::sort(pending_runnable_scripts_.begin(), pending_runnable_scripts_.end(),
+            [](const Script* a, const Script* b) {
+              // Runnable scripts with lowest priority value are displayed
+              // first. The display order of scripts with the same priority is
+              // arbitrary. Fallback to ordering by name, arbitrarily, for the
+              // behavior to be consistent.
+              return std::tie(a->priority, a->handle.name) <
+                     std::tie(b->priority, b->handle.name);
+            });
+  for (Script* script : pending_runnable_scripts_) {
+    runnable_scripts_.push_back(script->handle);
   }
+  listener_->OnRunnableScriptsChanged(runnable_scripts_);
+}
+
+void ScriptTracker::OnCheckDone() {
+  TerminatePendingChecks();
   if (must_recheck_) {
-    must_recheck_ = false;
-    CheckScripts();
+    std::move(must_recheck_).Run();
   }
+}
+
+void ScriptTracker::TerminatePendingChecks() {
+  pending_checks_.reset();
+  pending_runnable_scripts_.clear();
 }
 
 bool ScriptTracker::RunnablesHaveChanged() {
@@ -119,23 +146,7 @@ bool ScriptTracker::RunnablesHaveChanged() {
   return pending_paths != current_paths;
 }
 
-void ScriptTracker::RunPreconditionChecksSequentially(
-    AvailableScriptMap::const_iterator step) {
-  if (step == available_scripts_.end()) {
-    UpdateRunnableScriptsIfNecessary();
-    return;
-  }
-
-  Script* script = step->first;
-  script->precondition->Check(
-      delegate_->GetWebController(), delegate_->GetParameters(),
-      executed_scripts_,
-      base::BindOnce(&ScriptTracker::OnPreconditionCheck,
-                     weak_ptr_factory_.GetWeakPtr(), script, step));
-}
-
 void ScriptTracker::OnPreconditionCheck(Script* script,
-                                        AvailableScriptMap::const_iterator step,
                                         bool met_preconditions) {
   if (available_scripts_.find(script) == available_scripts_.end()) {
     // Result is not relevant anymore.
@@ -143,16 +154,13 @@ void ScriptTracker::OnPreconditionCheck(Script* script,
   }
   if (met_preconditions)
     pending_runnable_scripts_.push_back(script);
-
-  RunPreconditionChecksSequentially(++step);
 }
 
 void ScriptTracker::ClearAvailableScripts() {
   available_scripts_.clear();
   // Clearing available_scripts_ has cancelled any pending precondition checks,
   // ending them.
-  running_checks_ = false;
-  pending_runnable_scripts_.clear();
+  TerminatePendingChecks();
 }
 
 }  // namespace autofill_assistant

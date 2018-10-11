@@ -126,7 +126,7 @@ void Controller::GetOrCheckScripts(const GURL& url) {
         url, *parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
   } else {
-    script_tracker_->CheckScripts();
+    script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
     StartPeriodicScriptChecks();
   }
 }
@@ -156,7 +156,7 @@ void Controller::OnPeriodicScriptCheck() {
     return;
   }
   periodic_script_check_count_--;
-  script_tracker_->CheckScripts();
+  script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
@@ -181,7 +181,8 @@ void Controller::OnGetScripts(const GURL& url,
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
   DCHECK(parse_result);
-  script_tracker_->SetAndCheckScripts(std::move(scripts));
+  script_tracker_->SetScripts(std::move(scripts));
+  script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
   StartPeriodicScriptChecks();
 }
 
@@ -245,7 +246,7 @@ void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
       allow_autostart_ = false;
 
       if (!script_tracker_->running()) {
-        script_tracker_->CheckScripts();
+        script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
         StartPeriodicScriptChecks();
       }
       break;

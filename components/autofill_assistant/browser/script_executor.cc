@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -41,6 +42,11 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+std::unique_ptr<BatchElementChecker>
+ScriptExecutor::CreateBatchElementChecker() {
+  return std::make_unique<BatchElementChecker>(delegate_->GetWebController());
+}
+
 void ScriptExecutor::ShowStatusMessage(const std::string& message) {
   delegate_->GetUiController()->ShowStatusMessage(message);
 }
@@ -48,11 +54,6 @@ void ScriptExecutor::ShowStatusMessage(const std::string& message) {
 void ScriptExecutor::ClickElement(const std::vector<std::string>& selectors,
                                   base::OnceCallback<void(bool)> callback) {
   delegate_->GetWebController()->ClickElement(selectors, std::move(callback));
-}
-
-void ScriptExecutor::ElementExists(const std::vector<std::string>& selectors,
-                                   base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->ElementExists(selectors, std::move(callback));
 }
 
 void ScriptExecutor::ChooseAddress(
@@ -96,12 +97,6 @@ void ScriptExecutor::HighlightElement(const std::vector<std::string>& selectors,
 void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
                                   base::OnceCallback<void(bool)> callback) {
   delegate_->GetWebController()->FocusElement(selectors, std::move(callback));
-}
-
-void ScriptExecutor::GetFieldValue(
-    const std::vector<std::string>& selectors,
-    base::OnceCallback<void(const std::string&)> callback) {
-  delegate_->GetWebController()->GetFieldValue(selectors, std::move(callback));
 }
 
 void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,

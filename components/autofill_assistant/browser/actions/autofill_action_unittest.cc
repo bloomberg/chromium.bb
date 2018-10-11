@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_client_memory.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
+#include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -26,6 +27,7 @@ using ::testing::InSequence;
 using ::testing::Not;
 using ::testing::Return;
 using ::testing::StrNe;
+using ::testing::Invoke;
 
 class MockPersonalDataManager : public autofill::PersonalDataManager {
  public:
@@ -106,6 +108,10 @@ class AutofillActionTest : public testing::Test {
         .WillByDefault(Return(&mock_client_memory_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(personal_data_manager_.get()));
+    ON_CALL(mock_action_delegate_, CreateBatchElementChecker)
+        .WillByDefault(Invoke([this]() {
+          return std::make_unique<BatchElementChecker>(&mock_web_controller_);
+        }));
   }
 
  protected:
@@ -165,6 +171,7 @@ class AutofillActionTest : public testing::Test {
   }
 
   MockActionDelegate mock_action_delegate_;
+  MockWebController mock_web_controller_;
   MockClientMemory mock_client_memory_;
   std::string autofill_profile_guid_;
   std::unique_ptr<autofill::PersonalDataManager> personal_data_manager_;
@@ -197,14 +204,12 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
   InSequence seq;
 
   ActionProto action_proto = CreateUseAddressAction();
-  int required_fields_count = 3;
-  for (int i = 0; i < required_fields_count; i++) {
-    auto* required_field =
-        action_proto.mutable_use_address()->add_required_fields();
-    required_field->set_address_field(
-        UseAddressProto::RequiredField::FIRST_NAME);
-    required_field->mutable_element()->add_selectors(kFakeSelector);
-  }
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
+                   "#first_name");
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::LAST_NAME,
+                   "#last_name");
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::EMAIL,
+                   "#email");
 
   // Return a fake selected address.
   EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
@@ -217,10 +222,8 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation succeeds.
-  EXPECT_CALL(mock_action_delegate_,
-              OnGetFieldValue(ElementsAre(kFakeSelector), _))
-      .Times(required_fields_count)
-      .WillRepeatedly(RunOnceCallback<1>("not empty"));
+  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
 
   EXPECT_TRUE(ProcessAction(action_proto));
 }
@@ -247,12 +250,14 @@ TEST_F(AutofillActionTest, FallbackFails) {
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_action_delegate_,
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("#email"), _))
+      .WillOnce(RunOnceCallback<1>(true, "not empty"));
+  EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(ElementsAre("#first_name"), _))
-      .WillOnce(RunOnceCallback<1>(""));
-  EXPECT_CALL(mock_action_delegate_,
-              OnGetFieldValue(Not(ElementsAre("#first_name")), _))
-      .WillRepeatedly(RunOnceCallback<1>("not empty"));
+      .WillOnce(RunOnceCallback<1>(true, ""));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(ElementsAre("#last_name"), _))
+      .WillOnce(RunOnceCallback<1>(true, "not empty"));
 
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
@@ -287,12 +292,14 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
     InSequence seq;
 
     // Validation fails when getting FIRST_NAME.
-    EXPECT_CALL(mock_action_delegate_,
+    EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("#email"), _))
+        .WillOnce(RunOnceCallback<1>(true, "not empty"));
+    EXPECT_CALL(mock_web_controller_,
                 OnGetFieldValue(ElementsAre("#first_name"), _))
-        .WillOnce(RunOnceCallback<1>(""));
-    EXPECT_CALL(mock_action_delegate_,
-                OnGetFieldValue(Not(ElementsAre("#first_name")), _))
-        .WillRepeatedly(RunOnceCallback<1>("not empty"));
+        .WillOnce(RunOnceCallback<1>(true, ""));
+    EXPECT_CALL(mock_web_controller_,
+                OnGetFieldValue(ElementsAre("#last_name"), _))
+        .WillOnce(RunOnceCallback<1>(true, "not empty"));
 
     // Fallback succeeds.
     EXPECT_CALL(mock_action_delegate_,
@@ -300,8 +307,8 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
         .WillOnce(RunOnceCallback<2>(true));
 
     // Second validation succeeds.
-    EXPECT_CALL(mock_action_delegate_, OnGetFieldValue(_, _))
-        .WillRepeatedly(RunOnceCallback<1>("not empty"));
+    EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+        .WillRepeatedly(RunOnceCallback<1>(true, "not empty"));
   }
   EXPECT_TRUE(ProcessAction(action_proto));
 }

@@ -202,6 +202,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
 
   void OnGetFieldValue(const base::Closure& done_callback,
                        std::string* value_output,
+                       bool exists,
                        const std::string& value) {
     *value_output = value;
     std::move(done_callback).Run();

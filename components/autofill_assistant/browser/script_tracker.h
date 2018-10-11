@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -45,12 +46,16 @@ class ScriptTracker {
 
   ~ScriptTracker();
 
-  // Updates the set of available |scripts| and check them.
-  void SetAndCheckScripts(std::vector<std::unique_ptr<Script>> scripts);
+  // Updates the set of available |scripts|. This interrupts any pending checks,
+  // but don't start a new one.'
+  void SetScripts(std::vector<std::unique_ptr<Script>> scripts);
 
   // Run the preconditions on the current set of scripts, and possibly update
   // the set of runnable scripts.
-  void CheckScripts();
+  //
+  // Calling CheckScripts() while a check is in progress cleanly cancels the
+  // previously running check and starts a new one right afterwards.
+  void CheckScripts(const base::TimeDelta& max_duration);
 
   // Runs a script and reports, when the script has ended, whether the run was
   // successful. Fails immediately if a script is already running.
@@ -77,14 +82,14 @@ class ScriptTracker {
                    ScriptExecutor::RunScriptCallback original_callback,
                    ScriptExecutor::Result result);
   void UpdateRunnableScriptsIfNecessary();
+  void OnCheckDone();
+
+  // Cleans up any state use by pending checks. Stops running pending checks.
+  void TerminatePendingChecks();
 
   // Returns true if |runnable_| should be updated.
   bool RunnablesHaveChanged();
-  void RunPreconditionChecksSequentially(
-      AvailableScriptMap::const_iterator step);
-  void OnPreconditionCheck(Script* script,
-                           AvailableScriptMap::const_iterator step,
-                           bool met_preconditions);
+  void OnPreconditionCheck(Script* script, bool met_preconditions);
   void ClearAvailableScripts();
 
   ScriptExecutorDelegate* const delegate_;
@@ -107,16 +112,15 @@ class ScriptTracker {
 
   // List of scripts that have been executed and their corresponding statuses.
   std::map<std::string, ScriptStatusProto> executed_scripts_;
+  std::unique_ptr<BatchElementChecker> pending_checks_;
 
-  // If true, a check is currently in progress.
-  bool running_checks_;
-
-  // Scripts found to be runnable so far, in the current run of CheckScripts.
+  // Scripts found to be runnable so far, in the current check, represented by
+  // |pending_checks_|.
   std::vector<Script*> pending_runnable_scripts_;
 
   // If a Check() was called while a check was in progress, run another one just
   // afterwards, in case things have changed.
-  bool must_recheck_;
+  base::OnceCallback<void()> must_recheck_;
 
   // If a script is currently running, this is the script's executor. Otherwise,
   // this is nullptr.
