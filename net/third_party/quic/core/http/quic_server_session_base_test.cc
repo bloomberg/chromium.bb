@@ -73,7 +73,12 @@ class TestServerSession : public QuicServerSessionBase {
     return stream;
   }
 
-  QuicSpdyStream* CreateOutgoingDynamicStream() override {
+  QuicSpdyStream* CreateOutgoingBidirectionalStream() override {
+    DCHECK(false);
+    return nullptr;
+  }
+
+  QuicSpdyStream* CreateOutgoingUnidirectionalStream() override {
     if (!ShouldCreateOutgoingDynamicStream()) {
       return nullptr;
     }

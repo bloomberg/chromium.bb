@@ -68,7 +68,8 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
   return CanOpenNextOutgoingStream();
 }
 
-QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream() {
+QuicSpdyClientStream*
+QuicSpdyClientSession::CreateOutgoingBidirectionalStream() {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
@@ -76,6 +77,12 @@ QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream() {
   QuicSpdyClientStream* stream_ptr = stream.get();
   ActivateStream(std::move(stream));
   return stream_ptr;
+}
+
+QuicSpdyClientStream*
+QuicSpdyClientSession::CreateOutgoingUnidirectionalStream() {
+  QUIC_BUG << "Try to create outgoing unidirectional client data streams";
+  return nullptr;
 }
 
 std::unique_ptr<QuicSpdyClientStream>

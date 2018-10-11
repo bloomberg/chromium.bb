@@ -1058,8 +1058,14 @@ bool QuicChromiumClientSession::WasConnectionEverUsed() {
 }
 
 QuicChromiumClientStream*
-QuicChromiumClientSession::CreateOutgoingDynamicStream() {
+QuicChromiumClientSession::CreateOutgoingBidirectionalStream() {
   NOTREACHED() << "CreateOutgoingReliableStreamImpl should be called directly";
+  return nullptr;
+}
+
+QuicChromiumClientStream*
+QuicChromiumClientSession::CreateOutgoingUnidirectionalStream() {
+  NOTREACHED() << "Try to create outgoing unidirectional stream";
   return nullptr;
 }
 

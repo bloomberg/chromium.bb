@@ -178,7 +178,8 @@ class QuartcSessionTest : public QuicTest {
     ASSERT_TRUE(client_peer_->IsEncryptionEstablished());
 
     // Now we can establish encrypted outgoing stream.
-    QuartcStream* outgoing_stream = server_peer_->CreateOutgoingDynamicStream();
+    QuartcStream* outgoing_stream =
+        server_peer_->CreateOutgoingBidirectionalStream();
     QuicStreamId stream_id = outgoing_stream->id();
     ASSERT_NE(nullptr, outgoing_stream);
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
@@ -262,8 +263,8 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
 // Test that data streams are not created before handshake.
 TEST_F(QuartcSessionTest, CannotCreateDataStreamBeforeHandshake) {
   CreateClientAndServerSessions();
-  EXPECT_EQ(nullptr, server_peer_->CreateOutgoingDynamicStream());
-  EXPECT_EQ(nullptr, client_peer_->CreateOutgoingDynamicStream());
+  EXPECT_EQ(nullptr, server_peer_->CreateOutgoingBidirectionalStream());
+  EXPECT_EQ(nullptr, client_peer_->CreateOutgoingBidirectionalStream());
 }
 
 TEST_F(QuartcSessionTest, CancelQuartcStream) {
@@ -272,7 +273,7 @@ TEST_F(QuartcSessionTest, CancelQuartcStream) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   ASSERT_NE(nullptr, stream);
 
   uint32_t id = stream->id();
@@ -294,7 +295,7 @@ TEST_F(QuartcSessionTest, WriterGivesPacketNumberToTransport) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   stream->SetDelegate(client_stream_delegate_.get());
 
   char kClientMessage[] = "Hello";
@@ -327,7 +328,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionEnabled) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   QuicStreamId stream_id = stream->id();
   stream->SetDelegate(client_stream_delegate_.get());
   stream->set_cancel_on_loss(false);
@@ -351,7 +352,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcStream* stream = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream = client_peer_->CreateOutgoingBidirectionalStream();
   QuicStreamId stream_id = stream->id();
   stream->SetDelegate(client_stream_delegate_.get());
   stream->set_cancel_on_loss(true);
@@ -365,7 +366,7 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
   simulator_.RunFor(QuicTime::Delta::FromMilliseconds(1));
 
   // Send another packet to trigger loss detection.
-  QuartcStream* stream_1 = client_peer_->CreateOutgoingDynamicStream();
+  QuartcStream* stream_1 = client_peer_->CreateOutgoingBidirectionalStream();
   stream_1->SetDelegate(client_stream_delegate_.get());
 
   char kMessage1[] = "Second message";

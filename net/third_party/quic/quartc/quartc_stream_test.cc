@@ -62,7 +62,11 @@ class MockQuicSession : public QuicSession {
     return nullptr;
   }
 
-  QuartcStream* CreateOutgoingDynamicStream() override { return nullptr; }
+  QuartcStream* CreateOutgoingBidirectionalStream() override { return nullptr; }
+
+  QuartcStream* CreateOutgoingUnidirectionalStream() override {
+    return nullptr;
+  }
 
   const QuicCryptoStream* GetCryptoStream() const override { return nullptr; }
   QuicCryptoStream* GetMutableCryptoStream() override { return nullptr; }

@@ -222,14 +222,19 @@ const quic::QuicCryptoStream* P2PQuicTransportImpl::GetCryptoStream() const {
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return CreateOutgoingDynamicStream();
+  return CreateOutgoingBidirectionalStream();
 }
 
-P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingDynamicStream() {
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   P2PQuicStreamImpl* stream = CreateStreamInternal(GetNextOutgoingStreamId());
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
   return stream;
+}
+
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingUnidirectionalStream() {
+  DCHECK(false);
+  return nullptr;
 }
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingDynamicStream(

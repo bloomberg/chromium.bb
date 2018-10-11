@@ -170,11 +170,16 @@ QuicCryptoStream* QuartcSession::GetMutableCryptoStream() {
   return crypto_stream_.get();
 }
 
-QuartcStream* QuartcSession::CreateOutgoingDynamicStream() {
+QuartcStream* QuartcSession::CreateOutgoingBidirectionalStream() {
   // Use default priority for incoming QUIC streams.
   // TODO(zhihuang): Determine if this value is correct.
   return ActivateDataStream(CreateDataStream(GetNextOutgoingStreamId(),
                                              QuicStream::kDefaultPriority));
+}
+
+QuartcStream* QuartcSession::CreateOutgoingUnidirectionalStream() {
+  DCHECK(false);
+  return nullptr;
 }
 
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {

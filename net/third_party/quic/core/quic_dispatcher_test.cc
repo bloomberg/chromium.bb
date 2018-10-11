@@ -76,7 +76,8 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
                     const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
+  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
 
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
