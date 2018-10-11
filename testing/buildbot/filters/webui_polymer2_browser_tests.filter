@@ -167,6 +167,7 @@ CrSettingsSiteDataTest.*
 CrSettingsSiteDetailsPermissionTest.*
 CrSettingsSiteDetailsTest.*
 CrSettingsSiteEntryTest.*
+CrSettingsSiteListEntryTest.*
 CrSettingsSiteListTest.*
 CrSettingsSliderTest.*
 CrSettingsSmbPageTest.*
