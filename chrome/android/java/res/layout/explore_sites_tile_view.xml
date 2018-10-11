@@ -5,9 +5,10 @@
 
 <org.chromium.chrome.browser.explore_sites.ExploreSitesTileView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="@dimen/tile_view_width"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/explore_sites_site_tile_min_height"
+    android:paddingTop="@dimen/explore_sites_site_tile_padding" >
     <include
         layout="@layout/tile_view_modern"
         android:layout_width="match_parent"

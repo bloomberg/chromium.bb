@@ -5,20 +5,22 @@
 
 <org.chromium.chrome.browser.explore_sites.ExploreSitesCategoryCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingVertical="@dimen/explore_sites_category_padding" >
-
+    android:paddingBottom="@dimen/explore_sites_category_padding"
+    android:paddingTop="@dimen/explore_sites_category_padding" >
 
     <TextView
         android:id="@+id/category_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:textAppearance="@style/BlackTitle1" />
+        android:gravity="center"
+        android:textAppearance="@style/BlackTitle2"
+        android:minHeight="@dimen/explore_sites_category_title_height"
+        tools:text="Category" />
 
     <GridLayout
         android:id="@+id/category_sites"
