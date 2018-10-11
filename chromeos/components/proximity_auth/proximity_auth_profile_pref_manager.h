@@ -64,8 +64,9 @@ class ProximityAuthProfilePrefManager
   int GetPromotionShownCount() const override;
   void SetProximityThreshold(ProximityThreshold value) override;
   ProximityThreshold GetProximityThreshold() const override;
+  bool IsChromeOSLoginAllowed() const override;
   void SetIsChromeOSLoginEnabled(bool is_enabled) override;
-  bool IsChromeOSLoginEnabled() override;
+  bool IsChromeOSLoginEnabled() const override;
 
   // chromeos::multidevice_setup::MultiDeviceSetupClient::Observer:
   void OnFeatureStatesChanged(
