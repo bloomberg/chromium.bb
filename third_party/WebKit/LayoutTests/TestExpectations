@@ -460,7 +460,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 ### virtual/layout_ng/fast/block/basic
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/011.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/018.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-table-cell.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/text-indent-rtl.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html [ Failure ]
 
@@ -483,7 +482,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-block-formatting-context.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Pass Crash Timeout ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction2.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block2.html [ Failure ]
@@ -522,14 +520,10 @@ crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
 
-### Crash site: PaintController.cpp
-crbug.com/714962 virtual/layout_ng/fast/inline//continuation-outlines-with-layers-2.html [ Crash Failure ]
-
 crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
 ### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/emptyInlinesWithinLists.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-long-image.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-repeat-x.html [ Failure ]
@@ -901,7 +895,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/float-with-margin-moved-unbreakable.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/focus-outline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/forced-break-after-block-with-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/forced-break-after-empty-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/forced-break-after-last-block-before-spanner.html [ Failure ]
