@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -164,8 +165,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
 
     @Override
     public void setSearchQuery(String query) {
-        // TODO(crbug.com/881047): Check with UX, if the text on empty view should change during
-        // search.
+        mEmptyCoordinator.setInSearchMode(!TextUtils.isEmpty(query));
         mMediator.onFilterStringChanged(query);
     }
 
