@@ -12,6 +12,7 @@ from webelement import WebElement
 
 ELEMENT_KEY_W3C = "element-6066-11e4-a52e-4f735466cecf"
 ELEMENT_KEY = "ELEMENT"
+MAX_RETRY_COUNT = 3
 
 class ChromeDriverException(Exception):
   pass
@@ -122,17 +123,32 @@ def _ExceptionForStandardResponse(response):
 class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
 
-  def __init__(self, server_url, chrome_binary=None, android_package=None,
-               android_activity=None, android_process=None,
-               android_use_running_app=None, chrome_switches=None,
-               chrome_extensions=None, chrome_log_path=None,
-               debugger_address=None, logging_prefs=None,
-               mobile_emulation=None, experimental_options=None,
-               download_dir=None, network_connection=None,
-               send_w3c_capability=None, send_w3c_request=None,
-               page_load_strategy=None, unexpected_alert_behaviour=None,
-               devtools_events_to_log=None, accept_insecure_certs=None,
-               timeouts=None, test_name=None):
+  retry_count = 0
+
+  def __init__(self, *args, **kwargs):
+    try:
+      self._InternalInit(*args, **kwargs)
+    except Exception as e:
+      if not e.message.startswith('timed out'):
+        raise
+      else:
+        if ChromeDriver.retry_count < MAX_RETRY_COUNT:
+          ChromeDriver.retry_count = ChromeDriver.retry_count + 1
+          self._InternalInit(*args, **kwargs)
+        else:
+          raise
+
+  def _InternalInit(self, server_url, chrome_binary=None, android_package=None,
+      android_activity=None, android_process=None,
+      android_use_running_app=None, chrome_switches=None,
+      chrome_extensions=None, chrome_log_path=None,
+      debugger_address=None, logging_prefs=None,
+      mobile_emulation=None, experimental_options=None,
+      download_dir=None, network_connection=None,
+      send_w3c_capability=None, send_w3c_request=None,
+      page_load_strategy=None, unexpected_alert_behaviour=None,
+      devtools_events_to_log=None, accept_insecure_certs=None,
+      timeouts=None, test_name=None):
     self._executor = command_executor.CommandExecutor(server_url)
     self.w3c_compliant = False
 
