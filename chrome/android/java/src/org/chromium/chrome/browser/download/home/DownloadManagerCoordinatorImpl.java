@@ -50,17 +50,17 @@ class DownloadManagerCoordinatorImpl
     private boolean mMuteFilterChanges;
 
     /** Builds a {@link DownloadManagerCoordinatorImpl} instance. */
-    public DownloadManagerCoordinatorImpl(Profile profile, Activity activity, boolean offTheRecord,
-            boolean isSeparateActivity, SnackbarManager snackbarManager) {
+    public DownloadManagerCoordinatorImpl(Profile profile, Activity activity,
+            DownloadManagerUiConfig config, SnackbarManager snackbarManager) {
         mActivity = activity;
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
         mSelectionDelegate = new SelectionDelegate<ListItem>();
-        mListCoordinator = new DateOrderedListCoordinator(mActivity, offTheRecord,
+        mListCoordinator = new DateOrderedListCoordinator(mActivity, config,
                 OfflineContentAggregatorFactory.forProfile(profile),
                 mDeleteCoordinator::showSnackbar, mSelectionDelegate, this ::notifyFilterChanged,
                 createDateOrderedListObserver());
         mToolbarCoordinator = new ToolbarCoordinator(
-                mActivity, this, mListCoordinator, mSelectionDelegate, isSeparateActivity);
+                mActivity, this, mListCoordinator, mSelectionDelegate, config.isSeparateActivity);
 
         initializeView();
         RecordUserAction.record("Android.DownloadManager.Open");

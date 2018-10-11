@@ -13,6 +13,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
@@ -107,19 +108,19 @@ class DateOrderedListMediator {
     /**
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
-     * @param offTheRecord            Whether or not to include off the record items.
      * @param provider                The {@link OfflineContentProvider} to visually represent.
      * @param deleteController        A class to manage whether or not items can be deleted.
      * @param shareController         A class responsible for sharing downloaded item {@link
      *                                Intent}s.
      * @param selectionDelegate       A class responsible for handling list item selection.
+     * @param config                  A {@link DownloadManagerUiConfig} to provide UI config params.
      * @param dateOrderedListObserver An observer of the list and recycler view.
      * @param model                   The {@link ListItemModel} to push {@code provider} into.
      */
-    public DateOrderedListMediator(boolean offTheRecord, OfflineContentProvider provider,
-            ShareController shareController, DeleteController deleteController,
-            SelectionDelegate<ListItem> selectionDelegate,
-            DateOrderedListObserver dateOrderedListObserver, ListItemModel model) {
+    public DateOrderedListMediator(OfflineContentProvider provider, ShareController shareController,
+            DeleteController deleteController, SelectionDelegate<ListItem> selectionDelegate,
+            DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
+            ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -131,19 +132,19 @@ class DateOrderedListMediator {
         //                             [DateOrderedListMutator] ->
         //                                 [ListItemModel]
 
-        mProvider = new OfflineContentProviderGlue(provider, offTheRecord);
+        mProvider = new OfflineContentProviderGlue(provider, config.isOffTheRecord);
         mShareController = shareController;
         mModel = model;
         mDeleteController = deleteController;
         mSelectionDelegate = selectionDelegate;
 
         mSource = new OfflineItemSource(mProvider);
-        mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(offTheRecord, mSource);
+        mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(config.isOffTheRecord, mSource);
         mInvalidStateFilter = new InvalidStateOfflineItemFilter(mOffTheRecordFilter);
         mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mInvalidStateFilter);
         mSearchFilter = new SearchOfflineItemFilter(mDeleteUndoFilter);
         mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
-        mListMutator = new DateOrderedListMutator(mTypeFilter, mModel, new JustNowProvider());
+        mListMutator = new DateOrderedListMutator(mTypeFilter, mModel, new JustNowProvider(config));
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(
