@@ -1067,27 +1067,18 @@ TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
 
   textfield_->SetSelectionRange(gfx::Range(6));
 
-  // Shift+[Up/Down] on Mac should execute the command
-  // MOVE_[UP/DOWN]_AND_MODIFY_SELECTION. On other platforms, textfield won't
-  // handle these events.
+  // Shift+[Up/Down] should select the text to the beginning and end of the
+  // line, respectively.
   SendKeyEvent(ui::VKEY_UP, true /* shift */, false /* command */);
   EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
   EXPECT_TRUE(textfield_->key_handled());
   EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
-#else
-  EXPECT_FALSE(textfield_->key_handled());
-#endif
   textfield_->clear();
 
   SendKeyEvent(ui::VKEY_DOWN, true /* shift */, false /* command */);
   EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
   EXPECT_TRUE(textfield_->key_handled());
   EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
-#else
-  EXPECT_FALSE(textfield_->key_handled());
-#endif
   textfield_->clear();
 }
 
