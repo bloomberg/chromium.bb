@@ -105,7 +105,9 @@ class WebURLRequest {
     kOfflinePageOn = 1 << 8,
     kLitePageRedirectOn = 1 << 9,  // Allow the browser to redirect the resource
                                    // to a Lite Page server.
-    kPreviewsStateLast = kLitePageRedirectOn
+    kLazyImageLoadDeferred = 1 << 10,  // Request the placeholder version of an
+                                       // image that was deferred by lazyload.
+    kPreviewsStateLast = kLazyImageLoadDeferred
   };
 
   class ExtraData {

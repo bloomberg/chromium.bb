@@ -117,6 +117,12 @@ void FetchParameters::SetClientLoFiPlaceholder() {
   SetAllowImagePlaceholder();
 }
 
+void FetchParameters::SetLazyImagePlaceholder() {
+  resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
+                                     WebURLRequest::kLazyImageLoadDeferred);
+  SetAllowImagePlaceholder();
+}
+
 void FetchParameters::SetAllowImagePlaceholder() {
   DCHECK_EQ(kNone, image_request_optimization_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||

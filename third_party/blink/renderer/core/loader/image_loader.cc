@@ -496,7 +496,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
         if (IsLazyLoadingImageAllowed(frame, html_image)) {
-          params.SetAllowImagePlaceholder();
+          params.SetLazyImagePlaceholder();
           lazy_image_load_state_ = LazyImageLoadState::kDeferred;
         }
         LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);

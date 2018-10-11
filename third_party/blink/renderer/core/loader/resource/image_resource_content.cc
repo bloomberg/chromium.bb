@@ -43,6 +43,7 @@ class NullImageResourceInfo final
   bool IsSchedulingReload() const override { return false; }
   const ResourceResponse& GetResponse() const override { return response_; }
   bool ShouldShowPlaceholder() const override { return false; }
+  bool ShouldShowLazyImagePlaceholder() const override { return false; }
   bool IsCacheValidator() const override { return false; }
   bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const override {
     return false;
@@ -430,13 +431,19 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
       if (size_available_ == Image::kSizeUnavailable && !all_data_received)
         return UpdateImageResult::kNoDecodeError;
 
-      if (info_->ShouldShowPlaceholder() && all_data_received) {
+      if ((info_->ShouldShowPlaceholder() ||
+           info_->ShouldShowLazyImagePlaceholder()) &&
+          all_data_received) {
         if (image_ && !image_->IsNull()) {
           IntSize dimensions = image_->Size();
           ClearImage();
-          image_ = PlaceholderImage::Create(
-              this, dimensions,
-              EstimateOriginalImageSizeForPlaceholder(info_->GetResponse()));
+          if (info_->ShouldShowLazyImagePlaceholder()) {
+            image_ = PlaceholderImage::CreateForLazyImages(this, dimensions);
+          } else {
+            image_ = PlaceholderImage::Create(
+                this, dimensions,
+                EstimateOriginalImageSizeForPlaceholder(info_->GetResponse()));
+          }
         }
       }
 
