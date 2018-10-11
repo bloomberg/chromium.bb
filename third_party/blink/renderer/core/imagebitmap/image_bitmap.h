@@ -29,7 +29,7 @@ class OffscreenCanvas;
 
 enum ImageBitmapPixelFormat {
   kImageBitmapPixelFormat_Default,
-  kImageBitmapPixelFormat_8888,
+  kImageBitmapPixelFormat_Uint8,
 };
 
 class CORE_EXPORT ImageBitmap final : public ScriptWrappable,

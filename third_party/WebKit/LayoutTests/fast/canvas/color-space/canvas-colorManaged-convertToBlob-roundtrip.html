@@ -13,7 +13,7 @@ var opaqueReferencePxiels, transparentReferencePixels;
 
 function testPixels(actualPixels, refPixels, testScenario)
 {
-    if (testScenario.canvasColorParam.pixelFormat == '8-8-8-8') {
+    if (testScenario.canvasColorParam.pixelFormat == 'uint8') {
         // Narrowing down the source of expected error:
         // - Alpha values should always match.
         // - Color components should be acceptably close. All tests locally pass
@@ -118,7 +118,7 @@ function runAllTests() {
 
     var mimeTypes = ['image/png', 'image/jpeg', 'image/webp'];
     var blobColorSpaces = ['srgb', 'rec2020', 'display-p3'];
-    var blobPixelFormats = ['8-8-8-8', 'uint16'];
+    var blobPixelFormats = ['uint8', 'uint16'];
 
     var encodeOptionsSet = [];
     for (var i = 0; i < mimeTypes.length; i++)
@@ -135,7 +135,7 @@ function runAllTests() {
             }
 
     var canvasColorParams = [
-        {colorSpace: 'srgb', pixelFormat: '8-8-8-8'},
+        {colorSpace: 'srgb', pixelFormat: 'uint8'},
         {colorSpace: 'srgb', pixelFormat: 'float16'},
         {colorSpace: 'rec2020', pixelFormat: 'float16'},
         {colorSpace: 'p3', pixelFormat: 'float16'}];

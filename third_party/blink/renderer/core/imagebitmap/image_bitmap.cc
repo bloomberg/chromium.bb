@@ -30,7 +30,7 @@ namespace blink {
 constexpr const char* kImageOrientationFlipY = "flipY";
 constexpr const char* kImageBitmapOptionNone = "none";
 constexpr const char* kImageBitmapOptionDefault = "default";
-constexpr const char* kImageBitmapPixelFormat8888 = "8-8-8-8";
+constexpr const char* kImageBitmapPixelFormatUint8Name = "uint8";
 constexpr const char* kImageBitmapOptionPremultiply = "premultiply";
 constexpr const char* kImageBitmapOptionResizeQualityHigh = "high";
 constexpr const char* kImageBitmapOptionResizeQualityMedium = "medium";
@@ -71,8 +71,8 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
     DCHECK(options.imageOrientation() == kImageBitmapOptionNone);
   }
 
-  if (options.imagePixelFormat() == kImageBitmapPixelFormat8888)
-    parsed_options.pixel_format = kImageBitmapPixelFormat_8888;
+  if (options.imagePixelFormat() == kImageBitmapPixelFormatUint8Name)
+    parsed_options.pixel_format = kImageBitmapPixelFormat_Uint8;
 
   if (options.premultiplyAlpha() == kImageBitmapOptionNone) {
     parsed_options.premultiply_alpha = false;
@@ -189,10 +189,10 @@ SkImageInfo GetSkImageInfo(sk_sp<SkImage> skia_image) {
   if (color_type == kN32_SkColorType && skia_image->colorSpace() &&
       skia_image->colorSpace()->isSRGB()) {
     // Skia is in the middle of transitioning this scenario from meaning
-    // linearly blended sRGB 8888 to non-linearly blended sRGB 8888.  While the
-    // transition is happening, we'll strip the color space to force
-    // non-linearly blended sRGB 8888.  (This nullptr will continue to mean
-    // non-linearly blended sRGB 8888 after the transition too,  so there's
+    // linearly blended sRGB uint8 to non-linearly blended sRGB uint8.  While
+    // the transition is happening, we'll strip the color space to force
+    // non-linearly blended sRGB uint8.  (This nullptr will continue to mean
+    // non-linearly blended sRGB uint8 after the transition too,  so there's
     // really no harm leaving this indefinitely.)
     color_space.reset(nullptr);
   }
@@ -445,8 +445,8 @@ scoped_refptr<StaticBitmapImage> GetImageWithPixelFormat(
     ImageBitmapPixelFormat pixel_format) {
   if (pixel_format == kImageBitmapPixelFormat_Default)
     return std::move(image);
-  // If the the image is not half float backed, default and 8-8-8-8 image bitmap
-  // pixel formats result in the same 8-8-8-8 backed image bitmap.
+  // If the the image is not half float backed, default and uint8 image bitmap
+  // pixel formats result in the same uint8 backed image bitmap.
   sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (skia_image->colorType() != kRGBA_F16_SkColorType)
     return std::move(image);

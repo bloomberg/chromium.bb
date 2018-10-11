@@ -42,10 +42,10 @@ CanvasRenderingContext::CanvasRenderingContext(
     : host_(host),
       color_params_(kSRGBCanvasColorSpace, kRGBA8CanvasPixelFormat, kNonOpaque),
       creation_attributes_(attrs) {
-  // Supported color spaces: srgb-8888, srgb-f16, p3-f16, rec2020-f16. For wide
+  // Supported color spaces: srgb-uint8, srgb-f16, p3-f16, rec2020-f16. For wide
   // gamut color spaces, user must explicitly request for float16 storage.
-  // Otherwise, we fall back to srgb-8888. Invalid requests fall back to
-  // srgb-8888 too.
+  // Otherwise, we fall back to srgb-uint8. Invalid requests fall back to
+  // srgb-uint8 too.
   if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName) {
     color_params_.SetCanvasPixelFormat(kF16CanvasPixelFormat);
     if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)

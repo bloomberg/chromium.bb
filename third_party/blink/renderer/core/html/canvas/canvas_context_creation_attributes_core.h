@@ -27,7 +27,7 @@ class CORE_EXPORT CanvasContextCreationAttributesCore {
   bool depth = true;
   bool fail_if_major_performance_caveat = false;
   bool low_latency = false;
-  String pixel_format = "8-8-8-8";
+  String pixel_format = "uint8";
   bool premultiplied_alpha = true;
   bool preserve_drawing_buffer = false;
   bool stencil = false;

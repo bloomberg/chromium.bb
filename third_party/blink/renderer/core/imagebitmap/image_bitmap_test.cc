@@ -588,7 +588,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   scoped_refptr<StaticBitmapImage> bitmap_image =
       StaticBitmapImage::Create(sk_image);
 
-  // source: 8888, bitmap pixel format: default
+  // source: uint8, bitmap pixel format: default
   ImageBitmapOptions options;
   ImageBitmap* image_bitmap =
       ImageBitmap::Create(bitmap_image, bitmap_image->Rect(), options);
@@ -598,8 +598,8 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
       image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
   ASSERT_EQ(kN32_SkColorType, sk_image_internal->colorType());
 
-  // source: 8888, bitmap pixel format: 8888
-  options.setImagePixelFormat("8-8-8-8");
+  // source: uint8, bitmap pixel format: uint8
+  options.setImagePixelFormat("uint8");
   ImageBitmap* image_bitmap_8888 =
       ImageBitmap::Create(bitmap_image, bitmap_image->Rect(), options);
   ASSERT_TRUE(image_bitmap_8888);
@@ -608,7 +608,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
                                               .GetSkImage();
   ASSERT_EQ(kN32_SkColorType, sk_image_internal_8888->colorType());
 
-  // Since there is no conversion from 8888 to default for image bitmap pixel
+  // Since there is no conversion from uint8 to default for image bitmap pixel
   // format option, we expect the two image bitmaps to refer to the same
   // internal SkImage back storage.
   ASSERT_EQ(sk_image_internal, sk_image_internal_8888);
@@ -631,8 +631,8 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
       image_bitmap_f16->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
   ASSERT_EQ(kRGBA_F16_SkColorType, sk_image_internal_f16->colorType());
 
-  // source: f16, bitmap pixel format: 8888
-  options_f16.setImagePixelFormat("8-8-8-8");
+  // source: f16, bitmap pixel format: uint8
+  options_f16.setImagePixelFormat("uint8");
   ImageBitmap* image_bitmap_f16_8888 = ImageBitmap::Create(
       bitmap_image_f16, bitmap_image_f16->Rect(), options_f16);
   ASSERT_TRUE(image_bitmap_f16_8888);
