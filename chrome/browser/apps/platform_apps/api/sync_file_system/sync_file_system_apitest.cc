@@ -6,8 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
@@ -17,8 +15,6 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
-#include "chrome/test/base/test_switches.h"
-#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -26,10 +22,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::Eq;
-using ::testing::Ne;
-using ::testing::Property;
-using ::testing::Return;
 using storage::FileSystemURL;
 using sync_file_system::MockRemoteFileSyncService;
 using sync_file_system::RemoteFileSyncService;
@@ -40,7 +32,7 @@ namespace {
 class SyncFileSystemApiTest : public extensions::ExtensionApiTest {
  public:
   SyncFileSystemApiTest()
-      : mock_remote_service_(NULL), real_default_quota_(0) {}
+      : mock_remote_service_(nullptr), real_default_quota_(0) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();

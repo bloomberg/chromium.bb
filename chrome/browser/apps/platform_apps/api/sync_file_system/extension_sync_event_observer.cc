@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/apps/platform_apps/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
@@ -27,24 +27,23 @@ using ::sync_file_system::SyncEventObserver;
 namespace chrome_apps {
 namespace api {
 
-static base::LazyInstance<extensions::BrowserContextKeyedAPIFactory<
-    ExtensionSyncEventObserver>>::DestructorAtExit
-    g_extension_sync_event_observer_factory = LAZY_INSTANCE_INITIALIZER;
-
 // static
 extensions::BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>*
 ExtensionSyncEventObserver::GetFactoryInstance() {
-  return g_extension_sync_event_observer_factory.Pointer();
+  static base::NoDestructor<
+      extensions::BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>>
+      g_sync_event_observer_factory;
+  return g_sync_event_observer_factory.get();
 }
 
 ExtensionSyncEventObserver::ExtensionSyncEventObserver(
     content::BrowserContext* context)
-    : browser_context_(context), sync_service_(NULL) {}
+    : browser_context_(context), sync_service_(nullptr) {}
 
 void ExtensionSyncEventObserver::InitializeForService(
     ::sync_file_system::SyncFileSystemService* sync_service) {
   DCHECK(sync_service);
-  if (sync_service_ != NULL) {
+  if (sync_service_ != nullptr) {
     DCHECK_EQ(sync_service_, sync_service);
     return;
   }
@@ -52,10 +51,10 @@ void ExtensionSyncEventObserver::InitializeForService(
   sync_service_->AddSyncEventObserver(this);
 }
 
-ExtensionSyncEventObserver::~ExtensionSyncEventObserver() {}
+ExtensionSyncEventObserver::~ExtensionSyncEventObserver() = default;
 
 void ExtensionSyncEventObserver::Shutdown() {
-  if (sync_service_ != NULL)
+  if (sync_service_ != nullptr)
     sync_service_->RemoveSyncEventObserver(this);
 }
 
