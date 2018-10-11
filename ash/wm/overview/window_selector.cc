@@ -817,9 +817,14 @@ void WindowSelector::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Do not cancel the overview mode if the window activation was caused by
+  // Do not cancel overview mode if the window activation was caused by
   // snapping window to one side of the screen.
   if (Shell::Get()->IsSplitViewModeActive())
+    return;
+
+  // Do not cancel overview mode if the window activation was caused while
+  // dragging overview mode offscreen.
+  if (IsSlidingOutOverviewFromShelf())
     return;
 
   // Don't restore focus on exit if a window was just activated.

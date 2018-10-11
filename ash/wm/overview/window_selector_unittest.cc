@@ -9,6 +9,8 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
@@ -571,6 +573,40 @@ TEST_F(WindowSelectorTest, TextFilterActive) {
   EXPECT_FALSE(wm::IsActiveWindow(window.get()));
   EXPECT_TRUE(wm::IsActiveWindow(wm::GetFocusedWindow()));
   EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
+}
+
+// Verifies the whether overview mode is still active after the text filter
+// window loses activation in certain circumstances.
+TEST_F(WindowSelectorTest, TextFilterDeactivated) {
+  UpdateDisplay("600x600");
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  wm::ActivateWindow(window.get());
+
+  // Click somewhere on the screen not on the shelf and not on the overview
+  // window. This will cause a activation change which should close overview
+  // mode.
+  ToggleOverview();
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     gfx::Point(500, 400));
+  generator.ClickLeftButton();
+  ASSERT_FALSE(IsSelecting());
+
+  // Click somewhere on the screen not on the shelf and not on the overview
+  // window. This will cause a activation change but will not close overview
+  // mode since a overview to home launcher drag is underway.
+  ToggleOverview();
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
+  Shell::Get()
+      ->app_list_controller()
+      ->home_launcher_gesture_handler()
+      ->OnPressEvent(HomeLauncherGestureHandler::Mode::kSlideUpToShow,
+                     gfx::Point());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(IsSelecting());
 }
 
 // Tests that the ordering of windows is stable across different overview
