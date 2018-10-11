@@ -50,11 +50,16 @@ class CORE_EXPORT WorkletGlobalScope
   String UserAgent() const final { return user_agent_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   bool IsSecureContext(String& error_message) const final;
-
-  // Currently, worklet agents have no clearly defined owner. See
-  // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
   const base::UnguessableToken& GetAgentClusterID() const final {
-    return base::UnguessableToken::Null();
+    // Currently, worklet agents have no clearly defined owner. See
+    // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
+    //
+    // However, it is intended that a SharedArrayBuffer can be shared with a
+    // worklet, e.g. the AudioWorklet. If this WorkletGlobalScope's creation
+    // params included an agent cluster ID, we'll assume that this worklet is
+    // in the same agent cluster. See
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=892067.
+    return agent_cluster_id_;
   }
 
   DOMTimerCoordinator* Timers() final {
@@ -123,6 +128,8 @@ class CORE_EXPORT WorkletGlobalScope
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
 
   const HttpsState https_state_;
+
+  const base::UnguessableToken agent_cluster_id_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,
