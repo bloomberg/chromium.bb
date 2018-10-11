@@ -925,6 +925,18 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetParent() {
   return parent_;
 }
 
+bool RenderFrameHostImpl::IsDescendantOf(RenderFrameHost* ancestor) {
+  if (!ancestor || !static_cast<RenderFrameHostImpl*>(ancestor)->child_count())
+    return false;
+
+  for (RenderFrameHostImpl* current = GetParent(); current;
+       current = current->GetParent()) {
+    if (current == ancestor)
+      return true;
+  }
+  return false;
+}
+
 int RenderFrameHostImpl::GetFrameTreeNodeId() {
   return frame_tree_node_->frame_tree_node_id();
 }
@@ -4015,8 +4027,7 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
     // descendants. Detect cases like this and skip them.
     bool has_same_site_ancestor = false;
     for (auto* added_rfh : beforeunload_pending_replies_) {
-      if (rfh->frame_tree_node()->IsDescendantOf(
-              added_rfh->frame_tree_node()) &&
+      if (rfh->IsDescendantOf(added_rfh) &&
           rfh->GetSiteInstance() == added_rfh->GetSiteInstance()) {
         has_same_site_ancestor = true;
         break;
@@ -4524,10 +4535,12 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 }
 
 bool RenderFrameHostImpl::IsFocused() {
-  return GetRenderWidgetHost()->is_focused() &&
-         frame_tree_->GetFocusedFrame() &&
-         (frame_tree_->GetFocusedFrame() == frame_tree_node() ||
-          frame_tree_->GetFocusedFrame()->IsDescendantOf(frame_tree_node()));
+  if (!GetRenderWidgetHost()->is_focused() || !frame_tree_->GetFocusedFrame())
+    return false;
+
+  RenderFrameHostImpl* focused_rfh =
+      frame_tree_->GetFocusedFrame()->current_frame_host();
+  return focused_rfh == this || focused_rfh->IsDescendantOf(this);
 }
 
 bool RenderFrameHostImpl::UpdatePendingWebUI(const GURL& dest_url,

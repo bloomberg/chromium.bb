@@ -313,18 +313,6 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
   }
 }
 
-bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
-  if (!other || !other->child_count())
-    return false;
-
-  for (FrameTreeNode* node = parent(); node; node = node->parent()) {
-    if (node == other)
-      return true;
-  }
-
-  return false;
-}
-
 FrameTreeNode* FrameTreeNode::PreviousSibling() const {
   return GetSibling(-1);
 }

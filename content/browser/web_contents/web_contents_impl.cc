@@ -2431,18 +2431,12 @@ void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
 
   // If |frame| is no longer in fullscreen, remove it and any descendants.
   // See https://fullscreen.spec.whatwg.org.
-  bool changed = false;
-  base::EraseIf(fullscreen_frames_, [&](RenderFrameHostImpl* rfh) {
-    for (auto* current = rfh; current; current = current->GetParent()) {
-      if (current == frame) {
-        changed = true;
-        return true;
-      }
-    }
-    return false;
+  size_t size_before_deletion = fullscreen_frames_.size();
+  base::EraseIf(fullscreen_frames_, [&](RenderFrameHostImpl* current) {
+    return (current == frame || current->IsDescendantOf(frame));
   });
 
-  if (changed)
+  if (size_before_deletion != fullscreen_frames_.size())
     FullscreenFrameSetUpdated();
 }
 
