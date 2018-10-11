@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_center_bubble.h"
+#include "ash/system/message_center/message_center_bubble.h"
 
-#include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/system/message_center/message_center_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center.h"

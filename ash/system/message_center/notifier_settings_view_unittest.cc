@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <memory>
 
-#include "ash/message_center/message_center_controller.h"
-#include "ash/message_center/notifier_settings_view.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/message_center_controller.h"
+#include "ash/system/message_center/notifier_settings_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

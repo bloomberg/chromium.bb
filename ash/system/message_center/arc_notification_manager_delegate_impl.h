@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_ARC_NOTIFICATION_MANAGER_DELEGATE_IMPL_H_
-#define ASH_MESSAGE_CENTER_ARC_NOTIFICATION_MANAGER_DELEGATE_IMPL_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_NOTIFICATION_MANAGER_DELEGATE_IMPL_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_NOTIFICATION_MANAGER_DELEGATE_IMPL_H_
 
 #include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
 #include "base/macros.h"
@@ -29,4 +29,4 @@ class ArcNotificationManagerDelegateImpl
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_ARC_NOTIFICATION_MANAGER_DELEGATE_IMPL_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_NOTIFICATION_MANAGER_DELEGATE_IMPL_H_

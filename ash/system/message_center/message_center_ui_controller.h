@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_CONTROLLER_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_CONTROLLER_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UI_CONTROLLER_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UI_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/message_center/message_center_ui_delegate.h"
+#include "ash/system/message_center/message_center_ui_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -95,4 +95,4 @@ class ASH_EXPORT MessageCenterUiController
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_CONTROLLER_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UI_CONTROLLER_H_

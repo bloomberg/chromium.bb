@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/message_center_scroll_bar.h"
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/metrics/histogram_macros.h"

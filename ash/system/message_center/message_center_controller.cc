@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_center_controller.h"
+#include "ash/system/message_center/message_center_controller.h"
 
 #include <utility>
 
-#include "ash/message_center/arc_notification_manager_delegate_impl.h"
-#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/unguessable_token.h"

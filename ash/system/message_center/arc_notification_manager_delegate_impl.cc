@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/arc_notification_manager_delegate_impl.h"
+#include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
 
 #include "ash/login_status.h"
-#include "ash/message_center/message_center_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/notification_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"

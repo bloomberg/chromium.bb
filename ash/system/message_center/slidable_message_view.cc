@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/slidable_message_view.h"
+#include "ash/system/message_center/slidable_message_view.h"
 
-#include "ash/message_center/notification_swipe_control_view.h"
+#include "ash/system/message_center/notification_swipe_control_view.h"
 #include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"

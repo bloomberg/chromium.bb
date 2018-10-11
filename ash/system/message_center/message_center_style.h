@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
@@ -30,4 +30,4 @@ constexpr int kSettingsTransitionDurationMs = 500;
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_STYLE_H_

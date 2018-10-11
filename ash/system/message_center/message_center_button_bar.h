@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_BUTTON_BAR_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_BUTTON_BAR_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_BUTTON_BAR_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_BUTTON_BAR_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -107,4 +107,4 @@ class MessageCenterButtonBar : public views::View,
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_BUTTON_BAR_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_BUTTON_BAR_H_

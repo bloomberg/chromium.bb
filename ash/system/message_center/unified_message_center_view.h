@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "ash/ash_export.h"
-#include "ash/message_center/message_center_scroll_bar.h"
-#include "ash/message_center/message_list_view.h"
+#include "ash/system/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/message_list_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center_observer.h"

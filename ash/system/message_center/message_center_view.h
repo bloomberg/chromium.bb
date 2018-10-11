@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_VIEW_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_VIEW_H_
 
 #include <stddef.h>
 
 #include "ash/ash_export.h"
-#include "ash/message_center/message_list_view.h"
 #include "ash/session/session_observer.h"
+#include "ash/system/message_center/message_list_view.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
@@ -181,4 +181,4 @@ class ASH_EXPORT MessageCenterView
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_VIEW_H_

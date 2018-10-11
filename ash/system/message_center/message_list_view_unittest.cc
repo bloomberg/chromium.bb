@@ -6,8 +6,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/message_center/message_list_view.h"
-#include "ash/message_center/slidable_message_view.h"
+#include "ash/system/message_center/message_list_view.h"
+#include "ash/system/message_center/slidable_message_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
