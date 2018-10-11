@@ -50,6 +50,8 @@ cr.define('multidevice_setup', function() {
   const MultiDeviceSetupFirstRun = Polymer({
     is: 'multidevice-setup-first-run',
 
+    behaviors: [WebUIListenerBehavior],
+
     properties: {
       /** @private {!multidevice_setup.MultiDeviceSetupDelegate} */
       delegate_: Object,
@@ -85,6 +87,13 @@ cr.define('multidevice_setup', function() {
     /** @override */
     attached: function() {
       this.delegate_ = new MultiDeviceSetupFirstRunDelegate();
+      this.addWebUIListener(
+          'multidevice_setup.initializeSetupFlow',
+          this.initializeSetupFlow.bind(this));
+    },
+
+    initializeSetupFlow: function() {
+      this.$$('#next-button').focus();
     },
 
     /** @private */
