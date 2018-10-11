@@ -379,6 +379,10 @@ class DeviceStatusCollector : public session_manager::SessionManagerObserver,
   // Whether reporting is for enterprise or consumer.
   bool is_enterprise_reporting_ = false;
 
+  // New day start time used to separate the children usage time into different
+  // days.
+  const base::TimeDelta activity_day_start_;
+
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>

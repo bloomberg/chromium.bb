@@ -85,6 +85,7 @@ namespace internal {
 
 using UsageTimeLimitProcessorInternalTest = testing::Test;
 
+// TODO: improve tests to cover bugs on crbug/894047
 TEST_F(UsageTimeLimitProcessorInternalTest, TimeLimitWindowValid) {
   std::string last_updated_millis =
       CreatePolicyTimestamp("1 Jan 1970 00:00:00");

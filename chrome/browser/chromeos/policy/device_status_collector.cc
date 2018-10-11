@@ -842,13 +842,6 @@ void DeviceStatusCollector::ActivityStorage::StoreChildScreenTime(
   TimeDelta previous_activity = TimeDelta::FromMilliseconds(
       pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
 
-  // Reset screen time if it has not been reset today.
-  if (today_start > pref_service_->GetTime(prefs::kLastChildScreenTimeReset)) {
-    pref_service_->SetTime(prefs::kLastChildScreenTimeReset, Time::Now());
-    pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds, 0);
-    previous_activity = TimeDelta::FromSeconds(0);
-  }
-
   // If this activity window belongs to the current day, the screen time pref
   // should be updated.
   if (activity_day_start >= today_start) {
@@ -886,6 +879,7 @@ DeviceStatusCollector::DeviceStatusCollector(
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient()),
       session_manager_(session_manager::SessionManager::Get()),
       is_enterprise_reporting_(is_enterprise_reporting),
+      activity_day_start_(activity_day_start),
       task_runner_(nullptr),
       weak_factory_(this) {
   // Get the task runner of the current thread, so we can queue status responses
@@ -1177,6 +1171,14 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
   CHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser());
 
   Time now = GetCurrentTime();
+  Time reset_time = now.LocalMidnight() + activity_day_start_;
+  // Reset screen time if it has not been reset today.
+  if (reset_time > pref_service_->GetTime(prefs::kLastChildScreenTimeReset)) {
+    pref_service_->SetTime(prefs::kLastChildScreenTimeReset, now);
+    pref_service_->SetInteger(prefs::kChildScreenTimeMilliseconds, 0);
+    pref_service_->CommitPendingWrite();
+  }
+
   if (last_state_active_) {
     activity_storage_->AddActivityPeriod(last_active_check_, now,
                                          GetUserForActivityReporting());
