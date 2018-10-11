@@ -588,8 +588,6 @@ jumbo_component("platform") {
     "exported/web_video_frame_submitter.cc",
     "exported/wrapped_resource_request.h",
     "exported/wrapped_resource_response.h",
-    "feature_policy/feature_policy.cc",
-    "feature_policy/feature_policy.h",
     "file_metadata.cc",
     "file_metadata.h",
     "fonts/alternate_font_family.h",
@@ -1666,7 +1664,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "exported/web_canonical_cookie_test.cc",
     "exported/web_cors_test.cc",
     "exported/web_string_test.cc",
-    "feature_policy/feature_policy_test.cc",
     "fonts/android/font_cache_android_test.cc",
     "fonts/bitmap_glyphs_blacklist_test.cc",
     "fonts/cursor_position_test.cc",
@@ -2034,19 +2031,6 @@ fuzzer_test("blink_json_parser_fuzzer") {
     ":platform",
   ]
   dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
-}
-
-# Fuzzer for blink::FeaturePolicy.
-fuzzer_test("feature_policy_fuzzer") {
-  sources = [
-    "feature_policy/feature_policy_fuzzer.cc",
-  ]
-  deps = [
-    ":blink_fuzzer_test_support",
-    ":platform",
-  ]
-  dict = "//testing/libfuzzer/fuzzers/dicts/feature_policy.dict"
-  seed_corpus = "//testing/libfuzzer/fuzzers/feature_policy_corpus"
 }
 
 fuzzer_test("blink_harfbuzz_shaper_fuzzer") {

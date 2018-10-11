@@ -1,20 +1,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/renderer/platform/json/json_values.h"
-#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
-#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
 
@@ -129,10 +125,10 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           allowlist.matches_all_origins = true;
           break;
         } else {
-          url::Origin target_origin = url::Origin::Create(
-              GURL(StringUTF8Adaptor(tokens[i]).AsStringPiece()));
-          if (!target_origin.opaque())
-            origins.push_back(target_origin);
+          scoped_refptr<SecurityOrigin> target_origin =
+              SecurityOrigin::CreateFromString(tokens[i]);
+          if (!target_origin->IsOpaque())
+            origins.push_back(target_origin->ToUrlOrigin());
           else if (messages)
             messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");
         }
