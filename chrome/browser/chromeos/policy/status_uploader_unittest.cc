@@ -56,6 +56,7 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
             policy::DeviceStatusCollector::CPUStatisticsFetcher(),
             policy::DeviceStatusCollector::CPUTempFetcher(),
             policy::DeviceStatusCollector::AndroidStatusFetcher(),
+            policy::DeviceStatusCollector::TpmStatusFetcher(),
             base::TimeDelta(), /* Day starts at midnight */
             true /* is_enterprise_device */) {}
 
