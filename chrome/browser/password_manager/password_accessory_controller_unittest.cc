@@ -357,7 +357,7 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -398,22 +398,22 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
 
           MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("PWD"), password_for_str("Alf"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
 
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
 
           MatchesItem(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("M1@u"), password_for_str("Cat"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
 
           MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -433,7 +433,7 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -543,7 +543,7 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -559,7 +559,7 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -577,7 +577,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -593,7 +593,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -613,7 +613,7 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
@@ -645,7 +645,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
       OnItemsAvailable(ElementsAre(
           IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                      ItemType::SUGGESTION),
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           IsDivider(), MatchesOption(manage_passwords_str()))));
