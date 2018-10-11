@@ -331,7 +331,9 @@ class UnifiedAutoplaySettingBrowserTest : public UnifiedAutoplayBrowserTest {
   ~UnifiedAutoplaySettingBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(media::kAutoplaySoundSettings);
+    scoped_feature_list_.InitWithFeatures(
+        {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
+        {});
     UnifiedAutoplayBrowserTest::SetUpOnMainThread();
   }
 

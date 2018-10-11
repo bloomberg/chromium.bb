@@ -1092,7 +1092,9 @@ class UnifiedAutoplaySoundSettingsPageInfoTest
   ~UnifiedAutoplaySoundSettingsPageInfoTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(media::kAutoplaySoundSettings);
+    scoped_feature_list_.InitWithFeatures(
+        {media::kAutoplayDisableSettings, media::kAutoplayWhitelistSettings},
+        {});
     ChromeRenderViewHostTestHarness::SetUp();
   }
 

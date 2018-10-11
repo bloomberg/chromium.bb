@@ -4358,7 +4358,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-autoplay-unified-sound-settings",
      flag_descriptions::kEnableAutoplayUnifiedSoundSettingsName,
      flag_descriptions::kEnableAutoplayUnifiedSoundSettingsDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(media::kAutoplaySoundSettings)},
+     kOsDesktop, FEATURE_VALUE_TYPE(media::kAutoplayWhitelistSettings)},
 
 #if defined(OS_CHROMEOS)
     {"enable-chromeos-account-manager",

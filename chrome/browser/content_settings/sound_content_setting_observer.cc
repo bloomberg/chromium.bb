@@ -54,7 +54,7 @@ void SoundContentSettingObserver::ReadyToCommitNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  if (!base::FeatureList::IsEnabled(media::kAutoplaySoundSettings))
+  if (!base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings))
     return;
 
   GURL url = navigation_handle->IsInMainFrame()

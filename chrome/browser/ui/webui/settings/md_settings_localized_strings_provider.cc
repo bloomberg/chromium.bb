@@ -2570,7 +2570,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean(
       "enableBlockAutoplayContentSetting",
-      base::FeatureList::IsEnabled(media::kAutoplaySoundSettings));
+      base::FeatureList::IsEnabled(media::kAutoplayDisableSettings));
 
   html_source->AddBoolean(
       "enableClipboardContentSetting",
