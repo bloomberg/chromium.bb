@@ -65,27 +65,27 @@ class CONTENT_EXPORT AppCacheDiskCache {
   virtual ~AppCacheDiskCache();
 
   // Initializes the object to use disk backed storage.
-  int InitWithDiskBackend(const base::FilePath& disk_cache_directory,
-                          int disk_cache_size,
-                          bool force,
-                          base::OnceClosure post_cleanup_callback,
-                          net::CompletionOnceCallback callback);
+  net::Error InitWithDiskBackend(const base::FilePath& disk_cache_directory,
+                                 int disk_cache_size,
+                                 bool force,
+                                 base::OnceClosure post_cleanup_callback,
+                                 net::CompletionOnceCallback callback);
 
   // Initializes the object to use memory only storage.
   // This is used for Chrome's incognito browsing.
-  int InitWithMemBackend(int disk_cache_size,
-                         net::CompletionOnceCallback callback);
+  net::Error InitWithMemBackend(int disk_cache_size,
+                                net::CompletionOnceCallback callback);
 
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
-  int CreateEntry(int64_t key,
-                  AppCacheDiskCacheEntry** entry,
-                  net::CompletionOnceCallback callback);
-  int OpenEntry(int64_t key,
-                AppCacheDiskCacheEntry** entry,
-                net::CompletionOnceCallback callback);
-  int DoomEntry(int64_t key, net::CompletionOnceCallback callback);
+  net::Error CreateEntry(int64_t key,
+                         AppCacheDiskCacheEntry** entry,
+                         net::CompletionOnceCallback callback);
+  net::Error OpenEntry(int64_t key,
+                       AppCacheDiskCacheEntry** entry,
+                       net::CompletionOnceCallback callback);
+  net::Error DoomEntry(int64_t key, net::CompletionOnceCallback callback);
 
   base::WeakPtr<AppCacheDiskCache> GetWeakPtr();
 
@@ -139,13 +139,13 @@ class CONTENT_EXPORT AppCacheDiskCache {
     return create_backend_callback_.get() != NULL || is_waiting_to_initialize_;
   }
 
-  int Init(net::CacheType cache_type,
-           const base::FilePath& directory,
-           int cache_size,
-           bool force,
-           base::OnceClosure post_cleanup_callback,
-           net::CompletionOnceCallback callback);
-  void OnCreateBackendComplete(int rv);
+  net::Error Init(net::CacheType cache_type,
+                  const base::FilePath& directory,
+                  int cache_size,
+                  bool force,
+                  base::OnceClosure post_cleanup_callback,
+                  net::CompletionOnceCallback callback);
+  void OnCreateBackendComplete(int return_value);
 
   // Called by AppCacheDiskCacheEntry constructor.
   void AddOpenEntry(AppCacheDiskCacheEntry* entry) {
