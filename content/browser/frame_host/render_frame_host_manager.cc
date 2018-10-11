@@ -1929,8 +1929,18 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   // navigation should use the current SiteInstance.
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
   bool no_renderer_swap_allowed = false;
+  bool should_swap_for_error_isolation = false;
   bool was_server_redirect = request.navigation_handle() &&
                              request.navigation_handle()->WasServerRedirect();
+
+  // When error page isolation is enabled, each navigation that crosses
+  // from a success to failure and vice versa needs to do a process swap.
+  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          frame_tree_node_->IsMainFrame())) {
+    should_swap_for_error_isolation =
+        (request.state() == NavigationRequest::FAILED) !=
+        (current_site_instance->GetSiteURL() == GURL(kUnreachableWebDataURL));
+  }
 
   if (frame_tree_node_->IsMainFrame()) {
     // Renderer-initiated main frame navigations that may require a
@@ -1939,16 +1949,12 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // marked as renderer-initiated are created by receiving a BeginNavigation
     // IPC, and will then proceed in the same renderer. In site-per-process
     // mode, it is possible for renderer-intiated navigations to be allowed to
-    // go cross-process. Main frame navigations resulting in an error are also
-    // expected to change process. Check it first.
+    // go cross-process. Check it first.
     bool can_renderer_initiate_transfer =
-        (request.state() == NavigationRequest::FAILED &&
-         SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-             true /* in_main_frame */)) ||
-        (render_frame_host_->IsRenderFrameLive() &&
-         IsURLHandledByNetworkStack(request.common_params().url) &&
-         IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                               request.common_params().url));
+        render_frame_host_->IsRenderFrameLive() &&
+        IsURLHandledByNetworkStack(request.common_params().url) &&
+        IsRendererTransferNeededForNavigation(render_frame_host_.get(),
+                                              request.common_params().url);
     no_renderer_swap_allowed |=
         request.from_begin_navigation() && !can_renderer_initiate_transfer;
   } else {
@@ -1959,7 +1965,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
         request.dest_site_instance());
   }
 
-  if (no_renderer_swap_allowed)
+  if (no_renderer_swap_allowed && !should_swap_for_error_isolation)
     return scoped_refptr<SiteInstance>(current_site_instance);
 
   // If the navigation can swap SiteInstances, compute the SiteInstance it
