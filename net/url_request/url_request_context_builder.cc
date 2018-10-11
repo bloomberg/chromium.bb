@@ -60,7 +60,6 @@
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/json_parser_delegate.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
@@ -307,17 +306,9 @@ void URLRequestContextBuilder::SetSharedCertVerifier(
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
-void URLRequestContextBuilder::enable_reporting(
-    std::unique_ptr<ReportingPolicy> reporting_policy,
-    std::unique_ptr<JSONParserDelegate> json_parser) {
-  reporting_policy_ = std::move(reporting_policy);
-  json_parser_ = std::move(json_parser);
-}
-
 void URLRequestContextBuilder::set_reporting_policy(
     std::unique_ptr<ReportingPolicy> reporting_policy) {
-  enable_reporting(std::move(reporting_policy),
-                   std::make_unique<InProcessJSONParser>());
+  reporting_policy_ = std::move(reporting_policy);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -672,8 +663,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   // both return nullptr if the corresponding base::Feature is disabled.
 
   if (reporting_policy_) {
-    storage->set_reporting_service(ReportingService::Create(
-        *reporting_policy_, std::move(json_parser_), context.get()));
+    storage->set_reporting_service(
+        ReportingService::Create(*reporting_policy_, context.get()));
   }
 
   if (network_error_logging_enabled_) {
