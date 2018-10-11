@@ -22,6 +22,13 @@ void SharePath(Profile* profile,
                const base::FilePath& path,
                base::OnceCallback<void(bool, std::string)> callback);
 
+// Unshare specified path with vm.
+// Callback receives success bool and failure reason string.
+void UnsharePath(Profile* profile,
+                 std::string vm_name,
+                 const base::FilePath& path,
+                 base::OnceCallback<void(bool, std::string)> callback);
+
 // Get list of all shared paths for the default crostini container.
 std::vector<std::string> GetSharedPaths(Profile* profile);
 

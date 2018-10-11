@@ -18,6 +18,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -109,6 +110,19 @@ void SharePath(Profile* profile,
   }
   // TODO(joelhockey): Save new path into prefs once management UI is ready.
   CallSeneschalSharePath(profile, vm_name, path, std::move(callback));
+}
+
+void UnsharePath(Profile* profile,
+                 std::string vm_name,
+                 const base::FilePath& path,
+                 base::OnceCallback<void(bool, std::string)> callback) {
+  PrefService* pref_service = profile->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
+  base::ListValue* shared_paths = update.Get();
+  shared_paths->Remove(base::Value(path.value()), nullptr);
+  // TODO(joelhockey): Call to seneschal once UnsharePath is supported,
+  // and update FilesApp to watch for changes.
+  std::move(callback).Run(true, "");
 }
 
 std::vector<std::string> GetSharedPaths(Profile* profile) {
