@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Omdøb</translation>
 <translation id="1175364870820465910">&amp;Udskriv...</translation>
 <translation id="1181037720776840403">Fjern</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Rapportér automatisk<ph name="END_WHITEPAPER_LINK" /> oplysninger om mulige sikkerhedsproblemer til Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1201895884277373915">Mere fra dette website</translation>
 <translation id="1206967143813997005">Ugyldig første signatur</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Udfyld</translation>
 <translation id="2465655957518002998">Vælg leveringsmetode</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Køre Netværksdiagnosticering<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Oversæt denne side</translation>
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="2482878487686419369">Underretninger</translation>
 <translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">Serverens certifikat er ikke troværdigt.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mindst 1 element på synkroniserede enheder}=1{1 element (og flere på synkroniserede enheder)}one{# element (og flere på synkroniserede enheder)}other{# elementer (og flere på synkroniserede enheder)}}</translation>
 <translation id="3539171420378717834">Gem en kopi af dette kort på denne enhed</translation>
-<translation id="3549644494707163724">Krypter alle synkroniserede data med din egen adgangssætning til synkronisering</translation>
 <translation id="3556433843310711081">Din administrator kan fjerne blokeringen for dig</translation>
 <translation id="3566021033012934673">Din forbindelse er ikke privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Udløber <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Skadeligt indhold blokeres.</translation>
+<translation id="3810973564298564668">Valgmuligheder</translation>
 <translation id="382518646247711829">Hvis du bruger en proxyserver...</translation>
 <translation id="3828924085048779000">Tomme adgangssætninger er ikke tilladt.</translation>
 <translation id="385051799172605136">Tilbage</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4592951414987517459">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en moderne krypteringspakke.</translation>
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
-<translation id="4619615317237390068">Faner fra andre enheder</translation>
 <translation id="4646534391647090355">Før mig dertil nu</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">Opdater politikker</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Genstart Chromium</translation>
+<translation id="473775607612524610">Opdater</translation>
 <translation id="4742407542027196863">Administrer adgangskoder…</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
 <translation id="4750917950439032686">Dine oplysninger (f.eks. adgangskoder eller kreditkortnumre) er private, når de sendes til dette website.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">Du kan ikke besøge <ph name="SITE" /> lige nu, da websitet bruger certifikatlåsning. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere igen senere.</translation>
 <translation id="6059925163896151826">USB-enheder</translation>
 <translation id="6071091556643036997">Politiktypen er ugyldig.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}one{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}other{Disse kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}}</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN" />, kan indhentes af din administrator.</translation>
 <translation id="6096619198407627433">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto. Du kan miste adgang til beskyttet indhold på <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="610911394827799129">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -926,7 +925,6 @@ Yderligere oplysninger:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om dette problem.</translation>
 <translation id="7453467225369441013">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="7455133967321480974">Brug global standard (bloker)</translation>
-<translation id="7460163899615895653">Dine seneste faner fra andre enheder vises her</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
@@ -1010,6 +1008,7 @@ Yderligere oplysninger:
 <translation id="7983301409776629893">Oversæt altid <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ikke angivet</translation>
 <translation id="800218591365569300">Prøv at lukke andre faner eller programmer for at frigøre hukommelse.</translation>
+<translation id="8009225694047762179">Administrer adgangskoder</translation>
 <translation id="8012647001091218357">Vi kan ikke få kontakt til dine forældre på nuværende tidspunkt. Prøv igen.</translation>
 <translation id="8025119109950072390">Hackere på dette website kan narre dig til at gøre noget farligt, såsom at installere software eller afsløre dine personlige oplysninger (f.eks. adgangskoder, telefonnumre eller kreditkort).</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE" />. Vil du oversætte den til <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1071,6 +1070,7 @@ Yderligere oplysninger:
 Yderligere oplysninger:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Skift</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433057134996913067">Dette logger dig ud af de fleste websites.</translation>
 <translation id="8437238597147034694">&amp;Fortryd flytning</translation>

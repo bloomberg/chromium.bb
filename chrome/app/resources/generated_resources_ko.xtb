@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">프로비저닝 플로가 중단되었습니다. 다시 시도하거나 기기 소유자 또는 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="1611649489706141841">앞으로</translation>
 <translation id="1611704746353331382">HTML 파일로 북마크 내보내기...</translation>
+<translation id="1614511179807650956">할당된 모바일 데이터를 모두 사용한 것 같습니다. 추가 데이터를 구입하려면 <ph name="NAME" /> 활성화 포털을 방문하세요.</translation>
 <translation id="161460670679785907">휴대전화를 인식할 수 없습니다</translation>
 <translation id="1616206807336925449">이 확장 프로그램은 특별한 권한이 필요하지 않습니다.</translation>
 <translation id="1616298854599875024">확장 프로그램 '<ph name="IMPORT_NAME" />'은(는) 공유 모듈이 아니므로 가져올 수 없습니다</translation>
@@ -596,7 +597,6 @@
 <translation id="1852799913675865625">파일을 읽는 중에 오류가 발생했습니다. <ph name="ERROR_TEXT" /></translation>
 <translation id="1853692000353488670">새 시크릿 탭</translation>
 <translation id="1856715684130786728">위치 추가...</translation>
-<translation id="1856813161013948396">지문 센서를 탭하여 화면 잠금을 해제합니다. 설정하려면 클릭하세요.</translation>
 <translation id="1858585891038687145">소프트웨어 제작자를 식별하기 위해 이 인증서를 신뢰합니다.</translation>
 <translation id="1861262398884155592">폴더가 비어 있습니다.</translation>
 <translation id="1864111464094315414">로그인</translation>
@@ -689,6 +689,7 @@
 <translation id="1999115740519098545">시작 그룹</translation>
 <translation id="2000419248597011803">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
 <translation id="2001796770603320721">드라이브에서 관리</translation>
+<translation id="2003130567827682533">'<ph name="NAME" />' 데이터를 활성화하려면 먼저 Wi-Fi 네트워크에 연결하세요.</translation>
 <translation id="2004663115385769400">$1(으)로 열 수 없음</translation>
 <translation id="200544492091181894">나중에 언제든지 설정에서 변경 가능</translation>
 <translation id="2006638907958895361"><ph name="APP" />에서 링크 열기</translation>
@@ -1104,7 +1105,6 @@
 <translation id="2643698698624765890">창 메뉴에서 확장 프로그램을 클릭하여 확장 프로그램을 관리할 수 있습니다.</translation>
 <translation id="2647142853114880570">새로고침</translation>
 <translation id="264810637653812429">호환되는 기기가 없습니다.</translation>
-<translation id="2648831393319960979">계정에 기기를 추가하고 있습니다. 잠시만 기다려 주세요.</translation>
 <translation id="2649045351178520408">Base64-인코딩 ASCII, 인증서 체인</translation>
 <translation id="2651353619134567122">시스템 데이터를 전송합니다. 이 기기는 현재 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송하고 있습니다. 이 설정은 언제든지 기기 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 변경할 수 있습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">검색 실패</translation>
@@ -1246,7 +1246,6 @@
 <translation id="2850124913210091882">백업</translation>
 <translation id="2850541429955027218">테마 추가</translation>
 <translation id="2853916256216444076">$1 동영상</translation>
-<translation id="2857608528410806398">QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다.</translation>
 <translation id="2860150991415616761">매우 길게(4초)</translation>
 <translation id="2861301611394761800">시스템 업데이트가 완료되었습니다. 시스템을 다시 시작하세요.</translation>
 <translation id="2861941300086904918">네이티브 클라이언트 보안 관리자</translation>
@@ -1289,7 +1288,6 @@
 <translation id="2908162660801918428">디렉토리별 미디어 갤러리 추가</translation>
 <translation id="2908789530129661844">화면 축소</translation>
 <translation id="2910318910161511225">네트워크에 연결하고 다시 시도해 주세요</translation>
-<translation id="2911898792135283060">비밀번호 생성...</translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
 <translation id="2916073183900451334">웹페이지에서 Tab 키를 누르면 링크뿐 아니라 양식 입력란도 강조표시됩니다.</translation>
 <translation id="2916745397441987255">확장 프로그램 검색</translation>
@@ -1689,6 +1687,7 @@
 <translation id="3541661933757219855">숨기려면 Ctrl+Alt+/ 또는 Esc를 누릅니다.</translation>
 <translation id="3543393733900874979">업데이트 실패(오류: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">SHA-512를 포함한 X9.62 ECDSA 서명</translation>
+<translation id="3544879808695557954">사용자 이름(선택사항)</translation>
 <translation id="354602065659584722">유해한 소프트웨어가 삭제됨</translation>
 <translation id="3547495624659668105">PRL 버전</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
@@ -1731,7 +1730,6 @@
 <translation id="3605780360466892872">와이셔츠</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">사용자 이미지 미리보기</translation>
-<translation id="3609446736023031597">Play 스토어 앱에서 최신 업데이트 및 추천 받기</translation>
 <translation id="3609785682760573515">동기화 중...</translation>
 <translation id="3609895557594655134">Android VPN 추가...</translation>
 <translation id="361106536627977100">Flash 데이터</translation>
@@ -2390,7 +2388,6 @@
 <translation id="4648499713050786492">프로필을 잠금 해제한 다음 사용자를 추가하세요.</translation>
 <translation id="465499440663162826">Chrome 웹 스토어에 연결할 수 없습니다.</translation>
 <translation id="4656293982926141856">이 컴퓨터</translation>
-<translation id="4658312088164718891">비밀번호를 입력하여 Smart Lock을 사용 설정하세요. 다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 있습니다.</translation>
 <translation id="4660476621274971848">'<ph name="EXPECTED_VERSION" />' 버전을 예상했으나 '<ph name="NEW_ID" />' 버전이 표시되었습니다</translation>
 <translation id="4662788913887017617">이 북마크를 내 iPhone과 공유</translation>
 <translation id="4663373278480897665">카메라 허용됨</translation>
@@ -2491,6 +2488,7 @@
 <translation id="4821935166599369261">프로파일링 사용(&amp;P)</translation>
 <translation id="4823484602432206655">사용자와 기기 설정 확인 및 변경</translation>
 <translation id="4823651846660089135">읽기 전용 기기</translation>
+<translation id="4827675678516992122">연결할 수 없음</translation>
 <translation id="4828937774870308359">오스트레일리아</translation>
 <translation id="4829768588131278040">PIN 설정</translation>
 <translation id="4830502475412647084">OS 업데이트 설치 중</translation>
@@ -2516,7 +2514,6 @@
 <translation id="4856478137399998590">모바일 데이터 서비스가 활성화되었으며 사용할 준비가 되었습니다.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{시크릿 창에서 모두 열기(I)}=1{시크릿 창에서 열기(I)}other{시크릿 창에서 #개 모두 열기(I)}}</translation>
 <translation id="4858913220355269194">축구왕</translation>
-<translation id="4862050643946421924">기기 추가 중...</translation>
 <translation id="4862642413395066333">OCSP 응답 서명</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" />x<ph name="HEIGHT" />(권장)처럼 보입니다.</translation>
 <translation id="4864369630010738180">로그인 중...</translation>
@@ -2634,8 +2631,6 @@
 <translation id="5000922062037820727">차단(권장)</translation>
 <translation id="5004584466530475658">새로운 사진 <ph name="FILE_COUNT" />장</translation>
 <translation id="5010043101506446253">인증 기관</translation>
-<translation id="5010929733229908807">동기화 암호로 모든 데이터가 암호화된 시기:
-          <ph name="TIME" /></translation>
 <translation id="5015344424288992913">프록시 알아내는 중...</translation>
 <translation id="5015762597229892204">프린터 드라이버 앱 선택</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -2718,7 +2713,6 @@
 <translation id="514575469079499857">위치 파악에 IP 주소 사용(기본값)</translation>
 <translation id="5150254825601720210">Netscape Certificate SSL Server Name</translation>
 <translation id="5151354047782775295">디스크 저장 공간을 확보하지 않으면 일부 데이터가 자동으로 삭제됩니다.</translation>
-<translation id="5153297660536091054">PIN 잠금 해제 기능</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" /> 고급 설정</translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">제목</translation>
@@ -2753,6 +2747,7 @@
 <translation id="5209320130288484488">기기를 찾을 수 없음</translation>
 <translation id="5209518306177824490">SHA-1 지문</translation>
 <translation id="5210365745912300556">탭 닫기</translation>
+<translation id="5213481667492808996">'<ph name="NAME" />' 데이터 서비스를 사용할 수 있습니다.</translation>
 <translation id="5213891612754844763">프록시 설정 표시</translation>
 <translation id="521582610500777512">사진이 삭제되었습니다.</translation>
 <translation id="5222676887888702881">로그아웃</translation>
@@ -2822,7 +2817,6 @@
 <translation id="5297082477358294722">비밀번호가 저장되었습니다. <ph name="SAVED_PASSWORDS_STORE" />에서 저장된 비밀번호를 보고 관리하세요.</translation>
 <translation id="5298219193514155779">테마 제작자</translation>
 <translation id="5299109548848736476">추적 안함</translation>
-<translation id="5299682071747318445">동기화 암호로 모든 데이터 암호화됨</translation>
 <translation id="5300287940468717207">사이트 권한을 재설정하시겠습니까?</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5301751748813680278">게스트로 로그인 중</translation>
@@ -3418,7 +3412,6 @@
 <translation id="6144938890088808325">Chromebook 개선에 도움을 주세요.</translation>
 <translation id="6146563240635539929">동영상</translation>
 <translation id="6147020289383635445">인쇄 미리보기에 실패했습니다.</translation>
-<translation id="6148716538476291841">이 기기에서 인터넷 사용 기록을 삭제합니다.</translation>
 <translation id="614940544461990577">다음을 시도:</translation>
 <translation id="6150853954427645995">오프라인에서 사용하기 위해 이 파일을 저장하려면 온라인으로 돌아가서 마우스 오른쪽 버튼으로 파일을 클릭한 다음 <ph name="OFFLINE_CHECKBOX_NAME" /> 옵션을 선택하세요.</translation>
 <translation id="6151323131516309312"><ph name="SEARCH_KEY" />을(를) 눌러 <ph name="SITE_NAME" /> 검색</translation>
@@ -3501,7 +3494,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />시스템 및 앱 정보<ph name="END_LINK1" />와 <ph name="BEGIN_LINK2" />통계<ph name="END_LINK2" /> 전송</translation>
 <translation id="6272643420381259437">플러그인을 다운로드하는 중에 오류(<ph name="ERROR" />)가 발생했습니다.</translation>
 <translation id="6273677812470008672">품질</translation>
-<translation id="6276301056778294989">기기에 동일한 코드가 표시되는지 확인하세요.</translation>
 <translation id="6277105963844135994">네트워크 시간 초과</translation>
 <translation id="6277518330158259200">스크린샷 캡쳐하기(&amp;A)</translation>
 <translation id="6278057325678116358">GTK+ 사용</translation>
@@ -3567,7 +3559,6 @@
 <translation id="6374108032506706911">Android용 Smart Lock 설정</translation>
 <translation id="6374469231428023295">다시 시도</translation>
 <translation id="6380143666419481200">동의 및 계속</translation>
-<translation id="6383051423892982287">나만의 <ph name="BEGIN_LINK" />동기화 암호<ph name="END_LINK" />로 동기화 데이터 암호화</translation>
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">사이트에서 쿠키 데이터를 저장하고 읽을 수 있음</translation>
 <translation id="6388429472088318283">언어 검색</translation>
@@ -3605,8 +3596,6 @@
 <translation id="6426200009596957090">ChromeVox 설정 열기</translation>
 <translation id="6429384232893414837">업데이트 오류</translation>
 <translation id="6430814529589430811">Base64-인코딩 ASCII, 단일 인증서</translation>
-<translation id="6431217872648827691">Google 비밀번호로 모든 데이터가 암호화된 시기:
-          <ph name="TIME" /></translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" />에서 이 컴퓨터의 모든 사용자에 대해 자동 업데이트를 설정합니다.</translation>
 <translation id="6434309073475700221">중지</translation>
 <translation id="6436164536244065364">웹 스토어에서 보기</translation>
@@ -3789,7 +3778,6 @@
 <translation id="6702639462873609204">수정(&amp;E)...</translation>
 <translation id="6706210727756204531">범위</translation>
 <translation id="6707389671160270963">SSL 클라이언트 인증서</translation>
-<translation id="6708029444764748914">PIN으로 기기에 로그인하려면 다시 입력하세요.</translation>
 <translation id="6708242697268981054">출처:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" />을(를) 사용하여 연결</translation>
 <translation id="6710213216561001401">이전</translation>
@@ -3933,6 +3921,7 @@
 <translation id="6945221475159498467">선택</translation>
 <translation id="694592694773692225">이 페이지에서 리디렉션이 차단되었습니다.</translation>
 <translation id="6949306908218145636">열린 페이지를 북마크에 추가...</translation>
+<translation id="6949434160682548041">비밀번호(선택사항)</translation>
 <translation id="6950627417367801484">앱 복원</translation>
 <translation id="6950943362443484797">앱은 자동으로 설치됩니다</translation>
 <translation id="6951153907720526401">결제 핸들러</translation>
@@ -4138,7 +4127,6 @@
 <translation id="7241389281993241388"><ph name="TOKEN_NAME" />에 로그인하여 클라이언트 인증서를 가져오세요.</translation>
 <translation id="7243632151880336635">지우기 및 로그아웃</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" />x<ph name="HEIGHT" />(최고)</translation>
-<translation id="7246339268451149667">지문 잠금 해제를 사용하시겠습니까?</translation>
 <translation id="7246947237293279874">FTP 프록시</translation>
 <translation id="725109152065019550">관리자가 계정에서 외부 저장소를 사용 중지했습니다.</translation>
 <translation id="7253521419891527137">자세히 알아보기(&amp;L)</translation>
@@ -4693,7 +4681,6 @@
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS #12 파일</translation>
 <translation id="8053390638574070785">페이지 새로고침</translation>
-<translation id="8054029954190364711">지문 잠금 해제 기능</translation>
 <translation id="8054517699425078995">이러한 형식의 파일은 기기를 손상시킬 수 있습니다. <ph name="FILE_NAME" />을(를) 다운로드하시겠습니까?</translation>
 <translation id="8054563304616131773">올바른 이메일 주소를 입력하세요.</translation>
 <translation id="8054921503121346576">USB 키보드 연결됨</translation>
@@ -4712,7 +4699,6 @@
 <translation id="8075191520954018715">메모리 상태</translation>
 <translation id="8076492880354921740">탭</translation>
 <translation id="8076835018653442223">관리자가 내 기기의 로컬 파일 액세스를 차단했습니다</translation>
-<translation id="8077816382010018681">QU 기능 알림 제목이 여기 표시됨</translation>
 <translation id="8079530767338315840">반복</translation>
 <translation id="8079938625609335826">어느 기기에서나 내 확장 프로그램을 모두 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="8083739373364455075">Google 드라이브에서 100GB의 공간을 무료로 사용하세요.</translation>
@@ -5179,6 +5165,7 @@
 <translation id="8821045908425223359">자동으로 IP 주소 설정</translation>
 <translation id="882204272221080310">펌웨어를 업데이트하여 보안 강화</translation>
 <translation id="8823514049557262177">링크 텍스트 복사(&amp;X)</translation>
+<translation id="8823704566850948458">비밀번호 추천...</translation>
 <translation id="8824701697284169214">페이지 추가(&amp;G)...</translation>
 <translation id="8827752199525959199">추가 작업입니다. <ph name="DOMAIN" /> <ph name="USERNAME" />의 비밀번호입니다.</translation>
 <translation id="8828933418460119530">DNS 이름</translation>
@@ -5207,7 +5194,6 @@
 <translation id="8874184842967597500">연결되지 않음</translation>
 <translation id="8876215549894133151">형식:</translation>
 <translation id="8876307312329369159">데모 세션에서는 이 설정을 변경할 수 없습니다.</translation>
-<translation id="8876309039915144086">비밀번호 생성...</translation>
 <translation id="8877448029301136595">[상위 디렉토리]</translation>
 <translation id="8879284080359814990">탭으로 표시(&amp;S)</translation>
 <translation id="8883847527783433352">다른 계정에 동기화</translation>

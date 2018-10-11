@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">નામ બદલો</translation>
 <translation id="1175364870820465910">&amp;છાપો...</translation>
 <translation id="1181037720776840403">દૂર કરો</translation>
-<translation id="1184214524891303587">Google ને સંભવિત સુરક્ષા ઘટનાઓની વિગતોની <ph name="BEGIN_WHITEPAPER_LINK" />આપમેળે જાણ કરો<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1201895884277373915">આ સાઇટથી વધુ</translation>
 <translation id="1206967143813997005">ખોટી નાની સહી</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">ભરો</translation>
 <translation id="2465655957518002998">વિતરણ પદ્ધતિ પસંદ કરો</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />નેટવર્ક ડાયગ્નોસ્ટિક્સ ચલાવી રહ્યાં છે<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">આ પૃષ્ઠનો અનુવાદ કરો</translation>
 <translation id="2479410451996844060">અમાન્ય શોધ URL.</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2491120439723279231">સર્વરના પ્રમાણપત્રમાં ભૂલો છે.</translation>
@@ -382,7 +382,6 @@
 <translation id="3528171143076753409">સર્વરનું પ્રમાણપત્ર વિશ્વસનીય નથી.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{સિંક કરેલ ઉપકરણો પર ઓછામાં ઓછી 1 આઇટમ}=1{1 આઇટમ (અને સિંક કરેલ ઉપકરણો પર બીજી ઘણી બધી)}one{# આઇટમ (અને સિંક કરેલ ઉપકરણો પર બીજી ઘણી બધી)}other{# આઇટમ (અને સિંક કરેલ ઉપકરણો પર બીજી ઘણી બધી)}}</translation>
 <translation id="3539171420378717834">આ ઉપકરણ પર આ કાર્ડની એક કૉપિ રાખો</translation>
-<translation id="3549644494707163724">તમારા પોતાના સમન્વયન પાસફ્રેઝ સાથે તમામ સમન્વયિત ડેટા એન્ક્રિપ્ટ કરો</translation>
 <translation id="3556433843310711081">તમારા માટે તમારા સંચાલક તેને અનાવરોધિત કરી શકે છે</translation>
 <translation id="3566021033012934673">તમારું કનેક્શન ખાનગી નથી</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -424,6 +423,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> માં સમાપ્ત થાય છે</translation>
 <translation id="3807873520724684969">નુકસાનકારક કન્ટેન્ટ બ્લૉક કર્યું.</translation>
+<translation id="3810973564298564668">મેનેજ કરો</translation>
 <translation id="382518646247711829">જો તમે કોઈ પ્રોક્સી સર્વરનો ઉપયોગ કરો છો...</translation>
 <translation id="3828924085048779000">ખાલી પાસફ્રેઝને અનુમતિ નથી. </translation>
 <translation id="385051799172605136">પાછળ</translation>
@@ -533,7 +533,6 @@
 <translation id="4587425331216688090">Chrome માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="4592951414987517459">આધુનિક સાઇફર સ્યૂટનો ઉપયોગ કરીને <ph name="DOMAIN" /> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટ કરાયું છે.</translation>
 <translation id="4594403342090139922">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
-<translation id="4619615317237390068">અન્ય ઉપકરણોમાંથી ટૅબ્સ</translation>
 <translation id="4646534391647090355">મને હવે ડાઉનલોડ હોમ પર લઈ જાઓ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
@@ -547,6 +546,7 @@
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4736825316280949806">Chromium ને પુનઃપ્રારંભ કરો</translation>
+<translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="4742407542027196863">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="4744603770635761495">અમલ કરવાયોગ્ય પાથ</translation>
 <translation id="4750917950439032686">તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ નંબર્સ) ખાનગી હોય છે જ્યારે તે આ સાઇટ પર મોકલવામાં આવે.</translation>
@@ -746,7 +746,6 @@
 <translation id="6051221802930200923">તમે અત્યારે આ <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે આ વેબસાઇટ પ્રમાણપત્ર પિનિંગનો ઉપયોગ કરે છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
 <translation id="6059925163896151826">USB ઉપકરણો</translation>
 <translation id="6071091556643036997">નીતિ પ્રકાર અમાન્ય છે.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{બધાં જ ડિવાઇસ પર ઝડપી ચેકઆઉટ માટે, આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવામાં આવશે.}one{બધાં ડિવાઇસ પર ઝડપી ચેકઆઉટ માટે, આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવામાં આવશે.}other{બધાં ડિવાઇસ પર ઝડપી ચેકઆઉટ માટે, આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવામાં આવશે.}}</translation>
 <translation id="6080696365213338172">તમે વ્યવસ્થાપક-પ્રદત્ત પ્રમાણપત્રનો ઉપયોગ કરીને કન્ટેન્ટ ઍક્સેસ કરી છે. તમે <ph name="DOMAIN" /> ને પ્રદાન કરેલ ડેટા તમારા વ્યવસ્થાપક દ્વારા ઇન્ટરસેપ્ટ થઈ શકે છે.</translation>
 <translation id="6096619198407627433">મોટા ભાગની સાઇટ પરથી તમને સાઇન આઉટ કરે છે. તમારા Google એકાઉન્ટ પરથી તમને સાઇન આઉટ કરાશે નહીં. <ph name="SITE" /> અને અન્ય કેટલીક સાઇટના સંરક્ષિત કન્ટેન્ટનો ઍક્સેસ તમે ગુમાવો તેમ બને.</translation>
 <translation id="610911394827799129">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના અન્ય સ્વરૂપો હોઈ શકે છે</translation>
@@ -925,7 +924,6 @@
 <translation id="7451311239929941790">આ સમસ્યા વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" />.</translation>
 <translation id="7453467225369441013">તમને મોટાભાગની સાઇટોમાંથી સાઇન આઉટ કરે છે. તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ નહીં થાઓ.</translation>
 <translation id="7455133967321480974">વૈશ્વિક ડિફોલ્ટનો ઉપયોગ કરો (અવરોધિત કરો)</translation>
-<translation id="7460163899615895653">અન્ય ઉપકરણોમાંના તમારા તાજેતરના ટૅબ્સ અહીં દેખાય છે</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="7485870689360869515">કોઈ ડેટા મળ્યો નથી.</translation>
@@ -1009,6 +1007,7 @@
 <translation id="7983301409776629893">હંમેશા <ph name="ORIGINAL_LANGUAGE" /> નું <ph name="TARGET_LANGUAGE" /> માં ભાષાંતર કરો</translation>
 <translation id="7995512525968007366">નિર્દિષ્ટ કરાયેલ નથી</translation>
 <translation id="800218591365569300">મેમરી ખાલી કરવા માટે અન્ય ટૅબ અથવા પ્રોગ્રામને બંધ કરવાનો પ્રયાસ કરો.</translation>
+<translation id="8009225694047762179">બધા પાસવર્ડ મેનેજ કરો</translation>
 <translation id="8012647001091218357">અમે આ પળે તમારા વાલીઓ સુધી પહોંચી શક્યાં નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="8025119109950072390">આ સાઇટ પરના હુમલાખોરો તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ, ફોન નંબર્સ અથવા ક્રેડિટ કાર્ડ્સ) ને દર્શાવવા અથવા સોફ્ટવેર ઇન્સ્ટૉલ કરવા જેવી જોખમી વસ્તુઓને કરવા માટે તમને છેતરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="8034522405403831421">આ પૃષ્ઠ <ph name="SOURCE_LANGUAGE" /> માં છે. શું તેનો અનુવાદ <ph name="TARGET_LANGUAGE" /> માં કરીએ?</translation>
@@ -1070,6 +1069,7 @@
 વધારાની વિગતો:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">બદલો</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8433057134996913067">આ તમને મોટાભાગની વેબસાઇટ્સમાંથી સાઇન આઉટ કરશે.</translation>
 <translation id="8437238597147034694">&amp;ખસેડવું પૂર્વવત્‌ કરો</translation>

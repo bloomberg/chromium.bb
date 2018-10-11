@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Für den letzten Tag</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3112556859945124369">Markieren…</translation>
-<translation id="3151924044251363314">Nur Personen mit Ihrer Passphrase können Ihre verschlüsselten Daten lesen. Die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen oder diese Einstellung ändern möchten, müssen Sie die Synchronisierung zurücksetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
@@ -332,7 +331,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Passwörter können nicht exportiert werden</translation>
-<translation id="6762156594045689028">Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Postleitzahl</translation>
 <translation id="6785453220513215166">Absturzbericht wird gesendet…</translation>
 <translation id="679325081238418596">Rufen Sie Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten ab</translation>

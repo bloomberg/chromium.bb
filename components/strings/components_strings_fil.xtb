@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Pangalanang muli</translation>
 <translation id="1175364870820465910">&amp;I-print...</translation>
 <translation id="1181037720776840403">Alisin</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Awtomatikong iulat<ph name="END_WHITEPAPER_LINK" /> ang mga detalye ng mga posibleng insidente ng seguridad sa Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1201895884277373915">Higit pa mula sa site na ito</translation>
 <translation id="1206967143813997005">Hindi magandang paunang signature</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Punan</translation>
 <translation id="2465655957518002998">Pumili ng Paraan ng Paghahatid</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Magpatakbo ng Network Diagnostics<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">I-translate ang pahinang ito</translation>
 <translation id="2479410451996844060">Di-wastong URL ng paghahanap.</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2491120439723279231">Naglalaman ng mga error ang certificate ng server.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">Hindi pinagkakatiwalaan ang certificate ng server.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Hindi bababa sa 1 item sa mga naka-sync na device}=1{1 item (at higit pa sa mga naka-sync na device)}one{# item (at higit pa sa mga naka-sync na device)}other{# na item (at higit pa sa mga naka-sync na device)}}</translation>
 <translation id="3539171420378717834">Magtago ng kopya ng card na ito sa device na ito</translation>
-<translation id="3549644494707163724">I-encrypt ang lahat ng naka-sync na data gamit ang sarili mong passphrase sa pag-sync</translation>
 <translation id="3556433843310711081">Maaari itong i-unblock ng iyong manager para sa iyo</translation>
 <translation id="3566021033012934673">Hindi pribado ang iyong koneksyon</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Mag-e-expire sa <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Na-block ang mapaminsalang content.</translation>
+<translation id="3810973564298564668">Mamahala</translation>
 <translation id="382518646247711829">Kung gumagamit ka ng proxy server...</translation>
 <translation id="3828924085048779000">Hindi pinapayagan ang walang laman na passphrase.</translation>
 <translation id="385051799172605136">Bumalik</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Alisin ang address sa Chrome?</translation>
 <translation id="4592951414987517459">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang makabagong cipher suite.</translation>
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
-<translation id="4619615317237390068">Mga tab mula sa iba pang mga device</translation>
 <translation id="4646534391647090355">Dalhin na ako roon</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; naglalaman ng mga error ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">I-reload ang mga patakaran</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">I-restart ang Chromium</translation>
+<translation id="473775607612524610">Mag-update</translation>
 <translation id="4742407542027196863">Pamahalaan ang mga password...</translation>
 <translation id="4744603770635761495">Naipapatupad na Path</translation>
 <translation id="4750917950439032686">Pribado ang iyong impormasyon (halimbawa, mga password o credit card number) kapag ipinadala ito sa site na ito.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">Hindi mo maaaring bisitahin ang <ph name="SITE" /> sa ngayon dahil gumagamit ng pag-pin ng certificate ang website. Karaniwang pansamantala lang ang mga error at pag-atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon.</translation>
 <translation id="6059925163896151826">Mga USB device</translation>
 <translation id="6071091556643036997">Invalid ang uri ng patakaran.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Mase-save ang card na ito sa iyong Google Account para sa mas mabilis na pag-check out sa lahat ng device.}one{Mase-save ang mga card na ito sa iyong Google Account para sa mas mabilis na pag-check out sa lahat ng device.}other{Mase-save ang mga card na ito sa iyong Google Account para sa mas mabilis na pag-check out sa lahat ng device.}}</translation>
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN" />.</translation>
 <translation id="6096619198407627433">Sina-sign out ka sa karamihang site. Hindi ka masa-sign out sa iyong Google Account. Maaari kang mawalan ng access sa pinoprotektahang content mula sa <ph name="SITE" /> at iba pang site.</translation>
 <translation id="610911394827799129">Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -926,7 +925,6 @@ Mga karagdagang detalye:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
 <translation id="7453467225369441013">Isa-sign out ka sa karamihan ng mga site. Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="7455133967321480974">Gamitin ang pangkalahatang default (I-block)</translation>
-<translation id="7460163899615895653">Lumalabas dito ang mga kamakailan mong tab mula sa iba pang mga device</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7481312909269577407">Sumulong</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
@@ -1010,6 +1008,7 @@ Mga karagdagang detalye:
 <translation id="7983301409776629893">Palaging isalin ang <ph name="ORIGINAL_LANGUAGE" /> sa <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Hindi Tinukoy</translation>
 <translation id="800218591365569300">Subukang isara ang iba pang tab o program upang magbakante ng memory.</translation>
+<translation id="8009225694047762179">Pamahalaan ang Mga Password</translation>
 <translation id="8012647001091218357">Hindi namin makaugnayan ang iyong mga magulang sa sandaling ito. Pakisubukang muli.</translation>
 <translation id="8025119109950072390">Maaari kang linlangin ng mga attacker sa site na ito na gumawa ng mga bagay na mapanganib tulad ng pag-i-install ng software o pagbubunyag ng iyong personal na impormasyon (halimbawa, mga password, numero ng telepono o credit card).</translation>
 <translation id="8034522405403831421">Nasa <ph name="SOURCE_LANGUAGE" /> ang pahinang ito. Isalin ito sa <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1071,6 +1070,7 @@ Mga karagdagang detalye:
 Mga karagdagang detalye:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Baguhin</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
 <translation id="8437238597147034694">&amp;I-undo ang paglilipat</translation>

@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="1181037720776840403">Eliminar</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Informar automáticamente<ph name="END_WHITEPAPER_LINK" /> los detalles de posibles incidentes de seguridad a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1201895884277373915">Más sobre este sitio</translation>
 <translation id="1206967143813997005">La firma inicial no es válida</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Llenar</translation>
 <translation id="2465655957518002998">Elegir método de entrega</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ejecución del Diagnóstico de red<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Traducir esta página</translation>
 <translation id="2479410451996844060">URL de búsqueda no válida</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2491120439723279231">El certificado del servidor contiene errores.</translation>
@@ -384,7 +384,6 @@
 <translation id="3528171143076753409">El certificado del servidor no es de confianza.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Al menos 1 elemento en dispositivos sincronizados}=1{1 elemento (y más en dispositivos sincronizados)}other{# elementos (y más en dispositivos sincronizados)}}</translation>
 <translation id="3539171420378717834">Conservar una copia de la tarjeta en el dispositivo.</translation>
-<translation id="3549644494707163724">Encriptar todos los datos sincronizados con tu propia frase de contraseña para sincronización</translation>
 <translation id="3556433843310711081">Tu administrador puede desbloquearlo por ti</translation>
 <translation id="3566021033012934673">La conexión no es privada</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -426,6 +425,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Se bloqueó el contenido dañino</translation>
+<translation id="3810973564298564668">Administrar</translation>
 <translation id="382518646247711829">Si utilizas un servidor proxy...</translation>
 <translation id="3828924085048779000">No se permite una frase de contraseña vacía.</translation>
 <translation id="385051799172605136">Atrás</translation>
@@ -535,7 +535,6 @@
 <translation id="4587425331216688090">¿Confirmas que quieres quitar la dirección de Chrome?</translation>
 <translation id="4592951414987517459">Tu conexión a <ph name="DOMAIN" /> está encriptada con un conjunto de cifrado moderno.</translation>
 <translation id="4594403342090139922">&amp;Deshacer Eliminar</translation>
-<translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
 <translation id="4646534391647090355">Ir ahora</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad contiene errores. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
@@ -549,6 +548,7 @@
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4736825316280949806">Reinicia Chromium.</translation>
+<translation id="473775607612524610">Actualizar</translation>
 <translation id="4742407542027196863">Administrar contraseñas…</translation>
 <translation id="4744603770635761495">Ruta ejecutable</translation>
 <translation id="4750917950439032686">Tu información (p. ej., contraseñas o números de tarjetas de crédito) es privada cuando se envía a este sitio.</translation>
@@ -748,7 +748,6 @@
 <translation id="6051221802930200923">No puedes visitar <ph name="SITE" /> ahora porque el sitio web usa la fijación de certificados. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6071091556643036997">El tipo de política no es válido.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Esta tarjeta se guardará en tu cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}other{Estas tarjetas se guardarán en tu cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}}</translation>
 <translation id="6080696365213338172">Accediste al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN" /> pueden ser interceptados por tu administrador.</translation>
 <translation id="6096619198407627433">Esta acción te hace salir de la mayoría de los sitios. No saldrás de tu cuenta de Google. Es posible que ya no puedas acceder al contenido protegido de <ph name="SITE" /> y otros sitios.</translation>
 <translation id="610911394827799129">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -927,7 +926,6 @@ Detalles adicionales:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> acerca de este problema</translation>
 <translation id="7453467225369441013">Esta acción te hace salir de la mayoría de los sitios. No saldrás de tu cuenta de Google.</translation>
 <translation id="7455133967321480974">Usar configuración global predeterminada (Bloquear)</translation>
-<translation id="7460163899615895653">Aquí aparecen tus pestañas recientes de otros dispositivos</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
@@ -1011,6 +1009,7 @@ Detalles adicionales:
 <translation id="7983301409776629893">Siempre traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Sin especificar</translation>
 <translation id="800218591365569300">Prueba cerrar las demás pestañas o programas para liberar memoria.</translation>
+<translation id="8009225694047762179">Administrar contraseñas</translation>
 <translation id="8012647001091218357">No pudimos comunicarnos con tus padres. Vuelve a intentarlo.</translation>
 <translation id="8025119109950072390">Es posible que los atacantes de este sitio te engañen para que hagas algo peligroso, como instalar software o divulgar información personal (p. ej., contraseñas, números de teléfono o tarjetas de crédito).</translation>
 <translation id="8034522405403831421">Esta página está en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1072,6 +1071,7 @@ Detalles adicionales:
 Detalles adicionales:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Si realizas esta acción, saldrás de la mayoría de los sitios web.</translation>
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>

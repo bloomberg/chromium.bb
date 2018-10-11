@@ -577,7 +577,6 @@
       Jei šis nustatymas neleidžiamas, naudotojai negali spausdinti naudodami „<ph name="PRODUCT_NAME" />“. Spausdinimas neleidžiamas naudojant veržliarakčio meniu, plėtinius, „JavaScript“ programas ir t. t. Tačiau galima spausdinti naudojant papildinius, kurie spausdina apeidami „<ph name="PRODUCT_NAME" />“. Pavyzdžiui, tam tikrų „Flash“ programų kontekstiniame meniu yra spausdinimo parinktis, kuriai netaikoma ši politika.</translation>
 <translation id="2518231489509538392">Leisti paleisti garsą</translation>
 <translation id="2521581787935130926">Rodyti programų spartųjį klavišą žymių juostoje</translation>
-<translation id="2529700525201305165">Riboti, kuriems naudotojams leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="2529880111512635313">Konfigūruoti programų ir plėtinių, kuriuos įdiegti privaloma, sąrašą</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2536525645274582300">Ar įgalinti „Google“ vietovės paslaugas, nusprendžia naudotojas</translation>
@@ -1437,11 +1436,6 @@
 <translation id="4816674326202173458">Leisti įmonės naudotojui būti pirminiu ir antriniu (numatytoji elgsena nevaldomiems naudotojams)</translation>
 <translation id="4826326557828204741">Veiksmas, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas, veikiant iš akumuliatoriaus energijos</translation>
 <translation id="4834526953114077364">Naudotojai, kurie jungėsi seniausiai ir kurie nebuvo prisijungę per paskutinius 3 mėnesius, šalinami, kol atsiras pakankamai laisvos vietos</translation>
-<translation id="4838572175671839397">Nurodant, kurie naudotojai gali prisijungti prie „<ph name="PRODUCT_NAME" />“, naudojamas reguliarusis reiškinys.
-
-      Jei naudotojas bando prisijungti naudotoju vardu, neatitinkančiu šio šablono, pateikiama atitinkama klaida.
-
-      Jei ši politika nenustatyta arba jos laukas tuščias, tada bet kuris naudotojas gali prisijungti prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="4858735034935305895">Leisti viso ekrano režimą</translation>
 <translation id="4861767323695239729">Naudotojo sesijoje leidžiamų įvesties metodų konfigūravimas</translation>
 <translation id="4869787217450099946">Nurodoma, ar ekrano pažadinimo užraktai leidžiami. Ekrano pažadinimo užraktų užklausą gali pateikti plėtiniai, naudodami energijos tvarkymo plėtinio API.
@@ -2144,25 +2138,6 @@
 <translation id="6903814433019432303">Ši politika aktyvi tik dirbant mažmeninės prekybos režimu.
 
       Nustatoma, ar URL rinkinys turi būti įkeltas, kai paleidžiama demonstracinės versijos sesija. Ši politika panaikina visus kitus pradinio URL nustatymo mechanizmus ir todėl gali būti taikoma tik su konkrečiu naudotoju nesusijusiai sesijai.</translation>
-<translation id="6908347296939885026">Įgalinama „<ph name="PRODUCT_NAME" />“ riboto prisijungimo funkcija sistemoje „G Suite“ ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Įjungus šį nustatymą naudotojas galės pasiekti „Google“
-      programas tik naudodamas paskyras iš nurodytų domenų (tai neveikia naudojant
-      gmail.com/googlemail.com).
-
-      Šis nustatymas NEUŽDRAUS naudotojui prisijungti tvarkomame įrenginyje,
-      kuriame reikia atlikti „Google“ autentifikavimo procesą. Naudotojui vis tiek
-      bus leidžiama prisijungti prie paskyrų iš kitų domenų, bet bus rodoma klaida,
-      kai bandys naudoti „G Suite“ su tomis paskyromis.
-
-      Jei paliksite šį nustatymą tuščią ar nesukonfigūruotą, naudotojas galės
-      pasiekti „G Suite“ naudodamas bet kurią paskyrą.
-
-      Pagal šią politiką antraštė „X-GoogApps-Allowed-Domains“ pridedama prie
-      visų HTTP ir HTTPS užklausų visuose google.com domenuose, kaip aprašyta adresu
-      https://support.google.com/a/answer/1668854.
-
-      Naudotojai negali pakeisti ar nepaisyti šio nustatymo.</translation>
 <translation id="6908640907898649429">Konfigūruojamas numatytasis paieškos teikėjas. Galite nurodyti numatytąjį paieškos teikėją, kurį naudotojas naudos, arba pasirinkti neleisti numatytosios paieškos.</translation>
 <translation id="6913068954484253496">Leisti „<ph name="PRODUCT_NAME" />“ prisijungti prie visų perdavimo įrenginių, pasiekiamų visais IP adresais.</translation>
 <translation id="6915442654606973733">Įgalinti ekrano skaitymo balsu funkciją.
@@ -3146,13 +3121,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Faktines grąžinimo galimybes taip pat gali lemti aparatinė įranga ir kritinio pažeidžiamumo pataisos.</translation>
 <translation id="913195841488580904">Blokuoti prieigą prie URL sąrašo</translation>
 <translation id="9135033364005346124">Įgalinti <ph name="CLOUD_PRINT_NAME" /> tarpinį serverį</translation>
-<translation id="9136253551939494882">Baltasis sąrašas, kuriuo valdoma, kuriuos sparčiojo atrakinimo režimus naudotojas gali konfigūruoti ir naudoti norėdamas atrakinti užrakinimo ekraną.
-
-          Ši vertė yra eilučių sąrašas. Galiojantys sąrašo įrašai yra "all" ir "PIN". Prie sąrašo pridėjus „all“ naudotojui bus pasiekiami visi sparčiojo atrakinimo režimai, įskaitant tuos, kurie bus įdiegti ateityje. Priešingu atveju bus pasiekiami tik sąraše pateikiami sparčiojo atrakinimo režimai.
-
-          Pavyzdžiui, jei norite leisti naudoti visus sparčiojo atrakinimo režimus, naudokite ["all"]. Jei norite leisti atrakinti tik naudojant PIN kodą, naudokite ["PIN"]. Jei norite išjungti visus sparčiojo atrakinimo režimus, naudokite [].
-
-          Pagal numatytuosius nustatymus tvarkomuose įrenginiuose nepasiekiami jokie sparčiojo atrakinimo režimai.</translation>
 <translation id="9136399279941091445">Nenaudojimo valandų intervalai, kai išleidžiama nurodyta įrenginio politika</translation>
 <translation id="9147029539363974059">Siunčiami sistemos žurnalai valdymo serveriui, kad būtų leidžiama
       administratoriams stebėti sistemos žurnalus.

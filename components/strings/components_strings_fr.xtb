@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Renommer</translation>
 <translation id="1175364870820465910">Im&amp;primer...</translation>
 <translation id="1181037720776840403">Supprimer</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Signaler automatiquement<ph name="END_WHITEPAPER_LINK" /> les incidents de sécurité potentiels à Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1201895884277373915">Plus de résultats pour ce site</translation>
 <translation id="1206967143813997005">Signature initiale incorrecte</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Remplir</translation>
 <translation id="2465655957518002998">Sélectionner un mode d'expédition</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Exécuter les diagnostics du réseau<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Traduire cette page</translation>
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2491120439723279231">Le certificat du serveur contient des erreurs.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">Le certificat du serveur n'est pas approuvé.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Au moins 1 élément sur les appareils synchronisés}=1{1 élément (et plus sur les appareils synchronisés)}one{# élément (et plus sur les appareils synchronisés)}other{# éléments (et plus sur les appareils synchronisés)}}</translation>
 <translation id="3539171420378717834">Conserver une copie de cette carte sur cet appareil</translation>
-<translation id="3549644494707163724">Chiffrer toutes les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
 <translation id="3556433843310711081">Votre responsable peut vous le débloquer</translation>
 <translation id="3566021033012934673">Votre connexion n'est pas privée</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Expire en <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Contenu malveillant bloqué.</translation>
+<translation id="3810973564298564668">Gérer</translation>
 <translation id="382518646247711829">Si vous utilisez un serveur proxy…</translation>
 <translation id="3828924085048779000">La phrase secrète est obligatoire.</translation>
 <translation id="385051799172605136">Retour</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
 <translation id="4592951414987517459">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement récente.</translation>
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
-<translation id="4619615317237390068">Onglets d'autres appareils</translation>
 <translation id="4646534391647090355">Accéder</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">Actualiser les règles</translation>
 <translation id="4728558894243024398">Plate-forme</translation>
 <translation id="4736825316280949806">Relancez Chromium</translation>
+<translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4742407542027196863">Gérer les mots de passe…</translation>
 <translation id="4744603770635761495">Chemin d'accès exécutable</translation>
 <translation id="4750917950439032686">Vos informations, par exemple vos mots de passe ou vos numéros de carte de paiement, sont privées lorsqu'elles sont transmises à ce site.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">Le site <ph name="SITE" /> est actuellement inaccessible, car il utilise l'épinglage des certificats. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
 <translation id="6059925163896151826">Appareils USB</translation>
 <translation id="6071091556643036997">Ce type de règle n'est pas valide.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Cette carte sera enregistrée dans votre compte Google, ce qui vous permettra de payer plus rapidement sur tous vos appareils.}one{Cette carte sera enregistrée dans votre compte Google, ce qui vous permettra de payer plus rapidement sur tous vos appareils.}other{Ces cartes seront enregistrées dans votre compte Google, ce qui vous permettra de payer plus rapidement sur tous vos appareils.}}</translation>
 <translation id="6080696365213338172">Vous avez accédé à du contenu à l'aide d'un certificat fourni par l'administrateur. Les données que vous fournissez à <ph name="DOMAIN" /> peuvent être interceptées par votre administrateur.</translation>
 <translation id="6096619198407627433">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google. Vous risquez de ne plus avoir accès au contenu protégé de <ph name="SITE" /> et de certains autres sites.</translation>
 <translation id="610911394827799129">Votre compte Google conserve peut-être d'autres contenus d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -926,7 +925,6 @@ Informations supplémentaires :
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur ce problème.</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>
 <translation id="7455133967321480974">Utiliser le paramètre global par défaut ("Bloquer")</translation>
-<translation id="7460163899615895653">Les onglets que vous avez utilisés récemment sur d'autres appareils s'affichent ici</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
@@ -1010,6 +1008,7 @@ Informations supplémentaires :
 <translation id="7983301409776629893">Toujours traduire en <ph name="TARGET_LANGUAGE" /> les pages en <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Non spécifié</translation>
 <translation id="800218591365569300">Essayez de fermer les autres onglets ou programmes pour libérer de la mémoire.</translation>
+<translation id="8009225694047762179">Gérer les mots de passe</translation>
 <translation id="8012647001091218357">Impossible de joindre vos parents pour le moment. Veuillez réessayer.</translation>
 <translation id="8025119109950072390">Des individus malveillants à l'œuvre sur ce site pourraient vous inciter à effectuer des opérations dangereuses, telles que l'installation d'un logiciel ou la révélation d'informations personnelles (par exemple des mots de passe, des numéros de téléphone ou des numéros de carte de paiement).</translation>
 <translation id="8034522405403831421">Cette page est rédigée en <ph name="SOURCE_LANGUAGE" />. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE" /> ?</translation>
@@ -1071,6 +1070,7 @@ Informations supplémentaires :
 Informations supplémentaires :
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Modifier</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>

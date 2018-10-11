@@ -126,7 +126,6 @@
 <translation id="1938981467853765413">Sniegt atsauksmes</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļauju pārlūkam Chrome.</translation>
 <translation id="1943432128510653496">Paroļu saglabāšana</translation>
-<translation id="1944384637046898011">Šifrēt visu ar Google paroli, sākot no: <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Kontrolējiet to, kā Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
 <translation id="1952172573699511566">Kad vien iespējams, vietnēs tiks rādīts teksts atlasītajā valodā.</translation>
 <translation id="195283394249132567">Personalizēti Google pakalpojumi</translation>
@@ -311,7 +310,6 @@
 <translation id="3522247891732774234">Pieejams atjauninājums. Citas iespējas</translation>
 <translation id="3527085408025491307">Mape</translation>
 <translation id="3542235761944717775">Pieejami <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">Šifrēt visus sinhronizētos datus, izmantojot sinhronizācijas ieejas frāzi</translation>
 <translation id="3549657413697417275">Meklēt savā vēsturē</translation>
 <translation id="3552151358455404883">Pārvaldīt Chrome sinhronizāciju un personalizēšanu <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Pievienot kontaktpersonām</translation>
@@ -379,7 +377,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4084712963632273211">No izdevēja <ph name="PUBLISHER_ORIGIN" /> — <ph name="BEGIN_DEEMPHASIZED" />nodrošina Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Lejupielādes: <ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">Vai dzēst lietotnes datus?</translation>
-<translation id="4097739989936358050">Šī lietotne darbojas pārlūkā Chrome.</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="410351446219883937">Automātiskā atskaņošana</translation>
 <translation id="4113030288477039509">Pārvalda jūsu administrators</translation>
@@ -424,7 +421,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="447252321002412580">Palīdzēt uzlabot Chrome funkcijas un veiktspēju</translation>
 <translation id="4479647676395637221">Jautāt, pirms atļaut vietnēm izmantot jūsu kameru (ieteicams)</translation>
 <translation id="4487967297491345095">Visi lietotnes Chrome dati tiks neatgriezeniski izdzēsti. Tas attiecas uz visiem failiem, iestatījumiem, kontiem, datu bāzēm un citiem datiem.</translation>
-<translation id="4508440807153586353">Jūsu šifrētos datus var lasīt tikai personas, kurām ir zināma jūsu ieejas frāze. Ieejas frāze netiek sūtīta Google serveriem un netiek tajos glabāta. Ja aizmirsīsiet ieejas frāzi vai vēlēsieties mainīt šo iestatījumu, jums būs jāatiestata sinhronizācija. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{pirms # dienas}zero{pirms # dienām}one{pirms # dienas}other{pirms # dienām}}</translation>
 <translation id="451872707440238414">Meklēt grāmatzīmēs</translation>
 <translation id="4521489764227272523">Atlasītie dati ir noņemti no pārlūka Chrome un jūsu sinhronizētajām ierīcēm.
@@ -724,11 +720,11 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6697492270171225480">Ja lapu neizdotas atrast, rāda ieteikumus par līdzīgām lapām</translation>
 <translation id="6697947395630195233">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>
+<translation id="6709133671862442373">Ziņas</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6712388303105732168">Skatīt līdzīgus Google ieteikumus, izmantojot pogu Līdzīgi vienumi</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
-<translation id="6762156594045689028">Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
 <translation id="6768277682697012280">Tiek instalēts PR modulis...</translation>
 <translation id="6776813977906306442">Nospiediet pogu Lejupielādēt, lai lejupielādētu videoklipus un tos skatītos vēlāk.</translation>

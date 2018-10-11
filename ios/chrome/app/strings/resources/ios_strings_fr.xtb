@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Dernières 24 heures</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
 <translation id="3112556859945124369">Marquer…</translation>
-<translation id="3151924044251363314">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tout marquer…</translation>
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3207960819495026254">Favori</translation>
@@ -332,7 +331,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Impossible d'exporter les mots de passe</translation>
-<translation id="6762156594045689028">Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6780034285637185932">Code postal</translation>
 <translation id="6785453220513215166">Envoi du rapport d'erreur en cours…</translation>
 <translation id="679325081238418596">Accédez à vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>

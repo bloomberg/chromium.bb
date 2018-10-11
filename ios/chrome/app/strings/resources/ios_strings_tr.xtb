@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Son 1 Gün</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3112556859945124369">İşaretle…</translation>
-<translation id="3151924044251363314">Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tümünü İşaretle…</translation>
 <translation id="3175081911749765310">Web Hizmetleri</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
@@ -332,7 +331,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="667999046851023355">Doküman</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Şifreler Dışa Aktarılamıyor</translation>
-<translation id="6762156594045689028">Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Posta Kodu</translation>
 <translation id="6785453220513215166">Kilitlenme raporu gönderiliyor...</translation>
 <translation id="679325081238418596">Yer işaretlerinizi, geçmişinizi, şifrelerinizi ve diğer ayarlarınızı tüm cihazlarınızda kullanın.</translation>

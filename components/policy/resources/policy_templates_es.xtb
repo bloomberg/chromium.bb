@@ -573,7 +573,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se inhabilita, los usuarios no podrán imprimir desde <ph name="PRODUCT_NAME" />. La impresión está inhabilitada en el menú de herramientas, las extensiones, las aplicaciones JavaScript, etc. Aún es posible imprimir desde complementos que omiten <ph name="PRODUCT_NAME" /> al imprimir. Por ejemplo, algunas aplicaciones Flash incluyen la opción de impresión en el menú contextual, que no está incluida en esta política.</translation>
 <translation id="2518231489509538392">Permitir reproducción de audio</translation>
 <translation id="2521581787935130926">Mostrar el acceso directo de aplicaciones en la barra de marcadores</translation>
-<translation id="2529700525201305165">Restringir los usuarios que pueden iniciar sesión en <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configura la lista de aplicaciones y extensiones de instalación forzada</translation>
 <translation id="253135976343875019">Tiempo de espera de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2536525645274582300">El usuario decide si quiere habilitar los servicios de ubicación de Google</translation>
@@ -827,6 +826,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si no se establece esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
+<translation id="3211426942294667684">Configuración de inicio de sesión en el navegador</translation>
 <translation id="3213821784736959823">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
 
       Si esta política se establece en verdadera, se utilizará el cliente DNS integrado, si está disponible.
@@ -1105,6 +1105,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no estableces esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio predeterminado habitual (específico de la plataforma).
 
       Accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para consultar una lista de las variables que se pueden utilizar.</translation>
+<translation id="3904459740090265495">Esta política controla el comportamiento del navegador cuando se inicia sesión. Permite establecer si los usuarios pueden iniciar sesión en <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios asociados a esta, como la función Sincronización de Chrome.
+
+      Si se asigna el valor "Inhabilitar el inicio de sesión en el navegador" a esta política, el usuario no podrá iniciar sesión en el navegador ni usar los servicios asociados a la cuenta. Además, las funciones del navegador, como Sincronización de Chrome, no se podrán usar ni estarán disponibles. Si el usuario inicia sesión y esta política está inhabilitada, la próxima vez que ejecute Chrome se cerrará la sesión, pero se conservarán los datos de su perfil local, como los marcadores o las contraseñas. De todas formas, podrá iniciar sesión y usar servicios web de Google como Gmail.
+
+      Si se asigna el valor "Habilitar el inicio de sesión en el navegador" a esta política, el usuario podrá iniciar sesión en el navegador. Si inicia sesión en servicios web de Google como Gmail, también lo hará en el navegador automáticamente. Con la sesión iniciada, el navegador conservará la información de la cuenta, pero Sincronización de Chrome no se activará de forma predeterminada; el usuario deberá activar esta función por separado. Al habilitar esta política, se impedirá que el usuario desactive la opción que permite iniciar sesión en el navegador. Para controlar la disponibilidad de Sincronización de Chrome, usa la política "SyncDisabled".
+
+      Si se asigna el valor "Forzar el inicio de sesión en el navegador" a esta política, se mostrará un cuadro de diálogo de selección de cuenta al usuario para que elija una e inicie sesión en el navegador. De este modo, se garantiza que, en el caso de las cuentas gestionadas, se apliquen y se cumplan las políticas asociadas a la cuenta. Además, se activará de forma predeterminada la función Sincronización de Chrome de la cuenta, excepto si la sincronización está inhabilitada por el administrador del dominio o por la política "SyncDisabled". El valor predeterminado que se asignará a BrowserGuestModeEnabled es "False". Ten en cuenta que, después de habilitar esta política, los perfiles con los que no se haya iniciado sesión se bloquearán y no se podrá acceder a ellos. Para obtener más información, consulta este artículo del Centro de Ayuda: https://support.google.com/chrome/a/answer/7572556.
+
+     Si no se asigna ningún valor a esta política, el usuario podrá decidir si quiere habilitar la opción para iniciar sesión en el navegador y usarla cuando lo crea oportuno.</translation>
 <translation id="3911737181201537215">Esta política no afecta al registro realizado por Android.</translation>
 <translation id="391531815696899618">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" />, en cuyo caso no se suben datos a Google Drive.
 
@@ -1154,6 +1163,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Ten en cuenta que esta política se ignora y los servicios de ubicación de Google están siempre inhabilitados si a la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> se le asigna el valor <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Permitir consultas a un servicio de hora de Google</translation>
+<translation id="408076456549153854">Habilitar inicio de sesión en el navegador</translation>
 <translation id="4088589230932595924">Modo de incógnito forzado</translation>
 <translation id="4088983553732356374">Permite seleccionar si los sitios web tienen permiso para establecer datos locales. El establecimiento de datos locales se puede permitir o rechazar en todos los sitios web.
 
@@ -1429,11 +1439,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4816674326202173458">Permitir que el usuario de empresa sea principal y secundario (comportamiento predeterminado para usuarios no administrados)</translation>
 <translation id="4826326557828204741">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está usando la batería</translation>
 <translation id="4834526953114077364">Eliminar usuarios utilizados hace más tiempo que no hayan iniciado sesión en los tres últimos meses hasta que haya suficiente espacio libre</translation>
-<translation id="4838572175671839397">Contiene una expresión regular que se utiliza para determinar qué usuarios pueden iniciar sesión en <ph name="PRODUCT_NAME" />.
-
-      Se muestra el error correspondiente si un usuario intenta iniciar sesión con un nombre de usuario que no coincida con este patrón.
-
-      Si esta política se deja en blanco o no se establece, cualquier usuario podrá iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de introducción admitidos en una sesión de usuario</translation>
 <translation id="4869787217450099946">Especifica si se permiten los bloqueos de activación de pantalla. Los bloqueos de activación de pantalla pueden solicitarlos las extensiones a través de la API de extensión de administración de energía.
@@ -1466,6 +1471,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4962262530309732070">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción Añadir persona del administrador de usuarios.
 
       Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no se podrán crear perfiles desde el administrador de usuarios.</translation>
+<translation id="4970855112942626932">Inhabilitar inicio de sesión en el navegador</translation>
 <translation id="4971529314808359013">Te permite definir una lista de patrones de URL que especifican sitios web para los que <ph name="PRODUCT_NAME" /> selecciona automáticamente un certificado de cliente, en caso de que el sitio web solicite un certificado.
 
           El valor debe ser un conjunto de diccionarios JSON de tipo Stringify. Cada diccionario debe tener la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, donde $URL_PATTERN es un patrón de configuración de contenido. $FILTER limita desde qué certificados de cliente podrá seleccionar el navegador automáticamente. Independientemente del filtro, solo se seleccionarán certificados que coincidan con la solicitud de certificado del servidor. Además, si $FILTER tiene la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, solo se seleccionarán certificados de cliente emitidos por un certificado con el valor $ISSUER_CN para CommonName. Si $FILTER es el diccionario vacío {}, no se limitará de forma adicional la selección de los certificados de cliente.
@@ -1875,6 +1881,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se configura esta política, la lista de dispositivos USB que se pueden separar está vacía.</translation>
 <translation id="6083631234867522991">Windows (clientes de Windows):</translation>
+<translation id="6091233616732024397">Forzar a los usuarios a iniciar sesión para usar el navegador</translation>
 <translation id="6093156968240188330">Permite que los usuarios remotos interactúen con ventanas con permisos de administrador en sesiones de asistencia remota</translation>
 <translation id="6095999036251797924">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) cuando el usuario está conectado a la red o utiliza la batería.
 
@@ -1953,6 +1960,11 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="6368011194414932347">Configurar la URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
 <translation id="6376659517206731212">Puede ser obligatoria</translation>
+<translation id="6377355597423503887">Esta política está obsoleta, pero puedes utilizar BrowserSignin en su lugar.
+
+      Permite a los usuarios iniciar sesión en <ph name="PRODUCT_NAME" />.
+
+      Esta política sirve para establecer si un usuario tiene permiso para iniciar sesión en <ph name="PRODUCT_NAME" />. Si se le asigna el valor "False", impedirá que funcionen las aplicaciones y extensiones que usan la API chrome.identity, así que te recomendamos que uses SyncDisabled.</translation>
 <translation id="6378076389057087301">Especificar si la actividad de audio afecta a la administración de energía</translation>
 <translation id="637934607141010488">Permite informar sobre la lista de usuarios de dispositivos que han iniciado sesión recientemente.
 
@@ -2129,25 +2141,6 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6903814433019432303">Esta política solo se encuentra activa en el modo de venta.
 
       Permite determinar el conjunto de URL que se cargarán cuando se inicie la sesión de demostración. Esta política anulará cualquier otro mecanismo para establecer la URL inicial y, por tanto, solo se puede aplicar a una sesión que no esté asociada a un usuario concreto.</translation>
-<translation id="6908347296939885026">Habilita la función de inicio de sesión restringido de <ph name="PRODUCT_NAME" /> en G Suite e impide que los usuarios cambien esta opción.
-
-      Si configuras esta opción, el usuario solo podrá acceder a las aplicaciones de Google
-      con cuentas de los dominios especificados. Ten en cuenta que esta opción no
-      funciona con gmail.com/googlemail.com.
-
-      Esta opción no evita que el usuario inicie sesión en un dispositivo administrado
-      que requiera la autenticación de Google. El usuario puede
-      iniciar sesión con cuentas de otros dominios, pero aparece un error
-      cuando intenta acceder a G Suite con esas cuentas.
-
-      Si no configuras esta opción, el usuario puede
-      acceder a G Suite con cualquier cuenta.
-
-      Esta política hace que el encabezado X-GoogApps-Allowed-Domains se añada a
-      todas las solicitudes HTTP y HTTPS en todos los dominios de google.com, como se describe en la página
-      https://support.google.com/a/answer/1668854.
-
-      Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="6908640907898649429">Permite configurar el proveedor de búsquedas predeterminadas. Puedes especificar el proveedor de búsquedas predeterminadas que utilizarán los usuarios o inhabilitar las búsquedas predeterminadas.</translation>
 <translation id="6913068954484253496">Permitir que <ph name="PRODUCT_NAME" /> se conecte a dispositivos de transmisión de todas las direcciones IP.</translation>
 <translation id="6915442654606973733">Habilita la función de accesibilidad de comentarios por voz.
@@ -2890,6 +2883,11 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8548832052135586762">Establece el modo de impresión: solo en color, solo monocromo o sin restricción. Si no se asigna ningún valor a esta política, no se aplica ninguna restricción.</translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
 <translation id="8566842294717252664">Oculta tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
+<translation id="857369585509260201">Esta política está obsoleta, pero puedes utilizar BrowserSignin en su lugar.
+
+      Si se asigna el valor "True" a esta política, el usuario deberá iniciar sesión en <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado que se asignará a BrowserGuestModeEnabled es "False". Ten en cuenta que, después de habilitar esta política, los perfiles con los que no se haya iniciado sesión se bloquearán y no se podrá acceder a ellos. Para obtener más información, consulta el artículo del Centro de Ayuda.
+
+      Si se asigna el valor "False" a esta política o no se configura, el usuario podrá utilizar el navegador sin iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Especifica las impresoras que un usuario no puede utilizar.
 
       Esta política solo se usará si se asigna <ph name="PRINTERS_BLACKLIST" /> a <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -3117,13 +3115,6 @@ Los controladores de protocolos registrados por la política se combinan con los
       Las posibilidades reales de reversión también dependen de la placa base y de los parches de vulnerabilidad grave.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Una lista blanca que controla los modos de desbloqueo rápido que el usuario puede configurar para desbloquear la pantalla de bloqueo.
-
-          Este valor es una lista de cadenas cuyas entradas válidas son "all" y "PIN". Si se añade "all" a la lista, el usuario puede utilizar todos los modos de desbloqueo rápido, incluidos aquellos que añada en el futuro. En caso contrario, solo podrá usar los que se indiquen en la lista.
-
-          Por ejemplo, selecciona ["all"] para permitir todos los modos de desbloqueo rápido y ["PIN"] para habilitar solo el desbloqueo mediante PIN. Si quieres inhabilitar todos los modos de desbloqueo rápido de la lista, utiliza [].
-
-           De forma predeterminada, no se pueden utilizar modos de desbloqueo rápido en los dispositivos administrados.</translation>
 <translation id="9136399279941091445">Intervalos fuera del horario en los que se publican las políticas de dispositivos especificadas</translation>
 <translation id="9147029539363974059">Envía registros del sistema al servidor de administración para permitir que
       los administradores los supervisen.

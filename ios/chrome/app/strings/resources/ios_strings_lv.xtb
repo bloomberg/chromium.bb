@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Iepriekšējā diena</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
 <translation id="3112556859945124369">Atzīmēt…</translation>
-<translation id="3151924044251363314">Jūsu šifrētos datus var lasīt tikai personas, kurām ir zināma jūsu ieejas frāze. Ieejas frāze netiek sūtīta Google serveriem un netiek tajos glabāta. Ja aizmirsīsiet ieejas frāzi vai vēlēsieties mainīt šo iestatījumu, jums būs jāatiestata sinhronizācija. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="3157684681743766797">Atzīmēt visus…</translation>
 <translation id="3175081911749765310">Tīm. pak.</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
@@ -332,7 +331,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="667999046851023355">Dokuments</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nevar eksportēt paroles</translation>
-<translation id="6762156594045689028">Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
 <translation id="6780034285637185932">Pasta indekss</translation>
 <translation id="6785453220513215166">Notiek avārijas ziņojuma sūtīšana...</translation>
 <translation id="679325081238418596">Iegūstiet savas grāmatzīmes, vēsturi, paroles un citus iestatījumus visās savās ierīcēs</translation>

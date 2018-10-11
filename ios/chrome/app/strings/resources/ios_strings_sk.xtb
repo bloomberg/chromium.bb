@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Posledný deň</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3112556859945124369">Označiť…</translation>
-<translation id="3151924044251363314">Šifrované údaje môže čítať iba používateľ s prístupovou frázou. Prístupová fráza sa do Googlu neodosiela a Google ju ani neukladá. Ak prístupovú frázu zabudnete alebo budete chcieť toto nastavenie zmeniť, synchronizáciu bude potrebné resetovať. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Označiť všetko…</translation>
 <translation id="3175081911749765310">Web. služ.</translation>
 <translation id="3207960819495026254">Pridané medzi záložky</translation>
@@ -332,7 +331,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Heslá sa nedajú exportovať</translation>
-<translation id="6762156594045689028">Ak chcete zmeniť toto nastavenie, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">PSČ</translation>
 <translation id="6785453220513215166">Prebieha odosielanie správy o zlyhaní...</translation>
 <translation id="679325081238418596">Preneste svoje záložky, históriu, heslá a ďalšie nastavenia na všetky svoje zariadenia</translation>

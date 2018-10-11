@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">过去 1 天</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3112556859945124369">标为…</translation>
-<translation id="3151924044251363314">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">全部标为…</translation>
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3207960819495026254">已加书签</translation>
@@ -332,7 +331,6 @@
 <translation id="667999046851023355">文档</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">无法导出密码</translation>
-<translation id="6762156594045689028">要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">邮编</translation>
 <translation id="6785453220513215166">正在发送崩溃报告…</translation>
 <translation id="679325081238418596">可让您在所有设备上使用您的书签、历史记录、密码和其他设置</translation>

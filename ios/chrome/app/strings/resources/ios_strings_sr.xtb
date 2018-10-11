@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Претходни дан</translation>
 <translation id="3037605927509011580">О, не!</translation>
 <translation id="3112556859945124369">Означи…</translation>
-<translation id="3151924044251363314">Само неко ко има приступну фразу може да чита шифроване податке. Приступна фраза се не шаље Google-у нити је он чува. Ако заборавите приступну фразу или желите да промените ово подешавање, треба да ресетујете синхронизацију. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Означи све…</translation>
 <translation id="3175081911749765310">Веб-услуге</translation>
 <translation id="3207960819495026254">Обележено</translation>
@@ -332,7 +331,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="667999046851023355">Документ</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Извоз лозинки није успео</translation>
-<translation id="6762156594045689028">Да бисте променили ово подешавање, <ph name="BEGIN_LINK" />ресетујте синхронизацију<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Поштански број</translation>
 <translation id="6785453220513215166">Слање извештаја о отказивању...</translation>
 <translation id="679325081238418596">Имаћете обележиваче, историју, лозинке и друга подешавања на свим уређајима</translation>

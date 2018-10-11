@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">שנה שם</translation>
 <translation id="1175364870820465910">הדפס...</translation>
 <translation id="1181037720776840403">הסר</translation>
-<translation id="1184214524891303587">‏<ph name="BEGIN_WHITEPAPER_LINK" />שלח באופן אוטומטי<ph name="END_WHITEPAPER_LINK" /> אל Google דיווח על בעיות אבטחה אפשריות. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1201895884277373915">עוד מאתר זה</translation>
 <translation id="1206967143813997005">חתימה ראשונית לא חוקית</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">מלא</translation>
 <translation id="2465655957518002998">בחירת שיטת מסירה</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />מפעיל את אבחון הרשת<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">תרגם את הדף הזה</translation>
 <translation id="2479410451996844060">כתובת אתר לא חוקית של חיפוש</translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="2491120439723279231">אישור השרת מכיל שגיאות.</translation>
@@ -250,7 +250,7 @@
 <translation id="2634124572758952069">‏לא ניתן היה למצוא את כתובת ה-IP של השרת של <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">סטטוס:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
-<translation id="2650446666397867134">הגישה לקובץ נדחתה</translation>
+<translation id="2650446666397867134">לא ניתן לגשת לקובץ</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2666117266261740852">סגירת כרטיסיות או יישומים אחרים</translation>
 <translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
-<translation id="3549644494707163724">הצפן את כל הנתונים המסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
 <translation id="3556433843310711081">המנהל שלך יכול לבטל בשבילך את החסימה</translation>
 <translation id="3566021033012934673">החיבור שלך אינו פרטי</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">מאסטרקארד</translation>
 <translation id="3787705759683870569">תאריך תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">תוכן מזיק נחסם.</translation>
+<translation id="3810973564298564668">נהל</translation>
 <translation id="382518646247711829">‏אם אתה משתמש בשרת Proxy...</translation>
 <translation id="3828924085048779000">אין אפשרות להשתמש במשפט-סיסמה ריק.</translation>
 <translation id="385051799172605136">חזור</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">‏האם להסיר את הכתובת מ-Chrome?</translation>
 <translation id="4592951414987517459">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מתקדמת.</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
-<translation id="4619615317237390068">כרטיסיות ממכשירים אחרים</translation>
 <translation id="4646534391647090355">אני רוצה לעבור לשם עכשיו</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="4736825316280949806">‏אתחול ה-Chromium</translation>
+<translation id="473775607612524610">עדכן</translation>
 <translation id="4742407542027196863">ניהול סיסמאות…</translation>
 <translation id="4744603770635761495">נתיב להפעלה</translation>
 <translation id="4750917950439032686">הפרטים שלך (כמו סיסמאות או מספרי כרטיסי אשראי) נשלחים לאתר הזה במצב פרטי.</translation>
@@ -752,7 +752,6 @@ Del</translation>
 <translation id="6051221802930200923">נכון לעכשיו אי אפשר לבקר באתר <ph name="SITE" />, מאחר שבאתר הזה נעשה שימוש בנעיצת אישורים. שגיאות רשת ומתקפות הן בדרך כלל זמניות, כך שהדף הזה יחזור כנראה לפעול מאוחר יותר.</translation>
 <translation id="6059925163896151826">‏מכשירי USB</translation>
 <translation id="6071091556643036997">סוג המדיניות אינו חוקי.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{‏הכרטיס הזה יישמר בחשבון Google שלך, כדי לאפשר תהליך מהיר יותר בקופה בכל המכשירים שברשותך.}two{‏הכרטיסים האלה יישמרו בחשבון Google שלך, כדי לאפשר תהליך מהיר יותר בקופה בכל המכשירים שברשותך.}many{‏הכרטיסים האלה יישמרו בחשבון Google שלך, כדי לאפשר תהליך מהיר יותר בקופה בכל המכשירים שברשותך.}other{‏הכרטיסים האלה יישמרו בחשבון Google שלך, כדי לאפשר תהליך מהיר יותר בקופה בכל המכשירים שברשותך.}}</translation>
 <translation id="6080696365213338172">ניגשת לתוכן באמצעות אישור שהוענק על ידי מנהל מערכת. מנהל המערכת שלך עשוי ליירט נתונים שתספק ל-<ph name="DOMAIN" />.</translation>
 <translation id="6096619198407627433">‏הפעולה תגרום ליציאה מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך. ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="610911394827799129">‏ייתכן שלחשבון Google שלך משויכים סוגים אחרים של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -931,7 +930,6 @@ Del</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /> על בעיה זו.</translation>
 <translation id="7453467225369441013">‏תבוצע יציאה שלך מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך.</translation>
 <translation id="7455133967321480974">השתמש בברירת המחדל הכללית (חסום)</translation>
-<translation id="7460163899615895653">הכרטיסיות האחרונות שפתחת במכשירים אחרים מוצגות כאן</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
@@ -1015,6 +1013,7 @@ Del</translation>
 <translation id="7983301409776629893">תרגם תמיד <ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">לא צוין</translation>
 <translation id="800218591365569300">מומלץ לסגור כרטיסיות או תוכניות אחרות וכך לפנות מקום בזיכרון.</translation>
+<translation id="8009225694047762179">ניהול סיסמאות</translation>
 <translation id="8012647001091218357">לא הצלחנו ליצור קשר עם ההורים שלך. נסה שוב מאוחר יותר.</translation>
 <translation id="8025119109950072390">תוקפים באתר הזה עשויים לגרום לך, בדרכי מרמה, לבצע פעולות מסוכנות כמו התקנת תוכנה או חשיפה של מידע אישי (לדוגמה: סיסמאות, מספרי טלפון או פרטי כרטיסי אשראי).</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE" />. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE" />?</translation>
@@ -1060,7 +1059,7 @@ Del</translation>
 <translation id="8298115750975731693">‏ייתכן שתידרש להיכנס ל-<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> עבור רשת ה-Wi-Fi שבה אתה משתמש (<ph name="WIFI_NAME" />).</translation>
 <translation id="8308427013383895095">התרגום נכשל עקב בעיה בחיבור הרשת.</translation>
 <translation id="8311129316111205805">טעינת הפעלה</translation>
-<translation id="8332188693563227489">הגישה ל-<ph name="HOST_NAME" /> נדחתה</translation>
+<translation id="8332188693563227489">אין גישה אל <ph name="HOST_NAME" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />להיכנס לאתר לא בטוח זה<ph name="END_LINK" /> לפני הסרת התכניות המסוכנות.</translation>
 <translation id="8349305172487531364">סרגל סימניות</translation>
@@ -1076,6 +1075,7 @@ Del</translation>
 פרטים נוספים:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">שנה</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433057134996913067">פעולה זו תוציא אותך מהחשבון ברוב האתרים.</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>

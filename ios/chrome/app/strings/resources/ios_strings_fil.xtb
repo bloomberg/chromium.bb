@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Nakalipas na Araw</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
 <translation id="3112556859945124369">Markahan…</translation>
-<translation id="3151924044251363314">Ang taong may alam ng iyong passphrase lang ang makakabasa sa iyong naka-encrypt na data. Hindi ipinapadala sa o iniimbak ng Google ang passphrase. Kung makakalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, kakailanganin mong i-reset ang pag-sync. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Markahan Lahat...</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
@@ -332,7 +331,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="667999046851023355">Dokumento</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Hindi Ma-export ang Mga Password</translation>
-<translation id="6762156594045689028">Upang baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Zip Code</translation>
 <translation id="6785453220513215166">Nagpapadala ng ulat sa pag-crash...</translation>
 <translation id="679325081238418596">Kunin ang iyong mga bookmark, history, password at iba pang mga setting sa lahat ng iyong device</translation>

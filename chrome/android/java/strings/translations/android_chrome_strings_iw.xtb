@@ -126,7 +126,6 @@
 <translation id="1938981467853765413"> שליחת משוב</translation>
 <translation id="194341124344773587">‏הפעל הרשאה בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
-<translation id="1944384637046898011">‏הצפן הכל באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
 <translation id="1946005195648379376">‏קבע כיצד Google משתמשת בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google.</translation>
 <translation id="1952172573699511566">אתרים יציגו טקסט בשפה המועדפת שלך, כשזה אפשרי.</translation>
 <translation id="195283394249132567">‏שירותים מותאמים אישית של Google</translation>
@@ -311,7 +310,6 @@
 <translation id="3522247891732774234">יש עדכון זמין. עוד אפשרויות</translation>
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3542235761944717775">‏‎<ph name="KILOBYTES" /> KB זמינים</translation>
-<translation id="3549644494707163724">הצפן את כל הנתונים המסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
 <translation id="3549657413697417275">חפש בהיסטוריה שלך</translation>
 <translation id="3552151358455404883">‏נהל את סנכרון Chrome וההתאמה האישית ב<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">הוסף לאנשי הקשר</translation>
@@ -379,7 +377,6 @@
 <translation id="4084712963632273211">‏מאת <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />מוגש על-ידי Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">‏‎<ph name="MEGABYTES" /> MB להורדות</translation>
 <translation id="4095146165863963773">למחוק נתוני יישומים?</translation>
-<translation id="4097739989936358050">‏האפליקציה הזו פועלת ב-Chrome.</translation>
 <translation id="4099578267706723511">‏עזור לשפר את Chrome על ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
 <translation id="410351446219883937">הפעלה אוטומטית</translation>
 <translation id="4113030288477039509">מנוהל על ידי מנהל המערכת שלך</translation>
@@ -424,7 +421,6 @@
 <translation id="447252321002412580">‏עזרה בשיפור התכונות והביצועים של Chrome</translation>
 <translation id="4479647676395637221">שאל לפני שתאפשר לאתרים להשתמש במצלמה שלך (מומלץ)</translation>
 <translation id="4487967297491345095">‏כל נתוני היישומים של Chrome יימחקו לצמיתות, כולל כל הקבצים, ההגדרות, החשבונות, מסדי הנתונים וכו'</translation>
-<translation id="4508440807153586353">‏רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם תשכח את ביטוי הסיסמה או אם תרצה לשנות את ההגדרה הזו, יהיה עליך לאפס את הסינכרון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{לפני יום}two{לפני יומיים}many{לפני # ימים}other{לפני # ימים}}</translation>
 <translation id="451872707440238414">חפש בסימניות</translation>
 <translation id="4521489764227272523">‏הנתונים שבחרת הוסרו מ-Chrome ומהמכשירים המסונכרנים.
@@ -724,11 +720,11 @@
 <translation id="6697492270171225480">הצגת הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
 <translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6698801883190606802">נהל נתונים מסונכרנים</translation>
+<translation id="6709133671862442373">חדשות</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6712388303105732168">‏כדי ש-Google תציע עוד דברים כאלה, יש ללחוץ על הלחצן 'עוד דברים כאלה'</translation>
 <translation id="6738867403308150051">מוריד...</translation>
 <translation id="6746124502594467657">הזז למטה</translation>
-<translation id="6762156594045689028"><ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /> כדי לשנות את ההגדרה הזו</translation>
 <translation id="6766622839693428701">החלקה מטה סוגרת.</translation>
 <translation id="6768277682697012280">‏מתקין מודול AR...</translation>
 <translation id="6776813977906306442">אפשר ללחוץ על לחצן ההורדה כדי להוריד סרטונים ולצפות בהם מאוחר יותר</translation>

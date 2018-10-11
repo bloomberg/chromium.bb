@@ -126,7 +126,6 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="1938981467853765413">Anna palautetta</translation>
 <translation id="194341124344773587">Ota käyttöoikeus käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
-<translation id="1944384637046898011">Salaa kaikki tiedot Google-salasanalla, joka on asetettu <ph name="TIME" />.</translation>
 <translation id="1946005195648379376">Hallinnoi tapaa, jolla Google käyttää selaushistoriaasi haun ja muiden Googlen palveluiden muokkaamiseen.</translation>
 <translation id="1952172573699511566">Verkkosivustot näyttävät tekstin valitsemallasi kielellä, kun se on mahdollista.</translation>
 <translation id="195283394249132567">Personoidut Google-palvelut</translation>
@@ -311,7 +310,6 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="3522247891732774234">Päivitys on saatavilla. Näytä lisäasetukset.</translation>
 <translation id="3527085408025491307">Kansio</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kt käytettävissä</translation>
-<translation id="3549644494707163724">Salaa kaikki synkronoidut tiedot oman synkronoinnin tunnuslauseesi avulla</translation>
 <translation id="3549657413697417275">Haku omasta historiasta</translation>
 <translation id="3552151358455404883">Hallinnoi Chromen synkronointia ja räätälöintiä <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />.</translation>
 <translation id="3557336313807607643">Lisää yhteystietoihin</translation>
@@ -379,7 +377,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4084712963632273211">Lähde: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Googlen toimittama<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> Mt ladattu</translation>
 <translation id="4095146165863963773">Poistetaanko sovellustiedot?</translation>
-<translation id="4097739989936358050">Tämä sovellus on käynnissä Chromessa.</translation>
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="410351446219883937">Automaattinen toisto</translation>
 <translation id="4113030288477039509">Järjestelmänvalvojasi hallinnoima</translation>
@@ -424,7 +421,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="447252321002412580">Auta parantamaan Chromen ominaisuuksia ja suorituskykyä</translation>
 <translation id="4479647676395637221">Pyydä lupaa, kun sivustot yrittävät käyttää kameraasi (suositus).</translation>
 <translation id="4487967297491345095">Kaikki Chromen sovellustiedot, mukaan lukien tiedostot, asetukset, tilit ja tietokannat, poistetaan pysyvästi.</translation>
-<translation id="4508440807153586353">Salattuja tietojasi voi lukea vain tunnuslauseesi avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, synkronointi täytyy nollata. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# päivä sitten}other{# päivää sitten}}</translation>
 <translation id="451872707440238414">Hae kirjanmerkeistä</translation>
 <translation id="4521489764227272523">Valitut tiedot on poistettu Chromesta ja synkronoiduilta laitteilta.
@@ -724,11 +720,11 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6697492270171225480">Näytä ehdotuksia samankaltaisista sivuista, kun sivua ei löydy</translation>
 <translation id="6697947395630195233">Chrome tarvitsee oikeuden käyttää sijaintiasi, jotta se voidaan jakaa tämän sivuston kanssa.</translation>
 <translation id="6698801883190606802">Hallinnoi synkronoituja tietoja</translation>
+<translation id="6709133671862442373">Uutiset</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="6712388303105732168">Hae samankaltaista sisältöä Googlesta käyttämällä Samanlaisia-painiketta</translation>
 <translation id="6738867403308150051">Ladataan…</translation>
 <translation id="6746124502594467657">Siirrä alas</translation>
-<translation id="6762156594045689028">Jos haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
 <translation id="6766622839693428701">Sulje pyyhkäisemällä alas.</translation>
 <translation id="6768277682697012280">Asennetaan AR-moduulia…</translation>
 <translation id="6776813977906306442">Lataa videoita myöhemmin katsottavaksi painamalla latauspainiketta.</translation>

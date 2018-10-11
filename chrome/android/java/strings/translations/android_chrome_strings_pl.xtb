@@ -21,7 +21,7 @@
 <translation id="114721135501989771">Inteligentne rozwiązania Google w Chrome</translation>
 <translation id="1157102636231978136">Dane przeglądania i aktywność związana z przeglądaniem, które są synchronizowane z Twoim kontem Google</translation>
 <translation id="116280672541001035">Użyto</translation>
-<translation id="1172593791219290334">Strona początkowa</translation>
+<translation id="1172593791219290334">Strona startowa</translation>
 <translation id="1175310183703641346">Twoje zakładki, historia, hasła i inne ustawienia przestaną być synchronizowane z Twoim kontem Google</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
@@ -126,7 +126,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="1938981467853765413">Prześlij opinię</translation>
 <translation id="194341124344773587">Przyznaj Chrome uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Zapisuj hasła</translation>
-<translation id="1944384637046898011">Zaszyfruj wszystko za pomocą hasła do Google z <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług.</translation>
 <translation id="1952172573699511566">Gdy będzie to możliwe, tekst na stronach internetowych będzie się wyświetlać w Twoim preferowanym języku.</translation>
 <translation id="195283394249132567">Spersonalizowane usługi Google</translation>
@@ -311,7 +310,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3522247891732774234">Dostępna jest aktualizacja. Więcej opcji</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3542235761944717775">Dostępne: <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">Szyfruj wszystkie synchronizowane dane za pomocą hasła synchronizacji</translation>
 <translation id="3549657413697417275">Przeszukaj historię</translation>
 <translation id="3552151358455404883">Zarządzaj synchronizacją Chrome i personalizacją w <ph name="BEGIN_LINK1" />Ustawieniach<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Dodaj do kontaktów</translation>
@@ -379,7 +377,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4084712963632273211">Opublikowane na <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />wyświetlone przez Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB pobranych plików</translation>
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
-<translation id="4097739989936358050">Ta aplikacja działa w Chrome.</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
@@ -424,7 +421,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="447252321002412580">Pomóż w ulepszaniu funkcji i działania Chrome</translation>
 <translation id="4479647676395637221">Pytaj, zanim zezwolisz stronom na korzystanie z kamery (zalecane)</translation>
 <translation id="4487967297491345095">Wszystkie dane aplikacji Chrome zostaną trwale usunięte. Dotyczy to wszystkich plików, ustawień, kont, baz danych itp.</translation>
-<translation id="4508440807153586353">Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, musisz zresetować synchronizację. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
 <translation id="451872707440238414">Szukaj zakładek</translation>
 <translation id="4521489764227272523">Wybrane dane zostały usunięte z Chrome i ze zsynchronizowanych urządzeń.
@@ -724,11 +720,11 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6697492270171225480">Gdy nie można odnaleźć strony, pokazuj sugestie podobnych stron</translation>
 <translation id="6697947395630195233">Chrome musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
+<translation id="6709133671862442373">Wiadomości</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6712388303105732168">Zobacz więcej podobnych informacji od Google – kliknij przycisk Więcej podobnych</translation>
 <translation id="6738867403308150051">Pobieram…</translation>
 <translation id="6746124502594467657">W dół</translation>
-<translation id="6762156594045689028">Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Przesuń w dół, by zamknąć.</translation>
 <translation id="6768277682697012280">Instaluję moduł AR…</translation>
 <translation id="6776813977906306442">Kliknij przycisk Pobierz, by pobrać film i obejrzeć go później</translation>
@@ -930,7 +926,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8274165955039650276">Zobacz pobrane</translation>
 <translation id="8283853025636624853">Synchronizowanie z kontem <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Karty standardowe</translation>
-<translation id="8313455859591948645">Zmiana strony początkowej</translation>
+<translation id="8313455859591948645">Zmiana strony startowej</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i więcej stron</translation>
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
 <translation id="8349013245300336738">Sortuj według ilości wykorzystanych danych</translation>

@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Din ultima zi</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3112556859945124369">Marchează…</translation>
-<translation id="3151924044251363314">Numai un utilizator care are expresia de acces poate citi datele criptate. Expresia de acces nu este trimisă sau stocată la Google. Dacă uiți expresia de acces sau dorești să modifici această setare, va fi necesar să resetezi sincronizarea. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marchează-le pe toate…</translation>
 <translation id="3175081911749765310">Servicii web</translation>
 <translation id="3207960819495026254">Marcată</translation>
@@ -332,7 +331,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nu se pot exporta parole</translation>
-<translation id="6762156594045689028">Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Codul poștal</translation>
 <translation id="6785453220513215166">Se trimite raportul de blocare...</translation>
 <translation id="679325081238418596">Accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>

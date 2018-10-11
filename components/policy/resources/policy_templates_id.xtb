@@ -545,7 +545,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak dari <ph name="PRODUCT_NAME" />. Pencetakan dinonaktifkan di menu perkakas, ekstensi, aplikasi JavaScript, dll. Masih mungkin untuk dapat mencetak dari plugin yang melewati <ph name="PRODUCT_NAME" /> saat mencetak. Contohnya, aplikasi Flash tertentu memiliki opsi cetak di menu konteks, yang tidak termasuk dalam kebijakan ini.</translation>
 <translation id="2518231489509538392">Mengizinkan pemutaran audio</translation>
 <translation id="2521581787935130926">Tampilkan pintasan aplikasi di bilah bookmark</translation>
-<translation id="2529700525201305165">Membatasi pengguna yang diizinkan untuk masuk ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Mengonfigurasi daftar aplikasi dan ekstensi yang dipasang secara paksa</translation>
 <translation id="253135976343875019">Menunda peringatan waktu menganggur saat menggunakan daya AC</translation>
 <translation id="2536525645274582300">Pengguna memutuskan apakah akan mengaktifkan layanan lokasi Google</translation>
@@ -791,6 +790,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
           Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
+<translation id="3211426942294667684">Setelan login browser</translation>
 <translation id="3213821784736959823">Mengontrol apakah klien DNS di dalamnya digunakan di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini disetel ke benar, klien DNS yang ada di dalamnya akan digunakan, jika tersedia.
@@ -1063,6 +1063,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika Anda tidak menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori defaultnya yang biasa digunakan (khusus platform).
 
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.</translation>
+<translation id="3904459740090265495">Kebijakan ini mengontrol perilaku login browser. Dengan kebijakan ini, Anda dapat menentukan apakah pengguna dapat login ke <ph name="PRODUCT_NAME" /> dengan akun mereka dan menggunakan layanan terkait akun seperti sinkronisasi Chrome.
+
+      Jika kebijakan ini ditetapkan ke "Nonaktifkan login browser", maka pengguna tidak dapat login ke browser dan menggunakan layanan berbasis akun. Dalam hal ini, fitur tingkat browser seperti sinkronisasi Chrome tidak dapat digunakan dan tidak akan tersedia. Jika pengguna telah login dan kebijakan ini ditetapkan ke "Dinonaktifkan", pengguna akan dibuat logout saat berikutnya menjalankan Chrome, namun data profil lokalnya, seperti bookmark, sandi, dsb. akan tetap tersimpan. Pengguna masih dapat login dan menggunakan layanan web Google seperti Gmail.
+
+      Jika kebijakan ini ditetapkan ke "Aktifkan login browser", maka pengguna diizinkan untuk login ke browser, dan akan otomatis dibuat login ke browser saat mereka login ke layanan web Google seperti Gmail. Setelah login ke browser, informasi akun pengguna akan disimpan oleh browser. Namun, ini tidak berarti bahwa sinkronisasi Chrome akan diaktifkan secara default; pengguna harus secara khusus memilih untuk ikut serta menggunakan fitur ini. Jika kebijakan ini diaktifkan, pengguna tidak akan dapat menonaktifkan setelan yang mengizinkan login browser. Untuk mengontrol ketersediaan sinkronisasi Chrome, gunakan kebijakan "SyncDisabled".
+
+      Jika kebijakan ini ditetapkan ke "Paksa login browser", maka dialog pemilihan akun akan ditampilkan dan pengguna harus memilih serta login ke salah satu akun agar dapat menggunakan browser. Hal ini memastikan bahwa untuk akun terkelola, kebijakan yang terkait dengan akun tersebut diterapkan dan diberlakukan. Secara default, langkah ini mengaktifkan sinkronisasi Chrome untuk akun tersebut, kecuali jika sinkronisasi dinonaktifkan oleh admin domain atau melalui kebijakan "SyncDisabled". Nilai default BrowserGuestModeEnabled akan ditetapkan ke false. Harap diperhatikan bahwa profil yang ada dan belum ditandatangani akan dikunci dan tidak dapat diakses setelah kebijakan ini diaktifkan. Untuk informasi selengkapnya, lihat artikel pusat bantuan: https://support.google.com/chrome/a/answer/7572556.
+
+      Jika kebijakan ini tidak ditetapkan, maka pengguna dapat memutuskan apakah mereka ingin mengaktifkan opsi login browser dan menggunakannya bila dirasa sesuai.</translation>
 <translation id="3911737181201537215">Kebijakan ini tidak memengaruhi penyimpanan log yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diupload ke Google Drive.
 
@@ -1111,6 +1120,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Perlu diperhatikan bahwa kebijakan ini diabaikan dan layanan lokasi Google selalu dinonaktifkan jika kebijakan <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> disetel ke <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Izinkan kueri ke layanan waktu Google</translation>
+<translation id="408076456549153854">Aktifkan login browser</translation>
 <translation id="4088589230932595924">Mode penyamaran dipaksakan</translation>
 <translation id="4088983553732356374">Memungkinkan Anda menentukan apakah situs web diizinkan untuk menyetel data lokal atau tidak. Penyetelan data lokal bisa diizinkan untuk semua situs web atau ditolak untuk semua situs web.
 
@@ -1376,11 +1386,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4816674326202173458">Memungkinkan pengguna perusahaan menjadi primer dan sekunder (Perilaku default untuk pengguna yang tidak dikelola)</translation>
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
 <translation id="4834526953114077364">Pengguna yang paling jarang digunakan yang belum masuk dalam 3 bulan terakhir dihapus sampai terdapat cukup ruang kosong</translation>
-<translation id="4838572175671839397">Berisi ekspresi reguler yang digunakan untuk menentukan pengguna yang dapat masuk ke <ph name="PRODUCT_NAME" />.
-
-      Kesalahan yang sesuai akan ditampilkan jika pengguna mencoba untuk masuk dengan nama pengguna yang tidak cocok dengan pola ini.
-
-      Jika kebijakan ini dibiarkan tidak disetel atau kosong, semua pengguna dapat masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Izinkan mode layar penuh</translation>
 <translation id="4861767323695239729">Mengonfigurasi metode masukan yang diizinkan dalam sesi pengguna</translation>
 <translation id="4869787217450099946">Menentukan apakah penguncian layar saat bangun diizinkan atau tidak. Penguncian layar saat bangun dapat diminta dengan ekstensi melalui API ekstensi pengelola daya.
@@ -1413,6 +1418,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4962262530309732070">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengizinkan setelan Tambahkan Pengguna dari pengelola pengguna.
 
       Jika kebijakan ini disetel ke false, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan pembuatan profil baru dari pengelola pengguna.</translation>
+<translation id="4970855112942626932">Nonaktifkan login browser</translation>
 <translation id="4971529314808359013">Memungkinkan Anda menentukan daftar pola URL yang menetapkan situs tempat <ph name="PRODUCT_NAME" /> akan memilih sertifikat klien secara otomatis, jika situs meminta sertifikat.
 
           Nilai harus berupa rangkaian kamus dengan string JSON. Setiap kamus harus memiliki bentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN yang merupakan pola setelan konten. $FILTER membatasi asal sertifikat klien yang akan dipilih browser secara otomatis. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Selain itu, jika $FILTER memiliki bentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, hanya sertifikat klien yang dikeluarkan oleh sertifikat dengan CommonName $ISSUER_CN yang akan dipilih. Jika $FILTER berupa kamus kosong {}, pemilihan sertifikat klien tidak lagi dibatasi.
@@ -1792,6 +1798,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak dikonfigurasi, daftar perangkat USB yang dapat dilepas akan kosong.</translation>
 <translation id="6083631234867522991">Windows (klien Windows):</translation>
+<translation id="6091233616732024397">Paksa pengguna login untuk menggunakan browser</translation>
 <translation id="6093156968240188330">Memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di sesi bantuan jarak jauh</translation>
 <translation id="6095999036251797924">Menentukan lamanya waktu tanpa masukan pengguna sebelum layar dikunci saat berjalan menggunakan daya AC atau baterai.
 
@@ -1864,6 +1871,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6368011194414932347">Konfigurasikan URL halaman beranda</translation>
 <translation id="6368403635025849609">Izinkan JavaScript di situs ini</translation>
 <translation id="6376659517206731212">Bisa Jadi Wajib</translation>
+<translation id="6377355597423503887">Kebijakan ini tidak digunakan lagi. Pertimbangkan untuk menggunakan BrowserSignin.
+
+      Mengizinkan pengguna untuk login ke <ph name="PRODUCT_NAME" />.
+
+      Jika kebijakan ini ditetapkan, Anda dapat mengonfigurasi apakah pengguna diizinkan untuk login ke <ph name="PRODUCT_NAME" /> atau tidak. Jika kebijakan ini ditetapkan ke 'False', aplikasi dan ekstensi yang menggunakan chrome.identity API tidak akan berfungsi. Sebaiknya Anda menggunakan SyncDisabled saja.</translation>
 <translation id="6378076389057087301">Tentukan apakah aktivitas audio memengaruhi pengelolaan daya</translation>
 <translation id="637934607141010488">Melaporkan daftar pengguna perangkat yang saat ini masuk.
 
@@ -2041,25 +2053,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="6903814433019432303">Kebijakan ini aktif dalam mode eceran saja.
 
       Menentukan kumpulan URL yang akan dimuat saat sesi demo dimulai. Kebijakan ini mengganti mekanisme lain untuk menyetel URL awal, sehingga hanya dapat diterapkan ke sesi yang tidak terkait dengan pengguna tertentu.</translation>
-<translation id="6908347296939885026">Mengaktifkan fitur login <ph name="PRODUCT_NAME" /> yang dibatasi di G Suite dan mencegah pengguna mengubah setelan ini.
-
-      Jika Anda menetapkan setelan ini, pengguna hanya dapat mengakses Google
-      Apps menggunakan akun dari domain yang ditentukan (perlu diperhatikan bahwa setelan ini tidak
-      berfungsi untuk gmail.com/googlemail.com).
-
-      Setelan ini TIDAK akan mencegah pengguna login dari perangkat yang dikelola
-      yang memerlukan autentikasi Google. Pengguna tetap diizinkan
-      login ke akun dari domain lain, tetapi mereka akan menerima error
-      saat mencoba menggunakan G Suite dengan akun tersebut.
-
-      Jika Anda mengosongkan/tidak mengonfigurasi setelan ini, pengguna dapat
-      mengakses G Suite dengan akun apa pun.
-
-      Kebijakan ini menyebabkan header X-GoogApps-Allowed-Domains ditambahkan ke
-      semua permintaan HTTP dan HTTPS ke semua domain google.com, seperti yang dijelaskan di
-      https://support.google.com/a/answer/1668854.
-
-      Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="6908640907898649429">Mengonfigurasi penyedia penelusuran default. Anda dapat menentukan penyedia penelusuran default yang akan digunakan pengguna atau memilih menonaktifkan penelusuran default.</translation>
 <translation id="6913068954484253496">Izinkan <ph name="PRODUCT_NAME" /> untuk tersambung ke perangkat Cast di semua alamat IP.</translation>
 <translation id="6915442654606973733">Mengaktifkan fitur aksesibilitas masukan yang diucapkan.
@@ -2765,6 +2758,11 @@ Kebijakan akan dihapus pada M75.</translation>
 <translation id="8548832052135586762">Menyetel pencetakan ke hanya warna, hanya monokrom, atau tanpa batasan mode warna. Kebijakan yang tidak disetel diperlakukan sebagai tidak ada batasan.</translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Halaman Tab Baru dan peluncur aplikasi</translation>
+<translation id="857369585509260201">Kebijakan ini tidak digunakan lagi. Pertimbangkan untuk menggunakan BrowserSignin.
+
+      Jika kebijakan ini ditetapkan ke true, pengguna harus login ke <ph name="PRODUCT_NAME" /> dengan profilnya sebelum menggunakan browser. Nilai default BrowserGuestModeEnabled akan ditetapkan ke false. Harap diperhatikan bahwa profil yang ada dan belum ditandatangani akan dikunci dan tidak dapat diakses setelah kebijakan ini diaktifkan. Untuk informasi selengkapnya, lihat artikel pusat bantuan.
+
+      Jika kebijakan ini ditetapkan ke false atau tidak dikonfigurasi, pengguna dapat menggunakan browser tanpa harus login ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Menentukan printer yang tidak dapat digunakan pengguna.
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -2968,13 +2966,6 @@ Kebijakan akan dihapus pada M75.</translation>
       Kemungkinan rollback aktual juga dapat bergantung pada model perangkat dan patch kerentanan kritis.</translation>
 <translation id="913195841488580904">Blokir akses ke daftar URL</translation>
 <translation id="9135033364005346124">Mengaktifkan proxy <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Daftar yang diizinkan mengontrol mode buka kunci cepat mana yang dapat dikonfigurasi dan digunakan oleh pengguna untuk membuka layar kunci.
-
-          Nilai ini adalah daftar string; daftar entri validnya adalah: "semua", "PIN". menambahkan "semua" ke daftar menandakan bahwa setiap mode buka kunci cepat tersedia bagi pengguna, termasuk yang diterapkan di masa mendatang. Jika tidak, hanya mode buka kunci cepat dalam daftar yang akan tersedia.
-
-          Misalnya, untuk mengizinkan setiap mode buka kunci, gunakan ["semua"]. Untuk hanya mengizinkan buka kunci dengan PIN, gunakan ["PIN"]. Untuk menonaktifkan semua mode buka kunci cepat, gunakan [].
-
-          Secara default, tidak ada mode buka kunci cepat untuk perangkat yang dikelola.</translation>
 <translation id="9136399279941091445">Interval di luar jam kerja saat kebijakan perangkat yang ditentukan dirilis</translation>
 <translation id="9147029539363974059">Mengirim log sistem ke server pengelolaan, untuk memungkinkan
       admin memantau log sistem.

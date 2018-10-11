@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Ahir</translation>
 <translation id="3037605927509011580">Vaja!</translation>
 <translation id="3112556859945124369">Marca com a…</translation>
-<translation id="3151924044251363314">Només els usuaris que sàpiguen la vostra frase de contrasenya poden llegir les dades que encripteu. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblideu o voleu canviar aquesta configuració, heu de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marca-ho tot com a…</translation>
 <translation id="3175081911749765310">Serveis web</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
@@ -332,7 +331,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">No es poden exportar les contrasenyes</translation>
-<translation id="6762156594045689028">Per canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Codi postal</translation>
 <translation id="6785453220513215166">S'està enviant l'informe d'error...</translation>
 <translation id="679325081238418596">Accediu a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius</translation>

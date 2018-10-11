@@ -126,7 +126,6 @@
 <translation id="1938981467853765413">提供反馈</translation>
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
-<translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
 <translation id="1946005195648379376">控制 Google 如何使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。</translation>
 <translation id="1952172573699511566">网站将尽可能以您的首选语言显示文字。</translation>
 <translation id="195283394249132567">个性化的 Google 服务</translation>
@@ -311,7 +310,6 @@
 <translation id="3522247891732774234">有更新。更多选项</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3542235761944717775">可用空间：<ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
 <translation id="3549657413697417275">搜索您的历史记录</translation>
 <translation id="3552151358455404883">在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中管理 Chrome 同步和个性化</translation>
 <translation id="3557336313807607643">添加到通讯录</translation>
@@ -379,7 +377,6 @@
 <translation id="4084712963632273211">来自 <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />由 Google 提供<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">下载内容已占用的空间：<ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">要删除应用数据吗？</translation>
-<translation id="4097739989936358050">此应用正在 Chrome 中运行。</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
@@ -424,7 +421,6 @@
 <translation id="447252321002412580">帮助我们改进 Chrome 的功能和性能</translation>
 <translation id="4479647676395637221">在允许网站使用您的摄像头前先询问（推荐）</translation>
 <translation id="4487967297491345095">Chrome 的所有应用数据都将被永久删除，其中包括所有文件、设置、帐号、数据库等。</translation>
-<translation id="4508440807153586353">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
 <translation id="451872707440238414">搜索书签</translation>
 <translation id="4521489764227272523">所选数据已从 Chrome 和同步的设备中移除。
@@ -724,11 +720,11 @@
 <translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
+<translation id="6709133671862442373">资讯</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6712388303105732168">使用“更多类似内容”按钮查看 Google 推荐的更多类似内容</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
 <translation id="6746124502594467657">下移</translation>
-<translation id="6762156594045689028">要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6768277682697012280">正在安装 AR 模块…</translation>
 <translation id="6776813977906306442">您可使用“下载”按钮下载视频以供日后观看</translation>

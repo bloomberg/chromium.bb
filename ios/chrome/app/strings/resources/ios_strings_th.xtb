@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">วันที่ผ่านมา</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
 <translation id="3112556859945124369">ทำเครื่องหมาย…</translation>
-<translation id="3151924044251363314">เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะสามารถอ่านข้อมูลที่เข้ารหัสของคุณได้ Google จะไม่ส่งหรือจัดเก็บรหัสผ่านนี้ หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ คุณจะต้องรีเซ็ตการซิงค์ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">ทำเครื่องหมายทั้งหมด…</translation>
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
@@ -332,7 +331,6 @@
 <translation id="667999046851023355">เอกสาร</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">ส่งออกรหัสผ่านไม่ได้</translation>
-<translation id="6762156594045689028">หากต้องการเปลี่ยนการตั้งค่านี้ โปรด<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">รหัสไปรษณีย์</translation>
 <translation id="6785453220513215166">กำลังส่งรายงานข้อขัดข้อง...</translation>
 <translation id="679325081238418596">รับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>

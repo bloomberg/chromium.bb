@@ -555,7 +555,6 @@
       Se esta configuração estiver desativada, os usuários não poderão imprimir em <ph name="PRODUCT_NAME" />. A impressão é desativada no menu de ferramentas, nas extensões, em aplicativos JavaScript etc. Ainda é possível imprimir a partir de plug-ins que ignoram <ph name="PRODUCT_NAME" /> durante a impressão. Por exemplo, determinados aplicativos Flash trazem a opção de impressão no menu de contexto, o que não é abordado nesta política.</translation>
 <translation id="2518231489509538392">Permitir a reprodução de áudio</translation>
 <translation id="2521581787935130926">Exibir os atalhos de aplicativos na barra de favoritos</translation>
-<translation id="2529700525201305165">Limita os usuários que têm permissão para fazer login no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configurar a lista de extensões e aplicativos instalados forçadamente</translation>
 <translation id="253135976343875019">Intervalo da advertência de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2536525645274582300">O usuário decide se quer ativar os serviços de localização do Google</translation>
@@ -797,6 +796,7 @@
 
           Deixar esta política sem definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
+<translation id="3211426942294667684">Configurações de login no navegador</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, o cliente DNS integrado será usado, se disponível.
@@ -1066,6 +1066,15 @@
       Se você não definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório padrão (específico da plataforma).
 
       Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.</translation>
+<translation id="3904459740090265495">Esta política controla o comportamento de login no navegador. Ela permite especificar se o usuário pode fazer login no <ph name="PRODUCT_NAME" /> com a própria conta e usar os serviços relacionados a ela, como a "Sincronização do Chrome".
+
+      Se a política for definida como "Desativar login no navegador", não será possível fazer login no navegador e usar os serviços baseados na conta. Nesse caso, os recursos do navegador, como a "Sincronização do Chrome", não poderão ser usados e ficarão indisponíveis. Se o usuário estiver conectado e a política for definida como "Desativada", ele será desconectado na próxima vez que executar o Chrome, mas os dados locais do perfil dele, como favoritos e senhas, serão preservados. O usuário ainda conseguirá fazer login e usar os serviços do Google na Web, como o Gmail.
+
+      Se a política for definida como "Ativar login no navegador", o usuário poderá fazer login no navegador e será automaticamente conectado a ele quando se conectar aos serviços do Google na Web, como o Gmail. As informações da conta serão mantidas pelo navegador quando o usuário estiver conectado a ele. No entanto, isso não significa que a "Sincronização do Chrome" será ativada por padrão, ou seja, o usuário precisa ativar o uso desse recurso separadamente. A ativação desta política impedirá que o usuário desative a configuração que permite o login no navegador. Para controlar a disponibilidade da "Sincronização do Chrome", use a política "SyncDisabled".
+
+      Se a política for definida como "Forçar login no navegador", o usuário verá uma caixa de diálogo de seleção de conta e precisará fazer login em uma delas para usar o navegador. Isso garante que, no caso de contas gerenciadas, as políticas associadas à conta sejam aplicadas e executadas. Por padrão, isso ativa a "Sincronização do Chrome" para a conta, exceto se a sincronização tiver sido desativada pelo administrador do domínio ou por meio da política "SyncDisabled". O valor padrão de BrowserGuestModeEnabled será definido como false. Os perfis existentes desconectados serão bloqueados, e não será possível acessá-los depois de ativar esta política. Para mais informações, consulte o artigo da Central de Ajuda: https://support.google.com/chrome/a/answer/7572556.
+
+      Se esta política não for configurada, o usuário poderá decidir se quer ativar a opção de login no navegador e usá-la conforme adequado.</translation>
 <translation id="3911737181201537215">Esta política não tem nenhum efeito sobre o registro feito pelo Android.</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
 
@@ -1114,6 +1123,7 @@
 
       Esta política é ignorada e os serviços de localização do Google ficam sempre desativados quando a política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> é definida como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Permitir consultas a um serviço de hora do Google</translation>
+<translation id="408076456549153854">Ativar login no navegador</translation>
 <translation id="4088589230932595924">Modo de navegação anônima forçado</translation>
 <translation id="4088983553732356374">Permite que você configure se os websites têm ou não permissão para definir dados locais. É possível permitir a configuração dos dados locais para todos os websites ou negá-la a todos eles.
 
@@ -1379,11 +1389,6 @@
 <translation id="4816674326202173458">Permitir que o usuário empresarial seja ao mesmo tempo primário e secundário (comportamento padrão para usuários não gerenciados)</translation>
 <translation id="4826326557828204741">Ação a ser executada quando o tempo de inatividade for atingido durante execução com bateria</translation>
 <translation id="4834526953114077364">Os usuários menos utilizados ​​recentemente que não se conectaram nos últimos três meses serão removidos até que haja espaço livre suficiente</translation>
-<translation id="4838572175671839397">Contém uma expressão regular que é usada para determinar quais usuários podem fazer login no <ph name="PRODUCT_NAME" />.
-
-      Se o usuário tentar fazer login com um nome de usuário que não corresponda a esse padrão, o erro correspondente é exibido.
-
-      Se esta política for deixada sem configuração ou em branco, qualquer usuário poderá fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de tela cheia</translation>
 <translation id="4861767323695239729">Configurar os métodos de entrada permitidos em uma sessão de usuário</translation>
 <translation id="4869787217450099946">Especifica se são permitidos bloqueios de ativação da tela. Esses bloqueios podem ser solicitados por extensões por meio da API da extensão de gerenciamento de energia.
@@ -1416,6 +1421,7 @@
 <translation id="4962262530309732070">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permitirá a adição de uma pessoa no gerenciador de usuários.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permitirá a criação de novos perfis no gerenciador de usuários.</translation>
+<translation id="4970855112942626932">Desativar login no navegador</translation>
 <translation id="4971529314808359013">Permite que você defina uma lista de padrões de URL que especifique sites para os quais o <ph name="PRODUCT_NAME" /> deve selecionar um certificado de cliente automaticamente, se o site solicita um certificado.
 
           O valor deve ser uma matriz de dicionários JSON com strings. Cada dicionário deve ter a forma { "padrão": "$PADRÃO_DE_URL", "filtro" : $FILTRO}, em que $PADRÃO_DE_URL é um padrão de configuração de conteúdo. $FILTRO restringe a partir de quais certificados de cliente o navegador selecionará automaticamente. Independentemente do filtro, apenas certificados que correspondam à solicitação de certificado do servidor serão selecionados. Se $FILTRO tem a forma { "EMISSOR": { "CN": "$CN_DO_EMISSOR" } }, apenas os certificados de cliente que são emitidos por um certificado com o nome real $CN_DO_EMISSOR são selecionados. Se $FILTRO for o dicionário em branco {}, a seleção de certificados de cliente não ficará mais restrita.
@@ -1790,6 +1796,7 @@
 
       Se esta política não for configurada, a lista de dispositivos USB removíveis ficará vazia.</translation>
 <translation id="6083631234867522991">Windows (clientes do Windows):</translation>
+<translation id="6091233616732024397">Forçar o usuário a fazer login para usar o navegador</translation>
 <translation id="6093156968240188330">Permitir que usuários remotos interajam com janelas elevadas em sessões de assistência remota</translation>
 <translation id="6095999036251797924">Especifica o período de tempo de inatividade após o qual a tela deve ser bloqueada, quando o dispositivo é executado em energia AC ou bateria.
 
@@ -1862,6 +1869,11 @@
 <translation id="6368011194414932347">Configurar o URL da página inicial</translation>
 <translation id="6368403635025849609">Permitir o JavaScript nestes sites</translation>
 <translation id="6376659517206731212">Pode ser obrigatória</translation>
+<translation id="6377355597423503887">Esta política está obsoleta, portanto, é recomendável usar BrowserSignin.
+
+      Permite que o usuário faça login no <ph name="PRODUCT_NAME" />.
+
+      Se você definir esta política, será possível configurar se o usuário poderá fazer login no <ph name="PRODUCT_NAME" />. A definição desta política como "False" impedirá o funcionamento dos apps e extensões que usam a API chrome.identity. Em vez disso, você pode usar SyncDisabled.</translation>
 <translation id="6378076389057087301">Especifica se a atividade de áudio afeta o gerenciamento de energia</translation>
 <translation id="637934607141010488">Informa a lista de usuários do dispositivo que fizeram login recentemente.
 
@@ -2037,26 +2049,6 @@
 <translation id="6894178810167845842">URL da página "Nova guia"</translation>
 <translation id="6899705656741990703">Detectar automaticamente configurações de proxy</translation>
 <translation id="6903814433019432303">Esta política é ativa somente no modo de varejo. Determina o conjunto de URLs a serem carregados quando a sessão de demonstração for iniciada. Esta política substitui quaisquer outros mecanismos de definição do URL inicial e, portanto, somente pode ser aplicada a uma sessão não associada a determinado usuário.</translation>
-<translation id="6908347296939885026">Permite o recurso de login restrito do <ph name="PRODUCT_NAME" /> no G Suite e impede que os usuários alterem esta configuração.
-
-      Se você definir esta configuração, o usuário só poderá acessar o Google
-      Apps usando contas dos domínios especificados (isso não
-      funciona para gmail.com/googlemail.com).
-
-      Esta configuração NÃO impedirá que o usuário faça login em um dispositivo gerenciado
-      que requer autenticação com uma Conta do Google. O usuário ainda terá permissão para
-      fazer login em contas de outros domínios, mas receberá uma mensagem de erro
-      ao tentar usar o G Suite com essas contas.
-
-      Se esta configuração for deixada em branco/não configurada, o usuário poderá
-      acessar o G Suite com qualquer conta.
-
-      Esta política faz com que o cabeçalho X-GoogApps-Allowed-Domains seja anexado a
-      todas as solicitações HTTP e HTTPS para todos os domínios do google.com, conforme descrito em
-      https://support.google.com/a/answer/1668854.
-
-
-      Os usuários não poderão alterar ou modificar esta configuração.</translation>
 <translation id="6908640907898649429">Configura o provedor de pesquisa padrão. É possível especificar o provedor de pesquisa padrão que será usado ou escolhido pelo usuário para desativar a pesquisa padrão.</translation>
 <translation id="6913068954484253496">Permitir que o <ph name="PRODUCT_NAME" /> conecte-se a dispositivos de transmissão em todos os endereços IP.</translation>
 <translation id="6915442654606973733">Ativar o recurso de acessibilidade do feedback falado.
@@ -2776,6 +2768,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8548832052135586762">Define a impressão para apenas em cores, apenas monocromática ou sem restrição de modo de cor. Se a política não for definida, não haverá restrição.</translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
+<translation id="857369585509260201">Esta política está obsoleta, portanto, é recomendável usar BrowserSignin.
+
+      Se esta política for definida como true, o usuário precisará fazer login no <ph name="PRODUCT_NAME" /> com o próprio perfil antes de usar o navegador. O valor padrão de BrowserGuestModeEnabled será definido como false. Os perfis existentes desconectados serão bloqueados, e não será possível acessá-los depois de ativar esta política. Para mais informações, consulte o artigo da Central de Ajuda.
+
+      Se esta política for definida como false ou não for configurada, o usuário poderá usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Especifica as impressoras que um usuário não pode usar.
 
       Esta política só será usada se <ph name="PRINTERS_BLACKLIST" /> for escolhida para <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -2994,13 +2991,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       As possibilidades de reversão reais também podem depender dos patches de vulnerabilidade críticos e do modelo.</translation>
 <translation id="913195841488580904">Bloquear acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy do <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Uma lista de permissões que controla quais modos de desbloqueio rápido o usuário pode configurar e usar para desbloquear a tela do dispositivo.
-
-          Esse valor é uma lista de strings, e as entradas válidas da lista precisam ser de um dos seguintes tipos: "all" ou "PIN". Se a opção "all" for adicionada à lista, todos os modos de desbloqueio rápidos estarão disponíveis, incluindo os implementados no futuro. Caso contrário, somente os modos presentes na lista serão disponibilizados.
-
-          Por exemplo, para permitir todos os modos de desbloqueio rápido, use ["all"]. Para permitir apenas o desbloqueio com PIN, use ["all"]. Para desativar todos os modos de desbloqueio rápido, use [].
-
-          Por padrão, nenhum modo de desbloqueio rápido é disponibilizado para dispositivos gerenciados.</translation>
 <translation id="9136399279941091445">Intervalos de horas de inatividade quando as políticas do dispositivo específicas são lançadas</translation>
 <translation id="9147029539363974059">Enviar registros de sistema para o servidor de gerenciamento, a fim de permitir
       que administradores monitorem os registros de sistema.

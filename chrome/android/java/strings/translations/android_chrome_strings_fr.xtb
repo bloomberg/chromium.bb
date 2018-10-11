@@ -126,7 +126,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1938981467853765413">Envoyer des commentaires</translation>
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
-<translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="1952172573699511566">Les sites Web s'afficheront dans votre langue préférée lorsque ce sera possible.</translation>
 <translation id="195283394249132567">Services Google personnalisés</translation>
@@ -311,7 +310,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> Ko disponibles</translation>
-<translation id="3549644494707163724">Chiffrer toutes les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
 <translation id="3549657413697417275">Chercher dans l'historique</translation>
 <translation id="3552151358455404883">Gérer la synchronisation et la personnalisation de Chrome dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Ajouter aux contacts</translation>
@@ -379,7 +377,6 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />proposé par Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> Mo téléchargé(s)</translation>
 <translation id="4095146165863963773">Supprimer les données de l'application ?</translation>
-<translation id="4097739989936358050">Cette application s'exécute dans Chrome.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4113030288477039509">Géré par votre administrateur</translation>
@@ -424,7 +421,6 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="4479647676395637221">Demander avant d'autoriser des sites à utiliser ma caméra (recommandé)</translation>
 <translation id="4487967297491345095">Toutes les données de l'application Chrome seront supprimées de façon définitive, y compris les fichiers, paramètres, comptes, bases de données, etc.</translation>
-<translation id="4508440807153586353">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Il y a # jour}one{Il y a # jour}other{Il y a # jours}}</translation>
 <translation id="451872707440238414">Rechercher dans vos favoris</translation>
 <translation id="4521489764227272523">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés.
@@ -724,11 +720,11 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6697492270171225480">Afficher des suggestions de pages similaires lorsqu'une page est introuvable</translation>
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
+<translation id="6709133671862442373">Actualités</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6712388303105732168">Affichez plus de suggestions similaires en cliquant sur le bouton Plus de suggestions similaires</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
 <translation id="6746124502594467657">Descendre</translation>
-<translation id="6762156594045689028">Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6766622839693428701">Balayez l'écran vers le bas pour fermer la feuille.</translation>
 <translation id="6768277682697012280">Installation du module RA…</translation>
 <translation id="6776813977906306442">Téléchargez des vidéos à regarder plus tard à l'aide du bouton "Télécharger"</translation>

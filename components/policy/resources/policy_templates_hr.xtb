@@ -549,7 +549,6 @@
       Ako je ta postavka onemogućena, korisnici ne mogu ispisivati iz proizvoda <ph name="PRODUCT_NAME" />. Ispis je onemogućen na izborniku francuskog ključa, proširenjima, aplikacijama jezika JavaScript itd. I dalje je omogućen ispis iz dodataka koji tijekom ispisa zaobilaze proizvod <ph name="PRODUCT_NAME" />. Primjerice, određene Flash aplikacije imaju na svojem kontekstom izborniku opciju ispisa, koja nije pokrivena ovim pravilom.</translation>
 <translation id="2518231489509538392">Dopusti reprodukciju zvuka</translation>
 <translation id="2521581787935130926">Prikaži prečac aplikacije u traci oznaka</translation>
-<translation id="2529700525201305165">Ograničavanje korisnika koji se mogu prijaviti na uslugu <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfiguriranje popisa prisilno instaliranih aplikacija i proširenja</translation>
 <translation id="253135976343875019">Odgoda upozorenja o neaktivnosti dok je uređaj priključen na struju</translation>
 <translation id="2536525645274582300">Korisnik odlučuje hoće li omogućiti Googleove usluge lokacije</translation>
@@ -1064,9 +1063,9 @@
       Popis varijabli koje se mogu upotrebljavati potražite na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3904459740090265495">To pravilo upravlja ponašanjem prijave putem preglednika. Omogućuje vam da odredite može li se korisnik prijaviti na preglednik <ph name="PRODUCT_NAME" /> svojim računom i upotrebljavati usluge povezane s računom kao što je Chrome sinkronizacija.
 
-      Ako se to pravilo postavi na "Onemogući prijavu putem preglednika", korisnik se ne može prijaviti na preglednik i upotrebljavati usluge na temelju računa. U tom se slučaju značajke na razini preglednika kao što je Chrome sinkronizacija ne mogu upotrebljavati i neće biti dostupne. Ako je korisnik bio prijavljen i pravilo se postavi na "Onemogućeno", korisnik će se odjaviti sljedeći put kad pokrene Chrome, no zadržat će se lokalni podaci profila kao što su oznake, zaporke itd. Korisnik će se i dalje moći prijaviti na Googleove web-usluge kao što je Gmail i moći će ih upotrebljavati.
+      Ako se to pravilo postavi na "Onemogući prijavu putem preglednika", korisnik se ne može prijaviti na preglednik i upotrebljavati usluge računa. U tom se slučaju značajke na razini preglednika kao što je Chrome sinkronizacija ne mogu upotrebljavati i neće biti dostupne. Ako je korisnik bio prijavljen i pravilo se postavi na "Onemogućeno", korisnik će se odjaviti sljedeći put kad pokrene Chrome, no zadržat će se lokalni podaci profila kao što su oznake, zaporke itd. Korisnik će se i dalje moći prijaviti na Googleove web-usluge kao što je Gmail i moći će ih upotrebljavati.
 
-      Ako se to pravilo postavi na "Omogući prijavu putem preglednika", korisnik se može prijaviti na preglednik i automatski se prijavljuje na preglednik kad se prijavi na Googleove web-usluge kao što je Gmail. Biti prijavljen na preglednik znači da će preglednik spremati podatke o korisnikovom računu. No to ne znači da će Chrome sinkronizacija biti uključena prema zadanim postavkama; da bi upotrebljavao tu značajku, korisnik se mora uključiti zasebno. Ako se to pravilo omogući, korisnik neće moći isključiti postavku koja omogućuje prijavu na preglednik. Da biste kontrolirali dostupnost Chrome sinkronizacije, upotrijebite pravilo "SyncDisabled".
+      Ako se to pravilo postavi na "Omogući prijavu putem preglednika", korisnik se može prijaviti na preglednik i automatski se prijavljuje na preglednik kad se prijavi na Googleove web-usluge kao što je Gmail. Kad je korisnik prijavljen na preglednik, to znači da preglednik sprema podatke o korisnikovom računu. No to ne znači da će Chrome sinkronizacija biti uključena prema zadanim postavkama; da bi upotrebljavao tu značajku, korisnik se mora uključiti zasebno. Ako se to pravilo omogući, korisnik neće moći isključiti postavku koja omogućuje prijavu na preglednik. Da biste kontrolirali dostupnost Chrome sinkronizacije, upotrijebite pravilo "SyncDisabled".
 
       Ako se pravilo postavi na "Nametni prijavu putem preglednika", korisniku se prikazuje dijaloški okvir za odabir računa i on mora odabrati račun i prijaviti se da bi upotrebljavao preglednik. Na taj se način za upravljane račune osigurava primjena i provedba pravila povezanih s računom. Prema zadanim postavkama time se uključuje Chrome sinkronizacija za račun, osim kad je sinkronizaciju onemogućio administrator domene ili kad je onemogućena putem pravila "SyncDisabled". Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na False. Postojeći neprijavljeni profili bit će zaključani i neće biti dostupni nakon što se to pravilo omogući. Više informacija potražite u članku centra za pomoć: https://support.google.com/chrome/a/answer/7572556.
 
@@ -1386,11 +1385,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="4816674326202173458">Dopuštanje poslovnom korisniku da bude primarni i sekundarni (zadano ponašanje za korisnike kojima se ne upravlja)</translation>
 <translation id="4826326557828204741">Radnja koja se poduzima kada se dosegne odgoda zbog neaktivnosti dok računalo pokreće baterija</translation>
 <translation id="4834526953114077364">Uklanjaju se korisnici koji najdulje nisu upotrebljavani, a koji se nisu prijavili u prethodna 3 mjeseca dok se ne oslobodi dovoljno prostora</translation>
-<translation id="4838572175671839397">Sadrži regularni izraz koji se upotrebljava za utvrđivanje korisnika koji se mogu prijaviti na uslugu <ph name="PRODUCT_NAME" />.
-
-      Prikazuje se odgovarajuća pogreška ako se korisnik pokuša prijaviti korisničkim imenom koje se ne podudara s uzorkom.
-
-      Ako se ovo pravilo ne postavi ili ostavi prazno, korisnik se može prijaviti na uslugu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Dopusti način punog zaslona</translation>
 <translation id="4861767323695239729">Konfiguriraj dopuštene načine unosa u korisničkoj sesiji</translation>
 <translation id="4869787217450099946">Određuje jesu li dopuštena blokiranja aktivacije zaslona. Ta blokiranja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem.
@@ -2061,18 +2055,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6903814433019432303">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje set URL-ova za učitavanje kada se pokrene demonstracijska sesija. To će pravilo premostiti sve druge mehanizme za postavljanje početnog URL-a, pa se može primijeniti samo na sesiju koja nije povezana s određenim korisnikom.</translation>
-<translation id="6908347296939885026">Omogućuje značajku ograničene prijave za <ph name="PRODUCT_NAME" /> u G Suiteu i korisnicima onemogućuje da promijene tu postavku.
-
-      Ako definirate tu postavku, korisnik će Google Appsu moći pristupiti samo pomoću računa s određenih domena (napominjemo da to ne vrijedi za 
- gmail.com/googlemail.com).
-
-      Ta postavka NE sprječava korisnika da se prijavi s upravljanog uređaja koji zahtijeva Google autentifikaciju. Korisnik će se i dalje moći prijavljivati na račune s drugih domena, ali će primiti pogrešku pri pokušaju upotrebe G Suitea s tim računima.
-
-      Ako tu postavku ostavite praznom ili je ne konfigurirate, korisnik će moći pristupiti G Suiteu bilo kojim računom.
-
-      To pravilo uzrokuje dodavanje zaglavlja X-GoogApps-Allowed-Domains svim HTTP i HTTPS zahtjevima za sve google.com domene kao što je opisano na stranici https://support.google.com/a/answer/1668854.
-
-      Korisnici ne mogu promijeniti ni nadjačati tu postavku.</translation>
 <translation id="6908640907898649429">Konfigurira zadanog davatelja usluge pretraživanja. Možete odrediti zadanog davatelja usluge pretraživanja koji će korisnik upotrebljavati ili onemogućiti zadano pretraživanje.</translation>
 <translation id="6913068954484253496">Dopusti da se <ph name="PRODUCT_NAME" /> povezuje s uređajima za emitiranje na svim IP adresama.</translation>
 <translation id="6915442654606973733">Omogući značajku pristupačnosti izgovaranja povratnih informacija.
@@ -2702,7 +2684,7 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Ako onemogućite tu postavku, na stranicama će se tražiti metaoznake.
 
           Ako se to pravilo ne postavi, na stranicama će se tražiti metaoznake.</translation>
-<translation id="8300455783946254851">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> prilikom upotrebe mobilne veze kada je postavljeno na točno. U tom slučaju podaci se sinkroniziraju s Google diskom prilikom povezanosti putem Wi-Fi-ja ili Etherneta.
+<translation id="8300455783946254851">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> prilikom upotrebe mobilne veze kada je postavljeno na točno. U tom slučaju podaci se sinkroniziraju s Google diskom prilikom povezanosti putem Wi-Fija ili Etherneta.
 
           Ako nije postavljeno ili je postavljeno na netočno, korisnici će moći prenositi datoteke na Google disk mobilnim vezama.</translation>
 <translation id="8300992833374611099">Kontroliraj gdje se mogu upotrebljavati Alati za razvojne programere</translation>
@@ -3009,13 +2991,6 @@ za preglednike imaju isti raspored.
       Stvarne mogućnosti vraćanja sustava na starije verzije mogu ovisiti o modelu uređaja i zakrpama za kritične ranjivosti.</translation>
 <translation id="913195841488580904">Blokiranje pristupa popisu URL-ova</translation>
 <translation id="9135033364005346124">Omogući <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
-<translation id="9136253551939494882">Popis dopuštenih načina otključavanja koji kontrolira koje brze načine otključavanja korisnik može konfigurirati i upotrebljavati za otključavanje zaključanog zaslona.
-
-          Ta je vrijednost popis nizova. Važeći su unosi na popisu: "all" i "PIN". Ako se na popis doda "all", to znači da su korisniku dostupni svi brzi načini otključavanja, uključujući one koji će se tek implementirati. U suprotnom će biti dostupni samo brzi načini otključavanja navedeni na popisu.
-
-          Na primjer, da biste dopustili sve brze načine otključavanja, upotrijebite ["all"]. Da biste dopustili samo otključavanje PIN-om, upotrijebite ["PIN"]. Da biste onemogućili sve brze načine otključavanja, upotrijebite [].
-
-          Prema zadanim postavkama za upravljane uređaje nije dostupan nijedan brzi način otključavanja.</translation>
 <translation id="9136399279941091445">Razdoblja prekida rada kada se izdaju navedena pravila za uređaje</translation>
 <translation id="9147029539363974059">Šalje zapisnike sustava poslužitelju za upravljanje da bi se administratorima
       omogućilo praćenje zapisnika sustava.

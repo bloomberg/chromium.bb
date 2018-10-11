@@ -71,7 +71,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
 <translation id="145097072038377568">Ajustes de Android desactivados</translation>
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
-<translation id="1506061864768559482">Motor de búsqueda</translation>
+<translation id="1506061864768559482">Buscador</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
 <translation id="1513858653616922153">Eliminar contraseña</translation>
 <translation id="1516229014686355813">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
@@ -126,7 +126,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1938981467853765413">Enviar comentarios</translation>
 <translation id="194341124344773587">Activa el permiso para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
-<translation id="1944384637046898011">Cifrar todo con una contraseña de Google a partir del <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Controla cómo utiliza Google tu historial de navegación para personalizar la Búsqueda y otros servicios de Google.</translation>
 <translation id="1952172573699511566">Si es posible, los sitios web muestran texto en tu idioma preferido.</translation>
 <translation id="195283394249132567">Servicios de Google personalizados</translation>
@@ -311,7 +310,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3522247891732774234">Actualización disponible. Más opciones</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3542235761944717775">kB disponibles: <ph name="KILOBYTES" /></translation>
-<translation id="3549644494707163724">Cifrar todos los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
 <translation id="3549657413697417275">Buscar en el historial</translation>
 <translation id="3552151358455404883">Administrar la personalización y la sincronización de Chrome en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Añadir a contactos</translation>
@@ -379,7 +377,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> (<ph name="BEGIN_DEEMPHASIZED" />ofrecida por Google<ph name="END_DEEMPHASIZED" />)</translation>
 <translation id="4084836577264234537">MB descargados: <ph name="MEGABYTES" /></translation>
 <translation id="4095146165863963773">¿Eliminar datos de la aplicación?</translation>
-<translation id="4097739989936358050">Esta aplicación se está ejecutando en Chrome</translation>
 <translation id="4099578267706723511">Ayudar a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
@@ -424,7 +421,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="4479647676395637221">Preguntar antes de permitir que los sitios web utilicen la cámara (recomendado)</translation>
 <translation id="4487967297491345095">Todos los datos de la aplicación Chrome se eliminarán de forma permanente. Esto incluye todos los archivos, ajustes, cuentas, bases de datos, etc.</translation>
-<translation id="4508440807153586353">Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta opción, debes restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Hace # día}other{Hace # días}}</translation>
 <translation id="451872707440238414">Buscar en tus marcadores</translation>
 <translation id="4521489764227272523">Los datos seleccionados se han quitado de Chrome y de los dispositivos sincronizados.
@@ -724,11 +720,11 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6697492270171225480">Mostrar sugerencias de páginas similares cuando no se encuentre una página</translation>
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
+<translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Descubre sugerencias similares de Google con el botón Sugerencias similares</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="6746124502594467657">Bajar</translation>
-<translation id="6762156594045689028">Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Desliza el dedo hacia abajo para cerrarla.</translation>
 <translation id="6768277682697012280">Instalando el módulo de realidad aumentada...</translation>
 <translation id="6776813977906306442">Descarga vídeos para verlos más tarde con el botón Descargar</translation>

@@ -579,7 +579,6 @@
       Jika tetapan ini dilumpuhkan, pengguna tidak boleh mencetak dari <ph name="PRODUCT_NAME" />. Cetakan dilumpuhkan dalam menu sepana, sambungan, aplikasi JavaScript dsb. Cetakan masih mungkin dilakukan dari pemalam yang memintas <ph name="PRODUCT_NAME" /> semasa mencetak. Contohnya, aplikasi Flash tertentu mempunyai pilihan cetakan dalam menu konteksnya, yang tidak dilindungi oleh dasar ini.</translation>
 <translation id="2518231489509538392">Benarkan audio dimainkan</translation>
 <translation id="2521581787935130926">Tunjukkan pintasan apl pada bar penanda halaman</translation>
-<translation id="2529700525201305165">Hadkan pengguna yang dibenarkan untuk log masuk ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurasikan senarai apl dan sambungan pemasangan paksa</translation>
 <translation id="253135976343875019">Kelewatan amaran melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2536525645274582300">Pengguna menentukan sama ada untuk mendayakan perkhidmatan lokasi Google</translation>
@@ -829,6 +828,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3205825995289802549">Maksimumkan tetingkap penyemak imbas pertama pada kendalian pertama</translation>
+<translation id="3211426942294667684">Tetapan log masuk penyemak imbas</translation>
 <translation id="3213821784736959823">Mengawal sama ada pelanggan DNS terbina dalam digunakan dalam <ph name="PRODUCT_NAME" />.
 
       Jika dasar ini ditetapkan kepada benar, pelanggan DNS terbina dalam akan digunakan, jika tersedia.
@@ -1105,6 +1105,15 @@
       Jika anda tidak menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori lalainya yang biasa (khusus platform).
 
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.</translation>
+<translation id="3904459740090265495">Dasar ini mengawal gelagat log masuk penyemak imbas. Dasar ini membolehkan anda menentukan sama ada pengguna boleh log masuk ke <ph name="PRODUCT_NAME" /> dengan akaun mereka dan menggunakan perkhidmatan yang berkaitan dengan akaun, seperti penyegerakan Chrome.
+
+      Jika dasar ini ditetapkan kepada "Lumpuhkan log masuk penyemak imbas", maka pengguna tidak boleh log masuk ke penyemak imbas dan menggunakan perkhidmatan yang berkaitan dengan akaun. Dalam keadaan ini, ciri tahap penyemak imbas, seperti penyegerakan Chrome, tidak boleh digunakan dan tidak akan tersedia. Jika pengguna telah log masuk dan dasar ini ditetapkan kepada "Dilumpuhkan", mereka akan dilog keluar apabila mereka menjalankan Chrome selepas ini tetapi data profil setempat mereka, seperti penanda halaman, kata laluan dan sebagainya, tidak akan berubah. Pengguna masih boleh log masuk dan menggunakan perkhidmatan web Google, seperti Gmail.
+
+      Jika dasar ini ditetapkan kepada "Dayakan log masuk penyemak imbas", maka pengguna dibenarkan untuk log masuk ke penyemak imbas dan dilog masuk ke penyemak imbas secara automatik apabila mengelog masuk ke perkhidmatan web Google, seperti Gmail. Tindakan log masuk ke penyemak imbas bermakna maklumat akaun pengguna akan disimpan oleh penyemak imbas. Walau bagaimanapun, ini tidak bermakna penyegerakan Chrome akan dihidupkan secara lalai; pengguna mesti ikut serta menggunakan ciri ini secara berasingan. Tindakan mendayakan dasar ini akan menghalang pengguna daripada mematikan tetapan yang membenarkan log masuk penyemak imbas. Untuk mengawal ketersediaan penyegerakan Chrome, gunakan dasar "SyncDisabled".
+
+      Jika dasar ini ditetapkan kepada "Paksa log masuk penyemak imbas", pengguna akan melihat dialog pemilihan akaun dan perlu memilih serta log masuk ke akaun untuk menggunakan penyemak imbas. Langkah ini memastikan bahawa bagi akaun terurus, dasar yang dikaitkan dengan akaun tersebut akan diterapkan dan dikuatkuasakan. Secara lalai, dasar ini menghidupkan penyegerakan Chrome untuk akaun tersebut, kecuali dalam keadaan apabila penyegerakan dilumpuhkan oleh pentadbir domain atau melalui dasar "SyncDisabled". Nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Sila ambil perhatian bahawa profil tidak bertandatangan yang sedia ada akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan: https://support.google.com/chrome/a/answer/7572556.
+
+      Jika dasar ini tidak ditetapkan, maka pengguna boleh menentukan sama ada mereka mahu mendayakan pilihan log masuk penyemak imbas dan menggunakannya mengikut kesesuaian mereka.</translation>
 <translation id="3911737181201537215">Dasar ini tidak memberi kesan kepada pengelogan yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Melumpuhkan penyegerakan Google Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /> apabila ditetapkan kepada Benar. Jika ini berlaku, tiada data akan dimuat naik ke Google Drive.
 
@@ -1155,6 +1164,7 @@
 
       Harap maklum bahawa dasar ini diabaikan dan perkhidmatan lokasi Google sentiasa dilumpuhkan apabila dasar <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ditetapkan kepada <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Benarkan pertanyaan kepada perkhidmatan masa Google</translation>
+<translation id="408076456549153854">Dayakan log masuk penyemak imbas</translation>
 <translation id="4088589230932595924">Mod Inkognito dipaksa</translation>
 <translation id="4088983553732356374">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk menetapkan data setempat. Penetapan data setempat boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
@@ -1428,11 +1438,6 @@
 <translation id="4816674326202173458">Membenarkan pengguna perusahaan untuk menjadi utama dan sekunder (Tingkah laku lalai untuk pengguna tidak dikendalikan)</translation>
 <translation id="4826326557828204741">Tindakan yang perlu diambil apabila kelewatan melahu dicapai semasa dijalankan menggunakan kuasa bateri</translation>
 <translation id="4834526953114077364">Pengguna yang paling kurang penggunaan baru-baru ini serta tidak log masuk dalam tempoh 3 bulan yang lalu akan dialih keluar sehingga ada ruang kosong yang mencukupi</translation>
-<translation id="4838572175671839397">Mengandungi ungkapan biasa yang digunakan untuk menentukan pengguna yang boleh log masuk ke <ph name="PRODUCT_NAME" />.
-
-      Ralat yang bersesuaian akan dipaparkan jika pengguna cuba untuk log masuk menggunakan nama pengguna yang tidak sepadan dengan pola ini.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan atau kosong, maka mana-mana pengguna boleh log masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Benarkan mod skrin penuh</translation>
 <translation id="4861767323695239729">Konfigurasikan kaedah input yang dibenarkan dalam sesi pengguna</translation>
 <translation id="4869787217450099946">Menentukan sama ada kunci bangkit skrin dibenarkan. Kunci bangkit skrin boleh diminta oleh sambungan melalui API sambungan pengurusan kuasa.
@@ -1465,6 +1470,7 @@
 <translation id="4962262530309732070">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membenarkan ciri Tambah Orang daripada pengurus pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil baharu dibuat daripada pengurus pengguna.</translation>
+<translation id="4970855112942626932">Lumpuhkan log masuk penyemak imbas</translation>
 <translation id="4971529314808359013">Membolehkan anda menentukan senarai pola url yang menentukan tapak yang <ph name="PRODUCT_NAME" /> harus memilih sijil pelanggan secara automatik untuknya, jika tapak tersebut meminta sijil.
 
           Nilai tersebut mestilah tatasusunan pelbagai kamus JSON yang berentetan. Setiap kamus mestilah berbentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN ialah pola tetapan kandungan. $FILTER menyekat yang daripadanya sijil pelanggan akan dipilih secara automatik oleh penyemak imbas. Tanpa bergantung kepada penapis, hanya sijil akan dipilih apabila sepadan dengan permintaan sijil pelayan. Jika $FILTER berbentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, selain itu hanya sijil pelanggan dipilih yang dikeluarkan oleh sijil dengan CommonName $ISSUER_CN. Jika $FILTER ialah kamus kosong {}, pemilihan sijil pelanggan tidak dihadkan sebagai tambahan.
@@ -1870,6 +1876,7 @@
 
       Jika dasar ini tidak dikonfigurasikan, senarai peranti USB yang boleh ditanggalkan ditetapkan sebagai kosong.</translation>
 <translation id="6083631234867522991">Windows (pelanggan Windows):</translation>
+<translation id="6091233616732024397">Paksa pengguna log masuk untuk menggunakan penyemak imbas</translation>
 <translation id="6093156968240188330">Benarkan pengguna jauh berinteraksi dengan tetingkap ternaik dalam sesi bantuan jauh</translation>
 <translation id="6095999036251797924">Menyatakan tempoh masa tanpa input pengguna yang selepas itu skrin dikunci semasa berfungsi dengan kuasa AC atau bateri.
 
@@ -1948,6 +1955,11 @@
 <translation id="6368011194414932347">Konfigurasi URL halaman utama</translation>
 <translation id="6368403635025849609">Benarkan JavaScript pada tapak ini</translation>
 <translation id="6376659517206731212">Boleh Jadi Mandatori</translation>
+<translation id="6377355597423503887">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan BrowserSignin.
+
+      Membenarkan pengguna log masuk ke <ph name="PRODUCT_NAME" />.
+
+      Jika anda menetapkan dasar ini, anda boleh mengkonfigurasi sama ada pengguna dibenarkan untuk log masuk ke <ph name="PRODUCT_NAME" />. Jika dasar ini ditetapkan kepada 'Palsu', apl dan sambungan yang menggunakan API chrome.identity akan dihalang daripada berfungsi, jadi anda mungkin mahu menggunakan SyncDisabled.</translation>
 <translation id="6378076389057087301">Menyatakan sama ada aktiviti audio menjejaskan pengurusan kuasa</translation>
 <translation id="637934607141010488">Laporkan senarai pengguna peranti yang telah log masuk baru-baru ini.
 
@@ -2123,26 +2135,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6903814433019432303">Dasar ini aktif dalam mod runcit sahaja.
 
       Memastikan set URL yang akan dimuatkan apabila sesi tunjuk cara dimulakan. Dasar ini akan mengatasi mana-mana mekanisme lain yang digunakan untuk menetapkan URL permulaan dan dengan itu, hanya boleh dilaksanakan ke atas sesi yang tidak berkaitan dengan pengguna tertentu.</translation>
-<translation id="6908347296939885026">Mendayakan ciri log masuk terhad <ph name="PRODUCT_NAME" /> dalam G Suite dan menghalang pengguna daripada menukar tetapan ini.
-
-      Jika anda mentakrifkan tetapan ini, pengguna hanya dapat mengakses
-      Google Apps menggunakan akaun daripada domain yang ditentukan (sila
-      ambil perhatian bahawa tetapan ini tidak berfungsi untuk
-      gmail.com/googlemail.com).
-
-      Tetapan ini TIDAK akan menghalang pengguna daripada log masuk pada
-      peranti terurus yang memerlukan pengesahan Google. Pengguna masih akan
-      dibenarkan log masuk ke akaun daripada domain lain tetapi mereka akan
-      menerima ralat semasa cuba menggunakan G Suite dengan akaun itu.
-
-      Jika anda membiarkan tetapan ini kosong/tidak dikonfigurasi, pengguna
-      akan dapat mengakses G Suite dengan mana-mana akaun.
-
-      Dasar ini menyebabkan pengepala X-GoogApps-Allowed-Domains ditambahkan pada
-      semua permintaan HTTP dan HTTPS pada semua domain google.com, seperti
-      yang diterangkan dalam https://support.google.com/a/answer/1668854.
-
-      Pengguna tidak boleh menukar atau membatalkan tetapan ini.</translation>
 <translation id="6908640907898649429">Mengkonfigurasi pembekal carian lalai. Anda boleh menentukan pembekal carian lalai yang akan digunakan atau dipilih oleh pengguna untuk mendayakan atau melumpuhkan carian lalai.</translation>
 <translation id="6913068954484253496">Benarkan <ph name="PRODUCT_NAME" /> menyambung ke peranti Cast pada semua alamat IP.</translation>
 <translation id="6915442654606973733">Dayakan ciri kebolehcapaian maklum balas pertuturan.
@@ -2895,6 +2887,11 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8548832052135586762">Menetapkan pencetakan kepada berwarna sahaja, monokrom sahaja atau tiada sekatan mod warna. Dasar yang tidak ditetapkan akan dianggap sebagai tiada sekatan.</translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
+<translation id="857369585509260201">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan BrowserSignin.
+
+      Jika dasar ini ditetapkan kepada benar, pengguna perlu log masuk ke <ph name="PRODUCT_NAME" /> menggunakan profil mereka sebelum menggunakan penyemak imbas. Selain itu, nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Harap maklum bahawa profil tidak bertandatangan yang sedia ada akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan.
+
+      Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, pengguna boleh menggunakan penyemak imbas tanpa perlu log masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Menentukan pencetak yang tidak boleh digunakan oleh pengguna.
 
       Dasar ini hanya digunakan jika <ph name="PRINTERS_BLACKLIST" /> dipilih untuk <ph name="BULK_PRINTERS_ACCESS_MODE" />.
@@ -3126,13 +3123,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Kemungkinan pengunduran sebenar mungkin juga bergantung pada papan dan tampung kerentanan kritikal.</translation>
 <translation id="913195841488580904">Sekat akses kepada senarai URL</translation>
 <translation id="9135033364005346124">Dayakan proksi <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Senarai putih yang mengawal mod buka kunci pantas yang boleh dikonfigurasi dan digunakan oleh pengguna untuk membuka kunci skrin kunci.
-
-          Nilai ini merupakan satu senarai rentetan; entri senarai yang sah ialah: "semua", "PIN". Penambahan "semua" pada senarai bermakna setiap mod buka kunci pantas tersedia kepada pengguna, termasuk mod yang dilaksanakan pada masa depan. Jika tidak, hanya mod buka kunci pantas yang ada dalam senarai akan tersedia.
-
-          Sebagai contoh, untuk membenarkan setiap mod buka kunci pantas, gunakan ["semua"]. Untuk membenarkan buka kunci dengan PIN sahaja, gunakan ["PIN"]. Untuk melumpuhkan semua mod buka kunci pantas, gunakan [].
-
-          Secara lalai, tiada mod buka kunci pantas tersedia untuk peranti yang diurus.</translation>
 <translation id="9136399279941091445">Selang luar waktu apabila dasar peranti yang dinyatakan dikeluarkan</translation>
 <translation id="9147029539363974059">Hantar log sistem ke pelayan pengurusan, untuk membolehkan
       pentadbir memantau log sistem.

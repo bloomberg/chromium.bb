@@ -305,7 +305,7 @@
 <translation id="6452181791372256707">नाकारा</translation>
 <translation id="6453179446719226835">भाषा बदलण्यात आली आहे</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> मध्ये स्क्रीन विस्तृत करत आहे</translation>
-<translation id="6482559668224714696">पूर्ण-स्क्रीन मॅग्निफायर</translation>
+<translation id="6482559668224714696">फुल-स्क्रीन मॅग्निफायर</translation>
 <translation id="6490471652906364588">USB-C डिव्‍हाइस (उजवे पोर्ट)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करीत आहे</translation>
 <translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
@@ -341,6 +341,7 @@
 <translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
 <translation id="7067196344162293536">स्वयं फिरवा</translation>
 <translation id="7068360136237591149">फायली उघडा</translation>
+<translation id="7076293881109082629">साइन इन करीत आहे</translation>
 <translation id="7092922358121866860">रात्रीचा प्रकाश सेटिंग्ज दाखवा</translation>
 <translation id="7098389117866926363">USB-C डिव्‍हाइस (मागील बाजूचे डावे पोर्ट)</translation>
 <translation id="7131634465328662194">तुम्हाला आपोआप साइन आउट केले जाईल.</translation>
@@ -400,7 +401,7 @@
 <translation id="8132793192354020517"><ph name="NAME" /> शी कनेक्ट केलेले</translation>
 <translation id="813913629614996137">प्रारंभ करत आहे…</translation>
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>
-<translation id="8152119955266188852">तुम्ही पूर्ण-स्क्रीन मॅग्निफायर शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
+<translation id="8152119955266188852">तुम्ही फुल-स्क्रीन मॅग्निफायर शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट सानुकूलित करा...</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
 <translation id="8236042855478648955">विश्रांतीची वेळ</translation>

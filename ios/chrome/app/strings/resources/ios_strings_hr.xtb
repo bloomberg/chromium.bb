@@ -106,7 +106,7 @@
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2709516037105925701">Automatsko popunjavanje</translation>
 <translation id="2712127207578915686">Datoteka nije otvorena</translation>
-<translation id="2718352093833049315">Samo na Wi-Fi-ju</translation>
+<translation id="2718352093833049315">Samo na Wi-Fiju</translation>
 <translation id="2747003861858887689">Prethodno polje</translation>
 <translation id="2780046210906776326">Nema računa e-pošte</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Od proteklog dana</translation>
 <translation id="3037605927509011580">O, ne!</translation>
 <translation id="3112556859945124369">Označi...</translation>
-<translation id="3151924044251363314">Samo osoba koja ima vašu šifru može čitati vaše kriptirane podatke. Šifra se ne šalje Googleu i ne pohranjuje na njemu. Ako je zaboravite ili želite promijeniti tu postavku, morat ćete poništiti sinkronizaciju. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Označi sve...</translation>
 <translation id="3175081911749765310">Web-usluge</translation>
 <translation id="3207960819495026254">Označeno</translation>
@@ -332,7 +331,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Izvoz zaporki nije moguć</translation>
-<translation id="6762156594045689028">Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Poštanski broj</translation>
 <translation id="6785453220513215166">Slanje izvješća o rušenju programa...</translation>
 <translation id="679325081238418596">Prenesite svoje oznake, povijest, zaporke i druge postavke na sve svoje uređaje</translation>

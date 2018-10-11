@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">過去 1 日</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3112556859945124369">マーク...</translation>
-<translation id="3151924044251363314">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3175081911749765310">ウェブサービス</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
@@ -332,7 +331,6 @@
 <translation id="667999046851023355">ドキュメント</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">パスワードをエクスポートできません</translation>
-<translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6780034285637185932">郵便番号</translation>
 <translation id="6785453220513215166">クラッシュレポートを送信しています...</translation>
 <translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定がどの端末でも利用できるようになります</translation>

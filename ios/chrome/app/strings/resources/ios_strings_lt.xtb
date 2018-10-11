@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Pastaroji diena</translation>
 <translation id="3037605927509011580">Oi!</translation>
 <translation id="3112556859945124369">Pažymėti…</translation>
-<translation id="3151924044251363314">Tik jūsų slaptafrazę žinantis asmuo gali skaityti šifruotus duomenis. Slaptafrazė nesiunčiama į sistemą „Google“ ir joje nesaugoma. Pamiršę slaptafrazę arba norėdami pakeisti šį nustatymą turėsite iš naujo nustatyti sinchronizavimą. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Pažymėti visus...</translation>
 <translation id="3175081911749765310">Žin. pasl.</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
@@ -332,7 +331,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="667999046851023355">Dokumentas</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Negalima eksportuoti slaptažodžių</translation>
-<translation id="6762156594045689028">Kad pakeistumėte šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatykite sinchronizavimą<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Pašto kodas</translation>
 <translation id="6785453220513215166">Siunčiama strigties ataskaita...</translation>
 <translation id="679325081238418596">Gaukite žymes, istoriją, slaptažodžius ir kitus nustatymus visuose įrenginiuose</translation>

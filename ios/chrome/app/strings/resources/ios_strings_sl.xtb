@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
 <translation id="3112556859945124369">Označi …</translation>
-<translation id="3151924044251363314">Vaše šifrirane podatke lahko bere samo oseba z vašim geslom. Geslo ni poslano Googlu in ni shranjeno v Googlu. Če ga pozabite ali želite spremeniti to nastavitev, boste morali sinhronizacijo ponastaviti. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Označi vse …</translation>
 <translation id="3175081911749765310">Spletne storitve</translation>
 <translation id="3207960819495026254">Zaznamovano</translation>
@@ -330,7 +329,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Gesel ni mogoče izvoziti</translation>
-<translation id="6762156594045689028">Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Poštna številka</translation>
 <translation id="6785453220513215166">Pošiljanje poročila o zrušitvi ...</translation>
 <translation id="679325081238418596">Get your bookmarks, history, passwords, and other settings on all your devices</translation>

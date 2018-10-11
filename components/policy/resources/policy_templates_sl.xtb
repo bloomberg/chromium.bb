@@ -578,7 +578,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo tiskati. Tiskanje je onemogočeno v meniju ključa, razširitvah, aplikacijah JavaScript itn. Tiskanje je še vedno mogoče prek vtičnikov, ki pri tiskanju zaobidejo <ph name="PRODUCT_NAME" />. Nekatere aplikacije Flash imajo na primer možnost tiskanja v priročnem meniju, česar ta pravilnik ne obsega.</translation>
 <translation id="2518231489509538392">Omogočanje predvajanje zvoka</translation>
 <translation id="2521581787935130926">Prikaz bližnjice za aplikacije v vrstici z zaznamki</translation>
-<translation id="2529700525201305165">Določa, kateri uporabniki se lahko prijavijo v storitev <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2536525645274582300">Uporabnik se odloči, ali bodo omogočene Googlove lokacijske storitve</translation>
@@ -829,6 +828,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.</translation>
 <translation id="3205825995289802549">Povečaj prvo okno brskalnika pri prvem izvajanju</translation>
+<translation id="3211426942294667684">Nastavitve prijave v brskalnik</translation>
 <translation id="3213821784736959823">Določa, ali je v brskalniku <ph name="PRODUCT_NAME" /> uporabljen vgrajeni odjemalec DNS.
 
        Če je ta pravilnik nastavljen na »true«, bo uporabljen vgrajeni odjemalec DNS, če je na voljo.
@@ -1110,6 +1110,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> uporabi običajni privzeti imenik (odvisno od posameznega okolja).
 
       Na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables si lahko ogledate seznam spremenljivk, ki jih je mogoče uporabiti.</translation>
+<translation id="3904459740090265495">Ta pravilnik nadzira delovanje prijave v brskalniku. Omogoča vam, da določite, ali se sme uporabnik prijaviti v brskalnik <ph name="PRODUCT_NAME" /> z računom in uporabljati storitve, povezane z računom, na primer sinhronizacijo za Chrome.
+
+      Če je pravilnik nastavljen na »Onemogočanje prijave v brskalnik«, se uporabnik ne more prijaviti v brskalnik in uporabljati storitev, ki temeljijo na računu. V tem primeru funkcij na ravni brskalnika, kot je sinhronizacija za Chrome, ni mogoče uporabljati in niso na voljo. Če je bil uporabnik prijavljen in je pravilnik nastavljen na »Onemogočeno«, bo ob naslednjem zagonu Chroma odjavljen, lokalni podatki profila, kot so zaznamki, gesla ipd., pa se bodo ohranili. Uporabnik se bo še vedno lahko prijavljal v Googlove spletne storitve, na primer Gmail, in jih uporabljal.
+
+      Če je pravilnik nastavljen na »Omogočanje prijave v brskalnik«, se uporabnik sme prijaviti v brskalnik in je samodejno prijavljen vanj, če je prijavljen v Googlove spletne storitve, na primer Gmail. Če je uporabnik prijavljen v brskalnik, pomeni, da brskalnik ohrani podatke o njegovem računu, vendar to ne pomeni, da je sinhronizacija za Chrome privzeto vklopljena; če želi uporabnik to funkcijo uporabljati, jo mora omogočiti ločeno. Če omogočite ta pravilnik, bo uporabniku preprečen izklop nastavitve, ki omogoča prijavo v brskalnik. Če želite nadzirati razpoložljivost sinhronizacije za Chrome, uporabite pravilnik »SyncDisabled«.
+
+      Če je pravilnik nastavljen na »Vsiljenje prijave v brskalnik«, je uporabniku prikazano pogovorno okno za izbiro računa, v katerem mora izbrati račun in se prijaviti vanj, če želi uporabljati brskalnik. S tem se zagotovi, da se pri upravljanih računih uporabljajo in izvajajo pravilniki, povezani z računom. S tem je za račun privzeto vklopljena sinhronizacija za Chrome, razen v primeru, če sinhronizacijo prek pravilnika »SyncDisabled« onemogoči skrbnik domene. Privzeta vrednost za BrowserGuestModeEnabled bo nastavljena na onemogočeno. Obstoječi neprijavljeni profili bodo po omogočanju tega pravilnika zaklenjeni in nedostopni. Več informacij je na voljo v tem članku centra za pomoč: https://support.google.com/chrome/a/answer/7572556.
+
+      Če ta pravilnik ni nastavljen, se lahko uporabnik odloči, ali želi omogočiti možnost prijave v brskalnik in jo uporabljati po želji.</translation>
 <translation id="3911737181201537215">Ta pravilnik ne vpliva na zapisovanje dnevnik sistema Android.</translation>
 <translation id="391531815696899618">Če je ta možnost nastavljena na »True«, onemogoči sinhroniziranje Googla Drive v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" />. V tem primeru se v Google Drive ne naložijo nobeni podatki.
 
@@ -1160,6 +1169,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če je pravilnik <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> nastavljen na <ph name="BLOCK_GEOLOCATION_SETTING" />, je ta pravilnik prezrt in Googlove lokacijske storitve so vedno onemogočene.</translation>
 <translation id="408029843066770167">Omogočanje poizvedb za Googlovo časovno storitev</translation>
+<translation id="408076456549153854">Omogočanje prijave v brskalnik</translation>
 <translation id="4088589230932595924">Vsiljen način brez beleženja zgodovine</translation>
 <translation id="4088983553732356374">Omogoča, da nastavite, ali je spletnim mestom dovoljeno nastavljanje lokalnih podatkov. Nastavljanje lokalnih podatkov je lahko dovoljeno za vsa mesta ali onemogočeno za vsa mesta.
 
@@ -1433,11 +1443,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4816674326202173458">Dovoli poslovnemu uporabniku, da je primarni in sekundarni uporabnik (privzeti način delovanja za neupravljane uporabnike)</translation>
 <translation id="4826326557828204741">Dejanje, ki se izvede, ko pri akumulatorskem napajanju dosežena zakasnitev zaradi nedejavnosti</translation>
 <translation id="4834526953114077364">Uporabniki, pri katerih je minilo največ časa, odkar so bili uporabljeni, in se niso prijavili v zadnjih treh mesecih, se odstranijo, dokler ni dovolj prostora</translation>
-<translation id="4838572175671839397">Vsebuje regularni izraz, ki določa, kateri uporabniki se lahko prijavijo v storitev <ph name="PRODUCT_NAME" />.
-
-      Če se uporabnik poskusi prijaviti z uporabniškim imenom, ki se ne ujema s tem vzorcem, se prikaže ustrezna napaka.
-
-      Če ta pravilnik ni nastavljen oziroma je prazen, se lahko v storitev <ph name="PRODUCT_NAME" /> prijavi vsak uporabnik.</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
 <translation id="4861767323695239729">Konfiguriranje dovoljenih načinov vnosa v uporabniški seji</translation>
 <translation id="4869787217450099946">Določa, ali je dovoljeno zaklepanje preklopa zaslona iz mirovanja. Zaklepanje preklopa zaslona iz mirovanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje porabe.
@@ -1470,6 +1475,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4962262530309732070">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> dovoli dodajanje osebe v upravitelju uporabnikov.
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli ustvarjanja novih profilov v upravitelju uporabnikov.</translation>
+<translation id="4970855112942626932">Onemogočanje prijave v brskalnik</translation>
 <translation id="4971529314808359013">Omogoča, da določite seznam vzorcev URL-jev, ki določajo spletna mesta, za katera mora <ph name="PRODUCT_NAME" /> samodejno izbrati potrdilo odjemalca, če spletno mesto zahteva potrdilo.
 
           Vrednost mora biti polje slovarjev JSON v obliki nizov. Vsak slovar mora imeti obliko { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemer je $URL_PATTERN vzorec nastavljanja vsebine. $FILTER omejuje, katera potrdila odjemalcev bo brskalnik izbral samodejno. Ne glede na filter bodo izbrana samo potrdila, ki se ujema z zahtevo strežnika za potrdilo. Če ima $FILTER obliko { "ISSUER": { "CN": "$ISSUER_CN" } }, so poleg tega izbrana samo potrdila odjemalcev, ki jih izda izdajatelj potrdila s pravim imenom $ISSUER_CN. Če je $FILTER prazen slovar {}, izbor potrdil odjemalcev ni dodatno omejen.
@@ -1878,6 +1884,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen, je seznam naprav USB, katerih povezavo je mogoče prekiniti, prazen.</translation>
 <translation id="6083631234867522991">Windows (odjemalci s sistemom Windows):</translation>
+<translation id="6091233616732024397">Vsiljenje prijave uporabnikom, če želijo uporabljati brskalnik</translation>
 <translation id="6093156968240188330">Omogoči oddaljenim uporabnikom uporabo oken s skrbniškimi pravicami v sejah oddaljene pomoči</translation>
 <translation id="6095999036251797924">Določi trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz električnega omrežja ali akumulatorja.
 
@@ -1956,6 +1963,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6368011194414932347">Konfiguracija URL-ja domače strani</translation>
 <translation id="6368403635025849609">Dovoli JavaScript na teh mestih</translation>
 <translation id="6376659517206731212">Lahko je obvezno</translation>
+<translation id="6377355597423503887">Ta pravilnik je zastarel, namesto njega lahko uporabite BrowserSignin.
+
+      Dovoljuje uporabniku prijavo v brskalnik <ph name="PRODUCT_NAME" />.
+
+      Če nastavite ta pravilnik, lahko določite, ali je uporabniku dovoljena prijava v brskalnik <ph name="PRODUCT_NAME" />. Če ta pravilnik onemogočite, ne bodo delovale aplikacije in razširitve, ki uporabljajo API chrome.identity, zato morda namesto njega raje uporabite SyncDisabled.</translation>
 <translation id="6378076389057087301">Navedite, ali zvočna dejavnost vpliva na upravljanje napajanja</translation>
 <translation id="637934607141010488">Poročanje o seznamu nedavno prijavljenih uporabnikov naprave.
 
@@ -2133,25 +2145,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6903814433019432303">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Določa URL-je, ki se naložijo v predstavitveni seji. Ta pravilnik preglasi vse druge mehanizme za nastavitev začetnega URL-ja in se lahko uporabi samo za sejo, ki ni povezana z določenim uporabnikom.</translation>
-<translation id="6908347296939885026">Omogoči funkcijo omejene prijave za <ph name="PRODUCT_NAME" /> v storitvi G Suite in uporabnikom prepreči spreminjanje te nastavitve.
-
-      Če določite to nastavitev, bo lahko uporabnik do storitve Google
-      Apps dostopal samo z računi iz navedenih domen (to ne deluje za
-      gmail.com/googlemail.com).
-
-      Ta nastavitev uporabniku NE prepreči prijave v upravljani napravi,
-      za katero je potrebno Googlovo preverjanje pristnosti. Uporabniku bo še vedno dovoljena
-      prijava v račune iz drugih domen, vendar bo prikazana napaka,
-      če s temi računi poskuša uporabiti storitev G Suite.
-
-      Če to nastavitev pustite prazno/nenastavljeno, bo lahko uporabnik
-      do storitve G Suite dostopal iz poljubnega računa.
-
-      Ta pravilnik povzroči, da je glava X-GoogApps-Allowed-Domains dodana vsem zahtevam
-      HTTP in HTTPS za vse domene google.com, kot je opisano na strani
-      https://support.google.com/a/answer/1668854.
-
-      Uporabniki te nastavitve ne morejo spremeniti ali preglasiti.</translation>
 <translation id="6908640907898649429">Nastavi privzeti iskalnik. Določite lahko privzeti iskalnik, ki ga bo uporabil uporabnik, ali onemogočite privzeti iskalnik.</translation>
 <translation id="6913068954484253496">Izdelku <ph name="PRODUCT_NAME" /> dovoli povezovanje z napravami za predvajanje na vseh naslovih IP</translation>
 <translation id="6915442654606973733">Omogočanje funkcije za izgovorjavo za ljudi s posebnimi potrebami.
@@ -2902,6 +2895,11 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="8548832052135586762">Nastavi tiskanje na samo barvno, samo enobarvno ali brez omejitve barv. Če pravilnik ni nastavljen, ni omejitve.</translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na novem zavihku s povezavami in v zaganjalniku aplikacij</translation>
+<translation id="857369585509260201">Ta pravilnik je zastarel, namesto njega lahko uporabite BrowserSignin.
+
+      Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno. Po omogočanju tega pravilnika bodo obstoječi neprijavljeni profili zaklenjeni in nedostopni. Če želite več informacij, preberite članek centra za pomoč.
+
+      Če je ta pravilnik onemogočen ali ni konfiguriran, lahko uporabnik uporablja brskalnik brez prijave v brskalnik <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Določa tiskalnike, ki jih uporabnik ne more uporabljati.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="BULK_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_BLACKLIST" />.
@@ -3130,13 +3128,6 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       Dejanske možnosti povrnitve so lahko odvisne tudi od vezja in nujnih popravkov ranljivosti.</translation>
 <translation id="913195841488580904">Blokiranje dostopa do seznama spletnih naslovov</translation>
 <translation id="9135033364005346124">Omogoči proxy <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Seznam dovoljenih, ki upravlja, katere hitre načine odklepanja lahko uporabnik nastavi in uporablja za odklepanje zaklenjenega zaslona.
-
-          Ta vrednost je seznam nizov; veljavni vnosi na seznamu so: »all« (vsi), »PIN« (koda PIN). Če na seznam dodate vnos »all« (vsi), so uporabniku na voljo vsi hitri načini odklepanja, vključno s tistimi, ki bodo uvedeni v prihodnosti. V nasprotnem primeru bodo na voljo samo hitri načini odklepanja s seznama.
-
-          Če želite na primer dovoliti vse hitre načine odklepanja, uporabite [»all«] (vsi). Če želite dovoliti samo odklepanje s kodo PIN, uporabite [»PIN«] (koda PIN). Če želite onemogočiti vse hitre načine odklepanja, uporabite [].
-
-          Za upravljane naprave privzeto ni na voljo noben hiter način odklepanja.</translation>
 <translation id="9136399279941091445">Intervali zunaj delovnega časa, ko pravilniki za napravo niso aktivni</translation>
 <translation id="9147029539363974059">Pošiljanje sistemskih dnevnikov v strežnik za upravljanje, kar skrbnikom omogoča
       nadziranje sistemskih dnevnikov.

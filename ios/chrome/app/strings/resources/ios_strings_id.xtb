@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Kemarin</translation>
 <translation id="3037605927509011580">Yah!</translation>
 <translation id="3112556859945124369">Tandai…</translation>
-<translation id="3151924044251363314">Hanya mereka yang memiliki frasa sandi Anda yang dapat membaca data yang telah dienkripsi. Frasa sandi tidak akan dikirim ke atau disimpan oleh Google. Jika lupa frasa sandi atau ingin mengubah setelan ini, Anda perlu menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Tandai Semua...</translation>
 <translation id="3175081911749765310">Layanan Web</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
@@ -332,7 +331,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="667999046851023355">Dokumen</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Tidak Dapat Mengekspor Sandi</translation>
-<translation id="6762156594045689028">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Kode Pos</translation>
 <translation id="6785453220513215166">Mengirim laporan kerusakan...</translation>
 <translation id="679325081238418596">Dapatkan bookmark, histori, sandi, dan setelan lainnya di semua perangkat Anda</translation>

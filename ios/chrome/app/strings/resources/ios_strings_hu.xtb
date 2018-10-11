@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Elmúlt nap</translation>
 <translation id="3037605927509011580">A manóba!</translation>
 <translation id="3112556859945124369">Megjelölés…</translation>
-<translation id="3151924044251363314">Titkosított adatait csak az olvashatja el, aki rendelkezik összetett jelszavával. Az összetett jelszót a Google nem kapja meg, és nem is tárolja. Ha elfelejtette összetett jelszavát, vagy módosítaná ezt a beállítást, alaphelyzetbe kell állítania a szinkronizálást. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
@@ -332,7 +331,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="667999046851023355">Dokumentum</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nem sikerült a jelszavak exportálása</translation>
-<translation id="6762156594045689028">A beállítás módosításához <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Irányítószám</translation>
 <translation id="6785453220513215166">Hibajelentés küldése…</translation>
 <translation id="679325081238418596">Bármely eszközéről hozzáférhet könyvjelzőihez, előzményeihez, jelszavaihoz és egyéb beállításaihoz</translation>

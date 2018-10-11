@@ -560,7 +560,6 @@ Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voi
 Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteesta <ph name="PRODUCT_NAME" />. Tulostus on poistettu käytöstä jakoavainvalikosta, laajennuksista, JavaScript-sovelluksista jne. Tuotteen <ph name="PRODUCT_NAME" /> ohittavista laajennuksista on yhä mahdollista tulostaa. Esimerkiksi joissakin Flash-sovelluksissa tulostusvalinta sijaitsee kontekstivalikossa, johon tätä käytäntöä ei sovelleta.</translation>
 <translation id="2518231489509538392">Salli äänen toistaminen</translation>
 <translation id="2521581787935130926">Näytä sovelluksen pikakuvake kirjanmerkkipalkissa</translation>
-<translation id="2529700525201305165">Rajoita tuotteeseen <ph name="PRODUCT_NAME" /> kirjautumista</translation>
 <translation id="2529880111512635313">Määritä sovellukset ja laajennukset, joiden asennus pakotetaan.</translation>
 <translation id="253135976343875019">Käyttämättömyysvaroituksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="2536525645274582300">Käyttäjä päättää, otetaanko Googlen sijaintipalvelut käyttöön</translation>
@@ -804,6 +803,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
           Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3205825995289802549">Suurenna ensimmäinen selainikkuna käynnistyksen yhteydessä</translation>
+<translation id="3211426942294667684">Selaimen kirjautumisasetukset</translation>
 <translation id="3213821784736959823">Hallinnoi, käytetäänkö tuotteessa <ph name="PRODUCT_NAME" /> sisäänrakennettua DNS-asiakassovellusta.
 
 Jos tämän käytännön arvo on true, sisäänrakennettua DNS-asiakassovellusta käytetään sen ollessa saatavilla.
@@ -1075,6 +1075,16 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos et ota tätä käytäntöä käyttöön, <ph name="PRODUCT_NAME" /> käyttää tavallista oletushakemistoaan (käyttöympäristökohtainen).
 
       Osoitteessa https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables on lista käytettävissä olevista muuttujista.</translation>
+<translation id="3904459740090265495">Tällä käytännöllä hallitaan selaimen kirjautumiskäyttäytymistä. Sillä voit valita, voiko käyttäjä suorittaa <ph name="PRODUCT_NAME" /> ‑kirjautumisen tilillään ja käyttää tähän liittyviä palveluita, kuten Chromen synkronointia.
+
+      Jos käytännön arvo on Estä kirjautuminen selaimelle, käyttäjä ei voi kirjautua selaimelle tai käyttää tilipohjaisia palveluita. Tällöin selaintason palvelut kuten Chromen synkronointi eivät ole käytettävissä. Jos käyttäjä oli kirjautuneena, kun käytännön arvoksi valittiin Estä, hänet kirjataan ulos seuraavalla Chromen suorituskerralla. Paikallinen profiilidata, esimerkiksi kirjanmerkit ja salasanat, säilytetään silti. Käyttäjä voi kirjautua Googlen verkkopalveluihin (esim. Gmail) ja käyttää niitä.
+
+      Jos käytännön arvo on Salli kirjautuminen selaimelle, käyttäjä voi kirjautua selaimelle, ja hänet kirjataan automaattisesti selaimelle Gmailiin tai muihin Googlen verkkopalveluihin kirjautumisen yhteydessä. Kun käyttäjä on kirjautunut selaimelle, se tallentaa hänen tilitietonsa. Chromen synkronointi ei kuitenkaan ole käytössä oletuksena, vaan käyttäjän on otettava tämä ominaisuus käyttöön erikseen. Tämän käytännön voimaantulo estää käyttäjää kytkemästä päälle asetusta, joka sallii selaimelle kirjautumisen. Voit päättää Chromen synkronoinnin saatavuudesta SyncDisabled-käytännöllä.
+
+      Jos käytännön arvo on Pakota kirjautumaan selaimelle, käyttäjälle näytetään tilinvalintaikkuna, ja hänen täytyy valita tili ja kirjautua sisään käyttääkseen selainta. Näin varmistetaan, että tilin käytäntöjä noudatetaan hallinnoiduilla tileillä. Samalla Chromen synkronointi otetaan oletuksena käyttöön tilillä, paitsi jos synkronointi on verkkotunnuksen 
+ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-käytännön arvoksi asetetaan Epätosi. Aiemmin luodut profiilit, joilla ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on voimassa. Lisätietoja on artikkelissa https://support.google.com/chrome/a/answer/7572556.
+
+      Jos tälle käytännölle ei määritetä arvoa, käyttäjä voi valita, otetaan selaimelle kirjautuminen käyttöön, ja käyttää ominaisuutta haluamallaan tavalla.</translation>
 <translation id="3911737181201537215">Tällä käytännöllä ei ole vaikutusta Androidin tekemään lokikirjaukseen.</translation>
 <translation id="391531815696899618">Jos arvo on tosi, Google Driven synkronointi tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksen kanssa poistetaan käytöstä. Tällöin mitään tietoja ei lähetetä Google Driveen.
 
@@ -1123,6 +1133,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Huomaa, että tämä käytäntö ohitetaan ja Googlen sijaintipalvelut ovat aina poissa käytöstä, kun käytännön <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> arvoksi on asetettu <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Salli kyselyt Googlen aikapalveluun</translation>
+<translation id="408076456549153854">Salli kirjautuminen selaimelle</translation>
 <translation id="4088589230932595924">Incognito-tila pakotettu</translation>
 <translation id="4088983553732356374">Tällä käytännöllä määritetään, onko sivustoilla lupa luoda paikallisia tietoja. Paikallisten tietojen luominen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
 
@@ -1388,11 +1399,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4816674326202173458">Anna yrityskäyttäjän olla sekä ensisijainen että toissijainen käyttäjä (oletuskäyttäytyminen ei-hallinnoiduille käyttäjille)</translation>
 <translation id="4826326557828204741">Toiminto, joka suoritetaan, jos käyttäjä ei tee mitään tietyn ajan kuluessa laitteen käyttäessä akun virtaa</translation>
 <translation id="4834526953114077364">Kauimmin käyttämättä olleet käyttäjät, jotka eivät ole kirjautuneet sisään viimeisten kolmen kuukauden aikana, poistetaan, kunnes vapaata tilaa on riittävästi.</translation>
-<translation id="4838572175671839397">Sisältää säännöllisen lausekkeen, joka määrittää tuotteen <ph name="PRODUCT_NAME" /> kirjautumisoikeuden käyttäjille.
-
-      Mikäli käyttäjä yrittää kirjautua käyttäjänimellä, joka ei vastaa kuviota, ruudulla näytetään virheviesti.
-
-      Jos käytäntö jätetään asettamatta tai tyhjäksi, kaikki käyttäjät voivat kirjautua tuotteeseen <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Salli koko ruudun tila</translation>
 <translation id="4861767323695239729">Määritä käyttökerran hyväksytyt syöttötavat</translation>
 <translation id="4869787217450099946">Määrittää, sallitaanko näytön herätyksen lukitus. Laajennus voi pyytää näytön herätyksen lukitusta virranhallintalaajennuksen sovellusliittymän kautta.
@@ -1425,6 +1431,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
 
       Jos tämän käytännön arvoksi on määritetty epätosi, <ph name="PRODUCT_NAME" /> ei salli käyttäjien hallinnan luovan uusia profiileja.</translation>
+<translation id="4970855112942626932">Estä kirjautuminen selaimelle</translation>
 <translation id="4971529314808359013">Antaa käyttäjän määrittää listan URL-osoitemalleista, joita vastaaville sivustoille <ph name="PRODUCT_NAME" /> valitsee automaattisesti asiakasvarmenteen sivuston pyytäessä varmennetta.
 
           Arvon täytyy olla joukko merkkijonoina annettuja JSON-sanakirjamerkintöjä. Jokaisen merkinnän muoto on { "pattern": "$URL_PATTERN", "filter" : $FILTER }. Tässä $URL_PATTERN on sisältöasetuksen malli. Suodatusarvo $FILTER määrittää, mitkä asiakasvarmenteet ovat selaimen valittavissa automaattisesti. Suodatusarvosta huolimatta selain voi valita vain varmenteita, jotka vastaavat palvelimen varmennepyyntöä. Lisäksi jos $FILTER annetaan muodossa { "ISSUER": { "CN": "$ISSUER_CN" } }, selain valitsee vain asiakasvarmenteita, joihin liittyvään varmenteeseen merkitty nimi on $ISSUER_CN. Jos $FILTER on tyhjä sanastomerkintä {}, asiakasvarmenteiden valintaan ei sovelleta lisärajoituksia.
@@ -1802,6 +1809,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos tätä käytäntöä ei määritetä, irrotettavien USB-laitteiden luettelo on tyhjä.</translation>
 <translation id="6083631234867522991">Windows (Windows-asiakkaat):</translation>
+<translation id="6091233616732024397">Pakota käyttäjät kirjautumaan selaimelle</translation>
 <translation id="6093156968240188330">Salli etätukea antavien etäkäyttäjien käyttää järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita</translation>
 <translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
 
@@ -1874,6 +1882,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6368011194414932347">Määritä etusivun URL-osoite</translation>
 <translation id="6368403635025849609">Salli JavaScript näissä sivustoissa</translation>
 <translation id="6376659517206731212">Voidaan asettaa pakolliseksi</translation>
+<translation id="6377355597423503887">Tämä käytäntö on vanhentunut, harkitse sen sijaan BrowserSignin-käytännön käyttöä.
+
+      Sallii käyttäjälle <ph name="PRODUCT_NAME" /> ‑kirjautumisen.
+
+      Tällä käytännöllä voit määrittää, salliiko <ph name="PRODUCT_NAME" /> käyttäjän kirjautumisen. Jos käytännön arvo on Epätosi, chrome.identity-sovellusliittymää käyttävät sovellukset ja laajennukset eivät toimi, joten sen tilalla suositellaan käytäntöä SyncDisabled.</translation>
 <translation id="6378076389057087301">Määritä, vaikuttaako äänitoiminta virranhallintaan</translation>
 <translation id="637934607141010488">Raporttiluettelo viime aikoina sisäänkirjautuneista laitteen käyttäjistä.
 
@@ -2050,25 +2063,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6903814433019432303">Tämä käytäntö on aktiivisena vain jälleenmyyntitilassa.
 
       Määrittää URL-osoitteet, jotka ladataan esittelykäyttökerran alkaessa. Tämä käytäntö korvaa kaikki muut aloitusosoitteiden määritystavat, joten sitä voidaan käyttää vain käyttökerroilla, jotka eivät liity tiettyihin käyttäjiin.</translation>
-<translation id="6908347296939885026"><ph name="PRODUCT_NAME" /> saa käyttää rajoitettua G Suite ‑kirjautumistoimintoa, eikä käyttäjä voi muuttaa tätä asetusta
-
-      Jos määrität tämän asetuksen, käyttäjä pääsee Google Apps
-      ‑sovelluksiin vain määrättyjen verkkotunnusten tileiltä (huomaa, että
-      tämä ei toimi gmail.comin/googlemail.comin kohdalla).
-
-      Asetus EI estä käyttäjää kirjautumasta sisään hallinnoidulla laitteella,
-      joka edellyttää Google-todennusta. Käyttäjä voi silti kirjautua muiden
-      verkkotunnusten tileille, mutta hän näkee virheilmoituksen yrittäessään
-      käyttää G Suitea näillä tileillä.
-
-      Jos tätä asetusta ei määritetä, käyttäjä voi käyttää G Suitea
-      millä tahansa tilillä.
-
-      Tämän käytännön seurauksena X-GoogApps-Allowed-Domains-otsikko
-      lisätään kaikkiin google.com-verkkotunnuksiin tehtäviin HTTP- ja HTTPS-
-      pyyntöihin. Lisätietoja on artikkelissa https://support.google.com/a/answer/1668854.
-
-      Käyttäjät eivät voi muuttaa tai ohittaa tätä asetusta.</translation>
 <translation id="6908640907898649429">Määrittää oletushakupalvelun. Voit määrittää käytettävän oletushakupalvelun tai poistaa oletushaun käytöstä.</translation>
 <translation id="6913068954484253496">Määritä, että <ph name="PRODUCT_NAME" /> saa yhdistää kaikkiin Cast-laitteisiin kaikissa IP-osoitteissa</translation>
 <translation id="6915442654606973733">Ota käyttöön äänipalautteen käytettävyysominaisuus.
@@ -2792,6 +2786,11 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8548832052135586762">Määrittää tulostusasetukseksi vain väritulostuksen, vain mustavalkotulostuksen tai rajoittamattoman. Määrittämätön käytäntö tulkitaan rajoituksen puuttumiseksi.</translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
+<translation id="857369585509260201">Tämä käytäntö on vanhentunut, harkitse sen sijaan BrowserSignin-käytännön käyttöä.
+
+Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritettava <ph name="PRODUCT_NAME" /> ‑kirjautuminen omalla profiilillaan ennen selaimen käyttämistä ja BrowserGuestModeEnabled-arvon oletukseksi määritetään Epätosi. Aiemmin luodut profiilit, joilla ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on voimassa. Lue lisää ohjekeskuksen artikkelista.
+
+      Jos tämän käytännön arvoksi on määritetty Epätosi tai sitä ei ole määritetty, selainta voi käyttää ilman <ph name="PRODUCT_NAME" /> ‑kirjautumista.</translation>
 <translation id="8586528890725660268">Määritä tulostimet, joita käyttäjä ei voi käyttää.
 
       Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_BLACKLIST" /> on valittuna asetuksen <ph name="BULK_PRINTERS_ACCESS_MODE" /> arvoksi.
@@ -3009,13 +3008,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
       Todelliset palautusmahdollisuudet voivat riippua myös levystä ja kriittisten haavoittuvuuksien korjauksista.</translation>
 <translation id="913195841488580904">Estää URL-osoiteluettelon käytön</translation>
 <translation id="9135033364005346124">Ota välityspalvelin <ph name="CLOUD_PRINT_NAME" /> käyttöön</translation>
-<translation id="9136253551939494882">Luettelo sallituista lukituksen pika-avaamisen tiloista, joita käyttäjä voi määrittää ja käyttää lukitusnäytön avaamiseen.
-
-          Tämä arvo on merkkijonoluettelo; mahdollisia luettelokohtia ovat esimerkiksi "all" ja "PIN". Jos lisäät luetteloon "all", se tarkoittaa, että kaikki lukituksen pika-avaamisen tilat ovat käyttäjän käytettävissä, mukaan lukien tulevaisuudessa käyttöön otettavat. Muuten vain luettelossa mainitut lukituksen pika-avaamisen tilat ovat käytettävissä.
-
-          Jos esimerkiksi haluat sallia kaikki lukituksen pika-avaamisen tilat, valitse ["all"]. Jos haluat sallia vain PIN-koodin avaamisen, valitse ["PIN"]. Jos haluat poistaa käytöstä kaikki lukituksen pika-avaamisen tilat, valitse [].
-
-          Oletuksena mitkään lukituksen pika-avaamisen tilat eivät ole käytettävissä hallinnoiduilla laitteilla.</translation>
 <translation id="9136399279941091445">Ei-aktiivinen aika tiettyjen laitekäytäntöjen julkaisemisen yhteydessä</translation>
 <translation id="9147029539363974059">Lähettää hallintapalvelimelle järjestelmän lokitietoja ja sallii
       järjestelmänvalvojien seurata järjestelmälokeja.

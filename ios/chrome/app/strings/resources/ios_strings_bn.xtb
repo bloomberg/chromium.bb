@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">গত দিন</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
-<translation id="3151924044251363314">শুধুমাত্র আপনার পাসফ্রেজ সহ কোনো ব্যক্তি আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন৷ পাসফ্রেজটি Google এ পাঠানো হয় না বা এর দ্বারা সংরক্ষণ করা হয় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে যান, তাহলে আপনাকে সিঙ্ক আবার সেট করতে হবে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
@@ -333,7 +332,6 @@
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6713747756340119864">Google অ্যাপ্লিকেশানগুলি</translation>
 <translation id="6730682669179532099">পাসওয়ার্ড এক্সপোর্ট করা যাচ্ছে না</translation>
-<translation id="6762156594045689028">এই সেটিং পরিবর্তন করার জন্য, <ph name="BEGIN_LINK" />সিঙ্ক পুনরায় সেট করুন<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">পিন কোড</translation>
 <translation id="6785453220513215166">ক্র্যাশ প্রতিবেদন পাঠানো হচ্ছে...</translation>
 <translation id="679325081238418596">আপনার সবকটি ডিভাইসে বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস পান</translation>

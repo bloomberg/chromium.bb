@@ -553,7 +553,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto nastavenie zakázané, používatelia v službe <ph name="PRODUCT_NAME" /> tlačiť nemôžu. Tlač je zakázaná v ponuke nástrojov, rozšíreniach, aplikáciách jazyka JavaScript a pod. Tlačiť môžete z doplnkov, ktoré pri tlači službu <ph name="PRODUCT_NAME" /> obchádzajú. Niektoré aplikácie Flash majú napríklad možnosť tlače v kontextovej ponuke, na ktoré sa tieto pravidlá nevzťahujú.</translation>
 <translation id="2518231489509538392">Povoliť prehrávanie zvuku</translation>
 <translation id="2521581787935130926">Zobrazovať odkaz aplikácií na paneli so záložkami</translation>
-<translation id="2529700525201305165">Obmedzenie používateľov, ktorí sa môžu prihlásiť do prehliadača <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
 <translation id="2536525645274582300">O povolení služieb na určovanie polohy od Googlu rozhoduje používateľ</translation>
@@ -805,6 +804,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak toto pravidlo nenastavíte, používateľom umožníte zvoliť vlastné nastavenia proxy servera.</translation>
 <translation id="3205825995289802549">Maximalizovať prvé okno prehliadača pri prvom spustení</translation>
+<translation id="3211426942294667684">Nastavenia prihlasovania do prehliadača</translation>
 <translation id="3213821784736959823">Ovláda, či sa v prehliadači <ph name="PRODUCT_NAME" /> používa vstavaný klient DNS.
 
       Ak je toto pravidlo nastavené na hodnotu True, vstavaný klient DNS sa použije (pokiaľ je k dispozícii).
@@ -1081,6 +1081,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> bude používať obvyklý predvolený adresár (podľa konkrétnej platformy).
 
       Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
+<translation id="3904459740090265495">Toto pravidlo ovláda prihlasovacie správanie prehliadača. Umožňuje určiť, či sa používateľ môže prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho účtu a používať služby súvisiace s účtom, ako je napríklad synchronizácia Chromu.
+
+      Ak ho nastavíte na možnosť Zakázať prihlásenie do prehliadača, používateľ sa nemôže prihlásiť do prehliadača ani používať služby založené v účte. V tomto prípade nie je možné použiť funkcie na úrovni prehliadača, ako napríklad synchronizáciu Chromu, pričom nebudú k dispozícii. Ak bol používateľ prihlásený a pravidlo nastavíte na možnosť Zakázané, bude pri ďalšom spustení Chromu odhlásený, ale údaje jeho miestneho profilu (napríklad záložky, heslá atď.) sa zachovajú. Používateľ sa bude môcť naďalej prihlasovať do webových služieb Googlu, ako je napríklad Gmail, a používať ich.
+
+      Ak ho nastavíte na možnosť Povoliť prihlásenie do prehliadača, používateľ sa môže prihlásiť do prehliadača a automaticky bude prihlasovaný do prehliadača pri prihlásení do webových služieb Googlu, ako je napríklad Gmail. To, že je používateľ prihlásený do prehliadača, znamená, že prehliadač bude uchovávať informácie o jeho účte. Neznamená to však, že synchronizácia Chromu bude predvolene zapnutá. Používateľ si musí túto funkciu samostatne aktivovať. Povolením tohto pravidla zabránite používateľovi vypnúť nastavenie umožňujúce prihlásenie do účtu. Ak chcete ovládať dostupnosť synchronizácie Chromu, použite pravidlo SyncDisabled.
+
+      Ak ho nastavíte na možnosť Presadzovať prihlásenie do prehliadača, používateľovi sa zobrazí dialógové okno na výber účtu, v ktorom musí vybrať účet a prihlásiť sa doň, aby mohol prehliadač používať. Tým sa zaistí, že v prípade spravovaných účtov sa budú uplatňovať a presadzovať pravidlá priradené k danému účtu. Predvolene sa tým v danom účte zapne aj synchronizácia Chromu. Výnimku predstavujú prípady, keď je zakázaná správcom domény alebo pravidlom SyncDisabled. Predvolená hodnota parametra BrowserGuestModeEnabled bude nastavená na hodnotu false. Upozorňujeme, že po povolení tohto pravidla sa existujúce nepriradené profily uzamknú a budú neprístupné. Ďalšie informácie nájdete v článku centra pomoci na https://support.google.com/chrome/a/answer/7572556.
+
+      Ak toto pravidlo nenastavíte, používateľ sa môže rozhodnúť, či chce možnosť prihlásenia do prehliadača povoliť, a následne ju použiť, keď to považuje za vhodné.</translation>
 <translation id="3911737181201537215">Na zaznamenávanie do denníkov vykonávané systémom Android nemá toto pravidlo žiaden vplyv.</translation>
 <translation id="391531815696899618">Ak je toto pravidlo nastavené na hodnotu True, zakazuje synchronizáciu aplikácie Súbory systému <ph name="PRODUCT_OS_NAME" /> s Diskom Google. V takom prípade sa na Disk Google nenahrajú žiadne údaje.
 
@@ -1131,6 +1140,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Upozorňujeme, že ak pravidlo <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> nastavíte na hodnotu <ph name="BLOCK_GEOLOCATION_SETTING" />, bude sa toto pravidlo ignorovať a služby určovania polohy od Googlu budú vždy zakázané.</translation>
 <translation id="408029843066770167">Povolenie dopytov odosielaných do časovej služby Google</translation>
+<translation id="408076456549153854">Povoliť prihlásenie do prehliadača</translation>
 <translation id="4088589230932595924">Vynútený režim inkognito</translation>
 <translation id="4088983553732356374">Umožňuje nastaviť, či môžu webové stránky nastavovať miestne údaje. Nastavenie miestnych údajov je možné buď povoliť pre všetky webové stránky, alebo ho pre všetky webové stránky zakázať.
 
@@ -1406,11 +1416,6 @@ Aplikácie ARC bude môcť používať iba proxy server HTTP s najvyššou prio
 <translation id="4816674326202173458">Povoliť používateľovi v podnikovej sieti stať sa hlavným aj sekundárnym používateľom (predvolené správanie pre používateľov, ktorí nie sú spravovaní)</translation>
 <translation id="4826326557828204741">Akcia, ktorá sa má vykonať po uplynutí určitého času nečinnosti počas prevádzky na batérii</translation>
 <translation id="4834526953114077364">Odstránia sa najdlhšie neprihlásení používatelia (ktorí sa neprihlásili za posledné 3 mesiace), dokým sa neuvoľní dostatok voľného miesta</translation>
-<translation id="4838572175671839397">Obsahuje regulárny výraz, ktorý sa používa na určenie toho, ktorí používatelia sa môžu prihlásiť do prehliadača <ph name="PRODUCT_NAME" />.
-
-Ak sa používateľ pokúsi prihlásiť pomocou používateľského mena, ktoré sa nezhoduje s týmto vzorom, zobrazí sa príslušná chyba.
-
-Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ sa môže prihlásiť do prehliadača <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Povoliť režim celej obrazovky</translation>
 <translation id="4861767323695239729">Konfigurovať povolené metódy vstupu v relácii používateľa</translation>
 <translation id="4869787217450099946">Určuje, či sú povolené uzamknutia obrazovky v aktívnom režime. Rozšírenia môžu o uzamknutie obrazovky v aktívnom režime požiadať prostredníctvom rozhrania API na správu napájania pre rozšírenia.
@@ -1443,6 +1448,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4962262530309732070">Ak je toto pravidlo nastavené na možnosť True alebo nie je nakonfigurované, <ph name="PRODUCT_NAME" /> povolí pridanie osoby prostredníctvom správcu používateľov.
 
       Ak je toto pravidlo nastavené na možnosť False, <ph name="PRODUCT_NAME" /> nepovolí vytvorenie nového profilu prostredníctvom správcu používateľov.</translation>
+<translation id="4970855112942626932">Zakázať prihlásenie do prehliadača</translation>
 <translation id="4971529314808359013">Umožňuje vám uviesť zoznam vzorov webových adries, ktorý uvádza webové stránky, pre ktoré by mal prehliadač <ph name="PRODUCT_NAME" /> automaticky vybrať certifikát klienta (ak stránky vyžadujú certifikát).
 
           Hodnota musí byť pole slovníkov JSON prevedených na reťazce. Každý slovník musí mať tvar { "pattern": "$URL_PATTERN", "filter" : $FILTER }, kde $URL_PATTERN je vzor nastavenia obsahu. $FILTER obmedzuje certifikáty klienta, z ktorých bude prehliadač automaticky vyberať. Nezávisle od filtra budú vybraté iba tie certifikáty, ktoré zodpovedajú žiadosti servera o certifikát. Ak má $FILTER tvar { "ISSUER": { "CN": "$ISSUER_CN" } }, budú navyše vybraté iba tie certifikáty klienta, ktoré boli vydané certifikátom s bežným názvom $ISSUER_CN. Ak je $FILTER prázdny slovník {}, výber certifikátov klienta nie je nijako ďalej obmedzený.
@@ -1848,6 +1854,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
 <translation id="6083631234867522991">Windows (klienty Windows):</translation>
+<translation id="6091233616732024397">Presadzovať prihlásenie používateľov pred použitím prehliadača</translation>
 <translation id="6093156968240188330">Umožnite vzdialeným používateľom interagovať počas relácií vzdialenej pomoci s privilegovanými oknami</translation>
 <translation id="6095999036251797924">Stanovuje čas, počas ktorého nebol zadaný žiadny vstup používateľa, a po ktorého uplynutí sa pri používaní napájacieho zdroja alebo batérie uzamkne obrazovka.
           Ak je tento čas nastavený na hodnotu väčšiu ako nula, stanovuje, ako dlho musí byť používateľ nečinný, než systém <ph name="PRODUCT_OS_NAME" /> uzamkne obrazovku.
@@ -1925,6 +1932,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6368011194414932347">Konfigurovať webovú adresu domovskej stránky</translation>
 <translation id="6368403635025849609">Povoliť JavaScript na týchto weboch</translation>
 <translation id="6376659517206731212">Môže byť povinné</translation>
+<translation id="6377355597423503887">Podpora tohto pravidla je ukončená. Skúste namiesto toho použiť pravidlo BrowserSignin.
+
+      Umožňuje prihlásenie používateľa do prehliadača <ph name="PRODUCT_NAME" />.
+
+      Ak toto pravidlo nastavíte, môžete nakonfigurovať, či má používateľ povolenie na prihlásenie do prehliadača <ph name="PRODUCT_NAME" />. Ak toto pravidlo nastavíte na možnosť false, zabránite tým fungovaniu aplikácií a rozšírení, ktoré používajú rozhranie chrome.identity API. Zvážte radšej použitie pravidla SyncDisabled.</translation>
 <translation id="6378076389057087301">Určuje, či prehrávanie zvuku ovplyvňuje správu napájania</translation>
 <translation id="637934607141010488">Nahlásenie zoznamu používateľov zariadenia, ktorí sa nedávno prihlásili.
 
@@ -2102,26 +2114,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6903814433019432303">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Určuje súbor webových adries, ktoré sa majú načítať po spustení ukážkovej relácie. Toto pravidlo prepíše akékoľvek ďalšie mechanizmy, ktoré slúžia na nastavenie počiatočných webových adries, a tak sa môže použiť iba v reláciách, ktoré nie sú spojené s konkrétnym používateľom.</translation>
-<translation id="6908347296939885026">Umožňuje povoliť obmedzený denník prehliadača <ph name="PRODUCT_NAME" /> vo funkcii v službe G Suite a zabráni používateľom toto nastavenie meniť.
-
-      Ak toto nastavenie definujete, používateľ získa prístup iba k aplikáciám Google
-      používajúcim účty z určených domén (upozorňujeme, že to nefunguje
-      v prípade domény gmail.com/googlemail.com).
-
-      Toto nastavenie NEZABRÁNI používateľom prihlasovať sa na spravovaných
-      zariadeniach, ktoré vyžadujú overenie totožnosti na Googli. Používateľ sa bude môcť naďalej
-      prihlasovať do účtov z iných domén, ale ak sa v nich pokúsi použiť
-      službu G Suite, zobrazí sa chybové hlásenie.
-.
-
-      Ak toto nastavenie ponecháte prázdne alebo ho nenakonfigurujete, používateľ získa prístup
-      do služby G Suite bez účtu.
-
-      Toto pravidlo spôsobí, že hlavička X-GoogApps-Allowed-Domains bude pripojená
-      k všetkým žiadostiam HTTP a HTTPS do všetkých domén google.com tak, ako je to opísané na adrese
-      https://support.google.com/a/answer/1668854.
-
-      Používatelia nemôžu toto nastavenie zmeniť ani prepísať.</translation>
 <translation id="6908640907898649429">Slúži na konfiguráciu predvoleného poskytovateľa vyhľadávania. Môžete zvoliť predvoleného poskytovateľa vyhľadávania pre používateľa alebo predvolené vyhľadávanie zakázať.</translation>
 <translation id="6913068954484253496">Povoliť zariadeniu <ph name="PRODUCT_NAME" /> pripojiť sa k zariadeniam Cast na všetkých adresách IP</translation>
 <translation id="6915442654606973733">Povolí hlasovú odozvu (funkcia na uľahčenie prístupu).
@@ -2857,6 +2849,11 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8548832052135586762">Nastaví iba farebnú tlač, iba monochromatickú tlač alebo žiadne obmedzenie farebného režimu. Ak toto pravidlo nenastavíte, znamená to, že sa nepoužijú žiadne obmedzenia.</translation>
 <translation id="8549772397068118889">Upozorniť na návštevu stránky, ktorá je mimo balíkov obsahu</translation>
 <translation id="8566842294717252664">Skryť internetový obchod zo stránky na novej karte a zo spúšťača aplikácií</translation>
+<translation id="857369585509260201">Podpora tohto pravidla je ukončená. Skúste namiesto toho použiť pravidlo BrowserSignin.
+
+      Ak toto pravidlo nastavíte na hodnotu true, používateľ sa musí prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho profilu ešte predtým, ako ho začne používať. Predvolená hodnota parametra BrowserGuestModeEnabled bude nastavená na hodnotu false. Upozorňujeme, že po povolení tohto pravidla sa existujúce nepriradené profily uzamknú a budú neprístupné. Ďalšie informácie získate v článku centra pomoci.
+
+      Ak toto pravidlo nastavíte na hodnotu false alebo ho nenakonfigurujete, používateľ môže používať prehliadač <ph name="PRODUCT_NAME" /> bez prihlásenia.</translation>
 <translation id="8586528890725660268">Umožňuje určiť tlačiarne, ktoré používateľ nemá k dispozícii.
 
       Toto pravidlo sa používa iba vtedy, keď je pre <ph name="BULK_PRINTERS_ACCESS_MODE" /> vybraná možnosť <ph name="PRINTERS_BLACKLIST" />.
@@ -3071,13 +3068,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Možnosti skutočného vrátenia môžu tiež závisieť od dosky a opráv závažných chýb zabezpečenia.</translation>
 <translation id="913195841488580904">Blokovať prístup k zoznamu webových adries</translation>
 <translation id="9135033364005346124">Povoliť server proxy <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Biela listina ovládajúca, ktoré režimy rýchleho odomknutia môže používateľ nakonfigurovať a použiť na odomknutie uzamknutej obrazovky.
-
-          Táto hodnota je zoznam reťazcov. Platné vstupy v zozname sú: all (Všetko) a PIN. Ak pridáte do zoznamu možnosť all (Všetko), znamená to, že používateľ bude mať k dispozícii všetky režimy rýchleho odomknutia vrátane tých, ktoré budú implementované v budúcnosti. Inak bude mať k dispozícii iba tie režimy rýchleho odomknutia, ktoré sú uvedené v zozname.
-
-          Ak chcete napríklad povoliť všetky režimy rýchleho odomknutia, použitie možnosť ["all"]. Ak chcete povoliť iba odomykanie pomocou kódu PIN, použitie možnosť ["PIN"]. Ak chcete zakázať všetky režimy rýchleho odomknutia, použite [].
-
-          Predvolene nemajú spravované zariadenia k dispozícii žiadne režimy rýchleho odomknutia.</translation>
 <translation id="9136399279941091445">Intervaly nečinnosti, kedy sú povolené určené pravidlá zariadenia</translation>
 <translation id="9147029539363974059">Odosielajte denníky systému na správcovský server, čím umožníte
       správcom monitorovať tieto denníky.

@@ -126,7 +126,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="1938981467853765413">Cung cấp phản hồi</translation>
 <translation id="194341124344773587">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
-<translation id="1944384637046898011">Mã hóa tất cả dữ liệu bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm và các dịch vụ khác của Google.</translation>
 <translation id="1952172573699511566">Các trang web sẽ hiển thị văn bản bằng ngôn ngữ ưu tiên của bạn khi có thể.</translation>
 <translation id="195283394249132567">Các dịch vụ được cá nhân hóa của Google</translation>
@@ -311,7 +310,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="3522247891732774234">Bản cập nhật có sẵn. Tùy chọn khác</translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3542235761944717775">Còn <ph name="KILOBYTES" /> KB</translation>
-<translation id="3549644494707163724">Mã hóa tất cả dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
 <translation id="3549657413697417275">Tìm kiếm lịch sử của bạn</translation>
 <translation id="3552151358455404883">Quản lý Chrome Sync và cá nhân hóa trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Thêm vào danh bạ</translation>
@@ -379,7 +377,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="4084712963632273211">Từ <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Do Google phân phối<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Đã tải xuống <ph name="MEGABYTES" /> MB</translation>
 <translation id="4095146165863963773">Xóa dữ liệu ứng dụng?</translation>
-<translation id="4097739989936358050">Ứng dụng này đang chạy trong Chrome.</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="4113030288477039509">Do quản trị viên của bạn quản lý</translation>
@@ -424,7 +421,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="447252321002412580">Giúp cải thiện hiệu suất cũng như các tính năng của Chrome</translation>
 <translation id="4479647676395637221">Hỏi trước trước khi cho phép các trang web sử dụng máy ảnh của bạn (được đề xuất)</translation>
 <translation id="4487967297491345095">Tất cả dữ liệu ứng dụng của Chrome sẽ bị xóa vĩnh viễn. Dữ liệu này bao gồm tất cả tệp, cài đặt, tài khoản, cơ sở dữ liệu, v.v.</translation>
-<translation id="4508440807153586353">Chỉ người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, bạn cần đặt lại đồng bộ hóa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# ngày trước}other{# ngày trước}}</translation>
 <translation id="451872707440238414">Tìm kiếm dấu trang của bạn</translation>
 <translation id="4521489764227272523">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị đã đồng bộ hóa của bạn.
@@ -724,11 +720,11 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6697492270171225480">Hiển thị phần đề xuất các trang tương tự khi không tìm thấy một trang</translation>
 <translation id="6697947395630195233">Chrome cần truy cập vị trí của bạn để chia sẻ thông tin vị trí với trang web này.</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu đã đồng bộ hóa</translation>
+<translation id="6709133671862442373">Tin tức</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6712388303105732168">Xem nội dung tương tự khác từ Google bằng cách sử dụng nút Nội dung tương tự</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
 <translation id="6746124502594467657">Di chuyển xuống</translation>
-<translation id="6762156594045689028">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">Vuốt xuống để đóng.</translation>
 <translation id="6768277682697012280">Đang cài đặt mô-đun thực tế tăng cường...</translation>
 <translation id="6776813977906306442">Tải video xuống để xem vào thời điểm khác bằng nút Tải xuống</translation>

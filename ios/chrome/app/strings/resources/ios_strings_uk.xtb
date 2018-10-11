@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Останній день</translation>
 <translation id="3037605927509011580">От халепа!</translation>
 <translation id="3112556859945124369">Позначити…</translation>
-<translation id="3151924044251363314">Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Парольна фраза не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, скиньте синхронізацію. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Позначити всі…</translation>
 <translation id="3175081911749765310">Веб-служби</translation>
 <translation id="3207960819495026254">Створено закладку</translation>
@@ -332,7 +331,6 @@
 <translation id="667999046851023355">Документ</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Не вдалось експортувати паролі</translation>
-<translation id="6762156594045689028">Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Поштовий індекс</translation>
 <translation id="6785453220513215166">Надсилання звіту про аварійне завершення роботи…</translation>
 <translation id="679325081238418596">Отримайте доступ до своїх закладок, історії, паролів та інших налаштувань на всіх пристроях</translation>

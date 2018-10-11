@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Senaste dagen</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3112556859945124369">Markera …</translation>
-<translation id="3151924044251363314">Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenfrasen skickas inte till och sparas inte av Google. Om du glömmer lösenfrasen måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Markera alla …</translation>
 <translation id="3175081911749765310">Webbtjänster</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
@@ -332,7 +331,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Det gick inte att exportera lösenord</translation>
-<translation id="6762156594045689028"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="6780034285637185932">Postnummer</translation>
 <translation id="6785453220513215166">Skickar en felrapport ...</translation>
 <translation id="679325081238418596">Använd bokmärken, historik och andra inställningar på alla dina enheter</translation>

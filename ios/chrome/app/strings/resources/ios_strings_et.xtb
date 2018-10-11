@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Viimane päev</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
 <translation id="3112556859945124369">Märgi …</translation>
-<translation id="3151924044251363314">Teie krüpteeritud andmeid saavad lugeda vaid need, kes teavad teie parooli – seda ei saadeta Google'ile ja Google ei talleta seda. Kui unustate parooli või soovite seda seadet muuta, tuleb teil sünkroonimine lähtestada. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Märgi kõik …</translation>
 <translation id="3175081911749765310">Teenused</translation>
 <translation id="3207960819495026254">Järjehoidjatesse lisatud</translation>
@@ -332,7 +331,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Paroole ei saa eksportida</translation>
-<translation id="6762156594045689028">Selle seade muutmiseks tuleb teil <ph name="BEGIN_LINK" />sünkroonimine lähtestada<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Sihtnumber</translation>
 <translation id="6785453220513215166">Krahhiaruande saatmine ...</translation>
 <translation id="679325081238418596">Kasutage kõigis seadmetes oma järjehoidjaid, ajalugu, paroole ja muid seadeid</translation>

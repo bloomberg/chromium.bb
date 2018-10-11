@@ -126,7 +126,6 @@
 <translation id="1938981467853765413">フィードバックを送信</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードの保存</translation>
-<translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
 <translation id="1946005195648379376">Google が閲覧履歴をどのような方法で使用し、検索やその他の Google サービスをカスタマイズするかを設定します。</translation>
 <translation id="1952172573699511566">可能な場合、設定した言語でウェブサイトのテキストを表示します。</translation>
 <translation id="195283394249132567">カスタマイズされる Google サービス</translation>
@@ -311,7 +310,6 @@
 <translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB の空き</translation>
-<translation id="3549644494707163724">同期パスフレーズで同期データをすべて暗号化する</translation>
 <translation id="3549657413697417275">履歴を検索</translation>
 <translation id="3552151358455404883">Chrome の同期とカスタマイズを [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で管理</translation>
 <translation id="3557336313807607643">連絡先に追加</translation>
@@ -379,7 +377,6 @@
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> のコンテンツ - <ph name="BEGIN_DEEMPHASIZED" />Google により配信<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB をダウンロードで使用中</translation>
 <translation id="4095146165863963773">アプリデータを削除しますか？</translation>
-<translation id="4097739989936358050">このアプリは Chrome で実行中です。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="4113030288477039509">管理者により管理されています</translation>
@@ -424,7 +421,6 @@
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
 <translation id="4487967297491345095">Chrome のすべてのアプリデータを完全に削除します。削除されるデータには、すべてのファイル、設定、アカウント、データベースなどが含まれます。</translation>
-<translation id="4508440807153586353">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 日前}other{# 日前}}</translation>
 <translation id="451872707440238414">ブックマークを検索</translation>
 <translation id="4521489764227272523">選択したデータが Chrome から削除され、同期デバイスからも削除されました。
@@ -724,11 +720,11 @@
 <translation id="6697492270171225480">ページが見つからない場合に類似のページを候補として表示する</translation>
 <translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
+<translation id="6709133671862442373">ニュース</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6712388303105732168">[もっと見る] ボタンで Google がおすすめする類似のコンテンツを表示できます</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
 <translation id="6746124502594467657">下に移動</translation>
-<translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6766622839693428701">閉じるには下にスワイプします。</translation>
 <translation id="6768277682697012280">AR モジュールをインストールしています...</translation>
 <translation id="6776813977906306442">動画をダウンロードして後で見るには、[ダウンロード] をクリックします</translation>

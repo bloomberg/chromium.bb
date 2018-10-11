@@ -34,7 +34,6 @@
 <translation id="1173894706177603556">Преименуване</translation>
 <translation id="1175364870820465910">&amp;Печат...</translation>
 <translation id="1181037720776840403">Премахване</translation>
-<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Автоматично съобщаване<ph name="END_WHITEPAPER_LINK" /> на Google на подробности за евентуални инциденти, свързани със сигурността. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Напред</translation>
 <translation id="1201895884277373915">Още от този сайт</translation>
 <translation id="1206967143813997005">Невалиден първоначален подпис</translation>
@@ -226,6 +225,7 @@
 <translation id="2463739503403862330">Попълване</translation>
 <translation id="2465655957518002998">Избиране на начин на бърза доставка</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Стартирайте мрежова диагностика<ph name="END_LINK" /></translation>
+<translation id="2473195200299095979">Превод на тази страница</translation>
 <translation id="2479410451996844060">Невалиден URL адрес за търсене.</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2491120439723279231">Сертификатът на сървъра съдържа грешки.</translation>
@@ -383,7 +383,6 @@
 <translation id="3528171143076753409">Сертификатът на сървъра не е надежден.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Поне 1 елемент на синхронизирани устройства}=1{1 елемент (и други на синхронизирани устройства)}other{# елемента (и други на синхронизирани устройства)}}</translation>
 <translation id="3539171420378717834">Съхраняване на копие на картата на това устройство</translation>
-<translation id="3549644494707163724">Всички синхронизирани данни да се шифроват със собствения ви пропуск за синхронизиране</translation>
 <translation id="3556433843310711081">Мениджърът ви може да го отблокира за вас</translation>
 <translation id="3566021033012934673">Връзката ви не е поверителна</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
@@ -425,6 +424,7 @@
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Изтича на <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3807873520724684969">Блокирано бе вредно съдържание.</translation>
+<translation id="3810973564298564668">Управление</translation>
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -534,7 +534,6 @@
 <translation id="4587425331216688090">Адресът да се премахне ли от Chrome?</translation>
 <translation id="4592951414987517459">Връзката ви с/ъс <ph name="DOMAIN" /> е шифрована със съвременен криптографски пакет.</translation>
 <translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
-<translation id="4619615317237390068">Раздели от други устройства</translation>
 <translation id="4646534391647090355">Към изтеглянията</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност съдържа грешки. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
@@ -548,6 +547,7 @@
 <translation id="4726672564094551039">Презареждане на правилата</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4736825316280949806">Рестартирайте Chromium.</translation>
+<translation id="473775607612524610">Актуализиране</translation>
 <translation id="4742407542027196863">Управление на паролите…</translation>
 <translation id="4744603770635761495">Път към изпълнимия файл</translation>
 <translation id="4750917950439032686">Информацията ви (например пароли или номера на кредитни карти) е частна, когато се изпраща до този сайт.</translation>
@@ -747,7 +747,6 @@
 <translation id="6051221802930200923">В момента не можете да посетите <ph name="SITE" />, защото уебсайтът използва метод за допълнително потвърждаване на сертификатите. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="6059925163896151826">USB устройства</translation>
 <translation id="6071091556643036997">Типът на правилата е невалиден.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Тази карта ще бъде запазена в профила ви в Google за по-бързо плащане от различни устройства.}other{Тези карти ще бъдат запазени в профила ви в Google за по-бързо плащане от различни устройства.}}</translation>
 <translation id="6080696365213338172">Осъществихте достъп до съдържанието посредством осигурен от администратора сертификат. Данните, които предоставите на <ph name="DOMAIN" />, могат да бъдат прихванати от администратора ви.</translation>
 <translation id="6096619198407627433">Ще излезете от повечето сайтове, но не и от профила си в Google. Може да загубите достъп до защитено съдържание от <ph name="SITE" /> и някои други сайтове.</translation>
 <translation id="610911394827799129">В профила ви в Google може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -926,7 +925,6 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за този проблем.</translation>
 <translation id="7453467225369441013">Ще излезете от повечето сайтове, но не и от профила си в Google.</translation>
 <translation id="7455133967321480974">Използване на глобалната стандартна стойност (блокиране)</translation>
-<translation id="7460163899615895653">Тук се показват скорошните раздели от други устройства</translation>
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7481312909269577407">Препращане</translation>
 <translation id="7485870689360869515">Няма намерени данни.</translation>
@@ -1010,6 +1008,7 @@
 <translation id="7983301409776629893">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Не е посочено</translation>
 <translation id="800218591365569300">Затворете другите раздели или програми, за да освободите памет.</translation>
+<translation id="8009225694047762179">Управление на паролите</translation>
 <translation id="8012647001091218357">Не можахме да се свържем с родителите ви. Моля, опитайте отново.</translation>
 <translation id="8025119109950072390">Извършителите на атаки, използващи този сайт, може да ви подведат да направите нещо опасно, като например да инсталирате софтуер или да разкриете лична информация (например пароли, телефонни номера или номера на кредитни карти).</translation>
 <translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE" />. Да се преведе ли на <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1071,6 +1070,7 @@
 Допълнителни подробности:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" />, <ph name="SECOND_LABEL" />, <ph name="THIRD_LABEL" /></translation>
+<translation id="8425213833346101688">Промяна</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8437238597147034694">&amp;Отмяна на преместването</translation>

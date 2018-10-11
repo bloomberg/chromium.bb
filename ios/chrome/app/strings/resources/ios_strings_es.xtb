@@ -128,7 +128,6 @@
 <translation id="3024255823539804759">Ayer</translation>
 <translation id="3037605927509011580">¡Vaya!</translation>
 <translation id="3112556859945124369">Marcar…</translation>
-<translation id="3151924044251363314">Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, debes restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3175081911749765310">Servicios web</translation>
 <translation id="3207960819495026254">Añadido a marcadores</translation>
@@ -267,7 +266,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="5738887413654608789">Esto te permite descubrir páginas web relevantes según lo que te rodea.</translation>
 <translation id="5771816112378578655">Configuración en curso...</translation>
 <translation id="5816228676161003208">Esto te permite hacer búsquedas más rápido con tu voz.</translation>
-<translation id="5846482154967366008">Motor de búsqueda</translation>
+<translation id="5846482154967366008">Buscador</translation>
 <translation id="5854790677617711513">Más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere una frase de contraseña para iniciar la sincronización.</translation>
@@ -332,7 +331,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="667999046851023355">Documento</translation>
 <translation id="6713747756340119864">Aplicaciones de Google</translation>
 <translation id="6730682669179532099">No se pueden exportar las contraseñas</translation>
-<translation id="6762156594045689028">Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Código postal</translation>
 <translation id="6785453220513215166">Enviando informe sobre fallos...</translation>
 <translation id="679325081238418596">Accede a tus marcadores, a tu historial, a tus contraseñas y a otros ajustes desde todos tus dispositivos</translation>

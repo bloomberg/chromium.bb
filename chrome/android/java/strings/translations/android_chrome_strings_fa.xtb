@@ -125,7 +125,6 @@
 <translation id="1938981467853765413">ارائه بازخورد</translation>
 <translation id="194341124344773587">‏مجوز Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
-<translation id="1944384637046898011">‏رمزگذاری همه با گذرواژه Google از تاریخ <ph name="TIME" /></translation>
 <translation id="1946005195648379376">‏نحوه استفاده Google از سابقه مرورتان را برای شخصی‌سازی جستجو و سایر سرویس‌های Google کنترل کنید.</translation>
 <translation id="1952172573699511566">درصورت امکان، وب‌سایت‌ها نوشتار را به زبان ترجیحی شما نمایش می‌دهند.</translation>
 <translation id="195283394249132567">‏سرویس‌های شخصی‌شده Google</translation>
@@ -310,7 +309,6 @@
 <translation id="3522247891732774234">به‌روزرسانی موجود است. گزینه‌های بیشتر</translation>
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> کیلوبایت دردسترس است</translation>
-<translation id="3549644494707163724">رمزگذاری همه داده‌های همگام‌سازی‌شده با رمزعبارتی همگام‌سازی خودتان</translation>
 <translation id="3549657413697417275">جستجو در سابقه</translation>
 <translation id="3552151358455404883">‏«همگام‌سازی Chrome» و شخصی‌سازی را در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> مدیریت کنید</translation>
 <translation id="3557336313807607643">افزودن به مخاطبین</translation>
@@ -378,7 +376,6 @@
 <translation id="4084712963632273211">‏از<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />توسط Google ارائه می‌شود<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> مگابایت بارگیری شد</translation>
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
-<translation id="4097739989936358050">‏این برنامه در Chrome درحال اجرا است.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4113030288477039509">مدیریت شده توسط سرپرست‌تان</translation>
@@ -423,7 +420,6 @@
 <translation id="447252321002412580">‏کمک به بهبود ویژگی‌ها و عملکرد Chrome</translation>
 <translation id="4479647676395637221">قبل از اجازه به سایت‌ها برای استفاده از دوربین، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="4487967297491345095">‏همه داده‌های برنامه Chrome به‌طور دائم حذف خواهند شد. این داده‌ها شامل همه فایل‌ها، تنظیمات، حساب‌ها، پایگاه‌های داده و غیره می‌شود.</translation>
-<translation id="4508440807153586353">‏فقط فردی که عبارت عبور شما را دارد می‌تواند اطلاعات رمزگذاری‌شده شما را بخواند. این عبارت عبور به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{۱ روز قبل}one{#  روز قبل}other{#  روز قبل}}</translation>
 <translation id="451872707440238414">جستجوی نشانک‌های شما</translation>
 <translation id="4521489764227272523">‏داده‌های انتخاب‌‌شده از Chrome و دستگاه‌های همگام‌سازی‌شده شما حذف شدند.
@@ -722,11 +718,11 @@
 <translation id="6697492270171225480">نمایش پیشنهادهای صفحه‌های مشابه وقتی صفحه‌ای پیدا نمی‌شود</translation>
 <translation id="6697947395630195233">‏Chrome برای اشتراک‌گذاری مکانتان با این سایت باید به مکانتان دسترسی داشته باشد.</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
+<translation id="6709133671862442373">اخبار</translation>
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6712388303105732168">‏با استفاده از دکمه «موارد دیگر شبیه به این»، موارد بیشتری از این قبیل را در Google ببینید</translation>
 <translation id="6738867403308150051">در حال بارگیری…</translation>
 <translation id="6746124502594467657">انتقال به پایین</translation>
-<translation id="6762156594045689028">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="6766622839693428701">برای بستن، تند به پایین بکشید.</translation>
 <translation id="6768277682697012280">‏درحال نصب مدول AR...</translation>
 <translation id="6776813977906306442">با استفاده از دکمه «بارگیری»، ویدیوها را برای تماشا در فرصتی دیگر بارگیری کنید</translation>

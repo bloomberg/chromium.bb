@@ -559,7 +559,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       W przypadku wyłączenia tej opcji użytkownicy nie mogą drukować z <ph name="PRODUCT_NAME" />. Drukowanie jest wyłączone w menu klucza, aplikacjach JavaScript itd. Nadal można drukować z poziomu wtyczek pomijających <ph name="PRODUCT_NAME" /> podczas drukowania. Na przykład menu niektórych aplikacji Flash zawiera opcję drukowania, która nie jest objęta tą zasadą.</translation>
 <translation id="2518231489509538392">Zezwalaj na odtwarzanie dźwięku</translation>
 <translation id="2521581787935130926">Pokaż skróty aplikacji na pasku zakładek</translation>
-<translation id="2529700525201305165">Określ użytkowników, którzy mogą logować się do <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2536525645274582300">Użytkownik decyduje, czy włączyć usługi lokalizacyjne Google</translation>
@@ -800,6 +799,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
           Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3205825995289802549">Zmaksymalizuj pierwsze okno wyświetlone przy pierwszym uruchomieniu przeglądarki</translation>
+<translation id="3211426942294667684">Ustawienia logowania w przeglądarce</translation>
 <translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME" /> jest używany wbudowany klient DNS.
 
       W przypadku włączenia tej opcji będzie używany wbudowany klient DNS (jeśli będzie dostępny).
@@ -1070,6 +1070,15 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli zasada pozostanie nieustawiona, <ph name="PRODUCT_NAME" /> będzie używać katalogu domyślnego (zależnego od platformy).
 
       Listę zmiennych, których można użyć, znajdziesz na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables</translation>
+<translation id="3904459740090265495">Ta zasada kontroluje mechanizm logowania w przeglądarce. Umożliwia określenie, czy użytkownik może zalogować się w <ph name="PRODUCT_NAME" /> przy użyciu swojego konta i używać usług związanych z kontem, na przykład synchronizacji Chrome.
+
+      Jeśli zasada ma wartość „Wyłącz logowanie w przeglądarce”, użytkownik nie może zalogować się w przeglądarce ani używać usług związanych z kontem. Funkcje przeglądarki, takie jak synchronizacja Chrome, będą niedostępne. Jeśli użytkownik był wcześniej zalogowany, a zasada jest wyłączona, użytkownik zostanie wylogowany po najbliższym uruchomieniu Chrome, ale dane z jego profilu lokalnego, takie jak zakładki, hasła itd., zostaną zachowane. Użytkownik nadal będzie mógł logować się w usługach internetowych Google takich jak Gmail i ich używać.
+
+      Jeśli zasada ma wartość „Włącz logowanie w przeglądarce”, użytkownik może zalogować się w przeglądarce i jest logowany w niej automatycznie po zalogowaniu się w usługach internetowych Google takich jak Gmail. Zalogowanie w przeglądarce oznacza, że przeglądarka będzie przechowywać dane z konta użytkownika. Nie oznacza to jednak, że domyślnie włączona zostanie synchronizacja Chrome – użytkownik musi zgodzić się na jej używanie oddzielnie. Włączenie tej zasady uniemożliwi użytkownikowi wyłączenie logowania w przeglądarce w ustawieniach. Do określania dostępności synchronizacji Chrome służy zasada „SyncDisabled”.
+
+      Jeśli zasada ma wartość „Wymuś logowanie w przeglądarce", użytkownikowi wyświetlane jest okno wyboru konta i musi on wybrać konto oraz zalogować się na nie, by używać przeglądarki. Jest to gwarancją, że na kontach zarządzanych będą stosowane i egzekwowane zasady. Domyślnie powoduje to włączenie dla tego konta synchronizacji Chrome – o ile synchronizacja nie została wyłączona przez administratora domeny lub za pomocą zasady „SyncDisabled”. Domyślnie wartość zasady BrowserGuestModeEnabled zostanie ustawiona na fałsz. Uwaga: po włączeniu tej zasady istniejące niepodpisane profile zostaną zablokowane i będą niedostępne. Więcej informacji znajdziesz w tym artykule w Centrum pomocy: https://support.google.com/chrome/a/answer/7572556
+
+      Jeśli zasada jest nieskonfigurowana, użytkownik może samodzielnie włączyć lub wyłączyć logowanie w przeglądarce i korzystać z tej funkcji według własnego uznania.</translation>
 <translation id="3911737181201537215">Ta zasada nie ma żadnego wpływu na zapisywanie w dzienniku przez Androida.</translation>
 <translation id="391531815696899618">Po ustawieniu wartości prawda wyłącza synchronizację Dysku Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" />. Żadne dane nie są przesyłane na Dysk Google.
 
@@ -1120,6 +1129,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Uwaga: po ustawieniu dla zasady <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> wartości <ph name="BLOCK_GEOLOCATION_SETTING" /> zasada jest ignorowana, a usługi lokalizacyjne Google zostają wyłączone.</translation>
 <translation id="408029843066770167">Zezwalaj na wysyłanie zapytań do usługi czasu Google</translation>
+<translation id="408076456549153854">Włącz logowanie w przeglądarce</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
 <translation id="4088983553732356374">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Może to być dozwolone lub zabronione dla wszystkich witryn.
 
@@ -1389,11 +1399,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4816674326202173458">Zezwól, by użytkownik korporacyjny miał atrybut główny i drugorzędny (domyślne zachowanie w przypadku niezarządzanych użytkowników)</translation>
 <translation id="4826326557828204741">Czynność, jaka ma zostać podjęta po osiągnięciu opóźnienia bezczynności przy pracy na baterii</translation>
 <translation id="4834526953114077364">Najdłużej nieaktywni użytkownicy, którzy nie logowali się w ciągu ostatnich 3 miesięcy, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
-<translation id="4838572175671839397">Zawiera wyrażenie regularne służące do określania, którzy użytkownicy mogą logować się w <ph name="PRODUCT_NAME" />.
-
-      Jeśli użytkownik o nazwie niepasującej do tego wzorca spróbuje się zalogować, zostanie wyświetlony odpowiedni komunikat o błędzie.
-
-      Jeśli ta zasada pozostanie nieustawiona lub pusta, każdy użytkownik będzie mógł zalogować się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Zezwalaj na tryb pełnoekranowy</translation>
 <translation id="4861767323695239729">Skonfiguruj metody wprowadzania dozwolone w sesji użytkownika</translation>
 <translation id="4869787217450099946">Określa, czy jest dozwolona blokada uśpienia ekranu. Blokady takie mogą być żądane przez rozszerzenia poprzez interfejs API zarządzania energią.
@@ -1426,6 +1431,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4962262530309732070">Jeśli ta zasada jest włączona lub nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> zezwala na dodawanie osób z poziomu menedżera użytkowników.
 
       Jeśli ta zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na tworzenie nowych profili z poziomu menedżera użytkowników.</translation>
+<translation id="4970855112942626932">Wyłącz logowanie w przeglądarce</translation>
 <translation id="4971529314808359013">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których <ph name="PRODUCT_NAME" /> automatycznie wybiera certyfikaty klienta, jeśli dana witryna żąda certyfikatu.
 
           Wartość musi być tablicą słowników JSON odwzorowanych na ciąg. Każdy słownik musi mieć postać { "pattern": "$URL_PATTERN", "filter" : $FILTER }, gdzie $URL_PATTERN jest wzorcem ustawiającym zawartość. $FILTER ogranicza certyfikaty klienta, spośród których przeglądarka może dokonać automatycznego wyboru. Niezależnie od filtra wybierane mogą być tylko te certyfikaty, które są zgodne z żądaniem certyfikatu serwera. Jeśli $FILTER ma postać { "ISSUER": { "CN": "$ISSUER_CN" } }, to dodatkowo wybierane będą tylko te certyfikaty klienta, które zostały wydane przez certyfikat z CommonName $ISSUER_CN. Jeśli $FILTER jest pustym słownikiem {}, wybór certyfikatów klienta nie jest dodatkowo ograniczany.
@@ -1804,6 +1810,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
 <translation id="6083631234867522991">Windows (klienty Windows):</translation>
+<translation id="6091233616732024397">Wymuś logowanie w przeglądarce</translation>
 <translation id="6093156968240188330">Umożliwia użytkownikom zdalnym używanie okien z podwyższonym poziomem uprawnień w sesjach pomocy zdalnej</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
 
@@ -1876,6 +1883,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6368011194414932347">Konfiguruj adres URL strony głównej</translation>
 <translation id="6368403635025849609">Zezwalaj na wykonywanie kodu JavaScript w tych witrynach</translation>
 <translation id="6376659517206731212">Może być obowiązkowa</translation>
+<translation id="6377355597423503887">Ta zasada została wycofana. Zamiast niej możesz użyć BrowserSignin.
+
+      Pozwala użytkownikowi zalogować się w <ph name="PRODUCT_NAME" />.
+
+      Jeśli ustawisz tę zasadę, możesz określić, czy zezwalasz użytkownikowi na logowanie się w <ph name="PRODUCT_NAME" />. Jeśli zasada będzie miała wartość false, aplikacje i rozszerzenia, które używają interfejsu API chrome.identity, nie będą działać. Dlatego zamiast niej możesz użyć SyncDisabled.</translation>
 <translation id="6378076389057087301">Określ, czy aktywność związana z dźwiękiem wpływa na zarządzanie energią</translation>
 <translation id="637934607141010488">Zgłasza listę użytkowników urządzenia, którzy niedawno się zalogowali.
 
@@ -2051,25 +2063,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6903814433019432303">Ta zasada jest aktywna tylko w trybie sklepu.
 
       Określa zestaw URL-i do załadowania po uruchomieniu sesji demonstracyjnej. Ta zasada zastępuje pozostałe mechanizmy ustawiania początkowego URL-a i dlatego można ją zastosować tylko do sesji niepowiązanej z konkretnym użytkownikiem.</translation>
-<translation id="6908347296939885026">Włącza w <ph name="PRODUCT_NAME" /> ograniczone logowanie w funkcji w G Suite i nie zezwala użytkownikom na zmianę tego ustawienia.
-
-      Jeśli zdefiniujesz to ustawienie, użytkownik będzie mógł uzyskiwać dostęp do Google
-      Apps tylko przy użyciu kont z określonych domen (uwaga: to ustawienie nie działa
-      w przypadku gmail.com/googlemail.com).
-
-      To ustawienie NIE uniemożliwia użytkownikowi logowania się na urządzeniu zarządzanym
-      wymagającym uwierzytelniania Google. Użytkownik nadal może
-      logować się na konta z innych domen, jednak gdy spróbuje na takim koncie
-      otworzyć G Suite, napotka błąd.
-
-      Jeśli pozostawisz to ustawienie puste lub nieskonfigurowane, użytkownik będzie mógł uzyskać dostęp do
-      G Suite z dowolnego konta.
-
-      Ta zasada powoduje, że do wszystkich żądań HTTP i HTTPS wysyłanych do wszystkich domen google.com
-      dołączany jest nagłówek X-GoogApps-Allowed-Domains. Jest to opisane na stronie
-      https://support.google.com/a/answer/1668854
-
-      Użytkownicy nie mogą zmienić ani zastąpić tego ustawienia.</translation>
 <translation id="6908640907898649429">Pozwala skonfigurować domyślnego dostawcę wyszukiwania. Możesz określić domyślnego dostawcę wyszukiwania, z którego usług będzie korzystał ​​użytkownik, lub wyłączyć funkcję wyszukiwarki domyślnej.</translation>
 <translation id="6913068954484253496">Zezwalaj usłudze <ph name="PRODUCT_NAME" /> na łączenie się z urządzeniami przesyłającymi pod wszystkimi adresami IP.</translation>
 <translation id="6915442654606973733">Włącza funkcję ułatwień dostępu w postaci potwierdzeń głosowych.
@@ -2791,6 +2784,11 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8548832052135586762">Ustawia drukowanie tylko kolorowe, tylko monochromatyczne albo brak ograniczenia. Nieskonfigurowanie zasady oznacza brak ograniczenia.</translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
+<translation id="857369585509260201">Ta zasada została wycofana. Zamiast niej możesz użyć BrowserSignin.
+
+      Jeśli włączysz tę zasadę, użytkownik będzie musiał logować się w <ph name="PRODUCT_NAME" /> przy użyciu swojego profilu, by skorzystać z przeglądarki. Domyślnie wartość zasady BrowserGuestModeEnabled zostanie przy tym ustawiona na fałsz. Pamiętaj, że po włączeniu tej zasady istniejące niepodpisane profile zostaną zablokowane i staną się niedostępne. Więcej informacji znajdziesz w artykule w Centrum pomocy.
+
+      Jeśli ustawisz tę zasadę na fałsz lub jej nie skonfigurujesz, użytkownik będzie mógł używać przeglądarki bez logowania się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8586528890725660268">Określa drukarki, z których użytkownik nie może korzystać.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="BULK_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_BLACKLIST" />.
@@ -3011,7 +3009,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Rzeczywista możliwość cofnięcia może zależeć też od modelu urządzenia i poprawek usuwających luki krytyczne.</translation>
 <translation id="913195841488580904">Blokuj dostęp do listy adresów URL</translation>
 <translation id="9135033364005346124">Włącz serwer proxy usługi <ph name="CLOUD_PRINT_NAME" /></translation>
-<translation id="9136253551939494882">Biała lista trybów szybkiego odblokowania, które użytkownik może skonfigurować i których może używać do odblokowywania ekranu blokady. Ta wartość to lista ciągów znaków. Poprawne opcje to: "all" (wszystkie) i "PIN" (kod PIN). Opcja "all" oznacza, że użytkownik może korzystać ze wszystkich trybów odblokowania ekranu, także tych, które zostaną wdrożone w przyszłości. W przeciwnym razie dostępne są tylko tryby szybkiego odblokowania znajdujące się na liście. Na przykład aby zezwolić na wszystkie tryby szybkiego odblokowania, użyj ciągu ["all"]. Aby zezwolić tylko na odblokowywanie przy użyciu kodu PIN, użyj ciągu ["PIN"]. Aby wyłączyć wszystkie tryby szybkiego odblokowania, użyj ciągu []. Domyślnie tryby szybkiego odblokowania nie są dostępne na urządzeniach zarządzanych.</translation>
 <translation id="9136399279941091445">Okresy bezczynności, gdy określone zasady dotyczące urządzeń są aktywne</translation>
 <translation id="9147029539363974059">Wysyła dzienniki systemowe na serwer zarządzania, by umożliwić monitorowanie ich przez administratorów.
 

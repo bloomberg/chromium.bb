@@ -423,6 +423,7 @@
 <translation id="1611584202130317952">প্রভিশনিং ফ্লো তে বিঘ্ন ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন অথবা আপনার ডিভাইসের মালিক বা প্রশাসকের সাথে যোগাযোগ করুন।</translation>
 <translation id="1611649489706141841">ফরওয়ার্ড</translation>
 <translation id="1611704746353331382">বুকমার্কগুলিকে HTML ফাইলে রপ্তানি করুন...</translation>
+<translation id="1614511179807650956">আপনি হয়ত সমস্ত মোবাইল ডেটা ব্যবহার করে ফেলেছেন৷ আরও ডেটা কিনতে <ph name="NAME" /> অ্যাক্টিভেশন পোর্টালে যান</translation>
 <translation id="161460670679785907">আপনার ফোনটি শনাক্ত করা যায়নি</translation>
 <translation id="1616206807336925449">এই এক্সটেনশনটির কোনও বিশেষ অনুমতির প্রয়োজন নেই।</translation>
 <translation id="1616298854599875024">এটি একটি শেয়ার করা মডিউল না হওয়ার কারণে <ph name="IMPORT_NAME" /> এক্সটেনশন ইমপোর্ট করা যাচ্ছে না</translation>
@@ -595,7 +596,6 @@
 <translation id="1852799913675865625"><ph name="ERROR_TEXT" /> ফাইলটি পড়ার চেষ্টা করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
 <translation id="1853692000353488670">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="1856715684130786728">লোকেশন যোগ করুন...</translation>
-<translation id="1856813161013948396">আঙ্গুলের ছাপ নেওয়ার সেন্সরে ট্যাপ করে লক স্ক্রিন এড়িয়ে যান। কনফিগার করতে ক্লিক করুন।</translation>
 <translation id="1858585891038687145">সফ্টওয়্যার প্রস্তুতকারকদের শনাক্তকরণের জন্য এই শংসাপত্রটিকে বিশ্বাস করুন</translation>
 <translation id="1861262398884155592">ফোল্ডারটি খালি</translation>
 <translation id="1864111464094315414">লগ-ইন করুন</translation>
@@ -688,6 +688,7 @@
 <translation id="1999115740519098545">প্রারম্ভে</translation>
 <translation id="2000419248597011803">অ্যাড্রেস বার এবং সার্চ বক্স থেকে সার্চের তথ্য এবং কিছু কুকি আপনার ডিফল্ট সার্চ ইঞ্জিনে পাঠায়</translation>
 <translation id="2001796770603320721">ড্রাইভে পরিচালনা করুন</translation>
+<translation id="2003130567827682533">'<ph name="NAME" />' ডেটা চালু করতে, প্রথমে একটি নেটওয়ার্কে কানেক্ট করুন</translation>
 <translation id="2004663115385769400">$1 দিয়ে খোলা যায়নি</translation>
 <translation id="200544492091181894">আপনি পরে সবসময় এগুলি সেটিংস থেকে পরিবর্তন করতে পারেন</translation>
 <translation id="2006638907958895361"><ph name="APP" /> এ লিঙ্ক খুলুন</translation>
@@ -1104,7 +1105,6 @@
 <translation id="2643698698624765890">উইন্ডো মেনুতে এক্সটেনশান ক্লিক করে আপনার এক্সটেনশানগুলি পরিচালনা করুন৷</translation>
 <translation id="2647142853114880570">আবার লোড করুন</translation>
 <translation id="264810637653812429">উপযুক্ত ডিভাইস খুঁজে পাওয়া যায়নি।</translation>
-<translation id="2648831393319960979">আপনার অ্যাকাউন্টে ডিভাইসে যোগ করার হচ্ছে - এটি কিছু সময় নিতে পারে...</translation>
 <translation id="2649045351178520408">Base64-এনকোড হওয়া ASCII, শংসাপত্রের শৃঙ্খলা</translation>
 <translation id="2651353619134567122">সিস্টেম ডেটা পাঠান। এই ডিভাইসটি বর্তমানে নিজে থেকে Google-এ ডায়গনস্টিক ও ব্যবহারের ডেটা পাঠায়। আপনি এটি আপনার ডিভাইসের <ph name="BEGIN_LINK1" />সেটিংস<ph name="END_LINK1" /> থেকে যেকোনও সময়ে পরিবর্তন করতে পারেন। আপনি যদি অতিরিক্ত ওয়েব ও অ্যাপ অ্যাক্টিভিটি চালু করে থাকেন, তাহলে এই তথ্যটি আপনার অ্যাকাউন্টে সেভ করা হবে, যাতে আপনি আমার অ্যাক্টিভিটিতে সেটি পরিচালনা করতে পারেন। <ph name="BEGIN_LINK2" />আরও জানুন<ph name="END_LINK2" /></translation>
 <translation id="2653033005692233957">সার্চ করা যায়নি</translation>
@@ -1247,7 +1247,6 @@
 <translation id="2850124913210091882">ব্যাকআপ নিন</translation>
 <translation id="2850541429955027218">থীম জুড়ুন</translation>
 <translation id="2853916256216444076">$1 টি ভিডিও</translation>
-<translation id="2857608528410806398">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে।</translation>
 <translation id="2860150991415616761">খুব দীর্ঘ সময় (৪ সে.)</translation>
 <translation id="2861301611394761800">সিস্টেম আপডেট সম্পূর্ণ৷ দয়া করে সিস্টেমটি পুনরায় শুরু করুন৷</translation>
 <translation id="2861941300086904918">নেটিভ ক্লায়েন্ট সুরক্ষা পরিচালক</translation>
@@ -1290,7 +1289,6 @@
 <translation id="2908162660801918428">ডিরেক্টরি অনুসারে মিডিয়া গ্যালারি জুড়ুন</translation>
 <translation id="2908789530129661844">স্ক্রিনের জুম কমান</translation>
 <translation id="2910318910161511225">নেটওয়ার্কে সংযোগ করে আবার চেষ্টা করুন</translation>
-<translation id="2911898792135283060">পাসওয়ার্ড তৈরি করুন...</translation>
 <translation id="2913331724188855103">সাইটগুলিকে কুকি ডেটা পড়ার এবং সংরক্ষণ করার অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="2916073183900451334">কোনও ওয়েবপৃষ্ঠায় লিঙ্কগুলি হাইলাইট করে ট্যাব টেপা পাশাপাশি ফর্ম ক্ষেত্রগুলি</translation>
 <translation id="2916745397441987255">এক্সটেনশানগুলি খুঁজুন</translation>
@@ -1730,7 +1728,6 @@
 <translation id="3605780360466892872">বটনডাউন</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">ব্যবহারকারীর ছবির পূর্বদৃশ্য</translation>
-<translation id="3609446736023031597">Play স্টোর অ্যাপ সম্পর্কে লেটেস্ট আপডেট এবং প্রস্তাবনা পান</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
 <translation id="3609895557594655134">Android VPN যোগ করুন...</translation>
 <translation id="361106536627977100">ফ্ল্যাশ ডেটা</translation>
@@ -2390,7 +2387,6 @@
 <translation id="4648499713050786492">কোনো ব্যক্তি যোগ করার আগে দয়া করে আপনার প্রোফাইলটি আনলক করুন।</translation>
 <translation id="465499440663162826">Chrome ওয়েব স্টোর-এর সাথে কানেক্ট করা যায়নি।</translation>
 <translation id="4656293982926141856">এই কম্পিউটার</translation>
-<translation id="4658312088164718891">Smart Lock চালু করতে পাসওয়ার্ড লিখুন। পরের বার, আপনার ফোন থেকে <ph name="DEVICE_TYPE" /> আনলক করতে পারবেন। সেটিংসে গিয়ে Smart Lock বন্ধ করুন।</translation>
 <translation id="4660476621274971848">"<ph name="EXPECTED_VERSION" />" ভার্সনটি হওয়া উচিত ছিল, কিন্তু ভার্সনটি হল "<ph name="NEW_ID" />"</translation>
 <translation id="4662788913887017617">এই বুকমার্কটি আপনার iPhone এর সাথে শেয়ার করুন</translation>
 <translation id="4663373278480897665">ক্যামেরা ব্যবহারের অনুমতি দেওয়া হয়েছে</translation>
@@ -2491,6 +2487,7 @@
 <translation id="4821935166599369261">&amp;প্রোফাইলিং সক্ষমিত</translation>
 <translation id="4823484602432206655">ব্যবহারকারী এবং ডিভাইস সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="4823651846660089135">ডিভাইস শুধুমাত্র পঠনযোগ্য</translation>
+<translation id="4827675678516992122">কানেক্ট করা যায়নি</translation>
 <translation id="4828937774870308359">অস্ট্রেলীয়</translation>
 <translation id="4829768588131278040">পিন সেট আপ করুন</translation>
 <translation id="4830502475412647084">OS আপডেট ইনস্টল করা হচ্ছে</translation>
@@ -2516,7 +2513,6 @@
 <translation id="4856478137399998590">আপনার মোবাইল ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং তা ব্যবহারের জন্য তৈরি আছে</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{সবগুলি &amp;ছদ্মবেশী উইন্ডোতে খুলুন}=1{&amp;ছদ্মবেশী উইন্ডোতে খুলুন}one{সবগুলি (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}other{সবগুলি (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}}</translation>
 <translation id="4858913220355269194">ফ্রিটজ</translation>
-<translation id="4862050643946421924">ডিভাইস যোগ করা হচ্ছে...</translation>
 <translation id="4862642413395066333">OCSP টি প্রতিক্রিয়া স্বাক্ষরিত হচ্ছে</translation>
 <translation id="4863769717153320198">মনে হচ্ছে <ph name="WIDTH" /> x <ph name="HEIGHT" /> (ডিফল্ট)</translation>
 <translation id="4864369630010738180">প্রবেশ করা হচ্ছে...</translation>
@@ -2634,7 +2630,6 @@
 <translation id="5000922062037820727">অবরুদ্ধ (প্রস্তাবিত)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> নতুন ফটো</translation>
 <translation id="5010043101506446253">শংসাপত্র কর্তৃপক্ষ</translation>
-<translation id="5010929733229908807">আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে <ph name="TIME" /> তারিখ অনুযায়ী সমস্ত ডেটা এনক্রিপটেড হয়েছে</translation>
 <translation id="5015344424288992913">প্রক্সি স্থির করা হচ্ছে...</translation>
 <translation id="5015762597229892204">একটি প্রিন্টার ড্রাইভার অ্যাপ্লিকেশান বেছে নিন</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -2717,7 +2712,6 @@
 <translation id="514575469079499857">লোকেশন নির্ধারণ করার জন্য আপনার আইপি অ্যাড্রেস ব্যবহার করুন (ডিফল্ট)</translation>
 <translation id="5150254825601720210">Netscape শংসাপত্র SSL সার্ভার নাম</translation>
 <translation id="5151354047782775295">ডিস্কের জায়গা খালি করুন, নাহলে নির্বাচিত তথ্য স্বয়ংক্রিয়ভাবে মুছে ফেলা হতে পারে</translation>
-<translation id="5153297660536091054">পিন দিয়ে আনলক করার বৈশিষ্ট্য</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" /> এর উন্নত সেটিংস</translation>
 <translation id="5154176924561037127">F8</translation>
 <translation id="5154702632169343078">বিষয়</translation>
@@ -2752,6 +2746,7 @@
 <translation id="5209320130288484488">কোনো ডিভাইস খুঁজে পাওয়া যায়নি</translation>
 <translation id="5209518306177824490">SHA-1 আঙুলের ছাপ</translation>
 <translation id="5210365745912300556">ট্যাব বন্ধ করুন</translation>
+<translation id="5213481667492808996">আপনার '<ph name="NAME" />' ডেটা পরিষেবা ব্যবহারের জন্য প্রস্তুত</translation>
 <translation id="5213891612754844763">প্রক্সি সেটিংস দেখুন</translation>
 <translation id="521582610500777512">ফটো বাতিল হয়েছে</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
@@ -2820,7 +2815,6 @@
 <translation id="5297082477358294722">পাসওয়ার্ড সেভ করা হয়েছে। <ph name="SAVED_PASSWORDS_STORE" />-এ সেভ করা পাসওয়ার্ড দেখুন এবং ম্যানেজ করুন।</translation>
 <translation id="5298219193514155779">থিম তৈরি করেছেন</translation>
 <translation id="5299109548848736476">ট্র্যাক করবেন না</translation>
-<translation id="5299682071747318445">আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে সমস্ত ডেটা এনক্রিপটেড হয়েছে</translation>
 <translation id="5300287940468717207">সাইটের অনুমতি রিসেট করবেন?</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301751748813680278">অতিথি হিসাবে প্রবেশ করা।</translation>
@@ -3417,7 +3411,6 @@
 <translation id="6144938890088808325">আমাদের Chromebooks উন্নত করতে সাহায্য করুন</translation>
 <translation id="6146563240635539929">ভিডিও</translation>
 <translation id="6147020289383635445">প্রিন্ট পূর্বরূপ ব্যর্থ হয়েছে৷</translation>
-<translation id="6148716538476291841">এই ডিভাইস থেকে ইতিহাস খালি করা হয়।</translation>
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6150853954427645995">অফলাইনে ব্যবহারের জন্য এই ফাইলটি সেভ করুন, অনলাইন ফিরে পেতে, ফাইলের ডানদিকে ক্লিক করুন, এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্প নির্বাচন করুন৷</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> সার্চের জন্য <ph name="SEARCH_KEY" /> টিপুন</translation>
@@ -3501,7 +3494,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />সিস্টেম ও অ্যাপ্লিকেশান তথ্য<ph name="END_LINK1" />, এবং <ph name="BEGIN_LINK2" />মেট্রিক্স<ph name="END_LINK2" /> পাঠান</translation>
 <translation id="6272643420381259437">প্লাগ ইনটি ডাউনলোড করার সময় একটি ত্রুটি (<ph name="ERROR" />) ঘটেছে</translation>
 <translation id="6273677812470008672">গুণমান</translation>
-<translation id="6276301056778294989">ডিভাইসটি অনুরুপ কোডটি দেখাচ্ছে কিনা নিশ্চিত করুন৷</translation>
 <translation id="6277105963844135994">নেটওয়ার্কের সময় শেষ হয়েছে</translation>
 <translation id="6277518330158259200">স্ক্রীনশট নি&amp;ন</translation>
 <translation id="6278057325678116358">GTK+ ব্যবহার করুন</translation>
@@ -3567,7 +3559,6 @@
 <translation id="6374108032506706911">Android এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
 <translation id="6380143666419481200">স্বীকার ও চালিয়ে যান</translation>
-<translation id="6383051423892982287">আপনার নিজস্ব <ph name="BEGIN_LINK" />সিঙ্ক পাসফ্রেজ<ph name="END_LINK" /> দিয়ে সিঙ্ক হওয়া ডেটা এনক্রিপ্ট করুন</translation>
 <translation id="6384275966486438344">আপনার সার্চের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">সাইটগুলি কুকি ডেটা সংরক্ষণ করতে ও পড়তে পারে</translation>
 <translation id="6388429472088318283">ভাষাগুলি সার্চ করুন</translation>
@@ -3605,7 +3596,6 @@
 <translation id="6426200009596957090">ChromeVox এর সেটিংস খুলুন</translation>
 <translation id="6429384232893414837">আপডেট করতে সমস্যা হয়েছে</translation>
 <translation id="6430814529589430811">Base64-এনকোডেড ASCII, একক শংসাপত্র</translation>
-<translation id="6431217872648827691">আপনার Google পাসওয়ার্ডের মাধ্যমে <ph name="TIME" /> তারিখ অনুযায়ী সমস্ত ডেটা এনক্রিপটেড হয়েছে</translation>
 <translation id="6431347207794742960">এই কম্পিউটারে সকল ব্যবহারকারীর জন্য <ph name="PRODUCT_NAME" /> স্বয়ংক্রিয় আপডেটগুলো সেটআপ করবে।</translation>
 <translation id="6434309073475700221">বাতিল</translation>
 <translation id="6436164536244065364">ওয়েব স্টোর-এ দেখুন</translation>
@@ -3788,7 +3778,6 @@
 <translation id="6702639462873609204">&amp;সম্পাদনা করুন...</translation>
 <translation id="6706210727756204531">সুযোগ</translation>
 <translation id="6707389671160270963">SSL ক্লায়েন্ট শংসাপত্র</translation>
-<translation id="6708029444764748914">আপনার ডিভাইসে সাইন-ইন করার জন্য এটি ব্যবহার করতে আপনার পিনটি আবার লিখুন।</translation>
 <translation id="6708242697268981054">উৎস:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> ব্যবহার করে সংযোগ করুন</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
@@ -4138,7 +4127,6 @@
 <translation id="7241389281993241388">ক্লায়েন্ট শংসাপত্র আমদানি করতে দয়া করে <ph name="TOKEN_NAME" />-এ প্রবেশ করুন৷</translation>
 <translation id="7243632151880336635">সাফ করে প্রস্থান করুন</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (সর্বোত্তম)</translation>
-<translation id="7246339268451149667">আঙ্গুলের ছাপ দিয়ে আনলক সক্ষম করবেন?</translation>
 <translation id="7246947237293279874">FTP প্রক্সী</translation>
 <translation id="725109152065019550">দুঃখিত, আপনার প্রশাসক আপনার অ্যাকাউন্টে বাহ্যিক সঞ্চয়স্থান অক্ষম করেছে৷</translation>
 <translation id="7253521419891527137">এবং আরও জানুন</translation>
@@ -4692,7 +4680,6 @@
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS #12 টি ফাইল</translation>
 <translation id="8053390638574070785">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
-<translation id="8054029954190364711">আঙুলের ছাপ দিয়ে আনলক করার বৈশিষ্ট্য</translation>
 <translation id="8054517699425078995">এই ধরনের ফাইলের প্রকার আপনার ডিভাইসের ক্ষতি করতে পারে৷ আপনি কী যে কোনো উপায়ে <ph name="FILE_NAME" />টিকে রাখতে চান?</translation>
 <translation id="8054563304616131773">অনুগ্রহ করে একটি সঠিক ইমেল আইডি লিখুন</translation>
 <translation id="8054921503121346576">USB কীবোর্ড সংযুক্ত হয়েছে</translation>
@@ -4711,7 +4698,6 @@
 <translation id="8075191520954018715">মেমরি স্থিতি</translation>
 <translation id="8076492880354921740">ট্যাবগুলি</translation>
 <translation id="8076835018653442223">আপনার প্রশাসকের দ্বারা আপনার ডিভাইসে স্থানীয় ফাইলের অ্যাক্সেস বন্ধ করা আছে</translation>
-<translation id="8077816382010018681">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে</translation>
 <translation id="8079530767338315840">পুনরাবৃত্তি করুন</translation>
 <translation id="8079938625609335826">সব ডিভাইসে আপনার এক্সটেনশন পেতে, সিঙ্ক চালু করুন।</translation>
 <translation id="8083739373364455075">Google ড্রাইভের মাধ্যমে ১০০ GB বিনামূল্যে পান</translation>
@@ -5179,6 +5165,7 @@
 <translation id="8821045908425223359">IP ঠিকানা স্বয়ংক্রিয়ভাবে কনফিগার করুন</translation>
 <translation id="882204272221080310">নিরাপত্তা আরও সুরক্ষার জন্য ফার্মওয়্যার আপডেট করুন।</translation>
 <translation id="8823514049557262177">লিঙ্ক টেক্সট কপি করুন</translation>
+<translation id="8823704566850948458">পাসওয়ার্ড সাজেস্ট করুন...</translation>
 <translation id="8824701697284169214">&amp;পৃষ্ঠা যোগ করুন...</translation>
 <translation id="8827752199525959199">আরও অ্যাকশন, <ph name="DOMAIN" />-এ <ph name="USERNAME" />-এর জন্য পাসওয়ার্ড</translation>
 <translation id="8828933418460119530">DNS নাম</translation>
@@ -5207,7 +5194,6 @@
 <translation id="8874184842967597500">সংযুক্ত নয়</translation>
 <translation id="8876215549894133151">ফর্ম্যাট:</translation>
 <translation id="8876307312329369159">ডেমো সেশনে এই সেটিংটি পরিবর্তন করা যাবে না।</translation>
-<translation id="8876309039915144086">পাসওয়ার্ড তৈরি করুন...</translation>
 <translation id="8877448029301136595">[পেরেন্ট ডাইরেক্টরি]</translation>
 <translation id="8879284080359814990">ট্যাব রূপে &amp;দেখান</translation>
 <translation id="8883847527783433352">অন্য অ্যাকাউন্টে সিঙ্ক করুন</translation>
