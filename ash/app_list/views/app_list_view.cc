@@ -1300,6 +1300,10 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   if (is_side_shelf_)
     return;
 
+  // The close animation is handled by the delegate.
+  if (target_state == AppListViewState::CLOSED)
+    return;
+
   const display::Display display = GetDisplayNearestView();
   const int target_state_y = GetPreferredWidgetYForState(target_state);
   gfx::Rect target_bounds = fullscreen_widget_->GetNativeView()->bounds();
