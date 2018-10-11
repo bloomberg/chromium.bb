@@ -1094,8 +1094,6 @@ source_set("chromeos") {
     "login/quick_unlock/pin_storage_prefs.h",
     "login/quick_unlock/quick_unlock_factory.cc",
     "login/quick_unlock/quick_unlock_factory.h",
-    "login/quick_unlock/quick_unlock_notification_controller.cc",
-    "login/quick_unlock/quick_unlock_notification_controller.h",
     "login/quick_unlock/quick_unlock_storage.cc",
     "login/quick_unlock/quick_unlock_storage.h",
     "login/quick_unlock/quick_unlock_utils.cc",
