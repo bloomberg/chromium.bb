@@ -114,6 +114,7 @@
     },
     {
       name: "BackgroundFetch",
+      origin_trial_feature_name: "BackgroundFetch",
       status: "experimental",
     },
     {

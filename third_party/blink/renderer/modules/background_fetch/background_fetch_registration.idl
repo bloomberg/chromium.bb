@@ -22,7 +22,7 @@ enum BackgroundFetchResult { "", "success", "failure" };
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=BackgroundFetch
+    OriginTrialEnabled=BackgroundFetch
 ] interface BackgroundFetchRegistration : EventTarget {
     readonly attribute DOMString id;
     readonly attribute unsigned long long uploadTotal;

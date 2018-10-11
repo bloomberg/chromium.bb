@@ -140,7 +140,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   if (name == "payment-handler")
     return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);
   if (name == "background-fetch") {
-    if (!RuntimeEnabledFeatures::BackgroundFetchEnabled()) {
+    if (!OriginTrials::BackgroundFetchEnabled(
+            ExecutionContext::From(script_state))) {
       exception_state.ThrowTypeError("Background Fetch is not enabled.");
       return nullptr;
     }
