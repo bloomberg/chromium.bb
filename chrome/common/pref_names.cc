@@ -875,6 +875,10 @@ const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 const char kNTLMShareAuthenticationEnabled[] =
     "network_file_shares.ntlm_share_authentication.enabled";
 
+// List of preconfigured network file shares.
+const char kNetworkFileSharesPreconfiguredShares[] =
+    "network_file_shares.preconfigured_shares";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

@@ -3379,6 +3379,22 @@
     ]
   },
 
+  "NetworkFileSharesPreconfiguredShares" : {
+    "os": ["chromeos"],
+    "test_policy": {
+      "NetworkFileSharesPreconfiguredShares": [{
+        "share_url": "smb://server/share",
+        "mode": "drop_down"
+      }, {
+        "share_url": "\\\\server\\share",
+        "mode": "drop_down"
+      }]
+    },
+    "pref_mappings": [
+      { "pref": "network_file_shares.preconfigured_shares" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
