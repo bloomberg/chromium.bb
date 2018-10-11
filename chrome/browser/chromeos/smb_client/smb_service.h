@@ -154,6 +154,10 @@ class SmbService : public KeyedService,
   // Whether NTLM should be used. Controlled via policy.
   bool IsNTLMAuthenticationEnabled() const;
 
+  // Gets the shares preconfigured via policy that should be displayed in the
+  // discovery drop down.
+  std::vector<SmbUrl> GetPreconfiguredSharePathsForDropDown() const;
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
