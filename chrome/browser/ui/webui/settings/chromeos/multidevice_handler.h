@@ -76,6 +76,10 @@ class MultideviceHandler
   void RegisterPrefChangeListeners();
   void NotifySmartLockSignInEnabledChanged();
 
+  // Returns true if |auth_token| matches the current auth token stored in
+  // QuickUnlockStorage, i.e., the user has successfully authenticated recently.
+  bool IsAuthTokenValid(const std::string& auth_token);
+
   // Unowned pointer to the preferences service.
   PrefService* prefs_;
 

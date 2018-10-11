@@ -42,8 +42,10 @@ cr.define('settings', function() {
      * Sets the value of the preference controlling whether Smart Lock may be
      * used to sign-in the user (as opposed to unlocking the screen).
      * @param {boolean} enabled
+     * @param {string=} opt_authToken Authentication token used to restrict
+     *    edit access to the Smart Lock sign-in pref.
      */
-    setSmartLockSignInEnabled(enabled) {}
+    setSmartLockSignInEnabled(enabled, opt_authToken) {}
   }
 
   /**
@@ -87,8 +89,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    setSmartLockSignInEnabled(enabled) {
-      chrome.send('setSmartLockSignInEnabled', [enabled]);
+    setSmartLockSignInEnabled(enabled, opt_authToken) {
+      chrome.send('setSmartLockSignInEnabled', [enabled, opt_authToken]);
     }
   }
 

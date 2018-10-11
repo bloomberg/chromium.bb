@@ -61,6 +61,17 @@ Polymer({
       type: Object,
       value: settings.SignInEnabledState.DISABLED,
     },
+
+    /** @private */
+    showPasswordPromptDialog_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  listeners: {
+    'auth-token-changed': 'onAuthTokenChanged_',
+    'close': 'onDialogClose_',
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -100,6 +111,11 @@ Polymer({
         settings.SignInEnabledState.DISABLED;
   },
 
+  /** @private */
+  openPasswordPromptDialog_: function() {
+    this.showPasswordPromptDialog_ = true;
+  },
+
   /**
    * Sets the Smart Lock 'sign-in enabled' pref based on the value of the
    * radio group representing the pref.
@@ -108,6 +124,43 @@ Polymer({
   onSmartLockSignInEnabledChanged_: function(event) {
     const radioGroup = event.target;
     const enabled = radioGroup.selected == settings.SignInEnabledState.ENABLED;
-    this.browserProxy_.setSmartLockSignInEnabled(enabled);
+
+    if (!enabled) {
+      // No authentication check is required to disable.
+      this.browserProxy_.setSmartLockSignInEnabled(false /* enabled */);
+      return;
+    }
+
+    // Toggle the enabled state back to disabled, as authentication may not
+    // succeed. The toggle state updates automatically by the pref listener.
+    radioGroup.selected = settings.SignInEnabledState.DISABLED;
+    this.openPasswordPromptDialog_();
+  },
+
+  /**
+   * Completes the transaction of setting the Smart Lock 'sign-in enabled' pref
+   * after the user authenticates.
+   * @param {!{detail: !Object}} event The event containing the auth token.
+   * @private
+   */
+  onAuthTokenChanged_: function(event) {
+    const authToken = event.detail.value;
+
+    // The auth-token-changed event fires after the expiration period (
+    // represented by the empty string), so only move forward when the auth
+    // token is non-empty.
+    if (authToken !== '') {
+      this.browserProxy_.setSmartLockSignInEnabled(
+          true /* enabled */, authToken);
+    }
+  },
+
+  /**
+   * Updates the state of the password dialog controller flag when the UI
+   * element closes.
+   * @private
+   */
+  onDialogClose_: function() {
+    this.showPasswordPromptDialog_ = false;
   },
 });
