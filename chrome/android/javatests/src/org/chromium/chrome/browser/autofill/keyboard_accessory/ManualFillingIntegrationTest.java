@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,6 +65,13 @@ public class ManualFillingIntegrationTest {
             new ChromeTabbedActivityTestRule();
 
     private final ManualFillingTestHelper mHelper = new ManualFillingTestHelper(mActivityTestRule);
+
+    @Before
+    public void setUp() throws Exception {
+        // TODO(crbug.com/894428) - fix this suite to use the embedded test server instead of
+        // data urls.
+        Features.getInstance().enable(ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION);
+    }
 
     @After
     public void tearDown() {

@@ -21,6 +21,13 @@
 namespace autofill {
 namespace features {
 
+// Controls whether autofill activates on non-HTTP(S) pages. Useful for
+// automated with data URLS in cases where it's too difficult to use the
+// embedded test server. Generally avoid using.
+//
+const base::Feature kAutofillAllowNonHttpActivation{
+    "AutofillAllowNonHttpActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the AddressNormalizer is supplied. If available, it may be
 // used to normalize address and will incur fetching rules from the server.
 const base::Feature kAutofillAddressNormalizer{

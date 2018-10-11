@@ -3173,6 +3173,7 @@ TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
   // Set up the form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://www.foo.com/");
 
   FormFieldData field;
   std::vector<ServerFieldType> field_types;

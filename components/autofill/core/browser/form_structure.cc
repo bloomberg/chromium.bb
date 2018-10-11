@@ -61,6 +61,14 @@ const char kShippingMode[] = "shipping";
 const int kCommonNamePrefixRemovalFieldThreshold = 3;
 const int kMinCommonNamePrefixLength = 16;
 
+// Returns true if the scheme given by |url| is one for which autfill is allowed
+// to activate. By default this only returns true for HTTP and HTTPS.
+bool HasAllowedScheme(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS() ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillAllowNonHttpActivation);
+}
+
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
 std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
@@ -690,6 +698,10 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed() const {
+  // Exclude URLs not on the web via HTTP(S).
+  if (!HasAllowedScheme(source_url_))
+    return false;
+
   size_t min_required_fields =
       std::min({MinRequiredFieldsForHeuristics(), MinRequiredFieldsForQuery(),
                 MinRequiredFieldsForUpload()});
@@ -718,6 +730,7 @@ bool FormStructure::ShouldBeParsed() const {
 
 bool FormStructure::ShouldRunHeuristics() const {
   return active_field_count() >= MinRequiredFieldsForHeuristics() &&
+         HasAllowedScheme(source_url_) &&
          (is_form_tag_ || is_formless_checkout_ ||
           !base::FeatureList::IsEnabled(
               features::kAutofillRestrictUnownedFieldsToFormlessCheckout));
