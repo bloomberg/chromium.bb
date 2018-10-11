@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
+#include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
 
 #include <memory>
 #include <utility>
@@ -37,20 +37,21 @@ using invalidation::TiclInvalidationService;
 
 // static
 invalidation::ProfileInvalidationProvider*
-IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
+IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<ProfileInvalidationProvider*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-IOSChromeProfileInvalidationProviderFactory*
-IOSChromeProfileInvalidationProviderFactory::GetInstance() {
-  return base::Singleton<IOSChromeProfileInvalidationProviderFactory>::get();
+IOSChromeDeprecatedProfileInvalidationProviderFactory*
+IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance() {
+  return base::Singleton<
+      IOSChromeDeprecatedProfileInvalidationProviderFactory>::get();
 }
 
-IOSChromeProfileInvalidationProviderFactory::
-    IOSChromeProfileInvalidationProviderFactory()
+IOSChromeDeprecatedProfileInvalidationProviderFactory::
+    IOSChromeDeprecatedProfileInvalidationProviderFactory()
     : BrowserStateKeyedServiceFactory(
           "InvalidationService",
           BrowserStateDependencyManager::GetInstance()) {
@@ -58,11 +59,11 @@ IOSChromeProfileInvalidationProviderFactory::
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
 }
 
-IOSChromeProfileInvalidationProviderFactory::
-    ~IOSChromeProfileInvalidationProviderFactory() {}
+IOSChromeDeprecatedProfileInvalidationProviderFactory::
+    ~IOSChromeDeprecatedProfileInvalidationProviderFactory() {}
 
 std::unique_ptr<KeyedService>
-IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
+IOSChromeDeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
@@ -88,8 +89,8 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       std::move(service), std::move(identity_provider));
 }
 
-void IOSChromeProfileInvalidationProviderFactory::RegisterBrowserStatePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void IOSChromeDeprecatedProfileInvalidationProviderFactory::
+    RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ProfileInvalidationProvider::RegisterProfilePrefs(registry);
   InvalidatorStorage::RegisterProfilePrefs(registry);
 }

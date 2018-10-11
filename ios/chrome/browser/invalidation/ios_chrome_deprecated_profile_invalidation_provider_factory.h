@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_INVALIDATION_IOS_CHROME_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
-#define IOS_CHROME_BROWSER_INVALIDATION_IOS_CHROME_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_INVALIDATION_IOS_CHROME_DEPRECATED_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
+#define IOS_CHROME_BROWSER_INVALIDATION_IOS_CHROME_DEPRECATED_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
 
 #include <memory>
 
@@ -29,7 +29,7 @@ class PrefRegistrySyncable;
 
 // A BrowserContextKeyedServiceFactory to construct InvalidationServices wrapped
 // in ProfileInvalidationProviders.
-class IOSChromeProfileInvalidationProviderFactory
+class IOSChromeDeprecatedProfileInvalidationProviderFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   // Returns the ProfileInvalidationProvider for the given |browser_state|,
@@ -37,14 +37,14 @@ class IOSChromeProfileInvalidationProviderFactory
   static invalidation::ProfileInvalidationProvider* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
-  static IOSChromeProfileInvalidationProviderFactory* GetInstance();
+  static IOSChromeDeprecatedProfileInvalidationProviderFactory* GetInstance();
 
  private:
   friend struct base::DefaultSingletonTraits<
-      IOSChromeProfileInvalidationProviderFactory>;
+      IOSChromeDeprecatedProfileInvalidationProviderFactory>;
 
-  IOSChromeProfileInvalidationProviderFactory();
-  ~IOSChromeProfileInvalidationProviderFactory() override;
+  IOSChromeDeprecatedProfileInvalidationProviderFactory();
+  ~IOSChromeDeprecatedProfileInvalidationProviderFactory() override;
 
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
@@ -52,7 +52,8 @@ class IOSChromeProfileInvalidationProviderFactory
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeProfileInvalidationProviderFactory);
+  DISALLOW_COPY_AND_ASSIGN(
+      IOSChromeDeprecatedProfileInvalidationProviderFactory);
 };
 
-#endif  // IOS_CHROME_BROWSER_INVALIDATION_IOS_CHROME_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_INVALIDATION_IOS_CHROME_DEPRECATED_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
