@@ -211,12 +211,6 @@ class WebController {
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<FindElementResult> element_result);
-  void OnClickObjectForFillingForm(
-      std::unique_ptr<FillFormInputData> data_to_autofill,
-      const std::vector<std::string>& selectors,
-      base::OnceCallback<void(bool)> callback,
-      std::unique_ptr<FindElementResult> element_result,
-      bool click_result);
   void OnGetFormAndFieldDataForFillingForm(
       std::unique_ptr<FillFormInputData> data_to_autofill,
       base::OnceCallback<void(bool)> callback,
