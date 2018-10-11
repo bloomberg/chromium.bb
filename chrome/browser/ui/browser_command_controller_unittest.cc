@@ -284,6 +284,7 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
   ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override {
     return nullptr;
   }
+  bool CanUserExitFullscreen() const override { return true; }
 
   void set_toolbar_showing(bool showing) { toolbar_showing_ = showing; }
 

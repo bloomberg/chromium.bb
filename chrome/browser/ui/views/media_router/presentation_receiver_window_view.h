@@ -97,6 +97,7 @@ class PresentationReceiverWindowView final
   void HideDownloadShelf() final;
   bool ShouldHideUIForFullscreen() const final;
   ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() final;
+  bool CanUserExitFullscreen() const final;
 
   // ExclusiveAccessBubbleViewsContext overrides.
   ExclusiveAccessManager* GetExclusiveAccessManager() final;

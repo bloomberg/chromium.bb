@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -322,11 +323,23 @@ void ImmersiveModeControllerAsh::Observe(
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
                                                          const void* key,
                                                          intptr_t old) {
+  if (key == ash::kWindowStateTypeKey) {
+    ash::mojom::WindowStateType new_state =
+        window->GetProperty(ash::kWindowStateTypeKey);
+    ash::mojom::WindowStateType old_state =
+        static_cast<ash::mojom::WindowStateType>(old);
+    if (new_state == ash::mojom::WindowStateType::TRUSTED_PINNED ||
+        old_state == ash::mojom::WindowStateType::TRUSTED_PINNED ||
+        new_state == ash::mojom::WindowStateType::PINNED ||
+        old_state == ash::mojom::WindowStateType::PINNED) {
+      browser_view_->FullscreenStateChanged();
+    }
+  }
+
   if (key == aura::client::kShowStateKey) {
     ui::WindowShowState new_state =
         window->GetProperty(aura::client::kShowStateKey);
     auto old_state = static_cast<ui::WindowShowState>(old);
-
     // Make sure the browser stays up to date with the window's state. This is
     // necessary in classic Ash if the user exits fullscreen with the restore
     // button, and it's necessary in OopAsh if the window manager initiates a

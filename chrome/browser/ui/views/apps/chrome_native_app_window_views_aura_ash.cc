@@ -397,6 +397,10 @@ ChromeNativeAppWindowViewsAuraAsh::GetExclusiveAccessBubble() {
   return exclusive_access_bubble_.get();
 }
 
+bool ChromeNativeAppWindowViewsAuraAsh::CanUserExitFullscreen() const {
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // ExclusiveAccessBubbleViewsContext implementation:
 ExclusiveAccessManager*

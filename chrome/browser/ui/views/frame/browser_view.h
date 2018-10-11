@@ -481,6 +481,7 @@ class BrowserView : public BrowserWindow,
   void HideDownloadShelf() override;
   void UnhideDownloadShelf() override;
   ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
+  bool CanUserExitFullscreen() const override;
 
   // ExclusiveAccessBubbleViewsContext:
   ExclusiveAccessManager* GetExclusiveAccessManager() override;

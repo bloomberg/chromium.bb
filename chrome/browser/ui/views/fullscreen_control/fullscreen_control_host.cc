@@ -277,6 +277,7 @@ void FullscreenControlHost::OnPopupTimeout(
 
 bool FullscreenControlHost::IsExitUiNeeded() {
   return exclusive_access_context_->IsFullscreen() &&
+         exclusive_access_context_->CanUserExitFullscreen() &&
          exclusive_access_context_->ShouldHideUIForFullscreen();
 }
 

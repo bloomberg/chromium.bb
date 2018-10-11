@@ -66,6 +66,7 @@ class BrowserNonClientFrameViewAsh
   void UpdateMinimumSize() override;
   int GetTabStripLeftInset() const override;
   void OnTabsMaxXChanged() override;
+  bool CanUserExitFullscreen() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

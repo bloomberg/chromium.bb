@@ -84,6 +84,10 @@ class ExclusiveAccessContext {
 
   // Accessor for the FullscreenExitBubbleViews.
   virtual ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() = 0;
+
+  // There are special modes where the user isn't allowed to exit fullscreen on
+  // their own, and this function allows us to check for that.
+  virtual bool CanUserExitFullscreen() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_CONTEXT_H_

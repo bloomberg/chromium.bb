@@ -16,6 +16,7 @@
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/frame_utils.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -424,6 +425,13 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
   BrowserNonClientFrameView::OnTabsMaxXChanged();
   UpdateClientArea();
+}
+
+bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
+  aura::Window* window = frame()->GetNativeWindow();
+  if (window)
+    return ash::IsWindowTrustedPinned(window) ? false : true;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

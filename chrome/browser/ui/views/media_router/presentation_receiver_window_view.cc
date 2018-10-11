@@ -380,6 +380,10 @@ PresentationReceiverWindowView::GetExclusiveAccessBubble() {
   return exclusive_access_bubble_.get();
 }
 
+bool PresentationReceiverWindowView::CanUserExitFullscreen() const {
+  return true;
+}
+
 ExclusiveAccessManager*
 PresentationReceiverWindowView::GetExclusiveAccessManager() {
   return &exclusive_access_manager_;
