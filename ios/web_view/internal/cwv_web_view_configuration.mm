@@ -77,8 +77,11 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
 }  // namespace
 
 + (void)shutDown {
-  [gDefaultConfiguration shutDown];
+  // Incognito should be shut down first because it holds onto members of the
+  // non-incognito browser state. This ensures that the non-incognito browser
+  // state will not leave any dangling references.
   [gIncognitoConfiguration shutDown];
+  [gDefaultConfiguration shutDown];
 }
 
 + (instancetype)defaultConfiguration {
