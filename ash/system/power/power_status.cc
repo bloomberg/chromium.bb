@@ -68,17 +68,22 @@ class BatteryImageSource : public gfx::CanvasImageSource {
     const float dsf = canvas->UndoDeviceScaleFactor();
     // All constants below are expressed relative to a canvas size of 16. The
     // actual canvas size (i.e. |size()|) may not be 16.
-    const float kAssumedCanvasSize = 16;
+    const float kAssumedCanvasSize =
+        features::IsSystemTrayUnifiedEnabled() ? 20 : 16;
     const float const_scale = dsf * size().height() / kAssumedCanvasSize;
 
     // The two shapes in this path define the outline of the battery icon.
     SkPath path;
-    gfx::RectF top(6.5f, 2, 3, 1);
+    gfx::RectF top = features::IsSystemTrayUnifiedEnabled()
+                         ? gfx::RectF(8, 3, 4, 2)
+                         : gfx::RectF(6.5f, 2, 3, 1);
     top.Scale(const_scale);
     top = gfx::RectF(gfx::ToEnclosingRect(top));
     path.addRect(gfx::RectFToSkRect(top));
 
-    gfx::RectF bottom(4.5f, 3, 7, 11);
+    gfx::RectF bottom = features::IsSystemTrayUnifiedEnabled()
+                            ? gfx::RectF(6, 5, 8, 12)
+                            : gfx::RectF(4.5f, 3, 7, 11);
     bottom.Scale(const_scale);
     // Align the top of bottom rect to the bottom of the top one. Otherwise,
     // they may overlap and the top will be too small.
