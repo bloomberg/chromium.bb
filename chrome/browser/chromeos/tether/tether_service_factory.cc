@@ -18,9 +18,21 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/session_manager/core/session_manager.h"
+
+namespace {
+
+bool IsFeatureAllowed(content::BrowserContext* context) {
+  return chromeos::multidevice_setup::IsFeatureAllowed(
+      chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
+      Profile::FromBrowserContext(context)->GetPrefs());
+}
+
+}  // namespace
 
 // static
 TetherServiceFactory* TetherServiceFactory::GetInstance() {
@@ -50,6 +62,9 @@ TetherServiceFactory::~TetherServiceFactory() {}
 KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   DCHECK(chromeos::NetworkHandler::IsInitialized());
+
+  if (!IsFeatureAllowed(context))
+    return nullptr;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kTetherStub)) {

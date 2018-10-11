@@ -91,6 +91,11 @@ class MultideviceHandler
   // null).
   std::unique_ptr<base::DictionaryValue> GeneratePageContentDataDictionary();
 
+  multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
+  GetHostStatusWithDevice();
+  multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
+  GetFeatureStatesMap();
+
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
   std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
       android_sms_app_helper_;

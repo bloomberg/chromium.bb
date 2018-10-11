@@ -47,6 +47,22 @@ bool AreAnyMultiDeviceFeaturesAllowed(PrefService* pref_service) {
          pref_service->GetBoolean(kSmartLockAllowedPrefName);
 }
 
+bool IsFeatureAllowed(mojom::Feature feature, PrefService* pref_service) {
+  switch (feature) {
+    case mojom::Feature::kBetterTogetherSuite:
+      return AreAnyMultiDeviceFeaturesAllowed(pref_service);
+    case mojom::Feature::kInstantTethering:
+      return pref_service->GetBoolean(kInstantTetheringAllowedPrefName);
+    case mojom::Feature::kMessages:
+      return pref_service->GetBoolean(kMessagesAllowedPrefName);
+    case mojom::Feature::kSmartLock:
+      return pref_service->GetBoolean(kSmartLockAllowedPrefName);
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 }  // namespace multidevice_setup
 
 }  // namespace chromeos
