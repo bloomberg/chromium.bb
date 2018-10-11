@@ -5,13 +5,11 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -20,7 +18,6 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "components/drive/service/fake_drive_service.h"
-#include "content/public/browser/storage_partition.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -59,7 +56,7 @@ class FakeDriveServiceFactory
 class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
                            public drive::FakeDriveService::ChangeObserver {
  public:
-  SyncFileSystemTest() : remote_service_(NULL) {}
+  SyncFileSystemTest() : remote_service_(nullptr) {}
 
   scoped_refptr<base::SequencedTaskRunner> MakeSequencedTaskRunner() {
     return base::CreateSequencedTaskRunnerWithTraits(
