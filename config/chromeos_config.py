@@ -4068,6 +4068,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'kip-release': {
           'useflags': append_useflags(['new_tcmalloc']),
       },
+
+      'veyron_minnie-release': {
+          'useflags': append_useflags(['new_tcmalloc']),
+      },
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():
