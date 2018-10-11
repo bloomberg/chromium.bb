@@ -143,16 +143,20 @@ public class AsyncImageView extends ForegroundRoundedCornerImageView {
         mCancelable = null;
         mWaitingForResponse = false;
         setImageDrawable(drawable);
+
+        // Restore the identifier after calling setImageDrawable(), which will erase it.
+        mIdentifier = identifier;
+
         setForegroundDrawableCompat(drawable == null ? mUnavailableDrawable : null);
     }
 
     private void cancelPreviousDrawableRequest() {
         mFactory = null;
+        mIdentifier = null;
 
         if (mWaitingForResponse) {
             if (mCancelable != null) mCancelable.run();
             mCancelable = null;
-            mIdentifier = null;
             mWaitingForResponse = false;
         }
     }
