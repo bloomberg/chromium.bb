@@ -23,8 +23,8 @@
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -157,7 +157,7 @@ class ModuleScriptLoaderTest : public PageTestBase {
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
-  Persistent<MainThreadWorkletGlobalScope> global_scope_;
+  Persistent<WorkletGlobalScope> global_scope_;
 };
 
 void ModuleScriptLoaderTest::SetUp() {
@@ -191,8 +191,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
-  global_scope_ = new MainThreadWorkletGlobalScope(
-      &GetFrame(), std::move(creation_params), *reporting_proxy_);
+  global_scope_ = new WorkletGlobalScope(std::move(creation_params),
+                                         *reporting_proxy_, &GetFrame());
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
                                                                NullURL());
   modulator_ = new ModuleScriptLoaderTestModulator(

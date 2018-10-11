@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_pending_generator_registry.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -18,8 +18,7 @@ class CSSPaintDefinition;
 class ExceptionState;
 class WorkerReportingProxy;
 
-class MODULES_EXPORT PaintWorkletGlobalScope final
-    : public MainThreadWorkletGlobalScope {
+class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 

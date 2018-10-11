@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
-#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"

@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"

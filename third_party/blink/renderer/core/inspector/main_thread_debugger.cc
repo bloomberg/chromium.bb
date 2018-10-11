@@ -60,7 +60,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/timing/memory_info.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/xml/xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -82,7 +82,7 @@ LocalFrame* ToFrame(ExecutionContext* context) {
   if (auto* document = DynamicTo<Document>(context))
     return document->GetFrame();
   if (context->IsMainThreadWorkletGlobalScope())
-    return ToMainThreadWorkletGlobalScope(context)->GetFrame();
+    return ToWorkletGlobalScope(context)->GetFrame();
   return nullptr;
 }
 }
@@ -179,12 +179,11 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
     script_state =
         event->World() ? ToScriptState(frame, *event->World()) : nullptr;
   } else if (context->IsMainThreadWorkletGlobalScope()) {
-    frame = ToMainThreadWorkletGlobalScope(context)->GetFrame();
+    frame = ToWorkletGlobalScope(context)->GetFrame();
     if (!frame)
       return;
-    script_state = ToMainThreadWorkletGlobalScope(context)
-                       ->ScriptController()
-                       ->GetScriptState();
+    script_state =
+        ToWorkletGlobalScope(context)->ScriptController()->GetScriptState();
   } else {
     NOTREACHED();
   }
