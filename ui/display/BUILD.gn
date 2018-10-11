@@ -52,6 +52,8 @@ jumbo_component("display") {
     "win/uwp_text_scale_factor.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   defines = [ "DISPLAY_IMPLEMENTATION" ]
 
   public_deps = [

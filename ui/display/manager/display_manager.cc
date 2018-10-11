@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -394,9 +395,9 @@ const DisplayLayout& DisplayManager::GetCurrentDisplayLayout() const {
   }
   DLOG(ERROR) << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
-  static DisplayLayout layout;
-  layout.primary_id = active_display_list_[0].id();
-  return layout;
+  static base::NoDestructor<DisplayLayout> layout;
+  layout->primary_id = active_display_list_[0].id();
+  return *layout;
 }
 
 const DisplayLayout& DisplayManager::GetCurrentResolvedDisplayLayout() const {
