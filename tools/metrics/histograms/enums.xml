@@ -20406,6 +20406,8 @@ Called by update_net_error_codes.py.-->
   <int value="2588" label="GetComputedStyleForWebkitAppearance"/>
   <int value="2589" label="CursorImageLE32x32"/>
   <int value="2590" label="CursorImageGT32x32"/>
+  <int value="2591"
+      label="RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

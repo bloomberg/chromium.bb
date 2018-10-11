@@ -609,6 +609,19 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               WillBeRemoved("Cache.addAll() with duplicate requests", kM72,
                             "5622587912617984")};
 
+    case WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics:
+      return {"RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics", kM72,
+              String::Format(
+                  "\"Complex\" Plan B SDP detected! Chrome will switch the "
+                  "default sdpSemantics in %s from 'plan-b' to the "
+                  "standardized 'unified-plan' format and this peer connection "
+                  "is relying on the default sdpSemantics. This SDP is not "
+                  "compatible with Unified Plan and will be rejected by "
+                  "clients expecting Unified Plan. For more information about "
+                  "how to prepare for the switch, see "
+                  "https://webrtc.org/web-apis/chrome/unified-plan/.",
+                  MilestoneString(kM72))};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
