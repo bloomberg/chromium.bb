@@ -1558,37 +1558,6 @@ CSSTransitionData& ComputedStyle::AccessTransitions() {
   return *TransitionsInternal();
 }
 
-const Font& ComputedStyle::GetFont() const {
-  return FontInternal();
-}
-const FontDescription& ComputedStyle::GetFontDescription() const {
-  return FontInternal().GetFontDescription();
-}
-float ComputedStyle::SpecifiedFontSize() const {
-  return GetFontDescription().SpecifiedSize();
-}
-float ComputedStyle::ComputedFontSize() const {
-  return GetFontDescription().ComputedSize();
-}
-LayoutUnit ComputedStyle::ComputedFontSizeAsFixed() const {
-  return LayoutUnit::FromFloatRound(GetFontDescription().ComputedSize());
-}
-int ComputedStyle::FontSize() const {
-  return GetFontDescription().ComputedPixelSize();
-}
-float ComputedStyle::FontSizeAdjust() const {
-  return GetFontDescription().SizeAdjust();
-}
-bool ComputedStyle::HasFontSizeAdjust() const {
-  return GetFontDescription().HasSizeAdjust();
-}
-FontSelectionValue ComputedStyle::GetFontWeight() const {
-  return GetFontDescription().Weight();
-}
-FontSelectionValue ComputedStyle::GetFontStretch() const {
-  return GetFontDescription().Stretch();
-}
-
 FontBaseline ComputedStyle::GetFontBaseline() const {
   // TODO(kojii): Incorporate 'dominant-baseline' when we support it.
   // https://www.w3.org/TR/css-inline-3/#dominant-baseline-property
@@ -1731,23 +1700,12 @@ const CSSValue* ComputedStyle::GetRegisteredVariable(
   return GetRegisteredVariable(name, true);
 }
 
-float ComputedStyle::WordSpacing() const {
-  return GetFontDescription().WordSpacing();
-}
-float ComputedStyle::LetterSpacing() const {
-  return GetFontDescription().LetterSpacing();
-}
-
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
   if (FontInternal().GetFontDescription() != v) {
     SetFontInternal(Font(v));
     return true;
   }
   return false;
-}
-
-void ComputedStyle::SetFont(const Font& font) {
-  SetFontInternal(font);
 }
 
 bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
@@ -1757,10 +1715,6 @@ bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
   return font_data && other_font_data &&
          font_data->GetFontMetrics().HasIdenticalAscentDescentAndLineGap(
              other_font_data->GetFontMetrics());
-}
-
-const Length& ComputedStyle::SpecifiedLineHeight() const {
-  return LineHeightInternal();
 }
 
 Length ComputedStyle::LineHeight() const {
