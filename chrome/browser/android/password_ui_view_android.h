@@ -46,7 +46,7 @@ class PasswordUIViewAndroid : public PasswordUIView {
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
-  void ShowPassword(size_t index,
+  void ShowPassword(const std::string& sort_key,
                     const base::string16& password_value) override;
   void SetPasswordList(
       const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list)
