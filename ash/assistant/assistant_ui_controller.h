@@ -103,7 +103,7 @@ class ASH_EXPORT AssistantUiController
   void OnDeepLinkReceived(
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) override;
-  void OnUrlOpened(const GURL& url) override;
+  void OnUrlOpened(const GURL& url, bool from_server) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,

@@ -207,9 +207,17 @@ void AssistantUiController::OnDeepLinkReceived(
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
 
-void AssistantUiController::OnUrlOpened(const GURL& url) {
-  // We hide Assistant UI when opening a URL in a new tab.
-  if (model_.visibility() == AssistantVisibility::kVisible)
+void AssistantUiController::OnUrlOpened(const GURL& url, bool from_server) {
+  if (model_.visibility() != AssistantVisibility::kVisible)
+    return;
+
+  // We close the Assistant UI entirely when opening a new browser tab if the
+  // navigation was initiated by a server response. Otherwise the navigation
+  // was user initiated so we only hide the UI to retain session state. That way
+  // the user can choose to resume their session if they are so inclined.
+  if (from_server)
+    CloseUi(AssistantSource::kUnspecified);
+  else
     HideUi(AssistantSource::kUnspecified);
 }
 

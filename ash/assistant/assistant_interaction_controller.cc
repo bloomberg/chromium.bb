@@ -442,7 +442,10 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
   if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
-  assistant_controller_->OpenUrl(url);
+  // We need to indicate that the navigation attempt is occurring as a result of
+  // a server response so that we can differentiate from navigation attempts
+  // initiated by direct user interaction.
+  assistant_controller_->OpenUrl(url, /*from_server=*/true);
 }
 
 void AssistantInteractionController::OnDialogPlateButtonPressed(

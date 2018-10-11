@@ -130,9 +130,9 @@ class ASH_EXPORT AssistantController
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
-  // Opens the specified |url| in a new browser tab.
-  // TODO(dmblack): Support opening specific URLs in the Assistant container.
-  void OpenUrl(const GURL& url);
+  // Opens the specified |url| in a new browser tab. Special handling is applied
+  // to deep links which may cause deviation from this behavior.
+  void OpenUrl(const GURL& url, bool from_server = false);
 
   AssistantCacheController* cache_controller() {
     DCHECK(assistant_cache_controller_);
@@ -170,7 +170,7 @@ class ASH_EXPORT AssistantController
   void NotifyConstructed();
   void NotifyDestroying();
   void NotifyDeepLinkReceived(const GURL& deep_link);
-  void NotifyUrlOpened(const GURL& url);
+  void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
