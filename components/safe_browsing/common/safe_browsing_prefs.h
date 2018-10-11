@@ -149,10 +149,6 @@ bool ExtendedReportingPrefExists(const PrefService& prefs);
 // Returns the level of reporting available for the current user.
 ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs);
 
-// Returns the name of the Safe Browsing Extended Reporting pref that is
-// currently in effect. The specific pref in-use may change through experiments.
-const char* GetExtendedReportingPrefName(const PrefService& prefs);
-
 // Returns whether the user is able to modify the Safe Browsing Extended
 // Reporting opt-in.
 bool IsExtendedReportingOptInAllowed(const PrefService& prefs);
