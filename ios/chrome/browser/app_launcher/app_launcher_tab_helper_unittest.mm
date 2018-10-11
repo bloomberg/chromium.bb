@@ -116,6 +116,7 @@ class AppLauncherTabHelperTest : public PlatformTest {
     auto navigation_manager = std::make_unique<FakeNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
+    web_state_.SetCurrentURL(GURL("https://chromium.org"));
     tab_helper_ = AppLauncherTabHelper::FromWebState(&web_state_);
   }
 
