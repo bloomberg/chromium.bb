@@ -349,3 +349,29 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
       embedded_test_server()->GetURL("googlé.com", "/title1.html"));
   CheckNoUkm();
 }
+
+// IDNs with a single label should be properly handled. There are two cases
+// where this might occur:
+// 1. The navigated URL is an IDN with a single label.
+// 2. One of the engaged sites is an IDN with a single label.
+// Neither of these should cause a crash.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
+                       IdnWithSingleLabelShouldNotCauseACrash) {
+  if (GetParam() != FeatureTestState::kEnabledWithUI)
+    return;
+
+  base::HistogramTester histograms;
+
+  // Case 1: Navigating to an IDN with a single label shouldn't cause a crash.
+  TestInfobarNotShown(embedded_test_server()->GetURL("é", "/title1.html"));
+
+  // Case 2: An IDN with a single label with a site engagement score shouldn't
+  // cause a crash.
+  SetSiteEngagementScore(GURL("http://tést"), 20);
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("tést.com", "/title1.html"));
+
+  histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                              0);
+  CheckNoUkm();
+}
