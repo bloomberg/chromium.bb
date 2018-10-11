@@ -36,9 +36,9 @@ import java.util.Map;
 public class ExploreSitesSection {
     private static final int MAX_CATEGORIES = 3;
     // This is a number of UMA histogram buckets that should be an upper bound
-    // of MAX_CATEGORIES over time. If MAX_CATEGORIES changes, this value should
-    // be updated only upwards.
-    private static final int MAX_CATEGORIES_HISTOGRAM_BUCKETS = 3;
+    // of MAX_CATEGORIES over time, plus 1 for "More" button. If MAX_CATEGORIES
+    // changes, this value should be updated only upwards.
+    private static final int MAX_CATEGORIES_HISTOGRAM_BUCKETS = 4;
 
     @TileStyle
     private int mStyle;
