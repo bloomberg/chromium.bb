@@ -139,7 +139,7 @@ config("compiler") {
   if (!is_debug && !is_component_build) {
     # Enable standard linker optimizations like GC (/OPT:REF) and ICF in static
     # release builds. These are implied by /PROFILE below, but /PROFILE is
-    # incompatible with /debug:fastlink and LLD ignores it as of this writing.
+    # incompatible with /debug:fastlink.
     # Release builds always want these optimizations, so enable them explicitly.
     # TODO(crbug.com/884545): Remove the checks for use_libfuzzer when
     # libFuzzer's issues with /OPT:REF are resolved upstream.
