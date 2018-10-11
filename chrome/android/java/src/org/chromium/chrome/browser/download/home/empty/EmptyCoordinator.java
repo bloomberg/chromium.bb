@@ -31,6 +31,7 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
     private final EmptyView mView;
 
     private boolean mShowingPrefetch;
+    private boolean mInSearchMode;
 
     /** Creates a {@link EmptyCoordinator} instance that monitors {@code source}. */
     public EmptyCoordinator(Context context, PrefetchStatusProvider prefetchStatusProvider,
@@ -49,6 +50,14 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
     /** @return The {@link View} that represents the empty screen. */
     public View getView() {
         return mView.getView();
+    }
+
+    /**
+     * Method to inform the coordinator about a change in search mode.
+     * @param inSearchMode Whether we are currently in active search mode.
+     */
+    public void setInSearchMode(boolean inSearchMode) {
+        mInSearchMode = inSearchMode;
     }
 
     // OfflineItemFilterObserver implementation.
@@ -93,13 +102,15 @@ public class EmptyCoordinator implements OfflineItemFilterObserver, FilterCoordi
                 iconId = R.drawable.ic_library_news_feed;
 
                 if (mPrefetchStatusProvider.enabled()) {
-                    textId = R.string.download_manager_prefetch_tab_empty;
+                    textId = mInSearchMode ? R.string.download_manager_prefetch_tab_no_results
+                                           : R.string.download_manager_prefetch_tab_empty;
                 } else {
                     textId = R.string.download_manager_enable_prefetch_message;
                 }
             } else {
                 iconId = R.drawable.downloads_big;
-                textId = R.string.download_manager_ui_empty;
+                textId = mInSearchMode ? R.string.download_manager_no_results
+                                       : R.string.download_manager_ui_empty;
             }
 
             mModel.set(EmptyProperties.EMPTY_TEXT_RES_ID, textId);

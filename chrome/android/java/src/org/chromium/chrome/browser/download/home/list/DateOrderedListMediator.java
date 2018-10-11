@@ -126,8 +126,8 @@ class DateOrderedListMediator {
         //         [OffTheRecordOfflineItemFilter] ->
         //             [InvalidStateOfflineItemFilter] ->
         //                 [DeleteUndoOfflineItemFilter] ->
-        //                     [TypeOfflineItemFilter] ->
-        //                         [SearchOfflineItemFitler] ->
+        //                     [SearchOfflineItemFitler] ->
+        //                         [TypeOfflineItemFilter] ->
         //                             [DateOrderedListMutator] ->
         //                                 [ListItemModel]
 
@@ -141,9 +141,9 @@ class DateOrderedListMediator {
         mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(offTheRecord, mSource);
         mInvalidStateFilter = new InvalidStateOfflineItemFilter(mOffTheRecordFilter);
         mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mInvalidStateFilter);
-        mTypeFilter = new TypeOfflineItemFilter(mDeleteUndoFilter);
-        mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
-        mListMutator = new DateOrderedListMutator(mSearchFilter, mModel, new JustNowProvider());
+        mSearchFilter = new SearchOfflineItemFilter(mDeleteUndoFilter);
+        mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
+        mListMutator = new DateOrderedListMutator(mTypeFilter, mModel, new JustNowProvider());
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(
@@ -224,7 +224,7 @@ class DateOrderedListMediator {
      *         options are available.
      */
     public OfflineItemFilterSource getFilterSource() {
-        return mDeleteUndoFilter;
+        return mSearchFilter;
     }
 
     /**
