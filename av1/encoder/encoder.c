@@ -3058,6 +3058,14 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td);
     }
   }
+#if CONFIG_MULTITHREAD
+  if (cpi->row_mt == 1) {
+    if (cpi->row_mt_mutex_ != NULL) {
+      pthread_mutex_destroy(cpi->row_mt_mutex_);
+      aom_free(cpi->row_mt_mutex_);
+    }
+  }
+#endif
   av1_row_mt_mem_dealloc(cpi);
   aom_free(cpi->tile_thr_data);
   aom_free(cpi->workers);

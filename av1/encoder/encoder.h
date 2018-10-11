@@ -482,6 +482,11 @@ typedef struct AV1RowMTSyncData {
   int rows;
 } AV1RowMTSync;
 
+typedef struct AV1RowMTInfo {
+  int current_mi_row;
+  int num_threads_working;
+} AV1RowMTInfo;
+
 // TODO(jingning) All spatially adaptive variables should go to TileDataEnc.
 typedef struct TileDataEnc {
   TileInfo tile_info;
@@ -497,6 +502,7 @@ typedef struct TileDataEnc {
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
 #endif
   AV1RowMTSync row_mt_sync;
+  AV1RowMTInfo row_mt_info;
 } TileDataEnc;
 
 typedef struct {
@@ -509,6 +515,7 @@ typedef struct MultiThreadHandle {
   int allocated_tile_rows;
   int allocated_tile_cols;
   int allocated_sb_rows;
+  int thread_id_to_tile_id[MAX_NUM_THREADS];  // Mapping of threads to tiles
 } MultiThreadHandle;
 
 typedef struct RD_COUNTS {
@@ -821,6 +828,9 @@ typedef struct AV1_COMP {
   MultiThreadHandle multi_thread_ctxt;
   void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
   void (*row_mt_sync_write_ptr)(AV1RowMTSync *const, int, int, const int);
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *row_mt_mutex_;
+#endif
 } AV1_COMP;
 
 // Must not be called more than once.

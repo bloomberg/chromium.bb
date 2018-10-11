@@ -24,6 +24,7 @@ typedef struct EncWorkerData {
   struct AV1_COMP *cpi;
   struct ThreadData *td;
   int start;
+  int thread_id;
 } EncWorkerData;
 
 void av1_row_mt_sync_read(AV1RowMTSync *const row_mt_sync, int r, int c);
