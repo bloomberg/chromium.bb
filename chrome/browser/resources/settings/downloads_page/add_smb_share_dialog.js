@@ -7,12 +7,6 @@
  * an SMB Share.
  */
 
-/** @enum {string} */
-settings.SmbAuthMethod = {
-  KERBEROS: 'kerberos',
-  CREDENTIALS: 'credentials',
-};
-
 Polymer({
   is: 'settings-add-smb-share-dialog',
 
@@ -63,8 +57,8 @@ Polymer({
       type: String,
       value: function() {
         return loadTimeData.getBoolean('isActiveDirectoryUser') ?
-            settings.SmbAuthMethod.KERBEROS :
-            settings.SmbAuthMethod.CREDENTIALS;
+            SmbAuthMethod.KERBEROS :
+            SmbAuthMethod.CREDENTIALS;
       },
     },
   },
@@ -93,7 +87,8 @@ Polymer({
   /** @private */
   onAddButtonTap_: function() {
     this.browserProxy_.smbMount(
-        this.mountUrl_, this.mountName_.trim(), this.username_, this.password_);
+        this.mountUrl_, this.mountName_.trim(), this.username_, this.password_,
+        this.authenticationMethod_);
     this.$.dialog.close();
   },
 
@@ -124,6 +119,6 @@ Polymer({
    * @private
    */
   shouldShowCredentialUI_: function() {
-    return this.authenticationMethod_ == settings.SmbAuthMethod.CREDENTIALS;
+    return this.authenticationMethod_ == SmbAuthMethod.CREDENTIALS;
   },
 });
