@@ -226,8 +226,12 @@ UsageTimeLimitProcessor::UsageTimeLimitProcessor(
       previous_state_(previous_state),
       enabled_time_usage_limit_(GetEnabledTimeUsageLimit()) {
   // This will also set overridden_window_limit_ to true if applicable.
+  // TODO: refactor GetActiveTimeWindowLimit to stop updating the state on a
+  // getter method.
   active_time_window_limit_ = GetActiveTimeWindowLimit();
   // This will also sets overridden_usage_limit_ to true if applicable.
+  // TODO: refactor GetActiveTimeUsageLimit to stop updating the state on a
+  // getter method.
   active_time_usage_limit_ = GetActiveTimeUsageLimit();
 }
 
@@ -376,8 +380,9 @@ bool UsageTimeLimitProcessor::IsUsageLimitOverridden(
       previous_state_->is_time_usage_limit_enabled &&
       previous_state_->remaining_usage <= base::TimeDelta::FromMinutes(0);
   bool override_created_after_usage_limit_start =
+      !previous_state_->time_usage_limit_started.is_null() &&
       time_limit_override_->created_at >
-      previous_state_->time_usage_limit_started;
+          previous_state_->time_usage_limit_started;
   return usage_limit_enforced_previously &&
          override_created_after_usage_limit_start;
 }
@@ -469,8 +474,10 @@ UsageTimeLimitProcessor::GetActiveTimeUsageLimit() {
   base::Optional<internal::TimeUsageLimitEntry> current_usage_limit =
       GetEnabledTimeUsageLimit();
 
-  if (IsUsageLimitOverridden(current_usage_limit_day))
+  if (IsUsageLimitOverridden(current_usage_limit_day)) {
+    overridden_usage_limit_ = true;
     return base::nullopt;
+  }
 
   if (current_usage_limit && used_time_ >= current_usage_limit->usage_quota)
     return current_usage_limit;
