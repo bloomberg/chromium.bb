@@ -13,6 +13,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
 import org.chromium.chrome.browser.download.home.filter.DeleteUndoOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -142,7 +143,7 @@ class DateOrderedListMediator {
         mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mInvalidStateFilter);
         mTypeFilter = new TypeOfflineItemFilter(mDeleteUndoFilter);
         mSearchFilter = new SearchOfflineItemFilter(mTypeFilter);
-        mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
+        mListMutator = new DateOrderedListMutator(mSearchFilter, mModel, new JustNowProvider());
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(

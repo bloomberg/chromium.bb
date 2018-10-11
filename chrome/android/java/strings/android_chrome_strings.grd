@@ -2530,6 +2530,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_MANAGER_IN_PROGRESS_DESCRIPTION" desc="Text containing two components of an in-progress string description.">
         <ph name="FILE_SIZE_OF_TOTAL">%1$s<ex>1.56 MB / 10MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>failed</ex></ph>
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_JUST_NOW" desc="Text on a label describing that the associated download event happened just now.">
+        Just Now
+      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">

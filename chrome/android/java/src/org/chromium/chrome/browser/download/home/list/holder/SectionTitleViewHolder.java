@@ -69,7 +69,9 @@ public class SectionTitleViewHolder extends ListItemViewHolder implements ListMe
         mTitle.setText(ListUtils.getTextForSection(sectionItem.filter));
 
         if (sectionItem.showDate) {
-            mDate.setText(UiUtils.dateToHeaderString(sectionItem.date));
+            mDate.setText(sectionItem.isJustNow ? itemView.getContext().getResources().getString(
+                                                          R.string.download_manager_just_now)
+                                                : UiUtils.dateToHeaderString(sectionItem.date));
         }
 
         updateTopBottomSpacing(sectionItem.showMenu);
