@@ -68,6 +68,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
       bool force_update) override;
   void OnExclusiveAccessUserInput() override;
   ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
+  bool CanUserExitFullscreen() const override;
 
   // Simulates the window changing state.
   void ChangeWindowFullscreenState();
@@ -201,6 +202,10 @@ void FullscreenControllerTestWindow::OnExclusiveAccessUserInput() {}
 ExclusiveAccessBubbleViews*
 FullscreenControllerTestWindow::GetExclusiveAccessBubble() {
   return nullptr;
+}
+
+bool FullscreenControllerTestWindow::CanUserExitFullscreen() const {
+  return true;
 }
 
 }  // namespace
