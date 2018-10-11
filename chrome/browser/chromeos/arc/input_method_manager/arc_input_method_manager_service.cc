@@ -119,7 +119,15 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   void OnKeyEvent(
       const std::string& engine_id,
       const input_method::InputMethodEngineBase::KeyboardEvent& event,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {
+    if (event.key == "HistoryBack") {
+      // Back button on the shelf is pressed.
+      owner_->imm_bridge_->SendHideVirtualKeyboard();
+      std::move(key_data).Run(true);
+      return;
+    }
+    std::move(key_data).Run(false);
+  }
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {
     owner_->OnArcImeDeactivated();
@@ -138,7 +146,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
       const std::vector<gfx::Rect>& bounds) override {
     owner_->UpdateTextInputState();
   }
-  bool IsInterestedInKeyEvent() const override { return false; }
+  bool IsInterestedInKeyEvent() const override { return true; }
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::string& text,
                                 int cursor_pos,
