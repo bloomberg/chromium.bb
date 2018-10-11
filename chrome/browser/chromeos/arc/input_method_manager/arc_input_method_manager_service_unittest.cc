@@ -206,11 +206,17 @@ class TestInputMethodManagerBridge : public ArcInputMethodManagerBridge {
     last_text_input_state = state.Clone();
   }
 
+  void SendShowVirtualKeyboard() override {
+    ++show_virtual_keyboard_calls_count_;
+  }
+  void SendHideVirtualKeyboard() override {}
+
   std::vector<std::tuple<std::string, bool>> enable_ime_calls_;
   std::vector<std::string> switch_ime_to_calls_;
   int focus_calls_count_ = 0;
   int update_text_input_state_calls_count_ = 0;
   mojom::TextInputStatePtr last_text_input_state;
+  int show_virtual_keyboard_calls_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerBridge);
@@ -669,14 +675,8 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
   ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
   ui::IMEEngineHandlerInterface* engine_handler =
       std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
-  // Enable it
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
-  engine_handler->Enable(
-      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
-          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
-              .at(0)
-              .id()));
 
+  // Set up mock input context.
   constexpr int test_context_id = 0;
   const ui::IMEEngineHandlerInterface::InputContext test_context{
       test_context_id,
@@ -687,8 +687,16 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
       true /* should_do_learning */};
   ui::MockInputMethod mock_input_method(nullptr);
   TestIMEInputContextHandler test_context_handler(&mock_input_method);
-  ui::DummyTextInputClient dummy_text_input_client;
+  ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::IMEBridge::Get()->SetInputContextHandler(&test_context_handler);
+
+  // Enable the ARC IME.
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
+  engine_handler->Enable(
+      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
+          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
+              .at(0)
+              .id()));
   mock_input_method.SetFocusedTextInputClient(&dummy_text_input_client);
 
   ASSERT_EQ(0, bridge()->focus_calls_count_);
@@ -737,14 +745,8 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
   ui::IMEEngineHandlerInterface* engine_handler =
       std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
-  // Enable it
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
-  engine_handler->Enable(
-      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
-          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
-              .at(0)
-              .id()));
 
+  // Set up mock input context.
   constexpr int test_context_id = 0;
   const ui::IMEEngineHandlerInterface::InputContext test_context{
       test_context_id,
@@ -757,6 +759,14 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   TestIMEInputContextHandler test_context_handler(&mock_input_method);
   ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::IMEBridge::Get()->SetInputContextHandler(&test_context_handler);
+
+  // Enable the ARC IME.
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
+  engine_handler->Enable(
+      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
+          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
+              .at(0)
+              .id()));
   mock_input_method.SetFocusedTextInputClient(&dummy_text_input_client);
 
   engine_handler->FocusIn(test_context);
@@ -878,6 +888,62 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   // It's re-enabled when the ARC IME is deactivated.
   engine_handler->Disable();
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+  ToggleTabletMode(true);
+
+  // Adding one ARC IME.
+  {
+    const std::string android_ime_id = "test.arc.ime";
+    const std::string display_name = "DisplayName";
+    const std::string settings_url = "url_to_settings";
+    mojom::ImeInfoPtr info = mojom::ImeInfo::New();
+    info->ime_id = android_ime_id;
+    info->display_name = display_name;
+    info->enabled = false;
+    info->settings_url = settings_url;
+
+    std::vector<mojom::ImeInfoPtr> info_array;
+    info_array.emplace_back(std::move(info));
+    service()->OnImeInfoChanged(std::move(info_array));
+  }
+  // The proxy IME engine should be added.
+  ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
+  ui::IMEEngineHandlerInterface* engine_handler =
+      std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
+
+  // Set up mock input context.
+  constexpr int test_context_id = 0;
+  const ui::IMEEngineHandlerInterface::InputContext test_context{
+      test_context_id,
+      ui::TEXT_INPUT_TYPE_TEXT,
+      ui::TEXT_INPUT_MODE_DEFAULT,
+      0 /* flags */,
+      ui::TextInputClient::FOCUS_REASON_MOUSE,
+      true /* should_do_learning */};
+  ui::MockInputMethod mock_input_method(nullptr);
+  TestIMEInputContextHandler test_context_handler(&mock_input_method);
+  ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  ui::IMEBridge::Get()->SetInputContextHandler(&test_context_handler);
+
+  // Enable the ARC IME.
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
+  engine_handler->Enable(
+      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
+          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
+              .at(0)
+              .id()));
+
+  mock_input_method.SetFocusedTextInputClient(&dummy_text_input_client);
+
+  EXPECT_EQ(0, bridge()->show_virtual_keyboard_calls_count_);
+  mock_input_method.ShowVirtualKeyboardIfEnabled();
+  EXPECT_EQ(1, bridge()->show_virtual_keyboard_calls_count_);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
 }
 
 }  // namespace arc

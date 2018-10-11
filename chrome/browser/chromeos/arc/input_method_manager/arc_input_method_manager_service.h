@@ -70,7 +70,8 @@ class ArcInputMethodManagerService
   InputConnectionImpl* GetInputConnectionForTesting();
 
  private:
-  class ArcProxyInputMethodObserver;
+  class InputMethodEngineObserver;
+  class InputMethodObserver;
   class TabletModeObserver;
 
   void EnableIme(const std::string& ime_id, bool enable);
@@ -95,6 +96,10 @@ class ArcInputMethodManagerService
   // Notifies InputMethodManager's observers of possible ARC IME state changes.
   void NotifyInputMethodManagerObservers(bool is_tablet_mode);
 
+  // Called by InputMethodEngineObserver.
+  void OnArcImeActivated();
+  void OnArcImeDeactivated();
+
   Profile* const profile_;
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;
@@ -109,6 +114,8 @@ class ArcInputMethodManagerService
   std::unique_ptr<InputConnectionImpl> active_connection_;
 
   std::unique_ptr<TabletModeObserver> tablet_mode_observer_;
+
+  std::unique_ptr<InputMethodObserver> input_method_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerService);
 };

@@ -81,6 +81,30 @@ void ArcInputMethodManagerBridgeImpl::SendUpdateTextInputState(
   imm_instance->UpdateTextInputState(std::move(state));
 }
 
+void ArcInputMethodManagerBridgeImpl::SendShowVirtualKeyboard() {
+  auto* imm_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      bridge_service_->input_method_manager(), ShowVirtualKeyboard);
+  if (!imm_instance)
+    return;
+
+  if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
+    return;
+
+  imm_instance->ShowVirtualKeyboard();
+}
+
+void ArcInputMethodManagerBridgeImpl::SendHideVirtualKeyboard() {
+  auto* imm_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      bridge_service_->input_method_manager(), HideVirtualKeyboard);
+  if (!imm_instance)
+    return;
+
+  if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
+    return;
+
+  imm_instance->HideVirtualKeyboard();
+}
+
 void ArcInputMethodManagerBridgeImpl::OnConnectionClosed() {
   delegate_->OnConnectionClosed();
 }

@@ -28,6 +28,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace arc {
@@ -90,15 +91,16 @@ class ArcInputMethodManagerServiceFactory
 
 }  // namespace
 
-class ArcInputMethodManagerService::ArcProxyInputMethodObserver
+class ArcInputMethodManagerService::InputMethodEngineObserver
     : public input_method::InputMethodEngineBase::Observer {
  public:
-  explicit ArcProxyInputMethodObserver(ArcInputMethodManagerService* owner)
+  explicit InputMethodEngineObserver(ArcInputMethodManagerService* owner)
       : owner_(owner) {}
-  ~ArcProxyInputMethodObserver() override = default;
+  ~InputMethodEngineObserver() override = default;
 
   // input_method::InputMethodEngineBase::Observer overrides:
   void OnActivate(const std::string& engine_id) override {
+    owner_->OnArcImeActivated();
     // ash::Shell is not created in the unit tests.
     if (!ash::Shell::HasInstance())
       return;
@@ -120,6 +122,7 @@ class ArcInputMethodManagerService::ArcProxyInputMethodObserver
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {
+    owner_->OnArcImeDeactivated();
     // ash::Shell is not created in the unit tests.
     if (!ash::Shell::HasInstance())
       return;
@@ -157,7 +160,30 @@ class ArcInputMethodManagerService::ArcProxyInputMethodObserver
  private:
   ArcInputMethodManagerService* const owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcProxyInputMethodObserver);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodEngineObserver);
+};
+
+class ArcInputMethodManagerService::InputMethodObserver
+    : public ui::InputMethodObserver {
+ public:
+  explicit InputMethodObserver(ArcInputMethodManagerService* owner)
+      : owner_(owner) {}
+  ~InputMethodObserver() override = default;
+
+  // ui::InputMethodObserver overrides:
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowVirtualKeyboardIfEnabled() override {
+    owner_->imm_bridge_->SendShowVirtualKeyboard();
+  }
+
+ private:
+  ArcInputMethodManagerService* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodObserver);
 };
 
 class ArcInputMethodManagerService::TabletModeObserver
@@ -203,13 +229,14 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
       proxy_ime_extension_id_(
           crx_file::id_util::GenerateId(kArcIMEProxyExtensionName)),
       proxy_ime_engine_(std::make_unique<chromeos::InputMethodEngine>()),
-      tablet_mode_observer_(std::make_unique<TabletModeObserver>(this)) {
+      tablet_mode_observer_(std::make_unique<TabletModeObserver>(this)),
+      input_method_observer_(std::make_unique<InputMethodObserver>(this)) {
   auto* imm = chromeos::input_method::InputMethodManager::Get();
   imm->AddObserver(this);
   imm->AddImeMenuObserver(this);
 
   proxy_ime_engine_->Initialize(
-      std::make_unique<ArcProxyInputMethodObserver>(this),
+      std::make_unique<InputMethodEngineObserver>(this),
       proxy_ime_extension_id_.c_str(), profile_);
 
   // TabletModeClient should be already created here because it's created in
@@ -584,6 +611,20 @@ void ArcInputMethodManagerService::NotifyInputMethodManagerObservers(
     manager->NotifyInputMethodExtensionRemoved(proxy_ime_extension_id_);
   else
     manager->NotifyInputMethodExtensionAdded(proxy_ime_extension_id_);
+}
+
+void ArcInputMethodManagerService::OnArcImeActivated() {
+  ui::InputMethod* input_method =
+      ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+  if (input_method)
+    input_method->AddObserver(input_method_observer_.get());
+}
+
+void ArcInputMethodManagerService::OnArcImeDeactivated() {
+  ui::InputMethod* input_method =
+      ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
+  if (input_method)
+    input_method->RemoveObserver(input_method_observer_.get());
 }
 
 }  // namespace arc

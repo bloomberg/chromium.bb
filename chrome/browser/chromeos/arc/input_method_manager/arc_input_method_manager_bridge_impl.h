@@ -34,6 +34,8 @@ class ArcInputMethodManagerBridgeImpl
   void SendFocus(mojom::InputConnectionPtr connection,
                  mojom::TextInputStatePtr state) override;
   void SendUpdateTextInputState(mojom::TextInputStatePtr state) override;
+  void SendShowVirtualKeyboard() override;
+  void SendHideVirtualKeyboard() override;
 
   // ConnectionObserver<mojom::InputMethodManagerInstance> overrides:
   void OnConnectionClosed() override;
