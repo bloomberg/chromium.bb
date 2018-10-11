@@ -160,6 +160,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
@@ -2697,8 +2698,18 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   const bool should_stay_in_immersive =
       !fullscreen &&
       immersive_mode_controller_->ShouldStayImmersiveAfterExitingFullscreen();
-  if (ShouldUseImmersiveFullscreenForUrl(url) && !should_stay_in_immersive)
+  bool is_locked_fullscreen = false;
+#if defined(OS_CHROMEOS)
+  is_locked_fullscreen = ash::IsWindowTrustedPinned(GetNativeWindow());
+#endif
+  // Never use immersive in locked fullscreen as it allows the user to exit the
+  // locked mode.
+  if (is_locked_fullscreen) {
+    immersive_mode_controller_->SetEnabled(false);
+  } else if (ShouldUseImmersiveFullscreenForUrl(url) &&
+             !should_stay_in_immersive) {
     immersive_mode_controller_->SetEnabled(fullscreen);
+  }
 
   browser_->WindowFullscreenStateWillChange();
   browser_->WindowFullscreenStateChanged();
@@ -3009,6 +3020,10 @@ void BrowserView::HideDownloadShelf() {
 
 ExclusiveAccessBubbleViews* BrowserView::GetExclusiveAccessBubble() {
   return exclusive_access_bubble();
+}
+
+bool BrowserView::CanUserExitFullscreen() const {
+  return frame_->GetFrameView()->CanUserExitFullscreen();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -182,6 +182,8 @@
 
 # Immersive mode tests.
 -ImmersiveModeBrowserViewTest.TabNavigationAcceleratorsFullscreenBrowser/material
+-ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode/*
+-ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode/*
 
 # Flaky on ASAN bot. crbug.com/884216
 -KeyboardOverlayUIBrowserTest.*

@@ -17,6 +17,7 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -292,6 +293,10 @@ void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
 void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
   BrowserNonClientFrameView::OnTabsMaxXChanged();
   UpdateClientArea();
+}
+
+bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
+  return ash::IsWindowTrustedPinned(GetFrameWindow()) ? false : true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -74,6 +74,10 @@ bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
   return frame_->IsFullscreen();
 }
 
+bool BrowserNonClientFrameView::CanUserExitFullscreen() const {
+  return true;
+}
+
 bool BrowserNonClientFrameView::IsFrameCondensed() const {
   return frame_ && (frame_->IsMaximized() || frame_->IsFullscreen());
 }

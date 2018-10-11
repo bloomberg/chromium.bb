@@ -71,6 +71,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the top UI should hide.
   virtual bool ShouldHideTopUIForFullscreen() const;
 
+  // Returns whether the user is allowed to exit fullscreen on their own (some
+  // special modes lock the user in fullscreen).
+  virtual bool CanUserExitFullscreen() const;
+
   // Determines whether the top frame is condensed vertically, as when the
   // window is maximized. If true, the top frame is just the height of a tab,
   // rather than having extra vertical space above the tabs.
