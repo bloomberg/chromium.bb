@@ -85,6 +85,7 @@ cr.define('media_router_container_filter', function() {
       'key': 'Escape',
       'code': 'Escape',
       'bubbles': true,
+      'composed': true,
       'cancelable': true
     }));
   };
