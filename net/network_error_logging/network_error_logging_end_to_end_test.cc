@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/json_parser_delegate.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -69,8 +68,7 @@ class NetworkErrorLoggingEndToEndTest : public TestWithScopedTaskEnvironment {
     builder.set_proxy_config_service(std::make_unique<ProxyConfigServiceFixed>(
         ProxyConfigWithAnnotation::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-    builder.enable_reporting(std::move(policy),
-                             std::make_unique<InProcessJSONParser>());
+    builder.set_reporting_policy(std::move(policy));
     builder.set_network_error_logging_enabled(true);
     url_request_context_ = builder.Build();
 

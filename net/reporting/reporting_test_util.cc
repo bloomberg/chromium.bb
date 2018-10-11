@@ -16,7 +16,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
 #include "net/base/rand_callback.h"
-#include "net/reporting/json_parser_delegate.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
@@ -171,7 +170,6 @@ TestReportingContext::TestReportingContext(base::Clock* clock,
           base::BindRepeating(&TestReportingContext::RandIntCallback,
                               base::Unretained(this)),
           std::make_unique<TestReportingUploader>(),
-          std::make_unique<InProcessJSONParser>(),
           std::make_unique<TestReportingDelegate>()),
       rand_counter_(0),
       delivery_timer_(new base::MockOneShotTimer()),

@@ -21,7 +21,6 @@ class TickClock;
 
 namespace net {
 
-class JSONParserDelegate;
 class ReportingCache;
 class ReportingDelegate;
 class ReportingDeliveryAgent;
@@ -38,7 +37,6 @@ class NET_EXPORT ReportingContext {
  public:
   static std::unique_ptr<ReportingContext> Create(
       const ReportingPolicy& policy,
-      std::unique_ptr<JSONParserDelegate> json_parser,
       URLRequestContext* request_context);
 
   ~ReportingContext();
@@ -49,7 +47,6 @@ class NET_EXPORT ReportingContext {
   const base::TickClock* tick_clock() { return tick_clock_; }
   ReportingUploader* uploader() { return uploader_.get(); }
 
-  JSONParserDelegate* json_parser() { return json_parser_.get(); }
   ReportingDelegate* delegate() { return delegate_.get(); }
   ReportingCache* cache() { return cache_.get(); }
   ReportingEndpointManager* endpoint_manager() {
@@ -71,7 +68,6 @@ class NET_EXPORT ReportingContext {
                    const base::TickClock* tick_clock,
                    const RandIntCallback& rand_callback,
                    std::unique_ptr<ReportingUploader> uploader,
-                   std::unique_ptr<JSONParserDelegate> json_parser,
                    std::unique_ptr<ReportingDelegate> delegate);
 
  private:
@@ -84,7 +80,6 @@ class NET_EXPORT ReportingContext {
   base::ObserverList<ReportingObserver, /* check_empty= */ true>::Unchecked
       observers_;
 
-  std::unique_ptr<JSONParserDelegate> json_parser_;
   std::unique_ptr<ReportingDelegate> delegate_;
 
   std::unique_ptr<ReportingCache> cache_;

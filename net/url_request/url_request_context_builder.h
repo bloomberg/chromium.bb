@@ -65,7 +65,6 @@ class URLRequestContext;
 class URLRequestInterceptor;
 
 #if BUILDFLAG(ENABLE_REPORTING)
-class JSONParserDelegate;
 struct ReportingPolicy;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -321,17 +320,6 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetSharedCertVerifier(CertVerifier* shared_cert_verifier);
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  // Enable the Reporting API for the created URLRequestContext.  |policy|
-  // configures various timeout and cache size parameters.  |json_parser| will
-  // be used to parse the JSON configuration headers received in HTTPS
-  // responses.
-  void enable_reporting(std::unique_ptr<ReportingPolicy> policy,
-                        std::unique_ptr<JSONParserDelegate> json_parser);
-
-  // Deprecated: Use enable_reporting() instead, and provide a specific (and
-  // ideally safe) JSON parser.
-  // TODO(crbug.com/892148): Remove once all callers have been migrated to
-  // enable_reporting().
   void set_reporting_policy(std::unique_ptr<ReportingPolicy> reporting_policy);
 
   void set_network_error_logging_enabled(bool network_error_logging_enabled) {
@@ -440,7 +428,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<CTVerifier> ct_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
-  std::unique_ptr<JSONParserDelegate> json_parser_;
   std::unique_ptr<ReportingPolicy> reporting_policy_;
   bool network_error_logging_enabled_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
