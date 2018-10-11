@@ -242,7 +242,8 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     // Limit length to pos + 1.
     // TODO(layout-dev): We should probably try to break out an actual
     // IsBreakable method from NextBreakablePosition and get rid of this hack.
-    int next_breakable = NextBreakablePosition(pos, break_type_);
+    int len = std::min(pos + 1, static_cast<int>(string_.length()));
+    int next_breakable = NextBreakablePosition(pos, break_type_, len);
     return pos == next_breakable;
   }
 
@@ -305,12 +306,13 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   }
 
   template <typename CharacterType, LineBreakType, BreakSpaceType>
-  int NextBreakablePosition(int pos, const CharacterType* str) const;
+  int NextBreakablePosition(int pos, const CharacterType* str, int len) const;
   template <typename CharacterType, LineBreakType>
-  int NextBreakablePosition(int pos, const CharacterType* str) const;
+  int NextBreakablePosition(int pos, const CharacterType* str, int len) const;
   template <LineBreakType>
-  int NextBreakablePosition(int pos) const;
+  int NextBreakablePosition(int pos, int len) const;
   int NextBreakablePositionBreakCharacter(int pos) const;
+  int NextBreakablePosition(int pos, LineBreakType, int len) const;
   int NextBreakablePosition(int pos, LineBreakType) const;
 
   static const unsigned kPriorContextCapacity = 2;
