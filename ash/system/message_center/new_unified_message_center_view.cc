@@ -96,7 +96,7 @@ void NewUnifiedMessageCenterView::ListPreferredSizeChanged() {
   PreferredSizeChanged();
   ScrollToPositionFromBottom();
 
-  if (GetWidget())
+  if (GetWidget() && !GetWidget()->IsClosed())
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
