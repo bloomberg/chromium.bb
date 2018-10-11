@@ -3215,12 +3215,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     // autoplay policy.
     web_prefs->autoplay_policy =
         content::AutoplayPolicy::kNoUserGestureRequired;
-  } else if (base::FeatureList::IsEnabled(media::kAutoplaySoundSettings) &&
+  } else if (base::FeatureList::IsEnabled(media::kAutoplayDisableSettings) &&
              web_prefs->autoplay_policy ==
                  content::AutoplayPolicy::kDocumentUserActivationRequired) {
-    // If the autoplay sound settings feature is enabled and the autoplay policy
-    // is set to using the unified policy then set the default autoplay policy
-    // based on user preference.
+    // If the autoplay disable settings feature is enabled and the autoplay
+    // policy is set to using the unified policy then set the default autoplay
+    // policy based on user preference.
     web_prefs->autoplay_policy =
         UnifiedAutoplayConfig::ShouldBlockAutoplay(profile)
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
