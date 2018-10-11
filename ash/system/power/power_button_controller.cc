@@ -352,6 +352,10 @@ void PowerButtonController::DismissMenu() {
       arrow_key_traversal_initially_enabled_);
 }
 
+void PowerButtonController::StopForcingBacklightsOff() {
+  display_controller_->SetBacklightsForcedOff(false);
+}
+
 void PowerButtonController::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& display_states) {
   bool internal_display_off = false;
