@@ -318,21 +318,6 @@ static void * msm_ringbuffer_hostptr(struct fd_ringbuffer *ring)
 	return base + to_msm_ringbuffer(ring)->offset;
 }
 
-static uint32_t find_next_reloc_idx(struct msm_cmd *msm_cmd,
-		uint32_t start, uint32_t offset)
-{
-	uint32_t i;
-
-	/* a binary search would be more clever.. */
-	for (i = start; i < msm_cmd->nr_relocs; i++) {
-		struct drm_msm_gem_submit_reloc *reloc = &msm_cmd->relocs[i];
-		if (reloc->submit_offset >= offset)
-			return i;
-	}
-
-	return i;
-}
-
 static void delete_cmds(struct msm_ringbuffer *msm_ring)
 {
 	struct msm_cmd *cmd, *tmp;
@@ -473,10 +458,8 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
-		uint32_t a = find_next_reloc_idx(msm_cmd, 0, cmd->submit_offset);
-		uint32_t b = find_next_reloc_idx(msm_cmd, a, cmd->submit_offset + cmd->size);
-		struct drm_msm_gem_submit_reloc *relocs = &msm_cmd->relocs[a];
-		unsigned nr_relocs = (b > a) ? b - a : 0;
+		struct drm_msm_gem_submit_reloc *relocs = msm_cmd->relocs;
+		unsigned nr_relocs = msm_cmd->nr_relocs;
 
 		/* for reusable stateobjs, the reloc table has reloc_idx that
 		 * points into it's own private bos table, rather than the global
