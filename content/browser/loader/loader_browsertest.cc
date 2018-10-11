@@ -658,6 +658,13 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RedirectToDataURLBlocked) {
                    "/server-redirect?data:text/plain,redirected1")));
 }
 
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RedirectToAboutURLBlocked) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_FALSE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "/server-redirect?" + std::string(url::kAboutBlankURL))));
+}
+
 namespace {
 
 // Creates a valid filesystem URL.
