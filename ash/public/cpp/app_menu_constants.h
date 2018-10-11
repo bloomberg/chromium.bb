@@ -51,6 +51,10 @@ enum CommandId {
   // menu for Android app. Used by AppContextMenu and LauncherContextMenu.
   LAUNCH_APP_SHORTCUT_FIRST = 1000,
   LAUNCH_APP_SHORTCUT_LAST = 1999,
+
+  // Command for stopping an app, or stopping a VM via an associated app. Used
+  // by AppContextMenu and LauncherContextMenu.
+  STOP_APP = 2000,
   COMMAND_ID_COUNT
 };
 
