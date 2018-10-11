@@ -215,7 +215,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
-    service_->UpdateUI(service_worker_registration_id, unique_id, developer_id,
+    service_->UpdateUI(service_worker_registration_id, developer_id, unique_id,
                        title, SkBitmap(),
                        base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
                                       base::Unretained(this),
@@ -730,7 +730,7 @@ TEST_F(BackgroundFetchServiceTest, UpdateUI) {
 
   // Immediately update the title. This should succeed.
   UpdateUI(registration_id.service_worker_registration_id(),
-           registration_id.unique_id(), registration_id.developer_id(),
+           registration_id.developer_id(), registration_id.unique_id(),
            second_title, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
@@ -932,8 +932,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // title of the second registration only.
   std::string updated_second_registration_title = "Foo";
   UpdateUI(second_registration_id.service_worker_registration_id(),
-           second_registration_id.unique_id(),
            second_registration_id.developer_id(),
+           second_registration_id.unique_id(),
            updated_second_registration_title, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
@@ -942,8 +942,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // backgroundfetchsuccess or backgroundfetchfail event, both of which should
   // work even though that registration is no longer active).
   UpdateUI(aborted_registration_id.service_worker_registration_id(),
-           aborted_registration_id.unique_id(),
-           aborted_registration_id.developer_id(), "Bar", &error);
+           aborted_registration_id.developer_id(),
+           aborted_registration_id.unique_id(), "Bar", &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::INVALID_ID, error);
 
   // Verify that the second registration's title was indeed updated, and that it
