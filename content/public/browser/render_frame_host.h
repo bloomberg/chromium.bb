@@ -120,6 +120,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // current RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
 
+  // Returns whether or not this RenderFrameHost is a descendant of |ancestor|.
+  // This is equivalent to check that |ancestor| is reached by iterating on
+  // GetParent().
+  // This is a strict relationship, a RenderFrameHost is never an ancestor of
+  // itself.
+  virtual bool IsDescendantOf(RenderFrameHost* ancestor) = 0;
+
   // Returns the FrameTreeNode ID for this frame. This ID is browser-global and
   // uniquely identifies a frame that hosts content. The identifier is fixed at
   // the creation of the frame and stays constant for the lifetime of the frame.
