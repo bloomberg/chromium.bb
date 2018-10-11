@@ -13,6 +13,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -506,6 +507,7 @@ bool PasswordStore::InitOnBackgroundSequence(
 
 void PasswordStore::GetLoginsImpl(const FormDigest& form,
                                   std::unique_ptr<GetLoginsRequest> request) {
+  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogins");
   request->NotifyConsumerWithResults(FillMatchingLogins(form));
 }
 
@@ -648,16 +650,19 @@ void PasswordStore::WrapModificationTask(ModificationTask task) {
 }
 
 void PasswordStore::AddLoginInternal(const PasswordForm& form) {
+  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.AddLogin");
   PasswordStoreChangeList changes = AddLoginImpl(form);
   NotifyLoginsChanged(changes);
 }
 
 void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
+  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.UpdateLogin");
   PasswordStoreChangeList changes = UpdateLoginImpl(form);
   NotifyLoginsChanged(changes);
 }
 
 void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
+  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.RemoveLogin");
   PasswordStoreChangeList changes = RemoveLoginImpl(form);
   NotifyLoginsChanged(changes);
 }
@@ -844,6 +849,7 @@ void PasswordStore::ScheduleGetLoginsWithAffiliations(
 
 std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
     const PasswordForm& primary_key) {
+  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogin");
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> candidates(
       FillMatchingLogins(FormDigest(primary_key)));
