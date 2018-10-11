@@ -200,6 +200,26 @@ BluetoothDeviceBlueZ::~BluetoothDeviceBlueZ() {
     adapter()->NotifyGattServiceRemoved(
         static_cast<BluetoothRemoteGattServiceBlueZ*>(iter.second.get()));
   }
+
+  // We pause discovery when trying to connect. Ensure discovery is unpaused if
+  // we get destroyed during a pending connection.
+  if (IsConnecting()) {
+    BLUETOOTH_LOG(EVENT) << object_path_.value()
+                         << ": Unpausing discovery. Device removed.";
+    // Temporarily unpause discovery manually instead of using
+    // UnpauseDiscovery() which was introduced after branch point.
+    // TODO(ortuno): Remove once this is merged to M70.
+    bluez::BluezDBusManager::Get()
+        ->GetBluetoothAdapterClient()
+        ->UnpauseDiscovery(
+            adapter()->object_path(), base::Bind([]() {
+              BLUETOOTH_LOG(EVENT) << "Successfully un-paused discovery";
+            }),
+            base::Bind([](const std::string& error_name,
+                          const std::string& error_message) {
+              BLUETOOTH_LOG(EVENT) << "Failed to un-pause discovery";
+            }));
+  }
 }
 
 uint32_t BluetoothDeviceBlueZ::GetBluetoothClass() const {
