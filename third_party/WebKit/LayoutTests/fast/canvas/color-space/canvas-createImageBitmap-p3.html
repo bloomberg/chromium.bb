@@ -274,10 +274,6 @@ promise_test(function() {
 }, 'createImageBitmap in P3 from a transparent SRGB HTMLImageElement (BMP, \
 ICO, PNG, WEBP) with resize.');
 
-// TODO(zakerinasab): crbug.com/668547
-// Add at least two more test scenarios for loading the image element from P3
-// and Rec2020 images.
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // SVG Image - SRGB
@@ -291,10 +287,6 @@ promise_test(function() {
     }).then(testImageBitmapFromSVG);
 }, 'createImageBitmap in P3 from a SRGB SVG image with resize.');
 
-// TODO(zakerinasab): crbug.com/668547
-// Add at least two more tests for loading the image element from P3 and Rec2020
-// SVG images.
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // HTMLVideoElement - SRGB
@@ -307,10 +299,6 @@ promise_test(function() {
         video.src = 'resources/pattern-srgb-fullcolor.ogv'
     }).then(testImageBitmapFromVideo);
 }, 'createImageBitmap in P3 from a SRGB HTMLVideoElement with resize.');
-
-// TODO(zakerinasab): crbug.com/668547
-// Add at least two more tests for loading the video element from P3 and Rec2020
-// videos.
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -366,7 +354,7 @@ promise_test(function() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Blob - Opaque SRGB
+// Blob from file - Opaque SRGB
 promise_test(function() {
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
@@ -379,7 +367,7 @@ promise_test(function() {
     }).then(testImageBitmapOpaque);
 }, 'createImageBitmap in P3 from an opaque SRGB Blob with resize.');
 
-// Blob - Transparent SRGB
+// Blob from file - Transparent SRGB
 promise_test(function() {
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
@@ -392,8 +380,48 @@ promise_test(function() {
     }).then(testImageBitmapTransparent);
 }, 'createImageBitmap in P3 from a transparent SRGB Blob with resize.');
 
-// TODO(zakerinasab): crbug.com/668547
-// Add at least two more tests for loading the blob from P3 and Rec2020 images.
+// Color managed blob from canvas
+function testCreateImageBitmapFromColorManagedBlob(colorSpace, pixelFormat,
+                                                   isTransparent) {
+    let canvasPixelFormat = '8-8-8-8';
+    if (pixelFormat == 'uint16')
+        canvasPixelFormat = 'float16';
+    var testCanvas;
+    if (isTransparent)
+      testCanvas = initializeTestCanvasTransparent('srgb', canvasPixelFormat);
+    else
+      testCanvas = initializeTestCanvas('srgb', canvasPixelFormat);
+    var encodeOptions = {};
+    encodeOptions.quality = 1;
+    encodeOptions.type = 'image/png';
+    encodeOptions.colorSpace = colorSpace;
+    encodeOptions.pixelFormat = pixelFormat;
+
+    var t = async_test('createImageBitmap in P3 from color managed Blob' +
+        ' with resize. blobColorSpace: ' + colorSpace + ', blobPixelFormat: ' +
+        pixelFormat + ', transparency: ' + isTransparent);
+    testCanvas.convertToBlob(encodeOptions).then(
+        t.step_func_done(function(blob) {
+            if (isTransparent)
+                testImageBitmapTransparent(blob);
+            else
+                testImageBitmapOpaque(blob);
+        }));
+}
+
+function runAllCreateImageBitmapFromColorManagedBlobTests() {
+    var blobColorSpaces = ['srgb', 'rec2020', 'display-p3'];
+    var blobPixelFormats = ['8-8-8-8', 'uint16'];
+    var transparencies = [false, true];
+    for (var i = 0; i < blobColorSpaces.length; i++)
+        for (var j = 0; j < blobPixelFormats.length; j++)
+            for (var k = 0; k < transparencies.length; k++) {
+                testCreateImageBitmapFromColorManagedBlob(blobColorSpaces[i],
+                    blobPixelFormats[j], transparencies[k]);
+            }
+}
+
+runAllCreateImageBitmapFromColorManagedBlobTests();
 
 ////////////////////////////////////////////////////////////////////////////////
 
