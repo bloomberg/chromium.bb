@@ -25,7 +25,7 @@ import("//third_party/fuchsia-sdk/fuchsia_sdk_pkg.gni")
 def SerializeListOfStrings(strings):
   """Outputs a list of strings in GN-friendly, double-quoted format."""
 
-  return '[' + ','.join(['"{}"'.format(s) for s in strings]) + ']'
+  return '[\n' + ''.join(['    "{}",\n'.format(s) for s in strings]) + '  ]'
 
 
 def ConvertFidlLibrary(json):
@@ -46,10 +46,10 @@ def ConvertFidlLibrary(json):
   json['namespace'] = '.'.join(name_tokenized[:-1])
 
   return """fuchsia_sdk_fidl_pkg("{shortname}") {{
-    namespace = "{namespace}"
-    public_deps = {deps}
-    sources = {sources}
-  }}""".format(**json)
+  namespace = "{namespace}"
+  public_deps = {deps}
+  sources = {sources}
+}}\n\n""".format(**json)
 
 
 def ConvertNoOp(json):
