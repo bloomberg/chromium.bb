@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.DiscardableReferencePool;
@@ -54,10 +55,12 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -312,6 +315,11 @@ public class NewTabPage
             public void onPageLoadStarted(Tab tab, String url) {
                 saveLastScrollPosition();
             }
+
+            @Override
+            public void onBrowserControlsConstraintsUpdated(Tab tab, int constraints) {
+                updateMargins(constraints);
+            }
         };
         mTab.addObserver(mTabObserver);
         updateSearchProviderHasLogo();
@@ -366,6 +374,28 @@ public class NewTabPage
 
         controller.setEntryExtraData(
                 index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
+    }
+
+    /** Update the margins for the content when browser controls constraints are changed. */
+    protected void updateMargins(@BrowserControlsState int constraints) {
+        // TODO(mdjones): can this be merged with BasicNativePage's updateMargins?
+
+        View view = getView();
+        ViewGroup.MarginLayoutParams layoutParams =
+                ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
+        if (layoutParams == null) {
+            // We could be updating the margin before the root view is attached to window.
+            layoutParams = new ViewGroup.MarginLayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            view.setLayoutParams(layoutParams);
+        }
+
+        int bottomMargin = 0;
+        if (FeatureUtilities.isBottomToolbarEnabled()
+                && constraints != BrowserControlsState.HIDDEN) {
+            bottomMargin = mTab.getActivity().getFullscreenManager().getBottomControlsHeight();
+        }
+        layoutParams.bottomMargin = bottomMargin;
     }
 
     /** @return The view container for the new tab page. */
