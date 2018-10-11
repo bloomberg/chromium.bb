@@ -65,11 +65,12 @@ DownloadMediaParser::DownloadMediaParser(const std::string& mime_type,
 DownloadMediaParser::~DownloadMediaParser() = default;
 
 void DownloadMediaParser::Start(ParseCompleteCB parse_complete_cb) {
+  RecordMediaParserEvent(MediaParserEvent::kInitialize);
   parse_complete_cb_ = std::move(parse_complete_cb);
 
   // Only process media mime types.
   if (!IsSupportedMediaMimeType(mime_type_)) {
-    OnError();
+    OnError(MediaParserEvent::kUnsupportedMimeType);
     return;
   }
 
@@ -83,7 +84,7 @@ void DownloadMediaParser::Start(ParseCompleteCB parse_complete_cb) {
 
 void DownloadMediaParser::OnReadFileSize(int64_t file_size) {
   if (file_size < 0) {
-    OnError();
+    OnError(MediaParserEvent::kReadFileError);
     return;
   }
 
@@ -100,6 +101,7 @@ void DownloadMediaParser::OnMediaParserCreated() {
       &source_ptr, base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
                                        weak_factory_.GetWeakPtr()));
 
+  RecordMediaMetadataEvent(MediaMetadataEvent::kMetadataStart);
   media_parser()->ParseMediaMetadata(
       mime_type_, size_, false /* get_attached_images */, std::move(source_ptr),
       base::BindOnce(&DownloadMediaParser::OnMediaMetadataParsed,
@@ -107,7 +109,7 @@ void DownloadMediaParser::OnMediaParserCreated() {
 }
 
 void DownloadMediaParser::OnConnectionError() {
-  OnError();
+  OnError(MediaParserEvent::kUtilityConnectionError);
 }
 
 void DownloadMediaParser::OnMediaMetadataParsed(
@@ -115,11 +117,13 @@ void DownloadMediaParser::OnMediaMetadataParsed(
     chrome::mojom::MediaMetadataPtr metadata,
     const std::vector<metadata::AttachedImage>& attached_images) {
   if (!parse_success) {
-    OnError();
+    RecordMediaMetadataEvent(MediaMetadataEvent::kMetadataFailed);
+    OnError(MediaParserEvent::kMetadataFailed);
     return;
   }
   metadata_ = std::move(metadata);
   DCHECK(metadata_);
+  RecordMediaMetadataEvent(MediaMetadataEvent::kMetadataComplete);
 
   // For audio file, we only need metadata and poster.
   if (base::StartsWith(mime_type_, "audio/",
@@ -138,6 +142,7 @@ void DownloadMediaParser::OnMediaMetadataParsed(
 }
 
 void DownloadMediaParser::RetrieveEncodedVideoFrame() {
+  RecordVideoThumbnailEvent(VideoThumbnailEvent::kVideoThumbnailStart);
   media_data_source_.reset();
 
   auto media_source_factory = std::make_unique<LocalMediaDataSourceFactory>(
@@ -158,7 +163,8 @@ void DownloadMediaParser::OnVideoFrameRetrieved(
     chrome::mojom::VideoFrameDataPtr video_frame_data,
     const base::Optional<media::VideoDecoderConfig>& config) {
   if (!success) {
-    OnError();
+    RecordVideoThumbnailEvent(VideoThumbnailEvent::kVideoFrameExtractionFailed);
+    OnError(MediaParserEvent::kVideoThumbnailFailed);
     return;
   }
 
@@ -178,7 +184,8 @@ void DownloadMediaParser::OnVideoFrameRetrieved(
   // For other codec, the encoded frame is retrieved in utility process, send
   // the data to GPU process to do hardware decoding.
   if (video_frame_data_->get_encoded_data().empty()) {
-    OnError();
+    RecordVideoThumbnailEvent(VideoThumbnailEvent::kVideoFrameExtractionFailed);
+    OnError(MediaParserEvent::kVideoThumbnailFailed);
     return;
   }
 
@@ -218,7 +225,8 @@ void DownloadMediaParser::DecodeVideoFrame() {
 void DownloadMediaParser::OnVideoFrameDecoded(
     scoped_refptr<media::VideoFrame> frame) {
   if (!frame) {
-    OnError();
+    RecordVideoThumbnailEvent(VideoThumbnailEvent::kVideoDecodeFailed);
+    OnError(MediaParserEvent::kVideoThumbnailFailed);
     return;
   }
 
@@ -249,6 +257,7 @@ void DownloadMediaParser::RenderVideoFrame(
   cc::SkiaPaintCanvas canvas(bitmap);
   renderer.Copy(video_frame, &canvas, context, context_support);
 
+  RecordVideoThumbnailEvent(VideoThumbnailEvent::kVideoThumbnailComplete);
   NotifyComplete(std::move(bitmap));
 }
 
@@ -273,7 +282,7 @@ DownloadMediaParser::GetMediaInterfaceFactory() {
 }
 
 void DownloadMediaParser::OnDecoderConnectionError() {
-  OnError();
+  OnError(MediaParserEvent::kGpuConnectionError);
 }
 
 void DownloadMediaParser::OnMediaDataReady(
@@ -286,13 +295,16 @@ void DownloadMediaParser::OnMediaDataReady(
 
 void DownloadMediaParser::NotifyComplete(SkBitmap bitmap) {
   DCHECK(metadata_);
-  if (parse_complete_cb_)
-    std::move(parse_complete_cb_)
-        .Run(true, std::move(metadata_), std::move(bitmap));
+  DCHECK(parse_complete_cb_);
+  RecordMediaParserEvent(MediaParserEvent::kSuccess);
+  std::move(parse_complete_cb_)
+      .Run(true, std::move(metadata_), std::move(bitmap));
 }
 
-void DownloadMediaParser::OnError() {
-  if (parse_complete_cb_)
-    std::move(parse_complete_cb_)
-        .Run(false, chrome::mojom::MediaMetadata::New(), SkBitmap());
+void DownloadMediaParser::OnError(MediaParserEvent event) {
+  DCHECK(parse_complete_cb_);
+  RecordMediaParserEvent(MediaParserEvent::kFailure);
+  RecordMediaParserEvent(event);
+  std::move(parse_complete_cb_)
+      .Run(false, chrome::mojom::MediaMetadata::New(), SkBitmap());
 }

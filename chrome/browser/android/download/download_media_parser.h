@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
@@ -93,7 +94,7 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
                         std::unique_ptr<std::string> data);
 
   void NotifyComplete(SkBitmap bitmap);
-  void OnError();
+  void OnError(MediaParserEvent event);
 
   int64_t size_;
   std::string mime_type_;
