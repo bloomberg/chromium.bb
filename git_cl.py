@@ -3170,6 +3170,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       # TODO(crbug.com/881860): Remove.
+      # Clear the log after each git-cl upload run by setting mode='w'.
+      handler = logging.FileHandler(gerrit_util.GERRIT_ERR_LOG_FILE, mode='w')
+      handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+
+      GERRIT_ERR_LOGGER.addHandler(handler)
+      GERRIT_ERR_LOGGER.setLevel(logging.INFO)
+      # Don't propagate to root logger, so that logs are not printed.
+      GERRIT_ERR_LOGGER.propagate = 0
+
       # Get interesting headers from git push, to be displayed to the user if
       # subsequent Gerrit RPC calls fail.
       env = os.environ.copy()
@@ -6257,16 +6266,6 @@ class OptionParser(optparse.OptionParser):
         level=levels[min(options.verbose, len(levels) - 1)],
         format='[%(levelname).1s%(asctime)s %(process)d %(thread)d '
                '%(filename)s] %(message)s')
-
-    # TODO(crbug.com/881860): Remove.
-    # Clear the log after each git-cl run by setting mode='w'.
-    handler = logging.FileHandler(gerrit_util.GERRIT_ERR_LOG_FILE, mode='w')
-    handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-
-    GERRIT_ERR_LOGGER.addHandler(handler)
-    GERRIT_ERR_LOGGER.setLevel(logging.INFO)
-    # Don't propagate to root logger, so that logs are not printed.
-    GERRIT_ERR_LOGGER.propagate = 0
 
     return options, args
 

@@ -47,6 +47,10 @@ GERRIT_PROTOCOL = 'https'
 # TODO(crbug.com/881860): Remove.
 GERRIT_ERR_LOGGER = logging.getLogger('GerritErrorLogs')
 GERRIT_ERR_LOG_FILE = os.path.join(tempfile.gettempdir(), 'GerritHeaders.txt')
+GERRIT_ERR_MESSAGE = (
+    'If you see this when running \'git cl upload\', please report this to '
+    'https://crbug.com/881860, and attach the failures in %s.\n' %
+    GERRIT_ERR_LOG_FILE)
 INTERESTING_HEADERS = frozenset([
     'x-google-backends',
     'x-google-errorfiltertrace',
@@ -480,15 +484,14 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
   # end of retries loop
 
   if failed:
-    LOGGER.warn(
-        'If you see this when running \'git cl upload\', consider '
-        'reporting this to https://crbug.com/881860, and please attach the '
-        'failures in %s.\n', GERRIT_ERR_LOG_FILE)
+    LOGGER.warn(GERRIT_ERR_MESSAGE)
   if response.status not in accept_statuses:
     if response.status in (401, 403):
       print('Your Gerrit credentials might be misconfigured. Try: \n'
             '  git cl creds-check')
     reason = '%s: %s' % (response.reason, contents)
+    if failed:
+      reason += '\n' + GERRIT_ERR_MESSAGE
     raise GerritError(response.status, reason)
   return StringIO(contents)
 
