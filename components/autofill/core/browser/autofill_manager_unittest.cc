@@ -2907,6 +2907,9 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_ComponentizedNumbers) {
   // Verify only the first complete number is filled when there are multiple
   // componentized number fields.
   FormData form_with_multiple_componentized_phone_fields;
+  form_with_multiple_componentized_phone_fields.origin =
+      GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3004,6 +3007,8 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_WholeNumbers) {
   std::string guid(work_profile->guid());
 
   FormData form_with_multiple_whole_number_fields;
+  form_with_multiple_whole_number_fields.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3085,6 +3090,9 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FillPartsOnceOnly) {
   // Verify only the first complete number is filled when there are multiple
   // componentized number fields.
   FormData form_with_multiple_componentized_phone_fields;
+  form_with_multiple_componentized_phone_fields.origin =
+      GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3188,6 +3196,8 @@ TEST_F(AutofillManagerTest,
   std::string guid(work_profile->guid());
 
   FormData form_with_misclassified_extension;
+  form_with_misclassified_extension.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3278,6 +3288,8 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
   std::string guid(work_profile->guid());
 
   FormData form_with_no_complete_number;
+  form_with_no_complete_number.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3363,6 +3375,8 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_FocusOnSecondPhoneNumber) {
   std::string guid(work_profile->guid());
 
   FormData form_with_multiple_whole_number_fields;
+  form_with_multiple_whole_number_fields.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3448,6 +3462,8 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_HiddenFieldShouldNotCount) {
   std::string guid(work_profile->guid());
 
   FormData form_with_multiple_whole_number_fields;
+  form_with_multiple_whole_number_fields.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3601,6 +3617,8 @@ TEST_F(AutofillManagerTest,
   std::string guid(work_profile->guid());
 
   FormData form_with_multiple_sections;
+  form_with_multiple_sections.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
   // Default is zero, have to set to a number autofill can process.
   field.max_length = 10;
@@ -3800,6 +3818,8 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
 TEST_F(AutofillManagerTest, FormChangesVisibilityOfFields) {
   // Set up our form data.
   FormData form;
+  form.origin = GURL("http://www.foo.com/");
+
   FormFieldData field;
 
   // Default is zero, have to set to a number autofill can process.
@@ -4238,6 +4258,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
 TEST_F(AutofillManagerTest, DetermineHeuristicsWithOverallPrediction) {
   // Set up our form data.
   FormData form;
+  form.origin = GURL("https://www.myform.com");
   FormFieldData field;
   test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form.fields.push_back(field);

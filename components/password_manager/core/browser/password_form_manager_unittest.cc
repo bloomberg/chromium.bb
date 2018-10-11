@@ -89,6 +89,8 @@ enum SavePromptInteraction { SAVE, NEVER, NO_INTERACTION };
 PasswordForm CreateMinimalCrowdsourcableForm(
     const PasswordForm& observed_form) {
   PasswordForm form = observed_form;
+  form.origin = GURL("https://www.foo.com/login");
+  form.form_data.origin = form.origin;
   autofill::FormFieldData field;
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "text";
@@ -4514,6 +4516,9 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoUsernameSubmitted) {
 
   // User submits credentials for the observed form.
   PasswordForm submitted_form = *observed_form();
+  submitted_form.origin = GURL("https://www.foo.com/login");
+  submitted_form.form_data.origin = submitted_form.origin;
+
   autofill::FormFieldData field;
   field.name = ASCIIToUTF16("password1");
   field.form_control_type = "password";
@@ -4603,6 +4608,8 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_KnownValue) {
   observed_form()->password_element = ASCIIToUTF16("password");
   // User submits credentials for the observed form.
   PasswordForm submitted_form = *observed_form();
+  submitted_form.origin = GURL("https://www.foo.com/login");
+  submitted_form.form_data.origin = submitted_form.origin;
   submitted_form.username_value = saved_match()->username_value;
   submitted_form.password_value = saved_match()->password_value;
   submitted_form.form_data.fields[0].value = submitted_form.username_value;
