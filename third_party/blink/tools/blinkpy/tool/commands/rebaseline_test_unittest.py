@@ -66,16 +66,16 @@ class TestRebaselineTest(BaseTestCase):
     def test_baseline_directory(self):
         self.assertMultiLineEqual(
             self.command.baseline_directory('MOCK Mac10.11'),
-            '/test.checkout/LayoutTests/platform/test-mac-mac10.11')
+            '/test.checkout/wtests/platform/test-mac-mac10.11')
         self.assertMultiLineEqual(
             self.command.baseline_directory('MOCK Mac10.10'),
-            '/test.checkout/LayoutTests/platform/test-mac-mac10.10')
+            '/test.checkout/wtests/platform/test-mac-mac10.10')
         self.assertMultiLineEqual(
             self.command.baseline_directory('MOCK Trusty'),
-            '/test.checkout/LayoutTests/platform/test-linux-trusty')
+            '/test.checkout/wtests/platform/test-linux-trusty')
         self.assertMultiLineEqual(
             self.command.baseline_directory('MOCK Precise'),
-            '/test.checkout/LayoutTests/platform/test-linux-precise')
+            '/test.checkout/wtests/platform/test-linux-precise')
 
     def test_rebaseline_updates_expectations_file_noop(self):
         # pylint: disable=protected-access

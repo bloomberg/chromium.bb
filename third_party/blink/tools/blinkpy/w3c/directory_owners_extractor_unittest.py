@@ -78,12 +78,12 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
             # Although LayoutTests/external/OWNERS exists, it should not be listed.
             ABS_WPT_BASE + '/foo/bar.html': '',
             # Files out of external.
-            '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations': '',
-            '/mock-checkout/third_party/WebKit/LayoutTests/OWNERS': 'foo@chromium.org',
+            '/mock-checkout/' + RELATIVE_WEB_TESTS + 'TestExpectations': '',
+            '/mock-checkout/' + RELATIVE_WEB_TESTS + 'OWNERS': 'foo@chromium.org',
         })
         changed_files = [
             REL_WPT_BASE + '/foo/bar.html',
-            'third_party/WebKit/LayoutTests/TestExpectations',
+            RELATIVE_WEB_TESTS + 'TestExpectations',
         ]
         self.assertEqual(self.extractor.list_owners(changed_files), {})
 
@@ -124,11 +124,11 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
 
     def test_find_owners_file_out_of_external(self):
         self._write_files({
-            '/mock-checkout/third_party/WebKit/LayoutTests/OWNERS': 'foo@chromium.org',
-            '/mock-checkout/third_party/WebKit/LayoutTests/other/some_file': '',
+            '/mock-checkout/' + RELATIVE_WEB_TESTS + 'OWNERS': 'foo@chromium.org',
+            '/mock-checkout/' + RELATIVE_WEB_TESTS + 'other/some_file': '',
         })
-        self.assertIsNone(self.extractor.find_owners_file('third_party/WebKit/LayoutTests'))
-        self.assertIsNone(self.extractor.find_owners_file('third_party/WebKit/LayoutTests/other'))
+        self.assertIsNone(self.extractor.find_owners_file(RELATIVE_WEB_TESTS[:-1]))
+        self.assertIsNone(self.extractor.find_owners_file(RELATIVE_WEB_TESTS + 'other'))
         self.assertIsNone(self.extractor.find_owners_file('third_party'))
 
     def test_extract_owners(self):

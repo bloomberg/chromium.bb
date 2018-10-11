@@ -131,9 +131,9 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
         # pylint: disable=protected-access
         baseline_paths = self.command._generic_baseline_paths(test_baseline_set)
         self.assertEqual(baseline_paths, [
-            '/test.checkout/LayoutTests/passes/text-expected.png',
-            '/test.checkout/LayoutTests/passes/text-expected.txt',
-            '/test.checkout/LayoutTests/passes/text-expected.wav',
+            '/test.checkout/wtests/passes/text-expected.png',
+            '/test.checkout/wtests/passes/text-expected.txt',
+            '/test.checkout/wtests/passes/text-expected.wav',
         ])
 
     def test_unstaged_baselines(self):

@@ -564,7 +564,7 @@ class TestImporter(object):
 
         This is the same as invoking the `wpt-update-expectations` script.
         """
-        _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
+        _log.info('Adding test expectations lines to TestExpectations.')
         expectation_updater = WPTExpectationsUpdater(self.host)
         self.rebaselined_tests, self.new_test_expectations = expectation_updater.update_expectations()
 
