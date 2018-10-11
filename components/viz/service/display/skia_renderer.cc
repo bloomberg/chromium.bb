@@ -310,11 +310,13 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
       auto* vulkan_surface = output_surface_->GetVulkanSurface();
       auto* swap_chain = vulkan_surface->GetSwapChain();
       swap_chain->SetCurrentImageLayout(vk_image_info.fImageLayout);
+      output_surface_->SwapBuffers(std::move(output_frame));
 #endif
       break;
     }
     case DrawMode::GL: {
       output_surface_->SwapBuffers(std::move(output_frame));
+      break;
     }
   }
 
