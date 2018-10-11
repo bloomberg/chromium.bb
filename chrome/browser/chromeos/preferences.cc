@@ -317,6 +317,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       drive::prefs::kDisableDriveHostedFiles, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsWasLaunchedAtLeastOnce,
+                                false);
   registry->RegisterStringPref(drive::prefs::kDriveFsProfileSalt, "");
   registry->RegisterBooleanPref(drive::prefs::kDriveFsPinnedMigrated, false);
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod

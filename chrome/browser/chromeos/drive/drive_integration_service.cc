@@ -361,6 +361,11 @@ void UmaEmitUnmountOutcome(DriveMountStatus status) {
   UMA_HISTOGRAM_ENUMERATION("DriveCommon.Lifecycle.Unmount", status);
 }
 
+void UmaEmitFirstLaunch(const base::TimeTicks& time_started) {
+  UMA_HISTOGRAM_TIMES("DriveCommon.Lifecycle.FirstLaunchTime",
+                      base::TimeTicks::Now() - time_started);
+}
+
 }  // namespace
 
 // Observes drive disable Preference's change.
@@ -860,7 +865,12 @@ void DriveIntegrationService::AddDriveMountPoint() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (drivefs_holder_ && !drivefs_holder_->drivefs_host()->IsMounted()) {
-    mount_start_ = base::TimeTicks::Now();
+    PrefService* prefs = profile_->GetPrefs();
+    bool was_ever_mounted =
+        prefs->GetBoolean(prefs::kDriveFsWasLaunchedAtLeastOnce);
+    if (mount_start_.is_null() || was_ever_mounted) {
+      mount_start_ = base::TimeTicks::Now();
+    }
     drivefs_holder_->drivefs_host()->Mount();
   } else {
     AddDriveMountPointAfterMounted();
@@ -966,7 +976,15 @@ void DriveIntegrationService::MaybeRemountFileSystem(
 
 void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
   if (AddDriveMountPointAfterMounted()) {
-    UmaEmitMountOutcome(DriveMountStatus::kSuccess, mount_start_);
+    PrefService* prefs = profile_->GetPrefs();
+    bool was_ever_mounted =
+        prefs->GetBoolean(prefs::kDriveFsWasLaunchedAtLeastOnce);
+    if (was_ever_mounted) {
+      UmaEmitMountOutcome(DriveMountStatus::kSuccess, mount_start_);
+    } else {
+      UmaEmitFirstLaunch(mount_start_);
+      prefs->SetBoolean(prefs::kDriveFsWasLaunchedAtLeastOnce, true);
+    }
   } else {
     UmaEmitMountOutcome(DriveMountStatus::kUnknownFailure, mount_start_);
   }
@@ -981,9 +999,16 @@ void DriveIntegrationService::OnUnmounted(
 
 void DriveIntegrationService::OnMountFailed(
     base::Optional<base::TimeDelta> remount_delay) {
-  UmaEmitMountOutcome(remount_delay ? DriveMountStatus::kTemporaryUnavailable
-                                    : DriveMountStatus::kUnknownFailure,
-                      mount_start_);
+  PrefService* prefs = profile_->GetPrefs();
+  bool was_ever_mounted =
+      prefs->GetBoolean(prefs::kDriveFsWasLaunchedAtLeastOnce);
+  if (was_ever_mounted) {
+    UmaEmitMountOutcome(remount_delay ? DriveMountStatus::kTemporaryUnavailable
+                                      : DriveMountStatus::kUnknownFailure,
+                        mount_start_);
+  } else {
+    // We don't record mount time until we mount successfully at least once.
+  }
   MaybeRemountFileSystem(remount_delay, true);
 }
 
