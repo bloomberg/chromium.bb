@@ -4,7 +4,8 @@
 
 package org.chromium.webapk.shell_apk.h2o;
 
-import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -14,18 +15,16 @@ import android.widget.FrameLayout;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
+import org.chromium.webapk.shell_apk.HostBrowserLauncher;
+import org.chromium.webapk.shell_apk.HostBrowserLauncherActivity;
+import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
 import org.chromium.webapk.shell_apk.R;
 import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /** Displays splash screen. */
-public class SplashActivity extends Activity {
+public class SplashActivity extends HostBrowserLauncherActivity {
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView();
-    }
-
-    private void setContentView() {
+    protected void showSplashScreen() {
         Bundle metadata = WebApkUtils.readMetaData(this);
         Resources resources = getResources();
 
@@ -45,5 +44,25 @@ public class SplashActivity extends Activity {
                 metadata, WebApkMetaDataKeys.THEME_COLOR, Color.BLACK);
         WebApkUtils.setStatusBarColor(
                 getWindow(), WebApkUtils.getDarkenedColorForStatusBar(themeColor));
+    }
+
+    @Override
+    protected void onHostBrowserSelected(HostBrowserLauncherParams params) {
+        if (params == null) {
+            finish();
+            return;
+        }
+
+        Context appContext = getApplicationContext();
+
+        // TODO(pkotwicz): Pass parameter to tell Chrome not to show splash screen.
+        HostBrowserLauncher.launch(appContext, params);
+
+        if (!H2OLauncher.shouldMainIntentLaunchSplashActivity(params)) {
+            H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
+                    new ComponentName(appContext, H2OMainActivity.class), getComponentName());
+            finish();
+            return;
+        }
     }
 }

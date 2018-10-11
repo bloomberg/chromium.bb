@@ -41,9 +41,8 @@ template("webapk_java") {
       "src/org/chromium/webapk/shell_apk/HostBrowserUtils.java",
       "src/org/chromium/webapk/shell_apk/IdentityService.java",
       "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
-      "src/org/chromium/webapk/shell_apk/MainActivity.java",
       "src/org/chromium/webapk/shell_apk/LaunchHostBrowserSelector.java",
-      "src/org/chromium/webapk/shell_apk/ShareActivity.java",
+      "src/org/chromium/webapk/shell_apk/TransparentHostBrowserLauncherActivity.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
       "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
@@ -55,9 +54,14 @@ template("webapk_java") {
     ]
 
     if (invoker.use_new_splash) {
-      java_files +=
-          [ "src/org/chromium/webapk/shell_apk/h2o/SplashActivity.java" ]
+      java_files += [
+        "src/org/chromium/webapk/shell_apk/h2o/H2OLauncher.java",
+        "src/org/chromium/webapk/shell_apk/h2o/H2OMainActivity.java",
+        "src/org/chromium/webapk/shell_apk/h2o/SplashActivity.java",
+      ]
       deps += [ "//chrome/android/webapk/libs/common:splash_java" ]
+    } else {
+      java_files += [ "src/org/chromium/webapk/shell_apk/MainActivity.java" ]
     }
   }
 }
@@ -77,14 +81,13 @@ template("webapk_tmpl") {
   manifest_processor_template(_manifest_target_name) {
     forward_variables_from(invoker, [ "config_file" ])
 
-    if (_use_new_splash) {
-      input = "h2o/AndroidManifest.xml"
-    } else {
-      input = "AndroidManifest.xml"
-    }
+    input = "AndroidManifest.xml"
     output = _manifest_output
 
-    extra_variables = [ "shell_apk_version=$current_shell_apk_version" ]
+    extra_variables = [
+      "shell_apk_version=$current_shell_apk_version",
+      "use_new_splash=$_use_new_splash",
+    ]
   }
 
   android_resources(_resources_target_name) {
