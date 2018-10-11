@@ -366,6 +366,13 @@ DataReductionProxyTestContext::Builder::WithURLRequestContext(
 }
 
 DataReductionProxyTestContext::Builder&
+DataReductionProxyTestContext::Builder::WithURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = url_loader_factory;
+  return *this;
+}
+
+DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithMockClientSocketFactory(
     net::MockClientSocketFactory* mock_socket_factory) {
   mock_socket_factory_ = mock_socket_factory;
@@ -432,7 +439,7 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
-  scoped_refptr<network::TestSharedURLLoaderFactory> url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
   std::unique_ptr<TestingPrefServiceSimple> pref_service(
       new TestingPrefServiceSimple());
   std::unique_ptr<net::TestNetLog> net_log(new net::TestNetLog());
@@ -455,13 +462,12 @@ DataReductionProxyTestContext::Builder::Build() {
         task_runner, std::move(test_request_context));
   }
 
-  // In theory, when the other related classes (namely SecureProxyChecker
-  // and DataReductionProxyConfigServiceClient) get migrated away from
-  // using URLFetcher in favor of SimpleURLLoader, there will be a
-  // Builder::WithURLLoaderFactory, and specific tests will pass in
-  // a URLLoaderFactory instance. For now, we can just create our own.
-  url_loader_factory =
-      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+  if (url_loader_factory_) {
+    url_loader_factory = url_loader_factory_;
+  } else {
+    url_loader_factory =
+        base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+  }
 
   std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate(
       new TestDataReductionProxyEventStorageDelegate());
