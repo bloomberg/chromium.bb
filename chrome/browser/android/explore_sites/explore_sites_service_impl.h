@@ -48,6 +48,9 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
                                 const std::string& accept_languages,
                                 BooleanCallback callback) override;
 
+  // Add the url to the blacklist.
+  void BlacklistSite(const std::string& url) override;
+
  private:
   // KeyedService implementation:
   void Shutdown() override;

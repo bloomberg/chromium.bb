@@ -82,8 +82,13 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         }
 
         @Override
-        public void removeItem() {} // TODO(chili): Add removal method.
+        public void removeItem() {
+            // Update the database on the C++ side
+            ExploreSitesBridge.blacklistSite(mProfile, mSiteUrl);
 
+            // TODO(petewil): http://crbug.com/893845 - Remove the site tile from the EoS page, and
+            // replace it with a new one if we have it, sliding down the others as needed.
+        }
         @Override
         public String getUrl() {
             return mSiteUrl;

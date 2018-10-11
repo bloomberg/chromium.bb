@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
@@ -104,6 +105,14 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
                      weak_ptr_factory_.GetWeakPtr()));
   explore_sites_fetcher_->Start();
+}
+
+void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
+  // Add the url to the blacklist table in the database.
+  task_queue_.AddTask(
+      std::make_unique<BlacklistSiteTask>(explore_sites_store_.get(), url));
+
+  // TODO(https://crbug.com/893845): Remove cached category icon if affected.
 }
 
 void ExploreSitesServiceImpl::OnCatalogFetched(
