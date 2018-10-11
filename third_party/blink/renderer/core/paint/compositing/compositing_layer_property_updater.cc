@@ -42,14 +42,18 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
       fragment_data.PaintOffset() - mapping->SubpixelAccumulation();
   IntPoint snapped_paint_offset = RoundedIntPoint(layout_snapped_paint_offset);
 
+#if DCHECK_IS_ON()
   // A layer without visible contents can be composited due to animation.
   // Since the layer itself has no visible subtree, there is no guarantee
   // that all of its ancestors have a visible subtree. An ancestor with no
   // visible subtree can be non-composited despite we expected it to, this
   // resulted in the paint offset used by CompositedLayerMapping to mismatch.
   bool subpixel_accumulation_may_be_bogus = paint_layer->SubtreeIsInvisible();
-  DCHECK(layout_snapped_paint_offset == snapped_paint_offset ||
-         subpixel_accumulation_may_be_bogus);
+  if (!subpixel_accumulation_may_be_bogus) {
+    DCHECK_EQ(layout_snapped_paint_offset, snapped_paint_offset)
+        << object.DebugName();
+  }
+#endif
 
   base::Optional<PropertyTreeState> container_layer_state;
   auto SetContainerLayerState =
