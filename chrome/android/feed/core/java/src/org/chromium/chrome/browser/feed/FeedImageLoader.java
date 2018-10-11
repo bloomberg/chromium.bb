@@ -68,7 +68,7 @@ public class FeedImageLoader implements ImageLoaderApi {
     public void loadDrawable(
             List<String> urls, int widthPx, int heightPx, Consumer<Drawable> consumer) {
         assert mFeedImageLoaderBridge != null;
-        loadDrawableWithIter(urls.iterator(), consumer);
+        loadDrawableWithIter(urls.iterator(), widthPx, heightPx, consumer);
     }
 
     /** Cleans up FeedImageLoaderBridge. */
@@ -83,9 +83,14 @@ public class FeedImageLoader implements ImageLoaderApi {
      * continue processing. Being recursive allows resuming after an async call across the bridge.
      *
      * @param urlsIter The stateful iterator of all urls to load. Each call removes one value.
+     * @param widthPx The width of the image in pixels. Will be {@link #DIMENSION_UNKNOWN} if
+     * unknown.
+     * @param heightPx The height of the image in pixels. Will be {@link #DIMENSION_UNKNOWN} if
+     * unknown.
      * @param consumer The callback to be given the first successful image.
      */
-    private void loadDrawableWithIter(Iterator<String> urlsIter, Consumer<Drawable> consumer) {
+    private void loadDrawableWithIter(
+            Iterator<String> urlsIter, int widthPx, int heightPx, Consumer<Drawable> consumer) {
         assert mFeedImageLoaderBridge != null;
         if (!urlsIter.hasNext()) {
             // Post to ensure callback is not run synchronously.
@@ -97,7 +102,7 @@ public class FeedImageLoader implements ImageLoaderApi {
         if (url.startsWith(ASSET_PREFIX)) {
             Drawable drawable = getAssetDrawable(url);
             if (drawable == null) {
-                loadDrawableWithIter(urlsIter, consumer);
+                loadDrawableWithIter(urlsIter, widthPx, heightPx, consumer);
             } else {
                 // Post to ensure callback is not run synchronously.
                 ThreadUtils.postOnUiThread(() -> consumer.accept(drawable));
@@ -107,18 +112,18 @@ public class FeedImageLoader implements ImageLoaderApi {
             int direction = overlayDirection(uri);
             String sourceUrl = uri.getQueryParameter(OVERLAY_IMAGE_URL_PARAM);
             assert !TextUtils.isEmpty(sourceUrl) : "Overlay image source URL empty";
-            mFeedImageLoaderBridge.fetchImage(sourceUrl, (Bitmap bitmap) -> {
+            mFeedImageLoaderBridge.fetchImage(sourceUrl, widthPx, heightPx, (Bitmap bitmap) -> {
                 if (bitmap == null) {
-                    loadDrawableWithIter(urlsIter, consumer);
+                    loadDrawableWithIter(urlsIter, widthPx, heightPx, consumer);
                 } else {
                     consumer.accept(ThumbnailGradient.createDrawableWithGradientIfNeeded(
                             bitmap, direction, mActivityContext.getResources()));
                 }
             });
         } else {
-            mFeedImageLoaderBridge.fetchImage(url, (Bitmap bitmap) -> {
+            mFeedImageLoaderBridge.fetchImage(url, widthPx, heightPx, (Bitmap bitmap) -> {
                 if (bitmap == null) {
-                    loadDrawableWithIter(urlsIter, consumer);
+                    loadDrawableWithIter(urlsIter, widthPx, heightPx, consumer);
                 } else {
                     consumer.accept(new BitmapDrawable(mActivityContext.getResources(), bitmap));
                 }

@@ -43,14 +43,14 @@ public class FeedImageLoaderBridge {
      * Fetches images for feed. A {@code null} Bitmap is returned if no image is available. The
      * callback is never called synchronously.
      */
-    public void fetchImage(String url, Callback<Bitmap> callback) {
+    public void fetchImage(String url, int widthPx, int heightPx, Callback<Bitmap> callback) {
         assert mNativeFeedImageLoaderBridge != 0;
-        nativeFetchImage(mNativeFeedImageLoaderBridge, url, callback);
+        nativeFetchImage(mNativeFeedImageLoaderBridge, url, widthPx, heightPx, callback);
     }
 
     // Native methods
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedImageLoaderBridge);
-    private native void nativeFetchImage(
-            long nativeFeedImageLoaderBridge, String url, Callback<Bitmap> callback);
+    private native void nativeFetchImage(long nativeFeedImageLoaderBridge, String url, int widthPx,
+            int heightPx, Callback<Bitmap> callback);
 }

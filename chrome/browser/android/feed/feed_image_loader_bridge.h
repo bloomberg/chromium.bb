@@ -26,6 +26,8 @@ class FeedImageLoaderBridge {
   void FetchImage(JNIEnv* j_env,
                   const base::android::JavaRef<jobject>& j_this,
                   const base::android::JavaRef<jstring>& j_url,
+                  const jint width_px,
+                  const jint height_px,
                   const base::android::JavaRef<jobject>& j_callback);
 
  private:

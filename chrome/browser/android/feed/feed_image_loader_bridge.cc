@@ -56,11 +56,13 @@ void FeedImageLoaderBridge::Destroy(JNIEnv* env,
 void FeedImageLoaderBridge::FetchImage(JNIEnv* j_env,
                                        const JavaRef<jobject>& j_this,
                                        const JavaRef<jstring>& j_url,
+                                       const jint width_px,
+                                       const jint height_px,
                                        const JavaRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
   std::string url = base::android::ConvertJavaStringToUTF8(j_url);
   feed_image_manager_->FetchImage(
-      {std::move(url)},
+      {std::move(url)}, width_px, height_px,
       base::BindOnce(&FeedImageLoaderBridge::OnImageFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
