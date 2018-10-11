@@ -634,8 +634,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
         main_thread_task_runner_);
     loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-                                  std::move(subresource_loaders),
-                                  nullptr /* prefetch_loader_factory_info */),
+                                  std::move(subresource_loaders)),
                               base::nullopt /* subresource_overrides */);
   }
 

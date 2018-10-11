@@ -45,6 +45,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -441,15 +442,20 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
 }
 
 struct SignedExchangeAcceptHeaderBrowserTestParam {
-  SignedExchangeAcceptHeaderBrowserTestParam(bool sxg_enabled,
-                                             bool sxg_origin_trial_enabled,
-                                             bool sxg_accept_header_enabled)
+  SignedExchangeAcceptHeaderBrowserTestParam(
+      bool sxg_enabled,
+      bool sxg_origin_trial_enabled,
+      bool sxg_accept_header_enabled,
+      bool service_worker_servicification_enabled)
       : sxg_enabled(sxg_enabled),
         sxg_origin_trial_enabled(sxg_origin_trial_enabled),
-        sxg_accept_header_enabled(sxg_accept_header_enabled) {}
+        sxg_accept_header_enabled(sxg_accept_header_enabled),
+        service_worker_servicification_enabled(
+            service_worker_servicification_enabled) {}
   const bool sxg_enabled;
   const bool sxg_origin_trial_enabled;
   const bool sxg_accept_header_enabled;
+  const bool service_worker_servicification_enabled;
 };
 
 class SignedExchangeAcceptHeaderBrowserTest
@@ -476,6 +482,12 @@ class SignedExchangeAcceptHeaderBrowserTest
       enable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
     } else {
       disable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
+    }
+    if (GetParam().service_worker_servicification_enabled) {
+      enable_features.push_back(blink::features::kServiceWorkerServicification);
+    } else {
+      disable_features.push_back(
+          blink::features::kServiceWorkerServicification);
     }
     feature_list_.InitWithFeatures(enable_features, disable_features);
 
@@ -863,13 +875,21 @@ INSTANTIATE_TEST_CASE_P(
     SignedExchangeAcceptHeaderBrowserTest,
     SignedExchangeAcceptHeaderBrowserTest,
     testing::Values(
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, true)));
+        SignedExchangeAcceptHeaderBrowserTestParam(false, false, false, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, false, false, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, false, true, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, false, true, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, true, false, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, true, false, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, true, true, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(false, true, true, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, false, false, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, false, false, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, false, true, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, false, true, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, true, false, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, true, false, true),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, true, true, false),
+        SignedExchangeAcceptHeaderBrowserTestParam(true, true, true, true)));
 
 }  // namespace content

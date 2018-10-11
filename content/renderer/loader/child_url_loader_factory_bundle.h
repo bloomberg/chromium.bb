@@ -34,9 +34,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>;
 
   ChildURLLoaderFactoryBundleInfo();
-  ChildURLLoaderFactoryBundleInfo(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> base_info,
-      network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info);
+  explicit ChildURLLoaderFactoryBundleInfo(
+      std::unique_ptr<URLLoaderFactoryBundleInfo> base_info);
   ChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
       SchemeMap scheme_specific_factory_infos,
@@ -107,6 +106,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info,
               base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
                   subresource_overrides);
+  void SetPrefetchLoaderFactory(
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory);
 
   virtual bool IsHostChildURLLoaderFactoryBundle() const;
 

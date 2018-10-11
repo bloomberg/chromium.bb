@@ -20,7 +20,6 @@ class URLRequestContextGetter;
 
 namespace network {
 class SharedURLLoaderFactory;
-class URLLoaderFactoryBundleInfo;
 }
 
 namespace content {
@@ -42,9 +41,10 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
-  void GetFactory(network::mojom::URLLoaderFactoryRequest request,
-                  int frame_tree_node_id,
-                  std::unique_ptr<URLLoaderFactoryBundleInfo> factory_info);
+  void GetFactory(
+      network::mojom::URLLoaderFactoryRequest request,
+      int frame_tree_node_id,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info);
 
   // Used only when NetworkService is not enabled (or indirectly via the
   // other CreateLoaderAndStart when NetworkService is enabled).
