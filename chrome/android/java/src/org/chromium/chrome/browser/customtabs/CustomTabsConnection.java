@@ -1333,11 +1333,15 @@ public class CustomTabsConnection {
 
     /**
      * Discards substantial objects that are not currently in use.
+     * @param level The type of signal as defined in {@link android.content.ComponentCallbacks2}.
      */
-    public static void trimMemory() {
+    public static void onTrimMemory(int level) {
         if (!hasInstance()) return;
-        getInstance().mClientManager.cleanupUnusedSessions();
-        if (getInstance().mModuleLoader != null) getInstance().mModuleLoader.trimMemory();
+
+        if (ChromeApplication.isSevereMemorySignal(level)) {
+            getInstance().mClientManager.cleanupUnusedSessions();
+        }
+        if (getInstance().mModuleLoader != null) getInstance().mModuleLoader.onTrimMemory(level);
     }
 
     @VisibleForTesting

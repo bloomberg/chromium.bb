@@ -2231,8 +2231,8 @@ const char kCCTModuleDescription[] =
 
 const char kCCTModuleCacheName[] = "Chrome Custom Tabs Module Cache";
 const char kCCTModuleCacheDescription[] =
-    "Enables a cache for dynamically loaded modules in Chrome Custom Tabs, "
-    "on Android.";
+    "Enables a cache for dynamically loaded modules in Chrome Custom Tabs. "
+    "Under mild memory pressure the cache may be retained for some time";
 
 const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =

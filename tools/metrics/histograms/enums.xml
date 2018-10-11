@@ -9536,6 +9536,13 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Connected to service with KeepAlive connection"/>
 </enum>
 
+<enum name="CustomTabsDynamicModuleDestructionReason">
+  <int value="0" label="No caching enabled and the module is unused"/>
+  <int value="1" label="Cached and severe memory pressure"/>
+  <int value="2" label="Cached and mild memory pressure and time exceeded"/>
+  <int value="3" label="Cached and app hidden and time exceeded"/>
+</enum>
+
 <enum name="CustomTabsDynamicModuleLoadResult">
   <int value="0" label="Loaded new instance successfully"/>
   <int value="1" label="Used cached instance"/>

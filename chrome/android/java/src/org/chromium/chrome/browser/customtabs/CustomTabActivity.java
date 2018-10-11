@@ -1009,7 +1009,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             moduleComponentName = mIntentDataProvider.getModuleComponentName();
         }
         if (moduleComponentName != null) {
-            mConnection.getModuleLoader(moduleComponentName).maybeUnloadModule();
+            mConnection.getModuleLoader(moduleComponentName).decrementModuleUseCount();
         }
         if (mIncognitoTabHost != null) {
             IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);
