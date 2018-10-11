@@ -235,6 +235,10 @@ UIColor* DimColorIncognito() {
                                                           self.isStarred);
 }
 
+- (BOOL)isTabMatch {
+  return _match.has_tab_match;
+}
+
 #pragma mark helpers
 
 // Create a string to display for an answer line.

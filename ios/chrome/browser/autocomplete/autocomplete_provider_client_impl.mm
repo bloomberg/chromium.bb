@@ -28,8 +28,16 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
     ios::ChromeBrowserState* browser_state)
@@ -217,5 +225,18 @@ void AutocompleteProviderClientImpl::OnAutocompleteControllerResultReady(
 bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
     const GURL& url,
     const AutocompleteInput* input) {
+  TabModel* tab_model =
+      TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state_);
+  WebStateList* web_state_list = tab_model.webStateList;
+  if (!web_state_list)
+    return false;
+
+  for (int index = 0; index < web_state_list->count(); index++) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(index);
+
+    if (web_state != web_state_list->GetActiveWebState() &&
+        url == web_state->GetVisibleURL())
+      return true;
+  }
   return false;
 }
