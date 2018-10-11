@@ -61,7 +61,8 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
   DCHECK(!item->IsTransient());
   return Java_DownloadItem_createDownloadItem(
       env, DownloadManagerService::CreateJavaDownloadInfo(env, item),
-      item->GetStartTime().ToJavaTime(), item->GetFileExternallyRemoved());
+      item->GetStartTime().ToJavaTime(), item->GetEndTime().ToJavaTime(),
+      item->GetFileExternallyRemoved());
 }
 
 class ServiceImpl : public service_manager::Service {

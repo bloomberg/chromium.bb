@@ -81,6 +81,7 @@ public class OfflineItem implements Cloneable {
     public long totalSizeBytes;
     public boolean externallyRemoved;
     public long creationTimeMs;
+    public long completionTimeMs;
     public long lastAccessedTimeMs;
     public boolean isOpenable;
     public String filePath;
@@ -126,6 +127,7 @@ public class OfflineItem implements Cloneable {
         clone.totalSizeBytes = totalSizeBytes;
         clone.externallyRemoved = externallyRemoved;
         clone.creationTimeMs = creationTimeMs;
+        clone.completionTimeMs = completionTimeMs;
         clone.lastAccessedTimeMs = lastAccessedTimeMs;
         clone.isOpenable = isOpenable;
         clone.filePath = filePath;
