@@ -13,8 +13,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
@@ -50,10 +52,9 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/signin_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
@@ -506,6 +507,10 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     return account_tracker->SeedAccountInfo(gaia, email);
   }
 
+  IdentityAPI* id_api() {
+    return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
+  }
+
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
 
@@ -515,9 +520,11 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
 };
 
 class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kExtensionsMultiAccount);
+ public:
+  IdentityGetAccountsFunctionTest() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    feature_list_.InitAndEnableFeature(kExtensionsAllAccountsFeature);
+#endif
   }
 
  protected:
@@ -586,10 +593,17 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
 
     return testing::AssertionFailure(msg);
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, MultiAccountOn) {
-  EXPECT_TRUE(signin::IsExtensionsMultiAccount());
+IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, AllAccountsOn) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  EXPECT_FALSE(id_api()->AreExtensionsRestrictedToPrimaryAccount());
+#else
+  EXPECT_TRUE(id_api()->AreExtensionsRestrictedToPrimaryAccount());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoneSignedIn) {
@@ -617,21 +631,31 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, TwoAccountsSignedIn) {
   SignIn("primary@example.com");
   AddAccount("secondary@example.com");
-  EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary@example.com",
-                                 "gaia_id_for_secondary@example.com"}));
+  if (!id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
+    EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary@example.com",
+                                   "gaia_id_for_secondary@example.com"}));
+  } else {
+    EXPECT_TRUE(ExpectGetAccounts({"gaia_id_for_primary@example.com"}));
+  }
 }
 
 class IdentityOldProfilesGetAccountsFunctionTest
     : public IdentityGetAccountsFunctionTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    // Don't add the multi-account switch that parent class would have.
+ public:
+  IdentityOldProfilesGetAccountsFunctionTest() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    // Disable the feature that was enabled by the parent class.
+    feature_list_.InitAndDisableFeature(kExtensionsAllAccountsFeature);
+#endif
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
-                       MultiAccountOff) {
-  EXPECT_FALSE(signin::IsExtensionsMultiAccount());
+                       AllAccountsOff) {
+  EXPECT_TRUE(id_api()->AreExtensionsRestrictedToPrimaryAccount());
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityOldProfilesGetAccountsFunctionTest,
@@ -705,9 +729,14 @@ class GetAuthTokenFunctionTest
     : public IdentityTestWithSignin,
       public OAuth2TokenService::DiagnosticsObserver {
  public:
+  GetAuthTokenFunctionTest() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    feature_list_.InitAndEnableFeature(kExtensionsAllAccountsFeature);
+#endif
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IdentityTestWithSignin::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kExtensionsMultiAccount);
   }
 
   std::string IssueLoginAccessTokenForAccount(const std::string& account_id) {
@@ -765,10 +794,6 @@ class GetAuthTokenFunctionTest
     return ext;
   }
 
-  IdentityAPI* id_api() {
-    return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
-  }
-
   const std::string& GetPrimaryAccountId() {
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
@@ -812,6 +837,7 @@ class GetAuthTokenFunctionTest
     std::move(on_access_token_requested_).Run();
   }
 
+  base::test::ScopedFeatureList feature_list_;
   std::string extension_id_;
   std::set<std::string> oauth_scopes_;
 };
@@ -1777,6 +1803,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryUserManuallyIssueToken) {
+  // This test is only relevant if extensions see all accounts.
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
+    return;
+
   std::string primary_account_id = SignIn("primary@example.com");
   std::string secondary_account_id = AddAccount("secondary@example.com");
 
@@ -1823,6 +1853,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryNonInteractiveMintFailure) {
+  // This test is only relevant if extensions see all accounts.
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
+    return;
+
   SignIn("primary@example.com");
   AddAccount("secondary@example.com");
 
@@ -1841,6 +1875,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryNonInteractiveLoginAccessTokenFailure) {
+  // This test is only relevant if extensions see all accounts.
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
+    return;
+
   SignIn("primary@example.com");
   AddAccount("secondary@example.com");
 
@@ -1857,6 +1895,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryInteractiveApprovalAborted) {
+  // This test is only relevant if extensions see all accounts.
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
+    return;
+
   SignIn("primary@example.com");
   AddAccount("secondary@example.com");
 
