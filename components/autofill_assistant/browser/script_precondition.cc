@@ -121,7 +121,9 @@ bool ScriptPrecondition::MatchPath(const GURL& url) const {
     return true;
   }
 
-  const std::string path = url.path();
+  std::string path = url.has_ref()
+                         ? base::StrCat({url.PathForRequest(), "#", url.ref()})
+                         : url.PathForRequest();
   for (auto& regexp : path_pattern_) {
     if (regexp->Match(path, 0, path.size(), re2::RE2::UNANCHORED, NULL, 0)) {
       return true;

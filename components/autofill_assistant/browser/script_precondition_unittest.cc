@@ -157,6 +157,17 @@ TEST_F(ScriptPreconditionTest, PathPartialMatch) {
   EXPECT_TRUE(Check(proto));
 }
 
+TEST_F(ScriptPreconditionTest, PathWithQueryAndRef) {
+  ScriptPreconditionProto proto;
+  proto.add_path_pattern("/hello.*world");
+
+  SetUrl("http://www.example.com/hello?q=world");
+  EXPECT_TRUE(Check(proto));
+
+  SetUrl("http://www.example.com/hello#world");
+  EXPECT_TRUE(Check(proto));
+}
+
 TEST_F(ScriptPreconditionTest, BadPathPattern) {
   ScriptPreconditionProto proto;
   proto.add_path_pattern("invalid[");
