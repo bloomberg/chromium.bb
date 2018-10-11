@@ -9,9 +9,9 @@ import android.os.Bundle;
 import android.os.SystemClock;
 
 /**
- * UI-less activity which launches host browser.
+ * Base class for activity which launches host browser.
  */
-public class HostBrowserLauncherActivity extends Activity {
+public abstract class HostBrowserLauncherActivity extends Activity {
     private long mActivityStartTimeMs;
 
     @Override
@@ -19,25 +19,28 @@ public class HostBrowserLauncherActivity extends Activity {
         mActivityStartTimeMs = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
 
+        showSplashScreen();
+
         new LaunchHostBrowserSelector(this).selectHostBrowser(
                 new LaunchHostBrowserSelector.Callback() {
                     @Override
                     public void onBrowserSelected(
                             String hostBrowserPackageName, boolean dialogShown) {
-                        launchHostBrowser(hostBrowserPackageName, dialogShown);
-                        finish();
+                        if (hostBrowserPackageName == null) {
+                            finish();
+                            return;
+                        }
+                        HostBrowserLauncherParams params =
+                                HostBrowserLauncherParams.createForIntent(
+                                        HostBrowserLauncherActivity.this, getComponentName(),
+                                        getIntent(), hostBrowserPackageName, dialogShown,
+                                        mActivityStartTimeMs);
+                        onHostBrowserSelected(params);
                     }
                 });
     }
 
-    private void launchHostBrowser(String hostBrowserPackageName, boolean dialogShown) {
-        if (hostBrowserPackageName == null) return;
+    protected abstract void showSplashScreen();
 
-        HostBrowserLauncherParams params =
-                HostBrowserLauncherParams.createForIntent(this, getComponentName(), getIntent(),
-                        hostBrowserPackageName, dialogShown, mActivityStartTimeMs);
-        if (params == null) return;
-
-        HostBrowserLauncher.launch(getApplicationContext(), params);
-    }
+    protected abstract void onHostBrowserSelected(HostBrowserLauncherParams params);
 }
