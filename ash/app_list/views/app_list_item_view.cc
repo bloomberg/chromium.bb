@@ -128,6 +128,7 @@ class AppListItemView::IconImageView : public views::ImageView {
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    views::ImageView::OnBoundsChanged(previous_bounds);
     if (icon_mask_)
       icon_mask_->layer()->SetBounds(GetLocalBounds());
   }
