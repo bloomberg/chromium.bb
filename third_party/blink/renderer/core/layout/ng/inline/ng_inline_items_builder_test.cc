@@ -24,6 +24,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
   void SetUp() override {
     NGLayoutTest::SetUp();
     style_ = ComputedStyle::Create();
+    style_->GetFont().Update(nullptr);
   }
 
   void SetWhiteSpace(EWhiteSpace whitespace) {

@@ -106,7 +106,7 @@ layer at (8,666) size 182x22 backgroundClip at (0,0) size 0x0 clip at (0,0) size
     LayoutText {#text} at (0,0) size 0x0
 layer at (8,728) size 182x22 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollWidth 320
   LayoutNGBlockFlow {DIV} at (0,720) size 182x22 [border: (1px solid #000000)]
-    LayoutInline {A} at (0,0) size 320x19 [color=#0000EE]
+    LayoutInline {A} at (0,0) size 174x19 [color=#0000EE]
       LayoutText {#text} at (0,0) size 0x0
       LayoutInline {SPAN} at (0,0) size 174x19
         LayoutText {#text} at (1,1) size 174x19

@@ -174,6 +174,42 @@ NGInlineItem* LastItemToCollapseWith(Vector<NGInlineItem>* items) {
 
 }  // anonymous namespace
 
+template <typename OffsetMappingBuilder>
+NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::BoxInfo(
+    unsigned item_index,
+    const NGInlineItem& item)
+    : item_index(item_index),
+      should_create_box_fragment(item.ShouldCreateBoxFragment()),
+      style(*item.Style()),
+      text_metrics(NGLineHeightMetrics(style)) {
+  DCHECK(item.Style());
+}
+
+// True if this inline box should create a box fragment when it has |child|.
+template <typename OffsetMappingBuilder>
+bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::
+    ShouldCreateBoxFragmentForChild(const BoxInfo& child) const {
+  // When a child inline box has margins, the parent has different width/height
+  // from the union of children.
+  if (child.style.HasMargin())
+    return true;
+
+  // Returns true when parent and child boxes have different font metrics, since
+  // they may have different heights and/or locations in block direction.
+  if (text_metrics != child.text_metrics)
+    return true;
+
+  return false;
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::
+    SetShouldCreateBoxFragment(Vector<NGInlineItem>* items) {
+  DCHECK(!should_create_box_fragment);
+  should_create_box_fragment = true;
+  (*items)[item_index].SetShouldCreateBoxFragment();
+}
+
 // Append a string as a text item.
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextItem(
@@ -667,6 +703,16 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
   RestoreTrailingCollapsibleSpaceIfRemoved();
   Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter, style,
          layout_object);
+
+  // When this atomic inline is inside of an inline box, the height of the
+  // inline box can be different from the height of the atomic inline. Ensure
+  // the inline box creates a box fragment so that its height is available in
+  // the fragment tree.
+  if (!boxes_.IsEmpty()) {
+    BoxInfo* current_box = &boxes_.back();
+    if (!current_box->should_create_box_fragment)
+      current_box->SetShouldCreateBoxFragment(items_);
+  }
 }
 
 template <typename OffsetMappingBuilder>
@@ -851,6 +897,7 @@ template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
     LayoutObject* node) {
   DCHECK(node);
+
   mapping_builder_.EnterInline(*node);
 
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
@@ -889,6 +936,17 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
   }
 
   AppendOpaque(NGInlineItem::kOpenTag, style, node);
+
+  // Set |ShouldCreateBoxFragment| of the parent box if needed.
+  BoxInfo* current_box =
+      &boxes_.emplace_back(items_->size() - 1, items_->back());
+  if (boxes_.size() > 1) {
+    BoxInfo* parent_box = std::prev(current_box);
+    if (!parent_box->should_create_box_fragment &&
+        parent_box->ShouldCreateBoxFragmentForChild(*current_box)) {
+      parent_box->SetShouldCreateBoxFragment(items_);
+    }
+  }
 }
 
 template <typename OffsetMappingBuilder>
@@ -902,6 +960,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitInline(
   DCHECK(node);
 
   AppendOpaque(NGInlineItem::kCloseTag, node->Style(), node);
+
+  boxes_.pop_back();
 
   Exit(node);
 
