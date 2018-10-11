@@ -135,10 +135,10 @@ TEST_F(PingManagerTest, SendPing) {
         R"(prodchannel="fake_channel_string" )"
         R"(os="\w+" arch="\w+" nacl_arch="[-\w]+"( wow64="1")?>)"
         R"(<hw physmemory="\d+"/>)"
-        R"(<os platform="Fake Operating System" arch="\w+" )"
+        R"(<os platform="Fake Operating System" arch="[,-.\w]+" )"
         R"(version="[-.\w]+"( sp="[\s\w]+")?/>)"
         R"(<app appid="abc"><event eventtype="3" eventresult="1" )"
-        R"(previousversion="1.0" nextversion="2.0"/></app></request>)";
+        R"(previousversion="1\.0" nextversion="2\.0"/></app></request>)";
     EXPECT_TRUE(RE2::FullMatch(msg, regex)) << msg;
 
     // Check the ping request does not carry the specific extra request headers.
@@ -170,7 +170,7 @@ TEST_F(PingManagerTest, SendPing) {
     const auto msg = interceptor->GetRequestBody(0);
     constexpr char regex[] =
         R"(<app appid="abc"><event eventtype="3" eventresult="0" )"
-        R"(previousversion="1.0" nextversion="2.0"/></app>)";
+        R"(previousversion="1\.0" nextversion="2\.0"/></app>)";
     EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
     interceptor->Reset();
   }
@@ -206,7 +206,7 @@ TEST_F(PingManagerTest, SendPing) {
         R"(errorcode="2" extracode1="-1" diffresult="0" )"
         R"(differrorcat="4" differrorcode="20" diffextracode1="-10" )"
         R"(previousfp="prev fp" nextfp="next fp" )"
-        R"(previousversion="1.0" nextversion="2.0"/></app>)";
+        R"(previousversion="1\.0" nextversion="2\.0"/></app>)";
     EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
 
     interceptor->Reset();
@@ -230,7 +230,7 @@ TEST_F(PingManagerTest, SendPing) {
     const auto msg = interceptor->GetRequestBody(0);
     constexpr char regex[] =
         R"(<app appid="abc"><event eventtype="3" eventresult="0" )"
-        R"(previousversion="1.0"/></app>)";
+        R"(previousversion="1\.0"/></app>)";
     EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
 
     interceptor->Reset();
@@ -252,7 +252,7 @@ TEST_F(PingManagerTest, SendPing) {
     const auto msg = interceptor->GetRequestBody(0);
     constexpr char regex[] =
         R"(<app appid="abc"><event eventtype="4" eventresult="1" )"
-        R"(previousversion="1.2.3.4" nextversion="0"/></app>)";
+        R"(previousversion="1\.2\.3\.4" nextversion="0"/></app>)";
     EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
 
     interceptor->Reset();
@@ -296,15 +296,15 @@ TEST_F(PingManagerTest, SendPing) {
     constexpr char regex[] =
         R"(<app appid="abc">)"
         R"(<event eventtype="3" eventresult="1" )"
-        R"(previousversion="1.0" nextversion="2.0"/>)"
+        R"(previousversion="1\.0" nextversion="2\.0"/>)"
         R"(<event eventtype="14" eventresult="0" downloader="direct" )"
         R"(errorcode="-1" url="http://host1/path1" downloaded="123" )"
-        R"(total="456" download_time_ms="987" previousversion="1.0" )"
-        R"(nextversion="2.0"/>)"
+        R"(total="456" download_time_ms="987" previousversion="1\.0" )"
+        R"(nextversion="2\.0"/>)"
         R"(<event eventtype="14" eventresult="1" downloader="bits" )"
         R"(url="http://host2/path2" downloaded="1230" total="4560" )"
-        R"(download_time_ms="9870" previousversion="1.0" )"
-        R"(nextversion="2.0"/></app>)";
+        R"(download_time_ms="9870" previousversion="1\.0" )"
+        R"(nextversion="2\.0"/></app>)";
     EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
 
     interceptor->Reset();
