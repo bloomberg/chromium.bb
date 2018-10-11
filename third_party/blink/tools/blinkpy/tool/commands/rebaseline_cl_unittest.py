@@ -412,8 +412,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'INFO: Finished try jobs found for all try bots.\n',
             'INFO: Failed to fetch results for "MOCK Try Win".\n',
-            ('INFO: Results URL: https://test-results.appspot.com/data/layout_results'
-             '/MOCK_Try_Win/5000/layout-test-results/results.html\n'),
+            ('INFO: Results URL: https://test-results.appspot.com/data/layout_results/'
+             'MOCK_Try_Win/5000/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html\n'),
             'INFO: There are some builders with no results:\n',
             'INFO:   MOCK Try Win\n',
             'INFO: Would you like to continue?\n',
@@ -429,8 +429,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'INFO: Finished try jobs found for all try bots.\n',
             'INFO: Failed to fetch results for "MOCK Try Win".\n',
-            ('INFO: Results URL: https://test-results.appspot.com/data/layout_results'
-             '/MOCK_Try_Win/5000/layout-test-results/results.html\n'),
+            ('INFO: Results URL: https://test-results.appspot.com/data/layout_results/'
+             'MOCK_Try_Win/5000/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html\n'),
             'INFO: There are some builders with no results:\n',
             'INFO:   MOCK Try Win\n',
             'INFO: For one/flaky-fail.html:\n',

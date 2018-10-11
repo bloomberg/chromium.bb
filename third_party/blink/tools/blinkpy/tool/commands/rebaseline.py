@@ -76,6 +76,10 @@ class AbstractRebaseliningCommand(Command):
     build_number_option = optparse.make_option(
         '--build-number', default=None, type='int',
         help='Optional build number; if not given, the latest build is used.')
+    step_name_option = optparse.make_option(
+        '--step-name',
+        help=('Name of the step which ran the actual tests, and which '
+              'should be used to retrieve results from.'))
 
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
@@ -295,7 +299,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 '--suffixes', ','.join(suffixes),
                 '--port-name', port_name,
             ])
-
 
             copy_command = [self._tool.executable, path_to_blink_tool, 'copy-existing-baselines-internal'] + args
             copy_baseline_commands.append(tuple([copy_command, cwd]))
