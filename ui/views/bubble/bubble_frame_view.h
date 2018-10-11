@@ -18,7 +18,6 @@
 namespace views {
 
 class BubbleBorder;
-class FootnoteContainerView;
 class ImageView;
 
 // The non-client frame view of bubble-styled widgets.
@@ -184,7 +183,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   Button* close_;
 
   // A view to contain the footnote view, if it exists.
-  FootnoteContainerView* footnote_container_;
+  View* footnote_container_;
 
   // Whether the close button was clicked.
   bool close_button_clicked_;
