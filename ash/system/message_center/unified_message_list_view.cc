@@ -112,6 +112,12 @@ void UnifiedMessageListView::Init() {
   UpdateBorders();
 }
 
+int UnifiedMessageListView::GetLastNotificationHeight() const {
+  if (!has_children())
+    return 0;
+  return child_at(child_count() - 1)->bounds().height();
+}
+
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
   if (ignore_size_change_)
     return;
