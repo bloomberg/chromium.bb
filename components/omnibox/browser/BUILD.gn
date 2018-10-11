@@ -27,6 +27,8 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "answer_finance.icon",
     "answer_sunrise.icon",
     "answer_when_is.icon",
+    "bookmark.icon",
+    "clear.icon",
     "drive_docs.icon",
     "drive_forms.icon",
     "drive_logo.icon",
@@ -35,17 +37,11 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "blank.icon",
     "calculator.icon",
     "extension_app.icon",
-    "http.icon",
     "keyword_search.icon",
-    "md_page.icon",
+    "page.icon",
     "pedal.icon",
-    "star.icon",
     "switch.icon",
     "tab.icon",
-    "touchable_bookmark.icon",
-    "touchable_clear.icon",
-    "touchable_page.icon",
-    "touchable_search.icon",
   ]
 }
 

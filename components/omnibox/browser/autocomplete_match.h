@@ -14,8 +14,10 @@
 #include <vector>
 
 #include "base/strings/utf_offset_string_conversions.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/url_formatter/url_formatter.h"
@@ -134,13 +136,14 @@ struct AutocompleteMatch {
   // Converts |type| to a string representation.  Used in logging and debugging.
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
 
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   // Gets the vector icon identifier for the icon to be shown for |type|. If
   // |is_bookmark| is true, returns a bookmark icon rather than what the type
   // would determine.
   static const gfx::VectorIcon& TypeToVectorIcon(Type type,
                                                  bool is_bookmark,
-                                                 bool is_tab_match,
                                                  DocumentType document_type);
+#endif
 
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,

@@ -22,7 +22,6 @@
 #include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -45,10 +44,6 @@ class OmniboxViewTest : public testing::Test {
 
     bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
     client()->SetBookmarkModel(bookmark_model_.get());
-
-    material_design_ =
-        std::make_unique<ui::test::MaterialDesignControllerTestAPI>(
-            ui::MaterialDesignController::MATERIAL_REFRESH);
   }
 
   TestOmniboxView* view() { return view_.get(); }
@@ -65,7 +60,6 @@ class OmniboxViewTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI> material_design_;
   std::unique_ptr<TestOmniboxEditController> controller_;
   std::unique_ptr<TestOmniboxView> view_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
@@ -169,9 +163,8 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
   bookmark_model()->AddURL(bookmark_model()->bookmark_bar_node(), 0,
                            base::ASCIIToUTF16("a bookmark"), kUrl);
 
-  gfx::ImageSkia expected_icon =
-      gfx::CreateVectorIcon(omnibox::kTouchableBookmarkIcon, gfx::kFaviconSize,
-                            gfx::kPlaceholderColor);
+  gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
+      omnibox::kBookmarkIcon, gfx::kFaviconSize, gfx::kPlaceholderColor);
 
   gfx::ImageSkia icon = view()->GetIcon(
       gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());

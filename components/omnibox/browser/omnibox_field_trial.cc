@@ -149,7 +149,7 @@ const base::Feature kUIExperimentElideSuggestionUrlAfterHost{
 // Feature used to jog the Omnibox textfield to align with the dropdown
 // suggestions text when the popup is opened. When this feature is disabled, the
 // textfield is always aligned with the suggestions text, and a separator fills
-// the gap. If Material Refresh is disabled, this has no effect.
+// the gap.
 const base::Feature kUIExperimentJogTextfieldOnPopup{
     "OmniboxUIExperimentJogTextfieldOnPopup",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -727,22 +727,16 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 }
 
 bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
-         ui::MaterialDesignController::is_mode_initialized() &&
-         ui::MaterialDesignController::IsRefreshUi();
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions);
 }
 
 bool OmniboxFieldTrial::IsNewAnswerLayoutEnabled() {
-  return (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
-          ui::MaterialDesignController::is_mode_initialized() &&
-          ui::MaterialDesignController::IsRefreshUi()) ||
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
-  return (base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers) &&
-          ui::MaterialDesignController::is_mode_initialized() &&
-          ui::MaterialDesignController::IsRefreshUi()) ||
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
@@ -750,9 +744,7 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
 #if defined(OS_IOS)
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 #else  // defined(OS_IOS)
-  return (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) &&
-          ui::MaterialDesignController::is_mode_initialized() &&
-          ui::MaterialDesignController::IsRefreshUi()) ||
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 #endif
 }
@@ -767,9 +759,8 @@ OmniboxFieldTrial::GetPedalSuggestionMode() {
 }
 
 bool OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled() {
-  return ui::MaterialDesignController::IsRefreshUi() &&
-         base::FeatureList::IsEnabled(
-             omnibox::kUIExperimentJogTextfieldOnPopup);
+  return base::FeatureList::IsEnabled(
+      omnibox::kUIExperimentJogTextfieldOnPopup);
 }
 
 bool OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() {
