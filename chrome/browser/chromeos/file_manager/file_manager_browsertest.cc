@@ -399,6 +399,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickViewBackgroundColorHtml"),
                       TestCase("openQuickViewDrive"),
                       TestCase("openQuickViewDrive").EnableDriveFs(),
+                      TestCase("openQuickViewAndroid"),
                       TestCase("openQuickViewCrostini"),
                       TestCase("openQuickViewUsb"),
                       TestCase("openQuickViewMtp"),

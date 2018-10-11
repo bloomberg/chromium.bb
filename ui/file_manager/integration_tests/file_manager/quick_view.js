@@ -305,6 +305,59 @@ testcase.openQuickViewCrostini = function() {
 };
 
 /**
+ * Tests opening Quick View on an Android file.
+ */
+testcase.openQuickViewAndroid = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Android files.
+    function() {
+      openNewWindow(null, RootPath.ANDROID_FILES).then(this.next);
+    },
+    // Add files to the Android files volume.
+    function(result) {
+      appId = result;
+      const entrySet = BASIC_ANDROID_ENTRY_SET.concat([ENTRIES.documentsText]);
+      addEntries(['android_files'], entrySet, this.next);
+    },
+    // Wait for the file list to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#file-list').then(this.next);
+    },
+    // Check: the basic Android file set should appear in the file list.
+    function() {
+      const files = TestEntryInfo.getExpectedRows(BASIC_ANDROID_ENTRY_SET);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Navigate to the Android files '/Documents' directory.
+    function() {
+      remoteCall
+          .navigateWithDirectoryTree(
+              appId, '/Documents', 'My files/Play files', 'android_files')
+          .then(this.next);
+    },
+    // Check: the 'android.txt' file should appear in the file list.
+    function() {
+      const files = [ENTRIES.documentsText.getExpectedRow()];
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Open the Android file in Quick View.
+    function() {
+      const documentsFileName = ENTRIES.documentsText.nameText;
+      const openSteps = openQuickViewSteps(appId, documentsFileName);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * text document.
  */
