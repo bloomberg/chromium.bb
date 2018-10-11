@@ -37,6 +37,13 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>}
      */
     getSmartLockSignInEnabled() {}
+
+    /**
+     * Sets the value of the preference controlling whether Smart Lock may be
+     * used to sign-in the user (as opposed to unlocking the screen).
+     * @param {boolean} enabled
+     */
+    setSmartLockSignInEnabled(enabled) {}
   }
 
   /**
@@ -77,6 +84,11 @@ cr.define('settings', function() {
     /** @override */
     getSmartLockSignInEnabled() {
       return cr.sendWithPromise('getSmartLockSignInEnabled');
+    }
+
+    /** @override */
+    setSmartLockSignInEnabled(enabled) {
+      chrome.send('setSmartLockSignInEnabled', [enabled]);
     }
   }
 

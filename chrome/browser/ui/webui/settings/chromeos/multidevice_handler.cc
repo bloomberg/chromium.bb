@@ -83,6 +83,10 @@ void MultideviceHandler::RegisterMessages() {
       "getSmartLockSignInEnabled",
       base::BindRepeating(&MultideviceHandler::HandleGetSmartLockSignInEnabled,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setSmartLockSignInEnabled",
+      base::BindRepeating(&MultideviceHandler::HandleSetSmartLockSignInEnabled,
+                          base::Unretained(this)));
 }
 
 void MultideviceHandler::OnJavascriptAllowed() {
@@ -191,13 +195,21 @@ void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
 void MultideviceHandler::HandleGetSmartLockSignInEnabled(
     const base::ListValue* args) {
   std::string callback_id;
-  bool result = args->GetString(0, &callback_id);
-  DCHECK(result);
+  CHECK(args->GetString(0, &callback_id));
 
   bool signInEnabled = prefs_->GetBoolean(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(signInEnabled));
+}
+
+void MultideviceHandler::HandleSetSmartLockSignInEnabled(
+    const base::ListValue* args) {
+  bool enabled = false;
+  CHECK(args->GetBoolean(0, &enabled));
+
+  prefs_->SetBoolean(
+      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled, enabled);
 }
 
 void MultideviceHandler::OnSetFeatureStateEnabledResult(

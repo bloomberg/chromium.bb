@@ -37,7 +37,9 @@
       <div class="list-frame">
         <paper-radio-group
             selected="[[smartLockSignInEnabled_]]"
-            selectable="cr-radio-button">
+            selectable="cr-radio-button"
+            on-paper-radio-group-changed=
+                    "onSmartLockSignInEnabledChanged_">
           <cr-radio-button
               name="disabled"
               class="list-item underbar"

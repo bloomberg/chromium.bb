@@ -99,4 +99,15 @@ Polymer({
         settings.SignInEnabledState.ENABLED :
         settings.SignInEnabledState.DISABLED;
   },
+
+  /**
+   * Sets the Smart Lock 'sign-in enabled' pref based on the value of the
+   * radio group representing the pref.
+   * @private
+   */
+  onSmartLockSignInEnabledChanged_: function(event) {
+    const radioGroup = event.target;
+    const enabled = radioGroup.selected == settings.SignInEnabledState.ENABLED;
+    this.browserProxy_.setSmartLockSignInEnabled(enabled);
+  },
 });
