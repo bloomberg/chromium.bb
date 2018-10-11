@@ -44,6 +44,8 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
 
   // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* view) override {
+    if (view->GetPreferredSize() == view->size())
+      return;
     view->SetBoundsRect(gfx::Rect(view->GetPreferredSize()));
     view->Layout();
     ++size_changed_count_;
@@ -103,6 +105,24 @@ TEST_F(NewUnifiedMessageCenterViewTest, AddAndRemoveNotification) {
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
   EXPECT_FALSE(message_center_view()->visible());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, ContentsRelayout) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 10; ++i)
+    ids.push_back(AddNotification());
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  const int previous_contents_height = GetScrollerContents()->height();
+  const int previous_list_height = GetMessageListView()->height();
+
+  MessageCenter::Get()->RemoveNotification(ids.back(), true /* by_user */);
+  EXPECT_TRUE(message_center_view()->visible());
+  EXPECT_GT(previous_contents_height, GetScrollerContents()->height());
+  EXPECT_GT(previous_list_height, GetMessageListView()->height());
 }
 
 TEST_F(NewUnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
