@@ -1440,6 +1440,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mManualFillingController.initialize(getWindowAndroid(),
                     new DeferredViewStubInflationProvider<>(accessoryBarStub),
                     new DeferredViewStubInflationProvider<>(accessorySheetStub));
+            getCompositorViewHolder().setKeyboardExtensionView(
+                    mManualFillingController.getKeyboardExtensionSizeManager());
         }
 
         // Create after native initialization so subclasses that override this method have a chance
