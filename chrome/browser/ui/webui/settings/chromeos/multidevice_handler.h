@@ -68,6 +68,7 @@ class MultideviceHandler
   void HandleRetryPendingHostSetup(const base::ListValue* args);
   void HandleSetUpAndroidSms(const base::ListValue* args);
   void HandleGetSmartLockSignInEnabled(const base::ListValue* args);
+  void HandleSetSmartLockSignInEnabled(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
