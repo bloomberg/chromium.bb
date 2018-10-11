@@ -899,27 +899,41 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Font properties.
-  CORE_EXPORT const Font& GetFont() const;
-  CORE_EXPORT void SetFont(const Font&);
-  CORE_EXPORT const FontDescription& GetFontDescription() const;
+  CORE_EXPORT const Font& GetFont() const { return FontInternal(); }
+  CORE_EXPORT void SetFont(const Font& font) { SetFontInternal(font); }
+  CORE_EXPORT const FontDescription& GetFontDescription() const {
+    return FontInternal().GetFontDescription();
+  }
   CORE_EXPORT bool SetFontDescription(const FontDescription&);
   bool HasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;
 
   // font-size
-  int FontSize() const;
-  CORE_EXPORT float SpecifiedFontSize() const;
-  CORE_EXPORT float ComputedFontSize() const;
-  LayoutUnit ComputedFontSizeAsFixed() const;
+  int FontSize() const { return GetFontDescription().ComputedPixelSize(); }
+  CORE_EXPORT float SpecifiedFontSize() const {
+    return GetFontDescription().SpecifiedSize();
+  }
+  CORE_EXPORT float ComputedFontSize() const {
+    return GetFontDescription().ComputedSize();
+  }
+  LayoutUnit ComputedFontSizeAsFixed() const {
+    return LayoutUnit::FromFloatRound(GetFontDescription().ComputedSize());
+  }
 
   // font-size-adjust
-  float FontSizeAdjust() const;
-  bool HasFontSizeAdjust() const;
+  float FontSizeAdjust() const { return GetFontDescription().SizeAdjust(); }
+  bool HasFontSizeAdjust() const {
+    return GetFontDescription().HasSizeAdjust();
+  }
 
   // font-weight
-  CORE_EXPORT FontSelectionValue GetFontWeight() const;
+  CORE_EXPORT FontSelectionValue GetFontWeight() const {
+    return GetFontDescription().Weight();
+  }
 
   // font-stretch
-  FontSelectionValue GetFontStretch() const;
+  FontSelectionValue GetFontStretch() const {
+    return GetFontDescription().Stretch();
+  }
 
   // Child is aligned to the parent by matching the parent’s dominant baseline
   // to the same baseline in the child.
@@ -933,7 +947,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // FIXME: Remove letter-spacing/word-spacing and replace them with respective
   // FontBuilder calls.  letter-spacing
-  float LetterSpacing() const;
+  float LetterSpacing() const { return GetFontDescription().LetterSpacing(); }
   void SetLetterSpacing(float);
 
   // tab-size
@@ -949,7 +963,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // word-spacing
-  float WordSpacing() const;
+  float WordSpacing() const { return GetFontDescription().WordSpacing(); }
   void SetWordSpacing(float);
 
   // orphans
@@ -1327,7 +1341,7 @@ class ComputedStyle : public ComputedStyleBase,
   void ApplyTextTransform(String*, UChar previous_character = ' ') const;
 
   // Line-height utility functions.
-  const Length& SpecifiedLineHeight() const;
+  const Length& SpecifiedLineHeight() const { return LineHeightInternal(); }
   int ComputedLineHeight() const;
   LayoutUnit ComputedLineHeightAsFixed() const;
 
