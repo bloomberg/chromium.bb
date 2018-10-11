@@ -278,6 +278,10 @@ bool EmbeddedTestServer::GetAddressList(AddressList* address_list) const {
   return true;
 }
 
+std::string EmbeddedTestServer::GetIPLiteralString() const {
+  return local_endpoint_.address().ToString();
+}
+
 void EmbeddedTestServer::ResetSSLConfigOnIOThread(
     ServerCertificate cert,
     const SSLServerConfig& ssl_config) {

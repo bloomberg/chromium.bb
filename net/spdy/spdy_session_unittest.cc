@@ -26,6 +26,7 @@
 #include "net/base/test_data_stream.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_request_info.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
@@ -6681,21 +6682,20 @@ TEST(CanPoolTest, CanNotPoolAcrossETLDsWithChannelID) {
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadPins) {
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  uint8_t bad_pin = 3;
   TransportSecurityState tss;
-  test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
+  tss.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
   TestSSLConfigService ssl_config_service;
   SSLInfo ssl_info;
   ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
                                      "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
+  uint8_t bad_pin = 3;
   ssl_info.public_key_hashes.push_back(test::GetTestHashValue(bad_pin));
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.org"));
+                                    "www.example.org", "example.test"));
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
@@ -6783,17 +6783,20 @@ TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
 }
 
 TEST(CanPoolTest, CanPoolWithAcceptablePins) {
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
   TransportSecurityState tss;
-  test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
+  tss.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
   TestSSLConfigService ssl_config_service;
   SSLInfo ssl_info;
   ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
                                      "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
-  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(primary_pin));
+  HashValue hash;
+  // The expected value of GoodPin1 used by |scoped_security_state_source|.
+  ASSERT_TRUE(
+      hash.FromString("sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
+  ssl_info.public_key_hashes.push_back(hash);
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
                                    "www.example.org", "mail.example.org"));

@@ -1012,6 +1012,14 @@ void NetworkContext::AddHSTSForTesting(const std::string& host,
   std::move(callback).Run();
 }
 
+void NetworkContext::EnableStaticKeyPinningForTesting(
+    EnableStaticKeyPinningForTestingCallback callback) {
+  net::TransportSecurityState* state =
+      url_request_context_->transport_security_state();
+  state->EnableStaticPinsForTesting();
+  std::move(callback).Run();
+}
+
 void NetworkContext::SetFailingHttpTransactionForTesting(
     int32_t error_code,
     SetFailingHttpTransactionForTestingCallback callback) {

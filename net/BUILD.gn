@@ -2578,6 +2578,8 @@ static_library("test_support") {
     "http/http_stream_factory_test_util.h",
     "http/http_transaction_test_util.cc",
     "http/http_transaction_test_util.h",
+    "http/transport_security_state_test_util.cc",
+    "http/transport_security_state_test_util.h",
     "log/test_net_log.cc",
     "log/test_net_log.h",
     "log/test_net_log_entry.cc",
@@ -2673,6 +2675,7 @@ static_library("test_support") {
 
   deps = [
     ":simple_quic_tools",
+    "//net/http:transport_security_state_unittest_data_default",
     "//third_party/zlib",
   ]
 
@@ -3626,14 +3629,6 @@ bundle_data("net_unittests_bundle_data") {
     "data/url_request_unittest/filedir-sentinel",
     "data/url_request_unittest/gzip-encoded",
     "data/url_request_unittest/gzip-encoded.mock-http-headers",
-    "data/url_request_unittest/hpkp-headers-report-only.html",
-    "data/url_request_unittest/hpkp-headers-report-only.html.mock-http-headers",
-    "data/url_request_unittest/hpkp-headers.html",
-    "data/url_request_unittest/hpkp-headers.html.mock-http-headers",
-    "data/url_request_unittest/hsts-and-hpkp-headers.html",
-    "data/url_request_unittest/hsts-and-hpkp-headers.html.mock-http-headers",
-    "data/url_request_unittest/hsts-and-hpkp-headers2.html",
-    "data/url_request_unittest/hsts-and-hpkp-headers2.html.mock-http-headers",
     "data/url_request_unittest/hsts-headers.html",
     "data/url_request_unittest/hsts-headers.html.mock-http-headers",
     "data/url_request_unittest/hsts-multiple-headers.html",
@@ -6131,33 +6126,6 @@ fuzzer_test("net_http_security_headers_hsts_fuzzer") {
   ]
   dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
   seed_corpus = "data/fuzzer_data/http_security_headers/"
-}
-
-fuzzer_test("net_http_security_headers_hpkp_fuzzer") {
-  sources = [
-    "http/http_security_headers_hpkp_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-    "//url",
-  ]
-  dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
-  seed_corpus = "data/fuzzer_data/http_security_headers/"
-}
-
-fuzzer_test("net_http_security_headers_hpkp_report_only_fuzzer") {
-  sources = [
-    "http/http_security_headers_hpkp_report_only_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-    "//url",
-  ]
-  dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
 }
 
 fuzzer_test("net_http_transport_security_state_static_fuzzer") {
