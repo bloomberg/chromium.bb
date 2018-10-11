@@ -286,9 +286,12 @@ bool WindowSelectorController::ToggleOverview(
   }
 
   if (IsSelecting()) {
-    // Do not allow ending overview if we're in single split mode.
-    if (windows.empty() && Shell::Get()->IsSplitViewModeActive())
+    // Do not allow ending overview if we're in single split mode unless swiping
+    // up from the shelf.
+    if (windows.empty() && Shell::Get()->IsSplitViewModeActive() &&
+        type != WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
       return true;
+    }
 
     window_selector_->set_enter_exit_overview_type(new_type);
     if (type == WindowSelector::EnterExitOverviewType::kWindowsMinimized ||

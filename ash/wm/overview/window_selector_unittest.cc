@@ -4878,4 +4878,22 @@ TEST_F(SplitViewWindowSelectorTest, SwapWindowAndOverviewGrid) {
                 window1.get(), SplitViewController::LEFT));
 }
 
+// Verify the behavior when trying to exit overview with one snapped window
+// is as expected.
+TEST_F(SplitViewWindowSelectorTest, ExitOverviewWithOneSnapped) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+
+  // Tests that we cannot exit overview when there is one snapped window and no
+  // windows in overview normally.
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  ToggleOverview();
+  ASSERT_TRUE(IsSelecting());
+
+  // Tests that we can exit overview if we swipe up from the shelf.
+  ToggleOverview(WindowSelector::EnterExitOverviewType::kSwipeFromShelf);
+  EXPECT_FALSE(IsSelecting());
+}
+
 }  // namespace ash
