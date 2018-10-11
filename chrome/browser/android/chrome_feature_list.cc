@@ -85,6 +85,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTParallelRequest,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
+    &kCCTReportParallelRequestStatus,
     &kCCTResourcePrefetch,
     &kChromeDuetFeature,
     &kChromeHomeSwipeLogic,
@@ -229,6 +230,9 @@ const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
 
 const base::Feature kCCTRedirectPreconnect{"CCTRedirectPreconnect",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTReportParallelRequestStatus{
+    "CCTReportParallelRequestStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
