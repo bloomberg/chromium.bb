@@ -618,7 +618,7 @@
                   '|chrome/browser/resources/settings/',
     },
     'browsing_data': {
-      'filepath': '/browsing_data/',
+      'filepath': 'browsing_data|BrowsingData',
     },
     'bubble': {
       'filepath': 'ui/views/bubble/|'\
