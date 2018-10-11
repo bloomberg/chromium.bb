@@ -83,7 +83,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void CountDeprecation(WebFeature);
 
   // May return nullptr if this global scope is not threaded (i.e.,
-  // MainThreadWorkletGlobalScope) or after dispose() is called.
+  // WorkletGlobalScope for the main thread) or after Dispose() is called.
   virtual WorkerThread* GetThread() const = 0;
 
   ResourceFetcher* Fetcher() const override;

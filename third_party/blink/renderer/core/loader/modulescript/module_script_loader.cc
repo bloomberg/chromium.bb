@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"

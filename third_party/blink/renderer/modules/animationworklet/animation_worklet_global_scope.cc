@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -35,25 +36,23 @@ void UpdateAnimation(Animator* animator,
 
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    v8::Isolate* isolate,
     WorkerThread* thread) {
-  return new AnimationWorkletGlobalScope(std::move(creation_params), isolate,
-                                         thread);
+  return new AnimationWorkletGlobalScope(std::move(creation_params), thread);
 }
 
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    v8::Isolate* isolate,
     WorkerThread* thread)
-    : ThreadedWorkletGlobalScope(std::move(creation_params), isolate, thread) {
-}
+    : WorkletGlobalScope(std::move(creation_params),
+                         thread->GetWorkerReportingProxy(),
+                         thread) {}
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() = default;
 
 void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(animator_definitions_);
   visitor->Trace(animators_);
-  ThreadedWorkletGlobalScope::Trace(visitor);
+  WorkletGlobalScope::Trace(visitor);
 }
 
 void AnimationWorkletGlobalScope::Dispose() {
@@ -61,7 +60,7 @@ void AnimationWorkletGlobalScope::Dispose() {
   if (AnimationWorkletProxyClient* proxy_client =
           AnimationWorkletProxyClient::From(Clients()))
     proxy_client->Dispose();
-  ThreadedWorkletGlobalScope::Dispose();
+  WorkletGlobalScope::Dispose();
 }
 
 Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(

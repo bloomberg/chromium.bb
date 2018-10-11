@@ -66,8 +66,7 @@ WorkerOrWorkletGlobalScope* AnimationWorkletThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                "AnimationWorkletThread::CreateWorkerGlobalScope");
-  return AnimationWorkletGlobalScope::Create(std::move(creation_params),
-                                             GetIsolate(), this);
+  return AnimationWorkletGlobalScope::Create(std::move(creation_params), this);
 }
 
 }  // namespace blink
