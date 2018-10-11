@@ -25,6 +25,10 @@ CrElementsToggleTest.All
 CrSettingsAnimatedPagesTest.All
 CrSettingsFocusRowBehavior.FocusTest
 CrSettingsSyncPageTest.All
+LoginUITest.PRE_InterruptedAutoStartEnrollment
+LoginUITest.InterruptedAutoStartEnrollment
+LoginUITest.PRE_LoginNoExceptions
+LoginUITest.LoginNoExceptions
 MaterialBookmarksFocusTest.All
 MaterialHistoryFocusTest.All
 PrintPreviewDestinationDialogInteractiveTest.*
