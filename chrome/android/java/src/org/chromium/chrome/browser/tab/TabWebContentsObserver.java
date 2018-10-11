@@ -116,7 +116,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             // a new renderer for the shared RenderProcessHost and the new renderer crashes
             // again, all tabs sharing this renderer will be notified about the crash (including
             // potential background tabs that did not reload yet).
-            if (mTab.needsReload() || mTab.isShowingSadTab()) return;
+            if (mTab.needsReload() || SadTab.isShowing(mTab)) return;
 
             // This will replace TabRendererCrashStatus if numbers line up.
             int appState = ApplicationStatus.getStateForApplication();

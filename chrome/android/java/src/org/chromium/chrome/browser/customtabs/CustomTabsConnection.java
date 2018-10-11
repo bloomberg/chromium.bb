@@ -219,7 +219,7 @@ public class CustomTabsConnection {
         }
 
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             final CustomTabsConnection connection = mCustomTabsConnection;
             ThreadUtils.postOnUiThread(() -> { connection.cancelSpeculation(null /* session */); });
         }

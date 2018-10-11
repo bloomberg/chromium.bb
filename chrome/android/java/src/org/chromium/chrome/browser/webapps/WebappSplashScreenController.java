@@ -158,7 +158,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     @Override
-    public void onCrash(Tab tab, boolean sadTabShown) {
+    public void onCrash(Tab tab) {
         animateHidingSplashScreen(tab, WebappUma.SplashScreenHidesReason.CRASH);
     }
 

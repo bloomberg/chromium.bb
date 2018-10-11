@@ -13,6 +13,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -532,6 +533,6 @@ public abstract class XrTestFramework {
                 () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
 
         CriteriaHelper.pollUiThread(
-                () -> { return tab.isShowingSadTab(); }, "Renderer killed, but sad tab not shown");
+                () -> SadTab.isShowing(tab), "Renderer killed, but sad tab not shown");
     }
 }

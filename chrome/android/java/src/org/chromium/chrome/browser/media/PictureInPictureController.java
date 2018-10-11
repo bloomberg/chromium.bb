@@ -331,7 +331,7 @@ public class PictureInPictureController {
         }
 
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             dismissActivity(mActivity, METRICS_END_REASON_CRASH);
         }
 

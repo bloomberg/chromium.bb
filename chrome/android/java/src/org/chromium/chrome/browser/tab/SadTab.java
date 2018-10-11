@@ -64,6 +64,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
     }
 
     public static boolean isShowing(Tab tab) {
+        if (tab == null || !tab.isInitialized()) return false;
         SadTab sadTab = get(tab);
         return sadTab != null ? sadTab.isShowing() : false;
     }
@@ -124,7 +125,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
      * Removes the sad tab view if present.
      */
     @VisibleForTesting
-    void removeIfPresent() {
+    public void removeIfPresent() {
         if (isShowing()) {
             mTab.getContentView().removeView(mView);
             mTab.notifyContentChanged();

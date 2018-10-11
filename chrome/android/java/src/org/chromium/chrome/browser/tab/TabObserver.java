@@ -125,9 +125,8 @@ public interface TabObserver {
     /**
      * Called when the ContentView of a {@link Tab} crashes.
      * @param tab The notifying {@link Tab}.
-     * @param sadTabShown Whether or not the sad tab was shown
      */
-    void onCrash(Tab tab, boolean sadTabShown);
+    void onCrash(Tab tab);
 
     /**
      * Called when restore of the corresponding tab is triggered.

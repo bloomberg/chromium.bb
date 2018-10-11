@@ -46,7 +46,7 @@ public class SadTabTest {
 
     private static boolean isShowingSadTab(Tab tab) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(() -> tab.isShowingSadTab());
+            return ThreadUtils.runOnUiThreadBlocking(() -> SadTab.isShowing(tab));
         } catch (ExecutionException e) {
             return false;
         }

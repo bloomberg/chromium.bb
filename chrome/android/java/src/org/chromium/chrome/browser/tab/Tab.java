@@ -1877,13 +1877,6 @@ public class Tab
     }
 
     /**
-     * @return Whether or not the sad tab is showing.
-     */
-    public boolean isShowingSadTab() {
-        return mIsInitialized ? SadTab.isShowing(this) : false;
-    }
-
-    /**
      * Calls onContentChanged on all TabObservers and updates accessibility visibility.
      */
     void notifyContentChanged() {
@@ -2668,9 +2661,8 @@ public class Tab
     void handleTabCrash() {
         mIsLoading = false;
 
-        boolean sadTabShown = isShowingSadTab();
         RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) observers.next().onCrash(this, sadTabShown);
+        while (observers.hasNext()) observers.next().onCrash(this);
         mIsBeingRestored = false;
     }
 
@@ -2927,8 +2919,8 @@ public class Tab
 
         WebContentsAccessibility wcax = getWebContentsAccessibility(getWebContents());
         if (wcax != null) {
-            boolean isWebContentObscured = isObscuredByAnotherViewForAccessibility()
-                    || isShowingSadTab();
+            boolean isWebContentObscured =
+                    isObscuredByAnotherViewForAccessibility() || SadTab.isShowing(this);
             wcax.setObscuredByAnotherView(isWebContentObscured);
         }
     }

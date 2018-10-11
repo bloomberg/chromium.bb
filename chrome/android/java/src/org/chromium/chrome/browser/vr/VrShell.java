@@ -252,7 +252,7 @@ public class VrShell extends GvrLayout
             }
 
             @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
+            public void onCrash(Tab tab) {
                 updateHistoryButtonsVisibility();
             }
 

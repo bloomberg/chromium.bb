@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -582,8 +583,8 @@ public class ContextualSearchManager
             }
 
             @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
-                if (sadTabShown) {
+            public void onCrash(Tab tab) {
+                if (SadTab.isShowing(tab)) {
                     // Hide contextual search if the foreground tab crashed
                     hideContextualSearch(StateChangeReason.UNKNOWN);
                 }

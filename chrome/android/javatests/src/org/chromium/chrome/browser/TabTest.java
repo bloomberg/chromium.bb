@@ -20,6 +20,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -53,7 +54,7 @@ public class TabTest {
     };
 
     private boolean isShowingSadTab() throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(() -> mTab.isShowingSadTab());
+        return ThreadUtils.runOnUiThreadBlocking(() -> SadTab.isShowing(mTab));
     }
 
     @Before
