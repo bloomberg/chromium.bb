@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/files/file.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
 #include "ppapi/cpp/logging.h"
 #include "third_party/minizip/src/unzip.h"
@@ -177,18 +178,19 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
   return bytes_read;
 }
 
-int64_t VolumeReaderJavaScriptStream::Seek(int64_t offset, int whence) {
+int64_t VolumeReaderJavaScriptStream::Seek(int64_t offset,
+                                           base::File::Whence whence) {
   base::AutoLock al(shared_state_lock_);
 
   int64_t new_offset = offset_;
   switch (whence) {
-    case ZLIB_FILEFUNC_SEEK_SET:
+    case base::File::FROM_BEGIN:
       new_offset = offset;
       break;
-    case ZLIB_FILEFUNC_SEEK_CUR:
+    case base::File::FROM_CURRENT:
       new_offset += offset;
       break;
-    case ZLIB_FILEFUNC_SEEK_END:
+    case base::File::FROM_END:
       new_offset = archive_size_ + offset;
       break;
     default:

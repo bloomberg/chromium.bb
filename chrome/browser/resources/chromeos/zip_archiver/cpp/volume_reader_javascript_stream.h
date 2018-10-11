@@ -63,7 +63,7 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   int64_t Read(int64_t bytes_to_read, const void** destination_buffer) override;
 
   // See volume_reader.h for description.
-  int64_t Seek(int64_t offset, int whence) override;
+  int64_t Seek(int64_t offset, base::File::Whence whence) override;
 
   // Sets the request Id to be used by the reader.
   void SetRequestId(const std::string& request_id);
