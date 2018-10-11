@@ -37,6 +37,8 @@ class LayoutFieldset final : public LayoutBlockFlow {
 
   const char* GetName() const override { return "LayoutFieldset"; }
 
+  bool CreatesNewFormattingContext() const final { return true; }
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectFieldset || LayoutBlockFlow::IsOfType(type);

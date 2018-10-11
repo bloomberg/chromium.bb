@@ -4472,9 +4472,8 @@ void LayoutBlockFlow::PositionSpannerDescendant(
 DISABLE_CFI_PERF
 bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
-      IsFlexItemIncludingDeprecated() || IsTableCell() || IsTableCaption() ||
-      IsFieldsetIncludingNG() || IsCustomItem() || IsDocumentElement() ||
-      IsGridItem() || IsWritingModeRoot() ||
+      IsFlexItemIncludingDeprecated() || IsCustomItem() ||
+      IsDocumentElement() || IsGridItem() || IsWritingModeRoot() ||
       StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
       StyleRef().SpecifiesColumns() ||
@@ -4483,39 +4482,8 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
     return true;
   }
 
-  // The remaining checks here are not covered by any spec, but we still need to
-  // establish new formatting contexts in some cases, for various reasons.
-
-  if (IsRubyText()) {
-    // Ruby text objects are pushed around after layout, to become flush with
-    // the associated ruby base. As such, we cannot let floats leak out from
-    // ruby text objects.
-    return true;
-  }
-
-  if (IsLayoutFlowThread()) {
-    // The spec requires multicol containers to establish new formatting
-    // contexts. Blink uses an anonymous flow thread child of the multicol
-    // container to actually perform layout inside. Therefore we need to
-    // propagate the BFCness down to the flow thread, so that floats are fully
-    // contained by the flow thread, and thereby the multicol container.
-    return true;
-  }
-
   if (IsRenderedLegend())
     return true;
-
-  if (IsTextControl()) {
-    // INPUT and other replaced elements rendered by Blink itself should be
-    // completely contained.
-    return true;
-  }
-
-  if (IsSVGForeignObject()) {
-    // This is the root of a foreign object. Don't let anything inside it escape
-    // to our ancestors.
-    return true;
-  }
 
   return false;
 }

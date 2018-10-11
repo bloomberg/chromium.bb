@@ -83,6 +83,12 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
 
   PaintLayerType LayerTypeRequired() const override;
 
+  bool CreatesNewFormattingContext() const final {
+    // This is the root of a foreign object. Don't let anything inside it escape
+    // to our ancestors.
+    return true;
+  }
+
  private:
   LayoutUnit ElementX() const;
   LayoutUnit ElementY() const;

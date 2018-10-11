@@ -361,6 +361,8 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
       const LayoutObject*,
       bool ignore_scroll_offset) const override;
 
+  bool CreatesNewFormattingContext() const final { return true; }
+
  protected:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTableCell || LayoutBlockFlow::IsOfType(type);

@@ -19,6 +19,8 @@ class CORE_EXPORT LayoutNGFieldset final : public LayoutNGBlockFlow {
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;
 
+  bool CreatesNewFormattingContext() const final { return true; }
+
  protected:
   bool IsOfType(LayoutObjectType) const override;
 };
