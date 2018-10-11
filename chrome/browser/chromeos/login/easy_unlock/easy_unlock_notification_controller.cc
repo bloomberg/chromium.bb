@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,6 +34,7 @@ const char kEasyUnlockPromotionNotifierId[] =
     "easyunlock_notification_ids.promotion";
 
 const char kLockScreenSettingsSubpage[] = "lockScreen";
+const char kSmartLockSettingsSubpage[] = "multidevice/features/smartLock";
 
 // Convenience function for creating a Notification.
 std::unique_ptr<message_center::Notification> CreateNotification(
@@ -154,7 +156,11 @@ void EasyUnlockNotificationController::ShowNotification(
 }
 
 void EasyUnlockNotificationController::LaunchEasyUnlockSettings() {
-  chrome::ShowSettingsSubPageForProfile(profile_, kLockScreenSettingsSubpage);
+  chrome::ShowSettingsSubPageForProfile(
+      profile_, base::FeatureList::IsEnabled(
+                    chromeos::features::kEnableUnifiedMultiDeviceSettings)
+                    ? kSmartLockSettingsSubpage
+                    : kLockScreenSettingsSubpage);
 }
 
 void EasyUnlockNotificationController::LockScreen() {
