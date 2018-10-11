@@ -241,44 +241,22 @@ const CSSValue* CoerceStyleValuesOrStrings(
   if (values.IsEmpty())
     return nullptr;
 
-  const CSSParserContext* parser_context = nullptr;
+  CSSStyleValueVector style_values =
+      StyleValueFactory::CoerceStyleValuesOrStrings(
+          property, custom_property_name, nullptr, values, execution_context);
 
-  HeapVector<Member<const CSSValue>> css_values;
-  for (const auto& value : values) {
-    if (value.IsCSSStyleValue()) {
-      if (!value.GetAsCSSStyleValue())
-        return nullptr;
-
-      css_values.push_back(
-          StyleValueToCSSValue(property, custom_property_name, nullptr,
-                               *value.GetAsCSSStyleValue(), execution_context));
-    } else {
-      DCHECK(value.IsString());
-      if (!parser_context)
-        parser_context = CSSParserContext::Create(execution_context);
-
-      const auto subvalues = StyleValueFactory::FromString(
-          property.PropertyID(), custom_property_name, nullptr,
-          value.GetAsString(), parser_context);
-      if (subvalues.IsEmpty())
-        return nullptr;
-
-      for (const auto& subvalue : subvalues) {
-        DCHECK(subvalue);
-        css_values.push_back(
-            StyleValueToCSSValue(property, custom_property_name, nullptr,
-                                 *subvalue, execution_context));
-      }
-    }
-  }
+  if (style_values.IsEmpty())
+    return nullptr;
 
   CSSValueList* result = CssValueListForPropertyID(property.PropertyID());
-  for (const auto& css_value : css_values) {
+  for (const auto& style_value : style_values) {
+    const CSSValue* css_value =
+        StyleValueToCSSValue(property, custom_property_name, nullptr,
+                             *style_value, execution_context);
     if (!css_value)
       return nullptr;
     if (css_value->IsCSSWideKeyword() || css_value->IsVariableReferenceValue())
-      return css_values.size() == 1U ? css_value : nullptr;
-
+      return style_values.size() == 1U ? css_value : nullptr;
     result->Append(*css_value);
   }
 
