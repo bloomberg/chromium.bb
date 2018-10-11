@@ -108,20 +108,24 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
         store_->CreateWriteBatch();
 
     for (const SyncChange& change : change_list) {
-      DCHECK(change.sync_data().IsLocal())
-          << " from " << change.location().ToString();
-      SyncDataLocal sync_data(change.sync_data());
-      DCHECK(sync_data.IsValid()) << " from " << change.location().ToString();
-      const std::string storage_key =
-          GenerateSyncableHash(type_, sync_data.GetTag());
-      DCHECK(!storage_key.empty());
-
       switch (change.change_type()) {
         case SyncChange::ACTION_INVALID:
           NOTREACHED() << " from " << change.location().ToString();
           break;
+
         case SyncChange::ACTION_ADD:
         case SyncChange::ACTION_UPDATE: {
+          DCHECK_EQ(type_, change.sync_data().GetDataType());
+          DCHECK(change.sync_data().IsLocal())
+              << " from " << change.location().ToString();
+
+          SyncDataLocal sync_data(change.sync_data());
+          DCHECK(sync_data.IsValid())
+              << " from " << change.location().ToString();
+          const std::string storage_key =
+              GenerateSyncableHash(type_, sync_data.GetTag());
+          DCHECK(!storage_key.empty());
+
           (*in_memory_store_)[storage_key] = sync_data.GetSpecifics();
           std::unique_ptr<sync_pb::PersistedEntityData> persisted_entity =
               CreatePersistedFromSyncData(sync_data);
@@ -133,11 +137,35 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
               batch->GetMetadataChangeList());
           break;
         }
-        case SyncChange::ACTION_DELETE:
+
+        case SyncChange::ACTION_DELETE: {
+          std::string storage_key;
+          // Both SyncDataLocal and SyncDataRemote are allowed for deletions.
+          if (change.sync_data().IsLocal()) {
+            SyncDataLocal sync_data(change.sync_data());
+            DCHECK(sync_data.IsValid())
+                << " from " << change.location().ToString();
+            storage_key = GenerateSyncableHash(type_, sync_data.GetTag());
+          } else {
+            SyncDataRemote sync_data(change.sync_data());
+            storage_key = sync_data.GetClientTagHash();
+          }
+
+          DCHECK(!storage_key.empty())
+              << " from " << change.location().ToString();
+
           in_memory_store_->erase(storage_key);
-          other_->Delete(storage_key, batch->GetMetadataChangeList());
           batch->DeleteData(storage_key);
+
+          if (IsActOnceDataType(type_)) {
+            batch->GetMetadataChangeList()->ClearMetadata(storage_key);
+            other_->UntrackEntityForStorageKey(storage_key);
+          } else {
+            other_->Delete(storage_key, batch->GetMetadataChangeList());
+          }
+
           break;
+        }
       }
     }
 
