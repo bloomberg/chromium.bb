@@ -147,14 +147,20 @@ class CHROMEOS_EXPORT CertLoader : public PolicyCertificateProvider::Observer {
   CertLoader();
   ~CertLoader() override;
 
-  // Called when |system_cert_cache_|, |user_cert_cache| or policy-provided
-  // certificates have potentially changed.
-  void OnCertCacheOrPolicyCertsUpdated();
+  // Called when |system_cert_cache_| or |user_cert_cache| certificates have
+  // potentially changed.
+  void OnCertCacheUpdated();
 
-  // Called if a certificate load task is finished.
-  void UpdateCertificates(
+  // Called as a result of |OnCertCacheUpdated|. This is a separate function,
+  // because |OnCertCacheUpdated| may trigger a background task for filtering
+  // certificates.
+  void StoreCertsFromCache(
       net::ScopedCERTCertificateList all_certs,
       net::ScopedCERTCertificateList system_token_client_certs);
+
+  // Called when policy-provided certificates or cache-based certificates (see
+  // |all_certs_from_cache_|) have potentially changed.
+  void UpdateCertificates();
 
   void NotifyCertificatesLoaded();
 
@@ -174,8 +180,14 @@ class CHROMEOS_EXPORT CertLoader : public PolicyCertificateProvider::Observer {
   // certificates.
   net::ScopedCERTCertificateList all_certs_;
 
+  // Cached certificates loaded from the database(s).
+  net::ScopedCERTCertificateList all_certs_from_cache_;
+
   // Cached certificates from system token.
   net::ScopedCERTCertificateList system_token_client_certs_;
+
+  // True if |StoreCertsFromCache()| was called before.
+  bool certs_from_cache_loaded_ = false;
 
   std::vector<const PolicyCertificateProvider*> policy_certificate_providers_;
 
