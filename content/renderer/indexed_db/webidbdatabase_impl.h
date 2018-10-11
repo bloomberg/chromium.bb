@@ -80,13 +80,11 @@ class CONTENT_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
            blink::WebIDBKeyView primary_key,
            blink::WebIDBPutMode,
            blink::WebIDBCallbacks*,
-           const blink::WebVector<long long>& index_ids,
-           blink::WebVector<WebIndexKeys>) override;
+           const blink::WebVector<blink::WebIDBIndexKeys>&) override;
   void SetIndexKeys(long long transaction_id,
                     long long object_store_id,
                     blink::WebIDBKeyView primary_key,
-                    const blink::WebVector<long long>& index_ids,
-                    const blink::WebVector<WebIndexKeys>&) override;
+                    const blink::WebVector<blink::WebIDBIndexKeys>&) override;
   void SetIndexesReady(long long transaction_id,
                        long long object_store_id,
                        const blink::WebVector<long long>& index_ids) override;

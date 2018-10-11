@@ -558,15 +558,14 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 
-  Vector<int64_t> index_ids;
-  WebVector<WebVector<WebIDBKey>> index_keys;
+  WebVector<WebIDBIndexKeys> index_keys;
   index_keys.reserve(Metadata().indexes.size());
   for (const auto& it : Metadata().indexes) {
     if (clone.IsEmpty())
       value_wrapper.Clone(script_state, &clone);
-    index_ids.push_back(it.key);
-    index_keys.emplace_back(GenerateIndexKeysForValue(
-        script_state->GetIsolate(), *it.value, clone));
+    index_keys.emplace_back(
+        it.key, GenerateIndexKeysForValue(script_state->GetIsolate(), *it.value,
+                                          clone));
   }
   // Records 1KB to 1GB.
   UMA_HISTOGRAM_COUNTS_1M(
@@ -587,8 +586,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
       transaction_->Id(), Id(), WebData(value_wrapper.TakeWireBytes()),
       value_wrapper.TakeBlobInfo(), WebIDBKeyView(key),
       static_cast<WebIDBPutMode>(put_mode),
-      request->CreateWebCallbacks().release(), index_ids,
-      WebVector<WebIDBDatabase::WebIndexKeys>(std::move(index_keys)));
+      request->CreateWebCallbacks().release(), std::move(index_keys));
 
   return request;
 }
@@ -749,8 +747,6 @@ class IndexPopulator final : public EventListener {
     if (cursor_any->GetType() == IDBAny::kIDBCursorWithValueType)
       cursor = cursor_any->IdbCursorWithValue();
 
-    Vector<int64_t> index_ids;
-    index_ids.push_back(IndexMetadata().id);
     if (cursor && !cursor->IsDeleted()) {
       cursor->Continue(nullptr, nullptr, IDBRequest::AsyncTraceState(),
                        ASSERT_NO_EXCEPTION);
@@ -758,18 +754,21 @@ class IndexPopulator final : public EventListener {
       const IDBKey* primary_key = cursor->IdbPrimaryKey();
       ScriptValue value = cursor->value(script_state_);
 
-      WebVector<WebVector<WebIDBKey>> index_keys_list;
-      index_keys_list.reserve(1);
-      index_keys_list.emplace_back(GenerateIndexKeysForValue(
-          script_state_->GetIsolate(), IndexMetadata(), value));
+      WebVector<WebIDBIndexKeys> index_keys;
+      index_keys.reserve(1);
+      index_keys.emplace_back(
+          IndexMetadata().id,
+          GenerateIndexKeysForValue(script_state_->GetIsolate(),
+                                    IndexMetadata(), value));
 
-      database_->Backend()->SetIndexKeys(
-          transaction_id_, object_store_id_, WebIDBKeyView(primary_key),
-          index_ids,
-          WebVector<WebIDBDatabase::WebIndexKeys>(std::move(index_keys_list)));
+      database_->Backend()->SetIndexKeys(transaction_id_, object_store_id_,
+                                         WebIDBKeyView(primary_key),
+                                         std::move(index_keys));
     } else {
       // Now that we are done indexing, tell the backend to go
       // back to processing tasks of type NormalTask.
+      Vector<int64_t> index_ids;
+      index_ids.push_back(IndexMetadata().id);
       database_->Backend()->SetIndexesReady(transaction_id_, object_store_id_,
                                             index_ids);
       database_.Clear();

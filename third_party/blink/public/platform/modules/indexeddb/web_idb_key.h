@@ -156,6 +156,8 @@ class WebIDBKey {
   std::unique_ptr<IDBKey> private_;
 };
 
+using WebIDBIndexKeys = std::pair<int64_t, WebVector<WebIDBKey>>;
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_H_
