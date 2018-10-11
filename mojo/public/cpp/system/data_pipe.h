@@ -159,7 +159,6 @@ inline DataPipe::DataPipe(uint32_t capacity_num_bytes) {
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
   options.capacity_num_bytes = capacity_num_bytes;
-  mojo::DataPipe data_pipe(options);
   MojoResult result =
       CreateDataPipe(&options, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
