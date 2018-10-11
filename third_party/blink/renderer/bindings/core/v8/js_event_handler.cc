@@ -25,6 +25,8 @@ void JSEventHandler::SetCompiledHandler(
     v8::Local<v8::Function> listener,
     const V8PrivateProperty::Symbol& property) {
   DCHECK(!HasCompiledHandler());
+  v8::Context::BackupIncumbentScope backup_incumbent_scope(
+      script_state->GetContext());
   event_handler_ = V8EventHandlerNonNull::Create(listener);
   Attach(script_state, listener, property, this);
 }
