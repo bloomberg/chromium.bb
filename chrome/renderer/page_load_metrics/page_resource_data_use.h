@@ -62,11 +62,13 @@ class PageResourceDataUse {
 
   uint64_t total_received_bytes_;
   uint64_t last_update_bytes_;
+  uint64_t encoded_body_length_ = 0;
 
   bool is_complete_;
   bool is_canceled_;
   bool reported_as_ad_resource_;
   bool is_main_frame_resource_;
+  bool was_fetched_via_cache_;
 
   std::string mime_type_;
 

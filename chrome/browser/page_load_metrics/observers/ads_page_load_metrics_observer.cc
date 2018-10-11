@@ -36,6 +36,13 @@ namespace {
       break;                                                               \
   }
 
+#define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
+  if (was_cached) {                                                        \
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Cache." suffix, value);   \
+  } else {                                                                 \
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Network." suffix, value); \
+  }
+
 // Finds the RenderFrameHost for the handle, possibly using the FrameTreeNode
 // ID directly if the the handle has not been committed.
 // NOTE: Unsafe with respect to security privileges.
@@ -434,42 +441,48 @@ void AdsPageLoadMetricsObserver::UpdateResource(
 
 void AdsPageLoadMetricsObserver::RecordResourceMimeHistograms(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  int64_t data_length = resource->was_fetched_via_cache
+                            ? resource->encoded_body_length
+                            : resource->received_data_length;
   ResourceMimeType mime_type = GetResourceMimeType(resource);
   if (mime_type == ResourceMimeType::kImage) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Image",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mime.Image", resource->was_fetched_via_cache,
+                             data_length);
   } else if (mime_type == ResourceMimeType::kJavascript) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.JS",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mime.JS", resource->was_fetched_via_cache,
+                             data_length);
   } else if (mime_type == ResourceMimeType::kVideo) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Video",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mime.Video", resource->was_fetched_via_cache,
+                             data_length);
   } else if (mime_type == ResourceMimeType::kCss) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.CSS",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mime.CSS", resource->was_fetched_via_cache,
+                             data_length);
   } else if (mime_type == ResourceMimeType::kHtml) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.HTML",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mime.HTML", resource->was_fetched_via_cache,
+                             data_length);
   } else if (mime_type == ResourceMimeType::kOther) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mime.Other",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mime.Other", resource->was_fetched_via_cache,
+                             data_length);
   }
 }
 
 void AdsPageLoadMetricsObserver::RecordResourceHistograms(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  int64_t data_length = resource->was_fetched_via_cache
+                            ? resource->encoded_body_length
+                            : resource->received_data_length;
   if (resource->is_main_frame_resource && resource->reported_as_ad_resource) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mainframe.AdResource",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mainframe.AdResource",
+                             resource->was_fetched_via_cache, data_length);
   } else if (resource->is_main_frame_resource) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Mainframe.VanillaResource",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Mainframe.VanillaResource",
+                             resource->was_fetched_via_cache, data_length);
   } else if (resource->reported_as_ad_resource) {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Subframe.AdResource",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Subframe.AdResource",
+                             resource->was_fetched_via_cache, data_length);
   } else {
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Subframe.VanillaResource",
-                         resource->received_data_length);
+    RESOURCE_BYTES_HISTOGRAM("Subframe.VanillaResource",
+                             resource->was_fetched_via_cache, data_length);
   }
 
   // Only report sizes by mime type for ad resources.
