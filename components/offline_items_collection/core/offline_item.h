@@ -135,6 +135,10 @@ struct OfflineItem {
   // The time when the underlying offline content was created.
   base::Time creation_time;
 
+  // The time when the underlying offline content finished downloading,
+  // base::Time() if the download hasn't reached a completion state yet.
+  base::Time completion_time;
+
   // The last time the underlying offline content was accessed.
   base::Time last_accessed_time;
 

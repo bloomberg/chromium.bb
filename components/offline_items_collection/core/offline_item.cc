@@ -78,6 +78,7 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          total_size_bytes == offline_item.total_size_bytes &&
          externally_removed == offline_item.externally_removed &&
          creation_time == offline_item.creation_time &&
+         completion_time == offline_item.completion_time &&
          last_accessed_time == offline_item.last_accessed_time &&
          is_openable == offline_item.is_openable &&
          file_path == offline_item.file_path &&
