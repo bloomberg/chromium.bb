@@ -11073,7 +11073,8 @@
           'type': 'string',
           'enum': [
             'all',
-            'PIN'
+            'PIN',
+            'FINGERPRINT',
           ],
         },
         'id': 'QuickUnlockModeWhitelist',
@@ -11090,9 +11091,9 @@
       'tags': [],
       'desc': '''A whitelist controlling which quick unlock modes the user can configure and use to unlock the lock screen.
 
-          This value is a list of strings; valid list entries are: "all", "PIN". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
+          This value is a list of strings; valid list entries are: "all", "PIN", "FINGERPRINT". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
 
-          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To disable all quick unlock modes, use [].
+          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To allow PIN and fingerprint, use ["PIN", "FINGERPRINT"]. To disable all quick unlock modes, use [].
 
           By default, no quick unlock modes are available for managed devices.''',
     },
