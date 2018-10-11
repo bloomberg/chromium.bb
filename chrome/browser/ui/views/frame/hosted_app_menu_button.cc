@@ -49,11 +49,10 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
 
 HostedAppMenuButton::~HostedAppMenuButton() {}
 
-void HostedAppMenuButton::SetColors(SkColor icon_color,
-                                    SkColor ink_drop_color) {
+void HostedAppMenuButton::SetColor(SkColor color) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kBrowserToolsIcon, icon_color));
-  ink_drop_color_ = ink_drop_color;
+           gfx::CreateVectorIcon(kBrowserToolsIcon, color));
+  ink_drop_color_ = color;
 }
 
 void HostedAppMenuButton::StartHighlightAnimation() {

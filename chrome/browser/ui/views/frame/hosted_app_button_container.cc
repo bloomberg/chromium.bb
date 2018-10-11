@@ -285,9 +285,8 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
                                                       main_bar);
 }
 
-
 SkColor HostedAppButtonContainer::GetContentSettingInkDropColor() const {
-  return GetIconInkDropColor();
+  return GetIconColor();
 }
 
 content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
@@ -313,7 +312,7 @@ void HostedAppButtonContainer::OnImmersiveRevealStarted() {
 }
 
 SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
-  return GetIconInkDropColor();
+  return GetIconColor();
 }
 
 content::WebContents*
@@ -430,14 +429,10 @@ SkColor HostedAppButtonContainer::GetIconColor() const {
   return paint_as_active_ ? active_color_ : inactive_color_;
 }
 
-SkColor HostedAppButtonContainer::GetIconInkDropColor() const {
-  return color_utils::IsDark(GetIconColor()) ? SK_ColorBLACK : SK_ColorWHITE;
-}
-
 void HostedAppButtonContainer::UpdateChildrenColor() {
   SkColor icon_color = GetIconColor();
   hosted_app_origin_text_->SetTextColor(icon_color);
   content_settings_container_->SetIconColor(icon_color);
   page_action_icon_container_view_->SetIconColor(icon_color);
-  app_menu_button_->SetColors(icon_color, GetIconInkDropColor());
+  app_menu_button_->SetColor(icon_color);
 }

@@ -21,7 +21,7 @@ class HostedAppMenuButton : public AppMenuButton,
   ~HostedAppMenuButton() override;
 
   // Sets the color of the menu button icon and highlight.
-  void SetColors(SkColor icon_color, SkColor ink_drop_color);
+  void SetColor(SkColor color);
 
   // Fades the menu button highlight on and off.
   void StartHighlightAnimation();
