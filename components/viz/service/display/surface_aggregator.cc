@@ -870,9 +870,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     if (render_pass->background_filters.HasFilterThatMovesPixels()) {
       pixel_moving_background_filter_passes_data.push_back(
           RemapPassId(render_pass->id, surface->surface_id()));
-      // TODO(wutao): Partial swap does not work with pixel moving background
-      // filter. See https://crbug.com/737255. Current solution is to mark the
-      // whole output rect as damaged.
+
       pixel_moving_background_filters_rect.Union(
           cc::MathUtil::MapEnclosingClippedRect(
               render_pass->transform_to_root_target, render_pass->output_rect));
@@ -1046,7 +1044,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
 
-  damage_rect.Union(pixel_moving_background_filters_rect);
+  if (damage_rect.Intersects(pixel_moving_background_filters_rect))
+    damage_rect.Union(pixel_moving_background_filters_rect);
+
   return damage_rect;
 }
 
