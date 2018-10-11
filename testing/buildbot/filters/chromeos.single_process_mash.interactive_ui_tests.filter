@@ -1,7 +1,7 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/883523
 
-# Keyboard event related. See crbug.com/889101
+# Keyboard event related. See crbug.com/889101 and crbug.com/891489
 -BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInBrowserFullscreen
 -BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc
 -BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
@@ -10,6 +10,7 @@
 -BrowserKeyEventsTest.NormalKeyEvents
 -KeyboardLockInteractiveBrowserTest.ActiveWithAllKeysLocked
 -KeyboardLockInteractiveBrowserTest.ActiveWithSomeKeysLocked
+-KeyboardLockInteractiveBrowserTest.CancelActiveKeyboardLockBeforeFullscreen
 -KeyboardLockInteractiveBrowserTest.CancelActiveKeyboardLockInFullscreen
 -KeyboardLockInteractiveBrowserTest.RequestedButNotActive
 -KeyboardLockInteractiveBrowserTest.SubsequentLockCallSupersedesPreviousCall
