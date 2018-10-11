@@ -39,6 +39,7 @@ void CallSeneschalSharePath(
     Profile* profile,
     std::string vm_name,
     const base::FilePath path,
+    bool save_to_prefs,
     base::OnceCallback<void(bool, std::string)> callback) {
   // Verify path is in one of the allowable mount points.
   // This logic is similar to DownloadPrefs::SanitizeDownloadTargetPath().
@@ -56,18 +57,26 @@ void CallSeneschalSharePath(
     return;
   }
 
+  // Path must be a valid directory.
+  if (!base::DirectoryExists(path)) {
+    std::move(callback).Run(false, "Path is not a valid directory");
+    return;
+  }
+
+  // Even if VM is not running, save to prefs now.
+  if (save_to_prefs) {
+    PrefService* pref_service = profile->GetPrefs();
+    ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
+    base::ListValue* shared_paths = update.Get();
+    shared_paths->Append(std::make_unique<base::Value>(path.value()));
+  }
+
   // VM must be running.
   base::Optional<vm_tools::concierge::VmInfo> vm_info =
       crostini::CrostiniManager::GetForProfile(profile)->GetVmInfo(
           std::move(vm_name));
   if (!vm_info) {
     std::move(callback).Run(false, "VM not running");
-    return;
-  }
-
-  // Path must be a valid directory.
-  if (!base::DirectoryExists(path)) {
-    std::move(callback).Run(false, "Path is not a valid directory");
     return;
   }
 
@@ -108,8 +117,7 @@ void SharePath(Profile* profile,
           chromeos::switches::kCrostiniFiles)) {
     std::move(callback).Run(false, "Flag crostini-files not enabled");
   }
-  // TODO(joelhockey): Save new path into prefs once management UI is ready.
-  CallSeneschalSharePath(profile, vm_name, path, std::move(callback));
+  CallSeneschalSharePath(profile, vm_name, path, true, std::move(callback));
 }
 
 void UnsharePath(Profile* profile,
@@ -147,7 +155,7 @@ void ShareAllPaths(Profile* profile, base::OnceCallback<void()> callback) {
       base::BarrierClosure(paths.size(), std::move(callback));
   for (const auto& path : paths) {
     CallSeneschalSharePath(
-        profile, kCrostiniDefaultVmName, base::FilePath(path),
+        profile, kCrostiniDefaultVmName, base::FilePath(path), false,
         base::BindOnce(&SharePathLogErrorCallback, std::move(path), barrier));
   }
 }

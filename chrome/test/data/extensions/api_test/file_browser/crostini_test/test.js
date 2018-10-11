@@ -55,13 +55,17 @@ chrome.test.runTests([
         '/external/Downloads-user';
     chrome.fileManagerPrivate.getCrostiniSharedPaths(
         chrome.test.callbackPass((entries) => {
-          chrome.test.assertEq(2, entries.length);
+          // 2 entries inserted in setup, and 1 successful entry added above.
+          chrome.test.assertEq(3, entries.length);
           chrome.test.assertEq(urlPrefix + '/shared1', entries[0].toURL());
           chrome.test.assertTrue(entries[0].isDirectory);
           chrome.test.assertEq('/shared1', entries[0].fullPath);
           chrome.test.assertEq(urlPrefix + '/shared2', entries[1].toURL());
           chrome.test.assertTrue(entries[1].isDirectory);
           chrome.test.assertEq('/shared2', entries[1].fullPath);
+          chrome.test.assertEq(urlPrefix + '/share_dir', entries[2].toURL());
+          chrome.test.assertTrue(entries[2].isDirectory);
+          chrome.test.assertEq('/share_dir', entries[2].fullPath);
         }));
   }
 ]);
