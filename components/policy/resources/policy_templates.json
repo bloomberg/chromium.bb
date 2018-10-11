@@ -672,6 +672,7 @@
         'NetworkFileSharesAllowed',
         'NetBiosShareDiscoveryEnabled',
         'NTLMShareAuthenticationEnabled',
+        'NetworkFileSharesPreconfiguredShares',
       ],
     },
     {
@@ -13468,6 +13469,44 @@
 
       If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.''',
     },
+    {
+      'name': 'NetworkFileSharesPreconfiguredShares',
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'share_url': { 'type': 'string' },
+            'mode': {
+              'type': 'string',
+              'enum': [
+                'drop_down',
+              ]
+            }
+          },
+          'required': ['share_url', 'mode'],
+        }
+      },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [{
+        'share_url': 'smb://server/share',
+        'mode': 'drop_down'
+      }, {
+        'share_url': '\\\\server\\share',
+        'mode': 'drop_down'
+      }],
+      'id': 490,
+      'caption': '''List of preconfigured network file shares.''',
+      'tags': [],
+      'desc': '''Specifies a list of preconfigued network file shares.
+
+      Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be "drop_down" which indicates that "share_url" will be added to the share discovery drop down.''',
+    },
   ],
 
   'messages': {
@@ -13609,5 +13648,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 489
+  'highest_id_currently_used': 490
 }

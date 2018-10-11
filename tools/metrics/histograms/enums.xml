@@ -14678,6 +14678,7 @@ Called by update_net_error_codes.py.-->
   <int value="487" label="BrowserSignin"/>
   <int value="488" label="SmartLockSigninAllowed"/>
   <int value="489" label="NTLMShareAuthenticationEnabled"/>
+  <int value="490" label="NetworkFileSharesPreconfiguredShares"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
