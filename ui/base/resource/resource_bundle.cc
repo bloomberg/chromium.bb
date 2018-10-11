@@ -750,7 +750,7 @@ ResourceBundle::~ResourceBundle() {
 void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle(delegate);
-  static std::vector<ScaleFactor> supported_scale_factors;
+  std::vector<ScaleFactor> supported_scale_factors;
 #if defined(OS_IOS)
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.device_scale_factor() > 2.0) {

@@ -28,7 +28,7 @@ build_ime = !is_ios
 #
 # Introduce a standalone target that can build on both 'host' and 'target'
 # toolchains that just builds the support to load datapacks. The dependencies
-# should be kept minimal to have to build too many targets with multiple
+# should be kept minimal to not have to build too many targets with multiple
 # toolchains.
 component("ui_data_pack") {
   sources = [
@@ -46,8 +46,11 @@ component("ui_data_pack") {
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 }
 
 buildflag_header("ui_features") {
@@ -399,8 +402,11 @@ jumbo_component("base") {
     ]
   }
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   defines = [ "UI_BASE_IMPLEMENTATION" ]
 
