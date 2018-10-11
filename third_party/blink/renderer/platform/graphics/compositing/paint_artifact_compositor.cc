@@ -323,9 +323,9 @@ void PaintArtifactCompositor::PendingLayer::Upcast(
 }
 
 static bool IsNonCompositingAncestorOf(
-    const TransformPaintPropertyNode* ancestor,
+    const TransformPaintPropertyNode* unaliased_ancestor,
     const TransformPaintPropertyNode* node) {
-  for (; node != ancestor; node = node->Parent()) {
+  for (; node != unaliased_ancestor; node = SafeUnalias(node->Parent())) {
     if (!node || node->HasDirectCompositingReasons())
       return false;
   }
@@ -373,12 +373,15 @@ static bool CanUpcastTo(const PropertyTreeState& guest,
 // Returns nullptr if 'ancestor' is not a strict ancestor of 'node'.
 // Otherwise, return the child of 'ancestor' that is an ancestor of 'node' or
 // 'node' itself.
-static const EffectPaintPropertyNode* StrictChildOfAlongPath(
-    const EffectPaintPropertyNode* ancestor,
+static const EffectPaintPropertyNode* StrictUnaliasedChildOfAlongPath(
+    const EffectPaintPropertyNode* unaliased_ancestor,
     const EffectPaintPropertyNode* node) {
-  for (; node; node = node->Parent()) {
-    if (node->Parent() == ancestor)
+  node = node->Unalias();
+  while (node) {
+    auto* parent = SafeUnalias(node->Parent());
+    if (parent == unaliased_ancestor)
       return node;
+    node = parent;
   }
   return nullptr;
 }
@@ -396,59 +399,58 @@ bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
 }
 
 bool PaintArtifactCompositor::CanDecompositeEffect(
-    const EffectPaintPropertyNode* effect,
+    const EffectPaintPropertyNode* unaliased_effect,
     const PendingLayer& layer) {
-  effect = effect->Unalias();
   // If the effect associated with the layer is deeper than than the effect
   // we are attempting to decomposite, than implies some previous decision
   // did not allow to decomposite intermediate effects.
-  if (layer.property_tree_state.Effect()->Unalias() != effect)
+  if (layer.property_tree_state.Effect()->Unalias() != unaliased_effect)
     return false;
   if (layer.requires_own_layer)
     return false;
   // TODO(trchen): Exotic blending layer may be decomposited only if it could
   // be merged into the first layer of the current group.
-  if (effect->BlendMode() != SkBlendMode::kSrcOver)
+  if (unaliased_effect->BlendMode() != SkBlendMode::kSrcOver)
     return false;
-  if (effect->HasDirectCompositingReasons())
+  if (unaliased_effect->HasDirectCompositingReasons())
     return false;
   if (!CanUpcastTo(layer.property_tree_state,
-                   PropertyTreeState(effect->LocalTransformSpace(),
-                                     effect->OutputClip()
-                                         ? effect->OutputClip()
+                   PropertyTreeState(unaliased_effect->LocalTransformSpace(),
+                                     unaliased_effect->OutputClip()
+                                         ? unaliased_effect->OutputClip()
                                          : layer.property_tree_state.Clip(),
-                                     effect)))
+                                     unaliased_effect)))
     return false;
   return true;
 }
 
 static bool EffectGroupContainsChunk(
-    const EffectPaintPropertyNode& group_effect,
+    const EffectPaintPropertyNode& unaliased_group_effect,
     const PaintChunk& chunk) {
-  const auto* effect = chunk.properties.Effect();
-  return effect == &group_effect ||
-         StrictChildOfAlongPath(&group_effect, effect);
+  const auto* effect = SafeUnalias(chunk.properties.Effect());
+  return effect == &unaliased_group_effect ||
+         StrictUnaliasedChildOfAlongPath(&unaliased_group_effect, effect);
 }
 
 static bool SkipGroupIfEffectivelyInvisible(
     const PaintArtifact& paint_artifact,
-    const EffectPaintPropertyNode& current_group,
+    const EffectPaintPropertyNode& unaliased_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // The lower bound of visibility is considered to be 0.0004f < 1/2048. With
   // 10-bit color channels (only available on the newest Macs as of 2016;
   // otherwise it's 8-bit), we see that an alpha of 1/2048 or less leads to a
   // color output of less than 0.5 in all channels, hence not visible.
   static const float kMinimumVisibleOpacity = 0.0004f;
-  if (current_group.Opacity() >= kMinimumVisibleOpacity ||
-      current_group.HasDirectCompositingReasons()) {
+  if (unaliased_group.Opacity() >= kMinimumVisibleOpacity ||
+      unaliased_group.HasDirectCompositingReasons()) {
     return false;
   }
 
   // Fast-forward to just past the end of the chunk sequence within this
   // effect group.
-  DCHECK(EffectGroupContainsChunk(current_group, *chunk_it));
+  DCHECK(EffectGroupContainsChunk(unaliased_group, *chunk_it));
   while (++chunk_it != paint_artifact.PaintChunks().end()) {
-    if (!EffectGroupContainsChunk(current_group, *chunk_it))
+    if (!EffectGroupContainsChunk(unaliased_group, *chunk_it))
       break;
   }
   return true;
@@ -461,7 +463,8 @@ void PaintArtifactCompositor::LayerizeGroup(
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // Skip paint chunks that are effectively invisible due to opacity and don't
   // have a direct compositing reason.
-  if (SkipGroupIfEffectivelyInvisible(paint_artifact, *current_group.Unalias(),
+  const auto& unaliased_group = *current_group.Unalias();
+  if (SkipGroupIfEffectivelyInvisible(paint_artifact, unaliased_group,
                                       chunk_it))
     return;
 
@@ -489,8 +492,9 @@ void PaintArtifactCompositor::LayerizeGroup(
     // A. The next chunk belongs to the current group but no subgroup.
     // B. The next chunk does not belong to the current group.
     // C. The next chunk belongs to some subgroup of the current group.
+    DCHECK(chunk_it->properties.Effect());
     const auto* chunk_effect = chunk_it->properties.Effect()->Unalias();
-    if (chunk_effect == &current_group) {
+    if (chunk_effect == &unaliased_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
       const auto& last_display_item =
           paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
@@ -505,16 +509,17 @@ void PaintArtifactCompositor::LayerizeGroup(
       if (requires_own_layer)
         continue;
     } else {
-      const EffectPaintPropertyNode* subgroup =
-          StrictChildOfAlongPath(&current_group, chunk_effect);
+      const EffectPaintPropertyNode* unaliased_subgroup =
+          StrictUnaliasedChildOfAlongPath(&unaliased_group, chunk_effect);
       // Case B: This means we need to close the current group without
       //         processing the next chunk.
-      if (!subgroup)
+      if (!unaliased_subgroup)
         break;
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
       size_t first_layer_in_subgroup = pending_layers.size();
-      LayerizeGroup(paint_artifact, pending_layers, *subgroup, chunk_it);
+      LayerizeGroup(paint_artifact, pending_layers, *unaliased_subgroup,
+                    chunk_it);
       // Now the chunk iterator stepped over the subgroup we just saw.
       // If the subgroup generated 2 or more layers then the subgroup must be
       // composited to satisfy grouping requirement.
@@ -526,13 +531,14 @@ void PaintArtifactCompositor::LayerizeGroup(
         continue;
       // Now attempt to "decomposite" subgroup.
       PendingLayer& subgroup_layer = pending_layers[first_layer_in_subgroup];
-      if (!CanDecompositeEffect(subgroup, subgroup_layer))
+      if (!CanDecompositeEffect(unaliased_subgroup, subgroup_layer))
         continue;
-      subgroup_layer.Upcast(PropertyTreeState(
-          subgroup->LocalTransformSpace(),
-          subgroup->OutputClip() ? subgroup->OutputClip()
-                                 : subgroup_layer.property_tree_state.Clip(),
-          &current_group));
+      subgroup_layer.Upcast(
+          PropertyTreeState(unaliased_subgroup->LocalTransformSpace(),
+                            unaliased_subgroup->OutputClip()
+                                ? unaliased_subgroup->OutputClip()
+                                : subgroup_layer.property_tree_state.Clip(),
+                            &unaliased_group));
     }
     // At this point pending_layers.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
@@ -540,7 +546,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     // layer.
     const PendingLayer& new_layer = pending_layers.back();
     DCHECK(!new_layer.requires_own_layer);
-    DCHECK_EQ(&current_group, new_layer.property_tree_state.Effect());
+    DCHECK_EQ(&unaliased_group, new_layer.property_tree_state.Effect());
     // This iterates pending_layers[first_layer_in_current_group:-1] in reverse.
     for (size_t candidate_index = pending_layers.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {

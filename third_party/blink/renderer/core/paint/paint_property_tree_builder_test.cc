@@ -1789,7 +1789,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
             inner_document_scroll_translation->Matrix());
   auto* paint_offset_translation = inner_document_scroll_translation->Parent();
   auto* iframe_pre_translation =
-      inner_document_scroll_translation->Parent()->Parent();
+      inner_document_scroll_translation->Parent()->Unalias()->Parent();
   EXPECT_EQ(FloatSize(), paint_offset_translation->Matrix().To2DTranslation());
   EXPECT_EQ(TransformationMatrix().Translate3d(7, 7, 0),
             iframe_pre_translation->Matrix());
@@ -1809,6 +1809,104 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
     EXPECT_EQ(div_with_transform_properties->Transform(),
               iframe_element_properties->PaintOffsetTranslation()->Parent());
   }
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .transformed {
+        transform: translateX(1px);
+      }
+      #parent {
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+      }
+    </style>
+    <div id='parent'>
+      <iframe id='iframe'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #child {
+        transform: translateX(50px);
+        width: 50px;
+        height: 50px;
+        overflow: hidden;
+      }
+    </style>
+    <div id='child'></div>
+  )HTML");
+
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->UpdateAllLifecyclePhases();
+
+  LayoutObject* frame = ChildFrame().View()->GetLayoutView();
+  const auto& frame_contents_properties =
+      frame->FirstFragment().ContentsProperties();
+
+  LayoutObject* child =
+      ChildDocument().getElementById("child")->GetLayoutObject();
+  const auto& child_local_border_box_properties =
+      child->FirstFragment().LocalBorderBoxProperties();
+  auto* child_properties =
+      child->GetMutableForPainting().FirstFragment().PaintProperties();
+
+  // From the frame content's properties, we have:
+  //  - transform isolation node
+  //    - paint offset translation
+  //      - transform
+  EXPECT_EQ(TransformationMatrix().Translate(50, 0),
+            child_local_border_box_properties.Transform()->Matrix());
+  EXPECT_EQ(child_local_border_box_properties.Transform()->Parent(),
+            child_properties->PaintOffsetTranslation());
+  EXPECT_EQ(child_local_border_box_properties.Transform()->Parent()->Parent(),
+            frame_contents_properties.Transform());
+  // Verify it's a true isolation node (i.e. it has a parent and it is a parent
+  // alias).
+  EXPECT_TRUE(frame_contents_properties.Transform()->Parent());
+  EXPECT_TRUE(frame_contents_properties.Transform()->IsParentAlias());
+
+  // Do similar checks for clip and effect, although the child local border box
+  // properties directly reference the alias, since they do not have their own
+  // clip and effect.
+  EXPECT_EQ(child_local_border_box_properties.Clip(),
+            frame_contents_properties.Clip());
+  EXPECT_TRUE(frame_contents_properties.Clip()->Parent());
+  EXPECT_TRUE(frame_contents_properties.Clip()->IsParentAlias());
+
+  EXPECT_EQ(child_local_border_box_properties.Effect(),
+            frame_contents_properties.Effect());
+  EXPECT_TRUE(frame_contents_properties.Effect()->Parent());
+  EXPECT_TRUE(frame_contents_properties.Effect()->IsParentAlias());
+
+// The following part of the code would cause a DCHECK, but we want to see if
+// the pre-paint iteration doesn't touch child's state, due to isolation. Hence,
+// this only runs if we don't have DCHECKs enabled.
+#if !DCHECK_IS_ON()
+  // Now clobber the child transform to something identifiable.
+  TransformPaintPropertyNode::State state{
+      TransformationMatrix().Translate(123, 321)};
+  child_properties->UpdateTransform(
+      *child_local_border_box_properties.Transform()->Parent(),
+      std::move(state));
+  // Verify that we clobbered it correctly.
+  EXPECT_EQ(TransformationMatrix().Translate(123, 321),
+            child_local_border_box_properties.Transform()->Matrix());
+
+  // This causes a tree topology change which forces the subtree to be updated.
+  // However, isolation stops this recursion.
+  GetDocument().getElementById("parent")->setAttribute(HTMLNames::classAttr,
+                                                       "transformed");
+  frame_view->UpdateAllLifecyclePhases();
+
+  // Verify that our clobbered state is still clobbered.
+  EXPECT_EQ(TransformationMatrix().Translate(123, 321),
+            child_local_border_box_properties.Transform()->Matrix());
+#endif  // !DCHECK_IS_ON()
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
@@ -1866,7 +1964,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
   EXPECT_EQ(TransformationMatrix().Translate3d(31, 31, 0),
             inner_document_paint_offset_translation->Matrix());
   auto* inner_document_scroll_translation =
-      inner_document_paint_offset_translation->Parent();
+      inner_document_paint_offset_translation->Parent()->Unalias();
   EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 0),
             inner_document_scroll_translation->Matrix());
   auto* iframe_pre_translation = inner_document_scroll_translation->Parent();

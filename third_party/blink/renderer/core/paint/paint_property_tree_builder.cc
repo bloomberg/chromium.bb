@@ -313,7 +313,20 @@ static bool NeedsPaintOffsetTranslationForScrollbars(
 }
 
 static bool NeedsIsolationNodes(const LayoutObject& object) {
-  return object.HasLayer() && object.ShouldApplyPaintContainment();
+  if (!object.HasLayer())
+    return false;
+
+  // Paint containment establishes isolation.
+  if (object.ShouldApplyPaintContainment())
+    return true;
+
+  // Layout view establishes isolation with the exception of local roots (since
+  // they are already essentially isolated).
+  if (object.IsLayoutView()) {
+    const auto* parent_frame = object.GetFrame()->Tree().Parent();
+    return parent_frame && parent_frame->IsLocalFrame();
+  }
+  return false;
 }
 
 static bool NeedsStickyTranslation(const LayoutObject& object) {
