@@ -112,7 +112,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
 
             @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
+            public void onCrash(Tab tab) {
                 clearRequestsAndHide();
             }
 

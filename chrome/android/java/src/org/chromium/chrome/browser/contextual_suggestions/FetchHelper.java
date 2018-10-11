@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -493,7 +494,7 @@ class FetchHelper {
         String url = currentTab.getUrl();
         if (TextUtils.isEmpty(url)) return false;
         if (currentTab.isShowingErrorPage() || currentTab.isShowingInterstitialPage()
-                || currentTab.isShowingSadTab()) {
+                || SadTab.isShowing(currentTab)) {
             return false;
         }
         return true;

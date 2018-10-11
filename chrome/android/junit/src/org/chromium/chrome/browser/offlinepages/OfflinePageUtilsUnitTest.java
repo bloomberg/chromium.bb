@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import android.os.Environment;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -26,10 +27,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.test.util.SadTabRule;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content_public.browser.WebContents;
@@ -54,6 +58,9 @@ public class OfflinePageUtilsUnitTest {
     @Mock
     private OfflinePageUtils.Internal mOfflinePageUtils;
 
+    @Rule
+    public final SadTabRule mSadTabRule = new SadTabRule();
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -62,7 +69,10 @@ public class OfflinePageUtilsUnitTest {
         // Setting up a mock tab. These are the values common to most tests, but individual
         // tests might easily overwrite them.
         doReturn(false).when(mTab).isShowingErrorPage();
-        doReturn(false).when(mTab).isShowingSadTab();
+        doReturn(new UserDataHost()).when(mTab).getUserDataHost();
+        doReturn(true).when(mTab).isInitialized();
+        mSadTabRule.setTab(mTab);
+        doNothing().when(mTab).addObserver(any(TabObserver.class));
         doReturn(mWebContents).when(mTab).getWebContents();
         doReturn(false).when(mWebContents).isDestroyed();
         doReturn(false).when(mWebContents).isIncognito();
@@ -152,14 +162,14 @@ public class OfflinePageUtilsUnitTest {
                         any(OfflinePageBridge.SavePageCallback.class));
 
         doReturn(false).when(mTab).isShowingErrorPage();
-        doReturn(true).when(mTab).isShowingSadTab();
+        mSadTabRule.show(true);
         OfflinePageUtils.saveBookmarkOffline(bookmarkId, mTab);
         // Save page not called because tab is showing a sad tab.
         verify(mOfflinePageBridge, times(0))
                 .savePage(eq(mWebContents), any(ClientId.class),
                         any(OfflinePageBridge.SavePageCallback.class));
 
-        doReturn(false).when(mTab).isShowingSadTab();
+        mSadTabRule.show(false);
         doReturn(null).when(mTab).getWebContents();
         OfflinePageUtils.saveBookmarkOffline(bookmarkId, mTab);
         // Save page not called because tab returns null web contents.

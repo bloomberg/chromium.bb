@@ -77,8 +77,8 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         mTab = tab;
         mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
-                if (sadTabShown) showAndroidControls(false);
+            public void onCrash(Tab tab) {
+                if (SadTab.isShowing(tab)) showAndroidControls(false);
             }
             @Override
             public void onRendererResponsiveStateChanged(boolean isResponsive) {
@@ -141,7 +141,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         if (!Float.isNaN(contentOffsetY)) mPreviousContentOffsetY = contentOffsetY;
 
         if (mTab.getFullscreenManager() == null) return;
-        if (mTab.isShowingSadTab() || mTab.isNativePage()) {
+        if (SadTab.isShowing(mTab) || mTab.isNativePage()) {
             showAndroidControls(false);
         } else {
             updateFullscreenManagerOffsets(false, mPreviousTopControlsOffsetY,

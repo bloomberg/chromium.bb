@@ -88,7 +88,7 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             mCallback.notifyFailed("Tab crashed :(");
             tab.removeObserver(this);
         }
@@ -266,7 +266,7 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             mCallback.notifyFailed("Tab crashed :(");
             mTab.removeObserver(this);
         }

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -587,7 +588,7 @@ public class InfoBarTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().isShowingSadTab();
+                return SadTab.isShowing(mActivityTestRule.getActivity().getActivityTab());
             }
         }, MAX_TIMEOUT, CHECK_INTERVAL);
     }

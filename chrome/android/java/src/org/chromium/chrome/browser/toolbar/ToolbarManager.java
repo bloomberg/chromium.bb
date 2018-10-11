@@ -74,6 +74,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -390,7 +391,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
+            public void onCrash(Tab tab) {
                 updateTabLoadingState(false);
                 updateButtonStatus();
                 finishLoadProgress(false);
@@ -1521,7 +1522,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private void updateButtonStatus() {
         assert mToolbar != null;
         Tab currentTab = mToolbarModel.getTab();
-        boolean tabCrashed = currentTab != null && currentTab.isShowingSadTab();
+        boolean tabCrashed = currentTab != null && SadTab.isShowing(currentTab);
 
         mToolbar.updateButtonVisibility();
         mToolbar.updateBackButtonVisibility(currentTab != null && currentTab.canGoBack());

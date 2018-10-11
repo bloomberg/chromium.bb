@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDe
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -617,7 +618,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 || (url != null && url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX));
         int themeColor = tab.getThemeColor();
 
-        boolean canUseLiveTexture = tab.getWebContents() != null && !tab.isShowingSadTab()
+        boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
                 && !isNativePage && !tab.isHidden();
 
         boolean isNtp = tab.getNativePage() instanceof NewTabPage;

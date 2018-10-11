@@ -695,7 +695,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
 
             @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
+            public void onCrash(Tab tab) {
                 postDeferredStartupIfNeeded();
             }
 

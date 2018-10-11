@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -282,7 +283,7 @@ public class OfflinePageUtils {
      */
     private static boolean shouldSkipSavingTabOffline(Tab tab) {
         WebContents webContents = tab.getWebContents();
-        return tab.isShowingErrorPage() || tab.isShowingSadTab() || webContents == null
+        return tab.isShowingErrorPage() || SadTab.isShowing(tab) || webContents == null
                 || webContents.isDestroyed() || webContents.isIncognito();
     }
 
@@ -870,7 +871,7 @@ public class OfflinePageUtils {
          * If the tab was being restored, reports that it crashed while doing so.
          */
         @Override
-        public void onCrash(Tab tab, boolean sadTabShown) {
+        public void onCrash(Tab tab) {
             if (tab.isBeingRestored()) recordTabRestoreHistogram(TabRestoreType.CRASHED, null);
         }
     }
