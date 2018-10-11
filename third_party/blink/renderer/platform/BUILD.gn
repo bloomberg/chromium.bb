@@ -1865,7 +1865,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
 }
 
 executable("image_decode_bench") {
-  testonly = true
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
 
@@ -1875,9 +1874,7 @@ executable("image_decode_bench") {
 
   deps = [
     ":platform",
-    "//base",
     "//mojo/core/embedder",
-    "//testing/perf",
     "//third_party/blink/renderer/platform/wtf",
   ]
 
