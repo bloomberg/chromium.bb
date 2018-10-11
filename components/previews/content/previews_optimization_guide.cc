@@ -104,6 +104,16 @@ bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
                           std::move(callback), url));
 }
 
+void PreviewsOptimizationGuide::LogHintCacheMatch(
+    const GURL& url,
+    bool is_committed,
+    net::EffectiveConnectionType ect) const {
+  if (!hints_)
+    return;
+
+  hints_->LogHintCacheMatch(url, is_committed, ect);
+}
+
 void PreviewsOptimizationGuide::OnHintsProcessed(
     const optimization_guide::proto::Configuration& config,
     const optimization_guide::ComponentInfo& info) {

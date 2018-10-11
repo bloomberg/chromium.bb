@@ -23,6 +23,9 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
     previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
 
+  // Record whether the hint cache has a matching entry for this pre-commit URL.
+  previews_decider->LogHintCacheMatch(url, false /* is_committed */);
+
   if (!previews::params::ArePreviewsAllowed()) {
     return previews_state;
   }
@@ -74,6 +77,9 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider) {
   bool is_https = url.SchemeIs(url::kHttpsScheme);
+
+  // Record whether the hint cache has a matching entry for this committed URL.
+  previews_decider->LogHintCacheMatch(url, true /* is_committed */);
 
   // Check if an offline preview was actually served.
   if (previews_data && previews_data->offline_preview_used()) {

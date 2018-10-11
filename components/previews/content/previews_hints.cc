@@ -518,4 +518,35 @@ bool PreviewsHints::MaybeLoadOptimizationHints(
   return hint_cache_->HasHint(url.host());
 }
 
+void PreviewsHints::LogHintCacheMatch(const GURL& url,
+                                      bool is_committed,
+                                      net::EffectiveConnectionType ect) const {
+  if (!hint_cache_)
+    return;
+
+  if (hint_cache_->HasHint(url.host())) {
+    if (!is_committed) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.OptimizationGuide.HintCache.HasHint.BeforeCommit", ect,
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", ect,
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
+      if (hint_cache_->IsHintLoaded(url.host())) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit", ect,
+            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
+        const optimization_guide::proto::Hint* hint =
+            hint_cache_->GetHint(url.host());
+        if (FindPageHint(url, *hint) != nullptr) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", ect,
+              net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
+        }
+      }
+    }
+  }
+}
+
 }  // namespace previews

@@ -53,6 +53,11 @@ class PreviewsDecider {
   // Requests that any applicable detailed resource hints be loaded.
   virtual void LoadResourceHints(const GURL& url) = 0;
 
+  // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
+  // guidance for |url|. This is useful for measuring the effectiveness of the
+  // page hints provided by Cacao.
+  virtual void LogHintCacheMatch(const GURL& url, bool is_committed) const = 0;
+
  protected:
   PreviewsDecider() {}
   virtual ~PreviewsDecider() {}

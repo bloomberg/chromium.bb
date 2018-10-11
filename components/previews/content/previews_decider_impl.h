@@ -131,6 +131,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
 
   void LoadResourceHints(const GURL& url) override;
 
+  void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
+
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
   uint64_t GeneratePageId();

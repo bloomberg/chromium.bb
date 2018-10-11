@@ -38,4 +38,7 @@ bool TestPreviewsDecider::IsURLAllowedForPreview(
 
 void TestPreviewsDecider::LoadResourceHints(const GURL& url) {}
 
+void TestPreviewsDecider::LogHintCacheMatch(const GURL& url,
+                                            bool is_committed) const {}
+
 }  // namespace previews
