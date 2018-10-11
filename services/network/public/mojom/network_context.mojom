@@ -637,10 +637,6 @@ interface NetworkContext {
                     bool include_subdomains) => ();
 
   [Sync]
-  // Enables the checking of static PKP records.
-  EnableStaticKeyPinningForTesting() => ();
-
-  [Sync]
   // Will force the transaction to fail with the given error code.
   SetFailingHttpTransactionForTesting(int32 rv) => ();
 };

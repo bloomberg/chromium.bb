@@ -1072,6 +1072,32 @@ HashValue GetTestHashValue(uint8_t label) {
   return hash_value;
 }
 
+std::string GetTestPin(uint8_t label) {
+  HashValue hash_value = GetTestHashValue(label);
+  std::string base64;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<char*>(hash_value.data()),
+                        hash_value.size()),
+      &base64);
+
+  return std::string("pin-sha256=\"") + base64 + "\"";
+}
+
+void AddPin(TransportSecurityState* state,
+            const std::string& host,
+            uint8_t primary_label,
+            uint8_t backup_label) {
+  std::string primary_pin = GetTestPin(primary_label);
+  std::string backup_pin = GetTestPin(backup_label);
+  std::string header = "max-age = 10000; " + primary_pin + "; " + backup_pin;
+
+  // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.
+  SSLInfo ssl_info;
+  ssl_info.is_issued_by_known_root = true;
+  ssl_info.public_key_hashes.push_back(GetTestHashValue(primary_label));
+  EXPECT_TRUE(state->AddHPKPHeader(host, header, ssl_info));
+}
+
 TestServerPushDelegate::TestServerPushDelegate() = default;
 
 TestServerPushDelegate::~TestServerPushDelegate() = default;
