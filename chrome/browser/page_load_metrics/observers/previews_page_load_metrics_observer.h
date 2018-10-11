@@ -1,14 +1,15 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_NOSCRIPT_PREVIEW_PAGE_LOAD_METRICS_OBSERVER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_NOSCRIPT_PREVIEW_PAGE_LOAD_METRICS_OBSERVER_H_
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class NavigationHandle;
@@ -16,26 +17,13 @@ class NavigationHandle;
 
 namespace previews {
 
-namespace noscript_preview_names {
-
-extern const char kNavigationToLoadEvent[];
-extern const char kNavigationToFirstContentfulPaint[];
-extern const char kNavigationToFirstMeaningfulPaint[];
-extern const char kParseBlockedOnScriptLoad[];
-extern const char kParseDuration[];
-
-extern const char kNumNetworkResources[];
-extern const char kNetworkBytes[];
-
-}  // namespace noscript_preview_names
-
-// Observer responsible for recording page load metrics when a NoScript Preview
-// is loaded in the page.
-class NoScriptPreviewPageLoadMetricsObserver
+// Observer responsible for recording page load metrics for some types of
+// previews (such as NoScript and ResourceLoadingHints previews).
+class PreviewsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  NoScriptPreviewPageLoadMetricsObserver();
-  ~NoScriptPreviewPageLoadMetricsObserver() override;
+  PreviewsPageLoadMetricsObserver();
+  ~PreviewsPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
@@ -71,6 +59,9 @@ class NoScriptPreviewPageLoadMetricsObserver
 
   content::BrowserContext* browser_context_;
 
+  // The previews type active for the page load (available at commit-time).
+  previews::PreviewsType previews_type_ = previews::PreviewsType::UNSPECIFIED;
+
   // The total number of bytes from OnDataUseObserved().
   int64_t total_network_bytes_ = 0;
 
@@ -82,9 +73,9 @@ class NoScriptPreviewPageLoadMetricsObserver
   int64_t num_network_resources_ = 0;
   int64_t network_bytes_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(NoScriptPreviewPageLoadMetricsObserver);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsPageLoadMetricsObserver);
 };
 
 }  // namespace previews
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_NOSCRIPT_PREVIEW_PAGE_LOAD_METRICS_OBSERVER_H_
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
