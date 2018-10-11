@@ -8,7 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
@@ -208,6 +211,17 @@ void MultideviceHandler::HandleSetSmartLockSignInEnabled(
   bool enabled = false;
   CHECK(args->GetBoolean(0, &enabled));
 
+  std::string auth_token;
+  bool auth_token_present = args->GetString(1, &auth_token);
+
+  // Either the user is disabling sign-in, or they are enabling it and the auth
+  // token must be present.
+  CHECK(!enabled || auth_token_present);
+
+  // Only check auth token if the user is attempting to enable sign-in.
+  if (enabled && !IsAuthTokenValid(auth_token))
+    return;
+
   prefs_->SetBoolean(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled, enabled);
 }
@@ -271,6 +285,14 @@ void MultideviceHandler::NotifySmartLockSignInEnabledChanged() {
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
   FireWebUIListener("smart-lock-signin-enabled-changed",
                     base::Value(sign_in_enabled));
+}
+
+bool MultideviceHandler::IsAuthTokenValid(const std::string& auth_token) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
+  return !quick_unlock_storage->GetAuthTokenExpired() &&
+         auth_token == quick_unlock_storage->GetAuthToken();
 }
 
 }  // namespace settings
