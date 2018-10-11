@@ -297,9 +297,7 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
   if (!weak_dialog_model_)
     return;
 
-  weak_dialog_model_->saved_authenticators().emplace_back(
-      authenticator.GetId(), authenticator.GetDisplayName(),
-      authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode());
+  weak_dialog_model_->AddAuthenticator(authenticator);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
@@ -310,11 +308,7 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorRemoved(
   if (!weak_dialog_model_)
     return;
 
-  auto& saved_authenticators = weak_dialog_model_->saved_authenticators();
-  base::EraseIf(saved_authenticators, [authenticator_id](
-                                          const auto& authenticator_reference) {
-    return authenticator_reference.authenticator_id == authenticator_id;
-  });
+  weak_dialog_model_->RemoveAuthenticator(authenticator_id);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
