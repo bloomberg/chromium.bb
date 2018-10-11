@@ -120,11 +120,13 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
   void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void DidFinishLoading(TimeTicks finish_time,
-                        int64_t encoded_data_length,
-                        int64_t encoded_body_length,
-                        int64_t decoded_body_length,
-                        bool should_report_corb_blocking) override;
+  void DidFinishLoading(
+      TimeTicks finish_time,
+      int64_t encoded_data_length,
+      int64_t encoded_body_length,
+      int64_t decoded_body_length,
+      bool should_report_corb_blocking,
+      const std::vector<network::cors::PreflightTimingInfo>&) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
                int64_t encoded_body_length,

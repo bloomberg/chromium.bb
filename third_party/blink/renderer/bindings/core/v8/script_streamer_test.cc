@@ -116,7 +116,9 @@ class ScriptStreamingTest : public testing::Test {
   void AppendPadding() { AppendPadding(GetResource()); }
 
   void Finish() {
-    GetResource()->Loader()->DidFinishLoading(TimeTicks(), 0, 0, 0, false);
+    GetResource()->Loader()->DidFinishLoading(
+        TimeTicks(), 0, 0, 0, false,
+        std::vector<network::cors::PreflightTimingInfo>());
     GetResource()->SetStatus(ResourceStatus::kCached);
   }
 
