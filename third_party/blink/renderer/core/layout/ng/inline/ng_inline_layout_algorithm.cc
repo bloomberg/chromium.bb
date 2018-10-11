@@ -126,10 +126,6 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(
   // https://drafts.csswg.org/css2/visudet.html#line-height
   if (!quirks_mode_ || !item.IsEmptyItem())
     box->ComputeTextMetrics(*item.Style(), baseline_type_);
-  if (item.ShouldCreateBoxFragment()) {
-    box->SetNeedsBoxFragment(
-        box_states->ContainingLayoutObjectForAbsolutePositionObjects());
-  }
   return box;
 }
 
@@ -277,10 +273,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = HandleOpenTag(item, item_result, box_states_);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
-      if (!box->needs_box_fragment && item_result.inline_size) {
-        box->SetNeedsBoxFragment(
-            box_states_->ContainingLayoutObjectForAbsolutePositionObjects());
-      }
       if (quirks_mode_ && box->needs_box_fragment)
         box->EnsureTextMetrics(*item.Style(), baseline_type_);
       box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,

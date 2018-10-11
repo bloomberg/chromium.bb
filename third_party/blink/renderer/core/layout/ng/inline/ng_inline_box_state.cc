@@ -158,6 +158,11 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
   NGInlineBoxState* box = OnOpenTag(*item.Style(), line_box);
   box->item = &item;
 
+  if (item.ShouldCreateBoxFragment()) {
+    box->SetNeedsBoxFragment(
+        ContainingLayoutObjectForAbsolutePositionObjects());
+  }
+
   // Compute box properties regardless of needs_box_fragment since close tag may
   // also set needs_box_fragment.
   box->has_start_edge = item_result.has_edge;
@@ -225,41 +230,15 @@ void NGInlineLayoutStateStack::EndBoxState(
   // Unite the metrics to the parent box.
   if (position_pending == kPositionNotPending)
     parent_box.metrics.Unite(box->metrics);
-
-  // Create box fragments for parent if the current box has properties (e.g.,
-  // margin) that make it tricky to compute the parent's rects.
-  if (box->ParentNeedsBoxFragment(parent_box))
-    parent_box.SetNeedsBoxFragment(nullptr);
 }
 
 void NGInlineBoxState::SetNeedsBoxFragment(
     const LayoutObject* inline_container) {
-  // Note: inline_container can also be incorrectly passed as null.
-  // when being set for parent_box. This is ok, because inline_container
-  // is already set correctly inside inline_layout_algorithm.
   DCHECK(item);
+  DCHECK(!needs_box_fragment);
   needs_box_fragment = true;
-  // Assign inline_container only if it has not been set.
-  if (!this->inline_container)
-    this->inline_container = inline_container;
-}
-
-bool NGInlineBoxState::ParentNeedsBoxFragment(
-    const NGInlineBoxState& parent) const {
-  if (!parent.item)
-    return false;
-  // Below are the known cases where parent rect may not equal the union of
-  // its child rects.
-  if ((has_start_edge && margin_inline_start) ||
-      (has_end_edge && margin_inline_end))
-    return true;
-  // Inline box height is determined by font metrics, which can be different
-  // from the height of its child atomic inline.
-  if (item && item->Type() == NGInlineItem::kAtomicInline)
-    return true;
-  // Returns true when parent and child boxes have different font metrics, since
-  // they may have different heights and/or locations in block direction.
-  return text_metrics != parent.text_metrics;
+  DCHECK(!this->inline_container);
+  this->inline_container = inline_container;
 }
 
 // Crete a placeholder for a box fragment.
@@ -725,9 +704,7 @@ void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) const {
     DCHECK_EQ(include_used_fonts, other.include_used_fonts);
   }
 
-  // TODO(kojii): |needs_box_fragment| may not match due to
-  // |ParentNeedsBoxFragment|. Investigate how to match them.
-  // DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
+  DCHECK_EQ(needs_box_fragment, other.needs_box_fragment);
 
   DCHECK_EQ(has_start_edge, other.has_start_edge);
   // |has_end_edge| may not match because it will be computed in |OnCloseTag|.

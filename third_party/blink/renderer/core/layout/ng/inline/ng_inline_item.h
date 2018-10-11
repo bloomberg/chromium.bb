@@ -92,6 +92,7 @@ class CORE_EXPORT NGInlineItem {
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.
   bool ShouldCreateBoxFragment() const { return should_create_box_fragment_; }
+  void SetShouldCreateBoxFragment() { should_create_box_fragment_ = true; }
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
