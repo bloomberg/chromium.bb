@@ -161,6 +161,11 @@ GURL GetWarmupURL() {
       params, "warmup_url", kDefaultWarmupUrl));
 }
 
+bool IsWarmupURL(const GURL& url) {
+  GURL warmup_url = params::GetWarmupURL();
+  return url.host() == warmup_url.host() && url.path() == warmup_url.path();
+}
+
 bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code) {
   // 200 and 404 are always whitelisted.
   if (http_response_code == net::HTTP_OK ||
