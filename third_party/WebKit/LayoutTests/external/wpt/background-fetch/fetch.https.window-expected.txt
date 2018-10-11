@@ -6,6 +6,7 @@ PASS Empty URL is OK.
 FAIL Requests with PUT method require CORS Preflight and succeed. assert_equals: expected "backgroundfetchsuccess" but got "backgroundfetchfail"
 FAIL Requests with text/json content type require CORS Preflight and succeed. assert_equals: expected "backgroundfetchsuccess" but got "backgroundfetchfail"
 PASS Using Background Fetch to successfully fetch a single resource
+PASS Registration object gets updated values when a background fetch completes.
 PASS Background Fetch that exceeds the quota throws a QuotaExceededError
 FAIL Fetches can have requests with duplicate URLs promise_test: Unhandled rejection with value: object "TypeError: Fetches with duplicate requests are not yet supported. Consider adding query params to make the requests unique. For updates check http://crbug.com/871174"
 FAIL Fetches can have requests with a body promise_test: Unhandled rejection with value: object "TypeError: Requests with a body are not yet supported. For updates check http://crbug.com/774054"

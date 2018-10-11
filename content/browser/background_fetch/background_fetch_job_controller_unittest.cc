@@ -207,10 +207,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   BackgroundFetchDelegate* delegate_;
 
  private:
-  void DidUpdateProgress(const std::string& unique_id,
-                         uint64_t download_total,
-                         uint64_t downloaded) {
-    last_downloaded_ = downloaded;
+  void DidUpdateProgress(const BackgroundFetchRegistration& registration) {
+    last_downloaded_ = registration.downloaded;
 
     if (job_progress_closure_)
       job_progress_closure_.Run();

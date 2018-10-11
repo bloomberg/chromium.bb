@@ -160,9 +160,10 @@ void BackgroundFetchJobController::DidUpdateRequest(
 
   active_request_downloaded_bytes_ = bytes_downloaded;
 
-  progress_callback_.Run(registration_id().unique_id(), options_.download_total,
-                         complete_requests_downloaded_bytes_cache_ +
-                             GetInProgressDownloadedBytes());
+  auto registration =
+      NewRegistration(blink::mojom::BackgroundFetchResult::UNSET);
+  registration->downloaded += GetInProgressDownloadedBytes();
+  progress_callback_.Run(*registration);
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(

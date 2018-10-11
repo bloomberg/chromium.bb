@@ -43,9 +43,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
                               blink::mojom::BackgroundFetchFailureReason)>;
   using ProgressCallback =
-      base::RepeatingCallback<void(const std::string& /* unique_id */,
-                                   uint64_t /* download_total */,
-                                   uint64_t /* downloaded */)>;
+      base::RepeatingCallback<void(const BackgroundFetchRegistration&)>;
 
   BackgroundFetchJobController(
       BackgroundFetchDelegateProxy* delegate_proxy,
