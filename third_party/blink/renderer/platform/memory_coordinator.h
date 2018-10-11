@@ -52,8 +52,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
   // the heap size.
   static void Initialize();
 
-  void RegisterThread(WebThread*) LOCKS_EXCLUDED(web_threads_mutex_);
-  void UnregisterThread(WebThread*) LOCKS_EXCLUDED(web_threads_mutex_);
+  void RegisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
+  void UnregisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
 
   void RegisterClient(MemoryCoordinatorClient*);
   void UnregisterClient(MemoryCoordinatorClient*);
@@ -81,8 +81,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
   static bool is_low_end_device_;
 
   HeapHashSet<WeakMember<MemoryCoordinatorClient>> clients_;
-  HashSet<WebThread*> web_threads_;
-  Mutex web_threads_mutex_;
+  HashSet<Thread*> threads_;
+  Mutex threads_mutex_;
 };
 
 }  // namespace blink

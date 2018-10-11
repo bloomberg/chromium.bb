@@ -134,9 +134,6 @@ class WebURLResponse;
 class WebURLResponse;
 struct WebSize;
 
-using WebThread = Thread;
-using WebThreadCreationParams = ThreadCreationParams;
-
 namespace scheduler {
 class WebThreadScheduler;
 }
@@ -160,11 +157,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // This is another entry point for embedders that only require simple
   // execution environment of Blink. This version automatically sets up Blink
-  // with a minimally viable implementation of WebThread for the main thread.
-  // The WebThread object is returned by Platform::CurrentThread(), therefore
-  // embedders do not need to override CurrentThread(), if your application
-  // is single-threaded. If your application supports multi-thread, you
-  // need to override CurrentThread() as well as CreateThread().
+  // with a minimally viable implementation of WebThreadScheduler and
+  // blink::Thread for the main thread.
+  //
+  // TODO(yutak): Fix function name as it seems obsolete at this point.
   static void CreateMainThreadAndInitialize(Platform*);
 
   // Used to switch the current platform only for testing.
@@ -432,35 +428,35 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Threads -------------------------------------------------------
 
-  // Thread creation is no longer customizable in Platform. CreateThread()
-  // always creates a new physical thread for Blink. Platform maintains
-  // the thread-local storage containing each WebThread object, so that
-  // CurrentThread() could return the correct thread object.
+  // blink::Thread creation is no longer customizable in Platform.
+  // CreateThread() always creates a new physical thread for Blink.
+  // Platform maintains the thread-local storage containing each blink::Thread
+  // object, so that CurrentThread() could return the correct thread object.
   //
   // TODO(yutak): These non-virtual functions should be moved to somewhere
   // else, because they no longer require embedder's implementation.
 
   // Creates a new thread. This may be called from a non-main thread (e.g.
   // nested Web workers).
-  std::unique_ptr<WebThread> CreateThread(const WebThreadCreationParams&);
+  std::unique_ptr<Thread> CreateThread(const ThreadCreationParams&);
 
   // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
   // for any other purpose.
-  std::unique_ptr<WebThread> CreateWebAudioThread();
+  std::unique_ptr<Thread> CreateWebAudioThread();
 
   // Create and initialize the compositor thread. The thread is saved in
   // Platform, and will be accessible through CompositorThread().
   void InitializeCompositorThread();
 
   // Returns an interface to the current thread.
-  WebThread* CurrentThread();
+  Thread* CurrentThread();
 
   // Returns an interface to the main thread.
-  WebThread* MainThread();
+  Thread* MainThread();
 
   // Returns an interface to the compositor thread. This can be null if the
   // renderer was created with threaded rendering disabled.
-  WebThread* CompositorThread();
+  Thread* CompositorThread();
 
   // Returns the task runner of the compositor thread. This is available
   // once InitializeCompositorThread() is called.
@@ -771,13 +767,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
  protected:
-  WebThread* main_thread_;
+  Thread* main_thread_;
 
  private:
   static void InitializeCommon(Platform* platform);
 
-  void WaitUntilWebThreadTLSUpdate(WebThread*);
-  void UpdateWebThreadTLS(WebThread* thread, base::WaitableEvent* event);
+  void WaitUntilThreadTLSUpdate(Thread*);
+  void UpdateThreadTLS(Thread* thread, base::WaitableEvent* event);
 
   // Platform owns the main thread in most cases. The pointer value is the same
   // as main_thread_ if this variable is non-null.
@@ -785,9 +781,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // This variable is null if (and only if) ScopedTestingPlatformSupport<>
   // overrides the old Platform. In this case, main_thread_ points to the old
   // Platform's main thread. See testing_platform_support.h for this.
-  std::unique_ptr<WebThread> owned_main_thread_;
+  std::unique_ptr<Thread> owned_main_thread_;
 
-  std::unique_ptr<WebThread> compositor_thread_;
+  std::unique_ptr<Thread> compositor_thread_;
 
   // We can't use WTF stuff here. Ultimately these should go away (see comments
   // near CreateThread()), though.

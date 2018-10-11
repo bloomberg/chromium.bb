@@ -99,7 +99,7 @@ void ScriptWrappableMarkingVisitor::PerformCleanup() {
 }
 
 void ScriptWrappableMarkingVisitor::ScheduleIdleLazyCleanup() {
-  WebThread* const thread = Platform::Current()->CurrentThread();
+  Thread* const thread = Platform::Current()->CurrentThread();
   // Thread might already be gone, or some threads (e.g. PPAPI) don't have a
   // scheduler.
   if (!thread || !thread->Scheduler())

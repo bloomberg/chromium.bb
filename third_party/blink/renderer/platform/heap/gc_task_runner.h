@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class GCTaskObserver final : public WebThread::TaskObserver {
+class GCTaskObserver final : public Thread::TaskObserver {
   USING_FAST_MALLOC(GCTaskObserver);
 
  public:
@@ -73,7 +73,7 @@ class GCTaskRunner final {
   USING_FAST_MALLOC(GCTaskRunner);
 
  public:
-  explicit GCTaskRunner(WebThread* thread)
+  explicit GCTaskRunner(Thread* thread)
       : gc_task_observer_(std::make_unique<GCTaskObserver>()), thread_(thread) {
     thread_->AddTaskObserver(gc_task_observer_.get());
   }
@@ -82,7 +82,7 @@ class GCTaskRunner final {
 
  private:
   std::unique_ptr<GCTaskObserver> gc_task_observer_;
-  WebThread* thread_;
+  Thread* thread_;
 };
 
 }  // namespace blink

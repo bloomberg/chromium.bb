@@ -82,9 +82,8 @@ class MockServiceWorkerInstalledScriptsManager
             // Pass a temporary task runner to ensure
             // ServiceWorkerInstalledScriptsManager construction succeeds.
             Platform::Current()
-                ->CreateThread(
-                    WebThreadCreationParams(WebThreadType::kTestThread)
-                        .SetThreadNameForTest("io thread"))
+                ->CreateThread(ThreadCreationParams(WebThreadType::kTestThread)
+                                   .SetThreadNameForTest("io thread"))
                 ->GetTaskRunner()){};
   MOCK_CONST_METHOD1(IsScriptInstalled, bool(const KURL& script_url));
   MOCK_METHOD1(GetRawScriptData,

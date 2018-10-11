@@ -88,7 +88,7 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
   Mutex lock_;
   std::unique_ptr<HRTFDatabase> hrtf_database_;
 
-  std::unique_ptr<WebThread> thread_;
+  std::unique_ptr<Thread> thread_;
 
   float database_sample_rate_;
 };

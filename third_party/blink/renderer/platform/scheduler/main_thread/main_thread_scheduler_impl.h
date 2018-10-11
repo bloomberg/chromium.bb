@@ -160,7 +160,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   ~MainThreadSchedulerImpl() override;
 
   // WebThreadScheduler implementation:
-  std::unique_ptr<WebThread> CreateMainThread() override;
+  std::unique_ptr<Thread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   // Note: this is also shared by the ThreadScheduler interface.
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
@@ -204,9 +204,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
   // ThreadScheduler implementation:
-  void PostIdleTask(const base::Location&, WebThread::IdleTask) override;
+  void PostIdleTask(const base::Location&, Thread::IdleTask) override;
   void PostNonNestableIdleTask(const base::Location&,
-                               WebThread::IdleTask) override;
+                               Thread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   // IPCTaskRunner() is implemented above in the WebThreadScheduler section.
@@ -721,7 +721,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // trigger a priority update.
   bool ShouldUpdateTaskQueuePriorities(Policy new_policy) const;
 
-  static void RunIdleTask(WebThread::IdleTask, base::TimeTicks deadline);
+  static void RunIdleTask(Thread::IdleTask, base::TimeTicks deadline);
 
   // Probabilistically record all task metadata for the current task.
   // If task belongs to a per-frame queue, this task is attributed to

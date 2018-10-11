@@ -23,7 +23,7 @@ class FontCachePurgePreventer;
 
 class CORE_EXPORT CanvasFontCache final
     : public GarbageCollectedFinalized<CanvasFontCache>,
-      public WebThread::TaskObserver {
+      public Thread::TaskObserver {
   USING_PRE_FINALIZER(CanvasFontCache, Dispose);
 
  public:

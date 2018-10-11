@@ -56,7 +56,7 @@ constexpr const char* kRGBA12CanvasPixelFormatName = "12-12-12-12";
 constexpr const char* kF16CanvasPixelFormatName = "float16";
 
 class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
-                                           public WebThread::TaskObserver {
+                                           public Thread::TaskObserver {
   USING_PRE_FINALIZER(CanvasRenderingContext, Dispose);
 
  public:
@@ -137,7 +137,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   void NeedsFinalizeFrame();
 
-  // WebThread::TaskObserver implementation
+  // Thread::TaskObserver implementation
   void DidProcessTask() override;
   void WillProcessTask() final {}
 

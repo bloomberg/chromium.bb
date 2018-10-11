@@ -11,7 +11,7 @@ namespace blink {
 
 namespace {
 
-class ThreadWithCustomScheduler : public WebThread {
+class ThreadWithCustomScheduler : public Thread {
  public:
   explicit ThreadWithCustomScheduler(ThreadScheduler* scheduler)
       : scheduler_(scheduler) {}

@@ -121,7 +121,7 @@ Platform::~Platform() = default;
 
 namespace {
 
-class SimpleMainThread : public WebThread {
+class SimpleMainThread : public Thread {
  public:
   // We rely on base::ThreadTaskRunnerHandle for tasks posted on the main
   // thread. The task runner handle may not be available on Blink's startup
@@ -272,12 +272,12 @@ Platform* Platform::Current() {
   return g_platform;
 }
 
-WebThread* Platform::MainThread() {
+Thread* Platform::MainThread() {
   return main_thread_;
 }
 
-WebThread* Platform::CurrentThread() {
-  return static_cast<WebThread*>(current_thread_slot_.Get());
+Thread* Platform::CurrentThread() {
+  return static_cast<Thread*>(current_thread_slot_.Get());
 }
 
 service_manager::Connector* Platform::GetConnector() {
@@ -303,17 +303,17 @@ std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
   return nullptr;
 }
 
-std::unique_ptr<WebThread> Platform::CreateThread(
-    const WebThreadCreationParams& params) {
+std::unique_ptr<Thread> Platform::CreateThread(
+    const ThreadCreationParams& params) {
   std::unique_ptr<scheduler::WebThreadBase> thread =
       scheduler::WebThreadBase::CreateWorkerThread(params);
   thread->Init();
-  WaitUntilWebThreadTLSUpdate(thread.get());
+  WaitUntilThreadTLSUpdate(thread.get());
   return std::move(thread);
 }
 
-std::unique_ptr<WebThread> Platform::CreateWebAudioThread() {
-  WebThreadCreationParams params(WebThreadType::kWebAudioThread);
+std::unique_ptr<Thread> Platform::CreateWebAudioThread() {
+  ThreadCreationParams params(WebThreadType::kWebAudioThread);
   // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
   // system is under the high pressure. Note that the main browser thread also
   // runs with same priority. (see: crbug.com/734539)
@@ -321,20 +321,19 @@ std::unique_ptr<WebThread> Platform::CreateWebAudioThread() {
   return CreateThread(params);
 }
 
-void Platform::WaitUntilWebThreadTLSUpdate(WebThread* thread) {
+void Platform::WaitUntilThreadTLSUpdate(Thread* thread) {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   // This cross-thread posting is guaranteed to be safe.
   PostCrossThreadTask(*thread->GetTaskRunner(), FROM_HERE,
-                      CrossThreadBind(&Platform::UpdateWebThreadTLS,
+                      CrossThreadBind(&Platform::UpdateThreadTLS,
                                       WTF::CrossThreadUnretained(this),
                                       WTF::CrossThreadUnretained(thread),
                                       WTF::CrossThreadUnretained(&event)));
   event.Wait();
 }
 
-void Platform::UpdateWebThreadTLS(WebThread* thread,
-                                  base::WaitableEvent* event) {
+void Platform::UpdateThreadTLS(Thread* thread, base::WaitableEvent* event) {
   DCHECK(!current_thread_slot_.Get());
   current_thread_slot_.Set(thread);
   event->Signal();
@@ -343,25 +342,25 @@ void Platform::UpdateWebThreadTLS(WebThread* thread,
 void Platform::InitializeCompositorThread() {
   DCHECK(!compositor_thread_);
 
-  WebThreadCreationParams params(WebThreadType::kCompositorThread);
+  ThreadCreationParams params(WebThreadType::kCompositorThread);
 #if defined(OS_ANDROID)
   params.thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   std::unique_ptr<scheduler::WebThreadBase> compositor_thread =
       scheduler::WebThreadBase::CreateCompositorThread(params);
   compositor_thread->Init();
-  WaitUntilWebThreadTLSUpdate(compositor_thread.get());
+  WaitUntilThreadTLSUpdate(compositor_thread.get());
   compositor_thread_ = std::move(compositor_thread);
   SetDisplayThreadPriority(compositor_thread_->ThreadId());
 }
 
-WebThread* Platform::CompositorThread() {
+Thread* Platform::CompositorThread() {
   return compositor_thread_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 Platform::CompositorThreadTaskRunner() {
-  if (WebThread* compositor_thread = CompositorThread())
+  if (Thread* compositor_thread = CompositorThread())
     return compositor_thread->GetTaskRunner();
   return nullptr;
 }

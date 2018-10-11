@@ -60,7 +60,7 @@ void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode rail_mode) {
   WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(rail_mode);
 }
 
-WorkerBackingThread::WorkerBackingThread(const WebThreadCreationParams& params)
+WorkerBackingThread::WorkerBackingThread(const ThreadCreationParams& params)
     : backing_thread_(WebThreadSupportingGC::Create(params)) {}
 
 WorkerBackingThread::~WorkerBackingThread() = default;

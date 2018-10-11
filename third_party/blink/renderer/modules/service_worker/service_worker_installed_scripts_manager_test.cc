@@ -123,10 +123,10 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
  public:
   ServiceWorkerInstalledScriptsManagerTest()
       : io_thread_(Platform::Current()->CreateThread(
-            WebThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadNameForTest("io thread"))),
         worker_thread_(Platform::Current()->CreateThread(
-            WebThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadNameForTest("worker thread"))) {}
 
  protected:
@@ -182,8 +182,8 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
     waiter->Signal();
   }
 
-  std::unique_ptr<WebThread> io_thread_;
-  std::unique_ptr<WebThread> worker_thread_;
+  std::unique_ptr<Thread> io_thread_;
+  std::unique_ptr<Thread> worker_thread_;
 
   WaitableEvent worker_waiter_;
 

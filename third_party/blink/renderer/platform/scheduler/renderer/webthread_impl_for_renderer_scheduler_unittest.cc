@@ -30,7 +30,7 @@ class MockTask {
   MOCK_METHOD0(Run, void());
 };
 
-class MockTaskObserver : public blink::WebThread::TaskObserver {
+class MockTaskObserver : public Thread::TaskObserver {
  public:
   MOCK_METHOD0(WillProcessTask, void());
   MOCK_METHOD0(DidProcessTask, void());
@@ -62,7 +62,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::SimpleTestTickClock clock_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
-  std::unique_ptr<blink::WebThread> thread_;
+  std::unique_ptr<Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadImplForRendererSchedulerTest);
 };
@@ -163,8 +163,8 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
   thread_->RemoveTaskObserver(&observer);
 }
 
-void EnterRunLoop(base::MessageLoop* message_loop, blink::WebThread* thread) {
-  // Note: WebThreads do not support nested run loops, which is why we use a
+void EnterRunLoop(base::MessageLoop* message_loop, Thread* thread) {
+  // Note: blink::Threads do not support nested run loops, which is why we use a
   // run loop directly.
   base::RunLoop run_loop;
   message_loop->task_runner()->PostTask(

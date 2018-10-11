@@ -55,7 +55,7 @@ void AnimationWorkletThread::CollectAllGarbage() {
 
 void AnimationWorkletThread::EnsureSharedBackingThread() {
   WorkletThreadHolder<AnimationWorkletThread>::EnsureInstance(
-      WebThreadCreationParams(WebThreadType::kAnimationWorkletThread));
+      ThreadCreationParams(WebThreadType::kAnimationWorkletThread));
 }
 
 void AnimationWorkletThread::ClearSharedBackingThread() {

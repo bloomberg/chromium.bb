@@ -656,7 +656,7 @@ void MainThreadSchedulerImpl::Shutdown() {
   was_shutdown_ = true;
 }
 
-std::unique_ptr<blink::WebThread> MainThreadSchedulerImpl::CreateMainThread() {
+std::unique_ptr<Thread> MainThreadSchedulerImpl::CreateMainThread() {
   return std::make_unique<WebThreadImplForRendererScheduler>(this);
 }
 
@@ -2396,13 +2396,13 @@ MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
                                     WebString(WTF::String(name)));
 }
 
-void MainThreadSchedulerImpl::RunIdleTask(WebThread::IdleTask task,
+void MainThreadSchedulerImpl::RunIdleTask(Thread::IdleTask task,
                                           base::TimeTicks deadline) {
   std::move(task).Run(deadline);
 }
 
 void MainThreadSchedulerImpl::PostIdleTask(const base::Location& location,
-                                           WebThread::IdleTask task) {
+                                           Thread::IdleTask task) {
   IdleTaskRunner()->PostIdleTask(
       location,
       base::BindOnce(&MainThreadSchedulerImpl::RunIdleTask, std::move(task)));
@@ -2410,7 +2410,7 @@ void MainThreadSchedulerImpl::PostIdleTask(const base::Location& location,
 
 void MainThreadSchedulerImpl::PostNonNestableIdleTask(
     const base::Location& location,
-    WebThread::IdleTask task) {
+    Thread::IdleTask task) {
   IdleTaskRunner()->PostNonNestableIdleTask(
       location,
       base::BindOnce(&MainThreadSchedulerImpl::RunIdleTask, std::move(task)));

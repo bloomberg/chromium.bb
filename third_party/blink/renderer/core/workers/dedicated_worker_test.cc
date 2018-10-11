@@ -35,7 +35,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
                               nullptr /* parent_execution_context*/,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::Create(
-        WebThreadCreationParams(WebThreadType::kTestThread));
+        ThreadCreationParams(WebThreadType::kTestThread));
   }
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(

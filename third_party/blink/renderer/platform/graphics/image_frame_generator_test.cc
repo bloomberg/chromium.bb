@@ -256,8 +256,8 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
   // LocalFrame can now be decoded completely.
   SetFrameStatus(ImageFrame::kFrameComplete);
   AddNewData();
-  std::unique_ptr<WebThread> thread = Platform::Current()->CreateThread(
-      WebThreadCreationParams(WebThreadType::kTestThread)
+  std::unique_ptr<Thread> thread = Platform::Current()->CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest("DecodeThread"));
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,

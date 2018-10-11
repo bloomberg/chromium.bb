@@ -28,8 +28,6 @@ class BlameContext;
 namespace blink {
 class Thread;
 class WebInputEvent;
-
-using WebThread = Thread;
 }  // namespace blink
 
 namespace viz {
@@ -90,7 +88,7 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner();
 
   // Creates a WebThread implementation for the renderer main thread.
-  virtual std::unique_ptr<WebThread> CreateMainThread();
+  virtual std::unique_ptr<Thread> CreateMainThread();
 
   // Returns a new WebRenderWidgetSchedulingState.  The signals from this will
   // be used to make scheduling decisions.
