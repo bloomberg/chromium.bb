@@ -561,14 +561,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
-  if (element && (style.Display() != EDisplay::kNone ||
-                  element->LayoutObjectIsNeeded(style))) {
-    // TODO(rakina): Move this attribute check somewhere else.
-    if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-        element->Invisible() != InvisibleState::kMissing)
-      style.SetDisplay(EDisplay::kNone);
-    else if (element->IsHTMLElement())
-      AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
+  if (element && element->IsHTMLElement() &&
+      (style.Display() != EDisplay::kNone ||
+       element->LayoutObjectIsNeeded(style))) {
+    AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
   }
   if (style.Display() != EDisplay::kNone) {
     bool is_document_element =

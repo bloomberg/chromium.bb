@@ -2313,6 +2313,13 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
   if (ElementAnimations* element_animations = GetElementAnimations())
     element_animations->CssAnimations().ClearPendingUpdate();
 
+  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
+      hasAttribute(HTMLNames::invisibleAttr)) {
+    auto style = ComputedStyle::Create();
+    style->SetDisplay(EDisplay::kNone);
+    return style;
+  }
+
   scoped_refptr<ComputedStyle> style = HasCustomStyleCallbacks()
                                            ? CustomStyleForLayoutObject()
                                            : OriginalStyleForLayoutObject();
