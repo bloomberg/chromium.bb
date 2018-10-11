@@ -414,11 +414,17 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
                  weak_ptr_factory_.GetWeakPtr(),
                  download->GetId(),
                  callback);
-  DownloadTargetDeterminer::Start(
-      download,
-      GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH),
-      kDefaultPlatformConflictAction, download_prefs_.get(), this,
-      target_determined_callback);
+  base::FilePath download_path =
+      GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH);
+  DownloadPathReservationTracker::FilenameConflictAction action =
+      kDefaultPlatformConflictAction;
+#if defined(OS_ANDROID)
+  if (!download_path.empty())
+    action = DownloadPathReservationTracker::UNIQUIFY;
+#endif
+  DownloadTargetDeterminer::Start(download, download_path, action,
+                                  download_prefs_.get(), this,
+                                  target_determined_callback);
   return true;
 }
 
