@@ -109,7 +109,9 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
 
   ::testing::InSequence s;
   EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
-              SubmitCompositorFrameSync_(_))
+              DidAllocateSharedBitmap(_, _));
+  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
+              SubmitCompositorFrame_(_))
       .WillOnce(::testing::WithArg<0>(
           ::testing::Invoke([context_alpha](const viz::CompositorFrame* frame) {
             ASSERT_EQ(frame->render_pass_list.size(), 1u);
@@ -124,8 +126,6 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
             EXPECT_NE(shared_quad_state_list.front()->are_contents_opaque,
                       context_alpha);
           })));
-  EXPECT_CALL(mock_embedded_frame_sink_provider.mock_compositor_frame_sink(),
-              DidAllocateSharedBitmap(_, _));
   canvas_element().FinalizeFrame();
   platform->RunUntilIdle();
 }
