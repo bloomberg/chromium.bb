@@ -74,14 +74,19 @@ void BackgroundFetchRegistration::Initialize(
       ->AddRegistrationObserver(unique_id_, std::move(observer));
 }
 
-void BackgroundFetchRegistration::OnProgress(uint64_t upload_total,
-                                             uint64_t uploaded,
-                                             uint64_t download_total,
-                                             uint64_t downloaded) {
+void BackgroundFetchRegistration::OnProgress(
+    uint64_t upload_total,
+    uint64_t uploaded,
+    uint64_t download_total,
+    uint64_t downloaded,
+    mojom::BackgroundFetchResult result,
+    mojom::BackgroundFetchFailureReason failure_reason) {
   upload_total_ = upload_total;
   uploaded_ = uploaded;
   download_total_ = download_total;
   downloaded_ = downloaded;
+  result_ = result;
+  failure_reason_ = failure_reason;
 
   ExecutionContext* context = GetExecutionContext();
   if (!context || context->IsContextDestroyed())

@@ -452,6 +452,7 @@ void BackgroundFetchContext::DidMarkForDeletion(
     case FailureReason::CANCELLED_FROM_UI:
       CleanupRegistration(registration_id, {},
                           blink::mojom::BackgroundFetchResult::FAILURE);
+      registration_notifier_->Notify(*registration);
       event_dispatcher_.DispatchBackgroundFetchAbortEvent(
           registration_id, std::move(registration), base::DoNothing());
       return;
@@ -509,6 +510,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
   switch (registration->failure_reason) {
     case FailureReason::NONE:
       registration->result = blink::mojom::BackgroundFetchResult::SUCCESS;
+      registration_notifier_->Notify(*registration);
       event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
           registration_id, std::move(registration),
           base::BindOnce(
@@ -529,6 +531,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
     case FailureReason::QUOTA_EXCEEDED:
     case FailureReason::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
       registration->result = blink::mojom::BackgroundFetchResult::FAILURE;
+      registration_notifier_->Notify(*registration);
       event_dispatcher_.DispatchBackgroundFetchFailEvent(
           registration_id, std::move(registration),
           base::BindOnce(
