@@ -169,8 +169,7 @@ const std::string& SyncDataRemote::GetClientTagHash() const {
   // cases, where this is the hashed tag value. The original tag is not sent to
   // the server so we wouldn't be able to set this value anyways. The only way
   // to recreate an un-hashed tag is for the service to do so with a specifics.
-  // Should only be used by sessions, see crbug.com/604657.
-  DCHECK_EQ(SESSIONS, GetDataType());
+  DCHECK(!immutable_entity_.Get().client_defined_unique_tag().empty());
   return immutable_entity_.Get().client_defined_unique_tag();
 }
 
