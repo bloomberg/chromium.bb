@@ -28,6 +28,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "answer_sunrise.icon",
     "answer_when_is.icon",
     "drive_docs.icon",
+    "drive_forms.icon",
     "drive_logo.icon",
     "drive_sheets.icon",
     "drive_slides.icon",

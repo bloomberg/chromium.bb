@@ -117,6 +117,7 @@ struct AutocompleteMatch {
   enum class DocumentType {
     NONE,
     DRIVE_DOCS,
+    DRIVE_FORMS,
     DRIVE_SHEETS,
     DRIVE_SLIDES,
     DRIVE_OTHER

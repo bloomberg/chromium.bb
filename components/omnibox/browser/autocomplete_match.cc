@@ -248,6 +248,8 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
       switch (document_type) {
         case DocumentType::DRIVE_DOCS:
           return omnibox::kDriveDocsIcon;
+        case DocumentType::DRIVE_FORMS:
+          return omnibox::kDriveFormsIcon;
         case DocumentType::DRIVE_SHEETS:
           return omnibox::kDriveSheetsIcon;
         case DocumentType::DRIVE_SLIDES:
