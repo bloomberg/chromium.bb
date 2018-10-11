@@ -4061,6 +4061,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
       # Enable the new tcmalloc version on certain boards.
+      'elm-release': {
+          'useflags': append_useflags(['new_tcmalloc']),
+      },
+
       'kip-release': {
           'useflags': append_useflags(['new_tcmalloc']),
       },
