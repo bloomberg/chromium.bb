@@ -25,6 +25,7 @@ class TestAppDistributionProvider : public AppDistributionProvider {
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       bool is_first_run) override;
   void CancelDistributionNotifications() override;
+  bool IsPreFirebaseLegacyUser(int64_t install_date) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppDistributionProvider);
