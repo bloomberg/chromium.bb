@@ -29,10 +29,7 @@
 
 import("//build/config/compiler/compiler.gni")
 
-configs_to_delete = [
-  # Don't enable sanitizers for build tools. They slow down the overall build.
-  "//build/config/sanitizers:default_sanitizer_flags",
-]
+configs_to_delete = []
 configs_to_add = []
 if (is_debug) {
   configs_to_delete += [
@@ -44,6 +41,9 @@ if (is_debug) {
 
     # Don't define _DEBUG. Modest savings, but good for consistency.
     "//build/config:debug",
+
+    # Don't enable sanitizers for build tools. They slow down the overall build.
+    "//build/config/sanitizers:default_sanitizer_flags",
   ]
 
   configs_to_add += [
@@ -117,10 +117,7 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm/tools/genperf/perfect.c",
     ]
 
-    configs -= [
-      "//build/config/compiler:chromium_code",
-      "//build/config/sanitizers:link_executable",
-    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
@@ -329,10 +326,7 @@ if (current_toolchain == host_toolchain) {
       "$target_gen_dir/module.c",
     ]
 
-    configs -= [
-      "//build/config/compiler:chromium_code",
-      "//build/config/sanitizers:link_executable",
-    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
