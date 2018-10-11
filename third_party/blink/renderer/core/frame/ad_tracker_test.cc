@@ -237,6 +237,39 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
   EXPECT_TRUE(ad_tracker_->IsAdScriptInStack());
 }
 
+// When inline script in an ad frame inserts an iframe into a non-ad frame, the
+// new frame should be considered an ad.
+TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
+  SimRequest ad_script("https://example.com/ad_script.js", "text/javascript");
+  SimRequest ad_iframe("https://example.com/ad_frame.html", "text/html");
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete("<body><script src='ad_script.js'></script></body>");
+  ad_script.Complete(R"SCRIPT(
+    frame = document.createElement("iframe");
+    frame.src = "ad_frame.html";
+    document.body.appendChild(frame);
+    )SCRIPT");
+
+  // Verify that the new frame is an ad frame.
+  EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
+                  ->IsAdSubframe());
+
+  // Create a new sibling frame to the ad frame. The ad context calls the non-ad
+  // context's (top frame) appendChild.
+  ad_iframe.Complete(R"HTML(
+    <script>
+      frame = document.createElement("iframe");
+      frame.name = "ad_sibling";
+      parent.document.body.appendChild(frame);
+    </script>
+    )HTML");
+
+  // The new sibling frame should also be identified as an ad.
+  EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().Find("ad_sibling"))
+                  ->IsAdSubframe());
+}
+
 // Image loaded by ad script is tagged as ad.
 TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScript) {
   const char kAdUrl[] = "https://example.com/ad_script.js";

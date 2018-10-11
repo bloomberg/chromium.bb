@@ -18,6 +18,20 @@
 
 namespace blink {
 
+namespace {
+
+bool IsKnownAdExecutionContext(ExecutionContext* execution_context) {
+  // TODO(jkarlin): Do the same check for worker contexts.
+  if (auto* document = DynamicTo<Document>(execution_context)) {
+    LocalFrame* frame = document->GetFrame();
+    if (frame && frame->IsAdSubframe())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 AdTracker::AdTracker(LocalFrame* local_root) : local_root_(local_root) {
   local_root_->GetProbeSink()->addAdTracker(this);
 }
@@ -112,21 +126,10 @@ bool AdTracker::IsAdScriptInStack() {
   if (!execution_context)
     return false;
 
-  // If script is running in an ad context, then we consider the script to be ad
-  // script.
-  // TODO(jkarlin): Do the same check for worker contexts.
-  //
-  // TODO(jkarlin): Look at the execution context of every frame in the stack,
-  // not just the current frame. This requires some changes to v8.
-  //
-  // TODO(jkarlin): Minor memory optimization, stop tracking known ad scripts in
-  // ad contexts. This will reduce the size of executing_scripts_. Note that
-  // this is a minor win, as the strings are already ref-counted.
-  if (auto* document = DynamicTo<Document>(execution_context)) {
-    LocalFrame* frame = document->GetFrame();
-    if (frame && frame->IsAdSubframe())
-      return true;
-  }
+  // If we're in an ad context, then no matter what the executing script is it's
+  // considered an ad.
+  if (IsKnownAdExecutionContext(execution_context))
+    return true;
 
   // The pseudo-stack contains entry points into the stack (e.g., when v8 is
   // executed) but not the entire stack. It's cheap to retrieve the top of the
@@ -148,6 +151,12 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
                                 const String& url) {
   if (!execution_context)
     return false;
+
+  // TODO(jkarlin): Minor memory optimization, stop tracking known ad scripts in
+  // ad contexts. This will reduce the size of executing_scripts_. Note that
+  // this is a minor win, as the strings are already ref-counted.
+  if (IsKnownAdExecutionContext(execution_context))
+    return true;
 
   auto it = known_ad_scripts_.find(execution_context);
   if (it == known_ad_scripts_.end())
