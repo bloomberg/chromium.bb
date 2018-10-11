@@ -392,6 +392,7 @@ class BrowserView : public BrowserWindow,
   FindBar* CreateFindBar() override;
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
+  void ShowHatsBubbleFromAppMenuButton() override;
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params,

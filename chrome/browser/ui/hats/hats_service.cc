@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -28,6 +29,8 @@ const char kHatsSurveyTriggerDefault[] = "test";
 const double kHatsSurveyProbabilityDefault = 1;
 
 const char kHatsSurveyEnSiteIDDefault[] = "z4cctguzopq5x2ftal6vdgjrui";
+
+const char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 
 HatsFinchConfig CreateHatsFinchConfig() {
   HatsFinchConfig config;
@@ -59,7 +62,27 @@ HatsFinchConfig::HatsFinchConfig(const HatsFinchConfig& other) = default;
 HatsService::HatsService(Profile* profile)
     : profile_(profile), hats_finch_config_(CreateHatsFinchConfig()) {}
 
-bool HatsService::ShouldShowSurvey() {
-  return (base::RandDouble() < hats_finch_config_.probability);
-  // TODO add pref checks to avoid too many surveys for a single profile
+void HatsService::LaunchSatisfactionSurvey() {
+  if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
+    Browser* browser = chrome::FindBrowserWithActiveWindow();
+    if (browser && browser->is_type_tabbed())
+      browser->window()->ShowHatsBubbleFromAppMenuButton();
+  }
 }
+
+bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
+  if ((hats_finch_config_.trigger == trigger ||
+       hats_finch_config_.trigger == kHatsSurveyTriggerDefault) &&
+      !launch_hats_) {
+    if (base::RandDouble() < hats_finch_config_.probability) {
+      // we only want to ever show hats once per profile.
+      launch_hats_ = true;
+      return true;
+    }
+    // TODO add pref checks to avoid too many surveys for a single profile
+  }
+  return false;
+}
+
+// static
+bool HatsService::launch_hats_ = false;

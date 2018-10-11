@@ -36,9 +36,18 @@ struct HatsFinchConfig {
 class HatsService : public KeyedService {
  public:
   explicit HatsService(Profile* profile);
-  bool ShouldShowSurvey();
+
+  // This is the public function that will launch the "satisfaction" survey if
+  // it's appropriate.
+  void LaunchSatisfactionSurvey();
 
  private:
+  // This returns true is the survey trigger specified should be shown.
+  bool ShouldShowSurvey(const std::string& trigger) const;
+
+  // a temporary flag to ensure that hats is not launched multiple times
+  // TODO: replace with pref lookup
+  static bool launch_hats_;
   Profile* profile_;
   const HatsFinchConfig hats_finch_config_;
 

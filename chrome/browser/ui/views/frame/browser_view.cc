@@ -84,6 +84,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
+#include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -2841,6 +2842,29 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
   }
 #endif
 }
+
+#if !defined(OS_ANDROID)
+void BrowserView::ShowHatsBubbleFromAppMenuButton() {
+  // Never show any HaTS bubble in Incognito.
+  if (!IsRegularOrGuestSession())
+    return;
+
+  AppMenuButton* app_menu_button =
+      toolbar_button_provider()->GetAppMenuButton();
+
+  // Do not show Hatsbubble if there is no avatar menu button to anchor from
+  if (!app_menu_button)
+    return;
+
+  DCHECK(app_menu_button->GetWidget());
+  views::BubbleDialogDelegateView* bubble = HatsBubbleView::CreateHatsBubble(
+      app_menu_button, browser(),
+      app_menu_button->GetWidget()->GetNativeView());
+
+  bubble->SetHighlightedButton(app_menu_button);
+  bubble->GetWidget()->Show();
+}
+#endif
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,

@@ -19,8 +19,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/hats/hats_service.h"
-#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/search/ntp_user_data_logger.h"
@@ -219,24 +217,8 @@ void SearchTabHelper::TitleWasSet(content::NavigationEntry* entry) {
 
 void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                     const GURL& /* validated_url */) {
-  if (!render_frame_host->GetParent()) {
-    if (search::IsInstantNTP(web_contents_)) {
-      RecordNewTabLoadTime(web_contents_);
-
-#if !defined(OS_ANDROID)
-      if (base::FeatureList::IsEnabled(
-              features::kHappinessTrackingSurveysForDesktop)) {
-        HatsService* hats_service =
-            HatsServiceFactory::GetForProfile(profile(), true);
-
-        // In icognito mode, hats_service will be null.
-        if (hats_service && hats_service->ShouldShowSurvey()) {
-          // TODO launch bubble;
-        }
-      }
-#endif  // !defined(OS_ANDROID)
-    }
-  }
+  if (!render_frame_host->GetParent() && search::IsInstantNTP(web_contents_))
+    RecordNewTabLoadTime(web_contents_);
 }
 
 void SearchTabHelper::NavigationEntryCommitted(
