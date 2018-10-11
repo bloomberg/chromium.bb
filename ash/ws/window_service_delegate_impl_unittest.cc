@@ -127,6 +127,24 @@ TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
                              "ChangeCompleted id=29 success=false"));
 }
 
+TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoopInSecondaryDisplay) {
+  UpdateDisplay("500x400,500x400");
+  top_level_->SetBoundsInScreen(gfx::Rect(600, 100, 100, 100),
+                                GetSecondaryDisplay());
+
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
+            top_level_->GetRootWindow());
+  EXPECT_EQ(gfx::Point(600, 100), top_level_->GetBoundsInScreen().origin());
+
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      gfx::Point(605, 106));
+
+  EXPECT_TRUE(event_handler()->is_drag_in_progress());
+  GetEventGenerator()->MoveMouseTo(gfx::Point(615, 120));
+  EXPECT_EQ(gfx::Point(610, 114), top_level_->GetBoundsInScreen().origin());
+}
+
 TEST_F(WindowServiceDelegateImplTest, CancelWindowMoveLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
