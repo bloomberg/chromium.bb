@@ -161,6 +161,15 @@ int NoScriptPreviewsInflationPercent();
 // for inflating the original_bytes count.
 int NoScriptPreviewsInflationBytes();
 
+// For estimating ResourceLoadingHints data savings, this is the percentage
+// factor to multiple by the network bytes for inflating the original_bytes
+// count.
+int ResourceLoadingHintsPreviewsInflationPercent();
+
+// For estimating ResourceLoadingHints data savings, this is the number of
+// bytes to for inflating the original_bytes count.
+int ResourceLoadingHintsPreviewsInflationBytes();
+
 }  // namespace params
 
 }  // namespace previews
