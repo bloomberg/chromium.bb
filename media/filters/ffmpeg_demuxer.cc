@@ -603,18 +603,21 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       stream_timestamp < base::TimeDelta() &&
       buffer->duration() != kNoTimestamp &&
       !audio_decoder_config().codec_delay()) {
-    DCHECK_EQ(buffer->discard_padding().first, base::TimeDelta());
 
     if (stream_timestamp + buffer->duration() < base::TimeDelta()) {
       DCHECK_EQ(buffer->discard_padding().second, base::TimeDelta());
 
-      // Discard the entire packet if it's entirely before zero.
-      buffer->set_discard_padding(
-          std::make_pair(kInfiniteDuration, base::TimeDelta()));
+      // Discard the entire packet if it's entirely before zero, but don't
+      // override the discard padding if it refers to frames beyond this packet.
+      if (buffer->discard_padding().first <= buffer->duration()) {
+        buffer->set_discard_padding(
+            std::make_pair(kInfiniteDuration, base::TimeDelta()));
+      }
     } else {
       // Only discard part of the frame if it overlaps zero.
-      buffer->set_discard_padding(
-          std::make_pair(-stream_timestamp, buffer->discard_padding().second));
+      buffer->set_discard_padding(std::make_pair(
+          std::max(-stream_timestamp, buffer->discard_padding().first),
+          buffer->discard_padding().second));
     }
   }
 
