@@ -178,15 +178,19 @@ class PLATFORM_EXPORT FetchParameters {
     return image_request_optimization_;
   }
 
+  // Configures the request to load an image as a placeholder and sets the
+  // Client LoFi preview bit.
+  void SetClientLoFiPlaceholder();
+
+  // Configures the request to load an image as a placeholder and sets the
+  // lazy image load bit.
+  void SetLazyImagePlaceholder();
+
   // Configures the request to load an image placeholder if the request is
   // eligible (e.g. the url's protocol is HTTP, etc.). If this request is
   // non-eligible, this method doesn't modify the ResourceRequest. Calling this
   // method sets image_request_optimization_ to the appropriate value.
   void SetAllowImagePlaceholder();
-
-  // Configures the request to load an image as a placeholder and sets the
-  // Client LoFi preview bit.
-  void SetClientLoFiPlaceholder();
 
  private:
   ResourceRequest resource_request_;

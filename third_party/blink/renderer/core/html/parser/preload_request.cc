@@ -107,7 +107,7 @@ Resource* PreloadRequest::Start(Document* document) {
         params.SetClientLoFiPlaceholder();
       } else if (!is_lazyload_image_disabled_ &&
                  frame->IsLazyLoadingImageAllowed()) {
-        params.SetAllowImagePlaceholder();
+        params.SetLazyImagePlaceholder();
       }
     }
   }

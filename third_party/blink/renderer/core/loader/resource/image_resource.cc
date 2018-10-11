@@ -96,6 +96,9 @@ class ImageResource::ImageResourceInfoImpl final
   bool ShouldShowPlaceholder() const override {
     return resource_->ShouldShowPlaceholder();
   }
+  bool ShouldShowLazyImagePlaceholder() const override {
+    return resource_->ShouldShowLazyImagePlaceholder();
+  }
   bool IsCacheValidator() const override {
     return resource_->IsCacheValidator();
   }
@@ -543,6 +546,21 @@ bool ImageResource::ShouldShowPlaceholder() const {
     case PlaceholderOption::kShowAndReloadPlaceholderAlways:
     case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
       return true;
+    case PlaceholderOption::kReloadPlaceholderOnDecodeError:
+    case PlaceholderOption::kDoNotReloadPlaceholder:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool ImageResource::ShouldShowLazyImagePlaceholder() const {
+  switch (placeholder_option_) {
+    case PlaceholderOption::kShowAndReloadPlaceholderAlways:
+    case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
+      return RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
+             (GetResourceRequest().GetPreviewsState() &
+              WebURLRequest::kLazyImageLoadDeferred);
     case PlaceholderOption::kReloadPlaceholderOnDecodeError:
     case PlaceholderOption::kDoNotReloadPlaceholder:
       return false;
