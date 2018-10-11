@@ -156,7 +156,10 @@ enum class ProvisioningResult : int {
   // Device was already provisioned.
   SUCCESS_ALREADY_PROVISIONED = 21,
 
-  kMaxValue = SUCCESS_ALREADY_PROVISIONED,
+  // Account type is not supported for authorization.
+  UNSUPPORTED_ACCOUNT_TYPE = 22,
+
+  kMaxValue = UNSUPPORTED_ACCOUNT_TYPE,
 };
 
 enum class OptInFlowResult : int {
