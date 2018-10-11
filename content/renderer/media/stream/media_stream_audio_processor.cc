@@ -22,7 +22,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
@@ -30,6 +32,8 @@
 #include "media/base/channel_layout.h"
 #include "media/webrtc/echo_information.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "third_party/webrtc/api/audio/echo_canceller3_config.h"
+#include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
@@ -598,11 +602,22 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (properties.echo_cancellation_type ==
       EchoCancellationType::kEchoCancellationAec3) {
     webrtc::EchoCanceller3Config aec3_config;
-    aec3_config.ep_strength.bounded_erl =
+    base::Optional<std::string> audio_processing_platform_config_json =
+        GetContentClient()
+            ->renderer()
+            ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+    if (audio_processing_platform_config_json) {
+      aec3_config = webrtc::Aec3ConfigFromJsonString(
+          *audio_processing_platform_config_json);
+      bool config_parameters_already_valid =
+          webrtc::EchoCanceller3Config::Validate(&aec3_config);
+      RTC_DCHECK(config_parameters_already_valid);
+    }
+    aec3_config.ep_strength.bounded_erl |=
         base::FeatureList::IsEnabled(features::kWebRtcAecBoundedErlSetup);
-    aec3_config.echo_removal_control.has_clock_drift =
+    aec3_config.echo_removal_control.has_clock_drift |=
         base::FeatureList::IsEnabled(features::kWebRtcAecClockDriftSetup);
-    aec3_config.echo_audibility.use_stationary_properties =
+    aec3_config.echo_audibility.use_stationary_properties |=
         base::FeatureList::IsEnabled(features::kWebRtcAecNoiseTransparency);
 
     ap_builder.SetEchoControlFactory(
