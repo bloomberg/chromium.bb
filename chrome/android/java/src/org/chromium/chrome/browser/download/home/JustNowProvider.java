@@ -11,15 +11,12 @@ import java.util.Date;
 
 /** Helper class to expose whether an item should be shown in the Just Now section. */
 public class JustNowProvider {
-    // Threshold time interval during which a download is considered recent.
-    private static final long JUST_NOW_DEFAULT_THRESHOLD_MS = 30 * 60 * 1000;
-
     // Threshold timestamp after which a download is considered recent.
     private final Date mThresholdDate;
 
     /** Constructor. */
-    public JustNowProvider() {
-        mThresholdDate = new Date(new Date().getTime() - JUST_NOW_DEFAULT_THRESHOLD_MS);
+    public JustNowProvider(DownloadManagerUiConfig config) {
+        mThresholdDate = new Date(new Date().getTime() - config.justNowThresholdSeconds * 1000);
     }
 
     /**

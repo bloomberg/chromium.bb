@@ -21,6 +21,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
@@ -35,6 +37,8 @@ import org.chromium.components.offline_items_collection.OfflineItemState;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Unit tests for the DateOrderedListMutator class. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -54,6 +58,8 @@ public class DateOrderedListMutatorTest {
     @Before
     public void setUp() {
         mModel = new ListItemModel();
+        Map<String, Boolean> testFeatures = new HashMap<>();
+        ChromeFeatureList.setTestFeatures(testFeatures);
     }
 
     @After
@@ -995,7 +1001,8 @@ public class DateOrderedListMutatorTest {
     }
 
     private DateOrderedListMutator createMutatorWithoutJustNowProvider() {
-        return new DateOrderedListMutator(mSource, mModel, new JustNowProvider() {
+        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
+        return new DateOrderedListMutator(mSource, mModel, new JustNowProvider(config) {
             @Override
             public boolean isJustNowItem(OfflineItem item) {
                 return false;
@@ -1004,7 +1011,8 @@ public class DateOrderedListMutatorTest {
     }
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
-        return new DateOrderedListMutator(mSource, mModel, new JustNowProvider());
+        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
+        return new DateOrderedListMutator(mSource, mModel, new JustNowProvider(config));
     }
 
     private static void assertDatesAreEqual(Date date, Calendar calendar) {

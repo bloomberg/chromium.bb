@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.PrefetchStatusProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
@@ -80,7 +81,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
      * Creates an instance of a DateOrderedListCoordinator, which will visually represent
      * {@code provider} as a list of items.
      * @param context The {@link Context} to use to build the views.
-     * @param offTheRecord Whether or not to include off the record items.
+     * @param config The {@link DownloadManagerUiConfig} to provide UI configuration params.
      * @param provider The {@link OfflineContentProvider} to visually represent.
      * @param deleteController A class to manage whether or not items can be deleted.
      * @param filterObserver A {@link FilterCoordinator.Observer} that should be notified of
@@ -88,7 +89,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
      *                       need to take action based on the visual state of the list.
      * @param dateOrderedListObserver A {@link DateOrderedListObserver}.
      */
-    public DateOrderedListCoordinator(Context context, Boolean offTheRecord,
+    public DateOrderedListCoordinator(Context context, DownloadManagerUiConfig config,
             OfflineContentProvider provider, DeleteController deleteController,
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
@@ -98,8 +99,8 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mListView = new DateOrderedListView(context, decoratedModel, dateOrderedListObserver);
-        mMediator = new DateOrderedListMediator(offTheRecord, provider, context::startActivity,
-                deleteController, selectionDelegate, dateOrderedListObserver, model);
+        mMediator = new DateOrderedListMediator(provider, context::startActivity, deleteController,
+                selectionDelegate, config, dateOrderedListObserver, model);
 
         mEmptyCoordinator =
                 new EmptyCoordinator(context, prefetchProvider, mMediator.getEmptySource());
