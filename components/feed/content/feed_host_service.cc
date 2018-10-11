@@ -9,20 +9,20 @@
 namespace feed {
 
 FeedHostService::FeedHostService(
+    std::unique_ptr<FeedLoggingMetrics> logging_metrics,
     std::unique_ptr<FeedImageManager> image_manager,
     std::unique_ptr<FeedNetworkingHost> networking_host,
     std::unique_ptr<FeedSchedulerHost> scheduler_host,
     std::unique_ptr<FeedContentDatabase> content_database,
     std::unique_ptr<FeedJournalDatabase> journal_database,
-    std::unique_ptr<FeedOfflineHost> offline_host,
-    std::unique_ptr<FeedLoggingMetrics> logging_metrics)
-    : image_manager_(std::move(image_manager)),
+    std::unique_ptr<FeedOfflineHost> offline_host)
+    : logging_metrics_(std::move(logging_metrics)),
+      image_manager_(std::move(image_manager)),
       networking_host_(std::move(networking_host)),
       scheduler_host_(std::move(scheduler_host)),
       content_database_(std::move(content_database)),
       journal_database_(std::move(journal_database)),
-      offline_host_(std::move(offline_host)),
-      logging_metrics_(std::move(logging_metrics)) {}
+      offline_host_(std::move(offline_host)) {}
 
 FeedHostService::~FeedHostService() = default;
 

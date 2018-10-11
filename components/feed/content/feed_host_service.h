@@ -26,24 +26,25 @@ namespace feed {
 // yet.
 class FeedHostService : public KeyedService {
  public:
-  FeedHostService(std::unique_ptr<FeedImageManager> image_manager,
+  FeedHostService(std::unique_ptr<FeedLoggingMetrics> logging_metrics,
+                  std::unique_ptr<FeedImageManager> image_manager,
                   std::unique_ptr<FeedNetworkingHost> networking_host,
                   std::unique_ptr<FeedSchedulerHost> scheduler_host,
                   std::unique_ptr<FeedContentDatabase> content_database,
                   std::unique_ptr<FeedJournalDatabase> journal_database,
-                  std::unique_ptr<FeedOfflineHost> offline_host,
-                  std::unique_ptr<FeedLoggingMetrics> logging_metrics);
+                  std::unique_ptr<FeedOfflineHost> offline_host);
   ~FeedHostService() override;
 
+  FeedLoggingMetrics* GetLoggingMetrics();
   FeedImageManager* GetImageManager();
   FeedNetworkingHost* GetNetworkingHost();
   FeedSchedulerHost* GetSchedulerHost();
   FeedContentDatabase* GetContentDatabase();
   FeedJournalDatabase* GetJournalDatabase();
   FeedOfflineHost* GetOfflineHost();
-  FeedLoggingMetrics* GetLoggingMetrics();
 
  private:
+  std::unique_ptr<FeedLoggingMetrics> logging_metrics_;
   std::unique_ptr<FeedImageManager> image_manager_;
   std::unique_ptr<FeedNetworkingHost> networking_host_;
   std::unique_ptr<FeedSchedulerHost> scheduler_host_;
@@ -53,8 +54,6 @@ class FeedHostService : public KeyedService {
   // Depends on the |scheduler_host_|, so must come after in this file to be
   // destroyed before the scheduler.
   std::unique_ptr<FeedOfflineHost> offline_host_;
-
-  std::unique_ptr<FeedLoggingMetrics> logging_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
 };

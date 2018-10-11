@@ -28,7 +28,7 @@ class FeedLoggingMetrics {
   // Calling this callback when need to check whether url is visited, and will
   // tell CheckURLVisitCallback the result.
   using HistoryURLCheckCallback =
-      base::RepeatingCallback<void(GURL, CheckURLVisitCallback)>;
+      base::RepeatingCallback<void(const GURL&, CheckURLVisitCallback)>;
 
   explicit FeedLoggingMetrics(HistoryURLCheckCallback callback);
   ~FeedLoggingMetrics();

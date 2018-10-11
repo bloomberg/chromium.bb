@@ -29,7 +29,7 @@ enum FeedActionType {
   DOWNLOAD = 5,
 };
 
-void CheckURLVisit(GURL url,
+void CheckURLVisit(const GURL& url,
                    FeedLoggingMetrics::CheckURLVisitCallback callback) {
   if (url == VISITED_URL) {
     std::move(callback).Run(true);
