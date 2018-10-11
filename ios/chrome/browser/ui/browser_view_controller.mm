@@ -243,8 +243,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/ui/app_rating_prompt.h"
 #include "ios/public/provider/chrome/browser/ui/default_ios_web_view_factory.h"
-#import "ios/public/provider/chrome/browser/voice/voice_search_bar.h"
-#import "ios/public/provider/chrome/browser/voice/voice_search_bar_owner.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
@@ -326,8 +324,6 @@ UIColor* StatusBarBackgroundColor() {
 
 // Duration of the toolbar animation.
 const NSTimeInterval kLegacyFullscreenControllerToolbarAnimationDuration = 0.3;
-
-const CGFloat kVoiceSearchBarHeight = 59.0;
 
 // Dimensions to use when downsizing an image for search-by-image.
 const CGFloat kSearchByImageMaxImageArea = 90000.0;
@@ -451,8 +447,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     ToolbarHeightProviderForFullscreen,
                                     UIGestureRecognizerDelegate,
                                     UpgradeCenterClient,
-                                    VoiceSearchBarDelegate,
-                                    VoiceSearchBarOwner,
                                     WebStatePrinter> {
   // The dependency factory passed on initialization.  Used to vend objects used
   // by the BVC.
@@ -537,11 +531,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Bridge class to deliver container change notifications to BVC.
   std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
-
-  // TODO(crbug.com/800266): Remove this object.
-  // Voice search bar at the bottom of the view overlayed on |contentArea|
-  // when displaying voice search results.
-  UIView<VoiceSearchBar>* _voiceSearchBar;
 
   // The image fetcher used to save images and perform image-based searches.
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> _imageFetcher;
@@ -656,8 +645,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether BVC prefers to hide the status bar. This value is used to determine
 // the response from the |prefersStatusBarHidden| method.
 @property(nonatomic, assign) BOOL hideStatusBar;
-// Whether the VoiceSearchBar should be displayed.
-@property(nonatomic, readonly) BOOL shouldShowVoiceSearchBar;
 // Coordinator for displaying a modal overlay with activity indicator to prevent
 // the user from interacting with the browser view.
 @property(nonatomic, strong)
@@ -880,8 +867,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // ------------
 // Lazily instantiates |_voiceSearchController|.
 - (void)ensureVoiceSearchControllerCreated;
-// Shows/hides the voice search bar.
-- (void)updateVoiceSearchBarVisibilityAnimated:(BOOL)animated;
 
 // Reading List
 // ------------
@@ -1277,17 +1262,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return _inNewTabAnimation;
 }
 
-- (BOOL)shouldShowVoiceSearchBar {
-  // On iPads, the voice search bar should only be shown for regular horizontal
-  // size class configurations.  It should always be shown for voice search
-  // results Tabs on iPhones, including configurations with regular horizontal
-  // size classes (i.e. landscape iPhone 6 Plus).
-  BOOL compactWidth = self.traitCollection.horizontalSizeClass ==
-                      UIUserInterfaceSizeClassCompact;
-  return self.tabModel.currentTab.isVoiceSearchResultsTab &&
-         (![self canShowTabStrip] || compactWidth);
-}
-
 - (void)setHideStatusBar:(BOOL)hideStatusBar {
   if (_hideStatusBar == hideStatusBar)
     return;
@@ -1522,7 +1496,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self ensureVoiceSearchControllerCreated];
 
   // Present voice search.
-  [_voiceSearchBar prepareToPresentVoiceSearch];
   _voiceSearchController->StartRecognition(self, [_model currentTab]);
   [self.dispatcher cancelOmniboxEdit];
 }
@@ -1852,8 +1825,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // view controller).
   [self.presentedViewController
       traitCollectionDidChange:previousTraitCollection];
-  // Update voice search bar visibility.
-  [self updateVoiceSearchBarVisibilityAnimated:NO];
   // Change the height of the secondary toolbar to show/hide it.
   self.secondaryToolbarHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
@@ -3045,22 +3016,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-- (void)updateVoiceSearchBarVisibilityAnimated:(BOOL)animated {
-  // Voice search bar exists and is shown/hidden.
-  BOOL show = self.shouldShowVoiceSearchBar;
-  if (_voiceSearchBar && _voiceSearchBar.hidden != show)
-    return;
-
-  // Voice search bar doesn't exist and thus is not visible.
-  if (!_voiceSearchBar && !show)
-    return;
-
-  if (animated)
-    [_voiceSearchBar animateToBecomeVisible:show];
-  else
-    _voiceSearchBar.hidden = !show;
-}
-
 #pragma mark - Private Methods: Reading List
 
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
@@ -3153,14 +3108,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return @[];
 
   NSMutableArray* overlays = [NSMutableArray array];
-  UIView* voiceSearchView = [self voiceSearchOverlayViewForTab:tab];
-  if (voiceSearchView) {
-    CGFloat voiceSearchYOffset = [self voiceSearchOverlayYOffsetForTab:tab];
-    SnapshotOverlay* voiceSearchOverlay =
-        [[SnapshotOverlay alloc] initWithView:voiceSearchView
-                                      yOffset:voiceSearchYOffset];
-    [overlays addObject:voiceSearchOverlay];
-  }
   UIView* infoBarView = [self infoBarOverlayViewForTab:tab];
   if (infoBarView) {
     CGFloat infoBarYOffset = [self infoBarOverlayYOffsetForTab:tab];
@@ -3249,27 +3196,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
          CGRectGetHeight(_downloadManagerCoordinator.viewController.view.frame);
 }
 
-// Provides a view that encompasses the voice search bar if it's displayed or
-// nil if the voice search bar isn't displayed.
-- (UIView*)voiceSearchOverlayViewForTab:(Tab*)tab {
-  Tab* currentTab = [_model currentTab];
-  if (tab && tab == currentTab && tab.isVoiceSearchResultsTab &&
-      _voiceSearchBar && ![_voiceSearchBar isHidden]) {
-    return _voiceSearchBar;
-  }
-  return nil;
-}
-
 // Returns a vertical voice search bar offset relative to the tab content.
 - (CGFloat)voiceSearchOverlayYOffsetForTab:(Tab*)tab {
-  if (tab != [_model currentTab] || [_voiceSearchBar isHidden]) {
+  if (tab != [_model currentTab]) {
     // There is no UI representation for non-current tabs or there is
     // no visible voice search. Return offset outside of tab.
     return CGRectGetMaxY(self.view.frame);
   } else {
     // The voice search bar on iPhone is displayed at the bottom of a tab.
     CGRect visibleFrame = [self visibleFrameForTab:_model.currentTab];
-    return CGRectGetMaxY(visibleFrame) - kVoiceSearchBarHeight;
+    return CGRectGetMaxY(visibleFrame);
   }
 }
 
@@ -4315,14 +4251,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   Tab* currentTab = [_model currentTab];
   DCHECK(currentTab);
-  BOOL wasVoiceSearchTab = currentTab.isVoiceSearchResultsTab;
   currentTab.navigationManager->LoadURLWithParams(params);
-  // When a Tab becomes a voice search Tab, the voice search bar doesn't need
-  // to be animated on screen because the transition animator will handle the
-  // animations.  When a Tab stops being a voice search Tab, the voice search
-  // bar should be animated away.
-  if (currentTab.isVoiceSearchResultsTab != wasVoiceSearchTab)
-    [self updateVoiceSearchBarVisibilityAnimated:wasVoiceSearchTab];
 }
 
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
@@ -4852,8 +4781,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // no language selector presented.
     [_languageSelectionCoordinator dismissLanguageSelector];
   }
-  [self updateVoiceSearchBarVisibilityAnimated:NO];
-
   self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
 
   [_paymentRequestManager setActiveWebState:newTab.webState];
@@ -4875,12 +4802,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
   if (tab == [_model currentTab]) {
     [self updateToolbar];
-  }
-}
-
-- (void)tabModel:(TabModel*)model didStartLoadingTab:(Tab*)tab {
-  if (tab == [_model currentTab]) {
-    [self updateVoiceSearchBarVisibilityAnimated:NO];
   }
 }
 
@@ -5232,7 +5153,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.contentArea.frame = sideSwipeView.frame;
 
   [self.view insertSubview:self.contentArea aboveSubview:_fakeStatusBarView];
-  [self updateVoiceSearchBarVisibilityAnimated:NO];
   [self updateToolbar];
 
   // Reset horizontal stack view.
@@ -5264,7 +5184,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)updateAccessoryViewsForSideSwipeWithVisibility:(BOOL)visible {
   if (visible) {
-    [self updateVoiceSearchBarVisibilityAnimated:NO];
     [self updateToolbar];
     [_infoBarContainer->view() setHidden:NO];
   } else {
@@ -5272,7 +5191,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // for welcome page.
     [self hideFindBarWithAnimation:NO];
     [_infoBarContainer->view() setHidden:YES];
-    [_voiceSearchBar setHidden:YES];
   }
 }
 
@@ -5389,45 +5307,9 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
   _rateThisAppDialog = nil;
 }
 
-#pragma mark - VoiceSearchBarOwner
-
-- (id<VoiceSearchBar>)voiceSearchBar {
-  return _voiceSearchBar;
-}
-
-#pragma mark - VoiceSearchBarDelegate
-
-- (BOOL)isTTSEnabledForVoiceSearchBar:(id<VoiceSearchBar>)voiceSearchBar {
-  DCHECK_EQ(_voiceSearchBar, voiceSearchBar);
-  [self ensureVoiceSearchControllerCreated];
-  return _voiceSearchController->IsTextToSpeechEnabled() &&
-         _voiceSearchController->IsTextToSpeechSupported();
-}
-
-- (void)voiceSearchBarDidUpdateButtonState:(id<VoiceSearchBar>)voiceSearchBar {
-  DCHECK_EQ(_voiceSearchBar, voiceSearchBar);
-  SnapshotTabHelper::FromWebState(self.tabModel.currentTab.webState)
-      ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
-}
-
 #pragma mark - LogoAnimationControllerOwnerOwner (Public)
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
-  return [self currentLogoAnimationControllerOwner];
-}
-
-#pragma mark - LogoAnimationControllerOwnerOwner helpers
-
-// The LogoAnimationControllerOwner to be used for the next logo transition
-// animation.
-- (id<LogoAnimationControllerOwner>)currentLogoAnimationControllerOwner {
-  Protocol* ownerProtocol = @protocol(LogoAnimationControllerOwner);
-  if ([_voiceSearchBar conformsToProtocol:ownerProtocol] &&
-      self.shouldShowVoiceSearchBar) {
-    // Use |_voiceSearchBar| for VoiceSearch results tab and dismissal
-    // animations.
-    return static_cast<id<LogoAnimationControllerOwner>>(_voiceSearchBar);
-  }
   id currentNativeController =
       [self nativeControllerForTab:self.tabModel.currentTab];
   Protocol* possibleOwnerProtocol =
