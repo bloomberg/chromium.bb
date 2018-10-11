@@ -560,11 +560,11 @@ TEST_F(ShellTest, KeyboardCreation) {
 
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
-  SessionObserver* shell = Shell::Get();
   EXPECT_FALSE(keyboard::KeyboardController::Get()->IsEnabled());
 
-  shell->OnSessionStateChanged(
-      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->state = session_manager::SessionState::LOGGED_IN_NOT_ACTIVE;
+  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
 
   EXPECT_TRUE(keyboard::KeyboardController::Get()->IsEnabled());
 }

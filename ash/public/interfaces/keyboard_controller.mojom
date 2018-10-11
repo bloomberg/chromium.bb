@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module keyboard.mojom;
+module ash.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/keyboard/public/keyboard_config.mojom";
@@ -17,7 +17,7 @@ interface KeyboardControllerObserver {
   OnKeyboardVisibilityChanged(bool visible);
 
   // Called when the virtual keyboard configuration changes.
-  OnKeyboardConfigChanged(KeyboardConfig config);
+  OnKeyboardConfigChanged(keyboard.mojom.KeyboardConfig config);
 
   // Called when the keyboard bounds change.
   OnKeyboardVisibleBoundsChanged(gfx.mojom.Rect new_bounds);
@@ -25,10 +25,10 @@ interface KeyboardControllerObserver {
 
 interface KeyboardController {
   // Retrieves the current keyboard configuration.
-  GetKeyboardConfig() => (KeyboardConfig config);
+  GetKeyboardConfig() => (keyboard.mojom.KeyboardConfig config);
 
   // Sets the current keyboard configuration.
-  SetKeyboardConfig(KeyboardConfig config);
+  SetKeyboardConfig(keyboard.mojom.KeyboardConfig config);
 
   // Adds a KeyboardControllerObserver.
   AddObserver(associated KeyboardControllerObserver observer);

@@ -34,6 +34,7 @@ mojom("interfaces_internal") {
     "highlighter_controller.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
+    "keyboard_controller.mojom",
     "kiosk_app_info.mojom",
     "locale.mojom",
     "login_screen.mojom",
@@ -81,6 +82,7 @@ mojom("interfaces_internal") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/range/mojo",
+    "//ui/keyboard:mojom",
     "//ui/message_center/public/mojo:mojo",
     "//url/mojom:url_mojom_gurl",
   ]

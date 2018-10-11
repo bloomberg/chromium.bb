@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_CONTROLLER_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_CONTROLLER_CLIENT_H_
 
+#include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/keyboard/public/keyboard_controller.mojom.h"
 
 // This class implements mojom::KeyboardControllerObserver and makes calls
 // into the mojom::KeyboardController service.
 class ChromeKeyboardControllerClient
-    : public keyboard::mojom::KeyboardControllerObserver {
+    : public ash::mojom::KeyboardControllerObserver {
  public:
   // Convenience observer allowing UI classes to observe the global instance of
   // this class instead of setting up mojo bindings.
@@ -54,8 +54,8 @@ class ChromeKeyboardControllerClient
   void OnKeyboardConfigChanged(
       keyboard::mojom::KeyboardConfigPtr config) override;
 
-  keyboard::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
-  mojo::AssociatedBinding<keyboard::mojom::KeyboardControllerObserver>
+  ash::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
+  mojo::AssociatedBinding<ash::mojom::KeyboardControllerObserver>
       keyboard_controller_observer_binding_{this};
 
   // Cached copy of the latest config provided by mojom::KeyboardController.

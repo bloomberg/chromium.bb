@@ -95,7 +95,7 @@ void ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig(
     cached_keyboard_config_ = std::move(config);
 
   // Add this as a KeyboardController observer now that the service is ready.
-  keyboard::mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
+  ash::mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
   keyboard_controller_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
   keyboard_controller_ptr_->AddObserver(std::move(ptr_info));
 }

@@ -72,9 +72,6 @@ class ASH_EXPORT ShellObserver {
   // Called when dicatation is ended.
   virtual void OnDictationEnded() {}
 
-  // Called when a new KeyboardController is created.
-  virtual void OnKeyboardControllerCreated() {}
-
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
 

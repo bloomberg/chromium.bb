@@ -55,6 +55,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_focus_handler.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
@@ -198,10 +199,6 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_switches.h"
-#include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -473,42 +470,13 @@ void Shell::OnDictationEnded() {
 }
 
 void Shell::EnableKeyboard() {
-  if (!keyboard::IsKeyboardEnabled())
-    return;
-
-  if (keyboard_controller_->IsEnabled()) {
-    // Disable and re-enable the keyboard, as some callers expect the keyboard
-    // to be reloaded.
-    // TODO(https://crbug.com/731537): Add a separate function for reloading the
-    // keyboard.
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
-  }
-
-  // TODO(crbug.com/646565): The keyboard UI uses a WebContents that is
-  // created by chrome code but parented to an ash-created container window.
-  // See ChromeKeyboardUI and keyboard::KeyboardController. This needs to be
-  // fixed for both SingleProcessMash and MultiProcessMash.
-  if (::features::IsUsingWindowService())
-    return;
-
-  auto keyboard_ui = shell_delegate_->CreateKeyboardUI();
-  DCHECK(keyboard_ui);
-  keyboard_controller_->EnableKeyboard(std::move(keyboard_ui),
-                                       virtual_keyboard_controller_.get());
-  for (auto& observer : shell_observers_)
-    observer.OnKeyboardControllerCreated();
-  GetPrimaryRootWindowController()->ActivateKeyboard(
-      keyboard_controller_.get());
+  // The keyboard controller is persistent; this will create or recreate the
+  // keyboard window as necessary.
+  ash_keyboard_controller_->EnableKeyboard();
 }
 
 void Shell::DisableKeyboard() {
-  if (keyboard_controller_->IsEnabled()) {
-    for (auto* const controller : GetAllRootWindowControllers())
-      controller->DeactivateKeyboard(keyboard_controller_.get());
-  }
-
-  keyboard_controller_->DisableKeyboard();
+  ash_keyboard_controller_->DisableKeyboard();
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
@@ -710,7 +678,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
-      keyboard_controller_(std::make_unique<keyboard::KeyboardController>()),
       locale_notification_controller_(
           std::make_unique<LocaleNotificationController>()),
       login_screen_controller_(std::make_unique<LoginScreenController>()),
@@ -733,6 +700,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
+  ash_keyboard_controller_ =
+      std::make_unique<AshKeyboardController>(session_controller_.get());
 
   if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
     tray_bluetooth_helper_ =
@@ -958,6 +927,8 @@ Shell::~Shell() {
     display_configurator_->RemoveObserver(display_error_observer_.get());
   display_change_observer_.reset();
   display_shutdown_observer_.reset();
+
+  ash_keyboard_controller_.reset();
 
   PowerStatus::Shutdown();
   // Depends on SessionController.
@@ -1471,31 +1442,6 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // Disable drag-and-drop during OOBE and GAIA login screens by only enabling
   // the controller when the session is active. https://crbug.com/464118
   drag_drop_controller_->set_enabled(is_session_active);
-
-  // NOTE: keyboard::IsKeyboardEnabled() is false in mash, but may not be in
-  // unit tests. crbug.com/646565.
-  if (keyboard::IsKeyboardEnabled()) {
-    switch (state) {
-      case session_manager::SessionState::OOBE:
-      case session_manager::SessionState::LOGIN_PRIMARY:
-        // Ensure that the keyboard controller is activated for the primary
-        // window.
-        GetPrimaryRootWindowController()->ActivateKeyboard(
-            keyboard_controller_.get());
-        break;
-      case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-      case session_manager::SessionState::ACTIVE:
-        // Reload the keyboard on user profile change to refresh keyboard
-        // extensions with the new profile and ensure the extensions call the
-        // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
-        // keyboard works on supervised user creation, http://crbug.com/712873.
-        // |ACTIVE| is also needed for guest user workflow.
-        EnableKeyboard();
-        break;
-      default:
-        break;
-    }
-  }
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {

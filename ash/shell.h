@@ -51,10 +51,6 @@ class Insets;
 class Point;
 }
 
-namespace keyboard {
-class KeyboardController;
-}  // namespace keyboard
-
 namespace service_manager {
 class Connector;
 }
@@ -134,6 +130,7 @@ class ImmersiveContext;
 class ImmersiveHandlerFactoryAsh;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
+class AshKeyboardController;
 class LaserPointerController;
 class LocaleNotificationController;
 class LockStateController;
@@ -421,8 +418,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
   }
-  keyboard::KeyboardController* keyboard_controller() {
-    return keyboard_controller_.get();
+  AshKeyboardController* ash_keyboard_controller() {
+    return ash_keyboard_controller_.get();
   }
   LaserPointerController* laser_pointer_controller() {
     return laser_pointer_controller_.get();
@@ -754,7 +751,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
-  std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
@@ -847,6 +843,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       bluetooth_notification_controller_;
   std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
+  std::unique_ptr<AshKeyboardController> ash_keyboard_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   // Controls video output device state.
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;

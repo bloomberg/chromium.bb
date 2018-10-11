@@ -26,6 +26,7 @@
           "ash.mojom.FirstRunHelper",
           "ash.mojom.HighlighterController",
           "ash.mojom.ImeController",
+          "ash.mojom.KeyboardController",
           "ash.mojom.LocaleNotificationController",
           "ash.mojom.LoginScreen",
           "ash.mojom.MediaController",
