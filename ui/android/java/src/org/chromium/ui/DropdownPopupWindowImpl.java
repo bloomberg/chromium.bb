@@ -82,12 +82,14 @@ class DropdownPopupWindowImpl
 
         ViewRectProvider rectProvider = new ViewRectProvider(mAnchorView);
         rectProvider.setIncludePadding(true);
-        mBackground = ApiCompatibilityUtils.getDrawable(
-                context.getResources(), R.drawable.dropdown_popup_background);
+        mBackground =
+                ApiCompatibilityUtils.getDrawable(context.getResources(), R.drawable.popup_bg);
         mAnchoredPopupWindow = new AnchoredPopupWindow(
                 context, mAnchorView, mBackground, mContentView, rectProvider);
         mAnchoredPopupWindow.addOnDismissListener(onDismissLitener);
         mAnchoredPopupWindow.setLayoutObserver(this);
+        mAnchoredPopupWindow.setElevation(
+                context.getResources().getDimensionPixelSize(R.dimen.dropdown_elevation));
         Rect paddingRect = new Rect();
         mBackground.getPadding(paddingRect);
         rectProvider.setInsetPx(0, /* top= */ paddingRect.bottom, 0, /* bottom= */ paddingRect.top);
@@ -115,11 +117,8 @@ class DropdownPopupWindowImpl
     public void onPreLayoutChange(
             boolean positionBelow, int x, int y, int width, int height, Rect anchorRect) {
         mBackground.setBounds(anchorRect);
-        mAnchoredPopupWindow.setBackgroundDrawable(positionBelow
-                        ? ApiCompatibilityUtils.getDrawable(mContext.getResources(),
-                                  R.drawable.dropdown_popup_background_down)
-                        : ApiCompatibilityUtils.getDrawable(mContext.getResources(),
-                                  R.drawable.dropdown_popup_background_up));
+        mAnchoredPopupWindow.setBackgroundDrawable(
+                ApiCompatibilityUtils.getDrawable(mContext.getResources(), R.drawable.popup_bg));
     }
 
     /**

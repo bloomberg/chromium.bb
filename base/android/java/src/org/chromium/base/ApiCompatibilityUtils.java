@@ -46,6 +46,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodSubtype;
 import android.view.textclassifier.TextClassifier;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import java.io.File;
@@ -322,6 +323,17 @@ public class ApiCompatibilityUtils {
         if (!isElevationSupported()) return false;
 
         view.setElevation(elevationValue);
+        return true;
+    }
+
+    /**
+     * Set elevation if supported.
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean setElevation(PopupWindow window, float elevationValue) {
+        if (!isElevationSupported()) return false;
+
+        window.setElevation(elevationValue);
         return true;
     }
 
