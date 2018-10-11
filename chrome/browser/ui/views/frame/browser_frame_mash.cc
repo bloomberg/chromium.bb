@@ -56,11 +56,11 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                            &params.bounds, &params.show_state);
   params.delegate = browser_view_;
-  std::map<std::string, std::vector<uint8_t>> properties =
-      views::MusClient::ConfigurePropertiesFromParams(params);
-
   // The client will draw the frame.
   params.remove_standard_frame = true;
+
+  std::map<std::string, std::vector<uint8_t>> properties =
+      views::MusClient::ConfigurePropertiesFromParams(params);
 
   // ChromeLauncherController manages the browser shortcut shelf item; set the
   // window's shelf item type property to be ignored by ash::ShelfWindowWatcher.
