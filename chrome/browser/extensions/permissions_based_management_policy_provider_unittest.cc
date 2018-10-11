@@ -34,9 +34,9 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
       PrefUpdater;
 
   PermissionsBasedManagementPolicyProviderTest()
-      : profile_(new TestingProfile()),
+      : profile_(std::make_unique<TestingProfile>()),
         pref_service_(profile_->GetTestingPrefService()),
-        settings_(new ExtensionManagement(profile_.get())),
+        settings_(std::make_unique<ExtensionManagement>(profile_.get())),
         provider_(settings_.get()) {}
 
   void SetUp() override {}

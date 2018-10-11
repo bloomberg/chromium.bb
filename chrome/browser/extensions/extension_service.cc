@@ -46,6 +46,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/external_install_manager.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -218,6 +219,9 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
             info.extension_id) &&
         current == Manifest::GetHigherPriorityLocation(
                        current, info.download_location)) {
+      InstallationFailures::ReportFailure(
+          profile_, info.extension_id,
+          InstallationFailures::Reason::ALREADY_INSTALLED);
       return false;
     }
     // Otherwise, overwrite the current installation.
@@ -294,7 +298,7 @@ ExtensionService::ExtensionService(Profile* profile,
       shared_module_service_(new SharedModuleService(profile_)),
       app_data_migrator_(new AppDataMigrator(profile_, registry_)),
       extension_registrar_(profile_, this),
-      forced_extensions_tracker_(registry_, profile_->GetPrefs()) {
+      forced_extensions_tracker_(registry_, profile_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
 

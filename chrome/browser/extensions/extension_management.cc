@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
 #include "chrome/browser/extensions/permissions_based_management_policy_provider.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -431,6 +432,9 @@ void ExtensionManagement::Refresh() {
         if (!by_id->Parse(subdict,
                           internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
           settings_by_id_.erase(extension_id);
+          InstallationFailures::ReportFailure(
+              profile_, extension_id,
+              InstallationFailures::Reason::MALFORMED_EXTENSION_SETTINGS);
           LOG(WARNING) << "Malformed Extension Management settings for "
                        << extension_id << ".";
         }
@@ -487,8 +491,11 @@ void ExtensionManagement::UpdateForcedExtensions(
   std::string update_url;
   for (base::DictionaryValue::Iterator it(*extension_dict); !it.IsAtEnd();
        it.Advance()) {
-    if (!crx_file::id_util::IdIsValid(it.key()))
+    if (!crx_file::id_util::IdIsValid(it.key())) {
+      InstallationFailures::ReportFailure(
+          profile_, it.key(), InstallationFailures::Reason::INVALID_ID);
       continue;
+    }
     const base::DictionaryValue* dict_value = nullptr;
     if (it.value().GetAsDictionary(&dict_value) &&
         dict_value->GetStringWithoutPathExpansion(

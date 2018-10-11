@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -22,7 +21,7 @@ namespace extensions {
 class StandardManagementPolicyProviderTest : public testing::Test {
  public:
   StandardManagementPolicyProviderTest()
-      : settings_(new ExtensionManagement(&profile_)),
+      : settings_(std::make_unique<ExtensionManagement>(&profile_)),
         provider_(settings_.get()) {}
 
  protected:

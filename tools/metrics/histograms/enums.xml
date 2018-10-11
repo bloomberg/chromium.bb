@@ -17028,6 +17028,27 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="OVERFLOWED"/>
 </enum>
 
+<enum name="ExtensionInstallationFailureReason">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="INVALID_ID"/>
+  <int value="2" label="MALFORMED_EXTENSION_SETTINGS"/>
+  <int value="3" label="REPLACED_BY_ARC_APP"/>
+  <int value="4" label="MALFORMED_EXTENSION_DICT"/>
+  <int value="5" label="NOT_SUPPORTED_EXTENSION_DICT"/>
+  <int value="6" label="MALFORMED_EXTENSION_DICT_FILE_PATH"/>
+  <int value="7" label="MALFORMED_EXTENSION_DICT_VERSION"/>
+  <int value="8" label="MALFORMED_EXTENSION_DICT_UPDATE_URL"/>
+  <int value="9" label="LOCALE_NOT_SUPPORTED"/>
+  <int value="10" label="NOT_PERFORMING_NEW_INSTALL"/>
+  <int value="11" label="TOO_OLD_PROFILE"/>
+  <int value="12" label="DO_NOT_INSTALL_FOR_ENTERPRISE"/>
+  <int value="13" label="ALREADY_INSTALLED"/>
+  <int value="14" label="CRX_FETCH_FAILED"/>
+  <int value="15" label="MANIFEST_FETCH_FAILED"/>
+  <int value="16" label="MANIFEST_INVALID"/>
+  <int value="17" label="NO_UPDATE"/>
+</enum>
+
 <enum name="ExtensionInstallCause">
   <int value="0" label="INSTALL_CAUSE_UNSET"/>
   <int value="1" label="INSTALL_CAUSE_USER_DOWNLOAD"/>
