@@ -872,6 +872,17 @@ var ENTRIES = {
     },
   }),
 
+  documentsText: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'Documents/android.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'android.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+  }),
+
   neverSync: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
