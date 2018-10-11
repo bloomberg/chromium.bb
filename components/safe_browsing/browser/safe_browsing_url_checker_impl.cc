@@ -305,7 +305,7 @@ void SafeBrowsingUrlCheckerImpl::BlockAndProcessUrls(bool showed_interstitial) {
 
   // If user decided to not proceed through a warning, mark all the remaining
   // redirects as "bad".
-  for (; next_index_ < urls_.size(); ++next_index_) {
+  while (next_index_ < urls_.size()) {
     if (!RunNextCallback(false, showed_interstitial))
       return;
   }
