@@ -107,7 +107,7 @@ ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
       parent_execution_context ? parent_execution_context->GetScheduler()
                                : nullptr;
   worker_backing_thread_ =
-      WorkerBackingThread::Create(WebThreadCreationParams(GetThreadType())
+      WorkerBackingThread::Create(ThreadCreationParams(GetThreadType())
                                       .SetFrameOrWorkerScheduler(scheduler));
 }
 

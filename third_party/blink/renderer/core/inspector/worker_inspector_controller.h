@@ -53,7 +53,7 @@ class WorkerInspectorController final
     : public GarbageCollectedFinalized<WorkerInspectorController>,
       public TraceEvent::EnabledStateObserver,
       public InspectorSession::Client,
-      private WebThread::TaskObserver {
+      private Thread::TaskObserver {
  public:
   static WorkerInspectorController* Create(WorkerThread*);
   ~WorkerInspectorController() override;
@@ -81,7 +81,7 @@ class WorkerInspectorController final
       const String& message,
       mojom::blink::DevToolsSessionStatePtr updates) override;
 
-  // WebThread::TaskObserver implementation.
+  // Thread::TaskObserver implementation.
   void WillProcessTask() override;
   void DidProcessTask() override;
 

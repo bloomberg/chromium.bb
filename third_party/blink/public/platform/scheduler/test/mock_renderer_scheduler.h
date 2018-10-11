@@ -22,7 +22,7 @@ class MockRendererScheduler : public WebThreadScheduler {
   MockRendererScheduler() = default;
   ~MockRendererScheduler() override = default;
 
-  MOCK_METHOD0(CreateMainThread, std::unique_ptr<blink::WebThread>());
+  MOCK_METHOD0(CreateMainThread, std::unique_ptr<Thread>());
   MOCK_METHOD0(DefaultTaskRunner,
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(CompositorTaskRunner,

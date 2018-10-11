@@ -77,7 +77,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   std::unique_ptr<scheduler::MainThreadSchedulerImpl> scheduler_;
   base::sequence_manager::SequenceManager*
       sequence_manager_;  // Owned by scheduler_.
-  std::unique_ptr<WebThread> thread_;
+  std::unique_ptr<Thread> thread_;
 };
 
 }  // namespace blink

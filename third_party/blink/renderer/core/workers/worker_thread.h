@@ -78,7 +78,7 @@ struct GlobalScopeCreationParams;
 //    If the running task is for debugger, it's guaranteed to finish without
 //    any interruptions.
 //  - Queued tasks never run.
-class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
+class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
  public:
   // Represents how this thread is terminated. Used for UMA. Append only.
   enum class ExitCode {
@@ -139,7 +139,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // WARNING: This is not safe if a nested worker is running.
   static void TerminateAllWorkersForTesting();
 
-  // WebThread::TaskObserver.
+  // Thread::TaskObserver.
   void WillProcessTask() override;
   void DidProcessTask() override;
 

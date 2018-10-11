@@ -44,11 +44,11 @@ class CORE_EXPORT ScriptStreamerThread {
 
   bool IsRunning() const { return !!thread_; }
 
-  WebThread& PlatformThread();
+  Thread& PlatformThread();
 
   // At the moment, we only use one thread, so we can only stream one script
   // at a time. FIXME: Use a thread pool and stream multiple scripts.
-  std::unique_ptr<WebThread> thread_;
+  std::unique_ptr<Thread> thread_;
   bool running_task_;
   mutable Mutex mutex_;  // Guards m_runningTask.
 

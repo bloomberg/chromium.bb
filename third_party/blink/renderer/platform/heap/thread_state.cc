@@ -222,7 +222,7 @@ void ThreadState::AttachMainThread() {
   new (main_thread_state_storage_) ThreadState();
 
   // PpapiThread doesn't set the current thread.
-  WebThread* current_thread = Platform::Current()->CurrentThread();
+  Thread* current_thread = Platform::Current()->CurrentThread();
   if (current_thread) {
     ThreadScheduler* scheduler = current_thread->Scheduler();
     // Some binaries do not have a scheduler (e.g.

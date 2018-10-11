@@ -93,7 +93,7 @@ class PLATFORM_EXPORT ReverbConvolver {
   size_t max_realtime_fft_size_;
 
   // Background thread and synchronization
-  std::unique_ptr<WebThread> background_thread_;
+  std::unique_ptr<Thread> background_thread_;
 };
 
 }  // namespace blink

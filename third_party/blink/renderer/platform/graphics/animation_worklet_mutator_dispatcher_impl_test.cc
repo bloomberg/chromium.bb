@@ -29,9 +29,9 @@ using ::testing::Truly;
 namespace blink {
 namespace {
 
-std::unique_ptr<WebThread> CreateThread(const char* name) {
+std::unique_ptr<Thread> CreateThread(const char* name) {
   return Platform::Current()->CreateThread(
-      WebThreadCreationParams(WebThreadType::kTestThread)
+      ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest(name));
 }
 
@@ -114,7 +114,7 @@ bool OnlyIncludesAnimation1(const AnimationWorkletInput& in) {
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        RegisteredAnimatorShouldOnlyReceiveInputForItself) {
-  std::unique_ptr<WebThread> first_thread = CreateThread("FirstThread");
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
   MockAnimationWorkletMutator* first_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
@@ -133,7 +133,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        RegisteredAnimatorShouldNotBeMutatedWhenNoInput) {
-  std::unique_ptr<WebThread> first_thread = CreateThread("FirstThread");
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstThread");
   MockAnimationWorkletMutator* first_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
@@ -165,8 +165,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateIsNotInvokedWithNullOutput) {
   // Create a thread to run mutator tasks.
-  std::unique_ptr<WebThread> first_thread =
-      CreateThread("FirstAnimationThread");
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
@@ -182,8 +181,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateIsInvokedCorrectlyWithSingleRegisteredAnimator) {
   // Create a thread to run mutator tasks.
-  std::unique_ptr<WebThread> first_thread =
-      CreateThread("FirstAnimationThread");
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
@@ -212,8 +210,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
 TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnSameThread) {
-  std::unique_ptr<WebThread> first_thread =
-      CreateThread("FirstAnimationThread");
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
@@ -242,14 +239,12 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 TEST_F(
     AnimationWorkletMutatorDispatcherImplTest,
     MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnDifferentThreads) {
-  std::unique_ptr<WebThread> first_thread =
-      CreateThread("FirstAnimationThread");
+  std::unique_ptr<Thread> first_thread = CreateThread("FirstAnimationThread");
   MockAnimationWorkletMutator* first_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
-  std::unique_ptr<WebThread> second_thread =
-      CreateThread("SecondAnimationThread");
+  std::unique_ptr<Thread> second_thread = CreateThread("SecondAnimationThread");
   MockAnimationWorkletMutator* second_mutator =
       new ::testing::StrictMock<MockAnimationWorkletMutator>(
           second_thread->GetTaskRunner());

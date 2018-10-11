@@ -24,7 +24,7 @@ class WorkletThreadHolder {
     return thread_holder_instance_;
   }
 
-  static void EnsureInstance(const WebThreadCreationParams& params) {
+  static void EnsureInstance(const ThreadCreationParams& params) {
     DCHECK(IsMainThread());
     MutexLocker locker(HolderInstanceMutex());
     if (thread_holder_instance_)

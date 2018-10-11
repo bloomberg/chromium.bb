@@ -58,7 +58,7 @@ class PLATFORM_EXPORT ThreadScheduler {
   // tasks which may be reordered relative to other task types and may be
   // starved for an arbitrarily long time if no idle time is available.
   // Takes ownership of |IdleTask|. Can be called from any thread.
-  virtual void PostIdleTask(const base::Location&, WebThread::IdleTask) = 0;
+  virtual void PostIdleTask(const base::Location&, Thread::IdleTask) = 0;
 
   // Like postIdleTask but guarantees that the posted task will not run
   // nested within an already-running task. Posting an idle task as
@@ -66,7 +66,7 @@ class PLATFORM_EXPORT ThreadScheduler {
   // make it run later than it normally would, but it won't make it
   // run earlier than it normally would.
   virtual void PostNonNestableIdleTask(const base::Location&,
-                                       WebThread::IdleTask) = 0;
+                                       Thread::IdleTask) = 0;
 
   virtual void AddRAILModeObserver(
       scheduler::WebRAILModeObserver* observer) = 0;

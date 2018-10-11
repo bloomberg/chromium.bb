@@ -145,7 +145,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 
   // The rendering thread for the non-AudioWorklet mode. For the AudioWorklet
   // node, AudioWorkletThread will drive the rendering.
-  std::unique_ptr<WebThread> render_thread_;
+  std::unique_ptr<Thread> render_thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

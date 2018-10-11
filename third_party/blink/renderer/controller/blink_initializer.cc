@@ -65,7 +65,7 @@ namespace blink {
 
 namespace {
 
-class EndOfTaskRunner : public WebThread::TaskObserver {
+class EndOfTaskRunner : public Thread::TaskObserver {
  public:
   void WillProcessTask() override { AnimationClock::NotifyTaskStart(); }
   void DidProcessTask() override {
@@ -74,7 +74,7 @@ class EndOfTaskRunner : public WebThread::TaskObserver {
   }
 };
 
-WebThread::TaskObserver* g_end_of_task_runner = nullptr;
+Thread::TaskObserver* g_end_of_task_runner = nullptr;
 
 BlinkInitializer& GetBlinkInitializer() {
   DEFINE_STATIC_LOCAL(std::unique_ptr<BlinkInitializer>, initializer,
@@ -122,13 +122,13 @@ void InitializeCommon(Platform* platform,
   GetBlinkInitializer().RegisterInterfaces(*registry);
 
   // currentThread is null if we are running on a thread without a message loop.
-  if (WebThread* current_thread = platform->CurrentThread()) {
+  if (Thread* current_thread = platform->CurrentThread()) {
     DCHECK(!g_end_of_task_runner);
     g_end_of_task_runner = new EndOfTaskRunner;
     current_thread->AddTaskObserver(g_end_of_task_runner);
   }
 
-  if (WebThread* main_thread = Platform::Current()->MainThread()) {
+  if (Thread* main_thread = Platform::Current()->MainThread()) {
     scoped_refptr<base::SequencedTaskRunner> task_runner =
         main_thread->GetTaskRunner();
     if (task_runner)
@@ -156,7 +156,7 @@ void CreateMainThreadAndInitialize(Platform* platform,
 void BlinkInitializer::RegisterInterfaces(
     service_manager::BinderRegistry& registry) {
   ModulesInitializer::RegisterInterfaces(registry);
-  WebThread* main_thread = Platform::Current()->MainThread();
+  Thread* main_thread = Platform::Current()->MainThread();
   // GetSingleThreadTaskRunner() uses GetTaskRunner() internally.
   // crbug.com/781664
   if (!main_thread || !main_thread->GetTaskRunner())

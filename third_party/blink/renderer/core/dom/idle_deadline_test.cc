@@ -27,9 +27,9 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
   bool CanExceedIdleDeadlineIfRequired() const override { return false; }
-  void PostIdleTask(const base::Location&, WebThread::IdleTask) override {}
+  void PostIdleTask(const base::Location&, Thread::IdleTask) override {}
   void PostNonNestableIdleTask(const base::Location&,
-                               WebThread::IdleTask) override {}
+                               Thread::IdleTask) override {}
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override {
     return nullptr;

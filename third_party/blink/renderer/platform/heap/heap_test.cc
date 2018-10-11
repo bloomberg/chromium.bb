@@ -490,10 +490,10 @@ int OffHeapInt::destructor_calls_ = 0;
 class ThreadedTesterBase {
  protected:
   static void Test(ThreadedTesterBase* tester) {
-    Vector<std::unique_ptr<WebThread>, kNumberOfThreads> threads;
+    Vector<std::unique_ptr<Thread>, kNumberOfThreads> threads;
     for (int i = 0; i < kNumberOfThreads; i++) {
       threads.push_back(Platform::Current()->CreateThread(
-          WebThreadCreationParams(WebThreadType::kTestThread)
+          ThreadCreationParams(WebThreadType::kTestThread)
               .SetThreadNameForTest("blink gc testing thread")));
       PostCrossThreadTask(
           *threads.back()->GetTaskRunner(), FROM_HERE,
@@ -5447,10 +5447,9 @@ class ThreadedStrongificationTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread =
-        Platform::Current()->CreateThread(
-            WebThreadCreationParams(WebThreadType::kTestThread)
-                .SetThreadNameForTest("Test Worker Thread"));
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
     PostCrossThreadTask(*worker_thread->GetTaskRunner(), FROM_HERE,
                         CrossThreadBind(WorkerThreadMain));
 
@@ -5548,10 +5547,9 @@ class MemberSameThreadCheckTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread =
-        Platform::Current()->CreateThread(
-            WebThreadCreationParams(WebThreadType::kTestThread)
-                .SetThreadNameForTest("Test Worker Thread"));
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
     PostCrossThreadTask(
         *worker_thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&MemberSameThreadCheckTester::WorkerThreadMain,
@@ -5593,10 +5591,9 @@ class PersistentSameThreadCheckTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread =
-        Platform::Current()->CreateThread(
-            WebThreadCreationParams(WebThreadType::kTestThread)
-                .SetThreadNameForTest("Test Worker Thread"));
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
     PostCrossThreadTask(
         *worker_thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&PersistentSameThreadCheckTester::WorkerThreadMain,
@@ -5638,10 +5635,9 @@ class MarkingSameThreadCheckTester {
     IntWrapper::destructor_calls_ = 0;
 
     MutexLocker locker(MainThreadMutex());
-    std::unique_ptr<WebThread> worker_thread =
-        Platform::Current()->CreateThread(
-            WebThreadCreationParams(WebThreadType::kTestThread)
-                .SetThreadNameForTest("Test Worker Thread"));
+    std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+        ThreadCreationParams(WebThreadType::kTestThread)
+            .SetThreadNameForTest("Test Worker Thread"));
     Persistent<MainThreadObject> main_thread_object = new MainThreadObject();
     PostCrossThreadTask(
         *worker_thread->GetTaskRunner(), FROM_HERE,
@@ -6435,8 +6431,8 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
   // Step 1: Initiate a worker thread, and wait for |object| to get allocated on
   // the worker thread.
   MutexLocker main_thread_mutex_locker(MainThreadMutex());
-  std::unique_ptr<WebThread> worker_thread = Platform::Current()->CreateThread(
-      WebThreadCreationParams(WebThreadType::kTestThread)
+  std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
+      ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest("Test Worker Thread"));
   DestructorLockingObject* object = nullptr;
   PostCrossThreadTask(

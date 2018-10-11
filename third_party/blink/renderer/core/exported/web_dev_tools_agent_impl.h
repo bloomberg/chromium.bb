@@ -59,7 +59,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       public DevToolsAgent::Client,
       public InspectorPageAgent::Client,
       public InspectorLayerTreeAgent::Client,
-      private WebThread::TaskObserver {
+      private Thread::TaskObserver {
  public:
   class WorkerClient {
    public:
@@ -107,7 +107,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   // InspectorLayerTreeAgent::Client implementation.
   bool IsInspectorLayer(GraphicsLayer*) override;
 
-  // WebThread::TaskObserver implementation.
+  // Thread::TaskObserver implementation.
   void WillProcessTask() override;
   void DidProcessTask() override;
 

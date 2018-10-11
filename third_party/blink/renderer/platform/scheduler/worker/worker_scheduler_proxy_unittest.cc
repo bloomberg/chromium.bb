@@ -51,7 +51,7 @@ class WebThreadImplForWorkerSchedulerForTest
   WebThreadImplForWorkerSchedulerForTest(FrameScheduler* frame_scheduler,
                                          WaitableEvent* throtting_state_changed)
       : WebThreadImplForWorkerScheduler(
-            WebThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(WebThreadType::kTestThread)
                 .SetFrameOrWorkerScheduler(frame_scheduler)),
         throtting_state_changed_(throtting_state_changed) {}
 

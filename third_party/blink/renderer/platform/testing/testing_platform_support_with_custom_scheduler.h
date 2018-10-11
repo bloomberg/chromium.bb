@@ -27,7 +27,7 @@ class TestingPlatformSupportWithCustomScheduler
   ~TestingPlatformSupportWithCustomScheduler() override;
 
  private:
-  std::unique_ptr<WebThread> thread_;
+  std::unique_ptr<Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPlatformSupportWithCustomScheduler);
 };

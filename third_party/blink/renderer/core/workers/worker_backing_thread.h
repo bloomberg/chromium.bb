@@ -27,7 +27,7 @@ struct WorkerBackingThreadStartupData;
 class CORE_EXPORT WorkerBackingThread final {
  public:
   static std::unique_ptr<WorkerBackingThread> Create(
-      const WebThreadCreationParams& params) {
+      const ThreadCreationParams& params) {
     return base::WrapUnique(new WorkerBackingThread(params));
   }
 
@@ -53,7 +53,7 @@ class CORE_EXPORT WorkerBackingThread final {
   static void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode);
 
  private:
-  explicit WorkerBackingThread(const WebThreadCreationParams&);
+  explicit WorkerBackingThread(const ThreadCreationParams&);
 
   std::unique_ptr<WebThreadSupportingGC> backing_thread_;
   v8::Isolate* isolate_ = nullptr;

@@ -123,12 +123,6 @@ class PLATFORM_EXPORT Thread {
   virtual bool IsSimpleMainThread() const { return false; }
 };
 
-// Temporary aliases while we rename those classes in Blink.
-//
-// TODO(yutak): Rename all the occurrences and remove the aliases.
-using WebThreadCreationParams = ThreadCreationParams;
-using WebThread = Thread;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_THREAD_H_

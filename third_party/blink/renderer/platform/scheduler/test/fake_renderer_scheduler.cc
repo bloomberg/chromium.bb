@@ -17,7 +17,7 @@ FakeRendererScheduler::FakeRendererScheduler() = default;
 
 FakeRendererScheduler::~FakeRendererScheduler() = default;
 
-std::unique_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
+std::unique_ptr<Thread> FakeRendererScheduler::CreateMainThread() {
   return nullptr;
 }
 
