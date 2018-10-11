@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_list_view.h"
+#include "ash/system/message_center/message_list_view.h"
 
-#include "ash/message_center/message_center_style.h"
-#include "ash/message_center/message_center_view.h"
-#include "ash/message_center/slidable_message_view.h"
+#include "ash/system/message_center/message_center_style.h"
+#include "ash/system/message_center/message_center_view.h"
+#include "ash/system/message_center/slidable_message_view.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

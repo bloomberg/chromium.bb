@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/ash_message_center_lock_screen_controller.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"

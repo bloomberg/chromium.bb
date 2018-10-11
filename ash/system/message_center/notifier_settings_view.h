@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
-#define ASH_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
 
 #include <memory>
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/message_center/message_center_controller.h"
+#include "ash/system/message_center/message_center_controller.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -107,4 +107,4 @@ class ASH_EXPORT NotifierSettingsView
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_

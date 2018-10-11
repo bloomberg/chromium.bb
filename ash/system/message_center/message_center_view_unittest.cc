@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_center_view.h"
+#include "ash/system/message_center/message_center_view.h"
 
 #include <map>
 #include <memory>
 #include <utility>
 
-#include "ash/message_center/ash_message_center_lock_screen_controller.h"
-#include "ash/message_center/message_center_button_bar.h"
-#include "ash/message_center/message_center_style.h"
-#include "ash/message_center/message_list_view.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
+#include "ash/system/message_center/message_center_button_bar.h"
+#include "ash/system/message_center/message_center_style.h"
+#include "ash/system/message_center/message_list_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/logging.h"
 #include "base/macros.h"

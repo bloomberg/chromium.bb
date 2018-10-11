@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
 
 namespace ash {
 
@@ -36,4 +36,4 @@ class MessageCenterUiDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_UI_DELEGATE_H_

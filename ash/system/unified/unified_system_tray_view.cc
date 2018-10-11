@@ -4,11 +4,11 @@
 
 #include "ash/system/unified/unified_system_tray_view.h"
 
-#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/new_unified_message_center_view.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"

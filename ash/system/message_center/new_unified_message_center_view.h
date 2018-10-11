@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_NEW_UNIFIED_MESSAGE_CENTER_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_list_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"

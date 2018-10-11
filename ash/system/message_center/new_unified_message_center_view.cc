@@ -4,10 +4,10 @@
 
 #include "ash/system/message_center/new_unified_message_center_view.h"
 
-#include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_list_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"

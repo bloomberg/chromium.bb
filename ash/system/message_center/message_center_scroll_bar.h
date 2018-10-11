@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_SCROLL_BAR_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_SCROLL_BAR_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_SCROLL_BAR_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_SCROLL_BAR_H_
 
 #include "ui/events/event.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -46,4 +46,4 @@ class MessageCenterScrollBar : public views::OverlayScrollBar {
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_SCROLL_BAR_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_CENTER_SCROLL_BAR_H_

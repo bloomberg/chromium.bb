@@ -4,8 +4,8 @@
 
 #include "ash/system/message_center/unified_message_center_view.h"
 
-#include "ash/message_center/message_center_scroll_bar.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"

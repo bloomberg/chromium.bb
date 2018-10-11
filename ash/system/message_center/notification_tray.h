@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
-#include "ash/message_center/message_center_ui_delegate.h"
+#include "ash/system/message_center/message_center_ui_delegate.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "base/gtest_prod_util.h"

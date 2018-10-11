@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/message_center/message_center_bubble.h"
-#include "ash/message_center/message_center_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -19,6 +17,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
+#include "ash/system/message_center/message_center_bubble.h"
+#include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"

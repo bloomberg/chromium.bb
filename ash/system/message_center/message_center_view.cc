@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_center_view.h"
+#include "ash/system/message_center/message_center_view.h"
 
 #include <list>
 #include <map>
 
-#include "ash/message_center/ash_message_center_lock_screen_controller.h"
-#include "ash/message_center/message_center_button_bar.h"
-#include "ash/message_center/message_center_scroll_bar.h"
-#include "ash/message_center/message_center_style.h"
-#include "ash/message_center/notifier_settings_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
+#include "ash/system/message_center/message_center_button_bar.h"
+#include "ash/system/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/message_center_style.h"
+#include "ash/system/message_center/notifier_settings_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"

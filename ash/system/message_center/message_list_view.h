@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
 
 #include <list>
 #include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/message_center/slidable_message_view.h"
+#include "ash/system/message_center/slidable_message_view.h"
 #include "base/macros.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/rect.h"
@@ -166,4 +166,4 @@ class ASH_EXPORT MessageListView
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_

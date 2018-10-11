@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
-#define ASH_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -73,4 +73,4 @@ class ASH_EXPORT NotificationSwipeControlView : public views::View,
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_NOTIFICATION_SWIPE_CONTROL_VIEW_H_
