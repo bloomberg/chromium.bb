@@ -130,6 +130,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
           android_status_fetcher,
+      const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher,
       TimeDelta activity_day_start,
       bool is_enterprise_device)
       : policy::DeviceStatusCollector(pref_service,
@@ -138,6 +139,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       cpu_fetcher,
                                       cpu_temp_fetcher,
                                       android_status_fetcher,
+                                      tpm_status_fetcher,
                                       activity_day_start,
                                       is_enterprise_device) {
     // Set the baseline time to a fixed value (1 hour after day start) to
@@ -268,11 +270,24 @@ std::vector<em::CPUTempInfo> GetEmptyCPUTempInfo() {
   return std::vector<em::CPUTempInfo>();
 }
 
+std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
+    const std::vector<em::CPUTempInfo>& cpu_temp_info) {
+  return cpu_temp_info;
+}
+
 void CallAndroidStatusReceiver(
     const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver,
     const std::string& status,
     const std::string& droid_guard_info) {
   receiver.Run(status, droid_guard_info);
+}
+
+bool GetEmptyAndroidStatus(
+    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
+  // Post it to the thread because this call is expected to be asynchronous.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, "", ""));
+  return true;
 }
 
 bool GetFakeAndroidStatus(
@@ -286,17 +301,15 @@ bool GetFakeAndroidStatus(
   return true;
 }
 
-bool GetEmptyAndroidStatus(
-    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
-  // Post it to the thread because this call is expected to be asynchronous.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, "", ""));
-  return true;
+void GetEmptyTpmStatus(
+    policy::DeviceStatusCollector::TpmStatusReceiver receiver) {
+  std::move(receiver).Run(policy::TpmStatusInfo());
 }
 
-std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
-    const std::vector<em::CPUTempInfo>& cpu_temp_info) {
-  return cpu_temp_info;
+void GetFakeTpmStatus(
+    const policy::TpmStatusInfo& tpm_status_info,
+    policy::DeviceStatusCollector::TpmStatusReceiver receiver) {
+  std::move(receiver).Run(tpm_status_info);
 }
 
 }  // namespace
@@ -412,7 +425,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
                            base::BindRepeating(&GetEmptyCPUStatistics),
                            base::BindRepeating(&GetEmptyCPUTempInfo),
-                           base::BindRepeating(&GetEmptyAndroidStatus));
+                           base::BindRepeating(&GetEmptyAndroidStatus),
+                           base::BindRepeating(&GetEmptyTpmStatus));
 
     // Disable network interface reporting since it requires additional setup.
     settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces,
@@ -482,11 +496,13 @@ class DeviceStatusCollectorTest : public testing::Test {
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
-          android_status_fetcher) {
+          android_status_fetcher,
+      const policy::DeviceStatusCollector::TpmStatusFetcher&
+          tpm_status_fetcher) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
-        cpu_temp_fetcher, android_status_fetcher, kMidnight,
+        cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher, kMidnight,
         true /* is_enterprise_device */));
   }
 
@@ -495,7 +511,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     session_status_.Clear();
     got_session_status_ = false;
     run_loop_.reset(new base::RunLoop());
-    status_collector_->GetDeviceAndSessionStatusAsync(base::Bind(
+    status_collector_->GetDeviceAndSessionStatusAsync(base::BindRepeating(
         &DeviceStatusCollectorTest::OnStatusReceived, base::Unretained(this)));
     run_loop_->Run();
     run_loop_.reset();
@@ -792,10 +808,11 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   // Process the list a second time after restarting the collector. It should be
   // able to count the active periods found by the original collector, because
   // the results are stored in a pref.
-  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo),
-                         base::Bind(&GetEmptyAndroidStatus));
+  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                         base::BindRepeating(&GetEmptyCPUStatistics),
+                         base::BindRepeating(&GetEmptyCPUTempInfo),
+                         base::BindRepeating(&GetEmptyAndroidStatus),
+                         base::BindRepeating(&GetEmptyTpmStatus));
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
@@ -1185,10 +1202,12 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   }
   EXPECT_FALSE(expected_volume_info.empty());
 
-  RestartStatusCollector(base::Bind(&GetFakeVolumeInfo, expected_volume_info),
-                         base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo),
-                         base::Bind(&GetEmptyAndroidStatus));
+  RestartStatusCollector(
+      base::BindRepeating(&GetFakeVolumeInfo, expected_volume_info),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
 
@@ -1238,10 +1257,12 @@ TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
 TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Mock 100% CPU usage.
   std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
-  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetFakeCPUStatistics, full_cpu_usage),
-                         base::Bind(&GetEmptyCPUTempInfo),
-                         base::Bind(&GetEmptyAndroidStatus));
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetFakeCPUStatistics, full_cpu_usage),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
   GetStatus();
@@ -1289,10 +1310,12 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
     expected_temp_info.push_back(info);
   }
 
-  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetFakeCPUTempInfo, expected_temp_info),
-                         base::Bind(&GetEmptyAndroidStatus));
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetFakeCPUTempInfo, expected_temp_info),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
 
@@ -1321,11 +1344,12 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
 }
 
 TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
-  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo),
-                         base::Bind(&GetFakeAndroidStatus, kArcStatus,
-                             kDroidGuardInfo));
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
   status_collector_->set_kiosk_account(
       std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
@@ -1341,11 +1365,12 @@ TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
 }
 
 TEST_F(DeviceStatusCollectorTest, NoKioskAndroidReportingWhenDisabled) {
-  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo),
-                         base::Bind(&GetFakeAndroidStatus, kArcStatus,
-                             kDroidGuardInfo));
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   // Mock Kiosk app, so some session status is reported
   status_collector_->set_kiosk_account(
@@ -1361,9 +1386,11 @@ TEST_F(DeviceStatusCollectorTest, NoKioskAndroidReportingWhenDisabled) {
 
 TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
   RestartStatusCollector(
-      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
-      base::Bind(&GetEmptyCPUTempInfo),
-      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1381,9 +1408,11 @@ TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
 
 TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
   RestartStatusCollector(
-      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
-      base::Bind(&GetEmptyCPUTempInfo),
-      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1406,9 +1435,11 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
 
 TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
   RestartStatusCollector(
-      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
-      base::Bind(&GetEmptyCPUTempInfo),
-      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1425,9 +1456,11 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
 
 TEST_F(DeviceStatusCollectorTest, NoRegularUserReportingByDefault) {
   RestartStatusCollector(
-      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
-      base::Bind(&GetEmptyCPUTempInfo),
-      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1444,9 +1477,11 @@ TEST_F(DeviceStatusCollectorTest, NoRegularUserReportingByDefault) {
 TEST_F(DeviceStatusCollectorTest,
        NoRegularUserAndroidReportingWhenNotAffiliated) {
   RestartStatusCollector(
-      base::Bind(&GetEmptyVolumeInfo), base::Bind(&GetEmptyCPUStatistics),
-      base::Bind(&GetEmptyCPUTempInfo),
-      base::Bind(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, false);
@@ -1457,6 +1492,52 @@ TEST_F(DeviceStatusCollectorTest,
   // Currently, only AndroidStatus reporting is done for regular users. If that
   // is disabled, no UserSessionStatusRequest is filled at all.
   EXPECT_FALSE(got_session_status_);
+}
+
+TEST_F(DeviceStatusCollectorTest, TpmStatusReporting) {
+  // Create a fake TPM status info and populate it with some random values.
+  const policy::TpmStatusInfo kFakeTpmStatus{
+      true,  /* enabled */
+      false, /* owned */
+      true,  /* initialized */
+      false, /* attestation_prepared */
+      true,  /* attestation_enrolled */
+      5,     /* dictionary_attack_counter */
+      10,    /* dictionary_attack_threshold */
+      false, /* dictionary_attack_lockout_in_effect */
+      0,     /* dictionary_attack_lockout_seconds_remaining */
+      true   /* boot_lockbox_finalized */
+  };
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetFakeTpmStatus, kFakeTpmStatus));
+
+  GetStatus();
+
+  EXPECT_TRUE(device_status_.has_tpm_status_info());
+  EXPECT_EQ(kFakeTpmStatus.enabled, device_status_.tpm_status_info().enabled());
+  EXPECT_EQ(kFakeTpmStatus.owned, device_status_.tpm_status_info().owned());
+  EXPECT_EQ(kFakeTpmStatus.initialized,
+            device_status_.tpm_status_info().initialized());
+  EXPECT_EQ(kFakeTpmStatus.attestation_prepared,
+            device_status_.tpm_status_info().attestation_prepared());
+  EXPECT_EQ(kFakeTpmStatus.attestation_enrolled,
+            device_status_.tpm_status_info().attestation_enrolled());
+  EXPECT_EQ(kFakeTpmStatus.dictionary_attack_counter,
+            device_status_.tpm_status_info().dictionary_attack_counter());
+  EXPECT_EQ(kFakeTpmStatus.dictionary_attack_threshold,
+            device_status_.tpm_status_info().dictionary_attack_threshold());
+  EXPECT_EQ(
+      kFakeTpmStatus.dictionary_attack_lockout_in_effect,
+      device_status_.tpm_status_info().dictionary_attack_lockout_in_effect());
+  EXPECT_EQ(kFakeTpmStatus.dictionary_attack_lockout_seconds_remaining,
+            device_status_.tpm_status_info()
+                .dictionary_attack_lockout_seconds_remaining());
+  EXPECT_EQ(kFakeTpmStatus.boot_lockbox_finalized,
+            device_status_.tpm_status_info().boot_lockbox_finalized());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoTimeZoneReporting) {
@@ -1802,7 +1883,8 @@ class DeviceStatusCollectorDayStartTest : public DeviceStatusCollectorTest {
         base::BindRepeating(&GetEmptyVolumeInfo),
         base::BindRepeating(&GetEmptyCPUStatistics),
         base::BindRepeating(&GetEmptyCPUTempInfo),
-        base::BindRepeating(&GetEmptyAndroidStatus), activity_day_start,
+        base::BindRepeating(&GetEmptyAndroidStatus),
+        base::BindRepeating(&GetEmptyTpmStatus), activity_day_start,
         true /* is_enterprise_reporting */);
   }
 
@@ -2010,7 +2092,8 @@ class DeviceStatusCollectorNetworkInterfacesTest
     RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
                            base::BindRepeating(&GetEmptyCPUStatistics),
                            base::BindRepeating(&GetEmptyCPUTempInfo),
-                           base::BindRepeating(&GetEmptyAndroidStatus));
+                           base::BindRepeating(&GetEmptyAndroidStatus),
+                           base::BindRepeating(&GetEmptyTpmStatus));
 
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
@@ -2249,11 +2332,13 @@ class ConsumerDeviceStatusCollectorTimeLimitDisabledTest
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
-          android_status_fetcher) override {
+          android_status_fetcher,
+      const policy::DeviceStatusCollector::TpmStatusFetcher& tpm_status_fetcher)
+      override {
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &profile_pref_service_, &fake_statistics_provider_, volume_info,
-        cpu_stats, cpu_temp_fetcher, android_status_fetcher, kMidnight,
-        false /* is_enterprise_reporting */);
+        cpu_stats, cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
+        kMidnight, false /* is_enterprise_reporting */);
   }
 
   AccountId user_account_id_;
@@ -2276,7 +2361,8 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, ReportingArcStatus) {
       base::BindRepeating(&GetEmptyVolumeInfo),
       base::BindRepeating(&GetEmptyCPUStatistics),
       base::BindRepeating(&GetEmptyCPUTempInfo),
-      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
+      base::BindRepeating(&GetEmptyTpmStatus));
 
   testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
                                            true);
@@ -2325,7 +2411,8 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
       base::BindRepeating(&GetFakeVolumeInfo, expected_volume_info),
       base::BindRepeating(&GetEmptyCPUStatistics),
       base::BindRepeating(&GetEmptyCPUTempInfo),
-      base::BindRepeating(&GetEmptyAndroidStatus));
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus));
   content::RunAllTasksUntilIdle();
 
   GetStatus();
@@ -2375,7 +2462,8 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
       base::BindRepeating(&GetEmptyVolumeInfo),
       base::BindRepeating(&GetFakeCPUStatistics, full_cpu_usage),
       base::BindRepeating(&GetFakeCPUTempInfo, expected_temp_info),
-      base::BindRepeating(&GetEmptyAndroidStatus));
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus));
   content::RunAllTasksUntilIdle();
 
   GetStatus();
@@ -2385,6 +2473,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest,
   EXPECT_EQ(0, device_status_.cpu_temp_info_size());
   EXPECT_EQ(0, device_status_.system_ram_free().size());
   EXPECT_FALSE(device_status_.has_system_ram_total());
+  EXPECT_FALSE(device_status_.has_tpm_status_info());
 }
 
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitDisabledTest, TimeZoneReporting) {
@@ -2528,7 +2617,8 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
   RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
                          base::BindRepeating(&GetEmptyCPUStatistics),
                          base::BindRepeating(&GetEmptyCPUTempInfo),
-                         base::BindRepeating(&GetEmptyAndroidStatus));
+                         base::BindRepeating(&GetEmptyAndroidStatus),
+                         base::BindRepeating(&GetEmptyTpmStatus));
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
 
