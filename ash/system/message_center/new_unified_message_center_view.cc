@@ -25,6 +25,8 @@ namespace ash {
 
 namespace {
 
+constexpr int kClearAllButtonRowHeight = 3 * kUnifiedNotificationCenterSpacing;
+
 class ScrollerContentsView : public views::View {
  public:
   ScrollerContentsView(UnifiedMessageListView* message_list_view,
@@ -66,15 +68,17 @@ class ScrollerContentsView : public views::View {
 }  // namespace
 
 NewUnifiedMessageCenterView::NewUnifiedMessageCenterView()
-    : scroller_(new views::ScrollView()),
-      message_list_view_(new UnifiedMessageListView(this)) {
+    : scroll_bar_(new MessageCenterScrollBar(this)),
+      scroller_(new views::ScrollView()),
+      message_list_view_(new UnifiedMessageListView(this)),
+      position_from_bottom_(kClearAllButtonRowHeight) {
   message_list_view_->Init();
 
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
   scroller_->SetContents(new ScrollerContentsView(message_list_view_, this));
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller_->SetVerticalScrollBar(new MessageCenterScrollBar(this));
+  scroller_->SetVerticalScrollBar(scroll_bar_);
   scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
@@ -90,6 +94,7 @@ void NewUnifiedMessageCenterView::SetMaxHeight(int max_height) {
 void NewUnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
+  ScrollToPositionFromBottom();
 
   if (GetWidget())
     GetWidget()->SynthesizeMouseMoveEvent();
@@ -104,17 +109,30 @@ void NewUnifiedMessageCenterView::Layout() {
   // We have to manually layout because we want to override
   // CalculatePreferredSize().
   scroller_->SetBoundsRect(GetContentsBounds());
+
+  // If the last notification is taller than |scroller_|, we should align the
+  // top of the notification with the top of |scroller_|.
+  const int last_notification_offset =
+      message_list_view_->GetLastNotificationHeight() - scroller_->height() +
+      kUnifiedNotificationCenterSpacing;
+  if (position_from_bottom_ == kClearAllButtonRowHeight &&
+      last_notification_offset > 0) {
+    position_from_bottom_ += last_notification_offset;
+  }
+  ScrollToPositionFromBottom();
 }
 
 gfx::Size NewUnifiedMessageCenterView::CalculatePreferredSize() const {
   gfx::Size preferred_size = scroller_->GetPreferredSize();
   // Hide Clear All button at the buttom from initial viewport.
-  preferred_size.set_height(preferred_size.height() -
-                            3 * kUnifiedNotificationCenterSpacing);
+  preferred_size.set_height(preferred_size.height() - kClearAllButtonRowHeight);
   return preferred_size;
 }
 
-void NewUnifiedMessageCenterView::OnMessageCenterScrolled() {}
+void NewUnifiedMessageCenterView::OnMessageCenterScrolled() {
+  position_from_bottom_ =
+      scroll_bar_->GetMaxPosition() - scroller_->GetVisibleRect().y();
+}
 
 void NewUnifiedMessageCenterView::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
@@ -131,6 +149,16 @@ void NewUnifiedMessageCenterView::UpdateVisibility() {
   SetVisible(message_list_view_->child_count() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
              !session_controller->IsScreenLocked());
+  // When notification list went invisible, |position_from_bottom_| should be
+  // reset.
+  if (!visible())
+    position_from_bottom_ = kClearAllButtonRowHeight;
+}
+
+void NewUnifiedMessageCenterView::ScrollToPositionFromBottom() {
+  scroller_->ScrollToPosition(
+      scroll_bar_,
+      std::max(0, scroll_bar_->GetMaxPosition() - position_from_bottom_));
 }
 
 }  // namespace ash

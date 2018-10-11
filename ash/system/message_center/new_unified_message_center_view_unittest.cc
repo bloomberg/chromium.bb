@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/new_unified_message_center_view.h"
 
+#include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -21,6 +22,8 @@ using message_center::Notification;
 namespace ash {
 
 namespace {
+
+constexpr int kDefaultMaxHeight = 500;
 
 class DummyEvent : public ui::Event {
  public:
@@ -63,12 +66,18 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
     return id;
   }
 
-  void CreateMessageCenterView() {
+  void CreateMessageCenterView(int max_height = kDefaultMaxHeight) {
     message_center_view_ = std::make_unique<NewUnifiedMessageCenterView>();
     message_center_view_->AddObserver(this);
-    message_center_view_->SetMaxHeight(500);
+    message_center_view_->SetMaxHeight(max_height);
     OnViewPreferredSizeChanged(message_center_view_.get());
     size_changed_count_ = 0;
+  }
+
+  gfx::Rect GetMessageViewVisibleBounds(int index) {
+    gfx::Rect bounds = GetMessageListView()->child_at(index)->bounds();
+    bounds -= gfx::Vector2d(GetScroller()->GetVisibleRect().OffsetFromOrigin());
+    return bounds;
   }
 
   UnifiedMessageListView* GetMessageListView() {
@@ -76,6 +85,10 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   }
 
   views::ScrollView* GetScroller() { return message_center_view()->scroller_; }
+
+  MessageCenterScrollBar* GetScrollBar() {
+    return message_center_view()->scroll_bar_;
+  }
 
   views::View* GetScrollerContents() {
     return message_center_view()->scroller_->contents();
@@ -161,6 +174,82 @@ TEST_F(NewUnifiedMessageCenterViewTest, ClearAllPressed) {
   // view becomes invisible.
   message_center_view()->ButtonPressed(nullptr, DummyEvent());
   EXPECT_FALSE(message_center_view()->visible());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, InitialPosition) {
+  AddNotification();
+  AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is not maxed out.
+  EXPECT_LT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  EXPECT_EQ(kUnifiedNotificationCenterSpacing,
+            message_center_view()->bounds().bottom() -
+                GetMessageViewVisibleBounds(1).bottom());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, InitialPositionMaxOut) {
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  EXPECT_EQ(kUnifiedNotificationCenterSpacing,
+            message_center_view()->bounds().bottom() -
+                GetMessageViewVisibleBounds(5).bottom());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
+  AddNotification();
+  AddNotification();
+  CreateMessageCenterView(100 /* max_height */);
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is shorter than the notification.
+  gfx::Rect message_view_bounds = GetMessageViewVisibleBounds(1);
+  EXPECT_LT(message_center_view()->bounds().height(),
+            message_view_bounds.height());
+
+  // Top of the second notification aligns with the top of MessageCenterView.
+  EXPECT_EQ(0, message_view_bounds.y());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  gfx::Rect previous_visible_rect = GetScroller()->GetVisibleRect();
+
+  gfx::Size new_size = message_center_view()->size();
+  new_size.set_height(250);
+  message_center_view()->SetPreferredSize(new_size);
+  OnViewPreferredSizeChanged(message_center_view());
+
+  EXPECT_EQ(previous_visible_rect.bottom(),
+            GetScroller()->GetVisibleRect().bottom());
+
+  GetScroller()->ScrollToPosition(GetScrollBar(), 200);
+  message_center_view()->OnMessageCenterScrolled();
+  previous_visible_rect = GetScroller()->GetVisibleRect();
+
+  new_size.set_height(300);
+  message_center_view()->SetPreferredSize(new_size);
+  OnViewPreferredSizeChanged(message_center_view());
+
+  EXPECT_EQ(previous_visible_rect.bottom(),
+            GetScroller()->GetVisibleRect().bottom());
 }
 
 }  // namespace ash

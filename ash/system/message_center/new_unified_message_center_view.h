@@ -13,12 +13,12 @@
 #include "ui/views/view.h"
 
 namespace views {
-
 class ScrollView;
-
 }  // namespace views
 
 namespace ash {
+
+class MessageCenterScrollBar;
 
 // Manages scrolling of notification list.
 // TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
@@ -55,8 +55,15 @@ class ASH_EXPORT NewUnifiedMessageCenterView
 
   void UpdateVisibility();
 
+  // Scroll the notification list to |position_from_bottom_|.
+  void ScrollToPositionFromBottom();
+
+  MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;
+
+  // Position from the bottom of scroll contents in dip.
+  int position_from_bottom_;
 
   DISALLOW_COPY_AND_ASSIGN(NewUnifiedMessageCenterView);
 };

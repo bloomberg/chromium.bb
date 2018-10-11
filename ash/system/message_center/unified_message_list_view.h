@@ -35,6 +35,10 @@ class ASH_EXPORT UnifiedMessageListView
   // after ctor.
   void Init();
 
+  // Get the height of the notification at the bottom. If no notification is
+  // added, it returns 0.
+  int GetLastNotificationHeight() const;
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;
