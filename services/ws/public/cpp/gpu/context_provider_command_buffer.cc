@@ -170,9 +170,9 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     impl_ = nullptr;
     webgpu_interface_ = std::move(webgpu_impl);
     helper_ = std::move(webgpu_helper);
-  } else if (!command_buffer_->channel()->gpu_info().passthrough_cmd_decoder &&
-             attributes_.enable_raster_interface &&
-             !attributes_.enable_gles2_interface) {
+  } else if (attributes_.enable_oop_rasterization) {
+    DCHECK(attributes_.enable_raster_interface);
+    DCHECK(!attributes_.enable_gles2_interface);
     DCHECK(!support_grcontext_);
     // The raster helper writes the command buffer protocol.
     auto raster_helper =

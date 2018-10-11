@@ -29,9 +29,6 @@ constexpr gfx::Size kBufferSize(100, 100);
 class RasterInProcessCommandBufferTest : public ::testing::Test {
  public:
   std::unique_ptr<RasterInProcessContext> CreateRasterInProcessContext() {
-    if (!RasterInProcessContext::SupportedInTest())
-      return nullptr;
-
     ContextCreationAttribs attributes;
     attributes.bind_generates_resource = false;
     attributes.enable_oop_rasterization = true;
@@ -49,8 +46,6 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    if (!RasterInProcessContext::SupportedInTest())
-      return;
     gpu_memory_buffer_factory_ = GpuMemoryBufferFactory::CreateNativeType();
     gpu_memory_buffer_manager_ =
         std::make_unique<viz::TestGpuMemoryBufferManager>();
@@ -74,9 +69,6 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(RasterInProcessCommandBufferTest, CreateImage) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
   // Calling CreateImageCHROMIUM() should allocate an image id.
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer1 =
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
@@ -104,9 +96,6 @@ TEST_F(RasterInProcessCommandBufferTest, CreateImage) {
 }
 
 TEST_F(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
   GLuint texture_id =
       ri_->CreateTexture(/*use_buffer=*/true, kBufferUsage, kResourceFormat);
 
@@ -127,9 +116,6 @@ TEST_F(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
 }
 
 TEST_F(RasterInProcessCommandBufferTest, TexStorage2DImage) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
   // Check for GPU and driver support
   if (!context_->GetCapabilities().texture_storage_image) {
     return;
@@ -168,9 +154,6 @@ TEST_F(RasterInProcessCommandBufferTest, TexStorage2DImage) {
 
 TEST_F(RasterInProcessCommandBufferTest,
        WhitelistBetweenBeginEndRasterCHROMIUM) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
   // Check for GPU and driver support
   if (!context_->GetCapabilities().supports_oop_raster) {
     return;

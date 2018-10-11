@@ -37,7 +37,6 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
@@ -601,10 +600,11 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   std::unique_ptr<CommandBufferStub> stub;
-  bool use_passthrough_cmd_decoder =
-      gpu_channel_manager_->gpu_preferences().use_passthrough_cmd_decoder &&
-      gles2::PassthroughCommandDecoderSupported();
 
+  bool supports_oop_rasterization =
+      gpu_channel_manager_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
   if (init_params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
     if (!gpu_channel_manager_->gpu_preferences().enable_webgpu) {
       DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
@@ -613,7 +613,8 @@ void GpuChannel::OnCreateCommandBuffer(
 
     stub = std::make_unique<WebGPUCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
-  } else if (!use_passthrough_cmd_decoder &&
+  } else if (supports_oop_rasterization &&
+             init_params.attribs.enable_oop_rasterization &&
              init_params.attribs.enable_raster_interface &&
              !init_params.attribs.enable_gles2_interface) {
     stub = std::make_unique<RasterCommandBufferStub>(

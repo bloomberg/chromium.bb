@@ -1243,12 +1243,7 @@ void RasterDecoderImpl::RestoreBufferBindings() const {
 }
 
 void RasterDecoderImpl::RestoreFramebufferBindings() const {
-  PessimisticallyResetGrContext();
-  state_.fbo_binding_for_scissor_workaround_dirty = true;
-  state_.stencil_state_changed_since_validation = true;
-
-  if (workarounds().flush_on_framebuffer_change)
-    api()->glFlushFn();
+  NOTIMPLEMENTED();
 }
 
 void RasterDecoderImpl::RestoreRenderbufferBindings() {

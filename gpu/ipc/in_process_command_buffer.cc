@@ -577,10 +577,12 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       return ContextResult::kTransientFailure;
     }
 
-    bool use_passthrough_cmd_decoder =
-        task_executor_->gpu_preferences().use_passthrough_cmd_decoder &&
-        gles2::PassthroughCommandDecoderSupported();
-    if (!use_passthrough_cmd_decoder &&
+    bool supports_oop_rasterization =
+        task_executor_->gpu_feature_info()
+            .status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+        kGpuFeatureStatusEnabled;
+
+    if (supports_oop_rasterization && params.attribs.enable_oop_rasterization &&
         params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
       scoped_refptr<raster::RasterDecoderContextState> context_state =
