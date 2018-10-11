@@ -443,15 +443,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Now check that we don't run anything.
         self.assertEqual(get_tests_run(['--skipped=always', 'passes/skipped/skip.html']), [])
 
-    def test_gtest_also_run_disabled_tests(self):
+    def test_isolated_script_test_also_run_disabled_tests(self):
         self.assertEqual(
-            sorted(get_tests_run(['--gtest_also_run_disabled_tests', 'passes'])),
+            sorted(get_tests_run(['--isolated-script-test-also-run-disabled-tests', 'passes'])),
             sorted(get_tests_run(['--skipped=ignore', 'passes']))
         )
 
-    def test_gtest_also_run_disabled_tests_overrides_skipped(self):
+    def test_gtest_also_run_disabled_tests(self):
         self.assertEqual(
-            sorted(get_tests_run(['--gtest_also_run_disabled_tests', '--skipped=always', 'passes'])),
+            sorted(get_tests_run(['--gtest_also_run_disabled_tests', 'passes'])),
             sorted(get_tests_run(['--skipped=ignore', 'passes']))
         )
 
@@ -521,6 +521,14 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host.filesystem.write_text_file(filename, WEB_TESTS_LAST_COMPONENT + '/passes/text.html')
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
+
+    def test_isolated_script_test_filter(self):
+        host = MockHost()
+        tests_run = get_tests_run(
+            ['--isolated-script-test-filter=passes/text.html::passes/image.html', 'passes/error.html'],
+            host=host
+        )
+        self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html', 'passes/text.html'])
 
     def test_gtest_filter(self):
         host = MockHost()
