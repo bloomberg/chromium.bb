@@ -33694,6 +33694,13 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="FAILED_TO_FIND_NAMESPACE"/>
 </enum>
 
+<enum name="NativeSmbFileShare_AuthMethod">
+  <int value="0" label="No Credentials."/>
+  <int value="1" label="Username only."/>
+  <int value="2" label="Username and password."/>
+  <int value="3" label="SSO kerberos."/>
+</enum>
+
 <enum name="NativeSmbFileShare_MountResult">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Unknown failure"/>
