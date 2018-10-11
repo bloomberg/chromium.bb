@@ -32,6 +32,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -897,6 +898,12 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
 void LockContentsView::OnFingerprintUnlockStateChanged(
     const AccountId& account_id,
     mojom::FingerprintUnlockState state) {
+  // Make sure the display backlight is not forced off if there is a fingerprint
+  // authentication attempt. If the display backlight is off, then the device
+  // will authenticate and dismiss the lock screen but it will not be visible to
+  // the user.
+  Shell::Get()->power_button_controller()->StopForcingBacklightsOff();
+
   UserState* user_state = FindStateForUser(account_id);
   if (!user_state)
     return;

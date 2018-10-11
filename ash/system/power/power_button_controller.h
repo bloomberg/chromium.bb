@@ -114,6 +114,9 @@ class ASH_EXPORT PowerButtonController
   // Dismisses the menu.
   void DismissMenu();
 
+  // Do not force backlights to be turned off.
+  void StopForcingBacklightsOff();
+
   // display::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
