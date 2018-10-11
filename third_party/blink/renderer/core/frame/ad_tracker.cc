@@ -9,10 +9,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -109,6 +111,22 @@ bool AdTracker::IsAdScriptInStack() {
   ExecutionContext* execution_context = GetCurrentExecutionContext();
   if (!execution_context)
     return false;
+
+  // If script is running in an ad context, then we consider the script to be ad
+  // script.
+  // TODO(jkarlin): Do the same check for worker contexts.
+  //
+  // TODO(jkarlin): Look at the execution context of every frame in the stack,
+  // not just the current frame. This requires some changes to v8.
+  //
+  // TODO(jkarlin): Minor memory optimization, stop tracking known ad scripts in
+  // ad contexts. This will reduce the size of executing_scripts_. Note that
+  // this is a minor win, as the strings are already ref-counted.
+  if (auto* document = DynamicTo<Document>(execution_context)) {
+    LocalFrame* frame = document->GetFrame();
+    if (frame && frame->IsAdSubframe())
+      return true;
+  }
 
   // The pseudo-stack contains entry points into the stack (e.g., when v8 is
   // executed) but not the entire stack. It's cheap to retrieve the top of the
