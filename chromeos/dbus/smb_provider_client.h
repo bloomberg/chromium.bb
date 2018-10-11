@@ -72,6 +72,7 @@ class CHROMEOS_EXPORT SmbProviderClient
   // original |mount_id|.
   virtual void Remount(const base::FilePath& share_path,
                        int32_t mount_id,
+                       bool ntlm_enabled,
                        const std::string& workgroup,
                        const std::string& username,
                        base::ScopedFD password_fd,
