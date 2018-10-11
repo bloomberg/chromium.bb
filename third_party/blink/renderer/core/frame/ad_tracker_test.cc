@@ -211,6 +211,32 @@ TEST_F(AdTrackerSimTest, ScriptLoadedWhileExecutingAdScript) {
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
 }
 
+// Unknown script running in an ad context should be labeled as ad script.
+TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
+  const char kAdScriptUrl[] = "https://example.com/ad_script.js";
+  SimRequest ad_script(kAdScriptUrl, "text/javascript");
+
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  // Create an iframe that's considered an ad.
+  main_resource_->Complete("<body><script src='ad_script.js'></script></body>");
+  ad_script.Complete(R"SCRIPT(
+    frame = document.createElement("iframe");
+    document.body.appendChild(frame);
+    )SCRIPT");
+
+  // The child frame should be an ad subframe.
+  LocalFrame* child_frame =
+      ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild());
+  EXPECT_TRUE(child_frame->IsAdSubframe());
+
+  // Now run unknown script in the child's context. It should be considered an
+  // ad based on context alone.
+  ad_tracker_->SetExecutionContext(child_frame->GetDocument());
+  ad_tracker_->SetScriptAtTopOfStack("foo.js");
+  EXPECT_TRUE(ad_tracker_->IsAdScriptInStack());
+}
+
 // Image loaded by ad script is tagged as ad.
 TEST_F(AdTrackerSimTest, ImageLoadedWhileExecutingAdScript) {
   const char kAdUrl[] = "https://example.com/ad_script.js";
