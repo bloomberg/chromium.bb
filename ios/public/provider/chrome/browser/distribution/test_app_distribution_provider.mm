@@ -21,3 +21,8 @@ void TestAppDistributionProvider::ScheduleDistributionNotifications(
     bool is_first_run) {}
 
 void TestAppDistributionProvider::CancelDistributionNotifications() {}
+
+bool TestAppDistributionProvider::IsPreFirebaseLegacyUser(
+    int64_t install_date) {
+  return false;
+}
