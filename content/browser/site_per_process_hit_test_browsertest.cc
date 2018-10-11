@@ -1206,12 +1206,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   // Some basic tests on the transforms between child and root. These assume
   // a CSS scale of 0.5 on the child, though should be robust to placement of
   // the iframe.
+  float kScaleTolerance = 0.0001f;
   gfx::Transform transform_to_child;
   ASSERT_TRUE(
       root_rwhv->GetTransformToViewCoordSpace(child_rwhv, &transform_to_child));
   EXPECT_TRUE(transform_to_child.IsScaleOrTranslation());
-  EXPECT_EQ(2.f / scale_factor, transform_to_child.matrix().getFloat(0, 0));
-  EXPECT_EQ(2.f / scale_factor, transform_to_child.matrix().getFloat(1, 1));
+  EXPECT_NEAR(2.f / scale_factor, transform_to_child.matrix().getFloat(0, 0),
+              kScaleTolerance);
+  EXPECT_NEAR(2.f / scale_factor, transform_to_child.matrix().getFloat(1, 1),
+              kScaleTolerance);
 
   gfx::PointF child_origin =
       child_rwhv->TransformPointToRootCoordSpaceF(gfx::PointF());
@@ -1220,8 +1223,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   ASSERT_TRUE(child_rwhv->GetTransformToViewCoordSpace(root_rwhv,
                                                        &transform_from_child));
   EXPECT_TRUE(transform_from_child.IsScaleOrTranslation());
-  EXPECT_EQ(0.5f * scale_factor, transform_from_child.matrix().getFloat(0, 0));
-  EXPECT_EQ(0.5f * scale_factor, transform_from_child.matrix().getFloat(1, 1));
+  EXPECT_NEAR(0.5f * scale_factor, transform_from_child.matrix().getFloat(0, 0),
+              kScaleTolerance);
+  EXPECT_NEAR(0.5f * scale_factor, transform_from_child.matrix().getFloat(1, 1),
+              kScaleTolerance);
   EXPECT_EQ(child_origin.x(), transform_from_child.matrix().getFloat(0, 3));
   EXPECT_EQ(child_origin.y(), transform_from_child.matrix().getFloat(1, 3));
 
