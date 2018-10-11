@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
@@ -69,9 +70,10 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
 
   // Retrieves an encoded video frame.
   void RetrieveEncodedVideoFrame();
-  void OnVideoFrameRetrieved(bool success,
-                             chrome::mojom::VideoFrameDataPtr video_frame_data,
-                             const media::VideoDecoderConfig& config);
+  void OnVideoFrameRetrieved(
+      bool success,
+      chrome::mojom::VideoFrameDataPtr video_frame_data,
+      const base::Optional<media::VideoDecoderConfig>& config);
 
   // Decodes the video frame.
   void OnGpuVideoAcceleratorFactoriesReady(

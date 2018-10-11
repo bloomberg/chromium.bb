@@ -38,7 +38,7 @@ interface MediaParser {
                     MediaDataSource media_data_source)
       => (bool success,
           VideoFrameData frame_data,
-          media.mojom.VideoDecoderConfig config);
+          media.mojom.VideoDecoderConfig? config);
 
   // Validates the passed media file with sanity checks, and file decoding
   // for at most |decode_time| wall clock time. Returns |success| true if

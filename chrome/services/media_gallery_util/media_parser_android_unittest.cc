@@ -9,6 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -25,7 +26,7 @@ namespace {
 struct ExtractVideoFrameResult {
   bool success = false;
   chrome::mojom::VideoFrameDataPtr video_frame_data;
-  media::VideoDecoderConfig config;
+  base::Optional<media::VideoDecoderConfig> config;
 };
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -87,6 +88,7 @@ class MediaParserAndroidTest : public testing::Test {
 
   void SetUp() override {
     parser_ = std::make_unique<MediaParserAndroid>(ref_factory_.CreateRef());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   void TearDown() override { parser_.reset(); }
@@ -94,9 +96,10 @@ class MediaParserAndroidTest : public testing::Test {
  protected:
   MediaParserAndroid* parser() { return parser_.get(); }
 
-  ExtractVideoFrameResult ExtractFrame(const std::string& file_name,
+  const base::FilePath& temp_dir() const { return temp_dir_.GetPath(); }
+
+  ExtractVideoFrameResult ExtractFrame(const base::FilePath& file_path,
                                        const std::string& mime_type) {
-    auto file_path = media::GetTestDataFilePath(file_name);
     int64_t size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &size));
 
@@ -109,7 +112,7 @@ class MediaParserAndroidTest : public testing::Test {
         mime_type, size, std::move(data_source_ptr),
         base::BindLambdaForTesting(
             [&](bool success, chrome::mojom::VideoFrameDataPtr video_frame_data,
-                const media::VideoDecoderConfig& config) {
+                const base::Optional<media::VideoDecoderConfig>& config) {
               result.success = success;
               result.video_frame_data = std::move(video_frame_data);
               result.config = config;
@@ -123,6 +126,7 @@ class MediaParserAndroidTest : public testing::Test {
 
  private:
   std::unique_ptr<MediaParserAndroid> parser_;
+  base::ScopedTempDir temp_dir_;
 
   service_manager::ServiceContextRefFactory ref_factory_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -134,7 +138,8 @@ class MediaParserAndroidTest : public testing::Test {
 // Test to verify an encoded video frame can be extracted for h264 codec video
 // file. Decoding needs to happen in other process.
 TEST_F(MediaParserAndroidTest, VideoFrameExtractionH264) {
-  auto result = ExtractFrame("bear.mp4", "video/mp4");
+  auto result =
+      ExtractFrame(media::GetTestDataFilePath("bear.mp4"), "video/mp4");
   EXPECT_TRUE(result.success);
   EXPECT_EQ(result.video_frame_data->which(),
             chrome::mojom::VideoFrameData::Tag::ENCODED_DATA);
@@ -146,7 +151,8 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionH264) {
 // Test to verify a decoded video frame can be extracted for vp8 codec video
 // file with YUV420 color format.
 TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8) {
-  auto result = ExtractFrame("bear-vp8-webvtt.webm", "video/webm");
+  auto result = ExtractFrame(media::GetTestDataFilePath("bear-vp8-webvtt.webm"),
+                             "video/webm");
   EXPECT_TRUE(result.success);
   EXPECT_EQ(result.video_frame_data->which(),
             chrome::mojom::VideoFrameData::Tag::DECODED_FRAME);
@@ -162,7 +168,8 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8) {
 // Test to verify a decoded video frame can be extracted for vp8 codec with
 // alpha plane.
 TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8WithAlphaPlane) {
-  auto result = ExtractFrame("bear-vp8a.webm", "video/webm");
+  auto result =
+      ExtractFrame(media::GetTestDataFilePath("bear-vp8a.webm"), "video/webm");
   EXPECT_TRUE(result.success);
 
   EXPECT_EQ(result.video_frame_data->which(),
@@ -174,6 +181,15 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8WithAlphaPlane) {
   EXPECT_FALSE(frame->HasTextures());
   EXPECT_EQ(frame->storage_type(),
             media::VideoFrame::StorageType::STORAGE_MOJO_SHARED_BUFFER);
+}
+
+// Test to verify frame extraction will fail on invalid video file.
+TEST_F(MediaParserAndroidTest, VideoFrameExtractionInvalidFile) {
+  base::FilePath dummy_file = temp_dir().AppendASCII("test.txt");
+  EXPECT_GT(base::WriteFile(dummy_file, "123", sizeof("123")), 0);
+
+  auto result = ExtractFrame(dummy_file, "video/webm");
+  EXPECT_FALSE(result.success);
 }
 
 }  // namespace

@@ -156,14 +156,15 @@ void DownloadMediaParser::RetrieveEncodedVideoFrame() {
 void DownloadMediaParser::OnVideoFrameRetrieved(
     bool success,
     chrome::mojom::VideoFrameDataPtr video_frame_data,
-    const media::VideoDecoderConfig& config) {
+    const base::Optional<media::VideoDecoderConfig>& config) {
   if (!success) {
     OnError();
     return;
   }
 
   video_frame_data_ = std::move(video_frame_data);
-  config_ = config;
+  DCHECK(config.has_value());
+  config_ = config.value();
 
   // For vp8, vp9 codec, we directly do software decoding in utility process.
   // Render now.

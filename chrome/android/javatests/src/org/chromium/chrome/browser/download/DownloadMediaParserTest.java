@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -82,7 +81,6 @@ public class DownloadMediaParserTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @RetryOnFailure
     /**
      * Verify that the metadata from audio file can be retrieved correctly.
      * @throws InterruptedException
@@ -96,7 +94,6 @@ public class DownloadMediaParserTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @RetryOnFailure
     /**
      * Verify metadata and thumbnail can be retrieved correctly from h264 video file.
      * @throws InterruptedException
@@ -114,7 +111,6 @@ public class DownloadMediaParserTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @RetryOnFailure
     /**
      * Verify metadata and thumbnail can be retrieved correctly from vp8 video file.
      * @throws InterruptedException
@@ -132,7 +128,6 @@ public class DownloadMediaParserTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @RetryOnFailure
     /**
      * Verify metadata and thumbnail can be retrieved correctly from vp8 video file with alpha
      * plane.
@@ -146,5 +141,18 @@ public class DownloadMediaParserTest {
                 "Failed to retrieve thumbnail.", result.mediaData.thumbnail.getWidth() > 0);
         Assert.assertTrue(
                 "Failed to retrieve thumbnail.", result.mediaData.thumbnail.getHeight() > 0);
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Download"})
+    /**
+     * Verify graceful failure on parsing invalid video file.
+     * @throws InterruptedException
+     */
+    public void testParseInvalidVideoFile() throws Exception {
+        File invalidFile = File.createTempFile("test", "webm");
+        MediaParserResult result = parseMediaFile(invalidFile.getAbsolutePath(), "video/webm");
+        Assert.assertTrue("Should fail to parse invalid video.", result.mediaData == null);
     }
 }
