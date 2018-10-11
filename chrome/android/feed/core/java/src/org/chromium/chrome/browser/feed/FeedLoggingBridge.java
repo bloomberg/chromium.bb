@@ -99,6 +99,26 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         nativeOnOpenedWithNoContent(mNativeFeedLoggingBridge);
     }
 
+    /**
+     * Reports how long a user spends on the page.
+     *
+     * @param visitTimeMs Time spent reading the page.
+     */
+    public void onContentTargetVisited(long visitTimeMs) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnContentTargetVisited(mNativeFeedLoggingBridge, visitTimeMs);
+    }
+
+    /**
+     * Reports how long a user spends on the offline page.
+     *
+     * @param visitTimeMs Time spent reading the page.
+     */
+    public void onOfflinePageVisited(long visitTimeMs) {
+        assert mNativeFeedLoggingBridge != 0;
+        nativeOnOfflinePageVisited(mNativeFeedLoggingBridge, visitTimeMs);
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedLoggingBridge);
     private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
@@ -115,4 +135,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             long nativeFeedLoggingBridge, int timeToPopulateMs, int contentCount);
     private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
     private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
+    private native void nativeOnContentTargetVisited(
+            long nativeFeedLoggingBridge, long visitTimeMs);
+    private native void nativeOnOfflinePageVisited(long nativeFeedLoggingBridge, long visitTimeMs);
 }
