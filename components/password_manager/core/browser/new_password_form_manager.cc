@@ -401,12 +401,17 @@ bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
     const PasswordManagerDriver* driver) {
   if (!DoesManage(submitted_form, driver))
     return false;
-  submitted_form_ = submitted_form;
-  is_submitted_ = true;
   parsed_submitted_form_ =
-      ParseFormAndMakeLogging(submitted_form_, FormDataParser::Mode::kSaving);
+      ParseFormAndMakeLogging(submitted_form, FormDataParser::Mode::kSaving);
+
   RecordMetricOnReadonly(parser_.readonly_status(), !!parsed_submitted_form_,
                          FormDataParser::Mode::kSaving);
+  if (!parsed_submitted_form_)
+    return false;
+
+  submitted_form_ = submitted_form;
+  is_submitted_ = true;
+
   CreatePendingCredentials();
   return true;
 }
