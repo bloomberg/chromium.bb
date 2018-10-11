@@ -316,3 +316,30 @@ Utils.createSessionToLoad = function(mediaKeys, request) {
         return promise;
       });
 };
+
+// Verify that |keyStatuses| contains just the keys in the array |expected|.
+// Each entry specifies the keyId and status expected.
+// Example call: verifyKeyStatuses(mediaKeySession.keyStatuses,
+//   [{keyId: key1, status: 'usable'}, {keyId: key2, status: 'released'}]);
+Utils.verifyKeyStatuses = function(keyStatuses, expected) {
+  // |keyStatuses| should have same size as number of |keys.expected|.
+  if (keyStatuses.size !== expected.length) {
+    Utils.failTest(
+        'keystatuses should have expected size of ' + expected.length +
+        ' but has size ' + keyStatuses.size);
+  }
+
+  // All |expected| should be found.
+  expected.map(function(item) {
+    if (!keyStatuses.has(Utils.convertToUint8Array(item.keyId))) {
+      Utils.failTest('missing keyID ' + item.keyId);
+    }
+    if (keyStatuses.get(Utils.convertToUint8Array(item.keyId)) !==
+        item.status) {
+      Utils.failTest(
+          'keyId ' + item.keyId + ' has status ' +
+          keyStatuses.get(Utils.convertToUint8Array(item.keyId)) +
+          ', expected ' + item.status);
+    }
+  });
+};

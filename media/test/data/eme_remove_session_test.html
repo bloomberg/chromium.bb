@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<title>Test that remove() succeeds on temporary sessions</title>
+// This test is similar to the layout test
+// encrypted-media-session-remove-temporary.html, but needs to run as a
+// browser test as it needs access to a license server (for Widevine).
+
+<div id="logs"></div>
+<script src='eme_player_js/app_loader.js' type='text/javascript'></script>
+<script type='text/javascript'>
+  // This test only uses |keySystem| and |licenseServerURL|.
+  var testConfig = new TestConfig();
+  testConfig.loadQueryParams();
+
+  // Use the default KEY_ID and KEY as specified in eme_player_js/globals.js.
+  const keyId = KEY_ID;
+  const key = KEY;
+
+  // Code for using the Widevine key system.
+  function WidevineKeySystemHelper() {}
+
+  // Called when a 'message' event happens. Send the message to the license
+  // server, and when the response is received, call update() and then call
+  // |resolve| or |reject| as appropriate.
+  WidevineKeySystemHelper.prototype.onMessage = function(
+      event, resolve, reject) {
+    var mediaKeySession = event.target;
+    function onSuccess(response) {
+      var key = new Uint8Array(response);
+      Utils.timeLog('Update media key session with license response.', key);
+      mediaKeySession.update(key).then(resolve, reject);
+    }
+    Utils.sendRequest(
+        'POST', 'arraybuffer', Utils.convertToUint8Array(event.message),
+        this.testConfig.licenseServerURL, onSuccess);
+  };
+
+  // Code for using the ClearKey key system.
+  function ClearKeyKeySystemHelper() {}
+
+  // Called when a 'message' event happens. For ClearKey we know the key to be
+  // used, so simply call update() and then call |resolve| or |reject| as
+  // appropriate.
+  ClearKeyKeySystemHelper.prototype.onMessage = function(
+      event, resolve, reject) {
+    var mediaKeySession = event.target;
+    const jwkSet = Utils.createJWKData(keyId, key);
+    mediaKeySession.update(jwkSet).then(resolve, reject);
+  };
+
+  var keySystemHelper;
+  if (testConfig.keySystem == WIDEVINE_KEYSYSTEM) {
+    keySystemHelper = new WidevineKeySystemHelper();
+  } else if (
+      testConfig.keySystem == CLEARKEY ||
+      testConfig.keySystem == EXTERNAL_CLEARKEY) {
+    keySystemHelper = new ClearKeyKeySystemHelper();
+  } else {
+    Utils.timeLog('Unsupported key system ' + testConfig.keySystem);
+  }
+
+  // This test doesn't play any media, so no concern with specifying multiple
+  // codecs. This is done to provide a set of codecs that should cover all
+  // user agents.
+  const config = [{
+    initDataTypes: ['webm'],
+    audioCapabilities: [
+      {contentType: 'audio/mp4; codecs="mp4a.40.2"'},
+      {contentType: 'audio/webm; codecs="opus"'},
+    ],
+    persistentState: 'optional',
+    sessionTypes: ['temporary'],
+  }];
+  var waitForMessagePromise;
+
+  navigator.requestMediaKeySystemAccess(testConfig.keySystem, config)
+      .then(function(access) {
+        Utils.timeLog(
+            'Supports initDataType ' +
+            access.getConfiguration().initDataTypes[0]);
+        return access.createMediaKeys();
+      })
+      .then(function(mediaKeys) {
+        mediaKeySession = mediaKeys.createSession();
+        waitForMessagePromise = Utils.waitForEvent(
+            mediaKeySession, 'message', keySystemHelper.onMessage);
+
+        // As this is using 'webm' initDataType, the data to generateRequest()
+        // is simply the key ID.
+        Utils.timeLog('Calling generateRequest()');
+        return mediaKeySession.generateRequest(
+            'webm', Utils.convertToUint8Array(keyId));
+      })
+      .then(function() {
+        // keySystemHelper.onMessage() returns the result of calling update().
+        Utils.timeLog('Waiting for message event');
+        return waitForMessagePromise;
+      })
+      .then(function() {
+        // After update() the session should have 1 usable key.
+        Utils.timeLog('Checking keyStatuses');
+        Utils.verifyKeyStatuses(
+            mediaKeySession.keyStatuses, [{keyId: keyId, status: 'usable'}]);
+        Utils.timeLog('Calling remove()');
+        return mediaKeySession.remove();
+      })
+      .then(function() {
+        // After remove() all keys should be 'released'.
+        Utils.verifyKeyStatuses(
+            mediaKeySession.keyStatuses, [{keyId: keyId, status: 'released'}]);
+        // After remove() the session expiry should be NaN.
+        if (!isNaN(mediaKeySession.expiration)) {
+          Utils.failTest('expiration is not Nan');
+          return;
+        }
+        Utils.timeLog('Calling close()');
+        return mediaKeySession.close();
+      })
+      .then(function() {
+        // After close() there should be no keys.
+        Utils.verifyKeyStatuses(mediaKeySession.keyStatuses, []);
+        Utils.setResultInTitle('ENDED');
+      })
+      .catch(function(error) {
+        Utils.timeLog(error);
+        Utils.failTest('Failed test.');
+      });
+</script>
+</html>

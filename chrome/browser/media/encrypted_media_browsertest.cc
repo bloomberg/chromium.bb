@@ -646,7 +646,26 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, PolicyCheck) {
+  // There is no need to run this test twice for the same key system.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test.";
+    return;
+  }
+
   TestPolicyCheck();
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, RemoveTemporarySession) {
+  // Although this test doesn't play anything, there is no need to run it
+  // twice for the same key system.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test.";
+    return;
+  }
+
+  base::StringPairs query_params{{"keySystem", CurrentKeySystem()}};
+  RunEncryptedMediaTestPage("eme_remove_session_test.html", CurrentKeySystem(),
+                            query_params, media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {
