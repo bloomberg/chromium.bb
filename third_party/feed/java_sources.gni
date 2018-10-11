@@ -232,6 +232,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/piet/host/HostBindingProvider.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/DrawableScalingHelper.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/GridRowView.java",
+  "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerViewHelper.java",
   "src/src/main/java/com/google/android/libraries/feed/piet/ui/RoundedCornerWrapperView.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/contextmenumanager/ContextMenuManager.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/offlinemonitor/StreamOfflineMonitor.java",
