@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_web_contents.h"
@@ -134,7 +135,8 @@ std::unique_ptr<SearchController> CreateSearchController(
         std::make_unique<SettingsShortcutProvider>(profile));
   }
 
-  if (features::IsAppShortcutSearchEnabled()) {
+  if (features::IsAppShortcutSearchEnabled() &&
+      arc::IsArcAllowedForProfile(profile)) {
     size_t app_shortcut_group_id =
         controller->AddGroup(kMaxAppShortcutResults, 1.0, kBoostOfApps);
     controller->AddProvider(
