@@ -28,17 +28,20 @@ namespace {
 const char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
 const char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 const char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
+const char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 const char kOfflinePreviewsHtmlId[] = "offline-preview-status";
 
 // Descriptions for previews.
 const char kPreviewsAllowedDescription[] = "Previews Allowed";
 const char kClientLoFiDescription[] = "Client LoFi Previews";
 const char kNoScriptDescription[] = "NoScript Previews";
+const char kResourceLoadingHintsDescription[] = "ResourceLoadingHints Previews";
 const char kOfflineDesciption[] = "Offline Previews";
 
 // Flag feature name.
 const char kPreviewsAllowedFeatureName[] = "Previews";
 const char kNoScriptFeatureName[] = "NoScriptPreviews";
+const char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
 #if defined(OS_ANDROID)
 const char kOfflinePageFeatureName[] = "OfflinePreviews";
 #endif  // OS_ANDROID
@@ -48,6 +51,7 @@ const char kOfflinePageFeatureName[] = "OfflinePreviews";
 const char kPreviewsAllowedFlagHtmlId[] = "previews-flag";
 const char kEctFlagHtmlId[] = "ect-flag";
 const char kNoScriptFlagHtmlId[] = "noscript-flag";
+const char kResourceLoadingHintsFlagHtmlId[] = "resource-loading-hints-flag";
 const char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 const char kIgnorePreviewsBlacklistFlagHtmlId[] = "ignore-previews-blacklist";
 
@@ -56,6 +60,8 @@ const char kIgnorePreviewsBlacklistFlagHtmlId[] = "ignore-previews-blacklist";
 const char kPreviewsAllowedFlagLink[] = "chrome://flags/#allow-previews";
 const char kEctFlagLink[] = "chrome://flags/#force-effective-connection-type";
 const char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
+const char kResourceLoadingHintsFlagLink[] =
+    "chrome://flags/#enable-resource-loading-hints";
 const char kOfflinePageFlagLink[] = "chrome://flags/#enable-offline-previews";
 const char kIgnorePreviewsBlacklistLink[] =
     "chrome://flags/#ignore-previews-blacklist";
@@ -209,6 +215,13 @@ void InterventionsInternalsPageHandler::GetPreviewsEnabled(
   noscript_status->htmlId = kNoScriptPreviewsHtmlId;
   statuses.push_back(std::move(noscript_status));
 
+  auto resource_loading_hints_status = mojom::PreviewsStatus::New();
+  resource_loading_hints_status->description = kResourceLoadingHintsDescription;
+  resource_loading_hints_status->enabled =
+      previews::params::IsResourceLoadingHintsEnabled();
+  resource_loading_hints_status->htmlId = kResourceLoadingHintsHtmlId;
+  statuses.push_back(std::move(resource_loading_hints_status));
+
   auto offline_status = mojom::PreviewsStatus::New();
   offline_status->description = kOfflineDesciption;
   offline_status->enabled = previews::params::IsOfflinePreviewsEnabled();
@@ -257,6 +270,15 @@ void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
   noscript_status->value = GetFeatureFlagStatus(kNoScriptFeatureName);
   noscript_status->htmlId = kNoScriptFlagHtmlId;
   flags.push_back(std::move(noscript_status));
+
+  auto resource_loading_hints_status = mojom::PreviewsFlag::New();
+  resource_loading_hints_status->description =
+      flag_descriptions::kEnableResourceLoadingHintsName;
+  resource_loading_hints_status->link = kResourceLoadingHintsFlagLink;
+  resource_loading_hints_status->value =
+      GetFeatureFlagStatus(kResourceLoadingHintsFeatureName);
+  resource_loading_hints_status->htmlId = kResourceLoadingHintsFlagHtmlId;
+  flags.push_back(std::move(resource_loading_hints_status));
 
   auto offline_page_status = mojom::PreviewsFlag::New();
 #if defined(OS_ANDROID)
