@@ -1908,6 +1908,9 @@ if (enable_java_templates) {
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target = "${target_name}__build_config"
 
+    # Mark as used
+    assert(!defined(invoker.min_sdk_version) || invoker.min_sdk_version != 0)
+
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _jar_path = "$_base_path.jar"
@@ -2500,6 +2503,7 @@ if (enable_java_templates) {
 
       _final_dex_target_name = "${_template_name}__final_dex"
       dex("$_final_dex_target_name") {
+        forward_variables_from(invoker, [ "min_sdk_version" ])
         deps = _dex_deps + [ ":$_build_config_target" ]
         input_jars = _dex_sources
         output = _final_dex_path
@@ -2890,6 +2894,7 @@ if (enable_java_templates) {
                                "keystore_path",
                                "load_library_from_apk",
                                "loadable_modules",
+                               "min_sdk_version",
                                "native_lib_placeholders",
                                "native_lib_version_arg",
                                "native_lib_version_rule",
@@ -2988,6 +2993,7 @@ if (enable_java_templates) {
                                "javac_args",
                                "load_library_from_apk",
                                "loadable_modules",
+                               "min_sdk_version",
                                "native_lib_placeholders",
                                "native_lib_version_arg",
                                "native_lib_version_rule",
