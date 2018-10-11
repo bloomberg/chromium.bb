@@ -127,7 +127,11 @@ void InstanceIDResultCallback(base::Closure done_callback,
 
 class PushMessagingBrowserTest : public InProcessBrowserTest {
  public:
-  PushMessagingBrowserTest() : gcm_service_(nullptr), gcm_driver_(nullptr) {}
+  PushMessagingBrowserTest()
+      : scoped_testing_factory_installer_(
+            base::BindRepeating(&gcm::FakeGCMProfileService::Build)),
+        gcm_service_(nullptr),
+        gcm_driver_(nullptr) {}
   ~PushMessagingBrowserTest() override {}
 
   // InProcessBrowserTest:
@@ -136,9 +140,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_->Start());
-
-    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-        base::BindRepeating(&gcm::FakeGCMProfileService::Build));
 
     SiteEngagementScore::SetParamValuesForTesting();
     InProcessBrowserTest::SetUp();
@@ -166,12 +167,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         PushMessagingServiceFactory::GetForProfile(GetBrowser()->profile());
 
     LoadTestPage();
-  }
-
-  void TearDown() override {
-    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
-        BrowserContextKeyedServiceFactory::TestingFactory());
-    InProcessBrowserTest::TearDown();
   }
 
   void TearDownOnMainThread() override {
@@ -326,6 +321,9 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   virtual Browser* GetBrowser() const { return browser(); }
+
+  gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
+      scoped_testing_factory_installer_;
 
   gcm::FakeGCMProfileService* gcm_service_;
   instance_id::FakeGCMDriverForInstanceID* gcm_driver_;
