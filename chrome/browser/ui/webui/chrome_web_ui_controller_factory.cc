@@ -488,7 +488,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIKeyboardOverlayHost)
     return &NewWebUI<KeyboardOverlayUI>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
-    return &NewWebUI<MobileSetupUI>;
+    return &NewWebUI<chromeos::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIMultiDeviceSetupHost)
     return &NewWebUI<chromeos::multidevice_setup::MultiDeviceSetupDialogUI>;
   if (url.host_piece() == chrome::kChromeUINetworkHost)
