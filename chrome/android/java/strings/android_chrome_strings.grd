@@ -3314,6 +3314,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>
+      <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT_INCOGNITO" desc="The notification will display this text for the user to return to the incognito tab which has created the notification.">
+        Tap to go to site
+      </message>
       <message name="IDS_MEDIA_NOTIFICATION_INCOGNITO" desc="Text used as a placeholder for media notifications content, when notification is shown from incognito tab.">
         A site is playing media
       </message>
@@ -3322,6 +3325,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT" desc="Text to be shown as a notification when screen capture is in progress.">
         <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph> is sharing your screen
+      </message>
+      <message name="IDS_SCREEN_CAPTURE_INCOGNITO_NOTIFICATION_TEXT" desc="Text to be shown as a notification when screen capture is in progress in incognito mode.">
+        A site is sharing your screen
       </message>
       <message name="IDS_NEW_TAB_INCOGNITO_HEADER" desc="Header shown when a user opens an incognito tab explaining incognito mode">
         You’ve gone incognito.
