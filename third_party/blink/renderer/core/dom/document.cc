@@ -1143,10 +1143,31 @@ ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
   // at once here because CSS parsing is done synchronously on the main thread.
   // TODO(rakina): Find a way to improve this.
   CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
-  sheet->SetText(text);
+  sheet->SetText(text, true /* allow_import_rules */, exception_state);
   sheet->SetAssociatedDocument(this);
   return ScriptPromise::Cast(script_state,
                              ScriptValue::From(script_state, sheet));
+}
+
+CSSStyleSheet* Document::createCSSStyleSheetSync(
+    ScriptState* script_state,
+    const String& text,
+    ExceptionState& exception_state) {
+  return Document::createCSSStyleSheetSync(
+      script_state, text, CSSStyleSheetInit(), exception_state);
+}
+
+CSSStyleSheet* Document::createCSSStyleSheetSync(
+    ScriptState* script_state,
+    const String& text,
+    const CSSStyleSheetInit& options,
+    ExceptionState& exception_state) {
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
+  sheet->SetText(text, false /* allow_import_rules */, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  sheet->SetAssociatedDocument(this);
+  return sheet;
 }
 
 CSSStyleSheet* Document::createEmptyCSSStyleSheet(

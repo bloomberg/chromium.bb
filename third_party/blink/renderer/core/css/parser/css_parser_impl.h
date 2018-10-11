@@ -38,6 +38,11 @@ class StyleRuleViewport;
 class StyleSheetContents;
 class Element;
 
+enum class ParseSheetResult {
+  kSucceeded,
+  kHasUnallowedImportRule,
+};
+
 class CSSParserImpl {
   STACK_ALLOCATED();
 
@@ -95,11 +100,12 @@ class CSSParserImpl {
                                   const CSSParserContext*,
                                   StyleSheetContents*,
                                   AllowedRulesType);
-  static void ParseStyleSheet(
+  static ParseSheetResult ParseStyleSheet(
       const String&,
       const CSSParserContext*,
       StyleSheetContents*,
-      CSSDeferPropertyParsing = CSSDeferPropertyParsing::kNo);
+      CSSDeferPropertyParsing = CSSDeferPropertyParsing::kNo,
+      bool allow_import_rules = true);
   static CSSSelectorList ParsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
 

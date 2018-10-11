@@ -242,11 +242,12 @@ StyleRuleBase* CSSParserImpl::ParseRule(const String& string,
   return rule;
 }
 
-void CSSParserImpl::ParseStyleSheet(
+ParseSheetResult CSSParserImpl::ParseStyleSheet(
     const String& string,
     const CSSParserContext* context,
     StyleSheetContents* style_sheet,
-    CSSDeferPropertyParsing defer_property_parsing) {
+    CSSDeferPropertyParsing defer_property_parsing,
+    bool allow_import_rules) {
   TRACE_EVENT_BEGIN2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
                      "baseUrl", context->BaseURL().GetString().Utf8(), "mode",
                      context->Mode());
@@ -260,10 +261,16 @@ void CSSParserImpl::ParseStyleSheet(
     parser.lazy_state_ =
         new CSSLazyParsingState(context, string, parser.style_sheet_);
   }
+  ParseSheetResult result = ParseSheetResult::kSucceeded;
   bool first_rule_valid = parser.ConsumeRuleList(
-      stream, kTopLevelRuleList, [&style_sheet](StyleRuleBase* rule) {
+      stream, kTopLevelRuleList,
+      [&style_sheet, &result, allow_import_rules](StyleRuleBase* rule) {
         if (rule->IsCharsetRule())
           return;
+        if (rule->IsImportRule() && !allow_import_rules) {
+          result = ParseSheetResult::kHasUnallowedImportRule;
+          return;
+        }
         style_sheet->ParserAppendRule(rule);
       });
   style_sheet->SetHasSyntacticallyValidCSSHeader(first_rule_valid);
@@ -272,6 +279,7 @@ void CSSParserImpl::ParseStyleSheet(
   TRACE_EVENT_END2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
                    "tokenCount", tokenizer.TokenCount(), "length",
                    string.length());
+  return result;
 }
 
 CSSSelectorList CSSParserImpl::ParsePageSelector(

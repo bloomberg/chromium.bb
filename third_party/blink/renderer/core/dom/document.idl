@@ -75,6 +75,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [NewObject] Range createRange();
 
     [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] Promise<CSSStyleSheet> createCSSStyleSheet(DOMString text, optional CSSStyleSheetInit options);
+    [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] CSSStyleSheet createCSSStyleSheetSync(DOMString text, optional CSSStyleSheetInit options);
     [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] CSSStyleSheet createEmptyCSSStyleSheet(optional CSSStyleSheetInit options);
 
 

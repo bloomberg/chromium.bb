@@ -184,7 +184,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool SheetLoaded();
   bool LoadCompleted() const { return load_completed_; }
   void StartLoadingDynamicSheet();
-  void SetText(const String&);
+  void SetText(const String&, bool allow_import_rules, ExceptionState&);
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
   bool IsAlternate() const;
@@ -235,6 +235,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   // For other CSSStyleSheet, consult the alternate attribute.
   bool alternate_from_constructor_ = false;
   bool enable_rule_access_for_inspector_ = false;
+
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
