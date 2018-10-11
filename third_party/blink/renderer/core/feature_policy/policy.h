@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_POLICY_POLICY_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_POLICY_POLICY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_H_
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -56,4 +56,4 @@ class CORE_EXPORT Policy : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_POLICY_POLICY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_H_
