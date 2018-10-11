@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 using autofill::FillingStatus;
@@ -54,6 +55,7 @@ using ItemType = AccessoryItem::Type;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
+constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
 
 // The mock view mocks the platform-specific implementation. That also means
 // that we have to care about the lifespan of the Controller because that would
@@ -675,11 +677,11 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -692,16 +694,16 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run).Times(2);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   // The favicon service should already start to work on the request.
   Mock::VerifyAndClearExpectations(favicon_service());
 
   // This call is only enqueued (and the callback will be called afterwards).
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
 
   // After the async task is finished, both callbacks must be called.
   base::RunLoop().RunUntilIdle();
@@ -711,10 +713,16 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
 
   // We need a result with a non-empty image or it won't get cached.
-  favicon_base::FaviconImageResult non_empty_result;
+  favicon_base::FaviconRawBitmapResult non_empty_result;
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(32, 32);
-  non_empty_result.image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  bitmap.allocN32Pixels(kIconSize, kIconSize);
+  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data->data());
+  non_empty_result.bitmap_data = data;
+  non_empty_result.expired = false;
+  non_empty_result.pixel_size = gfx::Size(kIconSize, kIconSize);
+  non_empty_result.icon_type = favicon_base::IconType::kFavicon;
+  non_empty_result.icon_url = GURL(kExampleSite);
 
   // Populate the cache by requesting a favicon.
   EXPECT_CALL(*view(), OnItemsAvailable(_));
@@ -723,18 +731,18 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(non_empty_result));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(non_empty_result));
   EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&mock_callback);
 
   // This call is handled by the cache - no favicon service, no async request.
   EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   Mock::VerifyAndClearExpectations(&mock_callback);
   Mock::VerifyAndClearExpectations(favicon_service());
 
@@ -748,11 +756,11 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
       url::Origin::Create(GURL(kExampleSite)), true, false);
 
   // The cache was cleared, so now the service has to be queried again.
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(non_empty_result));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(non_empty_result));
   EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -766,11 +774,11 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   // Right after starting the favicon request for example.com, another frame on
   // the same site is focused. Even if the request is completed, the callback
   // should not be called because the origin of the suggestions has changed.
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run).Times(0);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://other.frame.com/")), true, false);
 

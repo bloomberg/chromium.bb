@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.graphics.Bitmap;
+import android.support.annotation.Px;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
@@ -128,13 +129,13 @@ class PasswordAccessoryBridge {
         return items;
     }
 
-    public void fetchFavicon(Callback<Bitmap> faviconCallback) {
+    public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {
         assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
-        nativeOnFaviconRequested(mNativeView, faviconCallback);
+        nativeOnFaviconRequested(mNativeView, desiredSize, faviconCallback);
     }
 
-    private native void nativeOnFaviconRequested(
-            long nativePasswordAccessoryViewAndroid, Callback<Bitmap> faviconCallback);
+    private native void nativeOnFaviconRequested(long nativePasswordAccessoryViewAndroid,
+            int desiredSizeInPx, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
             long nativePasswordAccessoryViewAndroid, boolean isPassword, String textToFill);
     private native void nativeOnOptionSelected(

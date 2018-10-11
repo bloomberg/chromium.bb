@@ -36,6 +36,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   void OnFaviconRequested(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      jint desiredSizeInPx,
       const base::android::JavaParamRef<jobject>& j_callback);
   void OnFillingTriggered(
       JNIEnv* env,
