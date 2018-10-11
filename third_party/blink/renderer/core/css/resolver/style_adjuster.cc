@@ -447,16 +447,20 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.Display() == EDisplay::kTableHeaderGroup ||
       style.Display() == EDisplay::kTableRow ||
       style.Display() == EDisplay::kTableRowGroup ||
-      style.Display() == EDisplay::kTableCell)
+      style.Display() == EDisplay::kTableCell) {
     style.SetWritingMode(layout_parent_style.GetWritingMode());
+    style.UpdateFontOrientation();
+  }
 
   // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
   if (style.GetWritingMode() != WritingMode::kHorizontalTb &&
       (style.Display() == EDisplay::kWebkitBox ||
-       style.Display() == EDisplay::kWebkitInlineBox))
+       style.Display() == EDisplay::kWebkitInlineBox)) {
     style.SetWritingMode(WritingMode::kHorizontalTb);
+    style.UpdateFontOrientation();
+  }
 
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
     style.SetFloating(EFloat::kNone);

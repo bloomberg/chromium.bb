@@ -2120,6 +2120,7 @@ void Document::PropagateStyleToViewport() {
     scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::Clone(viewport_style);
     new_style->SetWritingMode(root_writing_mode);
+    new_style->UpdateFontOrientation();
     new_style->SetDirection(root_direction);
     new_style->SetBackgroundColor(background_color);
     new_style->AccessBackgroundLayers() = background_layers;

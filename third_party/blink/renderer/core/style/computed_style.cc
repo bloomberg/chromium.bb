@@ -1568,6 +1568,34 @@ FontBaseline ComputedStyle::GetFontBaseline() const {
                                                       : kIdeographicBaseline;
 }
 
+FontOrientation ComputedStyle::ComputeFontOrientation() const {
+  if (IsHorizontalWritingMode())
+    return FontOrientation::kHorizontal;
+
+  switch (GetTextOrientation()) {
+    case ETextOrientation::kMixed:
+      return FontOrientation::kVerticalMixed;
+    case ETextOrientation::kUpright:
+      return FontOrientation::kVerticalUpright;
+    case ETextOrientation::kSideways:
+      return FontOrientation::kVerticalRotated;
+    default:
+      NOTREACHED();
+      return FontOrientation::kVerticalMixed;
+  }
+}
+
+void ComputedStyle::UpdateFontOrientation() {
+  FontOrientation orientation = ComputeFontOrientation();
+  if (GetFontDescription().Orientation() == orientation)
+    return;
+  FontSelector* current_font_selector = GetFont().GetFontSelector();
+  FontDescription font_description = GetFontDescription();
+  font_description.SetOrientation(orientation);
+  SetFontDescription(font_description);
+  GetFont().Update(current_font_selector);
+}
+
 TextDecoration ComputedStyle::TextDecorationsInEffect() const {
   if (HasSimpleUnderlineInternal())
     return TextDecoration::kUnderline;
