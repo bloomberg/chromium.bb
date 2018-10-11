@@ -258,6 +258,18 @@ class MODULES_EXPORT RTCPeerConnection final
   static int PeerConnectionCount();
   static int PeerConnectionCountLimit();
 
+  // SLD/SRD helper method, public for testing.
+  // "Complex" Plan B SDP is SDP that is not compatible with Unified Plan, i.e.
+  // SDP that has multiple tracks listed under the same m= sections. We should
+  // show a deprecation warning when setLocalDescription() or
+  // setRemoteDescription() is called and:
+  // - The SDP is complex Plan B SDP.
+  // - sdpSemantics was not specified at RTCPeerConnection construction.
+  // Such calls would normally succeed, but as soon as the default switches to
+  // Unified Plan they would fail. This decides whether to show deprecation for
+  // WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics.
+  bool ShouldShowComplexPlanBSdpWarning(const RTCSessionDescriptionInit&) const;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -288,6 +300,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   RTCPeerConnection(ExecutionContext*,
                     webrtc::PeerConnectionInterface::RTCConfiguration,
+                    bool sdp_semantics_specified,
                     WebMediaConstraints,
                     ExceptionState&);
   void Dispose();
@@ -442,6 +455,8 @@ class MODULES_EXPORT RTCPeerConnection final
   // "kUnifiedPlan", if constructed with "kDefault" it is translated to one or
   // the other.
   webrtc::SdpSemantics sdp_semantics_;
+  // Whether sdpSemantics was specified at construction.
+  bool sdp_semantics_specified_;
 };
 
 }  // namespace blink

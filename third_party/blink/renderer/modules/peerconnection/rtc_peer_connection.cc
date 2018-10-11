@@ -114,7 +114,9 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/pc/sessiondescription.h"
 
 namespace blink {
 
@@ -552,7 +554,8 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   RTCPeerConnection* peer_connection = new RTCPeerConnection(
-      context, std::move(configuration), constraints, exception_state);
+      context, std::move(configuration), rtc_configuration.hasSdpSemantics(),
+      constraints, exception_state);
   peer_connection->PauseIfNeeded();
   if (exception_state.HadException())
     return nullptr;
@@ -567,6 +570,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
 RTCPeerConnection::RTCPeerConnection(
     ExecutionContext* context,
     webrtc::PeerConnectionInterface::RTCConfiguration configuration,
+    bool sdp_semantics_specified,
     WebMediaConstraints constraints,
     ExceptionState& exception_state)
     : PausableObject(context),
@@ -585,7 +589,8 @@ RTCPeerConnection::RTCPeerConnection(
       stopped_(false),
       closed_(false),
       has_data_channels_(false),
-      sdp_semantics_(configuration.sdp_semantics) {
+      sdp_semantics_(configuration.sdp_semantics),
+      sdp_semantics_specified_(sdp_semantics_specified) {
   Document* document = To<Document>(GetExecutionContext());
 
   InstanceCounters::IncrementCounter(
@@ -841,9 +846,47 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
   return nullptr;
 }
 
+bool RTCPeerConnection::ShouldShowComplexPlanBSdpWarning(
+    const RTCSessionDescriptionInit& session_description_init) const {
+  if (sdp_semantics_specified_)
+    return false;
+  if (!session_description_init.hasType() || !session_description_init.hasSdp())
+    return false;
+  std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(
+      webrtc::CreateSessionDescription(
+          session_description_init.type().Utf8().data(),
+          session_description_init.sdp().Utf8().data(), nullptr));
+  if (!session_description)
+    return false;
+  size_t num_audio_mlines = 0u;
+  size_t num_video_mlines = 0u;
+  size_t num_audio_tracks = 0u;
+  size_t num_video_tracks = 0u;
+  for (const cricket::ContentInfo& content :
+       session_description->description()->contents()) {
+    cricket::MediaType media_type = content.media_description()->type();
+    size_t num_tracks = std::max(static_cast<size_t>(1u),
+                                 content.media_description()->streams().size());
+    if (media_type == cricket::MEDIA_TYPE_AUDIO) {
+      ++num_audio_mlines;
+      num_audio_tracks += num_tracks;
+    } else if (media_type == cricket::MEDIA_TYPE_VIDEO) {
+      ++num_video_mlines;
+      num_video_tracks += num_tracks;
+    }
+  }
+  return (num_audio_mlines == 1u && num_audio_tracks > 1u) ||
+         (num_video_mlines == 1u && num_video_tracks > 1u);
+}
+
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   String sdp;
   DOMException* exception = checkSdpForStateErrors(
       ExecutionContext::From(script_state), session_description_init, &sdp);
@@ -864,6 +907,11 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit& session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -929,6 +977,11 @@ RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
@@ -951,6 +1004,11 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit& session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
+  if (ShouldShowComplexPlanBSdpWarning(session_description_init)) {
+    Deprecation::CountDeprecation(
+        GetExecutionContext(),
+        WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
