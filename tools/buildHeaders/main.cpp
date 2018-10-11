@@ -50,6 +50,7 @@ void Usage()
            "     JSON   - JSON format data\n"
            "     Lua    - Lua module\n"
            "     Python - Python module (also accepts Py)\n"
+           "     C#     - C# module (also accepts CSharp)\n"
            "  -H print header in all supported languages to files in current directory\n"
            );
 }
@@ -90,6 +91,9 @@ bool ProcessArguments(int argc, char* argv[])
                     Language = spv::ELangLua;
                 } else if (language == "python" || language == "py") {
                     Language = spv::ELangPython;
+                }
+                else if (language == "c#" || language == "csharp") {
+                    Language = spv::ELangCSharp;
                 } else
                     return false;
 
