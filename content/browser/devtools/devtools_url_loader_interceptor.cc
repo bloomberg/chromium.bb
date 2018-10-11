@@ -207,7 +207,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   Response InnerContinueRequest(std::unique_ptr<Modifications> modifications);
   Response ProcessAuthResponse(AuthChallengeResponse* auth_challenge_response);
   Response ProcessResponseOverride(const std::string& response);
-  Response ProcessRedirectByClient(const std::string& location);
+  Response ProcessRedirectByClient(const GURL& redirect_url);
   void SendResponse(const base::StringPiece& body);
   void ApplyModificationsToRequest(
       std::unique_ptr<Modifications> modifications);
@@ -821,7 +821,8 @@ Response InterceptionJob::InnerContinueRequest(
       auto* headers = response_metadata_->head.headers.get();
       headers->RemoveHeader("location");
       headers->AddHeader("location: " + location);
-      return ProcessRedirectByClient(location);
+      return ProcessRedirectByClient(
+          create_loader_params_->request.url.Resolve(location));
     }
     client_->OnReceiveRedirect(*response_metadata_->redirect_info,
                                response_metadata_->head);
@@ -941,7 +942,9 @@ Response InterceptionJob::ProcessResponseOverride(const std::string& response) {
   head->headers = new net::HttpResponseHeaders(std::move(raw_headers));
   head->headers->GetMimeTypeAndCharset(&head->mime_type, &head->charset);
   if (head->mime_type.empty()) {
-    net::SniffMimeType(response.data() + header_size, body_size,
+    size_t bytes_to_sniff =
+        std::min(body_size, static_cast<size_t>(net::kMaxBytesToSniff));
+    net::SniffMimeType(response.data() + header_size, bytes_to_sniff,
                        create_loader_params_->request.url, "",
                        net::ForceSniffFileUrlsForHtml::kDisabled,
                        &head->mime_type);
@@ -953,9 +956,12 @@ Response InterceptionJob::ProcessResponseOverride(const std::string& response) {
   head->request_start = start_ticks_;
   head->response_start = base::TimeTicks::Now();
 
-  std::string location_url;
-  if (head->headers->IsRedirect(&location_url))
-    return ProcessRedirectByClient(location_url);
+  std::string location;
+  if (head->headers->IsRedirect(&location)) {
+    GURL redirect_url = create_loader_params_->request.url.Resolve(location);
+    if (redirect_url.is_valid())
+      return ProcessRedirectByClient(redirect_url);
+  }
 
   response_metadata_->transfer_size = body_size;
 
@@ -968,9 +974,7 @@ Response InterceptionJob::ProcessResponseOverride(const std::string& response) {
   return Response::OK();
 }
 
-Response InterceptionJob::ProcessRedirectByClient(const std::string& location) {
-  GURL redirect_url = create_loader_params_->request.url.Resolve(location);
-
+Response InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
   if (!redirect_url.is_valid())
     return Response::Error("Invalid redirect URL in overriden headers");
 
@@ -989,7 +993,7 @@ Response InterceptionJob::ProcessRedirectByClient(const std::string& location) {
           first_party_url_policy, request.referrer_policy,
           request.referrer.spec(), &headers, headers.response_code(),
           redirect_url, false /* insecure_scheme_was_upgraded */,
-          false /* copy_fragment */));
+          true /* copy_fragment */));
 
   client_->OnReceiveRedirect(*response_metadata_->redirect_info,
                              response_metadata_->head);

@@ -338,4 +338,13 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   return false;
 }
 
+::network::mojom::NetworkContextPtr
+HeadlessContentBrowserClient::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  return HeadlessBrowserContextImpl::From(context)->CreateNetworkContext(
+      in_memory, relative_partition_path);
+}
+
 }  // namespace headless

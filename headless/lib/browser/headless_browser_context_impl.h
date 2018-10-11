@@ -16,14 +16,13 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_context.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
-#include "headless/lib/browser/headless_url_request_context_getter.h"
+#include "headless/lib/browser/headless_request_context_manager.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
 
 namespace headless {
 class HeadlessBrowserImpl;
-class HeadlessResourceContext;
 class HeadlessWebContentsImpl;
 
 class HEADLESS_EXPORT HeadlessBrowserContextImpl final
@@ -109,6 +108,10 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   const base::UnguessableToken* GetDevToolsFrameTokenForFrameTreeNodeId(
       int frame_tree_node_id) const;
 
+  ::network::mojom::NetworkContextPtr CreateNetworkContext(
+      bool in_memory,
+      const base::FilePath& relative_partition_path);
+
  private:
   HeadlessBrowserContextImpl(
       HeadlessBrowserImpl* browser,
@@ -120,8 +123,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
 
   HeadlessBrowserImpl* browser_;  // Not owned.
   std::unique_ptr<HeadlessBrowserContextOptions> context_options_;
-  std::unique_ptr<HeadlessResourceContext> resource_context_;
-  scoped_refptr<HeadlessURLRequestContextGetter> url_request_getter_;
   base::FilePath path_;
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
@@ -139,6 +140,8 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
 
   std::unique_ptr<content::PermissionControllerDelegate>
       permission_controller_delegate_;
+
+  std::unique_ptr<HeadlessRequestContextManager> request_context_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextImpl);
 };

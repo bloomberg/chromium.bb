@@ -93,21 +93,12 @@ void HeadlessBrowserImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-
   browser_contexts_.clear();
-#if defined(USE_NSS_CERTS)
-  if (system_url_request_getter_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(
-            [](scoped_refptr<HeadlessURLRequestContextGetter> getter) {
-              net::SetURLRequestContextForNSSHttpIO(nullptr);
-              getter->NotifyContextShuttingDown();
-            },
-            std::move(system_url_request_getter_)));
-    DCHECK(!system_url_request_getter_);  // Posted task grabs ownership.
+  if (system_request_context_manager_) {
+    content::BrowserThread::DeleteSoon(
+        content::BrowserThread::IO, FROM_HERE,
+        system_request_context_manager_.release());
   }
-#endif
   browser_main_parts_->QuitMainMessageLoop();
 }
 
@@ -179,27 +170,11 @@ void HeadlessBrowserImpl::SetDefaultBrowserContext(
 
   default_browser_context_ = browser_context;
 
-#if defined(USE_NSS_CERTS)
-  if (!system_url_request_getter_ && browser_context) {
-    ProtocolHandlerMap empty_protocol_handlers;
-    system_url_request_getter_ =
-        base::MakeRefCounted<HeadlessURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}),
-            &empty_protocol_handlers, ProtocolHandlerMap(),
-            content::URLRequestInterceptorScopedVector(),
-            HeadlessBrowserContextImpl::From(browser_context)->options(),
-            base::FilePath());
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(
-            [](HeadlessURLRequestContextGetter* getter) {
-              net::SetURLRequestContextForNSSHttpIO(
-                  getter->GetURLRequestContext());
-            },
-            base::Unretained(system_url_request_getter_.get())));
+  if (default_browser_context_ && !system_request_context_manager_) {
+    system_request_context_manager_ =
+        HeadlessRequestContextManager::CreateSystemContext(
+            HeadlessBrowserContextImpl::From(browser_context)->options());
   }
-#endif  // defined(USE_NSS_CERTS)
 }
 
 HeadlessBrowserContext* HeadlessBrowserImpl::GetDefaultBrowserContext() {
