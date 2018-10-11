@@ -66,7 +66,7 @@ public class ContactsPickerDialogTest
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
 
     // The last action recorded in the dialog (e.g. photo selected).
-    private ContactsPickerAction mLastActionRecorded;
+    private @ContactsPickerAction int mLastActionRecorded;
 
     // The final set of contacts picked by the dialog (json string).
     private String mLastSelectedContacts;
@@ -101,7 +101,7 @@ public class ContactsPickerDialogTest
     // ContactsPickerDialog.ContactsPickerListener:
 
     @Override
-    public void onContactsPickerUserAction(ContactsPickerAction action, String contacts) {
+    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contacts) {
         mLastActionRecorded = action;
         mLastSelectedContacts = contacts;
         onActionCallback.notifyCalled();
@@ -158,7 +158,7 @@ public class ContactsPickerDialogTest
     }
 
     private void clickDone() throws Exception {
-        mLastActionRecorded = null;
+        mLastActionRecorded = ContactsPickerAction.NUM_ENTRIES;
 
         ContactsPickerToolbar toolbar =
                 (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
@@ -170,7 +170,7 @@ public class ContactsPickerDialogTest
     }
 
     public void clickCancel() throws Exception {
-        mLastActionRecorded = null;
+        mLastActionRecorded = ContactsPickerAction.NUM_ENTRIES;
 
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
         View cancel = new View(mActivityTestRule.getActivity());
@@ -181,8 +181,8 @@ public class ContactsPickerDialogTest
     }
 
     private void clickActionButton(final int expectedSelectionCount,
-            final ContactsPickerAction expectedAction) throws Exception {
-        mLastActionRecorded = null;
+            final @ContactsPickerAction int expectedAction) throws Exception {
+        mLastActionRecorded = ContactsPickerAction.NUM_ENTRIES;
 
         ContactsPickerToolbar toolbar =
                 (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
