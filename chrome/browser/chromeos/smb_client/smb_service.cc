@@ -435,6 +435,11 @@ bool SmbService::IsNetBiosDiscoveryEnabled() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kNetBiosShareDiscoveryEnabled);
 }
 
+bool SmbService::IsNTLMAuthenticationEnabled() const {
+  return profile_->GetPrefs()->GetBoolean(
+      prefs::kNTLMShareAuthenticationEnabled);
+}
+
 void SmbService::RecordMountCount() const {
   const std::vector<ProvidedFileSystemInfo> file_systems =
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);

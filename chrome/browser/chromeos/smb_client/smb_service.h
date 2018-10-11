@@ -151,6 +151,9 @@ class SmbService : public KeyedService,
   // Whether NetBios discovery should be used. Controlled via policy.
   bool IsNetBiosDiscoveryEnabled() const;
 
+  // Whether NTLM should be used. Controlled via policy.
+  bool IsNTLMAuthenticationEnabled() const;
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
