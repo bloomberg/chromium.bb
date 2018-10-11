@@ -65,8 +65,7 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   const WebIDBKey idb_key = WebIDBKey::CreateNumber(0);
   database_impl.Put(transaction_id, object_store_id, value, web_blob_info,
                     idb_key.View(), blink::kWebIDBPutModeAddOrUpdate,
-                    &callbacks, WebVector<long long>(),
-                    WebVector<WebVector<WebIDBKey>>());
+                    &callbacks, WebVector<blink::WebIDBIndexKeys>());
 }
 
 TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
@@ -91,7 +90,7 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.Put(transaction_id, object_store_id, value, web_blob_info,
                     key.View(), blink::kWebIDBPutModeAddOrUpdate, &callbacks,
-                    WebVector<long long>(), WebVector<WebVector<WebIDBKey>>());
+                    WebVector<blink::WebIDBIndexKeys>());
 }
 
 }  // namespace content
