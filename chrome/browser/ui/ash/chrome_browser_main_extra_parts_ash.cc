@@ -188,9 +188,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (!features::IsMultiProcessMash()) {
     ash_shell_init_ = std::make_unique<AshShellInit>();
   } else {
-    // TODO(jamescook): Sort out whether to use ImmersiveContextAsh or
-    // ImmersiveContextMus in SingleProcessMash.
-    immersive_context_ = std::make_unique<ImmersiveContextMus>();
     immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryMus>();
 
     // Enterprise support in the browser can monitor user activity. Connect to
@@ -205,6 +202,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
+
+  if (features::IsUsingWindowService())
+    immersive_context_ = std::make_unique<ImmersiveContextMus>();
 
   // TODO(estade): implement ScreenOrientationDelegateChromeos for Mash and
   // remove this condition.

@@ -13,6 +13,8 @@ class ImmersiveContextMus : public ash::ImmersiveContext {
   ImmersiveContextMus();
   ~ImmersiveContextMus() override;
 
+  static ImmersiveContextMus* Get() { return instance_; }
+
   // ash::ImmersiveContext:
   void OnEnteringOrExitingImmersive(
       ash::ImmersiveFullscreenController* controller,
@@ -25,6 +27,8 @@ class ImmersiveContextMus : public ash::ImmersiveContext {
   bool IsMouseEventsEnabled() override;
 
  private:
+  static ImmersiveContextMus* instance_;
+
   DISALLOW_COPY_AND_ASSIGN(ImmersiveContextMus);
 };
 

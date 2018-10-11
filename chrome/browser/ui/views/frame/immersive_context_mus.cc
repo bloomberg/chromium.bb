@@ -13,9 +13,18 @@
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 
-ImmersiveContextMus::ImmersiveContextMus() {}
+// static
+ImmersiveContextMus* ImmersiveContextMus::instance_ = nullptr;
 
-ImmersiveContextMus::~ImmersiveContextMus() {}
+ImmersiveContextMus::ImmersiveContextMus() {
+  DCHECK(!instance_);
+  instance_ = this;
+}
+
+ImmersiveContextMus::~ImmersiveContextMus() {
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
+}
 
 void ImmersiveContextMus::OnEnteringOrExitingImmersive(
     ash::ImmersiveFullscreenController* controller,

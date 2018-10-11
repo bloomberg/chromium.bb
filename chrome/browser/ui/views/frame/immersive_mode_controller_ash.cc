@@ -7,12 +7,14 @@
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ash/shell.h"  // mash-ok
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/notification_service.h"
@@ -102,7 +104,10 @@ class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
 
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
     : ImmersiveModeController(Type::ASH),
-      controller_(new ash::ImmersiveFullscreenController),
+      controller_(std::make_unique<ash::ImmersiveFullscreenController>(
+          features::IsUsingWindowService()
+              ? ImmersiveContextMus::Get()
+              : ash::Shell::Get()->immersive_context())),
       event_rewriter_(std::make_unique<LocatedEventRetargeter>()) {}
 
 ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() = default;
