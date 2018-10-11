@@ -195,7 +195,7 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
 }
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
-    size_t index) {
+    size_t index) const {
   return TryGetPasswordForm(password_map_, index);
 }
 
@@ -211,19 +211,35 @@ FormVector PasswordManagerPresenter::GetAllPasswords() {
 }
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
-    size_t index) {
+    size_t index) const {
   return TryGetPasswordForm(exception_map_, index);
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
-  if (TryRemovePasswordEntry(EntryKind::kPassword, index)) {
+  if (TryRemovePasswordEntries(&password_map_, index)) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
+  }
+}
+
+void PasswordManagerPresenter::RemoveSavedPassword(
+    const std::string& sort_key) {
+  if (TryRemovePasswordEntries(&password_map_, sort_key)) {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
   }
 }
 
 void PasswordManagerPresenter::RemovePasswordException(size_t index) {
-  if (TryRemovePasswordEntry(EntryKind::kException, index)) {
+  if (TryRemovePasswordEntries(&exception_map_, index)) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_RemovePasswordException"));
+  }
+}
+
+void PasswordManagerPresenter::RemovePasswordException(
+    const std::string& sort_key) {
+  if (TryRemovePasswordEntries(&exception_map_, sort_key)) {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_RemovePasswordException"));
   }
@@ -233,12 +249,15 @@ void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
   undo_manager_.Undo();
 }
 
-void PasswordManagerPresenter::RequestShowPassword(size_t index) {
+void PasswordManagerPresenter::RequestShowPassword(
+    const std::string& sort_key) {
 #if !defined(OS_ANDROID)  // This is never called on Android.
-  const auto* form = TryGetPasswordForm(password_map_, index);
-  if (!form)
+  auto it = password_map_.find(sort_key);
+  if (it == password_map_.end())
     return;
 
+  DCHECK(!it->second.empty());
+  const auto& form = *it->second[0];
   syncer::SyncService* sync_service = nullptr;
   if (ProfileSyncServiceFactory::HasProfileSyncService(
           password_view_->GetProfile())) {
@@ -246,14 +265,14 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
         ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile());
   }
   if (password_manager::sync_util::IsSyncAccountCredential(
-          *form, sync_service,
+          form, sync_service,
           SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
   }
 
   // Call back the front end to reveal the password.
-  password_view_->ShowPassword(index, form->password_value);
+  password_view_->ShowPassword(sort_key, form.password_value);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.AccessPasswordInSettings",
       password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
@@ -281,21 +300,36 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
   store->RemoveLogin(form);
 }
 
-bool PasswordManagerPresenter::TryRemovePasswordEntry(EntryKind entry_kind,
-                                                      size_t index) {
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return false;
-
-  PasswordFormMap& map =
-      entry_kind == EntryKind::kPassword ? password_map_ : exception_map_;
-  if (map.size() <= index)
+bool PasswordManagerPresenter::TryRemovePasswordEntries(
+    PasswordFormMap* form_map,
+    size_t index) {
+  if (form_map->size() <= index)
     return false;
 
   // Android tries to obtain a PasswordForm corresponding to a specific index,
   // and does not know about sort keys. In order to efficiently obtain the n'th
   // element in the map we make use of std::next() here.
-  auto forms_iter = std::next(map.cbegin(), index);
+  return TryRemovePasswordEntries(form_map,
+                                  std::next(form_map->cbegin(), index));
+}
+
+bool PasswordManagerPresenter::TryRemovePasswordEntries(
+    PasswordFormMap* form_map,
+    const std::string& sort_key) {
+  auto it = form_map->find(sort_key);
+  if (it == form_map->end())
+    return false;
+
+  return TryRemovePasswordEntries(form_map, it);
+}
+
+bool PasswordManagerPresenter::TryRemovePasswordEntries(
+    PasswordFormMap* form_map,
+    PasswordFormMap::const_iterator forms_iter) {
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return false;
+
   const FormVector& forms = forms_iter->second;
   DCHECK(!forms.empty());
 
@@ -304,7 +338,7 @@ bool PasswordManagerPresenter::TryRemovePasswordEntry(EntryKind entry_kind,
   for (const auto& form : forms)
     store->RemoveLogin(*form);
 
-  map.erase(forms_iter);
+  form_map->erase(forms_iter);
   return true;
 }
 

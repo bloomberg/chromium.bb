@@ -48,34 +48,36 @@ class PasswordManagerPresenter
   void UpdatePasswordLists();
 
   // Gets the password entry at |index|.
-  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
-  const autofill::PasswordForm* GetPassword(size_t index);
+  const autofill::PasswordForm* GetPassword(size_t index) const;
 
   // password::manager::CredentialProviderInterface:
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords()
       override;
 
   // Gets the password exception entry at |index|.
-  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
-  const autofill::PasswordForm* GetPasswordException(size_t index);
+  const autofill::PasswordForm* GetPasswordException(size_t index) const;
 
-  // Removes the saved password entry at |index|.
-  // |index| the entry index to be removed.
-  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
+  // Removes the saved password entries at |index|, or corresponding to
+  // |sort_key|, respectively.
+  // TODO(https://crbug.com/778146): Unify these methods and the implementation
+  // across Desktop and Android.
   void RemoveSavedPassword(size_t index);
+  void RemoveSavedPassword(const std::string& sort_key);
 
-  // Removes the saved password exception entry at |index|.
-  // |index| the entry index to be removed.
-  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
+  // Removes the saved exception entries at |index|, or corresponding to
+  // |sort_key|, respectively.
+  // TODO(https://crbug.com/778146): Unify these methods and the implementation
+  // across Desktop and Android.
   void RemovePasswordException(size_t index);
+  void RemovePasswordException(const std::string& sort_key);
 
   // Undoes the last saved password or exception removal.
   void UndoRemoveSavedPasswordOrException();
 
-  // Requests the plain text password for entry at |index| to be revealed.
-  // |index| The index of the entry.
-  // TODO(https://crbug.com/892260): Take a SortKey as argument instead.
-  void RequestShowPassword(size_t index);
+  // Requests to reveal the plain text password corresponding to |sort_key|.
+  // TODO(https://crbug.com/778146): Update this method to take a DisplayEntry
+  // instead.
+  void RequestShowPassword(const std::string& sort_key);
 
   // Wrapper around |PasswordStore::AddLogin| that adds the corresponding undo
   // action to |undo_manager_|.
@@ -96,14 +98,22 @@ class PasswordManagerPresenter
       std::map<std::string,
                std::vector<std::unique_ptr<autofill::PasswordForm>>>;
 
-  // Simple two state enum to indicate whether we should operate on saved
-  // passwords or saved exceptions.
-  enum class EntryKind { kPassword, kException };
+  // Attempts to remove the entries corresponding to |index| from |form_map|.
+  // This will also add a corresponding undo operation to |undo_manager_|.
+  // Returns whether removing the entry succeeded.
+  bool TryRemovePasswordEntries(PasswordFormMap* form_map, size_t index);
 
-  // Attempts to remove the entry corresponding to |index| from the map
-  // corresponding to |entry_kind|. This will also add a corresponding undo
-  // operation to |undo_manager_|. Returns whether removing the entry succeeded.
-  bool TryRemovePasswordEntry(EntryKind entry_kind, size_t index);
+  // Attempts to remove the entries corresponding to |sort_key| from |form_map|.
+  // This will also add a corresponding undo operation to |undo_manager_|.
+  // Returns whether removing the entry succeeded.
+  bool TryRemovePasswordEntries(PasswordFormMap* form_map,
+                                const std::string& sort_key);
+
+  // Attempts to remove the entries pointed to by |forms_iter| from |form_map|.
+  // This will also add a corresponding undo operation to |undo_manager_|.
+  // Returns whether removing the entry succeeded.
+  bool TryRemovePasswordEntries(PasswordFormMap* form_map,
+                                PasswordFormMap::const_iterator forms_iter);
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
