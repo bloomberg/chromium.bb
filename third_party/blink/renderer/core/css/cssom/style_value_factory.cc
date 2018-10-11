@@ -305,6 +305,38 @@ CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
   return style_value;
 }
 
+CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
+    const CSSProperty& property,
+    const AtomicString& custom_property_name,
+    const PropertyRegistration* registration,
+    const HeapVector<CSSStyleValueOrString>& values,
+    const ExecutionContext& execution_context) {
+  const CSSParserContext* parser_context = nullptr;
+
+  CSSStyleValueVector style_values;
+  for (const auto& value : values) {
+    if (value.IsCSSStyleValue()) {
+      if (!value.GetAsCSSStyleValue())
+        return CSSStyleValueVector();
+      style_values.push_back(*value.GetAsCSSStyleValue());
+    } else {
+      DCHECK(value.IsString());
+      if (!parser_context)
+        parser_context = CSSParserContext::Create(execution_context);
+
+      const auto subvalues = StyleValueFactory::FromString(
+          property.PropertyID(), custom_property_name, registration,
+          value.GetAsString(), parser_context);
+      if (subvalues.IsEmpty())
+        return CSSStyleValueVector();
+
+      DCHECK(!subvalues.Contains(nullptr));
+      style_values.AppendVector(subvalues);
+    }
+  }
+  return style_values;
+}
+
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     CSSPropertyID property_id,
     const AtomicString& custom_property_name,
