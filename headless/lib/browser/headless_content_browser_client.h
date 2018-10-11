@@ -61,6 +61,11 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
                                        const GURL& effective_site_url) override;
   bool ShouldEnableStrictSiteIsolation() override;
 
+  ::network::mojom::NetworkContextPtr CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
+
  private:
   std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();
   std::unique_ptr<base::Value> GetRendererServiceManifestOverlay();

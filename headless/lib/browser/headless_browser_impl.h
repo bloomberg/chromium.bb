@@ -30,7 +30,7 @@ namespace headless {
 
 class HeadlessBrowserContextImpl;
 class HeadlessBrowserMainParts;
-class HeadlessURLRequestContextGetter;
+class HeadlessRequestContextManager;
 class HeadlessWebContentsImpl;
 
 extern const base::FilePath::CharType kDefaultProfileName[];
@@ -104,11 +104,8 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   HeadlessBrowserContext* default_browser_context_;  // Not owned.
 
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
-
-#if defined(USE_NSS_CERTS)
-  scoped_refptr<HeadlessURLRequestContextGetter> system_url_request_getter_;
-#endif
-
+  std::unique_ptr<HeadlessRequestContextManager>
+      system_request_context_manager_;
   base::WeakPtrFactory<HeadlessBrowserImpl> weak_ptr_factory_;
 
  private:
