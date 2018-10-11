@@ -244,12 +244,9 @@ public class FeedNewTabPage extends NewTabPage {
     @Override
     protected void initializeMainView(Context context) {
         int topPadding = context.getResources().getDimensionPixelOffset(R.dimen.tab_strip_height);
-        int bottomPadding = mTab.getActivity().getFullscreenManager().getBottomControlsHeight();
 
         mRootView = new RootView(context);
-        mRootView.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        mRootView.setPadding(0, topPadding, 0, bottomPadding);
+        mRootView.setPadding(0, topPadding, 0, 0);
         mUiConfig = new UiConfig(mRootView);
     }
 
