@@ -687,6 +687,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportCrostiniUsageEnabled,
     crostini::prefs::kReportCrostiniUsageEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kNTLMShareAuthenticationEnabled,
+    prefs::kNTLMShareAuthenticationEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

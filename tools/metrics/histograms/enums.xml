@@ -14672,6 +14672,7 @@ Called by update_net_error_codes.py.-->
   <int value="486" label="WebUsbAllowDevicesForUrls"/>
   <int value="487" label="BrowserSignin"/>
   <int value="488" label="SmartLockSigninAllowed"/>
+  <int value="489" label="NTLMShareAuthenticationEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

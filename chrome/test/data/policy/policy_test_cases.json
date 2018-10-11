@@ -3371,6 +3371,14 @@
     ]
   },
 
+  "NTLMShareAuthenticationEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "NTLMShareAuthenticationEnabled": true },
+    "pref_mappings": [
+      { "pref": "network_file_shares.ntlm_share_authentication.enabled" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

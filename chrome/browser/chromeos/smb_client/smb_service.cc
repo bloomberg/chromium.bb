@@ -121,6 +121,7 @@ void SmbService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kNetworkFileSharesAllowed, true);
   registry->RegisterBooleanPref(prefs::kNetBiosShareDiscoveryEnabled, true);
+  registry->RegisterBooleanPref(prefs::kNTLMShareAuthenticationEnabled, true);
 }
 
 void SmbService::Mount(const file_system_provider::MountOptions& options,

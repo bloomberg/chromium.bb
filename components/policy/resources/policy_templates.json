@@ -671,6 +671,7 @@
       'policies': [
         'NetworkFileSharesAllowed',
         'NetBiosShareDiscoveryEnabled',
+        'NTLMShareAuthenticationEnabled',
       ],
     },
     {
@@ -13445,6 +13446,27 @@
 
       This policy is meant to be used together with the "Always on VPN" feature, that lets the admin decide to establish a VPN connection on boot.''',
     },
+    {
+      'id': 489,
+      'name': 'NTLMShareAuthenticationEnabled',
+      'type': 'main',
+      'schema': {'type': 'boolean', },
+      'tags': [],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome_os:71-'],
+      'caption': '''Controls enabling NTLM as an authentication protocol for SMB mounts''',
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> will use NTLM for authentication.
+
+      When this policy is set to True, NTLM will be used for authentication to SMB shares if necessary.
+      When this policy is set to False, NTLM authentication to SMB shares will be disabled.
+
+      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.''',
+    },
   ],
 
   'messages': {
@@ -13586,5 +13608,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 488
+  'highest_id_currently_used': 489
 }
