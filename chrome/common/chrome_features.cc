@@ -214,7 +214,7 @@ const base::Feature kDesktopPWAsLinkCapturing{
 
 // Determines whether in scope requests are always opened in the same window.
 const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disables downloads of unsafe file types over HTTP.
 const base::Feature kDisallowUnsafeHttpDownloads{
