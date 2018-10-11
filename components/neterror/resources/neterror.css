@@ -507,6 +507,10 @@ div.offline-content-suggestion {
   word-break: break-all;
 }
 
+.no-attribution .offline-content-suggestion-attribution {
+  display: none;
+}
+
 .offline-content-suggestion-freshness:before {
   content: '-';
   display: inline-block;
