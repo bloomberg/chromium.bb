@@ -153,6 +153,7 @@ CrSettingsPersonalizationOptionsTest.*
 CrSettingsPrefsTest.*
 CrSettingsPrefUtilTest.*
 CrSettingsPrintingPageTest.*
+CrSettingsPrivacyPageTest.*
 CrSettingsProtocolHandlersTest.*
 CrSettingsResetPageTest.*
 CrSettingsResetProfileBannerTest.*
