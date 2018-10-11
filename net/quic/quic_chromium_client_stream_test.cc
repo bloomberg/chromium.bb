@@ -62,7 +62,8 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                     quic::ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream,
                quic::QuicSpdyStream*(quic::QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicChromiumClientStream*());
+  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicChromiumClientStream*());
+  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD5(WritevData,
                quic::QuicConsumedData(quic::QuicStream* stream,
                                       quic::QuicStreamId id,

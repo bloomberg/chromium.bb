@@ -51,7 +51,9 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
   const QuicCryptoStream* GetCryptoStream() const override;
 
-  QuartcStream* CreateOutgoingDynamicStream() override;
+  QuartcStream* CreateOutgoingBidirectionalStream() override;
+
+  QuartcStream* CreateOutgoingUnidirectionalStream() override;
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 

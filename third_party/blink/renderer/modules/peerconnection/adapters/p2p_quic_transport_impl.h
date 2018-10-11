@@ -110,7 +110,8 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new outgoing stream. The caller does not own the
   // stream, so the stream is activated and ownership is moved to the
   // quic::QuicSession.
-  P2PQuicStreamImpl* CreateOutgoingDynamicStream() override;
+  P2PQuicStreamImpl* CreateOutgoingBidirectionalStream() override;
+  P2PQuicStreamImpl* CreateOutgoingUnidirectionalStream() override;
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 

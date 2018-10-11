@@ -135,11 +135,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   }
 
  protected:
-  // Override CreateIncomingDynamicStream() and CreateOutgoingDynamicStream()
-  // with QuicSpdyStream return type to make sure that all data streams are
-  // QuicSpdyStreams.
+  // Override CreateIncomingDynamicStream(),
+  // CreateOutgoingBidirectionalStream() and
+  // CreateOutgoingUnidirectionalStream() with QuicSpdyStream return type to
+  // make sure that all data streams are QuicSpdyStreams.
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override = 0;
-  QuicSpdyStream* CreateOutgoingDynamicStream() override = 0;
+  QuicSpdyStream* CreateOutgoingBidirectionalStream() override = 0;
+  QuicSpdyStream* CreateOutgoingUnidirectionalStream() override = 0;
 
   QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
 

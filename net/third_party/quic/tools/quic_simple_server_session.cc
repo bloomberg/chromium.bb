@@ -98,7 +98,14 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingDynamicStream(
   return stream;
 }
 
-QuicSimpleServerStream* QuicSimpleServerSession::CreateOutgoingDynamicStream() {
+QuicSimpleServerStream*
+QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
+  DCHECK(false);
+  return nullptr;
+}
+
+QuicSimpleServerStream*
+QuicSimpleServerSession::CreateOutgoingUnidirectionalStream() {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
@@ -192,7 +199,8 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
     }
 
     QuicSimpleServerStream* promised_stream =
-        static_cast<QuicSimpleServerStream*>(CreateOutgoingDynamicStream());
+        static_cast<QuicSimpleServerStream*>(
+            CreateOutgoingUnidirectionalStream());
     DCHECK_NE(promised_stream, nullptr);
     DCHECK_EQ(promised_info.stream_id, promised_stream->id());
     QUIC_DLOG(INFO) << "created server push stream " << promised_stream->id();
