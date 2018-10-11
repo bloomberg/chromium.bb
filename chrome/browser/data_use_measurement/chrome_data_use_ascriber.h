@@ -223,9 +223,9 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // Detects heavy pages. Can be null when the feature is disabled.
   std::unique_ptr<DataUseAscriber::PageLoadObserver> page_capping_observer_;
 
-  // True if the dtaa use ascriber should be disabled. The ascriber is enabled
+  // True if the data use ascriber should be disabled. The ascriber is disabled
   // by default.
-  bool disable_ascriber_ = false;
+  bool disable_ascriber_ = true;
 
   // Set of requests that are currently in-flight.
   std::unordered_set<const net::URLRequest*> requests_;

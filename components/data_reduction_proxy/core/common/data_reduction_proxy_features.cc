@@ -48,7 +48,7 @@ const base::Feature kDogfood{"DataReductionProxyDogfood",
 // harness, and disables the observer for data use ascriber.
 const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics{
     "DataSaverSiteBreakdownUsingPageLoadMetrics",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, "br" is not added to the accept-encoding header. This effectively
 // disables the use of Brotli on the connection from Chrome to secure

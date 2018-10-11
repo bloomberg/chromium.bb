@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "components/data_use_measurement/content/content_url_request_classifier.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -25,8 +24,10 @@
 
 namespace data_use_measurement {
 
+// This flag allows us to enable ChromeDataUseAscriber for data saver users
+// using Finch. The default is to disable ChromeDataUseAscriber.
 const base::Feature kDisableAscriberIfDataSaverDisabled{
-    "DisableAscriberIfDataSaverDisabled", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DisableAscriberIfDataSaverDisabled", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // static
 const void* const ChromeDataUseAscriber::DataUseRecorderEntryAsUserData::
@@ -650,8 +651,8 @@ void ChromeDataUseAscriber::RenderFrameHostChanged(int old_render_process_id,
 bool ChromeDataUseAscriber::IsDisabled() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // TODO(rajendrant): https://crbug.com/753559. Fix platform specific race
-  // conditions and re-enable.
+  // TODO(rajendrant): Disable and deprecate the ChromeDataUseAscriber
+  // altogether.
   return base::FeatureList::IsEnabled(kDisableAscriberIfDataSaverDisabled) &&
          disable_ascriber_;
 }
