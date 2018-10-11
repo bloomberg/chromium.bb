@@ -35,19 +35,10 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
     EXPECT_EQ(result, ConciergeClientResult::SUCCESS);
 
-    SharePath(
-        profile(), "success", share_path_,
-        base::BindOnce(&CrostiniSharePathTest::SharePathSuccessCallback,
-                       base::Unretained(this), run_loop()->QuitClosure()));
-  }
-
-  void SharePathSuccessCallback(base::OnceClosure closure,
-                                bool success,
-                                std::string failure_reason) {
-    EXPECT_TRUE(fake_seneschal_client_->share_path_called());
-    EXPECT_EQ(success, true);
-    EXPECT_EQ(failure_reason, "");
-    std::move(closure).Run();
+    SharePath(profile(), "success", share_path_,
+              base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                             base::Unretained(this), true, true, true, "",
+                             run_loop()->QuitClosure()));
   }
 
   void SharePathErrorSeneschalStartTerminaVmCallback(
@@ -56,19 +47,31 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_EQ(result, ConciergeClientResult::SUCCESS);
 
     SharePath(profile(), "error-seneschal", share_path_,
-              base::BindOnce(&CrostiniSharePathTest::SharePathErrorCallback,
-                             base::Unretained(this), true, "test failure",
-                             run_loop()->QuitClosure()));
+              base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                             base::Unretained(this), true, true, false,
+                             "test failure", run_loop()->QuitClosure()));
   }
 
-  void SharePathErrorCallback(bool expected_seneschal_client_called,
-                              std::string expected_failure_reason,
-                              base::OnceClosure closure,
-                              bool success,
-                              std::string failure_reason) {
+  void SharePathCallback(bool expected_path_saved_to_prefs,
+                         bool expected_seneschal_client_called,
+                         bool expected_success,
+                         std::string expected_failure_reason,
+                         base::OnceClosure closure,
+                         bool success,
+                         std::string failure_reason) {
+    const base::ListValue* prefs =
+        profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+    if (expected_path_saved_to_prefs) {
+      EXPECT_EQ(prefs->GetSize(), 1U);
+      std::string share_path;
+      prefs->GetString(0, &share_path);
+      EXPECT_EQ(share_path_.value(), share_path);
+    } else {
+      EXPECT_EQ(prefs->GetSize(), 0U);
+    }
     EXPECT_EQ(fake_seneschal_client_->share_path_called(),
               expected_seneschal_client_called);
-    EXPECT_EQ(success, false);
+    EXPECT_EQ(success, expected_success);
     EXPECT_EQ(failure_reason, expected_failure_reason);
     std::move(closure).Run();
   }
@@ -184,8 +187,8 @@ TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
 TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
   const base::FilePath path("not/absolute/dir");
   SharePath(profile(), "vm-running", path,
-            base::BindOnce(&CrostiniSharePathTest::SharePathErrorCallback,
-                           base::Unretained(this), false,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), false, false, false,
                            "Path must be absolute", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
@@ -193,8 +196,8 @@ TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
 TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
   const base::FilePath path("/not/under/downloads");
   SharePath(profile(), "vm-running", path,
-            base::BindOnce(&CrostiniSharePathTest::SharePathErrorCallback,
-                           base::Unretained(this), false,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), false, false, false,
                            "Path must be under Downloads",
                            run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -202,17 +205,17 @@ TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
 
 TEST_F(CrostiniSharePathTest, SharePathErrorVmNotRunning) {
   SharePath(profile(), "error-vm-not-running", share_path_,
-            base::BindOnce(&CrostiniSharePathTest::SharePathErrorCallback,
-                           base::Unretained(this), false, "VM not running",
-                           run_loop()->QuitClosure()));
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), true, false, false,
+                           "VM not running", run_loop()->QuitClosure()));
   run_loop()->Run();
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorNotValidDirectory) {
   const base::FilePath path = share_path_.AppendASCII("not-exists");
   SharePath(profile(), "vm-running", path,
-            base::BindOnce(&CrostiniSharePathTest::SharePathErrorCallback,
-                           base::Unretained(this), false,
+            base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                           base::Unretained(this), false, false, false,
                            "Path is not a valid directory",
                            run_loop()->QuitClosure()));
   run_loop()->Run();
