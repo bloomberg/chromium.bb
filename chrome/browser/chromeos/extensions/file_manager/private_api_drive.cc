@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -746,7 +747,7 @@ std::string MakeThumbnailDataUrlOnSequence(
   return base::StrCat({"data:image/png;base64,", encoded});
 }
 
-void SearchDriveFs(
+drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
     scoped_refptr<ChromeAsyncExtensionFunction> function,
     drivefs::mojom::QueryParametersPtr query,
     bool filter_dirs,
@@ -818,7 +819,7 @@ void OnSearchDriveFs(
   std::move(callback).Run(std::move(result));
 }
 
-void SearchDriveFs(
+drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
     scoped_refptr<ChromeAsyncExtensionFunction> function,
     drivefs::mojom::QueryParametersPtr query,
     bool filter_dirs,
@@ -828,10 +829,11 @@ void SearchDriveFs(
   drivefs::mojom::SearchQueryPtr search;
   integration_service->GetDriveFsInterface()->StartSearchQuery(
       mojo::MakeRequest(&search), query.Clone());
+  drivefs::mojom::QueryParameters::QuerySource source = query->query_source;
   if (net::NetworkChangeNotifier::IsOffline() &&
-      query->query_source !=
-          drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
+      source != drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
     // No point trying cloud query if we know we are offline.
+    source = drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
     OnSearchDriveFs(std::move(function), std::move(search), std::move(query),
                     filter_dirs, std::move(callback),
                     drive::FILE_ERROR_NO_CONNECTION, {});
@@ -841,6 +843,32 @@ void SearchDriveFs(
         base::BindOnce(&OnSearchDriveFs, std::move(function), std::move(search),
                        std::move(query), filter_dirs, std::move(callback)));
   }
+  return source;
+}
+
+void UmaEmitSearchOutcome(
+    bool success,
+    bool remote,
+    FileManagerPrivateSearchDriveMetadataFunction::SearchType type,
+    const base::TimeTicks& time_started) {
+  const char* infix = nullptr;
+  switch (type) {
+    case FileManagerPrivateSearchDriveMetadataFunction::SearchType::kText:
+      infix = "TextSearchTime";
+      break;
+    case FileManagerPrivateSearchDriveMetadataFunction::SearchType::
+        kSharedWithMe:
+      infix = "SharedSearchTime";
+      break;
+    case FileManagerPrivateSearchDriveMetadataFunction::SearchType::kOffline:
+      infix = "OfflineSearchTime";
+      break;
+  }
+  base::UmaHistogramTimes(
+      base::StrCat(
+          {remote ? "DriveCommon.RemoteSearch." : "DriveCommon.LocalSearch.",
+           infix, success ? ".SuccessTime" : ".FailTime"}),
+      base::TimeTicks::Now() - time_started);
 }
 
 }  // namespace
@@ -1117,6 +1145,9 @@ bool FileManagerPrivateSearchDriveFunction::RunAsync() {
     return false;
   }
 
+  operation_start_ = base::TimeTicks::Now();
+  is_offline_ = net::NetworkChangeNotifier::IsOffline();
+
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(GetProfile());
   if (file_system) {
@@ -1127,10 +1158,13 @@ bool FileManagerPrivateSearchDriveFunction::RunAsync() {
     // |file_system| is NULL if the backend is DriveFs.
     auto query = drivefs::mojom::QueryParameters::New();
     query->text_content = params->search_params.query;
-    SearchDriveFs(
-        this, std::move(query), false,
-        base::BindOnce(&FileManagerPrivateSearchDriveFunction::OnSearchDriveFs,
-                       this));
+    is_offline_ =
+        SearchDriveFs(
+            this, std::move(query), false,
+            base::BindOnce(
+                &FileManagerPrivateSearchDriveFunction::OnSearchDriveFs,
+                this)) ==
+        drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
   }
 
   return true;
@@ -1139,6 +1173,10 @@ bool FileManagerPrivateSearchDriveFunction::RunAsync() {
 void FileManagerPrivateSearchDriveFunction::OnSearchDriveFs(
     std::unique_ptr<base::ListValue> results) {
   if (!results) {
+    UmaEmitSearchOutcome(
+        false, !is_offline_,
+        FileManagerPrivateSearchDriveMetadataFunction::SearchType::kText,
+        operation_start_);
     SendResponse(false);
     return;
   }
@@ -1148,6 +1186,10 @@ void FileManagerPrivateSearchDriveFunction::OnSearchDriveFs(
   // never actually used, so no need to fill this.
   result->SetKey("nextFeed", base::Value(""));
   SetResult(std::move(result));
+  UmaEmitSearchOutcome(
+      true, !is_offline_,
+      FileManagerPrivateSearchDriveMetadataFunction::SearchType::kText,
+      operation_start_);
   SendResponse(true);
 }
 
@@ -1156,6 +1198,10 @@ void FileManagerPrivateSearchDriveFunction::OnSearch(
     const GURL& next_link,
     std::unique_ptr<SearchResultInfoList> results) {
   if (error != drive::FILE_ERROR_OK) {
+    UmaEmitSearchOutcome(
+        false, !is_offline_,
+        FileManagerPrivateSearchDriveMetadataFunction::SearchType::kText,
+        operation_start_);
     SendResponse(false);
     return;
   }
@@ -1185,6 +1231,10 @@ void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
   result->SetString("nextFeed", next_link.spec());
 
   SetResult(std::move(result));
+  UmaEmitSearchOutcome(
+      true, !is_offline_,
+      FileManagerPrivateSearchDriveMetadataFunction::SearchType::kText,
+      operation_start_);
   SendResponse(true);
 }
 
@@ -1210,6 +1260,9 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
     return false;
   }
 
+  operation_start_ = base::TimeTicks::Now();
+  is_offline_ = true;  // Legacy search is assumed offline always.
+
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(GetProfile());
   // |file_system| is NULL if the backend is DriveFs, otherwise it's legacy
@@ -1219,15 +1272,19 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
     switch (params->search_params.types) {
       case api::file_manager_private::SEARCH_TYPE_EXCLUDE_DIRECTORIES:
         options = drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES;
+        search_type_ = SearchType::kText;
         break;
       case api::file_manager_private::SEARCH_TYPE_SHARED_WITH_ME:
         options = drive::SEARCH_METADATA_SHARED_WITH_ME;
+        search_type_ = SearchType::kSharedWithMe;
         break;
       case api::file_manager_private::SEARCH_TYPE_OFFLINE:
         options = drive::SEARCH_METADATA_OFFLINE;
+        search_type_ = SearchType::kOffline;
         break;
       case api::file_manager_private::SEARCH_TYPE_ALL:
         options = drive::SEARCH_METADATA_ALL;
+        search_type_ = SearchType::kText;
         break;
       default:
         return false;
@@ -1254,26 +1311,33 @@ bool FileManagerPrivateSearchDriveMetadataFunction::RunAsync() {
     switch (params->search_params.types) {
       case api::file_manager_private::SEARCH_TYPE_EXCLUDE_DIRECTORIES:
         filter_dirs = true;
+        search_type_ = SearchType::kText;
         break;
       case api::file_manager_private::SEARCH_TYPE_SHARED_WITH_ME:
         query->shared_with_me = true;
+        search_type_ = SearchType::kSharedWithMe;
         break;
       case api::file_manager_private::SEARCH_TYPE_OFFLINE:
         query->available_offline = true;
         query->query_source =
             drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
+        search_type_ = SearchType::kOffline;
         break;
       case api::file_manager_private::SEARCH_TYPE_ALL:
+        search_type_ = SearchType::kText;
         break;
       default:
         return false;
     }
-    SearchDriveFs(
-        this, std::move(query), filter_dirs,
-        base::BindOnce(
-            &FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs,
-            this, params->search_params.query));
+    is_offline_ =
+        SearchDriveFs(
+            this, std::move(query), filter_dirs,
+            base::BindOnce(
+                &FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs,
+                this, params->search_params.query)) ==
+        drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
   }
+
   return true;
 }
 
@@ -1281,6 +1345,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
     const std::string& query_text,
     std::unique_ptr<base::ListValue> results) {
   if (!results) {
+    UmaEmitSearchOutcome(false, !is_offline_, search_type_, operation_start_);
     SendResponse(false);
     return;
   }
@@ -1319,6 +1384,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
   }
 
   SetResult(std::move(results_list));
+  UmaEmitSearchOutcome(true, !is_offline_, search_type_, operation_start_);
   SendResponse(true);
 }
 
@@ -1326,6 +1392,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchMetadata(
     drive::FileError error,
     std::unique_ptr<drive::MetadataSearchResultVector> results) {
   if (error != drive::FILE_ERROR_OK) {
+    UmaEmitSearchOutcome(false, !is_offline_, search_type_, operation_start_);
     SendResponse(false);
     return;
   }
@@ -1367,6 +1434,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
   }
 
   SetResult(std::move(results_list));
+  UmaEmitSearchOutcome(true, !is_offline_, search_type_, operation_start_);
   SendResponse(true);
 }
 

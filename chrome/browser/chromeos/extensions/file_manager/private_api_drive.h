@@ -150,6 +150,9 @@ class FileManagerPrivateSearchDriveFunction
       std::unique_ptr<SearchResultInfoList> search_result_info_list,
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
+
+  base::TimeTicks operation_start_;
+  bool is_offline_;
 };
 
 // Similar to FileManagerPrivateSearchDriveFunction but this one is used for
@@ -157,6 +160,12 @@ class FileManagerPrivateSearchDriveFunction
 class FileManagerPrivateSearchDriveMetadataFunction
     : public LoggedAsyncExtensionFunction {
  public:
+  enum class SearchType {
+    kText,
+    kSharedWithMe,
+    kOffline,
+  };
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchDriveMetadata",
                              FILEMANAGERPRIVATE_SEARCHDRIVEMETADATA)
 
@@ -181,6 +190,10 @@ class FileManagerPrivateSearchDriveMetadataFunction
           search_result_info_list,
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);
+
+  base::TimeTicks operation_start_;
+  SearchType search_type_;
+  bool is_offline_;
 };
 
 // Implements the chrome.fileManagerPrivate.getDriveConnectionState method.

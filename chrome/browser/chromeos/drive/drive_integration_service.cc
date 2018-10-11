@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
@@ -344,6 +345,22 @@ std::vector<base::FilePath> GetPinnedFiles(
   return pinned_files;
 }
 
+void UmaEmitMountOutcome(DriveMountStatus status,
+                         const base::TimeTicks& time_started) {
+  UMA_HISTOGRAM_ENUMERATION("DriveCommon.Lifecycle.Mount", status);
+  if (status == DriveMountStatus::kSuccess) {
+    UMA_HISTOGRAM_TIMES("DriveCommon.Lifecycle.MountTime.SuccessTime",
+                        base::TimeTicks::Now() - time_started);
+  } else {
+    UMA_HISTOGRAM_TIMES("DriveCommon.Lifecycle.MountTime.FailTime",
+                        base::TimeTicks::Now() - time_started);
+  }
+}
+
+void UmaEmitUnmountOutcome(DriveMountStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("DriveCommon.Lifecycle.Unmount", status);
+}
+
 }  // namespace
 
 // Observes drive disable Preference's change.
@@ -427,21 +444,19 @@ class DriveIntegrationService::PreferenceWatcher
 };
 
 class DriveIntegrationService::DriveFsHolder
-    : public drivefs::DriveFsHost::Delegate {
+    : public drivefs::DriveFsHost::Delegate,
+      public drivefs::DriveFsHost::MountObserver {
  public:
-  DriveFsHolder(
-      Profile* profile,
-      base::RepeatingClosure on_drivefs_mounted,
-      base::RepeatingCallback<void(base::Optional<base::TimeDelta>,
-                                   bool failed_to_mount)> on_drivefs_unmounted,
-      DriveFsMojoConnectionDelegateFactory
-          test_drivefs_mojo_connection_delegate_factory)
+  DriveFsHolder(Profile* profile,
+                drivefs::DriveFsHost::MountObserver* mount_observer,
+                DriveFsMojoConnectionDelegateFactory
+                    test_drivefs_mojo_connection_delegate_factory)
       : profile_(profile),
-        on_drivefs_mounted_(std::move(on_drivefs_mounted)),
-        on_drivefs_unmounted_(std::move(on_drivefs_unmounted)),
+        mount_observer_(mount_observer),
         test_drivefs_mojo_connection_delegate_factory_(
             std::move(test_drivefs_mojo_connection_delegate_factory)),
         drivefs_host_(profile_->GetPath(),
+                      this,
                       this,
                       std::make_unique<base::OneShotTimer>()) {}
 
@@ -470,15 +485,15 @@ class DriveIntegrationService::DriveFsHolder
   }
 
   void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
-    on_drivefs_unmounted_.Run(std::move(remount_delay), true);
+    mount_observer_->OnMountFailed(remount_delay);
   }
 
   void OnMounted(const base::FilePath& path) override {
-    on_drivefs_mounted_.Run();
+    mount_observer_->OnMounted(path);
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
-    on_drivefs_unmounted_.Run(std::move(remount_delay), false);
+    mount_observer_->OnUnmounted(remount_delay);
   }
 
   const std::string& GetProfileSalt() {
@@ -502,12 +517,7 @@ class DriveIntegrationService::DriveFsHolder
   }
 
   Profile* const profile_;
-
-  // Invoked when DriveFS mounting is completed.
-  const base::RepeatingClosure on_drivefs_mounted_;
-  const base::RepeatingCallback<void(base::Optional<base::TimeDelta>,
-                                     bool failed_to_mount)>
-      on_drivefs_unmounted_;
+  drivefs::DriveFsHost::MountObserver* const mount_observer_;
 
   const DriveFsMojoConnectionDelegateFactory
       test_drivefs_mojo_connection_delegate_factory_;
@@ -565,12 +575,7 @@ DriveIntegrationService::DriveIntegrationService(
           base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
               ? std::make_unique<DriveFsHolder>(
                     profile_,
-                    base::BindRepeating(&DriveIntegrationService::
-                                            AddDriveMountPointAfterMounted,
-                                        base::Unretained(this)),
-                    base::BindRepeating(
-                        &DriveIntegrationService::MaybeRemountFileSystem,
-                        base::Unretained(this)),
+                    this,
                     std::move(test_drivefs_mojo_connection_delegate_factory))
               : nullptr),
       weak_ptr_factory_(this) {
@@ -855,16 +860,18 @@ void DriveIntegrationService::AddDriveMountPoint() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (drivefs_holder_ && !drivefs_holder_->drivefs_host()->IsMounted()) {
+    mount_start_ = base::TimeTicks::Now();
     drivefs_holder_->drivefs_host()->Mount();
-    return;
+  } else {
+    AddDriveMountPointAfterMounted();
   }
-  AddDriveMountPointAfterMounted();
 }
 
-void DriveIntegrationService::AddDriveMountPointAfterMounted() {
+bool DriveIntegrationService::AddDriveMountPointAfterMounted() {
   const base::FilePath& drive_mount_point = GetMountPointPath();
-  if (mount_point_name_.empty())
+  if (mount_point_name_.empty()) {
     mount_point_name_ = drive_mount_point.BaseName().AsUTF8Unsafe();
+  }
   storage::ExternalMountPoints* const mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
@@ -889,6 +896,8 @@ void DriveIntegrationService::AddDriveMountPointAfterMounted() {
       !profile_->GetPrefs()->GetBoolean(prefs::kDriveFsPinnedMigrated)) {
     MigratePinnedFiles();
   }
+
+  return success;
 }
 
 void DriveIntegrationService::RemoveDriveMountPoint() {
@@ -953,6 +962,29 @@ void DriveIntegrationService::MaybeRemountFileSystem(
       base::BindOnce(&DriveIntegrationService::AddDriveMountPoint,
                      weak_ptr_factory_.GetWeakPtr()),
       remount_delay.value());
+}
+
+void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
+  if (AddDriveMountPointAfterMounted()) {
+    UmaEmitMountOutcome(DriveMountStatus::kSuccess, mount_start_);
+  } else {
+    UmaEmitMountOutcome(DriveMountStatus::kUnknownFailure, mount_start_);
+  }
+}
+
+void DriveIntegrationService::OnUnmounted(
+    base::Optional<base::TimeDelta> remount_delay) {
+  UmaEmitUnmountOutcome(remount_delay ? DriveMountStatus::kTemporaryUnavailable
+                                      : DriveMountStatus::kUnknownFailure);
+  MaybeRemountFileSystem(remount_delay, false);
+}
+
+void DriveIntegrationService::OnMountFailed(
+    base::Optional<base::TimeDelta> remount_delay) {
+  UmaEmitMountOutcome(remount_delay ? DriveMountStatus::kTemporaryUnavailable
+                                    : DriveMountStatus::kUnknownFailure,
+                      mount_start_);
+  MaybeRemountFileSystem(remount_delay, true);
 }
 
 void DriveIntegrationService::Initialize() {

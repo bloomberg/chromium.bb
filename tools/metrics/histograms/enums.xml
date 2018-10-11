@@ -12409,6 +12409,12 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Iterator error"/>
 </enum>
 
+<enum name="DriveMountStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="UnknownFailure"/>
+  <int value="2" label="TemporaryUnavailable"/>
+</enum>
+
 <enum name="DriveUploadProtocol">
   <int value="0" label="Resumable"/>
   <int value="1" label="Multipart"/>
