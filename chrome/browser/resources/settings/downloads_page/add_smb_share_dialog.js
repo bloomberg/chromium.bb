@@ -97,6 +97,12 @@ Polymer({
     this.$.dialog.close();
   },
 
+  /** @private */
+  onURLChanged_: function() {
+    const parts = this.mountUrl_.split('\\');
+    this.mountName_ = parts[parts.length - 1];
+  },
+
   /**
    * @return {boolean}
    * @private
