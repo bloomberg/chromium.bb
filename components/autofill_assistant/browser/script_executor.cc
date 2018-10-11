@@ -25,6 +25,7 @@ ScriptExecutor::ScriptExecutor(const std::string& script_path,
       delegate_(delegate),
       at_end_(CONTINUE),
       should_stop_script_(false),
+      should_clean_contextual_ui_on_finish_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
@@ -181,6 +182,10 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
 
 void ScriptExecutor::RunCallback(bool success) {
   DCHECK(callback_);
+  if (should_clean_contextual_ui_on_finish_ || !success) {
+    HideDetails();
+    should_clean_contextual_ui_on_finish_ = false;
+  }
 
   ScriptExecutor::Result result;
   result.success = success;
@@ -200,6 +205,7 @@ void ScriptExecutor::ProcessNextAction() {
   }
 
   Action* action = actions_[processed_actions_.size()].get();
+  should_clean_contextual_ui_on_finish_ = action->proto().clean_contextual_ui();
   int delay_ms = action->proto().action_delay_ms();
   if (delay_ms > 0) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
