@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_control.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
 

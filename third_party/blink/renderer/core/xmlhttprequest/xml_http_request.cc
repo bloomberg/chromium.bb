@@ -70,7 +70,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"

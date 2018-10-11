@@ -6,6 +6,7 @@
 
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 namespace blink {
 
 namespace {

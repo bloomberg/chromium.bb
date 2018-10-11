@@ -187,6 +187,7 @@ component("core") {
     "//third_party/blink/renderer/core/events",
     "//third_party/blink/renderer/core/execution_context",
     "//third_party/blink/renderer/core/exported",
+    "//third_party/blink/renderer/core/feature_policy",
     "//third_party/blink/renderer/core/fetch",
     "//third_party/blink/renderer/core/fileapi",
     "//third_party/blink/renderer/core/frame",
@@ -1842,6 +1843,7 @@ jumbo_source_set("unit_tests") {
     "exported/web_surrounding_text_test.cc",
     "exported/web_user_gesture_token_test.cc",
     "exported/web_view_test.cc",
+    "feature_policy/feature_policy_test.cc",
     "fetch/blob_bytes_consumer_test.cc",
     "fetch/body_stream_buffer_test.cc",
     "fetch/bytes_consumer_for_data_consumer_handle_test.cc",
@@ -2359,4 +2361,17 @@ if (!is_win) {
       "css/parser/css.proto",
     ]
   }
+}
+
+# Fuzzer for blink::FeaturePolicy.
+fuzzer_test("feature_policy_fuzzer") {
+  sources = [
+    "feature_policy/feature_policy_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/icu",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/feature_policy.dict"
+  seed_corpus = "//testing/libfuzzer/fuzzers/feature_policy_corpus"
 }

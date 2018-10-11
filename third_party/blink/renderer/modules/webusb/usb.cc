@@ -8,6 +8,7 @@
 
 #include "device/usb/public/mojom/device.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device_filter.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device_request_options.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 

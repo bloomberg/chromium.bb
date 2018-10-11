@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -23,7 +24,6 @@
 #include "third_party/blink/renderer/modules/vr/vr_get_devices_callback.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
 
