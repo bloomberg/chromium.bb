@@ -70,9 +70,6 @@ class VolumeArchiveMinizip : public VolumeArchive {
   // See volume_archive_interface.h.
   void MaybeDecompressAhead() override;
 
-  // See volume_archive_interface.h.
-  bool Cleanup() override;
-
   int64_t reader_data_size() const { return reader_data_size_; }
 
   // Custom functions need to access private variables of

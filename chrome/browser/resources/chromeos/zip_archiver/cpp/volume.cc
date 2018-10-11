@@ -204,10 +204,6 @@ Volume::Volume(
 
 Volume::~Volume() {
   worker_.Join();
-
-  if (volume_archive_) {
-    volume_archive_->Cleanup();
-  }
 }
 
 bool Volume::Init() {

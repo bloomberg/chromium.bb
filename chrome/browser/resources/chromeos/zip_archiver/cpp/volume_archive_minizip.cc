@@ -21,7 +21,6 @@ const char kArchiveOpenError[] = "Failed to open archive.";
 const char kArchiveNextHeaderError[] =
     "Failed to open current file in archive.";
 const char kArchiveReadDataError[] = "Failed to read archive data.";
-const char kArchiveReadFreeError[] = "Failed to close archive.";
 
 // The size of the buffer used to skip unnecessary data. Should be positive and
 // UINT16_MAX or less. unzReadCurrentFile in third_party/minizip/src/unzip.c
@@ -225,7 +224,11 @@ VolumeArchiveMinizip::VolumeArchiveMinizip(std::unique_ptr<VolumeReader> reader)
       decompressed_error_(false) {}
 
 VolumeArchiveMinizip::~VolumeArchiveMinizip() {
-  Cleanup();
+  if (zip_file_) {
+    if (unzClose(zip_file_) != UNZ_OK) {
+      LOG(WARNING) << "Failed to close archive.";
+    }
+  }
 }
 
 bool VolumeArchiveMinizip::Init(const std::string& encoding) {
@@ -487,20 +490,6 @@ void VolumeArchiveMinizip::DecompressData(int64_t offset, int64_t length) {
   // VolumeArchiveMinizip::ReadData.
   decompressed_data_ = decompressed_data_buffer_.get();
   decompressed_data_size_ = bytes_read;
-}
-
-bool VolumeArchiveMinizip::Cleanup() {
-  bool returnValue = true;
-  if (zip_file_) {
-    if (unzClose(zip_file_) != UNZ_OK) {
-      set_error_message(kArchiveReadFreeError);
-      returnValue = false;
-    }
-  }
-  zip_file_ = nullptr;
-  password_cache_.reset();
-
-  return returnValue;
 }
 
 int64_t VolumeArchiveMinizip::ReadData(int64_t offset,
