@@ -70,6 +70,8 @@ class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
   MOCK_METHOD0(CloseAccessorySheet, void());
   MOCK_METHOD0(SwapSheetWithKeyboard, void());
+  MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
+  MOCK_METHOD0(Hide, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryView);
@@ -854,4 +856,11 @@ TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordRejected) {
   histogram_tester_.ExpectBucketCount(
       "PasswordGeneration.UserEvent",
       PasswordGenerationUserEvent::kPasswordRejectedInDialog, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RelaysShowAndHideKeyboardAccessory) {
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->ShowWhenKeyboardIsVisible();
+  EXPECT_CALL(*view(), Hide());
+  controller()->Hide();
 }

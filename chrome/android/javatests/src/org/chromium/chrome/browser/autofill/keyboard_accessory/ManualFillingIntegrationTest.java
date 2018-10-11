@@ -217,6 +217,7 @@ public class ManualFillingIntegrationTest {
         // Focus the field to bring up the accessory.
         mHelper.clickEmailField();
         mHelper.waitForKeyboard();
+
         DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
 
         assertThat(popup.isShowing(), is(true));

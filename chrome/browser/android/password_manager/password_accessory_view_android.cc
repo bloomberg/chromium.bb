@@ -74,6 +74,16 @@ void PasswordAccessoryViewAndroid::SwapSheetWithKeyboard() {
       base::android::AttachCurrentThread(), java_object_);
 }
 
+void PasswordAccessoryViewAndroid::ShowWhenKeyboardIsVisible() {
+  Java_PasswordAccessoryBridge_showWhenKeyboardIsVisible(
+      base::android::AttachCurrentThread(), java_object_);
+}
+
+void PasswordAccessoryViewAndroid::Hide() {
+  Java_PasswordAccessoryBridge_hide(base::android::AttachCurrentThread(),
+                                    java_object_);
+}
+
 void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
     bool available) {
   if (!available && java_object_.is_null())
