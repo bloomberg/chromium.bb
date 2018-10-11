@@ -325,6 +325,7 @@ public class NewTabPage
         updateSearchProviderHasLogo();
 
         initializeMainView(activity);
+        updateMargins(mTab.getBrowserControlsStateConstraints());
 
         eventReporter.onSurfaceOpened();
 
@@ -377,7 +378,7 @@ public class NewTabPage
     }
 
     /** Update the margins for the content when browser controls constraints are changed. */
-    protected void updateMargins(@BrowserControlsState int constraints) {
+    private void updateMargins(@BrowserControlsState int constraints) {
         // TODO(mdjones): can this be merged with BasicNativePage's updateMargins?
 
         View view = getView();
