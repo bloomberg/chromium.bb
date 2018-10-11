@@ -681,8 +681,14 @@ void FileSelectHelper::RenderWidgetHostDestroyed(
 void FileSelectHelper::RenderFrameHostChanged(
     content::RenderFrameHost* old_host,
     content::RenderFrameHost* new_host) {
-  if (old_host == render_frame_host_)
+  if (!render_frame_host_)
+    return;
+  // The |old_host| and its children are now pending deletion. Do not give them
+  // file access past this point.
+  if (render_frame_host_ == old_host ||
+      render_frame_host_->IsDescendantOf(old_host)) {
     render_frame_host_ = nullptr;
+  }
 }
 
 void FileSelectHelper::RenderFrameDeleted(
