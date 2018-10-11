@@ -859,7 +859,6 @@ class BBJSONGenerator(object):
       'Optional Win10 Release (NVIDIA)',
       'Win7 ANGLE Tryserver (AMD)',
       # chromium.fyi
-      'chromeos-amd64-generic-rel-vm-tests',
       'linux-blink-rel-dummy',
       'mac10.10-blink-rel-dummy',
       'mac10.11-blink-rel-dummy',

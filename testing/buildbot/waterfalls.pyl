@@ -1262,6 +1262,11 @@
           'io_timeout': 3600,
         },
       },
+      'chromeos-kevin-rel-hw-tests': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
           'gn_all',
