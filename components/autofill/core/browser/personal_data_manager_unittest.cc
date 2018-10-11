@@ -6885,7 +6885,7 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates) {
   EXPECT_EQ(
       AutofillProfile::VALID,
       profiles[2]->GetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::CLIENT));
-  EXPECT_EQ(AutofillProfile::VALID,
+  EXPECT_EQ(AutofillProfile::UNVALIDATED,
             profiles[2]->GetValidityState(ADDRESS_HOME_CITY,
                                           AutofillProfile::CLIENT));
   EXPECT_EQ(AutofillProfile::EMPTY,
