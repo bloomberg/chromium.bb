@@ -108,6 +108,7 @@ class ScriptExecutor : public ActionDelegate {
   std::string last_server_payload_;
   AtEnd at_end_;
   bool should_stop_script_;
+  bool should_clean_contextual_ui_on_finish_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

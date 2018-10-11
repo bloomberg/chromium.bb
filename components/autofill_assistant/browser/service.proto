@@ -199,6 +199,11 @@ message ActionProto {
     ResetProto reset = 34;
     StopProto stop = 35;
   }
+
+  // Set to true to make the client remove any contextual information if the
+  // script finishes with this action. It has no effect if there is any other
+  // action sent to the client after this one. Default is false.
+  optional bool clean_contextual_ui = 33;
 }
 
 message ProcessedActionProto {

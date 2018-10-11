@@ -286,5 +286,61 @@ TEST_F(ScriptExecutorTest, RunDelayedAction) {
   EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
+TEST_F(ScriptExecutorTest, HideDetailsWhenFinished) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  ActionProto click_with_clean_contextual_ui;
+  click_with_clean_contextual_ui.set_clean_contextual_ui(true);
+  click_with_clean_contextual_ui.mutable_tell()->set_message("clean");
+  ;
+  *actions_response.add_actions() = click_with_clean_contextual_ui;
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  EXPECT_CALL(mock_ui_controller_, HideDetails());
+  executor_->Run(executor_callback_.Get());
+}
+
+TEST_F(ScriptExecutorTest, DontHideDetailsIfOtherActionsAreLeft) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  ActionProto click_with_clean_contextual_ui;
+  click_with_clean_contextual_ui.set_clean_contextual_ui(true);
+  click_with_clean_contextual_ui.mutable_tell()->set_message("clean");
+  *actions_response.add_actions() = click_with_clean_contextual_ui;
+  actions_response.add_actions()->mutable_tell()->set_message("Wait no!");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, ""));
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+
+  EXPECT_CALL(mock_ui_controller_, HideDetails()).Times(0);
+
+  executor_->Run(executor_callback_.Get());
+}
+
+TEST_F(ScriptExecutorTest, HideDetailsOnError) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  actions_response.add_actions()->mutable_tell()->set_message("Hello");
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(true, Serialize(actions_response)));
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _))
+      .WillOnce(RunOnceCallback<2>(false, ""));
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, false)));
+
+  EXPECT_CALL(mock_ui_controller_, HideDetails());
+
+  executor_->Run(executor_callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant
