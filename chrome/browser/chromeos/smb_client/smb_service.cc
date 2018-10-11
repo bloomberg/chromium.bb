@@ -310,7 +310,7 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   // which expects username & workgroup strings along with a password file
   // descriptor.
   GetSmbProviderClient()->Remount(
-      mount_path, mount_id, workgroup, username,
+      mount_path, mount_id, IsNTLMAuthenticationEnabled(), workgroup, username,
       temp_file_manager_->WritePasswordToFile("" /* password */),
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));

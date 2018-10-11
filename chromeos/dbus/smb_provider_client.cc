@@ -96,6 +96,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
 
   void Remount(const base::FilePath& share_path,
                int32_t mount_id,
+               bool ntlm_enabled,
                const std::string& workgroup,
                const std::string& username,
                base::ScopedFD password_fd,
@@ -105,6 +106,10 @@ class SmbProviderClientImpl : public SmbProviderClient {
     options.set_mount_id(mount_id);
     options.set_workgroup(workgroup);
     options.set_username(username);
+
+    std::unique_ptr<smbprovider::MountConfigProto> config =
+        CreateMountConfigProto(ntlm_enabled);
+    options.set_allocated_mount_config(config.release());
 
     dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
                                  smbprovider::kRemountMethod);
