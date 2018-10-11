@@ -123,6 +123,21 @@ Polymer({
     },
 
     /**
+     * This flag is used to conditionally show the footer for the dialog.
+     * @private
+     */
+    diceEnabled_: {
+      type: Boolean,
+      value: function() {
+        let diceEnabled = false;
+        // <if expr="not chromeos">
+        diceEnabled = loadTimeData.getBoolean('diceEnabled');
+        // </if>
+        return diceEnabled;
+      },
+    },
+
+    /**
      * Time in ms, when the dialog was opened.
      * @private
      */
@@ -374,7 +389,7 @@ Polymer({
     if (e.target.tagName === 'A') {
       e.preventDefault();
       if (!this.syncStatus.hasError) {
-        this.syncBrowserProxy_.signOut(false /* deleteProfile */);
+        this.syncBrowserProxy_.pauseSync();
         return;
       }
 
@@ -412,5 +427,13 @@ Polymer({
   computeHasOtherError_: function() {
     return !!this.syncStatus.hasError && !this.isSyncPaused_ &&
         !this.hasPassphraseError_;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowFooter_: function() {
+    return this.diceEnabled_ && !!this.syncStatus.signedIn;
   },
 });

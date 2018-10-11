@@ -174,8 +174,11 @@ class PeopleHandler : public SettingsPageUIHandler,
 #if defined(OS_CHROMEOS)
   void HandleRequestPinLoginState(const base::ListValue* args);
 #endif
+#if !defined(OS_CHROMEOS)
   void HandleStartSignin(const base::ListValue* args);
   void HandleSignout(const base::ListValue* args);
+  void HandlePauseSync(const base::ListValue* args);
+#endif
   void HandleGetSyncStatus(const base::ListValue* args);
   void HandleManageOtherPeople(const base::ListValue* args);
   void OnUnifiedConsentToggleChanged(const base::ListValue* args);

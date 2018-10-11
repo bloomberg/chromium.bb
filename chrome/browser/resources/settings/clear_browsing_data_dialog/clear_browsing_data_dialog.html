@@ -256,7 +256,8 @@
             $i18n{clearData}
         </paper-button>
       </div>
-      <div slot="footer" hidden="[[!syncStatus.signedIn]]">
+      <div slot="footer"
+          hidden="[[!shouldShowFooter_(syncStatus.signedIn, diceEnabled_)]]">
         <settings-sync-account-control sync-status="[[syncStatus]]"
             hide-buttons>
         </settings-sync-account-control>

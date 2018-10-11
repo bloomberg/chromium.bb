@@ -138,6 +138,11 @@ cr.define('settings', function() {
     signOut(deleteProfile) {}
 
     /**
+     * Invalidates the Sync token without signing the user out.
+     */
+    pauseSync() {}
+
+    /**
      * Opens the multi-profile user manager.
      */
     manageOtherPeople() {}
@@ -237,6 +242,11 @@ cr.define('settings', function() {
     /** @override */
     signOut(deleteProfile) {
       chrome.send('SyncSetupSignout', [deleteProfile]);
+    }
+
+    /** @override */
+    pauseSync() {
+      chrome.send('SyncSetupPauseSync');
     }
 
     /** @override */
