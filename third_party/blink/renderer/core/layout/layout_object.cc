@@ -268,9 +268,11 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return new LayoutDeprecatedFlexibleBox(*element);
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:
+      UseCounter::Count(element->GetDocument(), WebFeature::kCSSFlexibleBox);
       return LayoutObjectFactory::CreateFlexibleBox(*element, style);
     case EDisplay::kGrid:
     case EDisplay::kInlineGrid:
+      UseCounter::Count(element->GetDocument(), WebFeature::kCSSGridLayout);
       return new LayoutGrid(element);
     case EDisplay::kLayoutCustom:
     case EDisplay::kInlineLayoutCustom:
