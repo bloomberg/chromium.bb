@@ -42,8 +42,8 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
       [[UpdatePasswordInfoBarController alloc]
           initWithBaseViewController:baseViewController
                      infoBarDelegate:delegate.get()];
-  auto infobar = std::make_unique<InfoBarIOS>(controller, std::move(delegate));
-  infobar_manager->AddInfoBar(std::move(infobar));
+  infobar_manager->AddInfoBar(
+      std::make_unique<InfoBarIOS>(controller, std::move(delegate)));
 }
 
 IOSChromeUpdatePasswordInfoBarDelegate::

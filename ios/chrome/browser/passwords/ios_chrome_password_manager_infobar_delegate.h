@@ -19,11 +19,14 @@ class PasswordFormManagerForUI;
 
 // Base class for password manager infobar delegates, e.g.
 // IOSChromeSavePasswordInfoBarDelegate and
-// IOSChromeUpdatePasswordInfoBarDelegate. Provides link text and action for
-// smart lock.
+// IOSChromeUpdatePasswordInfoBarDelegate.
 class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ~IOSChromePasswordManagerInfoBarDelegate() override;
+
+  // Getter for the message displayed in addition to the title. If no message
+  // was set, this returns an empty string.
+  base::string16 GetDetailsMessageText() const;
 
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
