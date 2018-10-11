@@ -87,6 +87,10 @@ CWV_EXPORT
 // The scroll view associated with the web view.
 @property(nonatomic, readonly) CWVScrollView* scrollView;
 
+// A Boolean value indicating whether horizontal swipe gestures will trigger
+// back-forward list navigations.
+@property(nonatomic) BOOL allowsBackForwardNavigationGestures;
+
 // The User Agent product string used to build the full User Agent.
 + (NSString*)userAgentProduct;
 
