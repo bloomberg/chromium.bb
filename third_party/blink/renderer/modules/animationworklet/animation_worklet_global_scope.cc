@@ -199,9 +199,11 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
   if (options && options->GetData())
     value = options->GetData()->Deserialize(isolate);
 
-  v8::Local<v8::Object> instance;
-  if (!V8ObjectConstructor::NewInstance(isolate, constructor,
-                                        !value.IsEmpty() ? 1 : 0, &value)
+  v8::Local<v8::Value> instance;
+  if (!V8ScriptRunner::CallAsConstructor(
+           isolate, constructor,
+           ExecutionContext::From(ScriptController()->GetScriptState()),
+           !value.IsEmpty() ? 1 : 0, &value)
            .ToLocal(&instance))
     return nullptr;
 

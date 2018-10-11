@@ -80,7 +80,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   MaybeCreatePaintInstance();
 
   v8::Isolate* isolate = script_state_->GetIsolate();
-  v8::Local<v8::Object> instance = instance_.NewLocal(isolate);
+  v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
 
   // We may have failed to create an instance class, in which case produce an
   // invalid image.
@@ -144,11 +144,11 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
   v8::Local<v8::Function> constructor = constructor_.NewLocal(isolate);
   DCHECK(!IsUndefinedOrNull(constructor));
 
-  v8::Local<v8::Object> paint_instance;
-  if (V8ObjectConstructor::NewInstance(isolate, constructor)
-          .ToLocal(&paint_instance)) {
+  v8::Local<v8::Value> paint_instance;
+  if (V8ScriptRunner::CallAsConstructor(
+          isolate, constructor, ExecutionContext::From(script_state_), 0, {})
+          .ToLocal(&paint_instance))
     instance_.Set(isolate, paint_instance);
-  }
 
   did_call_constructor_ = true;
 }
@@ -156,7 +156,7 @@ void CSSPaintDefinition::MaybeCreatePaintInstance() {
 void CSSPaintDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_.Cast<v8::Value>());
   visitor->Trace(paint_.Cast<v8::Value>());
-  visitor->Trace(instance_.Cast<v8::Value>());
+  visitor->Trace(instance_);
   visitor->Trace(script_state_);
 }
 

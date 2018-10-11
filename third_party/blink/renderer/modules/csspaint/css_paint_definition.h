@@ -97,7 +97,7 @@ class MODULES_EXPORT CSSPaintDefinition final
   TraceWrapperV8Reference<v8::Function> paint_;
 
   // At the moment there is only ever one instance of a paint class per type.
-  TraceWrapperV8Reference<v8::Object> instance_;
+  TraceWrapperV8Reference<v8::Value> instance_;
 
   bool did_call_constructor_;
 

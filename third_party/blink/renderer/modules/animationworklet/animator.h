@@ -25,7 +25,7 @@ class ScriptState;
 class Animator final : public GarbageCollectedFinalized<Animator>,
                        public NameClient {
  public:
-  Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Object> instance);
+  Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Value> instance);
   ~Animator();
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "Animator"; }
@@ -44,7 +44,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   // This object keeps the definition object, and animator instance alive.
   // It participates in wrapper tracing as it holds onto V8 wrappers.
   TraceWrapperMember<AnimatorDefinition> definition_;
-  TraceWrapperV8Reference<v8::Object> instance_;
+  TraceWrapperV8Reference<v8::Value> instance_;
 
   Member<EffectProxy> effect_;
 };
