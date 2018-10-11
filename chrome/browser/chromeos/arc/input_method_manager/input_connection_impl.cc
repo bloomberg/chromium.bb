@@ -4,9 +4,12 @@
 
 #include "chrome/browser/chromeos/arc/input_method_manager/input_connection_impl.h"
 
+#include <tuple>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace arc {
 
@@ -19,6 +22,22 @@ namespace {
 // TODO(yhanada): Implement a way to observe an IME operation completion and
 // send the current text input state right after the IME operation completion.
 constexpr base::TimeDelta kStateUpdateTimeout = base::TimeDelta::FromSeconds(1);
+
+// Characters which should be sent as a KeyEvent and attributes of generated
+// KeyEvent.
+constexpr std::tuple<char, ui::KeyboardCode, const char*>
+    kControlCharToKeyEvent[] = {{'\n', ui::VKEY_RETURN, "Enter"}};
+
+bool IsControlChar(const base::string16& text) {
+  const std::string str = base::UTF16ToUTF8(text);
+  if (str.length() != 1)
+    return false;
+  for (const auto& t : kControlCharToKeyEvent) {
+    if (str[0] == std::get<0>(t))
+      return true;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -80,6 +99,12 @@ void InputConnectionImpl::CommitText(const base::string16& text,
   // Clear the current composing text at first.
   if (!ime_engine_->ClearComposition(input_context_id_, &error))
     LOG(ERROR) << "ClearComposition failed: error=\"" << error << "\"";
+
+  if (IsControlChar(text)) {
+    SendControlKeyEvent(text);
+    return;
+  }
+
   if (!ime_engine_->CommitText(input_context_id_,
                                base::UTF16ToUTF8(text).c_str(), &error))
     LOG(ERROR) << "CommitText failed: error=\"" << error << "\"";
@@ -162,6 +187,27 @@ void InputConnectionImpl::StartStateUpdateTimer() {
       base::BindOnce(&InputConnectionImpl::UpdateTextInputState,
                      base::Unretained(this),
                      true /* is_input_state_update_requested */));
+}
+
+void InputConnectionImpl::SendControlKeyEvent(const base::string16& text) {
+  DCHECK(IsControlChar(text));
+
+  const std::string str = base::UTF16ToUTF8(text);
+  DCHECK_EQ(1u, str.length());
+
+  for (const auto& t : kControlCharToKeyEvent) {
+    if (std::get<0>(t) == str[0]) {
+      chromeos::InputMethodEngine::KeyboardEvent press;
+      press.type = "keydown";
+      press.key_code = std::get<1>(t);
+      press.key = press.code = std::get<2>(t);
+      chromeos::InputMethodEngine::KeyboardEvent release(press);
+      release.type = "keyup";
+      ime_engine_->SendKeyEvents(input_context_id_, {press, release});
+      break;
+    }
+  }
+  return;
 }
 
 }  // namespace arc

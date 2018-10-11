@@ -159,8 +159,22 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
 
   ui::InputMethod* GetInputMethod() override { return input_method_; }
 
+  void SendKeyEvent(ui::KeyEvent* event) override {
+    ui::MockIMEInputContextHandler::SendKeyEvent(event);
+    ++send_key_event_call_count_;
+  }
+
+  void Reset() {
+    ui::MockIMEInputContextHandler::Reset();
+    send_key_event_call_count_ = 0;
+  }
+
+  int send_key_event_call_count() const { return send_key_event_call_count_; }
+
  private:
   ui::InputMethod* const input_method_;
+
+  int send_key_event_call_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
 };
@@ -756,6 +770,13 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
   engine_handler->SetSurroundingText("", 0, 0, 0);
   EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
   EXPECT_TRUE(bridge()->last_text_input_state->first_update_after_operation);
+
+  // Calling CommitText() with '\n' doesn't invoke
+  // InputMethodEngine::CommitText.
+  EXPECT_EQ(0, test_context_handler.send_key_event_call_count());
+  connection->CommitText(base::ASCIIToUTF16("\n"), 0);
+  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
+  EXPECT_EQ(2, test_context_handler.send_key_event_call_count());
 
   test_context_handler.Reset();
   connection->DeleteSurroundingText(1, 1);
