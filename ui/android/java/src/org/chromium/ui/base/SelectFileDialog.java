@@ -373,13 +373,13 @@ public class SelectFileDialog
     }
 
     @Override
-    public void onPhotoPickerUserAction(Action action, String[] photos) {
+    public void onPhotoPickerUserAction(@PhotoPickerAction int action, String[] photos) {
         switch (action) {
-            case CANCEL:
+            case PhotoPickerAction.CANCEL:
                 onFileNotSelected();
                 break;
 
-            case PHOTOS_SELECTED:
+            case PhotoPickerAction.PHOTOS_SELECTED:
                 if (photos.length == 0) {
                     onFileNotSelected();
                     return;
@@ -402,7 +402,7 @@ public class SelectFileDialog
                 }
                 break;
 
-            case LAUNCH_GALLERY:
+            case PhotoPickerAction.LAUNCH_GALLERY:
                 Intent intent = new Intent();
                 intent.setType("image/*");
                 if (mAllowMultiple) intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -410,7 +410,7 @@ public class SelectFileDialog
                 mWindowAndroid.showCancelableIntent(intent, this, R.string.low_memory_error);
                 break;
 
-            case LAUNCH_CAMERA:
+            case PhotoPickerAction.LAUNCH_CAMERA:
                 if (!mWindowAndroid.hasPermission(Manifest.permission.CAMERA)) {
                     mWindowAndroid.requestPermissions(new String[] {Manifest.permission.CAMERA},
                             (permissions, grantResults) -> {
@@ -431,18 +431,18 @@ public class SelectFileDialog
     }
 
     @Override
-    public void onContactsPickerUserAction(ContactsPickerAction action, String contacts) {
+    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contacts) {
         switch (action) {
-            case CANCEL:
+            case ContactsPickerAction.CANCEL:
                 onFileNotSelected();
                 break;
 
-            case CONTACTS_SELECTED:
+            case ContactsPickerAction.CONTACTS_SELECTED:
                 nativeOnContactsSelected(mNativeSelectFileDialog, contacts);
                 break;
 
-            case SELECT_ALL:
-            case UNDO_SELECT_ALL:
+            case ContactsPickerAction.SELECT_ALL:
+            case ContactsPickerAction.UNDO_SELECT_ALL:
                 break;
         }
     }

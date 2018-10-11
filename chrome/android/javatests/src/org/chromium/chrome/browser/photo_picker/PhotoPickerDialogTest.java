@@ -64,7 +64,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     private SelectionDelegate<PickerBitmap> mSelectionDelegate;
 
     // The last action recorded in the dialog (e.g. photo selected).
-    private Action mLastActionRecorded;
+    private @PhotoPickerAction int mLastActionRecorded;
 
     // The final set of photos picked by the dialog. Can be an empty array, if
     // nothing was selected.
@@ -100,7 +100,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     // PhotoPickerDialog.PhotoPickerListener:
 
     @Override
-    public void onPhotoPickerUserAction(Action action, String[] photos) {
+    public void onPhotoPickerUserAction(@PhotoPickerAction int action, String[] photos) {
         mLastActionRecorded = action;
         mLastSelectedPhotos = photos != null ? photos.clone() : null;
         if (mLastSelectedPhotos != null) Arrays.sort(mLastSelectedPhotos);
@@ -169,25 +169,25 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     }
 
     private void clickDone() throws Exception {
-        mLastActionRecorded = null;
+        mLastActionRecorded = PhotoPickerAction.NUM_ENTRIES;
 
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mDialog.findViewById(R.id.action_bar);
         Button done = (Button) toolbar.findViewById(R.id.done);
         int callCount = onActionCallback.getCallCount();
         TouchCommon.singleClickView(done);
         onActionCallback.waitForCallback(callCount, 1);
-        Assert.assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
     }
 
     public void clickCancel() throws Exception {
-        mLastActionRecorded = null;
+        mLastActionRecorded = PhotoPickerAction.NUM_ENTRIES;
 
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
         View cancel = new View(mActivityTestRule.getActivity());
         int callCount = onActionCallback.getCallCount();
         categoryView.onClick(cancel);
         onActionCallback.waitForCallback(callCount, 1);
-        Assert.assertEquals(PhotoPickerListener.Action.CANCEL, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerAction.CANCEL, mLastActionRecorded);
     }
 
     private void dismissDialog() {
@@ -212,7 +212,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         clickCancel();
 
         Assert.assertNull(mLastSelectedPhotos);
-        Assert.assertEquals(PhotoPickerListener.Action.CANCEL, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerAction.CANCEL, mLastActionRecorded);
 
         dismissDialog();
     }
@@ -232,7 +232,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         clickDone();
 
         Assert.assertEquals(1, mLastSelectedPhotos.length);
-        Assert.assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
         Assert.assertEquals(mTestFiles.get(1).getFilePath(), mLastSelectedPhotos[0]);
 
         dismissDialog();
@@ -254,7 +254,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         clickDone();
 
         Assert.assertEquals(3, mLastSelectedPhotos.length);
-        Assert.assertEquals(PhotoPickerListener.Action.PHOTOS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
         Assert.assertEquals(mTestFiles.get(0).getFilePath(), mLastSelectedPhotos[0]);
         Assert.assertEquals(mTestFiles.get(2).getFilePath(), mLastSelectedPhotos[1]);
         Assert.assertEquals(mTestFiles.get(4).getFilePath(), mLastSelectedPhotos[2]);

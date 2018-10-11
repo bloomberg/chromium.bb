@@ -338,7 +338,7 @@ public class PickerCategoryView
      * @param contacts The contacts that were selected (if any).
      */
     private void executeAction(
-            ContactsPickerListener.ContactsPickerAction action, String contacts) {
+            @ContactsPickerListener.ContactsPickerAction int action, String contacts) {
         mListener.onContactsPickerUserAction(action, contacts);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
