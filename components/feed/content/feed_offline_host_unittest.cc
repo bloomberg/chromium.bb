@@ -33,6 +33,7 @@ using offline_pages::StubOfflinePageModel;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::PrefetchSuggestion;
 using offline_pages::StubPrefetchService;
+using offline_pages::SuggestionsProvider;
 
 constexpr char kUrl1[] = "https://www.one.com/";
 constexpr char kUrl2[] = "https://www.two.com/";
@@ -41,6 +42,10 @@ constexpr char kUrl3[] = "https://www.three.com/";
 constexpr char kOne[] = "One";
 constexpr char kTwo[] = "Two";
 constexpr char kThree[] = "Three";
+
+MATCHER_P(EqualsSpec, expected, "") {
+  return arg.spec() == expected;
+}
 
 class TestOfflinePageModel : public StubOfflinePageModel {
  public:
@@ -84,6 +89,13 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   std::multimap<std::string, OfflinePageItem> url_to_offline_page_item_;
 };
 
+class TestPrefetchService : public StubPrefetchService {
+ public:
+  MOCK_METHOD1(SetSuggestionProvider, void(SuggestionsProvider*));
+  MOCK_METHOD0(NewSuggestionsAvailable, void());
+  MOCK_METHOD1(RemoveSuggestion, void(GURL));
+};
+
 void IgnoreStatus(std::vector<std::string> result) {}
 
 void CopyStatus(std::vector<std::string>* out,
@@ -102,7 +114,7 @@ class FeedOfflineHostTest : public ::testing::Test {
  public:
   TestOfflinePageModel* offline_page_model() { return &offline_page_model_; }
   FeedOfflineHost* host() { return host_.get(); }
-  StubPrefetchService* prefetch_service() { return &prefetch_service_; }
+  TestPrefetchService* prefetch_service() { return &prefetch_service_; }
   int get_suggestion_consumed_count() { return suggestion_consumed_count_; }
   int get_suggestions_shown_count() { return suggestions_shown_count_; }
   int get_get_known_content_count() { return get_known_content_count_; }
@@ -154,7 +166,7 @@ class FeedOfflineHostTest : public ::testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestOfflinePageModel offline_page_model_;
-  StubPrefetchService prefetch_service_;
+  TestPrefetchService prefetch_service_;
   std::unique_ptr<FeedOfflineHost> host_;
   int suggestion_consumed_count_ = 0;
   int suggestions_shown_count_ = 0;
@@ -373,6 +385,39 @@ TEST_F(FeedOfflineHostTest, NoAddObserverWithoutInitialize) {
       .Times(1)
       .RetiresOnSaturation();
   ResetHost();
+}
+
+TEST_F(FeedOfflineHostTest, SetSuggestionProviderNotCalledSynchronously) {
+  EXPECT_CALL(*prefetch_service(), SetSuggestionProvider(testing::_)).Times(0);
+}
+
+TEST_F(FeedOfflineHostTest, SetSuggestionProviderCalledAsync) {
+  EXPECT_CALL(*prefetch_service(), SetSuggestionProvider(testing::_)).Times(1);
+  RunUntilIdle();
+}
+
+TEST_F(FeedOfflineHostTest, OnNewContentReceived) {
+  EXPECT_CALL(*prefetch_service(), NewSuggestionsAvailable()).Times(1);
+  host()->OnNewContentReceived();
+}
+
+TEST_F(FeedOfflineHostTest, RemoveZeroSuggestions) {
+  EXPECT_CALL(*prefetch_service(), RemoveSuggestion(testing::_)).Times(0);
+  host()->OnContentRemoved({});
+}
+
+TEST_F(FeedOfflineHostTest, RemoveOneSuggestion) {
+  EXPECT_CALL(*prefetch_service(), RemoveSuggestion(EqualsSpec(kUrl1)))
+      .Times(1);
+  host()->OnContentRemoved({kUrl1});
+}
+
+TEST_F(FeedOfflineHostTest, RemoveTwoSuggestions) {
+  EXPECT_CALL(*prefetch_service(), RemoveSuggestion(EqualsSpec(kUrl1)))
+      .Times(1);
+  EXPECT_CALL(*prefetch_service(), RemoveSuggestion(EqualsSpec(kUrl2)))
+      .Times(1);
+  host()->OnContentRemoved({kUrl1, kUrl2});
 }
 
 }  // namespace feed
