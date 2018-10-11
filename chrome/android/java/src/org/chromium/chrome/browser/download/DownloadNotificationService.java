@@ -1203,9 +1203,6 @@ public class DownloadNotificationService extends Service {
         BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
-                // Make sure the OfflineContentAggregator bridge is initialized.
-                OfflineContentAggregatorNotificationBridgeUiFactory.instance();
-
                 DownloadServiceDelegate downloadServiceDelegate =
                         isDownloadOpenOrNotificationClickedAction(intent) ? null
                                                                           : getServiceDelegate(id);
