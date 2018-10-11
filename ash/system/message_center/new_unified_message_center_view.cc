@@ -23,6 +23,48 @@
 
 namespace ash {
 
+namespace {
+
+class ScrollerContentsView : public views::View {
+ public:
+  ScrollerContentsView(UnifiedMessageListView* message_list_view,
+                       views::ButtonListener* listener) {
+    auto* contents_layout = SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    contents_layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+    AddChildView(message_list_view);
+
+    views::View* button_container = new views::View;
+    auto* button_layout =
+        button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::kHorizontal,
+            gfx::Insets(kUnifiedNotificationCenterSpacing), 0));
+    button_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+
+    auto* clear_all_button = new RoundedLabelButton(
+        listener, l10n_util::GetStringUTF16(
+                      IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL));
+    clear_all_button->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
+    button_container->AddChildView(clear_all_button);
+    AddChildView(button_container);
+  }
+
+  ~ScrollerContentsView() override = default;
+
+  // views::View:
+  void ChildPreferredSizeChanged(views::View* view) override {
+    PreferredSizeChanged();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScrollerContentsView);
+};
+
+}  // namespace
+
 NewUnifiedMessageCenterView::NewUnifiedMessageCenterView()
     : scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this)) {
@@ -30,7 +72,7 @@ NewUnifiedMessageCenterView::NewUnifiedMessageCenterView()
 
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
-  scroller_->SetContents(CreateScrollerContents());
+  scroller_->SetContents(new ScrollerContentsView(message_list_view_, this));
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->SetVerticalScrollBar(new MessageCenterScrollBar(this));
   scroller_->set_draw_overflow_indicator(false);
@@ -89,32 +131,6 @@ void NewUnifiedMessageCenterView::UpdateVisibility() {
   SetVisible(message_list_view_->child_count() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
              !session_controller->IsScreenLocked());
-}
-
-views::View* NewUnifiedMessageCenterView::CreateScrollerContents() {
-  views::View* scroller_contents = new views::View;
-  auto* contents_layout = scroller_contents->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  contents_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  scroller_contents->AddChildView(message_list_view_);
-
-  views::View* button_container = new views::View;
-  auto* button_layout =
-      button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
-          gfx::Insets(kUnifiedNotificationCenterSpacing), 0));
-  button_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
-
-  auto* clear_all_button = new RoundedLabelButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL));
-  clear_all_button->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
-  button_container->AddChildView(clear_all_button);
-  scroller_contents->AddChildView(button_container);
-  return scroller_contents;
 }
 
 }  // namespace ash

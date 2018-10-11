@@ -54,7 +54,6 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   friend class NewUnifiedMessageCenterViewTest;
 
   void UpdateVisibility();
-  views::View* CreateScrollerContents();
 
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;
