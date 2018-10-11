@@ -41,11 +41,13 @@
 
 namespace extensions {
 
-ExtensionManagement::ExtensionManagement(PrefService* pref_service,
-                                         bool is_signin_profile)
-    : pref_service_(pref_service), is_signin_profile_(is_signin_profile) {
+ExtensionManagement::ExtensionManagement(Profile* profile)
+    : profile_(profile), pref_service_(profile_->GetPrefs()) {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagement::ExtensionManagement::ctor");
+#if defined(OS_CHROMEOS)
+  is_signin_profile_ = chromeos::ProfileHelper::IsSigninProfile(profile);
+#endif
   pref_change_registrar_.Init(pref_service_);
   base::Closure pref_change_callback = base::Bind(
       &ExtensionManagement::OnExtensionPrefChanged, base::Unretained(this));
@@ -544,12 +546,7 @@ KeyedService* ExtensionManagementFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   TRACE_EVENT0("browser,startup",
                "ExtensionManagementFactory::BuildServiceInstanceFor");
-  Profile* profile = Profile::FromBrowserContext(context);
-  bool is_signin_profile = false;
-#if defined(OS_CHROMEOS)
-  is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(profile);
-#endif
-  return new ExtensionManagement(profile->GetPrefs(), is_signin_profile);
+  return new ExtensionManagement(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* ExtensionManagementFactory::GetBrowserContextToUse(
