@@ -2759,6 +2759,43 @@ TEST_F(BluetoothBlueZTest, ConnectDeviceFails) {
   EXPECT_EQ(1, fake_bluetooth_adapter_client_->GetUnpauseCount());
 }
 
+// Tests that discovery is unpaused if the device gets removed during a
+// connection.
+TEST_F(BluetoothBlueZTest, RemoveDeviceDuringConnection) {
+  GetAdapter();
+
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_TRUE(device != nullptr);
+
+  fake_bluetooth_device_client_->LeaveConnectionsPending();
+  device->Connect(nullptr, GetCallback(),
+                  base::Bind(&BluetoothBlueZTest::ConnectErrorCallback,
+                             base::Unretained(this)));
+  // We pause discovery before connecting.
+  EXPECT_EQ(1, fake_bluetooth_adapter_client_->GetPauseCount());
+  EXPECT_EQ(0, fake_bluetooth_adapter_client_->GetUnpauseCount());
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_FALSE(device->IsConnected());
+  EXPECT_TRUE(device->IsConnecting());
+
+  // Install an observer; expect the DeviceRemoved method to be called
+  // with the device we remove.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  device->Forget(base::DoNothing(), GetErrorCallback());
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_EQ(1, observer.device_removed_count());
+
+  // If the device gets removed, we should still unpause discovery.
+  EXPECT_EQ(1, fake_bluetooth_adapter_client_->GetPauseCount());
+  EXPECT_EQ(1, fake_bluetooth_adapter_client_->GetUnpauseCount());
+}
+
 TEST_F(BluetoothBlueZTest, DisconnectDevice) {
   GetAdapter();
 
