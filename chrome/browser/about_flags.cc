@@ -431,6 +431,25 @@ const FeatureEntry::Choice kChromeHomeSwipeLogicChoices[] = {
      switches::kChromeHomeSwipeLogicType, "velocity"},
 };
 
+const FeatureEntry::FeatureParam kCCTModuleCache_ZeroMinutes[] = {
+    {"cct_module_cache_time_limit_ms", "0"}};
+const FeatureEntry::FeatureParam kCCTModuleCache_OneMinute[] = {
+    {"cct_module_cache_time_limit_ms", "60000"}};
+const FeatureEntry::FeatureParam kCCTModuleCache_FiveMinutes[] = {
+    {"cct_module_cache_time_limit_ms", "300000"}};
+const FeatureEntry::FeatureParam kCCTModuleCache_ThirtyMinutes[] = {
+    {"cct_module_cache_time_limit_ms", "1800000"}};
+const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
+    {"0 minutes", kCCTModuleCache_ZeroMinutes,
+     base::size(kCCTModuleCache_ZeroMinutes), nullptr},
+    {"1 minute", kCCTModuleCache_OneMinute,
+     base::size(kCCTModuleCache_OneMinute), nullptr},
+    {"5 minutes", kCCTModuleCache_FiveMinutes,
+     base::size(kCCTModuleCache_FiveMinutes), nullptr},
+    {"30 minutes", kCCTModuleCache_ThirtyMinutes,
+     base::size(kCCTModuleCache_ThirtyMinutes), nullptr},
+};
+
 #endif  // OS_ANDROID
 
 const FeatureEntry::Choice kNumRasterThreadsChoices[] = {
@@ -4165,7 +4184,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCCTModule)},
     {"cct-module-cache", flag_descriptions::kCCTModuleCacheName,
      flag_descriptions::kCCTModuleCacheDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleCache)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCCTModuleCache,
+                                    kCCTModuleCacheVariations,
+                                    "CCTModule")},
 #endif
 
     {"enable-css-fragment-identifiers",

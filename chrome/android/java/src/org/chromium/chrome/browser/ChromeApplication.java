@@ -137,14 +137,19 @@ public class ChromeApplication extends Application {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
+        if (isSevereMemorySignal(level) && mReferencePool != null) mReferencePool.drain();
+        CustomTabsConnection.onTrimMemory(level);
+    }
+
+    /**
+     * Determines whether the given memory signal is considered severe.
+     * @param level The type of signal as defined in {@link android.content.ComponentCallbacks2}.
+     */
+    public static boolean isSevereMemorySignal(int level) {
         // The conditions are expressed using ranges to capture intermediate levels possibly added
         // to the API in the future.
-        if ((level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
-                || level >= TRIM_MEMORY_MODERATE) {
-            if (mReferencePool != null) mReferencePool.drain();
-
-            CustomTabsConnection.trimMemory();
-        }
+        return (level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
+                || level >= TRIM_MEMORY_MODERATE;
     }
 
     /**
