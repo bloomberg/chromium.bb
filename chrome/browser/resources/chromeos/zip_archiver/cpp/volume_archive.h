@@ -29,10 +29,9 @@ class VolumeArchive {
   };
 
   // Initializes VolumeArchive. Should be called only once.
-  // In case of any errors call VolumeArchive::Cleanup and the error message can
-  // be obtained with VolumeArchive::error_message(). Encoding is the default
-  // encoding. Note, that other encoding may be used if specified in the
-  // archive file.
+  // In case of any errors, the error message can be obtained with
+  // VolumeArchive::error_message(). Encoding is the default encoding. Note,
+  // that other encoding may be used if specified in the archive file.
   virtual bool Init(const std::string& encoding) = 0;
 
   // Gets the next header. If path_name is set to nullptr, then there are no
@@ -81,11 +80,6 @@ class VolumeArchive {
   // Decompress ahead in case there are no more available bytes in the internal
   // buffer.
   virtual void MaybeDecompressAhead() = 0;
-
-  // Cleans all resources. Should be called only once. Returns true if
-  // successful. In case of failure the error message can be obtained with
-  // VolumeArchive::error_message().
-  virtual bool Cleanup() = 0;
 
   VolumeReader* reader() const { return reader_.get(); }
   std::string error_message() const { return error_message_; }
