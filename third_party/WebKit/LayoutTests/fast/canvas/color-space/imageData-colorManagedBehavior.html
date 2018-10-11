@@ -67,11 +67,11 @@ function checkImageDataColorSettings(canvasColorSettings, imageData) {
                 imageDataColorSettings.colorSpace);
   // According to the proposal for canvas color management
   // (github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md),
-  // pixelFormat can be "8-8-8-8", "10-10-10-2", "12-12-12-12", or "float16".
-  // However, the current implementation in Chromium only supports "8-8-8-8" and
+  // pixelFormat can be "uint8", "10-10-10-2", "12-12-12-12", or "float16".
+  // However, the current implementation in Chromium only supports "uint8" and
   // "float16", which are mapped to "uint8" and "float32" storage formats for
   // ImageData, respectively.
-  if (canvasColorSettings.pixelFormat == "8-8-8-8")
+  if (canvasColorSettings.pixelFormat == "uint8")
     assert_equals("uint8", imageDataColorSettings.storageFormat);
   else
     assert_equals("float32", imageDataColorSettings.storageFormat);
@@ -89,7 +89,7 @@ function checkImageDataColorValues(canvasColorSettings, imageData, isBlank = '',
       tolerance = colorCorrectionToleranceWCG_U8toSRGB_U8;
     switch (canvasColorSettings.colorSpace) {
       case "srgb":
-        if (canvasColorSettings.pixelFormat != "8-8-8-8") {
+        if (canvasColorSettings.pixelFormat != "uint8") {
           expectedPixels = linearRgbPixels;
           tolerance = colorCorrectionToleranceWCG;
         }
@@ -131,7 +131,7 @@ function initializeColorManagedCanvas(canvasColorSettings)
 }
 
 var canvasColorSettingsSet = [
-  {name: "SRGB", colorSettings: {colorSpace: "srgb", pixelFormat: "8-8-8-8"}},
+  {name: "SRGB", colorSettings: {colorSpace: "srgb", pixelFormat: "uint8"}},
   {name: "Linear RGB",
       colorSettings: {colorSpace: "srgb", pixelFormat: "float16"}},
   {name: "Rec2020",

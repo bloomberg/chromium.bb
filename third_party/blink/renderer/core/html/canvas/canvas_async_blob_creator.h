@@ -30,7 +30,7 @@ constexpr const char* kSRGBImageColorSpaceName = "srgb";
 constexpr const char* kRec2020ImageColorSpaceName = "rec2020";
 constexpr const char* kDisplayP3ImageColorSpaceName = "display-p3";
 
-constexpr const char* kRGBA8ImagePixelFormatName = "8-8-8-8";
+constexpr const char* kRGBA8ImagePixelFormatName = "uint8";
 constexpr const char* kRGBA16ImagePixelFormatName = "uint16";
 
 class CORE_EXPORT CanvasAsyncBlobCreator

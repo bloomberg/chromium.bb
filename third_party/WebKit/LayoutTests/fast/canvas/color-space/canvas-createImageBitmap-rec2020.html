@@ -318,7 +318,7 @@ promise_test(function() {
 
 // HTMLCanvasElement - Opaque SRGB
 promise_test(function() {
-    var testCanvas = initializeTestCanvas('srgb', '8-8-8-8');
+    var testCanvas = initializeTestCanvas('srgb', 'uint8');
     return testImageBitmapOpaque(testCanvas);
 }, 'createImageBitmap in Rec2020 from an opaque SRGB HTMLCanvasElement with resize.');
 
@@ -344,7 +344,7 @@ promise_test(function() {
 
 // HTMLCanvasElement - Transparent SRGB
 promise_test(function() {
-    var testCanvas = initializeTestCanvasTransparent('srgb', '8-8-8-8');
+    var testCanvas = initializeTestCanvasTransparent('srgb', 'uint8');
     return testImageBitmapTransparent(testCanvas);
 }, 'createImageBitmap in Rec2020 from a transparent SRGB HTMLCanvasElement with resize.');
 
@@ -397,7 +397,7 @@ promise_test(function() {
 // Color managed blob from canvas
 function testCreateImageBitmapFromColorManagedBlob(colorSpace, pixelFormat,
                                                    isTransparent) {
-    let canvasPixelFormat = '8-8-8-8';
+    let canvasPixelFormat = 'uint8';
     if (pixelFormat == 'uint16')
         canvasPixelFormat = 'float16';
     var testCanvas;
@@ -425,7 +425,7 @@ function testCreateImageBitmapFromColorManagedBlob(colorSpace, pixelFormat,
 
 function runAllCreateImageBitmapFromColorManagedBlobTests() {
     var blobColorSpaces = ['srgb', 'rec2020', 'display-p3'];
-    var blobPixelFormats = ['8-8-8-8', 'uint16'];
+    var blobPixelFormats = ['uint8', 'uint16'];
     var transparencies = [false, true];
     for (var i = 0; i < blobColorSpaces.length; i++)
         for (var j = 0; j < blobPixelFormats.length; j++)
@@ -441,7 +441,7 @@ runAllCreateImageBitmapFromColorManagedBlobTests();
 
 // ImageData - Opaque SRGB
 promise_test(function() {
-    var canvas = initializeTestCanvas('srgb', '8-8-8-8');
+    var canvas = initializeTestCanvas('srgb', 'uint8');
     var ctx = canvas.getContext('2d');
     var data = ctx.getImageData(0, 0, 20, 20);
     return testImageBitmapOpaque(data);
@@ -478,7 +478,7 @@ promise_test(function() {
 
 // ImageData - Transparent SRGB
 promise_test(function() {
-    var canvas = initializeTestCanvasTransparent('srgb', '8-8-8-8');
+    var canvas = initializeTestCanvasTransparent('srgb', 'uint8');
     var ctx = canvas.getContext('2d');
     var data = ctx.getImageData(0, 0, 20, 20);
     return testImageBitmapTransparent(data);
@@ -515,7 +515,7 @@ promise_test(function() {
 
 // ImageBitmap - Opaque SRGB
 promise_test(function() {
-    var testCanvas = initializeTestCanvas('srgb', '8-8-8-8');
+    var testCanvas = initializeTestCanvas('srgb', 'uint8');
     return createImageBitmap(testCanvas).then(testImageBitmapOpaque);
 }, 'createImageBitmap in Rec2020 from an opaque SRGB ImageBitmap with resize.');
 
@@ -544,7 +544,7 @@ promise_test(function() {
 
 // ImageBitmap - Transparent SRGB
 promise_test(function() {
-    var testCanvas = initializeTestCanvasTransparent('srgb', '8-8-8-8');
+    var testCanvas = initializeTestCanvasTransparent('srgb', 'uint8');
     return createImageBitmap(testCanvas).then(testImageBitmapTransparent);
 }, 'createImageBitmap in Rec2020 from a transparent SRGB ImageBitmap with resize.');
 
@@ -592,7 +592,7 @@ function initializeOffscreenCanvas(canvasColorSpace, canvasPixelFormat)
 
 //OffscreenCanvas - Opaque SRGB
 promise_test(function() {
-    var offscreen = initializeOffscreenCanvas('srgb', '8-8-8-8');
+    var offscreen = initializeOffscreenCanvas('srgb', 'uint8');
     return testImageBitmapOpaque(offscreen);
 }, 'createImageBitmap in Rec2020 from an opaque SRGB OffscreenCanvas with resize.');
 
@@ -637,7 +637,7 @@ function initializeOffscreenCanvasTransparent(canvasColorSpace, canvasPixelForma
 
 //OffscreenCanvas - Transparent SRGB
 promise_test(function() {
-    var offscreen = initializeOffscreenCanvasTransparent('srgb', '8-8-8-8');
+    var offscreen = initializeOffscreenCanvasTransparent('srgb', 'uint8');
     return testImageBitmapTransparent(offscreen);
 }, 'createImageBitmap in Rec2020 from a transparent SRGB OffscreenCanvas with resize.');
 

@@ -82,7 +82,7 @@ function runAllTests() {
     var canvasColorParams = [
         // When canvas is not half float backed, 16 bit PNGs will be decoded as
         // 8 bits PNGs (libpng strips 16 bits to 8 bits).
-        {colorSpace: 'srgb', pixelFormat: '8-8-8-8'},
+        {colorSpace: 'srgb', pixelFormat: 'uint8'},
 
         // For half float backed canvases, 16 bit PNGs are decoded as 16 bits,
         // and then color converted to the canvas color space and color types.

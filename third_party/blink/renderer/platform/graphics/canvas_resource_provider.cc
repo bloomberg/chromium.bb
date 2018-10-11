@@ -515,7 +515,7 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
                                    cc::PlaybackImageProvider::Settings()),
       weak_factory_(this) {
   // If the image provider may require to decode to half float instead of
-  // 8-8-8-8, create a f16 PlaybackImageProvider with the passed cache.
+  // uint8, create a f16 PlaybackImageProvider with the passed cache.
   if (canvas_color_type == kRGBA_F16_SkColorType) {
     DCHECK(cache_f16);
     playback_image_provider_f16_.emplace(cache_f16, target_color_space,
