@@ -105,9 +105,10 @@ class ExtensionManagementServiceTest : public testing::Test {
 
   void InitPrefService() {
     extension_management_.reset();
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     pref_service_ = profile_->GetTestingPrefService();
-    extension_management_.reset(new ExtensionManagement(profile_.get()));
+    extension_management_ =
+        std::make_unique<ExtensionManagement>(profile_.get());
   }
 
   void SetPref(bool managed,

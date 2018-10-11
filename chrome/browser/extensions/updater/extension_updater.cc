@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/api/module/module.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/forced_extensions/installation_failures.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -465,15 +466,28 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      InstallationFailures::ReportFailure(
+          profile_, id, InstallationFailures::Reason::CRX_FETCH_FAILED);
       break;
     case Error::MANIFEST_FETCH_FAILED:
+      InstallationFailures::ReportFailure(
+          profile_, id, InstallationFailures::Reason::MANIFEST_FETCH_FAILED);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      break;
     case Error::MANIFEST_INVALID:
+      InstallationFailures::ReportFailure(
+          profile_, id, InstallationFailures::Reason::MANIFEST_INVALID);
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
       break;
     case Error::NO_UPDATE_AVAILABLE:
+      InstallationFailures::ReportFailure(
+          profile_, id, InstallationFailures::Reason::NO_UPDATE);
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::NO_UPDATE,
