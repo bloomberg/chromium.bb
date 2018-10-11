@@ -231,13 +231,9 @@ source_set("audio") {
     ]
 
     libs += [
-      "dmoguids.lib",
       "dxguid.lib",
-      "msdmo.lib",
       "setupapi.lib",
-      "strmiids.lib",
       "winmm.lib",
-      "wmcodecdspuuid.lib",
     ]
   }
 
