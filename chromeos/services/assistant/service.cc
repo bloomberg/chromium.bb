@@ -52,13 +52,14 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 
 }  // namespace
 
-Service::Service()
+Service::Service(network::NetworkConnectionTracker* network_connection_tracker)
     : platform_binding_(this),
       session_observer_binding_(this),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       power_manager_observer_(this),
       voice_interaction_observer_binding_(this),
+      network_connection_tracker_(network_connection_tracker),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));
@@ -283,7 +284,8 @@ void Service::CreateAssistantManagerService(bool enable_hotword) {
   context()->connector()->BindInterface(device::mojom::kServiceName,
                                         mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      context()->connector(), std::move(battery_monitor), this, enable_hotword);
+      context()->connector(), std::move(battery_monitor), this, enable_hotword,
+      network_connection_tracker_);
 
   // Bind to Assistant controller in ash.
   context()->connector()->BindInterface(ash::mojom::kServiceName,
