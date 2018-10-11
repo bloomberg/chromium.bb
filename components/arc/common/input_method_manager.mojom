@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -104,7 +104,7 @@ interface InputMethodManagerHost {
 
 // This interface provides methods to control Android's InputMethodManager.
 //
-// Next method ID: 5
+// Next method ID: 7
 interface InputMethodManagerInstance {
   // Establishes full-duplex communication with the host.
   Init@0(InputMethodManagerHost host_ptr) => ();
@@ -123,4 +123,10 @@ interface InputMethodManagerInstance {
 
   // Sends the latest TextInputState of the active text field.
   [MinVersion=2] UpdateTextInputState@4(TextInputState state);
+
+  // Requests the active IME to show virtual keyboard.
+  [MinVersion=4] ShowVirtualKeyboard@5();
+
+  // Requests the active IME to hide virtual keyboard.
+  [MinVersion=4] HideVirtualKeyboard@6();
 };

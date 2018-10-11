@@ -42,6 +42,8 @@ class ArcInputMethodManagerBridge {
   virtual void SendFocus(mojom::InputConnectionPtr connection,
                          mojom::TextInputStatePtr state) = 0;
   virtual void SendUpdateTextInputState(mojom::TextInputStatePtr state) = 0;
+  virtual void SendShowVirtualKeyboard() = 0;
+  virtual void SendHideVirtualKeyboard() = 0;
 };
 
 }  // namespace arc
