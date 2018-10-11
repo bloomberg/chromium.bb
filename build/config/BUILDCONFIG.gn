@@ -614,6 +614,7 @@ if (is_win) {
 default_executable_configs = default_compiler_configs + [
                                "//build/config:default_libs",
                                "//build/config:executable_config",
+                               "//build/config/sanitizers:link_executable",
                              ] + _linker_configs
 set_defaults("executable") {
   configs = default_executable_configs
