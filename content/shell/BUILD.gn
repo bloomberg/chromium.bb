@@ -367,8 +367,8 @@ jumbo_static_library("content_shell_lib") {
 
   if (is_win) {
     sources += [
-      "common/v8_breakpad_support_win.cc",
-      "common/v8_breakpad_support_win.h",
+      "common/v8_crashpad_support_win.cc",
+      "common/v8_crashpad_support_win.h",
     ]
   }
 

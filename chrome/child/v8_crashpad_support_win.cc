@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/child/v8_breakpad_support_win.h"
+#include "chrome/child/v8_crashpad_support_win.h"
 
 #include <windows.h>
 
@@ -12,7 +12,7 @@
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "gin/public/debug.h"
 
-namespace v8_breakpad_support {
+namespace v8_crashpad_support {
 
 void SetUp() {
 #if defined(ARCH_CPU_X86_64)
@@ -23,4 +23,4 @@ void SetUp() {
 #endif
 }
 
-}  // namespace v8_breakpad_support
+}  // namespace v8_crashpad_support

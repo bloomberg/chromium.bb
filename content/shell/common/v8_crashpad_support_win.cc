@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/common/v8_breakpad_support_win.h"
+#include "content/shell/common/v8_crashpad_support_win.h"
 
 #include <windows.h>
 
 #include "base/logging.h"
 #include "gin/public/debug.h"
 
-namespace v8_breakpad_support {
+namespace v8_crashpad_support {
 
 void SetUp() {
 #ifdef _WIN64
@@ -29,4 +29,4 @@ void SetUp() {
 #endif
 }
 
-}  // namespace v8_breakpad_support
+}  // namespace v8_crashpad_support

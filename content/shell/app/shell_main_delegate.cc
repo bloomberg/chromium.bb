@@ -79,9 +79,10 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+
 #include <initguid.h>
 #include "base/logging_win.h"
-#include "content/shell/common/v8_breakpad_support_win.h"
+#include "content/shell/common/v8_crashpad_support_win.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -163,7 +164,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
 
-  v8_breakpad_support::SetUp();
+  v8_crashpad_support::SetUp();
 #endif
 #if defined(OS_LINUX)
   breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);

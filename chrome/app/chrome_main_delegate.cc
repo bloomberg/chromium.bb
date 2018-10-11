@@ -73,7 +73,7 @@
 #include "base/debug/close_handle_hook_win.h"
 #include "base/win/atl.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
-#include "chrome/child/v8_breakpad_support_win.h"
+#include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome_elf/chrome_elf_main.h"
 #include "sandbox/win/src/sandbox.h"
@@ -555,7 +555,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
       base::PlatformThread::CurrentId());
 
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  v8_breakpad_support::SetUp();
+  v8_crashpad_support::SetUp();
 #endif
 #if defined(OS_LINUX)
   breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);
