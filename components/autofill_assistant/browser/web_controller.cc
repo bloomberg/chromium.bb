@@ -491,23 +491,6 @@ void WebController::OnFindElementForFillingForm(
     return;
   }
 
-  ClickObject(element_result->object_id,
-              base::BindOnce(&WebController::OnClickObjectForFillingForm,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             std::move(data_to_autofill), selectors,
-                             std::move(callback), std::move(element_result)));
-}
-
-void WebController::OnClickObjectForFillingForm(
-    std::unique_ptr<FillFormInputData> data_to_autofill,
-    const std::vector<std::string>& selectors,
-    base::OnceCallback<void(bool)> callback,
-    std::unique_ptr<FindElementResult> element_result,
-    bool click_result) {
-  if (!click_result) {
-    DLOG(ERROR) << "Failed to click the element for filling form.";
-    OnResult(false, std::move(callback));
-  }
   ContentAutofillDriver* driver = ContentAutofillDriver::GetForRenderFrameHost(
       element_result->container_frame_host);
   DCHECK(!selectors.empty());

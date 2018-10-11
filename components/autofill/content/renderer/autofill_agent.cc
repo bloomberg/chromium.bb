@@ -682,8 +682,16 @@ void AutofillAgent::GetElementFormAndFieldData(
 
   blink::WebFormControlElement target_form_control_element =
       target_element.To<blink::WebFormControlElement>();
-  form_util::FindFormAndFieldForFormControlElement(target_form_control_element,
-                                                   &form, &field);
+  bool success = form_util::FindFormAndFieldForFormControlElement(
+      target_form_control_element, &form, &field);
+  if (success) {
+    // Remember this element so as to autofill the form without focusing the
+    // field for Autofill Assistant.
+    element_ = target_form_control_element;
+  }
+  // Do not expect failure.
+  DCHECK(success);
+
   return std::move(callback).Run(form, field);
 }
 
