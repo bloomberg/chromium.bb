@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -48,8 +49,20 @@ const CGFloat kAnimationDuration = 0.3;
 @property(nonatomic, strong) UIImageView* contentImageView;
 // Constraint for the size of the image.
 @property(nonatomic, strong) NSLayoutConstraint* imageSizeConstraint;
-// Constraint for the distance between the texts and the image.
-@property(nonatomic, strong) NSLayoutConstraint* imageTitleSpacing;
+// Constraint for the horizontal distance between the texts and the image
+// (standard content size).
+@property(nonatomic, strong) NSLayoutConstraint* imageTitleHorizontalSpacing;
+// Constraint for the vertical distance between the texts and the image
+// (accessibility content size).
+@property(nonatomic, strong) NSLayoutConstraint* imageTitleVerticalSpacing;
+
+// When they are activated, the image is on the leading side of the text.
+// They conflict with the accessibilityConstraints.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* standardConstraints;
+// When they are activated, the image is above the text. The text is taking the
+// full width. They conflict with the standardConstraints.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* accessibilityConstraints;
 
 // Applies the constraints on the elements. Called in the init.
 - (void)applyConstraints;
@@ -65,7 +78,6 @@ const CGFloat kAnimationDuration = 0.3;
 @synthesize contentImageView = _contentImageView;
 @synthesize faviconView = _faviconView;
 @synthesize imageSizeConstraint = _imageSizeConstraint;
-@synthesize imageTitleSpacing = _imageTitleSpacing;
 @synthesize displayImage = _displayImage;
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -152,11 +164,13 @@ const CGFloat kAnimationDuration = 0.3;
 
 - (void)setDisplayImage:(BOOL)displayImage {
   if (displayImage) {
-    self.imageTitleSpacing.constant = kStandardSpacing;
+    self.imageTitleHorizontalSpacing.constant = kStandardSpacing;
+    self.imageTitleVerticalSpacing.constant = kStandardSpacing;
     self.imageSizeConstraint.constant = kImageSize;
     self.imageContainer.hidden = NO;
   } else {
-    self.imageTitleSpacing.constant = 0;
+    self.imageTitleHorizontalSpacing.constant = 0;
+    self.imageTitleVerticalSpacing.constant = 0;
     self.imageSizeConstraint.constant = 0;
     self.imageContainer.hidden = YES;
   }
@@ -164,31 +178,31 @@ const CGFloat kAnimationDuration = 0.3;
 }
 
 + (CGFloat)heightForWidth:(CGFloat)width
-                withImage:(BOOL)hasImage
+       withImageAvailable:(BOOL)hasImage
                     title:(NSString*)title
             publisherName:(NSString*)publisherName
           publicationDate:(NSString*)publicationDate {
-    UILabel* titleLabel = [[UILabel alloc] init];
-    [self configureTitleLabel:titleLabel];
-    titleLabel.text = title;
+  UILabel* titleLabel = [[UILabel alloc] init];
+  [self configureTitleLabel:titleLabel];
+  titleLabel.text = title;
 
-    UILabel* additionalInfoLabel = [[UILabel alloc] init];
-    additionalInfoLabel.font = [self additionalInformationFont];
-    additionalInfoLabel.text =
-        [self stringForPublisher:publisherName date:publicationDate];
+  UILabel* additionalInfoLabel = [[UILabel alloc] init];
+  additionalInfoLabel.font = [self additionalInformationFont];
+  additionalInfoLabel.text =
+      [self stringForPublisher:publisherName date:publicationDate];
 
-    CGSize sizeForLabels =
-        CGSizeMake(width - [self labelMarginWithImage:hasImage], 500);
+  CGSize sizeForLabels =
+      CGSizeMake(width - [self labelHorizontalMarginsWithImage:hasImage], 500);
 
-    CGFloat minimalHeight = kImageSize + kStandardSpacing;
+  CGFloat minimalHeight = kImageSize + kStandardSpacing;
 
-    CGFloat labelHeight = kStandardSpacing;
-    labelHeight += [titleLabel sizeThatFits:sizeForLabels].height;
-    labelHeight += kSmallSpacing;
-    CGFloat additionalInfoHeight =
-        [additionalInfoLabel sizeThatFits:sizeForLabels].height;
-    labelHeight += MAX(additionalInfoHeight, kFaviconSize);
-    return MAX(minimalHeight, labelHeight);
+  CGFloat labelHeight = [titleLabel sizeThatFits:sizeForLabels].height;
+  labelHeight += [self labelVerticalMarginsWithImage:hasImage];
+  labelHeight += kSmallSpacing;
+  CGFloat additionalInfoHeight =
+      [additionalInfoLabel sizeThatFits:sizeForLabels].height;
+  labelHeight += MAX(additionalInfoHeight, kFaviconSize);
+  return MAX(minimalHeight, labelHeight);
 }
 
 #pragma mark - UICollectionViewCell
@@ -203,8 +217,24 @@ const CGFloat kAnimationDuration = 0.3;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  if (self.traitCollection.preferredContentSizeCategory !=
-      previousTraitCollection.preferredContentSizeCategory) {
+  UIContentSizeCategory currentCategory =
+      self.traitCollection.preferredContentSizeCategory;
+  UIContentSizeCategory previousCategory =
+      previousTraitCollection.preferredContentSizeCategory;
+
+  BOOL isCurrentCategoryAccessibility =
+      ContentSizeCategoryIsAccessibilityCategory(currentCategory);
+  if (isCurrentCategoryAccessibility !=
+      ContentSizeCategoryIsAccessibilityCategory(previousCategory)) {
+    if (isCurrentCategoryAccessibility) {
+      [NSLayoutConstraint deactivateConstraints:self.standardConstraints];
+      [NSLayoutConstraint activateConstraints:self.accessibilityConstraints];
+    } else {
+      [NSLayoutConstraint deactivateConstraints:self.accessibilityConstraints];
+      [NSLayoutConstraint activateConstraints:self.standardConstraints];
+    }
+  }
+  if (currentCategory != previousCategory) {
     [[self class] configureTitleLabel:_titleLabel];
     _additionalInformationLabel.font = [[self class] additionalInformationFont];
   }
@@ -220,7 +250,8 @@ const CGFloat kAnimationDuration = 0.3;
   CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
 
   self.titleLabel.preferredMaxLayoutWidth =
-      parentWidth - [[self class] labelMarginWithImage:self.displayImage];
+      parentWidth -
+      [[self class] labelHorizontalMarginsWithImage:self.displayImage];
   self.additionalInformationLabel.preferredMaxLayoutWidth =
       parentWidth - kFaviconSize - kSmallSpacing - 2 * kStandardSpacing;
 
@@ -234,9 +265,6 @@ const CGFloat kAnimationDuration = 0.3;
 - (void)applyConstraints {
   _imageSizeConstraint =
       [_imageContainer.heightAnchor constraintEqualToConstant:kImageSize];
-  _imageTitleSpacing = [_titleLabel.leadingAnchor
-      constraintEqualToAnchor:_imageContainer.trailingAnchor
-                     constant:kStandardSpacing];
 
   [NSLayoutConstraint activateConstraints:@[
     // Image.
@@ -245,10 +273,6 @@ const CGFloat kAnimationDuration = 0.3;
         constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor],
     [_imageContainer.widthAnchor
         constraintEqualToAnchor:_imageContainer.heightAnchor],
-    [_imageContainer.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
-
-    // Text.
-    _imageTitleSpacing,
 
     // Additional Information.
     [_additionalInformationLabel.trailingAnchor
@@ -277,11 +301,36 @@ const CGFloat kAnimationDuration = 0.3;
 
   AddSameConstraints(_contentImageView, _imageContainer);
 
+  _imageTitleHorizontalSpacing = [_titleLabel.leadingAnchor
+      constraintEqualToAnchor:_imageContainer.trailingAnchor
+                     constant:kStandardSpacing];
+  _imageTitleVerticalSpacing = [_titleLabel.topAnchor
+      constraintEqualToAnchor:_imageContainer.bottomAnchor
+                     constant:kStandardSpacing];
+  _standardConstraints = @[
+    _imageTitleHorizontalSpacing,
+    [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
+  ];
+
+  _accessibilityConstraints = @[
+    [_titleLabel.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kStandardSpacing],
+    _imageTitleVerticalSpacing,
+  ];
+
+  if (ContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory)) {
+    [NSLayoutConstraint activateConstraints:self.accessibilityConstraints];
+  } else {
+    [NSLayoutConstraint activateConstraints:self.standardConstraints];
+  }
+
   ApplyVisualConstraintsWithMetrics(
       @[
         @"H:[title]-(space)-|",
         @"H:|-(space)-[image]",
-        @"V:|-(space)-[title]",
+        @"V:|-(space)-[image]",
         @"H:[favicon]-(small)-[additional]",
       ],
       @{
@@ -313,10 +362,30 @@ const CGFloat kAnimationDuration = 0.3;
   return [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
 }
 
-// Returns the margin for the labels, depending if the cell |hasImage|.
-+ (CGFloat)labelMarginWithImage:(BOOL)hasImage {
-  CGFloat offset = hasImage ? kImageSize + kStandardSpacing : 0;
+// Returns the horizontal margin for the labels, depending if the cell
+// |hasImage| and the content size category.
++ (CGFloat)labelHorizontalMarginsWithImage:(BOOL)hasImage {
+  BOOL isCurrentCategoryAccessibility =
+      ContentSizeCategoryIsAccessibilityCategory(
+          [UIApplication sharedApplication].preferredContentSizeCategory);
+
+  CGFloat offset = (hasImage && !isCurrentCategoryAccessibility)
+                       ? kImageSize + kStandardSpacing
+                       : 0;
   return 2 * kStandardSpacing + offset;
+}
+
+// Returns the vertical margin for the labels, depending if the cell |hasImage|
+// and the content size category.
++ (CGFloat)labelVerticalMarginsWithImage:(BOOL)hasImage {
+  BOOL isCurrentCategoryAccessibility =
+      ContentSizeCategoryIsAccessibilityCategory(
+          [UIApplication sharedApplication].preferredContentSizeCategory);
+
+  CGFloat offset = (hasImage && isCurrentCategoryAccessibility)
+                       ? kImageSize + kStandardSpacing
+                       : 0;
+  return kStandardSpacing + offset;
 }
 
 // Returns the attributed string to be displayed.
