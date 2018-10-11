@@ -2388,8 +2388,10 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
 
 void LayoutObject::SetStyleWithWritingModeOf(scoped_refptr<ComputedStyle> style,
                                              LayoutObject* parent) {
-  if (parent)
+  if (parent) {
     style->SetWritingMode(parent->StyleRef().GetWritingMode());
+    style->UpdateFontOrientation();
+  }
   SetStyle(std::move(style));
 }
 

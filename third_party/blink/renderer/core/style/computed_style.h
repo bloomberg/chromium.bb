@@ -939,6 +939,16 @@ class ComputedStyle : public ComputedStyleBase,
   // to the same baseline in the child.
   FontBaseline GetFontBaseline() const;
 
+  // Compute FontOrientation from this style. It is derived from WritingMode and
+  // TextOrientation.
+  FontOrientation ComputeFontOrientation() const;
+
+  // Update FontOrientation in FontDescription if it is different. FontBuilder
+  // takes care of updating it, but if WritingMode or TextOrientation were
+  // changed after the style was constructed, this function synchronizes
+  // FontOrientation to match to this style.
+  void UpdateFontOrientation();
+
   // -webkit-locale
   const AtomicString& Locale() const {
     return LayoutLocale::LocaleString(GetFontDescription().Locale());
