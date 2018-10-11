@@ -65,6 +65,8 @@ class LayoutListItem final : public LayoutBlockFlow {
   // Returns true if we re-attached and updated the location of the marker.
   bool UpdateMarkerLocation();
 
+  LayoutUnit AdditionalMarginStart() const override;
+
   void PositionListMarker();
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
