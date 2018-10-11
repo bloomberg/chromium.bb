@@ -140,6 +140,27 @@ cr.define('mobile', function() {
     },
 
     /**
+     * Shows the payment portal webview when the payment portal starts loading.
+     * The goal is to ensure that any interstitial UI in the webview is visible
+     * to the user, at least temporarily, until https://crbug.com/894281 is
+     * resolved.
+     *
+     * @param {string} paymentUrl The payment portal URL - used to restrict
+     *     origins to which the message is sent.
+     * @private
+     */
+    showPaymentPortalOnLoadStart_: function(paymentUrl, evt) {
+      if (!evt.isTopLevel ||
+          new URL(evt.url).origin != new URL(paymentUrl).origin) {
+        return;
+      }
+
+      $('finalStatus').classList.add('hidden');
+      $('systemStatus').classList.add('hidden');
+      $('portalFrame').classList.remove('hidden');
+    },
+
+    /**
      * Loads payment URL defined by <code>deviceInfo</code> into the
      * portal frame webview.
      * If the webview element already exists, it will not be reused - the
@@ -186,6 +207,11 @@ cr.define('mobile', function() {
       frame.addEventListener(
           'loadstop',
           this.sendInitialMessage_.bind(this, deviceInfo.payment_url));
+
+      frame.addEventListener(
+          'loadstart',
+          this.showPaymentPortalOnLoadStart_.bind(
+              this, deviceInfo.payment_url));
 
       if (deviceInfo.post_data && deviceInfo.post_data.length) {
         mobile.util.postDeviceDataToWebview(frame, deviceInfo);
