@@ -49,7 +49,7 @@ _FACTORY_SHIM = 'factory_shim'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _AUTOTEST_RPC_HOSTNAME = 'master2'
-_LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
+LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
 STATEFUL_FILE = 'stateful.tgz'
 # For swarming proxy
@@ -313,7 +313,7 @@ def SetupBoard(buildroot, board, usepkg,
     cmd.append('--profile=%s' % profile)
 
   if not usepkg:
-    cmd.extend(_LOCAL_BUILD_FLAGS)
+    cmd.extend(LOCAL_BUILD_FLAGS)
 
   if force:
     cmd.append('--force')
@@ -461,7 +461,7 @@ def Build(buildroot, board, build_autotest, usepkg,
     cmd.append('--skip_chroot_upgrade')
 
   if not usepkg:
-    cmd.extend(_LOCAL_BUILD_FLAGS)
+    cmd.extend(LOCAL_BUILD_FLAGS)
 
   if noretry:
     cmd.append('--nobuildretry')

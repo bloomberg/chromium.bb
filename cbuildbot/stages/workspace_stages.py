@@ -34,7 +34,8 @@ from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
 
-FORCE_BUILD_PACKAGES = '10774.0.0'
+BUILD_PACKAGES_PREBUILTS = '10774.0.0'
+BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '5220.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -85,17 +86,17 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     """
     return manifest_version.VersionInfo.from_repo(self._build_root)
 
-  def BeforeLimit(self, limit):
-    """Is worksapce version older that cutoff limit?
+  def AfterLimit(self, limit):
+    """Is worksapce version newer than cutoff limit?
 
     Args:
       limit: String version of format '123.0.0'
 
     Returns:
-      bool: True if workspace has older version than limit.
+      bool: True if workspace has newer version than limit.
     """
     version_info = self.GetWorkspaceVersionInfo()
-    return version_info < manifest_version.VersionInfo(limit)
+    return version_info > manifest_version.VersionInfo(limit)
 
 
 class WorkspaceCleanStage(WorkspaceStageBase):
@@ -255,18 +256,35 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   category = constants.PRODUCT_OS_STAGE
 
   def PerformStage(self):
-    usepkg = self._run.config.usepkg_build_packages
-    if self.BeforeLimit(FORCE_BUILD_PACKAGES):
-      usepkg = False
+    usepkg = False
+    if self.AfterLimit(BUILD_PACKAGES_PREBUILTS):
+      usepkg = self._run.config.usepkg_build_packages
 
     packages = self.GetListOfPackagesToBuild()
-    commands.Build(self._build_root,
-                   self._current_board,
-                   build_autotest=False,
-                   usepkg=usepkg,
-                   packages=packages,
-                   skip_chroot_upgrade=True,
-                   chrome_root=self._run.options.chrome_root,
-                   noretry=self._run.config.nobuildretry,
-                   chroot_args=None,
-                   extra_env=self._portage_extra_env)
+
+    cmd = ['./build_packages', '--board=%s' % self._current_board,
+           '--accept_licenses=@CHROMEOS', '--skip_chroot_upgrade',
+           '--nowithautotest', ]
+
+    if self.AfterLimit(BUILD_PACKAGES_WITH_DEBUG_SYMBOLS):
+      cmd.append('--withdebugsymbols')
+
+    if not usepkg:
+      cmd.extend(commands.LOCAL_BUILD_FLAGS)
+
+    if self._run.config.nobuildretry:
+      cmd.append('--nobuildretry')
+
+    chroot_args = []
+    if self._run.options.chrome_root:
+      chroot_args.append('--chrome_root=%s' % self._run.options.chrome_root)
+
+    # TODO: Add event file handling, for build package performance tracking.
+    #if self.AfterLimit(BUILD_PACKAGES_EVENTS):
+    #  cmd.append('--withevents')
+    #  cmd.append('--eventfile=%s' % event_file)
+
+    cmd.extend(packages)
+
+    commands.RunBuildScript(
+        self._build_root, cmd, chroot_args=chroot_args, enter_chroot=True)
