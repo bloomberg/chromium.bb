@@ -604,6 +604,20 @@ void CrostiniManager::OnInstallTerminaComponent(
                               : ConciergeClientResult::LOAD_COMPONENT_FAILED);
 }
 
+bool CrostiniManager::UninstallTerminaComponent() {
+  bool success = true;
+  auto* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  if (cros_component_manager) {
+    success =
+        cros_component_manager->Unload(imageloader::kTerminaComponentName);
+  }
+  if (success) {
+    is_cros_termina_registered_ = false;
+  }
+  return success;
+}
+
 void CrostiniManager::StartConcierge(StartConciergeCallback callback) {
   VLOG(1) << "Starting Concierge service";
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(

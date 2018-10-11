@@ -191,6 +191,9 @@ class CrostiniManager : public KeyedService,
   // pending upgrades if a MaybeUpgradeCrostini failed.
   void InstallTerminaComponent(CrostiniResultCallback callback);
 
+  // Unloads and removes the cros-termina component. Returns success/failure.
+  bool UninstallTerminaComponent();
+
   // Starts the Concierge service. |callback| is called after the method call
   // finishes.
   void StartConcierge(StartConciergeCallback callback);
