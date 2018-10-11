@@ -9,7 +9,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
+import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.modelutil.ListObservableImpl;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
@@ -26,10 +28,10 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Recycler view adapter delegate for a model containing a list of category cards and an error code.
  */
-class CategoryCardAdapter extends ForwardingListObservable<Void>
+class CategoryCardAdapter extends ListObservableImpl<Void>
         implements RecyclerViewAdapter
                            .Delegate<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void>,
-                   PropertyObservable.PropertyObserver<PropertyKey> {
+                   PropertyObservable.PropertyObserver<PropertyKey>, ListObserver<Void> {
     @IntDef({ViewType.HEADER, ViewType.CATEGORY, ViewType.LOADING, ViewType.ERROR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
@@ -113,11 +115,34 @@ class CategoryCardAdapter extends ForwardingListObservable<Void>
             int status = mCategoryModel.get(ExploreSitesPage.STATUS_KEY);
             if (status != ExploreSitesPage.CatalogLoadingState.SUCCESS) {
                 notifyItemChanged(1);
-            } // Else the list observer takes care of updating.
+            } else {
+                // If it's success, we must "remove" the loading view.
+                // Loading the categories is taken care of by the list observer.
+                notifyItemRangeRemoved(/* index= */ 1, /* count= */ 1);
+            }
         }
         if (key == ExploreSitesPage.SCROLL_TO_CATEGORY_KEY) {
             int pos = mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY);
             mLayoutManager.scrollToPosition(pos);
         }
+    }
+
+    @Override
+    public void onItemRangeInserted(ListObservable source, int index, int count) {
+        // Add 1 because of title.
+        notifyItemRangeInserted(index + 1, count);
+    }
+
+    @Override
+    public void onItemRangeRemoved(ListObservable source, int index, int count) {
+        // Add 1 because of title.
+        notifyItemRangeRemoved(index + 1, count);
+    }
+
+    @Override
+    public void onItemRangeChanged(
+            ListObservable<Void> source, int index, int count, @Nullable Void payload) {
+        // Add 1 because of title.
+        notifyItemRangeChanged(index + 1, count, payload);
     }
 }
