@@ -8,10 +8,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "media/base/media_switches.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/service_impl.h"
-#include "services/video_capture/test/mock_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace video_capture {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/test/mock_device_factory.h"
+#include "media/capture/video/mock_device_factory.h"
 
 namespace {
 
@@ -45,7 +45,7 @@ class RawPointerVideoCaptureDevice : public media::VideoCaptureDevice {
 
 }  // anonymous namespace
 
-namespace video_capture {
+namespace media {
 
 MockDeviceFactory::MockDeviceFactory() = default;
 
@@ -83,4 +83,4 @@ void MockDeviceFactory::GetCameraLocationsAsync(
   base::ResetAndReturn(&result_callback).Run(std::move(device_descriptors));
 }
 
-}  // namespace video_capture
+}  // namespace media

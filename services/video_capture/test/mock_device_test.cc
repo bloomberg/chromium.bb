@@ -22,7 +22,7 @@ MockDeviceTest::~MockDeviceTest() = default;
 
 void MockDeviceTest::SetUp() {
   message_loop_ = std::make_unique<base::MessageLoop>();
-  auto mock_device_factory = std::make_unique<MockDeviceFactory>();
+  auto mock_device_factory = std::make_unique<media::MockDeviceFactory>();
   // We keep a pointer to the MockDeviceFactory as a member so that we can
   // invoke its AddMockDevice(). Ownership of the MockDeviceFactory is moved
   // to the DeviceFactoryMediaToMojoAdapter.

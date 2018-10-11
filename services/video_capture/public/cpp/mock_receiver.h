@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_TEST_MOCK_RECEIVER_H_
-#define SERVICES_VIDEO_CAPTURE_TEST_MOCK_RECEIVER_H_
+#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
+#define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
 
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -14,7 +14,8 @@ namespace video_capture {
 
 class MockReceiver : public mojom::Receiver {
  public:
-  MockReceiver(mojom::ReceiverRequest request);
+  MockReceiver();
+  explicit MockReceiver(mojom::ReceiverRequest request);
   ~MockReceiver() override;
 
   // Use forwarding method to work around gmock not supporting move-only types.
@@ -46,4 +47,4 @@ class MockReceiver : public mojom::Receiver {
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_TEST_MOCK_RECEIVER_H_
+#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_

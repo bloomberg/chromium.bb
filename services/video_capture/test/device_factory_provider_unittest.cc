@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/test/device_factory_provider_test.h"

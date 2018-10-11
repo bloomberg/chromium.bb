@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/test/mock_producer.h"
+#include "services/video_capture/public/cpp/mock_producer.h"
 
 namespace video_capture {
 
