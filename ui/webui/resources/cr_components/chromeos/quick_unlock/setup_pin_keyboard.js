@@ -115,6 +115,14 @@ Polymer({
      * @private
      */
     pinHasPassedMinimumLength_: {type: Boolean, value: false},
+
+    /**
+     * Enables pin placeholder.
+     */
+    enablePlaceholder: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   focus: function() {

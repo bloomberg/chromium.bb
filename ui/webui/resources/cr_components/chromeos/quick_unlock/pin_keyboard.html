@@ -40,6 +40,12 @@
       }
 
       #root {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #rowsContainer {
         direction: ltr;
         display: block;
       }
@@ -103,10 +109,12 @@
         font-family: 'Roboto';
       }
 
-      .letter {
+      inner-text.letter {
         color: var(--pin-keyboard-letter-color, --paper-blue-grey-700);
         font-size: 9px;
         margin-top: 4px;
+
+        @apply --pin-keyboard-digit-button-letter;
       }
 
       .number {
@@ -137,6 +145,8 @@
         position: relative;
         text-align: center;
         width: 180px;
+
+        @apply --pin-keyboard-pin-input-style;
       }
 
       #pinInput[has-content] {
@@ -159,89 +169,92 @@
         <cr-input id="pinInput" type="password" value="{{value}}"
             is-input-rtl$="[[isInputRtl_(value)]]"
             has-content$="[[hasInput_(value)]]" invalid="[[hasError]]"
-            placeholder="[[getInputPlaceholder_(enablePassword)]]"
+            placeholder="[[getInputPlaceholder_(enablePassword,
+                enablePlaceholder)]]"
             on-keydown="onInputKeyDown_" force-underline$="[[forceUnderline_]]">
         </cr-input>
       </div>
       <slot select="[problem]"></slot>
-      <div class="row">
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="2"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard2')]]</inner-text>
-          <inner-text class="letter">ABC</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="3"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard3')]]</inner-text>
-          <inner-text class="letter">DEF</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-      </div>
-      <div class="row">
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="4"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard4')]]</inner-text>
-          <inner-text class="letter">GHI</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="5"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard5')]]</inner-text>
-          <inner-text class="letter">JKL</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="6"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard6')]]</inner-text>
-          <inner-text class="letter">MNO</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-      </div>
-      <div class="row">
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="7"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard7')]]</inner-text>
-          <inner-text class="letter">PQRS</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="8"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard8')]]</inner-text>
-          <inner-text class="letter">TUV</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="9"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard9')]]</inner-text>
-          <inner-text class="letter">WXYZ</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-      </div>
-      <div class="row bottom-row">
-        <div class="digit-button"></div>
-        <paper-button class="digit-button" on-tap="onNumberTap_" value="0"
-            noink>
-          <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
-          <inner-text class="letter">+</inner-text>
-          <paper-ripple class="circle" center></paper-ripple>
-        </paper-button>
-        <div id="backspaceButtonContainer">
-          <paper-icon-button id="backspaceButton" class="digit-button"
-              disabled$="[[!hasInput_(value)]]"
-              icon="pin-keyboard:backspace"
-              on-pointerdown="onBackspacePointerDown_"
-              on-pointerout="clearAndReset_"
-              on-pointerup="onBackspacePointerUp_"
-              title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
+      <div id="rowsContainer">
+        <div class="row">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
               noink>
-          </paper-icon-button>
-          <paper-ripple class="circle" center></paper-ripple>
+            <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="2"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard2')]]</inner-text>
+            <inner-text class="letter">ABC</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="3"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard3')]]</inner-text>
+            <inner-text class="letter">DEF</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+        </div>
+        <div class="row">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="4"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard4')]]</inner-text>
+            <inner-text class="letter">GHI</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="5"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard5')]]</inner-text>
+            <inner-text class="letter">JKL</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="6"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard6')]]</inner-text>
+            <inner-text class="letter">MNO</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+        </div>
+        <div class="row">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="7"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard7')]]</inner-text>
+            <inner-text class="letter">PQRS</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="8"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard8')]]</inner-text>
+            <inner-text class="letter">TUV</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="9"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard9')]]</inner-text>
+            <inner-text class="letter">WXYZ</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+        </div>
+        <div class="row bottom-row">
+          <div class="digit-button"></div>
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="0"
+              noink>
+            <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
+            <inner-text class="letter">+</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </paper-button>
+          <div id="backspaceButtonContainer">
+            <paper-icon-button id="backspaceButton" class="digit-button"
+                disabled$="[[!hasInput_(value)]]"
+                icon="pin-keyboard:backspace"
+                on-pointerdown="onBackspacePointerDown_"
+                on-pointerout="clearAndReset_"
+                on-pointerup="onBackspacePointerUp_"
+                title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
+                noink>
+            </paper-icon-button>
+            <paper-ripple class="circle" center></paper-ripple>
+          </div>
         </div>
       </div>
     </div>
