@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
@@ -75,6 +76,10 @@ public class FeedImageLoaderTest {
     @Mock
     private Bitmap mBitmap;
     @Captor
+    ArgumentCaptor<Integer> mWidthPxCaptor;
+    @Captor
+    ArgumentCaptor<Integer> mHeightPxCaptor;
+    @Captor
     ArgumentCaptor<Callback<Bitmap>> mCallbackArgument;
 
     private FeedImageLoader mImageLoader;
@@ -93,16 +98,20 @@ public class FeedImageLoaderTest {
             return null;
         })
                 .when(mBridge)
-                .fetchImage(eq(url), mCallbackArgument.capture());
+                .fetchImage(eq(url), mWidthPxCaptor.capture(), mHeightPxCaptor.capture(),
+                        mCallbackArgument.capture());
     }
 
-    private void loadDrawable(String... urls) {
+    private void loadDrawable(int widthPx, int heightPx, String... urls) {
         // While normally {@link FeedImageLoader#loadDrawable} guarantees that the return callback
         // is invoked asynchronously, this is not the case in tests. It seems that both
         // {@link FeedImageLoaderTest#answerFetchImage}, {@link AndroidThreadUtils.postOnUiThread}
         // run synchronously.
-        mImageLoader.loadDrawable(Arrays.asList(urls), ImageLoaderApi.DIMENSION_UNKNOWN,
-                ImageLoaderApi.DIMENSION_UNKNOWN, mConsumer);
+        mImageLoader.loadDrawable(Arrays.asList(urls), widthPx, heightPx, mConsumer);
+    }
+
+    private void loadDrawable(String... urls) {
+        loadDrawable(ImageLoaderApi.DIMENSION_UNKNOWN, ImageLoaderApi.DIMENSION_UNKNOWN, urls);
     }
 
     @Test
@@ -110,9 +119,9 @@ public class FeedImageLoaderTest {
     public void testLoadDrawable() {
         answerFetchImage(HTTP_STRING1, mBitmap);
 
-        loadDrawable(HTTP_STRING1);
+        loadDrawable(100, 200, HTTP_STRING1);
 
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), any());
+        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), eq(100), eq(200), any());
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
@@ -123,7 +132,9 @@ public class FeedImageLoaderTest {
 
         loadDrawable(HTTP_STRING1);
 
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), any());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
         verify(mConsumer, times(1)).accept(eq(null));
     }
 
@@ -135,9 +146,15 @@ public class FeedImageLoaderTest {
 
         loadDrawable(HTTP_STRING1, HTTP_STRING2, HTTP_STRING3);
 
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), any());
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING2), any());
-        verify(mBridge, times(0)).fetchImage(eq(HTTP_STRING3), any());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING2), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
+        verify(mBridge, times(0))
+                .fetchImage(eq(HTTP_STRING3), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
@@ -166,7 +183,9 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void testLoadDrawableAssetFirst() {
         loadDrawable(ASSET_STRING, HTTP_STRING1);
-        verify(mBridge, times(0)).fetchImage(eq(HTTP_STRING1), any());
+        verify(mBridge, times(0))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), any());
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
@@ -174,7 +193,7 @@ public class FeedImageLoaderTest {
     @SmallTest
     public void testLoadDrawableEmptyList() {
         loadDrawable();
-        verify(mBridge, times(0)).fetchImage(any(), any());
+        verify(mBridge, times(0)).fetchImage(any(), anyInt(), anyInt(), any());
         verify(mConsumer, times(1)).accept(eq(null));
     }
 
@@ -185,7 +204,9 @@ public class FeedImageLoaderTest {
 
         loadDrawable(OVERLAY_IMAGE_START);
 
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), mCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), mCallbackArgument.capture());
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
@@ -196,7 +217,9 @@ public class FeedImageLoaderTest {
 
         loadDrawable(OVERLAY_IMAGE_END);
 
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), mCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), mCallbackArgument.capture());
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
@@ -214,8 +237,12 @@ public class FeedImageLoaderTest {
 
         loadDrawable(OVERLAY_IMAGE_END, HTTP_STRING2);
 
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING1), mCallbackArgument.capture());
-        verify(mBridge, times(1)).fetchImage(eq(HTTP_STRING2), mCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING1), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), mCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .fetchImage(eq(HTTP_STRING2), eq(ImageLoaderApi.DIMENSION_UNKNOWN),
+                        eq(ImageLoaderApi.DIMENSION_UNKNOWN), mCallbackArgument.capture());
         verify(mConsumer, times(1)).accept(AdditionalMatchers.not(eq(null)));
     }
 
