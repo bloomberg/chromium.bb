@@ -240,11 +240,13 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void DidFinishLoading(base::TimeTicks finishTime,
-                        int64_t totalEncodedDataLength,
-                        int64_t totalEncodedBodyLength,
-                        int64_t totalDecodedBodyLength,
-                        bool should_report_corb_blocking) override {
+  void DidFinishLoading(
+      base::TimeTicks finishTime,
+      int64_t totalEncodedDataLength,
+      int64_t totalEncodedBodyLength,
+      int64_t totalDecodedBodyLength,
+      bool should_report_corb_blocking,
+      const std::vector<network::cors::PreflightTimingInfo>&) override {
     EXPECT_TRUE(loader_);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);

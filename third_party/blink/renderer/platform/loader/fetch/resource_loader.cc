@@ -887,16 +887,20 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       resource_->Identifier(),
       network_instrumentation::RequestOutcome::kSuccess);
 
-  fetcher_->HandleLoaderFinish(resource_.Get(), TimeTicks(),
-                               ResourceFetcher::kDidFinishFirstPartInMultipart,
-                               0, false);
+  fetcher_->HandleLoaderFinish(
+      resource_.Get(), TimeTicks(),
+      ResourceFetcher::kDidFinishFirstPartInMultipart, 0, false,
+      std::vector<network::cors::PreflightTimingInfo>());
 }
 
-void ResourceLoader::DidFinishLoading(TimeTicks finish_time,
-                                      int64_t encoded_data_length,
-                                      int64_t encoded_body_length,
-                                      int64_t decoded_body_length,
-                                      bool should_report_corb_blocking) {
+void ResourceLoader::DidFinishLoading(
+    TimeTicks finish_time,
+    int64_t encoded_data_length,
+    int64_t encoded_body_length,
+    int64_t decoded_body_length,
+    bool should_report_corb_blocking,
+    const std::vector<network::cors::PreflightTimingInfo>&
+        cors_preflight_timing_info) {
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
@@ -919,7 +923,8 @@ void ResourceLoader::DidFinishLoading(TimeTicks finish_time,
 
   fetcher_->HandleLoaderFinish(
       resource_.Get(), finish_time, ResourceFetcher::kDidFinishLoading,
-      inflight_keepalive_bytes_, should_report_corb_blocking);
+      inflight_keepalive_bytes_, should_report_corb_blocking,
+      cors_preflight_timing_info);
 }
 
 void ResourceLoader::DidFail(const WebURLError& error,
@@ -1014,7 +1019,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     FinishedCreatingBlob(blob);
   }
   DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,
-                   decoded_body_length, false);
+                   decoded_body_length, false,
+                   std::vector<network::cors::PreflightTimingInfo>());
 }
 
 void ResourceLoader::Dispose() {
@@ -1097,7 +1103,8 @@ void ResourceLoader::FinishedCreatingBlob(
     DidFinishLoading(load_did_finish_before_blob_->finish_time,
                      response.EncodedDataLength(), response.EncodedBodyLength(),
                      response.DecodedBodyLength(),
-                     load_did_finish_before_blob_->should_report_corb_blocking);
+                     load_did_finish_before_blob_->should_report_corb_blocking,
+                     std::vector<network::cors::PreflightTimingInfo>());
   }
 }
 

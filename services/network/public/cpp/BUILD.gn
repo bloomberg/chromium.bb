@@ -84,6 +84,8 @@ jumbo_component("cpp_base") {
   sources = [
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
+    "cors/preflight_timing_info.cc",
+    "cors/preflight_timing_info.h",
     "data_element.cc",
     "data_element.h",
     "http_raw_request_response_info.cc",

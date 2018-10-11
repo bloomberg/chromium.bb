@@ -334,7 +334,11 @@ void CORSURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
-  HandleComplete(status);
+
+  URLLoaderCompletionStatus modified_status(status);
+  if (status.error_code == net::OK)
+    modified_status.cors_preflight_timing_info.swap(preflight_timing_info_);
+  HandleComplete(modified_status);
 }
 
 void CORSURLLoader::StartRequest() {
@@ -384,7 +388,7 @@ void CORSURLLoader::StartRequest() {
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
   if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
-    StartNetworkRequest(net::OK, base::nullopt);
+    StartNetworkRequest(net::OK, base::nullopt, base::nullopt);
     return;
   }
 
@@ -402,14 +406,18 @@ void CORSURLLoader::StartRequest() {
 
 void CORSURLLoader::StartNetworkRequest(
     int error_code,
-    base::Optional<CORSErrorStatus> status) {
+    base::Optional<CORSErrorStatus> status,
+    base::Optional<PreflightTimingInfo> preflight_timing_info) {
   if (error_code != net::OK) {
     HandleComplete(status ? URLLoaderCompletionStatus(*status)
                           : URLLoaderCompletionStatus(error_code));
     return;
   }
-
   DCHECK(!status);
+
+  if (preflight_timing_info)
+    preflight_timing_info_.push_back(*preflight_timing_info);
+
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because

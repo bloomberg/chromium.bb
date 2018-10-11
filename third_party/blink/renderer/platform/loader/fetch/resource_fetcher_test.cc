@@ -237,8 +237,9 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
       fetcher->GetNavigationTimingInfo();
   ASSERT_TRUE(navigation_timing_info);
   long long encoded_data_length = 123;
-  resource->Loader()->DidFinishLoading(TimeTicks(), encoded_data_length, 0, 0,
-                                       false);
+  resource->Loader()->DidFinishLoading(
+      TimeTicks(), encoded_data_length, 0, 0, false,
+      std::vector<network::cors::PreflightTimingInfo>());
   EXPECT_EQ(navigation_timing_info->TransferSize(), encoded_data_length);
 
   // When there are redirects.
