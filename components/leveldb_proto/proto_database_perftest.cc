@@ -24,8 +24,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/leveldb_proto/leveldb_database.h"
-#include "components/leveldb_proto/proto_database_impl.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
+#include "components/leveldb_proto/unique_proto_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -85,7 +85,7 @@ class TestDatabase {
   TestDatabase(const std::string& name,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                const base::FilePath& path) {
-    db_.reset(new ProtoDatabaseImpl<TestProto>(task_runner));
+    db_.reset(new UniqueProtoDatabase<TestProto>(task_runner));
     leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
 
     base::RunLoop run_init_db;
@@ -102,11 +102,11 @@ class TestDatabase {
   }
 
   bool is_initialized() const { return is_initialized_; }
-  ProtoDatabaseImpl<TestProto>* proto_db() const { return db_.get(); }
+  UniqueProtoDatabase<TestProto>* proto_db() const { return db_.get(); }
 
  private:
   bool is_initialized_ = false;
-  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db_;
+  std::unique_ptr<UniqueProtoDatabase<TestProto>> db_;
 };
 
 }  // namespace

@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/task/post_task.h"
+#include "base/test/test_simple_task_runner.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace leveldb_proto {
@@ -34,6 +36,11 @@ class FakeDB : public ProtoDatabase<T> {
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
             typename ProtoDatabase<T>::InitCallback callback) override;
+  void InitWithDatabase(
+      LevelDB* database,
+      const base::FilePath& database_dir,
+      const leveldb_env::Options& options,
+      typename ProtoLevelDBWrapper::InitCallback callback) override;
   void UpdateEntries(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
@@ -115,7 +122,9 @@ class FakeDB : public ProtoDatabase<T> {
 
 template <typename T>
 FakeDB<T>::FakeDB(EntryMap* db)
-    : db_(db) {}
+    : ProtoDatabase<T>(base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
+  db_ = db;
+}
 
 template <typename T>
 FakeDB<T>::~FakeDB() {}
@@ -127,6 +136,15 @@ void FakeDB<T>::Init(const char* client_name,
                      typename ProtoDatabase<T>::InitCallback callback) {
   dir_ = database_dir;
   init_callback_ = std::move(callback);
+}
+
+template <typename T>
+void FakeDB<T>::InitWithDatabase(
+    LevelDB* database,
+    const base::FilePath& database_dir,
+    const leveldb_env::Options& options,
+    typename ProtoLevelDBWrapper::InitCallback callback) {
+  Init("", database_dir, options, std::move(callback));
 }
 
 template <typename T>

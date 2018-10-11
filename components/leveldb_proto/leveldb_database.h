@@ -10,10 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/strings/string_split.h"
-#include "base/threading/thread_collision_warner.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
@@ -25,7 +22,6 @@ namespace leveldb {
 class Cache;
 class DB;
 class Env;
-class Status;
 }  // namespace leveldb
 
 namespace leveldb_proto {

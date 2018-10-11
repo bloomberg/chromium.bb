@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/unique_proto_database.h"
 
 #include <stddef.h>
 
@@ -174,13 +174,13 @@ void ExpectEntryPointersEquals(EntryMap expected,
   }
 }
 
-class ProtoDatabaseImplTest : public testing::Test {
+class UniqueProtoDatabaseTest : public testing::Test {
  public:
-  ProtoDatabaseImplTest()
+  UniqueProtoDatabaseTest()
       : options_(MakeMatcher(new OptionsEqMatcher(CreateSimpleOptions()))) {}
   void SetUp() override {
     main_loop_.reset(new MessageLoop());
-    db_.reset(new ProtoDatabaseImpl<TestProto>(main_loop_->task_runner()));
+    db_.reset(new UniqueProtoDatabase<TestProto>(main_loop_->task_runner()));
   }
 
   void TearDown() override {
@@ -190,32 +190,32 @@ class ProtoDatabaseImplTest : public testing::Test {
   }
 
   const Matcher<const Options&> options_;
-  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db_;
+  std::unique_ptr<UniqueProtoDatabase<TestProto>> db_;
   std::unique_ptr<MessageLoop> main_loop_;
 };
 
-// Test that ProtoDatabaseImpl calls Init on the underlying database and that
+// Test that UniqueProtoDatabase calls Init on the underlying database and that
 // the caller's InitCallback is called with the correct value.
-TEST_F(ProtoDatabaseImplTest, TestDBInitSuccess) {
+TEST_F(UniqueProtoDatabaseTest, TestDBInitSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
 
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBInitFailure) {
+TEST_F(UniqueProtoDatabaseTest, TestDBInitFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   Options options;
   options.create_if_missing = true;
   EXPECT_CALL(*mock_db, Init(path, OptionsEq(options))).WillOnce(Return(false));
@@ -223,23 +223,23 @@ TEST_F(ProtoDatabaseImplTest, TestDBInitFailure) {
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(false));
 
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, options,
+  db_->InitWithDatabase(mock_db.get(), path, options,
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBDestroySuccess) {
+TEST_F(UniqueProtoDatabaseTest, TestDBDestroySuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
 
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -251,16 +251,16 @@ TEST_F(ProtoDatabaseImplTest, TestDBDestroySuccess) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBDestroyFailure) {
+TEST_F(UniqueProtoDatabaseTest, TestDBDestroyFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
 
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -301,47 +301,47 @@ ACTION_P(VerifyLoadKeysAndEntries, expected) {
   ExpectEntryPointersEquals(expected, actual);
 }
 
-// Test that ProtoDatabaseImpl calls Load on the underlying database and that
+// Test that UniqueProtoDatabase calls Load on the underlying database and that
 // the caller's LoadCallback is called with the correct success value. Also
 // confirms that on success, the expected entries are passed to the caller's
 // LoadCallback.
-TEST_F(ProtoDatabaseImplTest, TestDBLoadSuccess) {
+TEST_F(UniqueProtoDatabaseTest, TestDBLoadSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
   EXPECT_CALL(*mock_db, LoadKeysAndEntriesWithFilter(_, _, _, _))
       .WillOnce(AppendLoadKeysAndEntries(model));
-  EXPECT_CALL(caller, LoadCallback1(true, _))
-      .WillOnce(VerifyLoadEntries(testing::ByRef(model)));
-  db_->LoadEntries(base::BindOnce(&MockDatabaseCaller::LoadCallback,
-                                  base::Unretained(&caller)));
+  EXPECT_CALL(caller, LoadKeysAndEntriesCallback1(true, _))
+      .WillOnce(VerifyLoadKeysAndEntries(testing::ByRef(model)));
+  db_->LoadKeysAndEntries(
+      base::BindOnce(&MockDatabaseCaller::LoadKeysAndEntriesCallback,
+                     base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBLoadFailure) {
+TEST_F(UniqueProtoDatabaseTest, TestDBLoadFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, LoadKeysAndEntriesWithFilter(_, _, _, _))
-      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, LoadWithFilter(_, _, _, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, LoadCallback1(false, _));
   db_->LoadEntries(base::BindOnce(&MockDatabaseCaller::LoadCallback,
                                   base::Unretained(&caller)));
@@ -368,16 +368,16 @@ ACTION_P(VerifyGetEntry, expected) {
   EXPECT_EQ(expected.SerializeAsString(), actual->SerializeAsString());
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBGetSuccess) {
+TEST_F(UniqueProtoDatabaseTest, TestDBGetSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -392,7 +392,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetSuccess) {
   base::RunLoop().RunUntilIdle();
 }
 
-class ProtoDatabaseImplLevelDBTest : public testing::Test {
+class UniqueProtoDatabaseLevelDBTest : public testing::Test {
  public:
   void SetUp() override { main_loop_.reset(new MessageLoop()); }
 
@@ -405,45 +405,46 @@ class ProtoDatabaseImplLevelDBTest : public testing::Test {
   std::unique_ptr<MessageLoop> main_loop_;
 };
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBSaveAndLoadKeys) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::Thread db_thread("dbthread");
   ASSERT_TRUE(db_thread.Start());
-  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db(
-      new ProtoDatabaseImpl<TestProto>(db_thread.task_runner()));
+  std::unique_ptr<UniqueProtoDatabase<TestProto>> db(
+      new UniqueProtoDatabase<TestProto>(db_thread.task_runner()));
 
   auto expect_init_success =
-      base::Bind([](bool success) { EXPECT_TRUE(success); });
+      base::BindOnce([](bool success) { EXPECT_TRUE(success); });
   db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           expect_init_success);
+           std::move(expect_init_success));
 
   base::RunLoop run_update_entries;
-  auto expect_update_success = base::Bind(
-      [](base::Closure signal, bool success) {
+  auto expect_update_success = base::BindOnce(
+      [](base::OnceClosure signal, bool success) {
         EXPECT_TRUE(success);
-        signal.Run();
+        std::move(signal).Run();
       },
       run_update_entries.QuitClosure());
   TestProto test_proto;
   test_proto.set_data("some data");
   ProtoDatabase<TestProto>::KeyEntryVector data_set(
-          {{"0", test_proto}, {"1", test_proto}, {"2", test_proto}});
+      {{"0", test_proto}, {"1", test_proto}, {"2", test_proto}});
   db->UpdateEntries(
       std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>(data_set),
-      std::make_unique<std::vector<std::string>>(), expect_update_success);
+      std::make_unique<std::vector<std::string>>(),
+      std::move(expect_update_success));
   run_update_entries.Run();
 
   base::RunLoop run_load_keys;
-  auto verify_loaded_keys = base::Bind(
-      [](base::Closure signal, bool success,
+  auto verify_loaded_keys = base::BindOnce(
+      [](base::OnceClosure signal, bool success,
          std::unique_ptr<std::vector<std::string>> keys) {
         EXPECT_TRUE(success);
         EXPECT_THAT(*keys, UnorderedElementsAre("0", "1", "2"));
-        signal.Run();
+        std::move(signal).Run();
       },
       run_load_keys.QuitClosure());
-  db->LoadKeys(verify_loaded_keys);
+  db->LoadKeys(std::move(verify_loaded_keys));
   run_load_keys.Run();
 
   // Shutdown database.
@@ -454,16 +455,16 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
   run_destruction.Run();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBGetNotFound) {
+TEST_F(UniqueProtoDatabaseTest, TestDBGetNotFound) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -477,16 +478,16 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetNotFound) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBGetFailure) {
+TEST_F(UniqueProtoDatabaseTest, TestDBGetFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -519,19 +520,19 @@ ACTION_P(VerifyUpdateEntries, expected) {
   return true;
 }
 
-// Test that ProtoDatabaseImpl calls Save on the underlying database with the
+// Test that UniqueProtoDatabase calls Save on the underlying database with the
 // correct entries to save and that the caller's SaveCallback is called with the
 // correct success value.
-TEST_F(ProtoDatabaseImplTest, TestDBSaveSuccess) {
+TEST_F(UniqueProtoDatabaseTest, TestDBSaveSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -551,10 +552,10 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveSuccess) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBSaveFailure) {
+TEST_F(UniqueProtoDatabaseTest, TestDBSaveFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   std::unique_ptr<ProtoDatabase<TestProto>::KeyEntryVector> entries(
       new ProtoDatabase<TestProto>::KeyEntryVector());
@@ -562,7 +563,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveFailure) {
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -575,19 +576,19 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveFailure) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Test that ProtoDatabaseImpl calls Save on the underlying database with the
+// Test that UniqueProtoDatabase calls Save on the underlying database with the
 // correct entries to delete and that the caller's SaveCallback is called with
 // the correct success value.
-TEST_F(ProtoDatabaseImplTest, TestDBRemoveSuccess) {
+TEST_F(UniqueProtoDatabaseTest, TestDBRemoveSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -607,10 +608,10 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveSuccess) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ProtoDatabaseImplTest, TestDBRemoveFailure) {
+TEST_F(UniqueProtoDatabaseTest, TestDBRemoveFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
-  MockDB* mock_db = new MockDB();
+  auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
   std::unique_ptr<ProtoDatabase<TestProto>::KeyEntryVector> entries(
       new ProtoDatabase<TestProto>::KeyEntryVector());
@@ -618,7 +619,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveFailure) {
 
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
-  db_->InitWithDatabase(base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+  db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
@@ -633,7 +634,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveFailure) {
 
 // This tests that normal usage of the real database does not cause any
 // threading violations.
-TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
+TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
   base::MessageLoop main_loop;
 
   ScopedTempDir temp_dir;
@@ -642,8 +643,8 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   base::Thread db_thread("dbthread");
   ASSERT_TRUE(db_thread.Start());
 
-  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db(
-      new ProtoDatabaseImpl<TestProto>(db_thread.task_runner()));
+  std::unique_ptr<UniqueProtoDatabase<TestProto>> db(
+      new UniqueProtoDatabase<TestProto>(db_thread.task_runner()));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
@@ -661,7 +662,7 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
 
 // This tests that normal usage of the real database does not cause any
 // threading violations.
-TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
+TEST(UniqueProtoDatabaseThreadingTest, TestDBDestroy) {
   base::MessageLoop main_loop;
 
   ScopedTempDir temp_dir;
@@ -670,8 +671,8 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
   base::Thread db_thread("dbthread");
   ASSERT_TRUE(db_thread.Start());
 
-  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db(
-      new ProtoDatabaseImpl<TestProto>(db_thread.task_runner()));
+  std::unique_ptr<UniqueProtoDatabase<TestProto>> db(
+      new UniqueProtoDatabase<TestProto>(db_thread.task_runner()));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
@@ -734,15 +735,15 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
   ExpectEntryPointersEquals(model, loaded_protos);
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoad) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBSaveAndLoad) {
   TestLevelDBSaveAndLoad(false);
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBCloseAndReopen) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBCloseAndReopen) {
   TestLevelDBSaveAndLoad(true);
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadWithFilter) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadWithFilter) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -770,7 +771,7 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadWithFilter) {
   EXPECT_EQ(entry.SerializeAsString(), model["0"].SerializeAsString());
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadKeysAndEntries) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadKeysAndEntries) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -799,7 +800,7 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestDBLoadKeysAndEntries) {
   }
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBInitFail) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -816,7 +817,7 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   EXPECT_FALSE(db->Save(save_entries, remove_keys));
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestMemoryDatabase) {
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
 
   std::vector<std::string> load_entries;
@@ -837,7 +838,7 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
   EXPECT_EQ(1u, second_load_entries.size());
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestCorruptDBReset) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -867,7 +868,7 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
   ASSERT_FALSE(found);
 }
 
-TEST_F(ProtoDatabaseImplLevelDBTest, TestDBDeleteWithFilter) {
+TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBDeleteWithFilter) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
