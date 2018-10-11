@@ -748,6 +748,10 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   return ShowSuggestions(element, false, false);
 }
 
+void PasswordAutofillAgent::DidEndTextFieldEditing() {
+  focus_state_notifier_.FocusedInputChanged(false, false);
+}
+
 void PasswordAutofillAgent::UpdateStateForTextChange(
     const WebInputElement& element) {
   // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
@@ -1341,32 +1345,6 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
   }
 }
 
-void PasswordAutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
-  focused_input_element_.Reset();
-
-  if (node.IsNull() ||          // |node| is null <==> focus outside of frame.
-      !node.IsElementNode()) {  // Not a valid WebElement.
-    focus_state_notifier_.FocusedInputChanged(
-        /*is_fillable=*/false, /*is_password_field=*/false);
-    return;
-  }
-
-  WebElement web_element = node.ToConst<WebElement>();
-  const WebInputElement* input = ToWebInputElement(&web_element);
-  if (!input) {
-    focus_state_notifier_.FocusedInputChanged(
-        /*is_fillable=*/false, /*is_password_field=*/false);
-    return;  // If the node isn't an element, don't even try to convert.
-  }
-  bool is_password = false;
-  bool is_fillable = input->IsTextField() && IsElementEditable(*input);
-  if (is_fillable) {
-    focused_input_element_ = *input;
-    is_password = focused_input_element_.IsPasswordFieldForAutofill();
-  }
-  focus_state_notifier_.FocusedInputChanged(is_fillable, is_password);
-}
-
 void PasswordAutofillAgent::OnDestruct() {
   binding_.Close();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -1551,9 +1529,28 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
-  if (node.IsNull() || !node.IsElementNode())
+  focused_input_element_.Reset();
+  if (node.IsNull() || !node.IsElementNode()) {  // Not a valid WebElement.
+    focus_state_notifier_.FocusedInputChanged(
+        /*is_fillable=*/false, /*is_password_field=*/false);
     return;
-  const WebElement web_element = node.ToConst<WebElement>();
+  }
+
+  WebElement web_element = node.ToConst<WebElement>();
+  const WebInputElement* input = ToWebInputElement(&web_element);
+  if (!input) {
+    focus_state_notifier_.FocusedInputChanged(
+        /*is_fillable=*/false, /*is_password_field=*/false);
+    return;  // If the node isn't an element, don't even try to convert.
+  }
+  bool is_password = false;
+  bool is_fillable = input->IsTextField() && IsElementEditable(*input);
+  if (is_fillable) {
+    focused_input_element_ = *input;
+    is_password = focused_input_element_.IsPasswordFieldForAutofill();
+  }
+  focus_state_notifier_.FocusedInputChanged(is_fillable, is_password);
+
   if (!web_element.IsFormControlElement())
     return;
   const WebFormControlElement control_element =

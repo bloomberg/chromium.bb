@@ -312,6 +312,7 @@ void AutofillAgent::Shutdown() {
 
 void AutofillAgent::TextFieldDidEndEditing(const WebInputElement& element) {
   GetAutofillDriver()->DidEndTextFieldEditing();
+  password_autofill_agent_->DidEndTextFieldEditing();
 }
 
 void AutofillAgent::SetUserGestureRequired(bool required) {
