@@ -136,6 +136,9 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   if (!app_info_.create_shortcuts)
     helper_->set_skip_shortcut_creation();
 
+  if (app_info_.bypass_service_worker_check)
+    helper_->set_bypass_service_worker_check();
+
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(&result_callback)));
