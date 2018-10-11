@@ -103,6 +103,10 @@ class WebStateImpl;
 // NO after wasHidden() call.
 @property(nonatomic, assign, getter=isVisible) BOOL visible;
 
+// A Boolean value indicating whether horizontal swipe gestures will trigger
+// back-forward list navigations.
+@property(nonatomic) BOOL allowsBackForwardNavigationGestures;
+
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;

@@ -960,6 +960,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 @synthesize nativeProvider = _nativeProvider;
 @synthesize swipeRecognizerProvider = _swipeRecognizerProvider;
 @synthesize webViewProxy = _webViewProxy;
+@synthesize allowsBackForwardNavigationGestures =
+    _allowsBackForwardNavigationGestures;
 
 - (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
@@ -4082,6 +4084,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
+  _webView.allowsBackForwardNavigationGestures =
+      _allowsBackForwardNavigationGestures;
   _injectedScriptManagers = [[NSMutableSet alloc] init];
   [self setDocumentURL:_defaultURL context:nullptr];
 }
@@ -5738,6 +5742,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
   UMA_HISTOGRAM_ENUMERATION(
       "Navigation.IOSWKWebViewSlowFastBackForward", type,
       BackForwardNavigationType::BACK_FORWARD_NAVIGATION_TYPE_COUNT);
+}
+
+- (void)setAllowsBackForwardNavigationGestures:
+    (BOOL)allowsBackForwardNavigationGestures {
+  // Store it to an instance variable as well as
+  // _webView.allowsBackForwardNavigationGestures because _webView may be nil.
+  // When _webView is nil, it will be set later in -setWebView:.
+  _allowsBackForwardNavigationGestures = allowsBackForwardNavigationGestures;
+  _webView.allowsBackForwardNavigationGestures =
+      allowsBackForwardNavigationGestures;
 }
 
 #pragma mark -

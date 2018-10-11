@@ -187,6 +187,16 @@ static NSString* gUserAgentProduct = nil;
   return self;
 }
 
+- (BOOL)allowsBackForwardNavigationGestures {
+  return _webState->GetWebViewProxy().allowsBackForwardNavigationGestures;
+}
+
+- (void)setAllowsBackForwardNavigationGestures:
+    (BOOL)allowsBackForwardNavigationGestures {
+  _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
+      allowsBackForwardNavigationGestures;
+}
+
 - (void)dealloc {
   if (_webState && _webStateObserver) {
     _webState->RemoveObserver(_webStateObserver.get());
@@ -554,6 +564,10 @@ static NSString* gUserAgentProduct = nil;
     [_webState->GetView() removeFromSuperview];
   }
 
+  BOOL allowsBackForwardNavigationGestures =
+      _webState &&
+      _webState->GetWebViewProxy().allowsBackForwardNavigationGestures;
+
   web::WebState::CreateParams webStateCreateParams(_configuration.browserState);
   if (sessionStorage) {
     _webState = web::WebState::CreateWithStorageSession(webStateCreateParams,
@@ -583,6 +597,9 @@ static NSString* gUserAgentProduct = nil;
   for (const auto& pair : _scriptCommandCallbacks) {
     _webState->AddScriptCommandCallback(pair.second, pair.first);
   }
+
+  _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
+      allowsBackForwardNavigationGestures;
 
   _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 
