@@ -183,6 +183,11 @@ class ShieldButton : public views::Button {
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
+    if (IsSlidingOutOverviewFromShelf()) {
+      event->SetHandled();
+      return;
+    }
+
     if (listener()) {
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(this, &location);
@@ -817,6 +822,9 @@ void WindowSelectorItem::RestackItemWidget() {
 
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
+  if (IsSlidingOutOverviewFromShelf())
+    return;
+
   if (sender == close_button_) {
     base::RecordAction(
         base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
@@ -829,6 +837,7 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
     CloseWindow();
     return;
   }
+
   CHECK(sender == caption_container_view_->listener_button());
 
   // For other cases, the event is handled in OverviewWindowDragController.

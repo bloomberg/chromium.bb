@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -286,6 +288,21 @@ void SetTransform(aura::Window* window, const gfx::Transform& transform) {
                             transform);
     window_iter->SetTransform(new_transform);
   }
+}
+
+bool IsSlidingOutOverviewFromShelf() {
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    return false;
+
+  HomeLauncherGestureHandler* home_launcher_gesture_handler =
+      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+  if (home_launcher_gesture_handler &&
+      home_launcher_gesture_handler->mode() ==
+          HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace ash
