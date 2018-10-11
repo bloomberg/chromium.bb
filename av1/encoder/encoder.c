@@ -5873,8 +5873,8 @@ typedef struct GF_PICTURE {
   int ref_frame[7];
 } GF_PICTURE;
 
-void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
-                     const GF_GROUP *gf_group, int *tpl_group_frames) {
+static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
+                            const GF_GROUP *gf_group, int *tpl_group_frames) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
@@ -5975,7 +5975,7 @@ void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   }
 }
 
-void init_tpl_stats(AV1_COMP *cpi) {
+static void init_tpl_stats(AV1_COMP *cpi) {
   int frame_idx;
   for (frame_idx = 0; frame_idx < MAX_LAG_BUFFERS; ++frame_idx) {
     TplDepFrame *tpl_frame = &cpi->tpl_stats[frame_idx];
@@ -5986,11 +5986,11 @@ void init_tpl_stats(AV1_COMP *cpi) {
   }
 }
 
-uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
-                                       uint8_t *cur_frame_buf,
-                                       uint8_t *ref_frame_buf, int stride,
-                                       BLOCK_SIZE bsize, int mi_row,
-                                       int mi_col) {
+static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
+                                              uint8_t *cur_frame_buf,
+                                              uint8_t *ref_frame_buf,
+                                              int stride, BLOCK_SIZE bsize,
+                                              int mi_row, int mi_col) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -6040,8 +6040,8 @@ uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
   return bestsme;
 }
 
-int get_overlap_area(int grid_pos_row, int grid_pos_col, int ref_pos_row,
-                     int ref_pos_col, int block, BLOCK_SIZE bsize) {
+static int get_overlap_area(int grid_pos_row, int grid_pos_col, int ref_pos_row,
+                            int ref_pos_col, int block, BLOCK_SIZE bsize) {
   int width = 0, height = 0;
   int bw = 4 << mi_size_wide_log2[bsize];
   int bh = 4 << mi_size_high_log2[bsize];
@@ -6069,7 +6069,7 @@ int get_overlap_area(int grid_pos_row, int grid_pos_col, int ref_pos_row,
   return width * height;
 }
 
-int round_floor(int ref_pos, int bsize_pix) {
+static int round_floor(int ref_pos, int bsize_pix) {
   int round;
   if (ref_pos < 0)
     round = -(1 + (-ref_pos - 1) / bsize_pix);
@@ -6079,9 +6079,9 @@ int round_floor(int ref_pos, int bsize_pix) {
   return round;
 }
 
-void tpl_model_store(TplDepStats *tpl_stats, int mi_row, int mi_col,
-                     BLOCK_SIZE bsize, int stride,
-                     const TplDepStats *src_stats) {
+static void tpl_model_store(TplDepStats *tpl_stats, int mi_row, int mi_col,
+                            BLOCK_SIZE bsize, int stride,
+                            const TplDepStats *src_stats) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
   int idx, idy;
@@ -6107,8 +6107,8 @@ void tpl_model_store(TplDepStats *tpl_stats, int mi_row, int mi_col,
   }
 }
 
-void tpl_model_update_b(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
-                        int mi_row, int mi_col, const BLOCK_SIZE bsize) {
+static void tpl_model_update_b(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
+                               int mi_row, int mi_col, const BLOCK_SIZE bsize) {
   TplDepFrame *ref_tpl_frame = &tpl_frame[tpl_stats->ref_frame_index];
   TplDepStats *ref_stats = ref_tpl_frame->tpl_stats_ptr;
   MV mv = tpl_stats->mv.as_mv;
@@ -6163,8 +6163,8 @@ void tpl_model_update_b(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
   }
 }
 
-void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
-                      int mi_row, int mi_col, const BLOCK_SIZE bsize) {
+static void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
+                             int mi_row, int mi_col, const BLOCK_SIZE bsize) {
   int idx, idy;
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
@@ -6179,9 +6179,10 @@ void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
   }
 }
 
-void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
-                        tran_low_t *qcoeff, tran_low_t *dqcoeff,
-                        TX_SIZE tx_size, int64_t *recon_error, int64_t *sse) {
+static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
+                               tran_low_t *qcoeff, tran_low_t *dqcoeff,
+                               TX_SIZE tx_size, int64_t *recon_error,
+                               int64_t *sse) {
   const struct macroblock_plane *const p = &x->plane[plane];
   const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
   uint16_t eob;
@@ -6200,8 +6201,8 @@ void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
   *sse = AOMMAX(*sse, 1);
 }
 
-void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
-                  TX_SIZE tx_size) {
+static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
+                         TX_SIZE tx_size) {
   switch (tx_size) {
     case TX_8X8: aom_hadamard_8x8(src_diff, bw, coeff); break;
     case TX_16X16: aom_hadamard_16x16(src_diff, bw, coeff); break;
@@ -6210,14 +6211,14 @@ void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
   }
 }
 
-void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
-                     struct scale_factors *sf, GF_PICTURE *gf_picture,
-                     int frame_idx, int16_t *src_diff, tran_low_t *coeff,
-                     tran_low_t *qcoeff, tran_low_t *dqcoeff, int mi_row,
-                     int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
-                     YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
-                     int64_t *recon_error, int64_t *sse,
-                     TplDepStats *tpl_stats) {
+static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
+                            struct scale_factors *sf, GF_PICTURE *gf_picture,
+                            int frame_idx, int16_t *src_diff, tran_low_t *coeff,
+                            tran_low_t *qcoeff, tran_low_t *dqcoeff, int mi_row,
+                            int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
+                            YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
+                            int64_t *recon_error, int64_t *sse,
+                            TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   ThreadData *td = &cpi->td;
 
@@ -6337,7 +6338,8 @@ void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   tpl_stats->mv.as_int = best_mv.as_int;
 }
 
-void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture, int frame_idx) {
+static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
+                              int frame_idx) {
   TplDepFrame *tpl_frame = &cpi->tpl_stats[frame_idx];
   YV12_BUFFER_CONFIG *this_frame = gf_picture[frame_idx].frame;
   YV12_BUFFER_CONFIG *ref_frame[7] = {

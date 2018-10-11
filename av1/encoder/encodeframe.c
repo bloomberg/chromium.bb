@@ -4451,8 +4451,8 @@ static void init_first_partition_pass_stats_tables(
 // mode_pruning_based_on_two_pass_partition_search feature.
 #define FIRST_PARTITION_PASS_MIN_SAMPLES 16
 
-int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row, int mi_col,
-                     int orig_rdmult) {
+static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
+                            int mi_col, int orig_rdmult) {
   TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
