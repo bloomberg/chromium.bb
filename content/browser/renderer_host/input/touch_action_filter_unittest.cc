@@ -828,6 +828,7 @@ TEST_F(TouchActionFilterTest, DoubleTap) {
   EXPECT_EQ(filter_.FilterGestureEvent(&double_tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(WebInputEvent::kGestureTap, double_tap.GetType());
+  EXPECT_EQ(2, double_tap.data.tap.tap_count);
   filter_.DecreaseActiveTouches();
 }
 

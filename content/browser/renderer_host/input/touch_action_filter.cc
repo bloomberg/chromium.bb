@@ -129,14 +129,23 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
                  ? FilterGestureEventResult::kFilterGestureEventFiltered
                  : FilterGestureEventResult::kFilterGestureEventAllowed;
 
-    // The double tap gesture is a tap ending event. If a double tap gesture is
-    // filtered out, replace it with a tap event.
+    // The double tap gesture is a tap ending event. If a double-tap gesture is
+    // filtered out, replace it with a tap event but preserve the tap-count to
+    // allow firing dblclick event in Blink.
+    //
+    // TODO(mustaq): This replacement of a double-tap gesture with a tap seems
+    // buggy, it produces an inconsistent gesture event stream: GestureTapCancel
+    // followed by GestureTap.  See crbug.com/874474#c47 for a repro.  We don't
+    // know of any bug resulting from it, but it's better to fix the broken
+    // assumption here at least to avoid introducing new bugs in future.
     case WebInputEvent::kGestureDoubleTap:
       gesture_sequence_in_progress_ = false;
       gesture_sequence_.append("D");
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
-      if (!allow_current_double_tap_event_)
+      if (!allow_current_double_tap_event_) {
         gesture_event->SetType(WebInputEvent::kGestureTap);
+        gesture_event->data.tap.tap_count = 2;
+      }
       allow_current_double_tap_event_ = true;
       break;
 
