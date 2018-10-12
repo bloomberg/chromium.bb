@@ -88,17 +88,22 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       void (^favicon_loaded_from_server_block)(
           favicon_base::GoogleFaviconServerRequestStatus status) =
           ^(const favicon_base::GoogleFaviconServerRequestStatus status) {
+            // Update the time when the icon was last requested - postpone thus
+            // the automatic eviction of the favicon from the favicon database.
+            large_icon_service_->TouchIconFromGoogleServer(block_url);
+
             // Favicon should be loaded to the db that backs LargeIconService
             // now.  Fetch it again. Even if the request was not successful, the
             // fallback style will be used.
-            FaviconForUrl(url, size, min_size, /*continueToGoogleServer=*/false,
-                          block);
+            FaviconForUrl(block_url, size, min_size,
+                          /*continueToGoogleServer=*/false, block);
+
           };
 
       large_icon_service_
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
               favicon::FaviconServerFetcherParams::CreateForMobile(
-                  url, min_size, size),
+                  block_url, min_size, size),
               /*may_page_url_be_private=*/true, kTrafficAnnotation,
               base::BindRepeating(favicon_loaded_from_server_block));
       return;
@@ -131,7 +136,7 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
   CGFloat min_favicon_size = [UIScreen mainScreen].scale * min_size;
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconOrFallbackStyle(
-      url, min_favicon_size, favicon_size_in_pixels,
+      block_url, min_favicon_size, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
   if (IsUIRefreshPhase1Enabled()) {
