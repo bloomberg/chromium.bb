@@ -446,6 +446,16 @@ void WebContentsViewMac::CloseTab() {
   web_contents_->Close(web_contents_->GetRenderViewHost());
 }
 
+void WebContentsViewMac::OnWindowVisibilityChanged(Visibility visibility) {
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
+    return;
+  // TODO(ccameron): Communicate window visibility and occlusion from the remote
+  // process (for now, always treat remote windows as visible).
+  if (ns_view_bridge_remote_)
+    visibility = Visibility::VISIBLE;
+  web_contents()->UpdateWebContentsVisibility(visibility);
+}
+
 std::list<RenderWidgetHostViewMac*> WebContentsViewMac::GetChildViews() {
   // Remove any child NSViews that have been destroyed.
   std::list<RenderWidgetHostViewMac*> result;
@@ -483,6 +493,10 @@ void WebContentsViewMac::OnViewsHostableAttached(
         ns_view_id_, client.PassInterface(), std::move(bridge_request));
 
     ns_view_bridge_remote_->SetParentViewsNSView(views_host_->GetNSViewId());
+
+    // TODO(ccameron): Communicate window visibility and occlusion from the
+    // remote process (for now, always treat remote windows as visible).
+    OnWindowVisibilityChanged(content::Visibility::VISIBLE);
   } else if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
     LOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
   }
@@ -744,16 +758,17 @@ void WebContentsViewMac::OnViewsHostableMakeFirstResponder() {
 }
 
 - (void)updateWebContentsVisibility {
-  WebContentsImpl* webContents = [self webContents];
-  if (!webContents || webContents->IsBeingDestroyed())
+  if (!webContentsView_)
     return;
-
+  content::Visibility visibility = content::Visibility::VISIBLE;
   if ([self isHiddenOrHasHiddenAncestor] || ![self window])
-    webContents->UpdateWebContentsVisibility(content::Visibility::HIDDEN);
+    visibility = content::Visibility::HIDDEN;
   else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
-    webContents->UpdateWebContentsVisibility(content::Visibility::VISIBLE);
+    visibility = content::Visibility::VISIBLE;
   else
-    webContents->UpdateWebContentsVisibility(content::Visibility::OCCLUDED);
+    visibility = content::Visibility::OCCLUDED;
+  if (webContentsView_)
+    webContentsView_->OnWindowVisibilityChanged(visibility);
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {

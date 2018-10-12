@@ -138,11 +138,17 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   bridge_factory_host_ = bridge_factory_host;
   bridge_factory_host_->AddObserver(this);
 
-  // Create the local window with the same parameters as will be used in the
-  // other process.
-  local_window_ =
-      BridgedNativeWidgetImpl::CreateNSWindow(window_create_params.get());
-  [local_window_ setBridgedNativeWidgetId:widget_id_];
+  // Create a local invisible window that will be used as the gfx::NativeWindow
+  // handle to track this window in this process.
+  {
+    auto local_window_create_params =
+        views_bridge_mac::mojom::CreateWindowParams::New();
+    local_window_create_params->style_mask = NSBorderlessWindowMask;
+    local_window_ = BridgedNativeWidgetImpl::CreateNSWindow(
+        local_window_create_params.get());
+    [local_window_ setBridgedNativeWidgetId:widget_id_];
+    [local_window_ setAlphaValue:0.0];
+  }
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
   views_bridge_mac::mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr;
