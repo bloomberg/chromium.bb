@@ -1608,7 +1608,6 @@
         },
       ],
       'supported_on': ['chrome_os:70-'],
-      'future': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -1648,8 +1647,7 @@
           'caption': '''Duplex printing only''',
         },
       ],
-      'supported_on': ['chrome_os:70-'],
-      'future': True,
+      'supported_on': ['chrome_os:71-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -1681,7 +1679,7 @@
           'required': ['WidthUm', 'HeightUm'],
         },
       },
-      'supported_on': ['chrome_os:70-'],
+      'supported_on': ['chrome_os:72-'],
       'future': True,
       'features': {
         'can_be_recommended': False,
@@ -1716,7 +1714,7 @@
           'caption': '''Enable monochrome printing''',
         },
       ],
-      'supported_on': ['chrome_os:70-'],
+      'supported_on': ['chrome_os:72-'],
       'future': True,
       'features': {
         'can_be_recommended': False,
@@ -1757,7 +1755,7 @@
           'caption': '''Enable long edge duplex printing''',
         },
       ],
-      'supported_on': ['chrome_os:70-'],
+      'supported_on': ['chrome_os:72-'],
       'future': True,
       'features': {
         'can_be_recommended': False,
@@ -1787,7 +1785,7 @@
         },
         'required': ['WidthUm', 'HeightUm'],
       },
-      'supported_on': ['chrome_os:70-'],
+      'supported_on': ['chrome_os:72-'],
       'future': True,
       'features': {
         'can_be_recommended': False,
