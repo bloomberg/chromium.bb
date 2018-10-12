@@ -43,6 +43,9 @@ class MultiDeviceSetupClientHolder : public KeyedService {
   }
 
  private:
+  // KeyedService:
+  void Shutdown() override { multidevice_setup_client_.reset(); }
+
   std::unique_ptr<MultiDeviceSetupClient> multidevice_setup_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupClientHolder);
