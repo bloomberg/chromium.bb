@@ -22,10 +22,6 @@ project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-set(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include"
-    CACHE PATH "Installation path of includes")
-set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-    CACHE PATH "Installation path of libraries")
 
 if("${AOM_ROOT}" STREQUAL "${AOM_CONFIG_DIR}")
   message(FATAL_ERROR
@@ -192,18 +188,22 @@ add_custom_target(aom_version_check
                   COMMENT "Updating version info if necessary." VERBATIM)
 add_dependencies(aom_version aom_version_check)
 
-if(NOT MSVC)
+if(NOT (MSVC OR XCODE))
+  include("GNUInstallDirs")
   add_library(aom_pc ${AOM_PKG_CONFIG_SOURCES})
   add_dummy_source_file_to_target(aom_pc c)
   add_custom_command(OUTPUT "${AOM_CONFIG_DIR}/aom.pc"
-                     COMMAND ${CMAKE_COMMAND} ARGS
-                             -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
-                             -DAOM_ROOT=${AOM_ROOT}
-                             -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-                             -DCMAKE_PROJECT_NAME=${CMAKE_PROJECT_NAME}
-                             -DCONFIG_MULTITHREAD=${CONFIG_MULTITHREAD}
-                             -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H} -P
-                             "${AOM_ROOT}/build/cmake/pkg_config.cmake"
+                     COMMAND
+                       ${CMAKE_COMMAND} ARGS -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+                       -DAOM_ROOT=${AOM_ROOT}
+                       -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+                       -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
+                       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                       -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
+                       -DCMAKE_PROJECT_NAME=${CMAKE_PROJECT_NAME}
+                       -DCONFIG_MULTITHREAD=${CONFIG_MULTITHREAD}
+                       -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H} -P
+                       "${AOM_ROOT}/build/cmake/pkg_config.cmake"
                      COMMENT "Writing aom.pc" VERBATIM)
   add_dependencies(aom_pc aom_version)
 endif()
@@ -621,14 +621,16 @@ if(NOT (MSVC OR XCODE))
 
   set(AOM_INSTALL_LIBS aom)
 
-  install(FILES ${AOM_INSTALL_INCS} DESTINATION "${INCLUDE_INSTALL_DIR}/aom")
+  install(FILES ${AOM_INSTALL_INCS} DESTINATION
+                "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/aom")
   install(FILES "${AOM_CONFIG_DIR}/aom.pc" DESTINATION
-                "${LIB_INSTALL_DIR}/pkgconfig")
-  install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${LIB_INSTALL_DIR}")
+                "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+  install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION
+                  "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
   if(ENABLE_EXAMPLES)
     install(TARGETS ${AOM_INSTALL_BINS} DESTINATION
-                    "${CMAKE_INSTALL_PREFIX}/bin")
+                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
   endif()
 endif()
 
