@@ -611,6 +611,8 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     autofill::FormData* out) {
   if (!data.ReadName(&out->name))
     return false;
+  if (!data.ReadButtonTitle(&out->button_title))
+    return false;
   if (!data.ReadOrigin(&out->origin))
     return false;
   if (!data.ReadAction(&out->action))

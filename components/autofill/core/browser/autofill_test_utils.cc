@@ -113,6 +113,7 @@ void CreateTestAddressFormData(FormData* form,
                                const char* unique_id) {
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
+  form->button_title = ASCIIToUTF16("Submit");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
   form->main_frame_origin =
