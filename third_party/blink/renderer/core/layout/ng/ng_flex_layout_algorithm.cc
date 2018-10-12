@@ -114,7 +114,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     while (!line->ResolveFlexibleLengths()) {
       continue;
     }
-    for (size_t i = 0; i < line->line_items.size(); ++i) {
+    for (wtf_size_t i = 0; i < line->line_items.size(); ++i) {
       FlexItem& flex_item = line->line_items[i];
       NGConstraintSpaceBuilder space_builder(ConstraintSpace());
       NGLogicalSize available_size(flex_item.flexed_content_size +
@@ -139,7 +139,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     // in to the next iteration.
     line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
 
-    for (size_t i = 0; i < line->line_items.size(); ++i) {
+    for (wtf_size_t i = 0; i < line->line_items.size(); ++i) {
       FlexItem& flex_item = line->line_items[i];
       container_builder_.AddChild(
           *flex_item.layout_result,

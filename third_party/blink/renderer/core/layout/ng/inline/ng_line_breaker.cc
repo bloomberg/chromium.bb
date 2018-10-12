@@ -134,7 +134,7 @@ void NGLineBreaker::ComputeBaseDirection() {
   const String& text = Text();
   if (text.Is8Bit())
     return;
-  size_t end_offset = text.find(kNewlineCharacter, offset_);
+  wtf_size_t end_offset = text.find(kNewlineCharacter, offset_);
   base_direction_ = NGBidiParagraph::BaseDirectionForString(
       end_offset == kNotFound
           ? StringView(text, offset_)

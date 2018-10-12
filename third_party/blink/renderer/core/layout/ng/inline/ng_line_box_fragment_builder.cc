@@ -133,7 +133,7 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   NGPhysicalSize physical_size = Size().ConvertToPhysical(line_writing_mode);
 
   DCHECK_EQ(children_.size(), offsets_.size());
-  for (size_t i = 0; i < children_.size(); i++) {
+  for (wtf_size_t i = 0; i < children_.size(); i++) {
     auto& child = children_[i];
     child.offset_ = offsets_[i].ConvertToPhysical(
         line_writing_mode, Direction(), physical_size, child->Size());

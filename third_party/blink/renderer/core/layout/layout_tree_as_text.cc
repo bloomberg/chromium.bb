@@ -318,7 +318,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
 
       if (element.HasClass()) {
         ts << " class=\"";
-        for (size_t i = 0; i < element.ClassNames().size(); ++i) {
+        for (wtf_size_t i = 0; i < element.ClassNames().size(); ++i) {
           if (i > 0)
             ts << " ";
           ts << element.ClassNames()[i];

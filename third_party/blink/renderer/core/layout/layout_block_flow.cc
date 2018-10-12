@@ -3522,8 +3522,8 @@ void LayoutBlockFlow::MakeChildrenInlineIfPossible() {
   // at layout.
   RemoveFloatingObjectsFromDescendants();
 
-  for (size_t i = 0; i < blocks_to_remove.size(); i++)
-    CollapseAnonymousBlockChild(blocks_to_remove[i]);
+  for (LayoutBlockFlow* child : blocks_to_remove)
+    CollapseAnonymousBlockChild(child);
   SetChildrenInline(true);
 }
 

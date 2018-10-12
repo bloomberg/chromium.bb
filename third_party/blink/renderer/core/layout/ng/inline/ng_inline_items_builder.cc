@@ -600,7 +600,7 @@ void NGInlineItemsBuilderTemplate<
       continue;
     }
 
-    size_t end = string.Find(IsControlItemCharacter, start + 1);
+    wtf_size_t end = string.Find(IsControlItemCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
     AppendTextItem(string, start, end, style, layout_object);
@@ -620,7 +620,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendPreserveNewline(
       continue;
     }
 
-    size_t end = string.find(kNewlineCharacter, start + 1);
+    wtf_size_t end = string.find(kNewlineCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
     DCHECK_GE(end, start);
@@ -777,7 +777,8 @@ void NGInlineItemsBuilderTemplate<
   // Remove the item if the item has only one space that we're removing.
   if (item->Length() == 1) {
     DCHECK_EQ(item->StartOffset(), space_offset);
-    unsigned index = std::distance(items_->begin(), item);
+    wtf_size_t index =
+        static_cast<wtf_size_t>(std::distance(items_->begin(), item));
     items_->EraseAt(index);
     if (index == items_->size())
       return;
