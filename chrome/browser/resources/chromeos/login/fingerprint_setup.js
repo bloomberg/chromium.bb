@@ -65,6 +65,11 @@ Polymer({
    * @override
    */
   onBeforeShow: function() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+
     this.showScreen_('setupFingerprint');
     chrome.send('startEnroll');
   },
