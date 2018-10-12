@@ -14,6 +14,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Promise;
-import org.chromium.chrome.R;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -223,7 +224,7 @@ class AutofillAssistantUiDelegate {
      * @param scriptHandles List of scripts to show.
      */
     public void updateScripts(ArrayList<ScriptHandle> scriptHandles) {
-        mChipsViewContainer.removeAllViews();
+        clearChipsViewContainer();
 
         if (scriptHandles.isEmpty()) {
             return;
@@ -233,18 +234,33 @@ class AutofillAssistantUiDelegate {
             ScriptHandle scriptHandle = scriptHandles.get(i);
             TextView chipView = createChipView(scriptHandle.getName());
             chipView.setOnClickListener((unusedView) -> {
-                mChipsViewContainer.removeAllViews();
+                clearChipsViewContainer();
                 mClient.onScriptSelected(scriptHandle.getPath());
             });
-            mChipsViewContainer.addView(chipView);
+            addChipViewToContainer(chipView);
         }
 
         ensureFullContainerIsShown();
     }
 
+    private void addChipViewToContainer(TextView newChild) {
+        // Add a left margin if it's not the first child.
+        if (mChipsViewContainer.getChildCount() > 0) {
+            LinearLayout.LayoutParams layoutParams =
+                    new LinearLayout.LayoutParams(newChild.getLayoutParams());
+            int leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8,
+                    newChild.getContext().getResources().getDisplayMetrics());
+            layoutParams.setMargins(leftMargin, 0, 0, 0);
+            newChild.setLayoutParams(layoutParams);
+        }
+
+        mChipsViewContainer.addView(newChild);
+        mChipsViewContainer.setVisibility(View.VISIBLE);
+    }
+
     private TextView createChipView(String text) {
         TextView chipView = (TextView) (LayoutInflater.from(mActivity).inflate(
-                R.layout.autofill_assistant_chip, null /* root */));
+                R.layout.autofill_assistant_chip, mChipsViewContainer, false));
         chipView.setText(text);
         return chipView;
     }
@@ -269,7 +285,7 @@ class AutofillAssistantUiDelegate {
         mDetailsText.setText(getDetailsText(details));
         mDetailsTime.setText(getDetailsTime(details.getDate()));
 
-        mDetailsImage.setVisibility(View.GONE);
+        mDetailsImage.setVisibility(View.INVISIBLE);
         mDetails.setVisibility(View.VISIBLE);
         ensureFullContainerIsShown();
 
@@ -332,20 +348,25 @@ class AutofillAssistantUiDelegate {
             return;
         }
 
-        mChipsViewContainer.removeAllViews();
+        clearChipsViewContainer();
 
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
             // TODO(crbug.com/806868): Show more information than the street.
             TextView chipView = createChipView(profile.getStreetAddress());
             chipView.setOnClickListener((unusedView) -> {
-                mChipsViewContainer.removeAllViews();
+                clearChipsViewContainer();
                 mClient.onAddressSelected(profile.getGUID());
             });
-            mChipsViewContainer.addView(chipView);
+            addChipViewToContainer(chipView);
         }
 
         ensureFullContainerIsShown();
+    }
+
+    private void clearChipsViewContainer() {
+        mChipsViewContainer.removeAllViews();
+        mChipsViewContainer.setVisibility(View.GONE);
     }
 
     /**
@@ -359,17 +380,17 @@ class AutofillAssistantUiDelegate {
             return;
         }
 
-        mChipsViewContainer.removeAllViews();
+        clearChipsViewContainer();
 
         for (int i = 0; i < cards.size(); i++) {
             CreditCard card = cards.get(i);
             // TODO(crbug.com/806868): Show more information than the card number.
             TextView chipView = createChipView(card.getObfuscatedNumber());
             chipView.setOnClickListener((unusedView) -> {
-                mChipsViewContainer.removeAllViews();
+                clearChipsViewContainer();
                 mClient.onCardSelected(card.getGUID());
             });
-            mChipsViewContainer.addView(chipView);
+            addChipViewToContainer(chipView);
         }
 
         ensureFullContainerIsShown();

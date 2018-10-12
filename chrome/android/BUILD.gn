@@ -154,6 +154,14 @@ android_resources("chrome_download_java_resources") {
   custom_package = "org.chromium.chrome.download"
 }
 
+android_resources("chrome_autofill_assistant_java_resources") {
+  resource_dirs = [ "//chrome/android/java/res_autofill_assistant" ]
+  deps = [
+    ":chrome_app_java_resources",
+  ]
+  custom_package = "org.chromium.chrome.autofill_assistant"
+}
+
 java_strings_grd("chrome_strings_grd") {
   defines = chrome_grit_defines
   grd_file = "java/strings/android_chrome_strings.grd"
@@ -223,6 +231,7 @@ android_aidl("photo_picker_aidl") {
 android_library("chrome_java") {
   deps = [
     ":chrome_app_java_resources",
+    ":chrome_autofill_assistant_java_resources",
     ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
