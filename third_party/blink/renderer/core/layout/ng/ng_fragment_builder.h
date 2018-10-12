@@ -79,8 +79,8 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   NGFragmentBuilder& AddBreakBeforeLine(int line_number);
 
   // Update if we have fragmented in this flow.
-  NGFragmentBuilder& PropagateBreak(scoped_refptr<NGLayoutResult>);
-  NGFragmentBuilder& PropagateBreak(scoped_refptr<const NGPhysicalFragment>);
+  NGFragmentBuilder& PropagateBreak(const NGLayoutResult&);
+  NGFragmentBuilder& PropagateBreak(const NGPhysicalFragment&);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGStaticPosition&,

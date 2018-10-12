@@ -964,7 +964,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   PositionOrPropagateListMarker(*layout_result, &logical_offset);
 
   container_builder_.AddChild(*layout_result, logical_offset);
-  container_builder_.PropagateBreak(layout_result);
+  container_builder_.PropagateBreak(*layout_result);
 
   // The margins we store will be used by e.g. getComputedStyle().
   // When calculating these values, ignore any floats that might have
@@ -1315,7 +1315,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
 
   container_builder_.AddChild(*layout_result, logical_offset);
   if (child.IsBlock())
-    container_builder_.PropagateBreak(layout_result);
+    container_builder_.PropagateBreak(*layout_result);
 
   if (child.IsBlock())
     ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data.margins);
@@ -2117,7 +2117,7 @@ void NGBlockLayoutAlgorithm::AddPositionedFloats(const Vec& positioned_floats) {
 
     container_builder_.AddChild(*positioned_float.layout_result,
                                 logical_offset);
-    container_builder_.PropagateBreak(positioned_float.layout_result);
+    container_builder_.PropagateBreak(*positioned_float.layout_result);
   }
 }
 

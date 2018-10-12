@@ -152,20 +152,20 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeLine(int line_number) {
 }
 
 NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
-    scoped_refptr<NGLayoutResult> child_layout_result) {
+    const NGLayoutResult& child_layout_result) {
   if (!did_break_)
-    PropagateBreak(child_layout_result->PhysicalFragment());
-  if (child_layout_result->HasForcedBreak())
+    PropagateBreak(*child_layout_result.PhysicalFragment());
+  if (child_layout_result.HasForcedBreak())
     SetHasForcedBreak();
   else
-    PropagateSpaceShortage(child_layout_result->MinimalSpaceShortage());
+    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
-    scoped_refptr<const NGPhysicalFragment> child_fragment) {
+    const NGPhysicalFragment& child_fragment) {
   if (!did_break_) {
-    const auto* token = child_fragment->BreakToken();
+    const auto* token = child_fragment.BreakToken();
     did_break_ = token && !token->IsFinished();
   }
   return *this;
