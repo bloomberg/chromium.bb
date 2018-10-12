@@ -63,6 +63,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -550,7 +551,8 @@ TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab, false,
-      blink::WebSandboxFlags::kNone);
+      blink::WebSandboxFlags::kNone,
+      blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
 
   // Checks that the frame is deleted properly and cleans up the view.
@@ -760,7 +762,8 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab, false,
-      blink::WebSandboxFlags::kNone);
+      blink::WebSandboxFlags::kNone,
+      blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   blink::WebLocalFrameClient::NavigationPolicyInfo popup_policy_info(
       popup_request);

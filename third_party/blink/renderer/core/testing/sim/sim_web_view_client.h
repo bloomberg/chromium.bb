@@ -37,7 +37,8 @@ class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       bool,
-                      WebSandboxFlags) override;
+                      WebSandboxFlags,
+                      const SessionStorageNamespaceId&) override;
 
  private:
   // WebWidgetClient overrides.

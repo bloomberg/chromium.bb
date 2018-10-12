@@ -211,12 +211,15 @@ blink::WebView* WebViewTestProxy::CreateView(
     const blink::WebString& frame_name,
     blink::WebNavigationPolicy policy,
     bool suppress_opener,
-    blink::WebSandboxFlags sandbox_flags) {
+    blink::WebSandboxFlags sandbox_flags,
+    const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!view_test_client_->CreateView(creator, request, features, frame_name,
-                                     policy, suppress_opener, sandbox_flags))
+                                     policy, suppress_opener, sandbox_flags,
+                                     session_storage_namespace_id))
     return nullptr;
   return RenderViewImpl::CreateView(creator, request, features, frame_name,
-                                    policy, suppress_opener, sandbox_flags);
+                                    policy, suppress_opener, sandbox_flags,
+                                    session_storage_namespace_id);
 }
 
 void WebViewTestProxy::PrintPage(blink::WebLocalFrame* frame) {

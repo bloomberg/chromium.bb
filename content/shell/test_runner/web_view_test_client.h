@@ -37,7 +37,8 @@ class WebViewTestClient : public blink::WebViewClient {
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener,
-                             blink::WebSandboxFlags) override;
+                             blink::WebSandboxFlags,
+                             const blink::SessionStorageNamespaceId&) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;

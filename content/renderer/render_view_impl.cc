@@ -1320,13 +1320,15 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 // TODO(csharrison): Migrate this method to WebLocalFrameClient /
 // RenderFrameImpl, as it is now serviced by a mojo interface scoped to the
 // opener frame.
-WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
-                                    const WebURLRequest& request,
-                                    const WebWindowFeatures& features,
-                                    const WebString& frame_name,
-                                    WebNavigationPolicy policy,
-                                    bool suppress_opener,
-                                    WebSandboxFlags sandbox_flags) {
+WebView* RenderViewImpl::CreateView(
+    WebLocalFrame* creator,
+    const WebURLRequest& request,
+    const WebWindowFeatures& features,
+    const WebString& frame_name,
+    WebNavigationPolicy policy,
+    bool suppress_opener,
+    WebSandboxFlags sandbox_flags,
+    const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
 
@@ -1341,15 +1343,12 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
 
   params->window_container_type = WindowFeaturesToContainerType(features);
 
-  params->session_storage_namespace_id =
-      blink::AllocateSessionStorageNamespaceId();
+  params->session_storage_namespace_id = session_storage_namespace_id;
+  // TODO(dmurph): Don't copy session storage when features.noopener is true:
+  // https://html.spec.whatwg.org/multipage/browsers.html#copy-session-storage
+  // https://crbug.com/771959
   params->clone_from_session_storage_namespace_id =
       session_storage_namespace_id_;
-  if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
-    RenderThreadImpl::current_blink_platform_impl()
-        ->CloneSessionStorageNamespace(session_storage_namespace_id_,
-                                       params->session_storage_namespace_id);
-  }
 
   const std::string& frame_name_utf8 = frame_name.Utf8(
       WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);

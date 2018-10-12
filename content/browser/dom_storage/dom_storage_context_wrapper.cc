@@ -37,6 +37,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "sql/database.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 namespace {
@@ -154,7 +155,7 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
       mojo_task_runner_, connector, context_->task_runner(),
       legacy_localstorage_path_, storage_dir, special_storage_policy);
 
-  if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
+  if (base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage)) {
     mojo_session_state_ = new SessionStorageContextMojo(
         mojo_task_runner_, connector,
 

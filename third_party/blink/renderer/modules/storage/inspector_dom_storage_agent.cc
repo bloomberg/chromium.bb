@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -219,11 +221,19 @@ Response InspectorDOMStorageAgent::FindStorageArea(
   if (is_local_storage) {
     if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessLocalStorage())
       return Response::Error("Security origin cannot access local storage");
-    storage_area = StorageArea::Create(
-        frame,
-        StorageController::GetInstance()->GetWebLocalStorageArea(
-            frame->GetDocument()->GetSecurityOrigin()),
-        StorageArea::StorageType::kLocalStorage);
+    if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
+      storage_area = StorageArea::CreateForInspectorAgent(
+          frame,
+          StorageController::GetInstance()->GetLocalStorageArea(
+              frame->GetDocument()->GetSecurityOrigin()),
+          StorageArea::StorageType::kLocalStorage);
+    } else {
+      storage_area = StorageArea::Create(
+          frame,
+          StorageController::GetInstance()->GetWebLocalStorageArea(
+              frame->GetDocument()->GetSecurityOrigin()),
+          StorageArea::StorageType::kLocalStorage);
+    }
     return Response::OK();
   }
 
@@ -235,11 +245,19 @@ Response InspectorDOMStorageAgent::FindStorageArea(
     return Response::Error("SessionStorage is not supported");
   DCHECK(session_namespace->IsSessionStorage());
 
-  storage_area =
-      StorageArea::Create(frame,
-                          session_namespace->GetWebStorageArea(
-                              frame->GetDocument()->GetSecurityOrigin()),
-                          StorageArea::StorageType::kSessionStorage);
+  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
+    storage_area = StorageArea::CreateForInspectorAgent(
+        frame,
+        session_namespace->GetCachedArea(
+            frame->GetDocument()->GetSecurityOrigin()),
+        StorageArea::StorageType::kSessionStorage);
+  } else {
+    storage_area =
+        StorageArea::Create(frame,
+                            session_namespace->GetWebStorageArea(
+                                frame->GetDocument()->GetSecurityOrigin()),
+                            StorageArea::StorageType::kSessionStorage);
+  }
   return Response::OK();
 }
 
