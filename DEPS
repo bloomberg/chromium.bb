@@ -291,6 +291,11 @@ deps = {
       'condition': 'checkout_ios',
   },
 
+    'src/ios/third_party/edo/src': {
+      'url': Var('chromium_git') + '/external/github.com/google/eDistantObject.git' + '@' + '4ec31ccbe1e03279619915b00ddf30af5422106e',
+      'condition': 'checkout_ios',
+  },
+
   'src/ios/third_party/gtx/src': {
       'url': Var('chromium_git') + '/external/github.com/google/GTXiLib.git' + '@' + '3e09baa61b2c13fe98029d53b1783f4ca9edaabf',
       'condition': 'checkout_ios',
