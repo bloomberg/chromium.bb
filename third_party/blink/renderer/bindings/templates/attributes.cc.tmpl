@@ -1,5 +1,5 @@
-{% from 'utilities.cpp.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
-{% from 'methods.cpp.tmpl' import runtime_timer_scope, runtime_timer_scope_disabled_by_default %}
+{% from 'utilities.cc.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
+{% from 'methods.cc.tmpl' import runtime_timer_scope, runtime_timer_scope_disabled_by_default %}
 
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
@@ -514,7 +514,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro build_attribute_or_accessor_configuration(attribute, config_type) %}
-{% from 'utilities.cpp.tmpl' import property_location %}
+{% from 'utilities.cc.tmpl' import property_location %}
 {% if attribute.constructor_type %}
   {% set getter_callback = '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name) %}
   {% set setter_callback = 'nullptr' %}

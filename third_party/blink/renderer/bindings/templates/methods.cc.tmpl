@@ -1,4 +1,4 @@
-{% from 'utilities.cpp.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
+{% from 'utilities.cc.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 {##############################################################################}
 {% macro runtime_timer_scope(counter) %}
@@ -546,7 +546,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
 
   {% raw %}
   // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   {% endraw %}
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "{{method.name}}");
@@ -612,7 +612,7 @@ V8SetReturnValue(info, wrapper);
 
 {##############################################################################}
 {% macro method_configuration(method) %}
-{% from 'utilities.cpp.tmpl' import property_location %}
+{% from 'utilities.cc.tmpl' import property_location %}
 {% set method_callback =
        '%s::%sMethodCallback' % (v8_class_or_partial, method.name) %}
 {% set method_callback_for_main_world =
