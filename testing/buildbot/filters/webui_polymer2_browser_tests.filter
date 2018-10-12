@@ -23,7 +23,6 @@
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
 -ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
--CrSettingsPeoplePageSetupPinDialogTest.All
 -DemoSetupTest.BackOnArcTermsScreen
 -DemoSetupTest.ClickConnectedNetworkOnNetworkScreen
 -DemoSetupTest.ClickNetworkOnNetworkScreen
