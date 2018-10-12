@@ -109,9 +109,6 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
 bool ProfileSyncServiceAndroid::Init() {
   if (sync_service_) {
     sync_service_->AddObserver(this);
-    sync_service_->SetPlatformSyncAllowedProvider(
-        base::Bind(&ProfileSyncServiceAndroid::IsSyncAllowedByAndroid,
-                   base::Unretained(this)));
     return true;
   } else {
     return false;
@@ -121,8 +118,6 @@ bool ProfileSyncServiceAndroid::Init() {
 ProfileSyncServiceAndroid::~ProfileSyncServiceAndroid() {
   if (sync_service_) {
     sync_service_->RemoveObserver(this);
-    sync_service_->SetPlatformSyncAllowedProvider(
-        ProfileSyncService::PlatformSyncAllowedProvider());
   }
 }
 
@@ -163,11 +158,11 @@ void ProfileSyncServiceAndroid::RequestStop(JNIEnv* env,
   sync_service_->RequestStop(ProfileSyncService::KEEP_DATA);
 }
 
-void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env,
-                                            const JavaParamRef<jobject>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(profile_);
-  sync_service_->RequestStop(ProfileSyncService::CLEAR_DATA);
+void ProfileSyncServiceAndroid::SetSyncAllowedByPlatform(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean allowed) {
+  sync_service_->SetSyncAllowedByPlatform(allowed);
 }
 
 jboolean ProfileSyncServiceAndroid::IsSyncActive(

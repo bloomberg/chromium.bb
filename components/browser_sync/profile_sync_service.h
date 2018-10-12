@@ -160,7 +160,6 @@ class ProfileSyncService : public syncer::SyncService,
                            public syncer::UnrecoverableErrorHandler,
                            public GaiaCookieManagerService::Observer {
  public:
-  using PlatformSyncAllowedProvider = base::RepeatingCallback<bool()>;
   using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
 
   // NOTE: Used in a UMA histogram, do not reorder etc.
@@ -456,9 +455,8 @@ class ProfileSyncService : public syncer::SyncService,
   // SyncPrefs. Will return the empty string if no bootstrap token exists.
   std::string GetCustomPassphraseKey() const;
 
-  // Set the provider for whether sync is currently allowed by the platform.
-  void SetPlatformSyncAllowedProvider(
-      const PlatformSyncAllowedProvider& platform_sync_allowed_provider);
+  // Set whether sync is currently allowed by the platform.
+  void SetSyncAllowedByPlatform(bool allowed);
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
   base::MessageLoop* GetSyncLoopForTest() const;
@@ -754,9 +752,8 @@ class ProfileSyncService : public syncer::SyncService,
   // IsPassphrasePrompted sync preference.
   bool passphrase_prompt_triggered_by_version_;
 
-  // An object that lets us check whether sync is currently allowed on this
-  // platform.
-  PlatformSyncAllowedProvider platform_sync_allowed_provider_;
+  // Whether sync is currently allowed on this platform.
+  bool sync_allowed_by_platform_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
   base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;

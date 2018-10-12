@@ -197,6 +197,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           std::make_unique<syncer::HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
+      sync_allowed_by_platform_(true),
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1526,10 +1527,10 @@ bool ProfileSyncService::IsCryptographerReady(
   return engine_ && engine_->IsCryptographerReady(trans);
 }
 
-void ProfileSyncService::SetPlatformSyncAllowedProvider(
-    const PlatformSyncAllowedProvider& platform_sync_allowed_provider) {
+void ProfileSyncService::SetSyncAllowedByPlatform(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  platform_sync_allowed_provider_ = platform_sync_allowed_provider;
+  sync_allowed_by_platform_ = allowed;
+  // TODO(crbug.com/867901): Start or stop Sync as needed here.
 }
 
 void ProfileSyncService::ConfigureDataTypeManager(
@@ -2023,8 +2024,7 @@ bool ProfileSyncService::IsSyncAllowedByFlag() {
 
 bool ProfileSyncService::IsSyncAllowedByPlatform() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return platform_sync_allowed_provider_.is_null() ||
-         platform_sync_allowed_provider_.Run();
+  return sync_allowed_by_platform_;
 }
 
 void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
