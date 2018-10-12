@@ -39,12 +39,14 @@ CustomEvent::CustomEvent(ScriptState* script_state,
     : Event(type, initializer) {
   world_ = WrapRefCounted(&script_state->World());
   if (initializer.hasDetail()) {
-    detail_.Set(initializer.detail().GetIsolate(),
-                initializer.detail().V8Value());
+    v8::Isolate *isolate = initializer.detail().GetIsolate();
+    detail_.Reset(isolate, initializer.detail().V8Value());
   }
 }
 
-CustomEvent::~CustomEvent() = default;
+CustomEvent::~CustomEvent() {
+  detail_.Reset();
+};
 
 void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   const AtomicString& type,
@@ -54,7 +56,7 @@ void CustomEvent::initCustomEvent(ScriptState* script_state,
   initEvent(type, bubbles, cancelable);
   world_ = WrapRefCounted(&script_state->World());
   if (!IsBeingDispatched() && !script_value.IsEmpty())
-    detail_.Set(script_value.GetIsolate(), script_value.V8Value());
+    detail_.Reset(script_value.GetIsolate(), script_value.V8Value());
 }
 
 ScriptValue CustomEvent::detail(ScriptState* script_state) const {
@@ -63,12 +65,12 @@ ScriptValue CustomEvent::detail(ScriptState* script_state) const {
     return ScriptValue(script_state, v8::Null(isolate));
   // Returns a clone of |detail_| if the world is different.
   if (!world_ || world_->GetWorldId() != script_state->World().GetWorldId()) {
-    v8::Local<v8::Value> value = detail_.NewLocal(isolate);
+    v8::Local<v8::Value> value = v8::Local<v8::Value>::New(isolate, detail_);
     scoped_refptr<SerializedScriptValue> serialized =
         SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
     return ScriptValue(script_state, serialized->Deserialize(isolate));
   }
-  return ScriptValue(script_state, detail_.NewLocal(isolate));
+  return ScriptValue(script_state, v8::Local<v8::Value>::New(isolate, detail_));
 }
 
 const AtomicString& CustomEvent::InterfaceName() const {
@@ -76,7 +78,6 @@ const AtomicString& CustomEvent::InterfaceName() const {
 }
 
 void CustomEvent::Trace(blink::Visitor* visitor) {
-  visitor->Trace(detail_);
   Event::Trace(visitor);
 }
 

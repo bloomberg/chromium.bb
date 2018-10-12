@@ -128,6 +128,7 @@ class CORE_EXPORT WebPluginContainerImpl final
                              unsigned long long total,
                              const WebString& url) override;
   void EnqueueMessageEvent(const WebDOMMessageEvent&) override;
+  void EnqueueEvent(const WebDOMEvent& event) override;
   void Invalidate() override;
   void InvalidateRect(const WebRect&) override;
   void ScrollRect(const WebRect&) override;

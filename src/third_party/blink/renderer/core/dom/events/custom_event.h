@@ -67,7 +67,11 @@ class CORE_EXPORT CustomEvent final : public Event {
               const CustomEventInit& initializer);
 
   scoped_refptr<DOMWrapperWorld> world_;
-  TraceWrapperV8Reference<v8::Value> detail_;
+
+  // blpwtk2: TraceWrapperV8Reference was changed to v8::Persistent to make
+  // sure CustomEvent holds a reference to the 'detail' object.  This is
+  // especially important if the 'detail' object was created in native.
+  v8::Persistent<v8::Value> detail_;
 };
 
 }  // namespace blink
