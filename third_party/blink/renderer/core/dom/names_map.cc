@@ -45,15 +45,26 @@ void NamesMap::Add(const AtomicString& key, const AtomicString& value) {
 // second and => is not used to separate key and value. It also allows an ident
 // token on its own as a short-hand for forwarding with the same name.
 
-// The states that can occur while parsing the part map. {...} denotes the new
-// states that can be reached from this state.
+// The states that can occur while parsing the part map and their transitions.
+// A "+" indicates that this transition should consume the current character.
 enum State {
-  kPreKey,    // Searching for the start of a key. {kPreKey, kKey}
-  kKey,       // Searching for the end of a key. {kKey, kPreValue}
-  kPreValue,  // Searching for the start of a value. {kPreValue, kPreKey,
-              // kValue}
-  kValue,     // Searching for the end of a value. {kValue, kPreKey, kPostValue}
-  kPostValue,  // Searching for the comma after the value. {kPostValue, kPreKey}
+  kPreKey,     // Searching for the start of a key:
+               //   space, comma -> kPreKey+
+               //   else -> kKey
+  kKey,        // Searching for the end of a key:
+               //   space, comma -> kPreValue
+               //   else -> kKey+
+  kPreValue,   // Searching for the start of a value:
+               //   space -> kPreValue+
+               //   comma -> kPreKey+
+               //   else -> kValue+
+  kValue,      // Searching for the end of a value:
+               //   comma -> kPreKey+
+               //   space -> kPostValue+
+               //   else -> kValue+
+  kPostValue,  // Searching for the comma after the value:
+               //   comma -> kPreKey+
+               //   else -> kPostValue+
 };
 
 template <typename CharacterType>
