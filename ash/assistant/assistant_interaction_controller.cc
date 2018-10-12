@@ -45,7 +45,9 @@ bool IsTabletMode() {
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      assistant_interaction_subscriber_binding_(this) {
+      assistant_interaction_subscriber_binding_(this),
+      assistant_response_processor_(assistant_controller),
+      weak_factory_(this) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -224,6 +226,25 @@ void AssistantInteractionController::OnInputModalityChanged(
   StopActiveInteraction(false);
 }
 
+void AssistantInteractionController::OnResponseDestroying(
+    AssistantResponse& response) {
+  response.RemoveObserver(this);
+
+  // We need to explicitly clean up resources owned by WebContentsManager for
+  // any card elements belonging to the response being destroyed.
+  std::vector<base::UnguessableToken> id_tokens;
+  for (const auto& ui_element : response.GetUiElements()) {
+    if (ui_element->GetType() == AssistantUiElementType::kCard) {
+      id_tokens.push_back(
+          static_cast<const AssistantCardElement*>(ui_element.get())
+              ->id_token());
+    }
+  }
+
+  if (!id_tokens.empty())
+    assistant_controller_->ReleaseWebContents(id_tokens);
+}
+
 void AssistantInteractionController::OnInteractionStarted(
     bool is_voice_interaction) {
   model_.SetInteractionState(InteractionState::kActive);
@@ -254,8 +275,10 @@ void AssistantInteractionController::OnInteractionStarted(
     model_.SetMicState(MicState::kClosed);
   }
 
-  // Start caching a new Assistant response for the interaction.
+  // Start caching a new Assistant response for the interaction. We observe the
+  // response so that we can receive notification of lifecycle change events.
   model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+  model_.pending_response()->AddObserver(this);
 }
 
 void AssistantInteractionController::OnInteractionFinished(
@@ -311,8 +334,8 @@ void AssistantInteractionController::OnInteractionFinished(
       break;
   }
 
-  // Finalize the pending response to flush it to the UI.
-  model_.FinalizePendingResponse();
+  // Perform processing on the pending response before flushing to UI.
+  OnProcessPendingResponse();
 }
 
 void AssistantInteractionController::OnHtmlResponse(
@@ -323,7 +346,7 @@ void AssistantInteractionController::OnHtmlResponse(
 
   // If this occurs, the server has broken our response ordering agreement. We
   // should not crash but we cannot handle the response so we ignore it.
-  if (!model_.pending_response()) {
+  if (!HasUnprocessedPendingResponse()) {
     NOTREACHED();
     return;
   }
@@ -353,7 +376,7 @@ void AssistantInteractionController::OnSuggestionsResponse(
 
   // If this occurs, the server has broken our response ordering agreement. We
   // should not crash but we cannot handle the response so we ignore it.
-  if (!model_.pending_response()) {
+  if (!HasUnprocessedPendingResponse()) {
     NOTREACHED();
     return;
   }
@@ -369,7 +392,7 @@ void AssistantInteractionController::OnTextResponse(
 
   // If this occurs, the server has broken our response ordering agreement. We
   // should not crash but we cannot handle the response so we ignore it.
-  if (!model_.pending_response()) {
+  if (!HasUnprocessedPendingResponse()) {
     NOTREACHED();
     return;
   }
@@ -433,9 +456,8 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
   model_.pending_response()->set_has_tts(true);
   // We have an agreement with the server that TTS will always be the last part
   // of an interaction to be processed. To be timely in updating UI, we use
-  // this as an opportunity to finalize the Assistant response and update the
-  // interaction model.
-  model_.FinalizePendingResponse();
+  // this as an opportunity to begin processing the Assistant response.
+  OnProcessPendingResponse();
 }
 
 void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
@@ -472,6 +494,38 @@ void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   DCHECK(!text.empty());
   StartTextInteraction(text);
+}
+
+bool AssistantInteractionController::HasUnprocessedPendingResponse() {
+  return model_.pending_response() &&
+         model_.pending_response()->processing_state() ==
+             AssistantResponse::ProcessingState::kUnprocessed;
+}
+
+void AssistantInteractionController::OnProcessPendingResponse() {
+  // It's possible that the pending response is already being processed. This
+  // can occur if the response contains TTS, as we begin processing before the
+  // interaction is finished in such cases to reduce UI latency.
+  if (model_.pending_response()->processing_state() !=
+      AssistantResponse::ProcessingState::kUnprocessed) {
+    return;
+  }
+
+  // Start processing.
+  assistant_response_processor_.Process(
+      *model_.pending_response(),
+      base::BindOnce(
+          &AssistantInteractionController::OnPendingResponseProcessed,
+          weak_factory_.GetWeakPtr()));
+}
+
+void AssistantInteractionController::OnPendingResponseProcessed(bool success) {
+  if (!success)
+    return;
+
+  // Once the pending response has been processed it is safe to flush to the UI.
+  // We accomplish this by finalizing the pending response.
+  model_.FinalizePendingResponse();
 }
 
 void AssistantInteractionController::OnUiVisible(AssistantSource source) {
