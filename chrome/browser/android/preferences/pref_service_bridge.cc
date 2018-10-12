@@ -1183,9 +1183,9 @@ void PrefServiceBridge::GetAndroidPermissionsForContentSetting(
     std::vector<std::string>* out) {
   JNIEnv* env = AttachCurrentThread();
   base::android::AppendJavaStringArrayToStringVector(
-      env, Java_PrefServiceBridge_getAndroidPermissionsForContentSetting(
-               env, content_type)
-               .obj(),
+      env,
+      Java_PrefServiceBridge_getAndroidPermissionsForContentSetting(
+          env, content_type),
       out);
 }
 

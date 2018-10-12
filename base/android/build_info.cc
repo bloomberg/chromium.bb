@@ -38,7 +38,7 @@ struct BuildInfoSingletonTraits {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobjectArray> params_objs = Java_BuildInfo_getAll(env);
     std::vector<std::string> params;
-    AppendJavaStringArrayToStringVector(env, params_objs.obj(), &params);
+    AppendJavaStringArrayToStringVector(env, params_objs, &params);
     return new BuildInfo(params);
   }
 

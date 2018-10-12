@@ -120,7 +120,7 @@ void FeedContentBridge::LoadContent(
     const JavaRef<jobject>& j_success_callback,
     const JavaRef<jobject>& j_failure_callback) {
   std::vector<std::string> keys;
-  AppendJavaStringArrayToStringVector(j_env, j_keys.obj(), &keys);
+  AppendJavaStringArrayToStringVector(j_env, j_keys, &keys);
   ScopedJavaGlobalRef<jobject> success_callback(j_success_callback);
   ScopedJavaGlobalRef<jobject> failure_callback(j_failure_callback);
 
@@ -207,7 +207,7 @@ void FeedContentBridge::AppendUpsertOperation(
   DCHECK(content_mutation_);
   std::string key(ConvertJavaStringToUTF8(j_env, j_key));
   std::string data;
-  JavaByteArrayToString(j_env, j_data.obj(), &data);
+  JavaByteArrayToString(j_env, j_data, &data);
 
   content_mutation_->AppendUpsertOperation(key, data);
 }

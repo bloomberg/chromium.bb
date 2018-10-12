@@ -24,7 +24,7 @@ void JNI_AwPdfExporter_GetPageRanges(JNIEnv* env,
                                      const JavaRef<jintArray>& int_arr,
                                      printing::PageRanges* range_vector) {
   std::vector<int> pages;
-  base::android::JavaIntArrayToIntVector(env, int_arr.obj(), &pages);
+  base::android::JavaIntArrayToIntVector(env, int_arr, &pages);
   for (int page : pages) {
     printing::PageRange range;
     range.from = page;

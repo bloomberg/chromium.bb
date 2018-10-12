@@ -54,7 +54,7 @@ void GetHomescreenIconAndSplashImageSizes() {
   ScopedJavaLocalRef<jintArray> java_size_array =
       Java_ShortcutHelper_getHomeScreenIconAndSplashImageSizes(env);
   std::vector<int> sizes;
-  base::android::JavaIntArrayToIntVector(env, java_size_array.obj(), &sizes);
+  base::android::JavaIntArrayToIntVector(env, java_size_array, &sizes);
 
   // Check that the size returned is what is expected.
   DCHECK(sizes.size() == 5);

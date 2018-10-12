@@ -59,7 +59,7 @@ TEST_F(ChromeBackupAgentTest, GetBoolBackupNames) {
   ScopedJavaLocalRef<jobjectArray> result =
       GetBoolBackupNamesForTesting(env_, JavaParamRef<jobject>(nullptr));
   std::vector<std::string> pref_names;
-  AppendJavaStringArrayToStringVector(AttachCurrentThread(), result.obj(),
+  AppendJavaStringArrayToStringVector(AttachCurrentThread(), result,
                                       &pref_names);
   EXPECT_EQ(expected_pref_names_, pref_names);
 }

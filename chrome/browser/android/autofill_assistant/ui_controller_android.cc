@@ -40,10 +40,9 @@ std::unique_ptr<std::map<std::string, std::string>> BuildParametersFromJava(
     const JavaRef<jobjectArray>& names,
     const JavaRef<jobjectArray>& values) {
   std::vector<std::string> names_vector;
-  base::android::AppendJavaStringArrayToStringVector(env, names.obj(),
-                                                     &names_vector);
+  base::android::AppendJavaStringArrayToStringVector(env, names, &names_vector);
   std::vector<std::string> values_vector;
-  base::android::AppendJavaStringArrayToStringVector(env, values.obj(),
+  base::android::AppendJavaStringArrayToStringVector(env, values,
                                                      &values_vector);
   DCHECK_EQ(names_vector.size(), values_vector.size());
   auto parameters = std::make_unique<std::map<std::string, std::string>>();

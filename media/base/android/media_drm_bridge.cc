@@ -749,7 +749,7 @@ void MediaDrmBridge::OnSessionKeysChange(
     ScopedJavaLocalRef<jbyteArray> j_key_id =
         Java_KeyStatus_getKeyId(env, j_key_status);
     std::vector<uint8_t> key_id;
-    JavaByteArrayToByteVector(env, j_key_id.obj(), &key_id);
+    JavaByteArrayToByteVector(env, j_key_id, &key_id);
     DCHECK(!key_id.empty());
 
     jint j_status_code = Java_KeyStatus_getStatusCode(env, j_key_status);

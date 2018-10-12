@@ -1126,7 +1126,7 @@ gfx::Point AwContents::GetLocationOnScreen() {
     return gfx::Point();
   std::vector<int> location;
   base::android::JavaIntArrayToIntVector(
-      env, Java_AwContents_getLocationOnScreen(env, obj).obj(), &location);
+      env, Java_AwContents_getLocationOnScreen(env, obj), &location);
   return gfx::Point(location[0], location[1]);
 }
 
