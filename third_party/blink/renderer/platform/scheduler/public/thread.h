@@ -70,7 +70,8 @@ struct PLATFORM_EXPORT ThreadCreationParams {
 // run.
 class PLATFORM_EXPORT Thread {
  public:
-  friend class Platform;  // For IsSimpleMainThread().
+  friend class Platform;  // For SetMainThread() and IsSimpleMainThread().
+  friend class ScopedMainThreadOverrider;  // For SetMainThread().
 
   // An IdleTask is expected to complete before the deadline it is passed.
   using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
@@ -81,6 +82,28 @@ class PLATFORM_EXPORT Thread {
     virtual void WillProcessTask() = 0;
     virtual void DidProcessTask() = 0;
   };
+
+  // Creates a new thread. This may be called from a non-main thread (e.g.
+  // nested Web workers).
+  static std::unique_ptr<Thread> CreateThread(const ThreadCreationParams&);
+
+  // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
+  // for any other purpose.
+  static std::unique_ptr<Thread> CreateWebAudioThread();
+
+  // Create and save (as a global variable) the compositor thread. The thread
+  // will be accessible through CompositorThread().
+  static void CreateAndSetCompositorThread();
+
+  // Return an interface to the current thread.
+  static Thread* Current();
+
+  // Return an interface to the main thread.
+  static Thread* MainThread();
+
+  // Return an interface to the compositor thread (if initialized). This can be
+  // null if the renderer was created with threaded rendering disabled.
+  static Thread* CompositorThread();
 
   // DEPRECATED: Returns a task runner bound to the underlying scheduler's
   // default task queue.
@@ -118,6 +141,13 @@ class PLATFORM_EXPORT Thread {
   virtual ~Thread() = default;
 
  private:
+  // For Platform and ScopedMainThreadOverrider. Return the thread object
+  // previously set (if any).
+  //
+  // This is done this way because we need to be able to "override" the main
+  // thread temporarily for ScopedTestingPlatformSupport.
+  static std::unique_ptr<Thread> SetMainThread(std::unique_ptr<Thread>);
+
   // This is used to identify the actual Thread instance. This should be
   // used only in Platform, and other users should ignore this.
   virtual bool IsSimpleMainThread() const { return false; }

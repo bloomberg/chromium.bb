@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_custom_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/scoped_scheduler_overrider.h"
 
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -29,16 +28,10 @@ class ThreadWithCustomScheduler : public Thread {
 
 }  // namespace
 
-TestingPlatformSupportWithCustomScheduler::
-    TestingPlatformSupportWithCustomScheduler(ThreadScheduler* scheduler)
-    : thread_(std::make_unique<ThreadWithCustomScheduler>(scheduler)) {
-  // If main_thread_ is set, Platform::SetCurrentPlatformForTesting() properly
-  // sets up the platform so Platform::CurrentThread() would return the
-  // thread specified here.
-  main_thread_ = thread_.get();
-}
+ScopedSchedulerOverrider::ScopedSchedulerOverrider(ThreadScheduler* scheduler)
+    : main_thread_overrider_(
+          std::make_unique<ThreadWithCustomScheduler>(scheduler)) {}
 
-TestingPlatformSupportWithCustomScheduler::
-    ~TestingPlatformSupportWithCustomScheduler() {}
+ScopedSchedulerOverrider::~ScopedSchedulerOverrider() {}
 
 }  // namespace blink
