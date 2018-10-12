@@ -6,9 +6,22 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 visibility = [ "//ui/file_manager/*" ]
 
-js_type_check("closure_compile") {
+group("closure_compile") {
+  deps = [
+    ":closure_compile_module",
+    ":test_support_type_check",
+  ]
+}
+
+js_type_check("closure_compile_module") {
   deps = [
     ":filtered_volume_manager",
+  ]
+}
+
+js_type_check("test_support_type_check") {
+  deps = [
+    ":test_error_reporting",
   ]
 }
 
@@ -24,4 +37,12 @@ js_library("filtered_volume_manager") {
   ]
   externs_list =
       [ "//ui/file_manager/externs/background/volume_manager_factory.js" ]
+}
+
+js_library("test_error_reporting") {
+  deps = [
+    # Note we allow targets depending on test_error_reporting to access
+    # webui_resource_test transitively.
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }

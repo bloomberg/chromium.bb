@@ -62,8 +62,7 @@ js_library("entry_list_watcher_unittest") {
   deps = [
     ":entry_list_watcher",
     "../../file_manager/common/js:mock_entry",
-    "../../file_manager/common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -104,7 +103,7 @@ js_library("gallery_data_model_unittest") {
   deps = [
     ":gallery_data_model",
     ":mock_gallery_item",
-    "../../file_manager/common/js:unittest_util",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -125,8 +124,7 @@ js_library("gallery_item_unittest") {
   deps = [
     ":gallery_item",
     ":mock_gallery_item",
-    "../../file_manager/common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -143,8 +141,7 @@ js_library("gallery_util_unittest") {
   deps = [
     ":gallery_util",
     "../../file_manager/common/js:mock_entry",
-    "../../file_manager/common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -202,8 +199,7 @@ js_library("slide_mode") {
 js_library("slide_mode_unittest") {
   deps = [
     ":slide_mode",
-    "../../file_manager/common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 

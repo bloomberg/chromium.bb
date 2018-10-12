@@ -580,8 +580,7 @@ js_library("thumbnail_loader_unittest") {
   deps = [
     ":thumbnail_loader",
     "../../common/js:mock_entry",
-    "../../common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
