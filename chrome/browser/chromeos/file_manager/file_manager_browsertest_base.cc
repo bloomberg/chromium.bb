@@ -1141,7 +1141,7 @@ bool FileManagerBrowserTestBase::GetTabletMode() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
-  return false;
+  return true;
 }
 
 bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
