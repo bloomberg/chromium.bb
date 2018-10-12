@@ -1375,18 +1375,14 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
       continue;
     }
 
-    StreamParser::TrackId track_id = stream->id;
+    StreamParser::TrackId track_id =
+        static_cast<StreamParser::TrackId>(media_tracks->tracks().size() + 1);
     std::string track_label = streams_[i]->GetMetadata("handler_name");
     std::string track_language = streams_[i]->GetMetadata("language");
 
     // Some metadata is named differently in FFmpeg for webm files.
-    if (glue_->container() == container_names::CONTAINER_WEBM) {
-      // TODO(servolk): FFmpeg doesn't set stream->id correctly for webm files.
-      // Need to fix that and use it as track id. crbug.com/323183
-      track_id =
-          static_cast<StreamParser::TrackId>(media_tracks->tracks().size() + 1);
+    if (glue_->container() == container_names::CONTAINER_WEBM)
       track_label = streams_[i]->GetMetadata("title");
-    }
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       ++supported_audio_track_count;
