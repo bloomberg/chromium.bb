@@ -76,7 +76,6 @@ class TextTrack;
 class TextTrackContainer;
 class TextTrackList;
 class TimeRanges;
-class URLRegistry;
 class VideoTrack;
 class VideoTrackList;
 class WebAudioSourceProvider;
@@ -101,8 +100,6 @@ class CORE_EXPORT HTMLMediaElement
 
   enum class RecordMetricsBehavior { kDoNotRecord, kDoRecord };
 
-  static void SetMediaStreamRegistry(URLRegistry*);
-  static bool IsMediaStreamURL(const String& url);
   static bool IsHLSURL(const KURL&);
 
   // If HTMLMediaElement is using MediaTracks (either placeholder or provided
@@ -753,8 +750,6 @@ class CORE_EXPORT HTMLMediaElement
   Member<HTMLMediaElementControlsList> controls_list_;
 
   Member<ElementVisibilityObserver> lazy_load_visibility_observer_;
-
-  static URLRegistry* media_stream_registry_;
 };
 
 inline bool IsHTMLMediaElement(const HTMLElement& element) {

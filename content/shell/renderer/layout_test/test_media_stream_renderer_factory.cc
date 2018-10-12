@@ -8,7 +8,6 @@
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/web/web_media_stream_registry.h"
 
 namespace {
 

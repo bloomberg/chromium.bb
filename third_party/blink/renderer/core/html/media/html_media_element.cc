@@ -410,21 +410,10 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   return result;
 }
 
-URLRegistry* HTMLMediaElement::media_stream_registry_ = nullptr;
-
 const HashSet<AtomicString>& HTMLMediaElement::GetCheckedAttributeNames()
     const {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
   return attribute_set;
-}
-
-void HTMLMediaElement::SetMediaStreamRegistry(URLRegistry* registry) {
-  DCHECK(!media_stream_registry_);
-  media_stream_registry_ = registry;
-}
-
-bool HTMLMediaElement::IsMediaStreamURL(const String& url) {
-  return media_stream_registry_ ? media_stream_registry_->Contains(url) : false;
 }
 
 bool HTMLMediaElement::IsHLSURL(const KURL& url) {
@@ -1410,8 +1399,7 @@ WebMediaPlayer::LoadType HTMLMediaElement::GetLoadType() const {
   if (media_source_)
     return WebMediaPlayer::kLoadTypeMediaSource;
 
-  if (src_object_ ||
-      (!current_src_.IsNull() && IsMediaStreamURL(current_src_.GetString())))
+  if (src_object_)
     return WebMediaPlayer::kLoadTypeMediaStream;
 
   return WebMediaPlayer::kLoadTypeURL;
@@ -1990,7 +1978,7 @@ bool HTMLMediaElement::SupportsSave() const {
     return false;
 
   // MediaStream can't be downloaded.
-  if (IsMediaStreamURL(current_src_.GetString()))
+  if (GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream)
     return false;
 
   // MediaSource can't be downloaded.
