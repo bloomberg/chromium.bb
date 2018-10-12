@@ -9,6 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("settings") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
     ":cros_settings_names",
   ]
@@ -32,10 +33,10 @@ source_set("settings") {
     "timezone_settings_helper.cc",
     "timezone_settings_helper.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("cros_settings_names") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//chromeos:chromeos_export",
   ]
@@ -43,7 +44,6 @@ source_set("cros_settings_names") {
     "cros_settings_names.cc",
     "cros_settings_names.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("unit_tests") {

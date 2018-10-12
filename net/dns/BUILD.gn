@@ -227,7 +227,7 @@ source_set("host_resolver_impl") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack.
   friend = [
-    "//chromeos",
+    "//chromeos/network",
     "//components/cronet/*",
     "//net/*",
   ]
