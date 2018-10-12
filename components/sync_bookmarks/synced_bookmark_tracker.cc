@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -11,11 +12,13 @@
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
+#include "ui/base/models/tree_node_iterator.h"
 
 namespace sync_bookmarks {
 
@@ -106,6 +109,58 @@ SyncedBookmarkTracker::SyncedBookmarkTracker(
 }
 
 SyncedBookmarkTracker::~SyncedBookmarkTracker() = default;
+
+// static
+bool SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+    const bookmarks::BookmarkModel* model,
+    const sync_pb::BookmarkModelMetadata& model_metadata) {
+  DCHECK(model_metadata.model_type_state().initial_sync_done());
+
+  // Collect ids of non-deletion entries in the metadata.
+  std::vector<int> metadata_node_ids;
+  for (const sync_pb::BookmarkMetadata& bookmark_metadata :
+       model_metadata.bookmarks_metadata()) {
+    if (!bookmark_metadata.metadata().has_server_id()) {
+      DLOG(ERROR) << "Error when decoding sync metadata: Entities must contain "
+                     "server id.";
+      return false;
+    }
+    if (bookmark_metadata.metadata().is_deleted() &&
+        bookmark_metadata.has_id()) {
+      DLOG(ERROR) << "Error when decoding sync metadata: Tombstones "
+                     "shouldn't have a bookmark id.";
+      return false;
+    }
+    if (!bookmark_metadata.metadata().is_deleted() &&
+        !bookmark_metadata.has_id()) {
+      DLOG(ERROR)
+          << "Error when decoding sync metadata: Bookmark id is missing.";
+      return false;
+    }
+    // The entry is valid. If it's not a tombstone, collect its node id to
+    // compare it later with the ids in the model.
+    if (!bookmark_metadata.metadata().is_deleted()) {
+      metadata_node_ids.push_back(bookmark_metadata.id());
+    }
+  }
+
+  // Collect ids of nodes in the model.
+  std::vector<int> model_node_ids;
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      model->root_node());
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* node = iterator.Next();
+    model_node_ids.push_back(node->id());
+  }
+
+  if (model_node_ids.size() != metadata_node_ids.size()) {
+    return false;
+  }
+  std::sort(model_node_ids.begin(), model_node_ids.end());
+  std::sort(metadata_node_ids.begin(), metadata_node_ids.end());
+  return std::equal(model_node_ids.begin(), model_node_ids.end(),
+                    metadata_node_ids.begin());
+}
 
 const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
     const std::string& sync_id) const {

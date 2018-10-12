@@ -216,10 +216,9 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.ParseFromString(metadata_str);
 
-  auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
-  model_type_state->Swap(model_metadata.mutable_model_type_state());
-
-  if (model_type_state->initial_sync_done()) {
+  if (model_metadata.model_type_state().initial_sync_done() &&
+      SyncedBookmarkTracker::BookmarkModelMatchesMetadata(model,
+                                                          model_metadata)) {
     std::vector<NodeMetadataPair> nodes_metadata;
     for (sync_pb::BookmarkMetadata& bookmark_metadata :
          *model_metadata.mutable_bookmarks_metadata()) {
@@ -227,35 +226,20 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
       // all nodes and store in a map keyed by id instead of doing a lookup for
       // every id.
       const bookmarks::BookmarkNode* node = nullptr;
-      if (bookmark_metadata.metadata().is_deleted()) {
-        if (bookmark_metadata.has_id()) {
-          DLOG(ERROR) << "Error when decoding sync metadata: Tombstones "
-                         "shouldn't have a bookmark id.";
-          continue;
-        }
-      } else {
-        if (!bookmark_metadata.has_id()) {
-          DLOG(ERROR)
-              << "Error when decoding sync metadata: Bookmark id is missing.";
-          continue;
-        }
+      if (!bookmark_metadata.metadata().is_deleted()) {
         node = GetBookmarkNodeByID(bookmark_model_, bookmark_metadata.id());
-        if (node == nullptr) {
-          DLOG(ERROR) << "Error when decoding sync metadata: Cannot find the "
-                         "bookmark node.";
-          continue;
-        }
+        DCHECK(node);
       }
       auto metadata = std::make_unique<sync_pb::EntityMetadata>();
       metadata->Swap(bookmark_metadata.mutable_metadata());
       nodes_metadata.emplace_back(node, std::move(metadata));
     }
-    // TODO(crbug.com/516866): Handle local nodes that don't have a
-    // corresponding
-    // metadata.
+    auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
+    model_type_state->Swap(model_metadata.mutable_model_type_state());
     StartTrackingMetadata(std::move(nodes_metadata),
                           std::move(model_type_state));
-  } else if (!model_metadata.bookmarks_metadata().empty()) {
+  } else if (!model_metadata.model_type_state().initial_sync_done() &&
+             !model_metadata.bookmarks_metadata().empty()) {
     DLOG(ERROR)
         << "Persisted Metadata not empty while initial sync is not done.";
   }

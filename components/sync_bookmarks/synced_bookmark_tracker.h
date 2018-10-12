@@ -18,6 +18,7 @@
 #include "components/sync/protocol/unique_position.pb.h"
 
 namespace bookmarks {
+class BookmarkModel;
 class BookmarkNode;
 }
 
@@ -94,6 +95,13 @@ class SyncedBookmarkTracker {
       std::vector<NodeMetadataPair> nodes_metadata,
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
   ~SyncedBookmarkTracker();
+
+  // Checks the integrity of the |model_metadata|. It also verifies that the
+  // contents of the |model_metadata| match the contents of |model|. It should
+  // only be called if the initial sync has completed.
+  static bool BookmarkModelMatchesMetadata(
+      const bookmarks::BookmarkModel* model,
+      const sync_pb::BookmarkModelMetadata& model_metadata);
 
   // Returns null if no entity is found.
   const Entity* GetEntityForSyncId(const std::string& sync_id) const;

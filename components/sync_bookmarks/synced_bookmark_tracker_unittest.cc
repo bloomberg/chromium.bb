@@ -376,6 +376,94 @@ TEST(SyncedBookmarkTrackerTest,
   EXPECT_THAT(entities_with_local_change[3]->metadata()->server_id(), Eq(kId3));
 }
 
+TEST(SyncedBookmarkTrackerTest, ShouldMatchModelAndMetadata) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node = model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  // Add entries for all the permanent nodes. TestBookmarkClient creates all the
+  // 3 permanent nodes.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->other_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->mobile_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
+
+  // Add entry for the extra node.
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(node->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("NodeId");
+
+  // Add a tombstone entry.
+  sync_pb::BookmarkMetadata* tombstone =
+      model_metadata.add_bookmarks_metadata();
+  tombstone->mutable_metadata()->set_server_id("tombstoneId");
+  tombstone->mutable_metadata()->set_is_deleted(true);
+
+  EXPECT_TRUE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+}
+
+TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  // Add entries for 2 permanent nodes only. TestBookmarkClient creates all the
+  // 3 permanent nodes.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->bookmark_bar_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->other_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
+
+  // The entry for the Mobile bookmarks is missing.
+  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+
+  // The entry for the Mobile bookmarks is missing a server id.
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->mobile_node()->id());
+  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+
+  // The entry for the Mobile bookmarks is missing a node id.
+  bookmark_metadata->clear_id();
+  bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
+  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+
+  // The entry for the Mobile bookmarks is having a wrong node id.
+  bookmark_metadata->set_id(model->mobile_node()->id() + 1);
+  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+
+  // A tombstone shouldn't have a node id.
+  sync_pb::BookmarkMetadata* tombstone =
+      model_metadata.add_bookmarks_metadata();
+  tombstone->mutable_metadata()->set_server_id("tombstoneId");
+  tombstone->mutable_metadata()->set_is_deleted(true);
+  tombstone->set_id(10);
+  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+      model.get(), model_metadata));
+}
+
 }  // namespace
 
 }  // namespace sync_bookmarks
