@@ -27,9 +27,30 @@ NSString* const kReadLaterTextMarker = @"READ_LATER_TEXT";
 // Background view constants.
 const CGFloat kLineSpacing = 4;
 
+UIFont* FontWithMaximumForCategory(UIContentSizeCategory category,
+                                   UIFontTextStyle font_style) {
+  if (ContentSizeCategoryIsAccessibilityCategory(category)) {
+    return [UIFont
+            preferredFontForTextStyle:font_style
+        compatibleWithTraitCollection:
+            [UITraitCollection traitCollectionWithPreferredContentSizeCategory:
+                                   UIContentSizeCategoryAccessibilityLarge]];
+  }
+  return [UIFont preferredFontForTextStyle:font_style];
+}
+
 // Returns the font to use for the message text.
 UIFont* GetMessageFont() {
-  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  return FontWithMaximumForCategory(
+      [UIApplication sharedApplication].preferredContentSizeCategory,
+      UIFontTextStyleBody);
+}
+
+// Returns the font to use for the message text.
+UIFont* GetInstructionFont() {
+  return FontWithMaximumForCategory(
+      [UIApplication sharedApplication].preferredContentSizeCategory,
+      UIFontTextStyleHeadline);
 }
 
 // Returns the attributes to use for the message text.
@@ -54,8 +75,7 @@ NSMutableDictionary* GetMessageAttributes() {
 // Later" option.
 NSMutableDictionary* GetInstructionAttributes() {
   NSMutableDictionary* attributes = GetMessageAttributes();
-  attributes[NSFontAttributeName] =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  attributes[NSFontAttributeName] = GetInstructionFont();
   return attributes;
 }
 
