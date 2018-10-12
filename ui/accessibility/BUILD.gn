@@ -196,6 +196,7 @@ test("accessibility_unittests") {
   sources = [
     "ax_event_generator_unittest.cc",
     "ax_generated_tree_unittest.cc",
+    "ax_node_data_unittest.cc",
     "ax_node_position_unittest.cc",
     "ax_table_info_unittest.cc",
     "ax_text_utils_unittest.cc",
