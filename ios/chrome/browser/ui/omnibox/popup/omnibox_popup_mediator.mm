@@ -10,6 +10,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 
@@ -113,19 +114,22 @@
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-          didSelectRowForAppending:(NSUInteger)row {
+        didTapTrailingButtonForRow:(NSUInteger)row {
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
 
-  if (AutocompleteMatch::IsSearchType(match.type)) {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Search"));
+  if (match.has_tab_match) {
+    [self.dispatcher unfocusOmniboxAndSwitchToTabWithURL:match.destination_url];
   } else {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
+    if (AutocompleteMatch::IsSearchType(match.type)) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileOmniboxRefineSuggestion.Search"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
+    }
+    _delegate->OnMatchSelectedForAppending(match);
   }
-
-  _delegate->OnMatchSelectedForAppending(match);
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender

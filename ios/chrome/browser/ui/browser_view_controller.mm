@@ -4740,6 +4740,29 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [nativeController focusFakebox];
 }
 
+- (void)unfocusOmniboxAndSwitchToTabWithURL:(const GURL&)URL {
+  // TODO(crbug.com/893121): Add animations.
+
+  // Cancelling the omnibox edit makes |URL| unsafe as it is not longer
+  // retained.
+  GURL retainedURL = URL;
+  [self.dispatcher cancelOmniboxEdit];
+
+  // TODO(crbug.com/893121): This should probably live in the WebState.
+  WebStateList* webStateList = self.tabModel.webStateList;
+  web::WebState* currentWebState = webStateList->GetActiveWebState();
+
+  for (NSInteger index = 0; index < webStateList->count(); index++) {
+    web::WebState* webState = webStateList->GetWebStateAt(index);
+
+    if (webState != currentWebState &&
+        retainedURL == webState->GetVisibleURL()) {
+      self.tabModel.webStateList->ActivateWebStateAt(index);
+      return;
+    }
+  }
+}
+
 #pragma mark - TabModelObserver methods
 
 // Observer method, tab inserted.

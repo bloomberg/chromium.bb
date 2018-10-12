@@ -52,6 +52,7 @@ source_set("popup_internal") {
     "self_sizing_table_view.mm",
   ]
   deps = [
+    "resources:omnibox_popup_tab_match",
     "//base",
     "//components/image_fetcher/ios",
     "//components/omnibox/browser",
@@ -73,9 +74,12 @@ source_set("unit_tests") {
   ]
   deps = [
     ":popup",
+    ":popup_internal",
     "//base",
+    "//components/omnibox/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//testing/gtest",
     "//ui/base",
   ]

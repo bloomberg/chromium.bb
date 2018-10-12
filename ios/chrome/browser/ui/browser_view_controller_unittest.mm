@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
@@ -42,6 +43,7 @@
 #import "ios/chrome/browser/web/error_page_content.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -51,7 +53,11 @@
 #import "ios/net/protocol_handler_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -241,6 +247,18 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     BlockCleanupTest::TearDown();
   }
 
+  // Returns a new unique_ptr containing a test webstate.
+  std::unique_ptr<web::TestWebState> CreateTestWebState() {
+    auto web_state = std::make_unique<web::TestWebState>();
+    web_state->SetBrowserState(chrome_browser_state_.get());
+    web_state->SetNavigationManager(
+        std::make_unique<web::TestNavigationManager>());
+    id mockJsInjectionReceiver = OCMClassMock([CRWJSInjectionReceiver class]);
+    web_state->SetJSInjectionReceiver(mockJsInjectionReceiver);
+    AttachTabHelpers(web_state.get(), true);
+    return web_state;
+  }
+
   MOCK_METHOD0(OnCompletionCalled, void());
 
   web::TestWebThreadBundle thread_bundle_;
@@ -255,6 +273,33 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   BrowserViewController* bvc_;
   UIWindow* window_;
 };
+
+TEST_F(BrowserViewControllerTest, TestSwitchToTab) {
+  WebStateList* web_state_list = tabModel_.webStateList;
+  ASSERT_EQ(0, web_state_list->count());
+
+  std::unique_ptr<web::TestWebState> web_state = CreateTestWebState();
+  web::WebState* web_state_ptr = web_state.get();
+  web_state->SetCurrentURL(GURL("http://test/1"));
+  web_state_list->InsertWebState(0, std::move(web_state),
+                                 WebStateList::INSERT_FORCE_INDEX,
+                                 WebStateOpener());
+
+  std::unique_ptr<web::TestWebState> web_state_2 = CreateTestWebState();
+  web::WebState* web_state_ptr_2 = web_state_2.get();
+  GURL url("http://test/2");
+  web_state_2->SetCurrentURL(url);
+  web_state_list->InsertWebState(1, std::move(web_state_2),
+                                 WebStateList::INSERT_FORCE_INDEX,
+                                 WebStateOpener());
+
+  web_state_list->ActivateWebStateAt(0);
+
+  ASSERT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
+
+  [bvc_.dispatcher unfocusOmniboxAndSwitchToTabWithURL:url];
+  EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
+}
 
 TEST_F(BrowserViewControllerTest, TestTabSelected) {
   [bvc_ tabSelected:tab_ notifyToolbar:YES];

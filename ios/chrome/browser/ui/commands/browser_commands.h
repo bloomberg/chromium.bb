@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 
+class GURL;
 @class OpenNewTabCommand;
 @class ReadingListAddCommand;
 
@@ -115,6 +116,9 @@
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
 - (void)focusFakebox;
+
+// Unfocus omnibox then switch to the first tab displaying |URL|.
+- (void)unfocusOmniboxAndSwitchToTabWithURL:(const GURL&)URL;
 
 @end
 
