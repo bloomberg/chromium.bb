@@ -342,6 +342,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
 
     //         Command ID        |      tab mode      |      fullscreen     |
     //                           | enabled | reserved | enabled  | reserved |
+    // clang-format off
     { IDC_OPEN_CURRENT_URL,        true,     false,     false,     false    },
     { IDC_FOCUS_TOOLBAR,           true,     false,     false,     false    },
     { IDC_FOCUS_LOCATION,          true,     false,     false,     false    },
@@ -370,6 +371,8 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_SELECT_PREVIOUS_TAB,     true,     true,      true,      false    },
     { IDC_EXIT,                    true,     true,      true,      true     },
     { IDC_SHOW_AS_TAB,             false,    false,     false,     false    },
+    { IDC_SHOW_SIGNIN,             true,     false,      true,      false   },
+    // clang-format on
   };
   const content::NativeWebKeyboardEvent key_event(
       blink::WebInputEvent::kTypeFirst, 0,
@@ -488,9 +491,9 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
   const CommandUpdater* command_updater = &command_controller;
 
   // Check that the SYNC_SETUP command is updated on preference change.
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
   profile1->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
 }
 
 TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
@@ -498,7 +501,7 @@ TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
   const CommandUpdater* command_updater = &command_controller;
 
   // Check that the SYNC_SETUP command is updated on preference change.
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
   profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
 }
