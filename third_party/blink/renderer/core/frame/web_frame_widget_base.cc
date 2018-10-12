@@ -195,7 +195,7 @@ void WebFrameWidgetBase::DragSourceSystemDragEnded() {
 }
 
 void WebFrameWidgetBase::CancelDrag() {
-  // It's possible for us this to be callback while we're not doing a drag if
+  // It's possible for this to be called while we're not doing a drag if
   // it's from a previous page that got unloaded.
   if (!doing_drag_and_drop_)
     return;

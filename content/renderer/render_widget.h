@@ -639,7 +639,7 @@ class CONTENT_EXPORT RenderWidget
   void DidToggleFullscreen();
 
   // Returns a rect that the compositor needs to raster. For a main frame this
-  // is always the entire viewprot, but for out-of-process iframes this can be
+  // is always the entire viewport, but for out-of-process iframes this can be
   // constrained to limit overdraw.
   gfx::Rect ViewportVisibleRect();
 

@@ -512,7 +512,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Please don't use this function.
   // Background: When we investigated the usage of (old) UpdateDistribution,
-  // some caller's intents were unclear. Thus, we had to introduce this funtion
+  // some caller's intents were unclear. Thus, we had to introduce this function
   // for the sake of safety. If we can figure out the intent of each caller, we
   // can replace that with calling UpdateDistributionForFlatTreeTraversal (or
   // just RecalcSlotAssignments()) on a case-by-case basis.
