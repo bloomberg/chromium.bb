@@ -33,6 +33,8 @@ namespace content {
 namespace {
 
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult";
+constexpr char kPrefetchLoadResultHistogram[] =
+    "SignedExchange.Prefetch.LoadResult";
 
 net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
                                      const GURL& outer_request_url) {
@@ -129,6 +131,11 @@ SignedExchangeLoader::SignedExchangeLoader(
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_url_.is_valid());
 
+  if (!(load_flags_ & net::LOAD_PREFETCH)) {
+    metric_recorder_->OnSignedExchangeNonPrefetch(
+        outer_request_url_, outer_response_.response_time);
+  }
+
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#privacy-considerations
   // This can be difficult to determine when the exchange is being loaded from
   // local disk, but when the client itself requested the exchange over a
@@ -136,8 +143,15 @@ SignedExchangeLoader::SignedExchangeLoader(
   // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
   // without TLS. [spec text]
   if (!IsOriginSecure(outer_request_url)) {
-    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram,
-                              SignedExchangeLoadResult::kSXGServedFromNonHTTPS);
+    const SignedExchangeLoadResult result =
+        SignedExchangeLoadResult::kSXGServedFromNonHTTPS;
+    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+    if (load_flags_ & net::LOAD_PREFETCH) {
+      UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
+      metric_recorder_->OnSignedExchangePrefetchFinished(
+          outer_request_url_, outer_response_.response_time);
+    }
+
     devtools_proxy_->ReportError(
         "Signed exchange response from non secure origin is not supported.",
         base::nullopt /* error_field */);
@@ -282,9 +296,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
-
   if (load_flags_ & net::LOAD_PREFETCH) {
-    metric_recorder_->OnSignedExchangePrefetchFinished(request_url, error);
+    UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
+    metric_recorder_->OnSignedExchangePrefetchFinished(
+        outer_request_url_, outer_response_.response_time);
   }
 
   if (error) {
