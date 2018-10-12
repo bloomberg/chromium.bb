@@ -392,3 +392,101 @@ testcase.fileDisplayWithoutVolumes = function() {
     },
   ]);
 };
+
+/**
+ * Tests Files app opening without errors when there are no volumes at all and
+ * then mounting Downloads volume which should appear and be able to display its
+ * files.
+ */
+testcase.fileDisplayWithoutVolumesThenMountDownloads = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Unmount all default volumes.
+    function() {
+      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
+    },
+    // Open Files app without specifying the initial directory/root.
+    function() {
+      openNewWindow(null, null, this.next);
+    },
+    // Wait for Files app to finish loading.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'failed to open new window');
+      appId = result;
+      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
+    },
+    // Remount Downloads.
+    function() {
+      sendTestMessage({name: 'mountDownloads'}).then(this.next);
+    },
+    // Add an entry to Downloads.
+    function() {
+      addEntries(['local'], [ENTRIES.newlyAdded], this.next);
+    },
+    // Because Downloads is the default volume it will be automatically
+    // selected, so let's wait for its entry to appear.
+    function() {
+      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests Files app opening without errors when there are no volumes at all and
+ * then mounting Drive volume which should appear and be able to display its
+ * files.
+ */
+testcase.fileDisplayWithoutVolumesThenMountDrive = function() {
+  let appId;
+  const driveTreeItem = '#directory-tree [entry-label="Google Drive"]';
+
+  StepsRunner.run([
+    // Unmount all default volumes.
+    function() {
+      sendTestMessage({name: 'unmountAllVolumes'}).then(this.next);
+    },
+    // Open Files app without specifying the initial directory/root.
+    function() {
+      openNewWindow(null, null, this.next);
+    },
+    // Wait for Files app to finish loading.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'failed to open new window');
+      appId = result;
+      remoteCall.waitFor('isFileManagerLoaded', appId, true).then(this.next);
+    },
+    // Remount Drive.
+    function() {
+      sendTestMessage({name: 'mountDrive'}).then(this.next);
+    },
+    // Add an entry to Drive.
+    function() {
+      addEntries(['drive'], [ENTRIES.newlyAdded], this.next);
+    },
+    // Wait "Google Drive" to show up in the directory tree.
+    function() {
+      remoteCall.waitForElement(appId, driveTreeItem).then(this.next);
+    },
+    // Select "My Drive" to display its content.
+    function() {
+      const isDriveSubVolume = true;
+      remoteCall
+          .callRemoteTestUtil(
+              'selectInDirectoryTree', appId, [driveTreeItem, isDriveSubVolume])
+          .then(this.next);
+    },
+    // Wait for "My Drive" files to display in the file list.
+    function() {
+      remoteCall.waitForFiles(appId, [ENTRIES.newlyAdded.getExpectedRow()])
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};

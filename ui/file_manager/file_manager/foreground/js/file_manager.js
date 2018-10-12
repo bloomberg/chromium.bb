@@ -1426,6 +1426,18 @@ FileManager.prototype = /** @struct */ {
           }.bind(this));
     }.bind(this));
 
+    queue.run((callback) => {
+      // If there is target to be selected, just move to next step.
+      if (nextCurrentDirEntry) {
+        callback();
+        return;
+      }
+
+      // Try to select MyFiles if anything else has failed.
+      nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
+      callback();
+    });
+
     // Finalize.
     queue.run(function(callback) {
       // Check directory change.
