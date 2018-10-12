@@ -77,6 +77,6 @@ static_library("minizip") {
   visibility = [
     # NOTE: Modifying visibility list requires approval from security team.
     "//testing/libfuzzer/fuzzers:*",
-    "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_pnacl",
+    "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_library",
   ]
 }
