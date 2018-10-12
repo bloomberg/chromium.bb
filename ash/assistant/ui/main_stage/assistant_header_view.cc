@@ -96,7 +96,8 @@ void AssistantHeaderView::InitLayout() {
   AddChildView(molecule_icon_);
 }
 
-void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
+void AssistantHeaderView::OnResponseChanged(
+    const std::shared_ptr<AssistantResponse>& response) {
   // We only handle the first response when animating the molecule icon. For
   // all subsequent responses the molecule icon remains unchanged.
   if (!is_first_response_)

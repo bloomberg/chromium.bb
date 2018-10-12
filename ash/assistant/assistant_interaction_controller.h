@@ -10,12 +10,15 @@
 #include <vector>
 
 #include "ash/assistant/assistant_controller_observer.h"
+#include "ash/assistant/assistant_response_processor.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_response_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -23,11 +26,13 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionModelObserver;
+class AssistantResponseProcessor;
 
 class AssistantInteractionController
     : public chromeos::assistant::mojom::AssistantInteractionSubscriber,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
+      public AssistantResponseObserver,
       public AssistantUiModelObserver,
       public HighlighterController::Observer,
       public DialogPlateObserver {
@@ -62,6 +67,9 @@ class AssistantInteractionController
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
+
+  // AssistantResponseObserver:
+  void OnResponseDestroying(AssistantResponse& response) override;
 
   // AssistantUiModelObserver:
   void OnUiModeChanged(AssistantUiMode ui_mode) override;
@@ -99,6 +107,11 @@ class AssistantInteractionController
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion);
 
  private:
+  bool HasUnprocessedPendingResponse();
+
+  void OnProcessPendingResponse();
+  void OnPendingResponseProcessed(bool success);
+
   void OnUiVisible(AssistantSource source);
 
   void StartMetalayerInteraction(const gfx::Rect& region);
@@ -117,7 +130,11 @@ class AssistantInteractionController
   mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       assistant_interaction_subscriber_binding_;
 
+  AssistantResponseProcessor assistant_response_processor_;
+
   AssistantInteractionModel model_;
+
+  base::WeakPtrFactory<AssistantInteractionController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionController);
 };

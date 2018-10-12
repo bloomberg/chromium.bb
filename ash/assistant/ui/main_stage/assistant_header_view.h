@@ -5,6 +5,8 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_HEADER_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_HEADER_VIEW_H_
 
+#include <memory>
+
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/macros.h"
@@ -33,7 +35,8 @@ class AssistantHeaderView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
 
   // AssistantInteractionModelObserver:
-  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseChanged(
+      const std::shared_ptr<AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,
