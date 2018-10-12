@@ -58,6 +58,9 @@ class V4L2Buffer {
 
   // V4L2 data as queried by QUERYBUF.
   struct v4l2_buffer v4l2_buffer_ = {};
+  // WARNING: do not change this to a vector or something smaller than
+  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
+  // the number of allocated planes, resulting in memory corruption.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES] = {{}};
 
   DISALLOW_COPY_AND_ASSIGN(V4L2Buffer);
@@ -162,6 +165,9 @@ class V4L2BufferQueueProxy {
 
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
+  // WARNING: do not change this to a vector or something smaller than
+  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
+  // the number of allocated planes, resulting in memory corruption.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES];
 
  private:
@@ -670,6 +676,9 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   }
 
   struct v4l2_buffer v4l2_buffer = {};
+  // WARNING: do not change this to a vector or something smaller than
+  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
+  // the number of allocated planes, resulting in memory corruption.
   struct v4l2_plane planes[VIDEO_MAX_PLANES] = {{}};
   v4l2_buffer.type = type_;
   v4l2_buffer.memory = memory_;
