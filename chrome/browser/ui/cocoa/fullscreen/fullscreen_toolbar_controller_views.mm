@@ -28,15 +28,18 @@
 - (BOOL)isFullscreenTransitionInProgress {
   views::BridgedNativeWidgetImpl* bridge_widget =
       views::BridgedNativeWidgetImpl::GetFromNativeWindow([self window]);
-  return bridge_widget->in_fullscreen_transition();
+  if (bridge_widget)
+    return bridge_widget->in_fullscreen_transition();
+  return NO;
 }
 
 - (NSWindow*)window {
   NSWindow* ns_window = browserView_->GetNativeWindow();
   if (!ns_view_) {
-    ns_view_.reset(
-        [views::BridgedNativeWidgetImpl::GetFromNativeWindow(ns_window)
-                ->ns_view() retain]);
+    views::BridgedNativeWidgetImpl* bridge_widget =
+        views::BridgedNativeWidgetImpl::GetFromNativeWindow(ns_window);
+    if (bridge_widget)
+      ns_view_.reset([bridge_widget->ns_view() retain]);
   }
   return ns_window;
 }
