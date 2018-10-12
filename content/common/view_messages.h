@@ -181,11 +181,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
 // Used to instruct the RenderView to send back updates to the preferred size.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
 
-// Used to tell the renderer not to add scrollbars with height and
-// width below a threshold.
-IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
-                    gfx::Size /* disable_scrollbar_size_limit */)
-
 // Response message to ViewHostMsg_CreateWorker.
 // Sent when the worker has started.
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerCreated)

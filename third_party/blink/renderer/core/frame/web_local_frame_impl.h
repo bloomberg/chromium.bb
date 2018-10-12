@@ -394,11 +394,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                WebHistoryCommitType);
   void DidFinish();
 
-  // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
-  // If the parameter is true, allow the document to be scrolled.
-  // Otherwise, disallow scrolling.
-  void SetCanHaveScrollbars(bool) override;
-
   void SetClient(WebLocalFrameClient* client) { client_ = client; }
 
   WebFrameWidgetBase* FrameWidgetImpl() { return frame_widget_; }

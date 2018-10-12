@@ -1110,19 +1110,12 @@ void RenderViewImpl::DidCloseWidget() {
 
 void RenderViewImpl::ApplyNewSizeForWidget(const gfx::Size& old_size,
                                            const gfx::Size& new_size) {
-  if (webview()) {
+  if (webview() && new_size != old_size) {
     // Only hide popups when the size changes. There are situations (e.g. hiding
     // the ChromeOS virtual keyboard) where we send a resize message with no
     // change in size, but we don't want to close popups.
     // See https://crbug.com/761908.
-    if (new_size != old_size)
-      webview()->HidePopups();
-
-    if (send_preferred_size_changes_ &&
-        webview()->MainFrame()->IsWebLocalFrame()) {
-      webview()->MainFrame()->ToWebLocalFrame()->SetCanHaveScrollbars(
-          ShouldDisplayScrollbars(new_size.width(), new_size.height()));
-    }
+    webview()->HidePopups();
   }
 }
 
@@ -1304,8 +1297,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
-                        OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
 
@@ -1872,12 +1863,6 @@ blink::WebFrameWidget* RenderViewImpl::GetWebFrameWidget() {
   return frame_widget_;
 }
 
-bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
-  return (!send_preferred_size_changes_ ||
-          (disable_scrollbars_size_limit_.width() <= width ||
-           disable_scrollbars_size_limit_.height() <= height));
-}
-
 bool RenderViewImpl::GetContentStateImmediately() const {
   return send_content_state_immediately_;
 }
@@ -1930,11 +1915,6 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
   // We explicitly update the preferred size here to ensure the preferred size
   // notification is sent.
   UpdatePreferredSize();
-}
-
-void RenderViewImpl::OnDisableScrollbarsForSmallWindows(
-    const gfx::Size& disable_scrollbar_size_limit) {
-  disable_scrollbars_size_limit_ = disable_scrollbar_size_limit;
 }
 
 void RenderViewImpl::OnSetRendererPrefs(

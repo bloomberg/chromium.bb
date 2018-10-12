@@ -265,7 +265,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
   blink::WebFrameWidget* GetWebFrameWidget() override;
-  bool ShouldDisplayScrollbars(int width, int height) const override;
   bool GetContentStateImmediately() const override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
@@ -539,17 +538,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Whether the preferred size may have changed and |UpdatePreferredSize| needs
   // to be called.
   bool needs_preferred_size_update_ = true;
-
-  // If non-empty, and |send_preferred_size_changes_| is true, disable drawing
-  // scroll bars on windows smaller than this size.  Used for windows that the
-  // browser resizes to the size of the content, such as browser action popups.
-  // If a render view is set to the minimum size of its content, webkit may add
-  // scroll bars.  This makes sense for fixed sized windows, but it does not
-  // make sense when the size of the view was chosen to fit the content.
-  // This setting ensures that no scroll bars are drawn.  The size limit exists
-  // because if the view grows beyond a size known to the browser, scroll bars
-  // should be drawn.
-  gfx::Size disable_scrollbars_size_limit_;
 
   // Loading state -------------------------------------------------------------
 
