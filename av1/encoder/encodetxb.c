@@ -1014,7 +1014,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   return update;
 }
 
-void hbt_init() {
+static void hbt_init() {
   hbt_hash_table =
       aom_malloc(sizeof(OptTxbQcoeff) * HBT_TABLE_SIZE * HBT_ARRAY_LENGTH);
   memset(hbt_hash_table, 0,
@@ -1026,11 +1026,11 @@ void hbt_init() {
 
 void hbt_destroy() { aom_free(hbt_hash_table); }
 
-int hbt_hash_miss(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
-                  TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
-                  const LV_MAP_EOB_COST *txb_eob_costs,
-                  const struct macroblock_plane *p, int block, int fast_mode,
-                  int *rate_cost) {
+static int hbt_hash_miss(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
+                         TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
+                         const LV_MAP_EOB_COST *txb_eob_costs,
+                         const struct macroblock_plane *p, int block,
+                         int fast_mode, int *rate_cost) {
   (void)fast_mode;
   const int16_t *scan = txb_info->scan_order->scan;
   int prev_eob = txb_info->eob;
@@ -1092,9 +1092,9 @@ int hbt_hash_miss(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
   return txb_info->eob;
 }
 
-int hbt_hash_hit(uint32_t hbt_table_index, int hbt_array_index,
-                 TxbInfo *txb_info, const struct macroblock_plane *p, int block,
-                 int *rate_cost) {
+static int hbt_hash_hit(uint32_t hbt_table_index, int hbt_array_index,
+                        TxbInfo *txb_info, const struct macroblock_plane *p,
+                        int block, int *rate_cost) {
   const int16_t *scan = txb_info->scan_order->scan;
   int new_eob = 0;
   int update = 0;
@@ -1134,11 +1134,12 @@ int hbt_hash_hit(uint32_t hbt_table_index, int hbt_array_index,
   return txb_info->eob;
 }
 
-int hbt_search_match(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
-                     TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
-                     const LV_MAP_EOB_COST *txb_eob_costs,
-                     const struct macroblock_plane *p, int block, int fast_mode,
-                     int *rate_cost) {
+static int hbt_search_match(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
+                            TxbInfo *txb_info,
+                            const LV_MAP_COEFF_COST *txb_costs,
+                            const LV_MAP_EOB_COST *txb_eob_costs,
+                            const struct macroblock_plane *p, int block,
+                            int fast_mode, int *rate_cost) {
   // Check for qcoeff match
   int hbt_array_index = hbt_qc_hash % HBT_ARRAY_LENGTH;
   int hbt_table_index = hbt_ctx_hash % HBT_TABLE_SIZE;
@@ -1157,10 +1158,11 @@ int hbt_search_match(uint32_t hbt_ctx_hash, uint32_t hbt_qc_hash,
   }
 }
 
-int hbt_create_hashes(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
-                      const LV_MAP_EOB_COST *txb_eob_costs,
-                      const struct macroblock_plane *p, int block,
-                      int fast_mode, int *rate_cost) {
+static int hbt_create_hashes(TxbInfo *txb_info,
+                             const LV_MAP_COEFF_COST *txb_costs,
+                             const LV_MAP_EOB_COST *txb_eob_costs,
+                             const struct macroblock_plane *p, int block,
+                             int fast_mode, int *rate_cost) {
   // Initialize hash table if needed.
   if (hbt_needs_init) {
     hbt_init();

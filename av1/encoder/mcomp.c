@@ -2541,11 +2541,11 @@ static int get_obmc_mvpred_var(const MACROBLOCK *x, const int32_t *wsrc,
                      : 0);
 }
 
-int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
-                             const int32_t *mask, MV *ref_mv, int error_per_bit,
-                             int search_range,
-                             const aom_variance_fn_ptr_t *fn_ptr,
-                             const MV *center_mv, int is_second) {
+static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
+                                    const int32_t *mask, MV *ref_mv,
+                                    int error_per_bit, int search_range,
+                                    const aom_variance_fn_ptr_t *fn_ptr,
+                                    const MV *center_mv, int is_second) {
   const MV neighbors[4] = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const in_what = &xd->plane[0].pre[is_second];
@@ -2584,12 +2584,13 @@ int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
   return best_sad;
 }
 
-int obmc_diamond_search_sad(const MACROBLOCK *x, const search_site_config *cfg,
-                            const int32_t *wsrc, const int32_t *mask,
-                            MV *ref_mv, MV *best_mv, int search_param,
-                            int sad_per_bit, int *num00,
-                            const aom_variance_fn_ptr_t *fn_ptr,
-                            const MV *center_mv, int is_second) {
+static int obmc_diamond_search_sad(const MACROBLOCK *x,
+                                   const search_site_config *cfg,
+                                   const int32_t *wsrc, const int32_t *mask,
+                                   MV *ref_mv, MV *best_mv, int search_param,
+                                   int sad_per_bit, int *num00,
+                                   const aom_variance_fn_ptr_t *fn_ptr,
+                                   const MV *center_mv, int is_second) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const in_what = &xd->plane[0].pre[is_second];
   // search_param determines the length of the initial step and hence the number

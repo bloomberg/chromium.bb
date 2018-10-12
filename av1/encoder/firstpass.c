@@ -1689,7 +1689,7 @@ static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
   return frame_index;
 }
 
-void define_customized_gf_group_structure(AV1_COMP *cpi) {
+static void define_customized_gf_group_structure(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;

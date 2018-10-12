@@ -243,7 +243,7 @@ static void enqueue_lf_jobs(AV1LfSync *lf_sync, AV1_COMMON *cm, int start,
   }
 }
 
-AV1LfMTInfo *get_lf_job_info(AV1LfSync *lf_sync) {
+static AV1LfMTInfo *get_lf_job_info(AV1LfSync *lf_sync) {
   AV1LfMTInfo *cur_job_info = NULL;
 
 #if CONFIG_MULTITHREAD
@@ -767,7 +767,7 @@ static void enqueue_lr_jobs(AV1LrSync *lr_sync, AV1LrStruct *lr_ctxt,
   }
 }
 
-AV1LrMTInfo *get_lr_job_info(AV1LrSync *lr_sync) {
+static AV1LrMTInfo *get_lr_job_info(AV1LrSync *lr_sync) {
   AV1LrMTInfo *cur_job_info = NULL;
 
 #if CONFIG_MULTITHREAD

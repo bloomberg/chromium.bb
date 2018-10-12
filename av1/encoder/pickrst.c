@@ -605,7 +605,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
 #endif  // CONFIG_INTEGERIZE_SGR
 }
 
-void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
+static void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
   if (params->r[0] == 0) {
     xqd[0] = 0;
     xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - xq[1], SGRPROJ_PRJ_MIN1,

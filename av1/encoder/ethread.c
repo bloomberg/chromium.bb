@@ -160,8 +160,8 @@ void av1_row_mt_sync_mem_dealloc(AV1RowMTSync *row_mt_sync) {
   }
 }
 
-void assign_tile_to_thread(MultiThreadHandle *multi_thread_ctxt, int num_tiles,
-                           int num_workers) {
+static void assign_tile_to_thread(MultiThreadHandle *multi_thread_ctxt,
+                                  int num_tiles, int num_workers) {
   int tile_id = 0;
   int i;
 

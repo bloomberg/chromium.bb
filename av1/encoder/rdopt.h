@@ -146,13 +146,6 @@ typedef struct y4m_input y4m_input;
 typedef void (*y4m_convert_func)(y4m_input *_y4m, unsigned char *_dst,
                                  unsigned char *_src);
 
-typedef struct {
-  int16_t x;
-  int16_t y;
-} sobel_xy;
-
-sobel_xy sobel(const uint8_t *input, int stride, int i, int j);
-
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);

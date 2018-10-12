@@ -176,6 +176,11 @@ static const double ADST_FLIP_SVM[8] = {
 };
 
 typedef struct {
+  int16_t x;
+  int16_t y;
+} sobel_xy;
+
+typedef struct {
   PREDICTION_MODE mode;
   MV_REFERENCE_FRAME ref_frame[2];
 } MODE_DEFINITION;
@@ -627,7 +632,7 @@ typedef struct InterModeSearchState {
 } InterModeSearchState;
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
+static int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
   if (bsize == BLOCK_8X8) return 1;
   if (bsize == BLOCK_16X16) return 2;
   if (bsize == BLOCK_32X32) return 3;
@@ -12390,7 +12395,7 @@ void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
 }
 
 /* Use standard 3x3 Sobel matrix. */
-sobel_xy sobel(const uint8_t *input, int stride, int i, int j) {
+static sobel_xy sobel(const uint8_t *input, int stride, int i, int j) {
   int16_t s_x = get_pix(input, stride, i - 1, j - 1) -
                 get_pix(input, stride, i + 1, j - 1) +
                 2 * get_pix(input, stride, i - 1, j) -
