@@ -250,8 +250,6 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
       new base::DictionaryValue());
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  SetIfNotNull(ui_thread_polled_data.get(), "dataReductionProxyInfo",
-               chrome_browser_net::GetDataReductionProxyInfo(profile));
   SetIfNotNull(ui_thread_polled_data.get(), "historicNetworkStats",
                chrome_browser_net::GetHistoricNetworkStats(profile));
   SetIfNotNull(ui_thread_polled_data.get(), "prerenderInfo",

@@ -30,7 +30,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/proxy_server.h"
-#include "net/log/test_net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -39,7 +38,6 @@ class TestingPrefServiceSimple;
 
 namespace net {
 class MockClientSocketFactory;
-class NetLog;
 class URLRequestContext;
 class URLRequestContextStorage;
 }
@@ -53,14 +51,12 @@ namespace data_reduction_proxy {
 
 class ClientConfig;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventCreator;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxyServer;
 class DataReductionProxySettings;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
-class TestDataReductionProxyEventStorageDelegate;
 class TestDataReductionProxyParams;
 
 // Test version of |DataReductionProxyRequestOptions|.
@@ -107,9 +103,7 @@ class TestDataReductionProxyConfigServiceClient
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
-      DataReductionProxyEventCreator* event_creator,
       DataReductionProxyIOData* io_data,
-      net::NetLog* net_log,
       network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
 
@@ -222,10 +216,8 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       PrefService* prefs,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::unique_ptr<DataReductionProxyConfig> config,
-      std::unique_ptr<DataReductionProxyEventCreator> event_creator,
       std::unique_ptr<TestDataReductionProxyRequestOptions> request_options,
       std::unique_ptr<DataReductionProxyConfigurator> configurator,
-      net::NetLog* net_log,
       network::NetworkConnectionTracker* network_connection_tracker,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
@@ -474,10 +466,6 @@ class DataReductionProxyTestContext {
     return simple_pref_service_.get();
   }
 
-  net::NetLog* net_log() {
-    return net_log_.get();
-  }
-
   net::URLRequestContextGetter* request_context_getter() const {
     return request_context_getter_.get();
   }
@@ -488,10 +476,6 @@ class DataReductionProxyTestContext {
 
   DataReductionProxyBypassStats* bypass_stats() const {
     return io_data_->bypass_stats();
-  }
-
-  DataReductionProxyEventCreator* event_creator() const {
-    return io_data_->event_creator();
   }
 
   DataReductionProxyConfigurator* configurator() const {
@@ -537,14 +521,11 @@ class DataReductionProxyTestContext {
   DataReductionProxyTestContext(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::unique_ptr<TestingPrefServiceSimple> simple_pref_service,
-      std::unique_ptr<net::TestNetLog> net_log,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       net::MockClientSocketFactory* mock_socket_factory,
       std::unique_ptr<TestDataReductionProxyIOData> io_data,
       std::unique_ptr<DataReductionProxySettings> settings,
-      std::unique_ptr<TestDataReductionProxyEventStorageDelegate>
-          storage_delegate,
       std::unique_ptr<TestConfigStorer> config_storer,
       TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
@@ -556,7 +537,6 @@ class DataReductionProxyTestContext {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<TestingPrefServiceSimple> simple_pref_service_;
-  std::unique_ptr<net::TestNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
@@ -565,7 +545,6 @@ class DataReductionProxyTestContext {
 
   std::unique_ptr<TestDataReductionProxyIOData> io_data_;
   std::unique_ptr<DataReductionProxySettings> settings_;
-  std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
   std::unique_ptr<TestConfigStorer> config_storer_;
   std::unique_ptr<network::TestNetworkQualityTracker>
       test_network_quality_tracker_;

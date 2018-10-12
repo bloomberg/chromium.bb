@@ -24,29 +24,21 @@ namespace data_reduction_proxy {
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    DataReductionProxyConfigurator* configurator)
     : TestDataReductionProxyConfig(
           std::make_unique<TestDataReductionProxyParams>(),
           io_task_runner,
-          net_log,
-          configurator,
-          event_creator) {}
+          configurator) {}
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    DataReductionProxyConfigurator* configurator)
     : DataReductionProxyConfig(
           io_task_runner,
-          net_log,
           network::TestNetworkConnectionTracker::GetInstance(),
           std::move(config_values),
-          configurator,
-          event_creator),
+          configurator),
       tick_clock_(nullptr),
       is_captive_portal_(false),
       add_default_proxy_bypass_rules_(true) {}
@@ -144,14 +136,10 @@ void TestDataReductionProxyConfig::SetWarmupURLFetchAttemptCounts(
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    DataReductionProxyConfigurator* configurator)
     : TestDataReductionProxyConfig(std::move(config_values),
                                    io_task_runner,
-                                   net_log,
-                                   configurator,
-                                   event_creator) {}
+                                   configurator) {}
 
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 }

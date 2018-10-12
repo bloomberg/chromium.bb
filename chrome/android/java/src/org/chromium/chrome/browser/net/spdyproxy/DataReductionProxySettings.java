@@ -319,10 +319,6 @@ public class DataReductionProxySettings {
     public Map<String, String> toFeedbackMap() {
         Map<String, String> map = new HashMap<>();
         map.put(DATA_REDUCTION_PROXY_ENABLED_KEY, String.valueOf(isDataReductionProxyEnabled()));
-        map.put("Data Reduction Proxy HTTP Proxies",
-                nativeGetHttpProxyList(mNativeDataReductionProxySettings));
-        map.put("Data Reduction Proxy Last Bypass",
-                nativeGetLastBypassEvent(mNativeDataReductionProxySettings));
         return map;
     }
 
@@ -397,8 +393,6 @@ public class DataReductionProxySettings {
             long nativeDataReductionProxySettingsAndroid);
     private native String nativeMaybeRewriteWebliteUrl(
             long nativeDataReductionProxySettingsAndroid, String url);
-    private native String nativeGetHttpProxyList(long nativeDataReductionProxySettingsAndroid);
-    private native String nativeGetLastBypassEvent(long nativeDataReductionProxySettingsAndroid);
     private native void nativeQueryDataUsage(long nativeDataReductionProxySettingsAndroid,
             List<DataReductionDataUseItem> items, int numDays);
 }

@@ -310,14 +310,6 @@ void DataReductionProxySettings::RemoveDataReductionProxySettingsObserver(
   observers_.RemoveObserver(observer);
 }
 
-DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()
-    const {
-  if (data_reduction_proxy_service_)
-    return data_reduction_proxy_service_->event_store();
-
-  return nullptr;
-}
-
 void DataReductionProxySettings::SetCustomProxyConfigClient(
     network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client) {
   DCHECK(!data_reduction_proxy_service_);

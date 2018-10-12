@@ -13,7 +13,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -79,20 +78,6 @@ std::unique_ptr<base::ListValue> GetExtensionInfo(Profile* profile) {
   }
 #endif
   return extension_list;
-}
-
-std::unique_ptr<base::DictionaryValue> GetDataReductionProxyInfo(
-    Profile* profile) {
-  DataReductionProxyChromeSettings* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
-
-  if (!data_reduction_proxy_settings)
-    return nullptr;
-
-  data_reduction_proxy::DataReductionProxyEventStore* event_store =
-      data_reduction_proxy_settings->GetEventStore();
-
-  return event_store ? event_store->GetSummaryValue() : nullptr;
 }
 
 std::unique_ptr<base::Value> GetSessionNetworkStats(Profile* profile) {

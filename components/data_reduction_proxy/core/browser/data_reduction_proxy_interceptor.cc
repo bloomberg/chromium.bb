@@ -8,7 +8,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_timing_info.h"
@@ -46,14 +45,10 @@ void MarkProxiesAsBad(net::URLRequest* request,
 DataReductionProxyInterceptor::DataReductionProxyInterceptor(
     DataReductionProxyConfig* config,
     DataReductionProxyConfigServiceClient* config_service_client,
-    DataReductionProxyBypassStats* stats,
-    DataReductionProxyEventCreator* event_creator)
+    DataReductionProxyBypassStats* stats)
     : bypass_stats_(stats),
       config_service_client_(config_service_client),
-      event_creator_(event_creator),
-      bypass_protocol_(new DataReductionProxyBypassProtocol(config)) {
-  DCHECK(event_creator_);
-}
+      bypass_protocol_(new DataReductionProxyBypassProtocol(config)) {}
 
 DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {
 }
@@ -145,9 +140,6 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
 
     if (bypass_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
       bypass_stats_->SetBypassType(bypass_type);
-
-    MaybeAddBypassEvent(request, data_reduction_proxy_info, bypass_type,
-                        should_retry);
   }
 
   DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
@@ -165,25 +157,6 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
   DCHECK(request->url().SchemeIs(url::kHttpScheme));
   return net::URLRequestJobManager::GetInstance()->CreateJob(request,
                                                              network_delegate);
-}
-
-void DataReductionProxyInterceptor::MaybeAddBypassEvent(
-    net::URLRequest* request,
-    const DataReductionProxyInfo& data_reduction_proxy_info,
-    DataReductionProxyBypassType bypass_type,
-    bool should_retry) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (data_reduction_proxy_info.bypass_action != BYPASS_ACTION_TYPE_NONE) {
-    event_creator_->AddBypassActionEvent(
-        request->net_log(), data_reduction_proxy_info.bypass_action,
-        request->method(), request->url(), should_retry,
-        data_reduction_proxy_info.bypass_duration);
-  } else if (bypass_type != BYPASS_EVENT_TYPE_MAX) {
-    event_creator_->AddBypassTypeEvent(
-        request->net_log(), bypass_type, request->method(), request->url(),
-        should_retry, data_reduction_proxy_info.bypass_duration);
-  }
 }
 
 }  // namespace data_reduction_proxy

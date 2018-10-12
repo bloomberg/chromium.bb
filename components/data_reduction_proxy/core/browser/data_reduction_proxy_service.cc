@@ -21,7 +21,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -63,7 +62,6 @@ DataReductionProxyService::DataReductionProxyService(
     compression_stats_.reset(
         new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
   }
-  event_store_.reset(new DataReductionProxyEventStore());
   network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   network_quality_tracker_->AddRTTAndThroughputEstimatesObserver(this);
 }
@@ -189,32 +187,6 @@ void DataReductionProxyService::UpdateContentLengths(
         data_used, original_size, data_reduction_proxy_enabled, request_type,
         mime_type, is_user_traffic, content_type, service_hash_code);
   }
-}
-
-void DataReductionProxyService::AddEvent(std::unique_ptr<base::Value> event) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  event_store_->AddEvent(std::move(event));
-}
-
-void DataReductionProxyService::AddEnabledEvent(
-    std::unique_ptr<base::Value> event,
-    bool enabled) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  event_store_->AddEnabledEvent(std::move(event), enabled);
-}
-
-void DataReductionProxyService::AddEventAndSecureProxyCheckState(
-    std::unique_ptr<base::Value> event,
-    SecureProxyCheckState state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  event_store_->AddEventAndSecureProxyCheckState(std::move(event), state);
-}
-
-void DataReductionProxyService::AddAndSetLastBypassEvent(
-    std::unique_ptr<base::Value> event,
-    int64_t expiration_ticks) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  event_store_->AddAndSetLastBypassEvent(std::move(event), expiration_ticks);
 }
 
 void DataReductionProxyService::SetUnreachable(bool unreachable) {

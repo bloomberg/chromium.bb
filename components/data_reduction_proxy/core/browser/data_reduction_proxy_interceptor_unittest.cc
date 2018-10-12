@@ -30,7 +30,6 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -128,7 +127,6 @@ class DataReductionProxyInterceptorTest : public testing::Test {
             .proxy_server(),
         &default_network_delegate_));
     default_context_->set_network_delegate(&default_network_delegate_);
-    default_context_->set_net_log(test_context_->net_log());
     test_context_->config()->test_params()->UseNonSecureProxiesForHttp();
   }
 
@@ -199,7 +197,6 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         context_(true) {
     context_.set_network_delegate(&network_delegate_);
-    context_.set_net_log(&net_log_);
   }
 
   ~DataReductionProxyInterceptorWithServerTest() override {
@@ -257,7 +254,6 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
-  net::TestNetLog net_log_;
   net::TestNetworkDelegate network_delegate_;
   net::TestURLRequestContext context_;
   net::EmbeddedTestServer proxy_;

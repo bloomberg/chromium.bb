@@ -30,7 +30,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
@@ -42,8 +41,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/proxy_server.h"
-#include "net/log/net_log_source_type.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -185,26 +184,21 @@ namespace data_reduction_proxy {
 
 DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    DataReductionProxyConfigurator* configurator)
     : unreachable_(false),
       enabled_by_user_(false),
       config_values_(std::move(config_values)),
       io_task_runner_(io_task_runner),
-      net_log_(net_log),
       network_connection_tracker_(network_connection_tracker),
       configurator_(configurator),
-      event_creator_(event_creator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
       network_properties_manager_(nullptr),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
   DCHECK(network_connection_tracker_);
   DCHECK(configurator);
-  DCHECK(event_creator);
 
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
@@ -586,10 +580,6 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     int http_response_code) {
   bool success_response =
       base::StartsWith(response, "OK", base::CompareCase::SENSITIVE);
-  if (event_creator_) {
-    event_creator_->EndSecureProxyCheck(net_log_with_source_, status.error(),
-                                        http_response_code, success_response);
-  }
 
   if (!status.is_success()) {
     if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
@@ -703,13 +693,6 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
 
 void DataReductionProxyConfig::SecureProxyCheck(
     SecureProxyCheckerCallback fetcher_callback) {
-  net_log_with_source_ = net::NetLogWithSource::Make(
-      net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
-  if (event_creator_) {
-    event_creator_->BeginSecureProxyCheck(net_log_with_source_,
-                                          params::GetSecureProxyCheckURL());
-  }
-
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(fetcher_callback);
 }
 
