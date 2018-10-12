@@ -286,10 +286,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                     gfx::Size /* pref_size */)
 
-// Notifies whether there are JavaScript touch event handlers or not.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
-                    bool /* has_handlers */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // A renderer sends this to the browser process when it wants to access a PPAPI
 // broker. In contrast to FrameHostMsg_OpenChannelToPpapiBroker, this is called

@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
+#include "content/browser/renderer_host/input_event_shim.h"
 #include "content/common/edit_command.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/guest_host.h"
@@ -121,6 +122,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // guest can navigate and resize offscreen.
   void Init();
 
+  // Returns an InputEventShim if this BrowserPluginGuest needs to intercept
+  // input events normally handled by a RenderWidgetHost.
+  InputEventShim* GetInputEventShim();
+
   // Returns a WeakPtr to this BrowserPluginGuest.
   base::WeakPtr<BrowserPluginGuest> AsWeakPtr();
 
@@ -186,6 +191,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void DisableAutoResize();
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+
+  // Methods to handle events from InputEventShim.
+  void DidSetHasTouchEventHandlers(bool accept);
+  void DidTextInputStateChange(const TextInputState& params);
+  void DidLockMouse(bool user_gesture, bool privileged);
+  void DidUnlockMouse();
 
   // WebContentsObserver implementation.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
@@ -268,6 +279,21 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
  private:
   class EmbedderVisibilityObserver;
 
+  // InputEventShim implementation.
+  class InputEventShimImpl : public InputEventShim {
+   public:
+    explicit InputEventShimImpl(BrowserPluginGuest* browser_plugin_guest);
+    ~InputEventShimImpl() override;
+
+    void DidSetHasTouchEventHandlers(bool accept) override;
+    void DidTextInputStateChange(const TextInputState& params) override;
+    void DidLockMouse(bool user_gesture, bool privileged) override;
+    void DidUnlockMouse() override;
+
+   private:
+    BrowserPluginGuest* browser_plugin_guest_;
+  };
+
   // The RenderWidgetHostImpl corresponding to the owner frame of BrowserPlugin.
   RenderWidgetHostImpl* GetOwnerRenderWidgetHost() const;
 
@@ -290,8 +316,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnExecuteEditCommand(int instance_id,
                             const std::string& command);
 
-  void OnLockMouse(bool user_gesture,
-                   bool privileged);
   void OnLockMouseAck(int instance_id, bool succeeded);
   // Resizes the guest's web contents.
   void OnSetFocus(int instance_id,
@@ -321,14 +345,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // collection. See RenderThreadImpl::IdleHandler (executed when hidden) and
   // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
   void OnSetVisibility(int instance_id, bool visible);
-  void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
   void OnSynchronizeVisualProperties(
       int instance_id,
       const viz::LocalSurfaceId& local_surface_id,
       const FrameVisualProperties& visual_properties);
 
-  void OnTextInputStateChanged(const TextInputState& params);
   void OnImeSetComposition(
       int instance_id,
       const BrowserPluginHostMsg_SetComposition_Params& params);
@@ -344,7 +366,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnHandleInputEventAck(
       blink::WebInputEvent::Type event_type,
       InputEventAckState ack_result);
-  void OnHasTouchEventHandlers(bool accept);
 #if defined(OS_MACOSX)
   // On MacOS X popups are painted by the browser process. We handle them here
   // so that they are positioned correctly.
@@ -375,6 +396,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // The last tooltip that was set with SetTooltipText().
   base::string16 current_tooltip_text_;
+
+  InputEventShimImpl input_event_shim_impl_;
 
   std::unique_ptr<EmbedderVisibilityObserver> embedder_visibility_observer_;
   WebContentsImpl* owner_web_contents_;

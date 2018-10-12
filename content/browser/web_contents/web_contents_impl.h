@@ -707,6 +707,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                              const gfx::Size& new_size) override;
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
+  InputEventShim* GetInputEventShim() const override;
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() const override;

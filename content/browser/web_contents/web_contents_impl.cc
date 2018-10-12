@@ -3305,6 +3305,16 @@ void WebContentsImpl::ResetAutoResizeSize() {
   auto_resize_size_ = gfx::Size();
 }
 
+InputEventShim* WebContentsImpl::GetInputEventShim() const {
+  // The only thing that intercepts text input and mouse lock is the
+  // BrowserPluginGuest. Delegate to the BrowserPluginGuest logic for
+  // whether or not it needs to shim these events.
+  if (browser_plugin_guest_) {
+    return browser_plugin_guest_->GetInputEventShim();
+  }
+  return nullptr;
+}
+
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   if (!delegate_) {
     // Embedder can delay setting a delegate on new WebContents with

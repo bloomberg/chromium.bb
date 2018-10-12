@@ -20,7 +20,6 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
@@ -269,18 +268,6 @@ void InputRouterImpl::ImeCompositionRangeChanged(
 
 void InputRouterImpl::SetMouseCapture(bool capture) {
   client_->SetMouseCapture(capture);
-}
-
-bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
-  // TODO(dtapuska): Move these to mojo
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
-                        OnHasTouchEventHandlers)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
@@ -596,7 +583,6 @@ void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 
   touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
   touch_event_queue_.OnHasTouchEventHandlers(has_handlers);
-  client_->OnHasTouchEventHandlers(has_handlers);
 }
 
 void InputRouterImpl::ForceSetTouchActionAuto() {
@@ -606,6 +592,7 @@ void InputRouterImpl::ForceSetTouchActionAuto() {
 
 void InputRouterImpl::OnHasTouchEventHandlersForTest(bool has_handlers) {
   touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
+  // TODO(ajwong): Why doesn't this change |touch_event_queue_|?
 }
 
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {

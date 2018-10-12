@@ -316,4 +316,8 @@ IPC_MESSAGE_CONTROL1(WidgetHostMsg_Close_ACK, int /* old_route_id */)
 // Sent in reply to WidgetMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
 
+// Notifies whether there are JavaScript touch event handlers or not.
+IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
+                    bool /* has_handlers */)
+
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

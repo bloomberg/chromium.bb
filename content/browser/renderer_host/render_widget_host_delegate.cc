@@ -152,4 +152,8 @@ bool RenderWidgetHostDelegate::IsShowingContextMenuOnPage() const {
   return false;
 }
 
+InputEventShim* RenderWidgetHostDelegate::GetInputEventShim() const {
+  return nullptr;
+}
+
 }  // namespace content
