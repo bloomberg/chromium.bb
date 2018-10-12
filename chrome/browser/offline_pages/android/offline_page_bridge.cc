@@ -481,10 +481,9 @@ std::vector<ClientId> getClientIdsFromObjectArrays(
     const JavaParamRef<jobjectArray>& j_ids_array) {
   std::vector<std::string> name_spaces;
   std::vector<std::string> ids;
-  base::android::AppendJavaStringArrayToStringVector(
-      env, j_namespaces_array.obj(), &name_spaces);
-  base::android::AppendJavaStringArrayToStringVector(env, j_ids_array.obj(),
-                                                     &ids);
+  base::android::AppendJavaStringArrayToStringVector(env, j_namespaces_array,
+                                                     &name_spaces);
+  base::android::AppendJavaStringArrayToStringVector(env, j_ids_array, &ids);
   DCHECK_EQ(name_spaces.size(), ids.size());
   std::vector<ClientId> client_ids;
 

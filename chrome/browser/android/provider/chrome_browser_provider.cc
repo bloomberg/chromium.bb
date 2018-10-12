@@ -767,7 +767,7 @@ void JNI_ChromeBrowserProvider_FillBookmarkRow(
 
   if (!favicon.is_null()) {
     std::vector<uint8_t> bytes;
-    base::android::JavaByteArrayToByteVector(env, favicon.obj(), &bytes);
+    base::android::JavaByteArrayToByteVector(env, favicon, &bytes);
     row->set_favicon(base::RefCountedBytes::TakeVector(&bytes));
   }
 

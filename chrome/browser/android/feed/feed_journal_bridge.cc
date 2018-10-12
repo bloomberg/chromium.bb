@@ -200,7 +200,7 @@ void FeedJournalBridge::AddAppendOperation(
     const base::android::JavaRef<jbyteArray>& j_value) {
   DCHECK(journal_mutation_);
   std::vector<uint8_t> bytes_vector;
-  JavaByteArrayToByteVector(j_env, j_value.obj(), &bytes_vector);
+  JavaByteArrayToByteVector(j_env, j_value, &bytes_vector);
   journal_mutation_->AddAppendOperation(
       std::string(bytes_vector.begin(), bytes_vector.end()));
 }

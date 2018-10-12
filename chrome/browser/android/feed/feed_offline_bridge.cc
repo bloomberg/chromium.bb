@@ -87,7 +87,7 @@ void FeedOfflineBridge::GetOfflineStatus(JNIEnv* env,
                                          const JavaRef<jobjectArray>& j_urls,
                                          const JavaRef<jobject>& j_callback) {
   std::vector<std::string> urls;
-  base::android::AppendJavaStringArrayToStringVector(env, j_urls.obj(), &urls);
+  base::android::AppendJavaStringArrayToStringVector(env, j_urls, &urls);
   ScopedJavaGlobalRef<jobject> callback(j_callback);
   offline_host_->GetOfflineStatus(
       std::move(urls), base::BindOnce(&OnGetOfflineStatus, callback));
@@ -98,7 +98,7 @@ void FeedOfflineBridge::OnContentRemoved(
     const base::android::JavaRef<jobject>& j_this,
     const base::android::JavaRef<jobjectArray>& j_urls) {
   std::vector<std::string> urls;
-  base::android::AppendJavaStringArrayToStringVector(env, j_urls.obj(), &urls);
+  base::android::AppendJavaStringArrayToStringVector(env, j_urls, &urls);
   offline_host_->OnContentRemoved(urls);
 }
 
