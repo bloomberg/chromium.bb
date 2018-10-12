@@ -1363,9 +1363,6 @@ extern const char kChromeHomeSwipeLogicDescription[];
 extern const char kChromeHomeSwipeLogicRestrictArea[];
 extern const char kChromeHomeSwipeLogicVelocity[];
 
-extern const char kChromeModernFullRollName[];
-extern const char kChromeModernFullRollDescription[];
-
 extern const char kChromeMemexName[];
 extern const char kChromeMemexDescription[];
 
@@ -1482,6 +1479,9 @@ extern const char kEnableWebNfcDescription[];
 
 extern const char kEnableWebPaymentsMethodSectionOrderV2Name[];
 extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
+
+extern const char kEphemeralTabName[];
+extern const char kEphemeralTabDescription[];
 
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];

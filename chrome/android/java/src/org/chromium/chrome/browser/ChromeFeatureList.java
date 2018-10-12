@@ -175,7 +175,6 @@ public abstract class ChromeFeatureList {
     // TODO(mdjones): Remove CHROME_HOME_SWIPE_VELOCITY_FEATURE or rename.
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";
-    public static final String CHROME_MODERN_FULL_ROLL = "ChromeModernFullRoll";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String CLIPBOARD_CONTENT_SETTING = "ClipboardContentSetting";
@@ -212,6 +211,7 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_HOME_V2 = "DownloadHomeV2";
     public static final String DOWNLOADS_FOREGROUND = "DownloadsForeground";
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
+    public static final String EPHEMERAL_TAB = "EphemeralTab";
     public static final String EXPERIMENTAL_APP_BANNERS = "ExperimentalAppBanners";
     public static final String EXPERIMENTAL_UI = "ExperimentalUi";
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
