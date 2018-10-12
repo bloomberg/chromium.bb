@@ -116,8 +116,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 @property(nonatomic, strong)
     NotifyUserAutoSigninViewController* notifyAutoSigninViewController;
 
-// Helper contains common password controller logic.
-@property(nonatomic, readonly) PasswordControllerHelper* helper;
+// Helper contains common password form processing logic.
+@property(nonatomic, readonly) PasswordFormHelper* formHelper;
 
 // Helper contains common password suggestion logic.
 @property(nonatomic, readonly) PasswordSuggestionHelper* suggestionHelper;
@@ -177,7 +177,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @synthesize notifyAutoSigninViewController = _notifyAutoSigninViewController;
 
-@synthesize helper = _helper;
+@synthesize formHelper = _formHelper;
 
 @synthesize suggestionHelper = _suggestionHelper;
 
@@ -197,8 +197,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
-    _helper = [[PasswordControllerHelper alloc] initWithWebState:webState
-                                                        delegate:self];
+    _formHelper =
+        [[PasswordFormHelper alloc] initWithWebState:webState delegate:self];
     _suggestionHelper =
         [[PasswordSuggestionHelper alloc] initWithDelegate:self];
     if (passwordManagerClient)
@@ -246,9 +246,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (void)findAndFillPasswordForms:(NSString*)username
                         password:(NSString*)password
                completionHandler:(void (^)(BOOL))completionHandler {
-  [self.helper findAndFillPasswordFormsWithUserName:username
-                                           password:password
-                                  completionHandler:completionHandler];
+  [self.formHelper findAndFillPasswordFormsWithUserName:username
+                                               password:password
+                                      completionHandler:completionHandler];
 }
 
 #pragma mark - CRWWebStateObserver
@@ -411,10 +411,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   if (!fillData)
     completion();
 
-  [self.helper fillPasswordFormWithFillData:*fillData
-                          completionHandler:^(BOOL success) {
-                            completion();
-                          }];
+  [self.formHelper fillPasswordFormWithFillData:*fillData
+                              completionHandler:^(BOOL success) {
+                                completion();
+                              }];
 }
 
 #pragma mark - PasswordManagerClientDelegate
@@ -430,7 +430,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (const GURL&)lastCommittedURL {
-  return self.helper.lastCommittedURL;
+  return self.formHelper.lastCommittedURL;
 }
 
 - (void)showSavePasswordInfoBar:
@@ -490,18 +490,19 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler {
   [self.suggestionHelper processWithPasswordFormFillData:formData];
-  [self.helper fillPasswordForm:formData completionHandler:completionHandler];
+  [self.formHelper fillPasswordForm:formData
+                  completionHandler:completionHandler];
 }
 
 - (void)onNoSavedCredentials {
   [self.suggestionHelper processWithNoSavedCredentials];
 }
 
-#pragma mark - PasswordControllerHelperDelegate
+#pragma mark - PasswordFormHelperDelegate
 
-- (void)helper:(PasswordControllerHelper*)helper
-    didSubmitForm:(const PasswordForm&)form
-      inMainFrame:(BOOL)inMainFrame {
+- (void)formHelper:(PasswordFormHelper*)formHelper
+     didSubmitForm:(const PasswordForm&)form
+       inMainFrame:(BOOL)inMainFrame {
   if (inMainFrame) {
     self.passwordManager->OnPasswordFormSubmitted(self.passwordManagerDriver,
                                                   form);
@@ -559,8 +560,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // Read all password forms from the page and send them to the password
   // manager.
   __weak PasswordController* weakSelf = self;
-  [self.helper findPasswordFormsWithCompletionHandler:^(
-                   const std::vector<autofill::PasswordForm>& forms) {
+  [self.formHelper findPasswordFormsWithCompletionHandler:^(
+                       const std::vector<autofill::PasswordForm>& forms) {
     [weakSelf didFinishPasswordFormExtraction:forms];
   }];
 }

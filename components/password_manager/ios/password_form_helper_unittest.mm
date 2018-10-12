@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/password_manager/ios/password_controller_helper.h"
+#import "components/password_manager/ios/password_form_helper.h"
 
 #include <stddef.h>
 
@@ -16,7 +16,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
-#import "components/password_manager/ios/password_controller_helper.h"
+#import "components/password_manager/ios/password_form_helper.h"
 #include "components/password_manager/ios/test_helpers.h"
 #include "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -38,7 +38,7 @@ using password_manager::FillData;
 using test_helpers::SetPasswordFormFillData;
 using test_helpers::SetFillData;
 
-@interface PasswordControllerHelper (Testing)
+@interface PasswordFormHelper (Testing)
 
 // Provides access to the method below for testing with mocks.
 - (void)extractSubmittedPasswordForm:(const std::string&)formName
@@ -126,17 +126,17 @@ class TestWebClientWithScript : public web::TestWebClient {
   }
 };
 
-class PasswordControllerHelperTest : public web::WebTestWithWebState {
+class PasswordFormHelperTest : public web::WebTestWithWebState {
  public:
-  PasswordControllerHelperTest()
+  PasswordFormHelperTest()
       : web::WebTestWithWebState(std::make_unique<TestWebClientWithScript>()) {}
 
-  ~PasswordControllerHelperTest() override = default;
+  ~PasswordFormHelperTest() override = default;
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
-    helper_ = [[PasswordControllerHelper alloc] initWithWebState:web_state()
-                                                        delegate:nil];
+    helper_ =
+        [[PasswordFormHelper alloc] initWithWebState:web_state() delegate:nil];
   }
 
   void TearDown() override {
@@ -155,10 +155,10 @@ class PasswordControllerHelperTest : public web::WebTestWithWebState {
         [NSString stringWithFormat:kGetFormIdScript, form_index]));
   }
 
-  // PasswordControllerHelper for testing.
-  PasswordControllerHelper* helper_;
+  // PasswordFormHelper for testing.
+  PasswordFormHelper* helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordControllerHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(PasswordFormHelperTest);
 };
 
 struct GetSubmittedPasswordFormTestData {
@@ -176,7 +176,7 @@ struct GetSubmittedPasswordFormTestData {
 
 // Check that HTML forms are captured and converted correctly into
 // PasswordForms on submission.
-TEST_F(PasswordControllerHelperTest, GetSubmittedPasswordForm) {
+TEST_F(PasswordFormHelperTest, GetSubmittedPasswordForm) {
   // clang-format off
   const GetSubmittedPasswordFormTestData test_data[] = {
     // Two forms with no explicit names.
@@ -267,7 +267,7 @@ struct FindPasswordFormTestData {
 };
 
 // Check that HTML forms are converted correctly into PasswordForms.
-TEST_F(PasswordControllerHelperTest, FindPasswordFormsInView) {
+TEST_F(PasswordFormHelperTest, FindPasswordFormsInView) {
   // clang-format off
   const FindPasswordFormTestData test_data[] = {
     // Normal form: a username and a password element.
@@ -500,7 +500,7 @@ struct FillPasswordFormTestData {
 };
 
 // Tests that filling password forms works correctly.
-TEST_F(PasswordControllerHelperTest, FillPasswordForm) {
+TEST_F(PasswordFormHelperTest, FillPasswordForm) {
   LoadHtml(kHtmlWithMultiplePasswordForms);
 
   const std::string base_url = BaseUrl();
@@ -649,7 +649,7 @@ TEST_F(PasswordControllerHelperTest, FillPasswordForm) {
 }
 
 // Tests that filling password forms with fill data works correctly.
-TEST_F(PasswordControllerHelperTest, FillPasswordFormWithFillData) {
+TEST_F(PasswordFormHelperTest, FillPasswordFormWithFillData) {
   LoadHtml(
       @"<form><input id='u1' type='text' name='un1'>"
        "<input id='p1' type='password' name='pw1'></form>");
@@ -673,7 +673,7 @@ TEST_F(PasswordControllerHelperTest, FillPasswordFormWithFillData) {
 
 // Tests that a form is found and the found form is filled in with the given
 // username and password.
-TEST_F(PasswordControllerHelperTest, FindAndFillOnePasswordForm) {
+TEST_F(PasswordFormHelperTest, FindAndFillOnePasswordForm) {
   LoadHtml(
       @"<form><input id='u1' type='text' name='un1'>"
        "<input id='p1' type='password' name='pw1'></form>");
@@ -698,7 +698,7 @@ TEST_F(PasswordControllerHelperTest, FindAndFillOnePasswordForm) {
 // Tests that multiple forms on the same page are found and filled.
 // This test includes an mock injected failure on form filling to verify
 // that completion handler is called with the proper values.
-TEST_F(PasswordControllerHelperTest, FindAndFillMultiplePasswordForms) {
+TEST_F(PasswordFormHelperTest, FindAndFillMultiplePasswordForms) {
   // Fails the first call to fill password form.
   MockJsPasswordManager* mockJsPasswordManager = [[MockJsPasswordManager alloc]
       initWithReceiver:web_state()->GetJSInjectionReceiver()];
