@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/update_client/protocol_parser.h"
+#include "components/update_client/protocol_parser_xml.h"
+
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
@@ -307,42 +310,42 @@ const char* kAppsStatusError =
     " </app>"
     "</response>";
 
-TEST(ComponentUpdaterProtocolParserTest, Parse) {
-  ProtocolParser parser;
+TEST(UpdateClientProtocolParserXmlTest, Parse) {
+  const auto parser = std::make_unique<ProtocolParserXml>();
 
   // Test parsing of a number of invalid xml cases
-  EXPECT_FALSE(parser.Parse(std::string()));
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_FALSE(parser->Parse(std::string()));
+  EXPECT_FALSE(parser->errors().empty());
 
-  EXPECT_TRUE(parser.Parse(kMissingAppId));
-  EXPECT_TRUE(parser.results().list.empty());
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kMissingAppId));
+  EXPECT_TRUE(parser->results().list.empty());
+  EXPECT_FALSE(parser->errors().empty());
 
-  EXPECT_TRUE(parser.Parse(kInvalidCodebase));
-  EXPECT_TRUE(parser.results().list.empty());
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kInvalidCodebase));
+  EXPECT_TRUE(parser->results().list.empty());
+  EXPECT_FALSE(parser->errors().empty());
 
-  EXPECT_TRUE(parser.Parse(kMissingVersion));
-  EXPECT_TRUE(parser.results().list.empty());
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kMissingVersion));
+  EXPECT_TRUE(parser->results().list.empty());
+  EXPECT_FALSE(parser->errors().empty());
 
-  EXPECT_TRUE(parser.Parse(kInvalidVersion));
-  EXPECT_TRUE(parser.results().list.empty());
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kInvalidVersion));
+  EXPECT_TRUE(parser->results().list.empty());
+  EXPECT_FALSE(parser->errors().empty());
 
-  EXPECT_TRUE(parser.Parse(kInvalidValidXmlMissingCodebase));
-  EXPECT_TRUE(parser.results().list.empty());
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kInvalidValidXmlMissingCodebase));
+  EXPECT_TRUE(parser->results().list.empty());
+  EXPECT_FALSE(parser->errors().empty());
 
-  EXPECT_TRUE(parser.Parse(kInvalidValidXmlMissingManifest));
-  EXPECT_TRUE(parser.results().list.empty());
-  EXPECT_FALSE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kInvalidValidXmlMissingManifest));
+  EXPECT_TRUE(parser->results().list.empty());
+  EXPECT_FALSE(parser->errors().empty());
 
   // Parse some valid XML, and check that all params came out as expected
-  EXPECT_TRUE(parser.Parse(kValidXml));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_EQ(1u, parser.results().list.size());
-  const ProtocolParser::Result* first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kValidXml));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_EQ(1u, parser->results().list.size());
+  const ProtocolParser::Result* first_result = &parser->results().list[0];
   EXPECT_STREQ("ok", first_result->status.c_str());
   EXPECT_EQ(1u, first_result->crx_urls.size());
   EXPECT_EQ(GURL("http://example.com/"), first_result->crx_urls[0]);
@@ -353,25 +356,25 @@ TEST(ComponentUpdaterProtocolParserTest, Parse) {
   EXPECT_EQ("extension_1_2_3_4.crx", first_result->manifest.packages[0].name);
 
   // Parse some xml that uses namespace prefixes.
-  EXPECT_TRUE(parser.Parse(kUsesNamespacePrefix));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_TRUE(parser.Parse(kSimilarTagnames));
-  EXPECT_TRUE(parser.errors().empty());
+  EXPECT_TRUE(parser->Parse(kUsesNamespacePrefix));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_TRUE(parser->Parse(kSimilarTagnames));
+  EXPECT_TRUE(parser->errors().empty());
 
   // Parse xml with hash value
-  EXPECT_TRUE(parser.Parse(valid_xml_with_hash));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_FALSE(parser.results().list.empty());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(valid_xml_with_hash));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_FALSE(parser->results().list.empty());
+  first_result = &parser->results().list[0];
   EXPECT_FALSE(first_result->manifest.packages.empty());
   EXPECT_EQ("1234", first_result->manifest.packages[0].hash_sha256);
   EXPECT_EQ("5678", first_result->manifest.packages[0].hashdiff_sha256);
 
   // Parse xml with package size value
-  EXPECT_TRUE(parser.Parse(valid_xml_with_invalid_sizes));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_FALSE(parser.results().list.empty());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(valid_xml_with_invalid_sizes));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_FALSE(parser->results().list.empty());
+  first_result = &parser->results().list[0];
   EXPECT_FALSE(first_result->manifest.packages.empty());
   EXPECT_EQ(1234, first_result->manifest.packages[0].size);
   EXPECT_EQ(-1234, first_result->manifest.packages[1].size);
@@ -381,38 +384,38 @@ TEST(ComponentUpdaterProtocolParserTest, Parse) {
   EXPECT_EQ(0, first_result->manifest.packages[5].size);
 
   // Parse xml with a <daystart> element.
-  EXPECT_TRUE(parser.Parse(kWithDaystart));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_FALSE(parser.results().list.empty());
-  EXPECT_EQ(parser.results().daystart_elapsed_seconds, 456);
+  EXPECT_TRUE(parser->Parse(kWithDaystart));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_FALSE(parser->results().list.empty());
+  EXPECT_EQ(parser->results().daystart_elapsed_seconds, 456);
 
   // Parse a no-update response.
-  EXPECT_TRUE(parser.Parse(kNoUpdate));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_FALSE(parser.results().list.empty());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kNoUpdate));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_FALSE(parser->results().list.empty());
+  first_result = &parser->results().list[0];
   EXPECT_STREQ("noupdate", first_result->status.c_str());
   EXPECT_EQ(first_result->extension_id, "12345");
   EXPECT_EQ(first_result->manifest.version, "");
 
   // Parse xml with one error and one success <app> tag.
-  EXPECT_TRUE(parser.Parse(kTwoAppsOneError));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_EQ(2u, parser.results().list.size());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kTwoAppsOneError));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_EQ(2u, parser->results().list.size());
+  first_result = &parser->results().list[0];
   EXPECT_EQ(first_result->extension_id, "aaaaaaaa");
   EXPECT_STREQ("error-unknownApplication", first_result->status.c_str());
   EXPECT_TRUE(first_result->manifest.version.empty());
-  const ProtocolParser::Result* second_result = &parser.results().list[1];
+  const ProtocolParser::Result* second_result = &parser->results().list[1];
   EXPECT_EQ(second_result->extension_id, "bbbbbbbb");
   EXPECT_STREQ("ok", second_result->status.c_str());
   EXPECT_EQ("1.2.3.4", second_result->manifest.version);
 
   // Parse xml with two apps setting the cohort info.
-  EXPECT_TRUE(parser.Parse(kTwoAppsSetCohort));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_EQ(2u, parser.results().list.size());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kTwoAppsSetCohort));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_EQ(2u, parser->results().list.size());
+  first_result = &parser->results().list[0];
   EXPECT_EQ(first_result->extension_id, "aaaaaaaa");
   EXPECT_NE(first_result->cohort_attrs.find("cohort"),
             first_result->cohort_attrs.end());
@@ -421,6 +424,7 @@ TEST(ComponentUpdaterProtocolParserTest, Parse) {
             first_result->cohort_attrs.end());
   EXPECT_EQ(first_result->cohort_attrs.find("cohorthint"),
             first_result->cohort_attrs.end());
+  second_result = &parser->results().list[1];
   EXPECT_EQ(second_result->extension_id, "bbbbbbbb");
   EXPECT_NE(second_result->cohort_attrs.find("cohort"),
             second_result->cohort_attrs.end());
@@ -431,38 +435,38 @@ TEST(ComponentUpdaterProtocolParserTest, Parse) {
   EXPECT_EQ(second_result->cohort_attrs.find("cohorthint"),
             second_result->cohort_attrs.end());
 
-  EXPECT_TRUE(parser.Parse(kUpdateCheckStatusOkWithRunAction));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_FALSE(parser.results().list.empty());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kUpdateCheckStatusOkWithRunAction));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_FALSE(parser->results().list.empty());
+  first_result = &parser->results().list[0];
   EXPECT_STREQ("ok", first_result->status.c_str());
   EXPECT_EQ(first_result->extension_id, "12345");
   EXPECT_STREQ("this", first_result->action_run.c_str());
 
-  EXPECT_TRUE(parser.Parse(kUpdateCheckStatusNoUpdateWithRunAction));
-  EXPECT_TRUE(parser.errors().empty());
-  EXPECT_FALSE(parser.results().list.empty());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kUpdateCheckStatusNoUpdateWithRunAction));
+  EXPECT_TRUE(parser->errors().empty());
+  EXPECT_FALSE(parser->results().list.empty());
+  first_result = &parser->results().list[0];
   EXPECT_STREQ("noupdate", first_result->status.c_str());
   EXPECT_EQ(first_result->extension_id, "12345");
   EXPECT_STREQ("this", first_result->action_run.c_str());
 
-  EXPECT_TRUE(parser.Parse(kUpdateCheckStatusErrorWithRunAction));
-  EXPECT_FALSE(parser.errors().empty());
-  EXPECT_TRUE(parser.results().list.empty());
+  EXPECT_TRUE(parser->Parse(kUpdateCheckStatusErrorWithRunAction));
+  EXPECT_FALSE(parser->errors().empty());
+  EXPECT_TRUE(parser->results().list.empty());
 
-  EXPECT_TRUE(parser.Parse(kAppsStatusError));
-  EXPECT_STREQ("Unknown app status", parser.errors().c_str());
-  EXPECT_EQ(3u, parser.results().list.size());
-  first_result = &parser.results().list[0];
+  EXPECT_TRUE(parser->Parse(kAppsStatusError));
+  EXPECT_STREQ("Unknown app status", parser->errors().c_str());
+  EXPECT_EQ(3u, parser->results().list.size());
+  first_result = &parser->results().list[0];
   EXPECT_EQ(first_result->extension_id, "aaaaaaaa");
   EXPECT_STREQ("error-unknownApplication", first_result->status.c_str());
   EXPECT_TRUE(first_result->manifest.version.empty());
-  second_result = &parser.results().list[1];
+  second_result = &parser->results().list[1];
   EXPECT_EQ(second_result->extension_id, "bbbbbbbb");
   EXPECT_STREQ("restricted", second_result->status.c_str());
   EXPECT_TRUE(second_result->manifest.version.empty());
-  const ProtocolParser::Result* third_result = &parser.results().list[2];
+  const ProtocolParser::Result* third_result = &parser->results().list[2];
   EXPECT_EQ(third_result->extension_id, "cccccccc");
   EXPECT_STREQ("error-invalidAppId", third_result->status.c_str());
   EXPECT_TRUE(third_result->manifest.version.empty());
