@@ -153,10 +153,10 @@ UIColor* BackgroundColorIncognito() {
         [NSString stringWithFormat:@"omnibox suggestion %i", i];
     row.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [rowsBuilder addObject:row];
-    [row.appendButton addTarget:self
-                         action:@selector(appendButtonTapped:)
-               forControlEvents:UIControlEventTouchUpInside];
-    [row.appendButton setTag:i];
+    [row.trailingButton addTarget:self
+                           action:@selector(trailingButtonTapped:)
+                 forControlEvents:UIControlEventTouchUpInside];
+    [row.trailingButton setTag:i];
     row.rowHeight = kRowHeight;
   }
   _rows = [rowsBuilder copy];
@@ -284,7 +284,7 @@ UIColor* BackgroundColorIncognito() {
   const CGFloat kDetailCellTopPadding = 26;
   const CGFloat kTextLabelHeight = 24;
   const CGFloat kTextDetailLabelHeight = 22;
-  const CGFloat kAppendButtonWidth = 40;
+  const CGFloat kTrailingButtonWidth = 40;
   const CGFloat kAnswerLabelHeight = 36;
   const CGFloat kAnswerImageWidth = 30;
   const CGFloat kAnswerImageLeftPadding = -1;
@@ -308,7 +308,7 @@ UIColor* BackgroundColorIncognito() {
         kTextCellLeadingPadding + kAnswerImageLeftPadding;
     if (alignmentRight) {
       imageLeftPadding =
-          row.frame.size.width - (kAnswerImageWidth + kAppendButtonWidth);
+          row.frame.size.width - (kAnswerImageWidth + kTrailingButtonWidth);
     }
     CGFloat imageTopPadding = kDetailCellTopPadding + kAnswerImageTopPadding;
     row.answerImageView.frame =
@@ -396,22 +396,24 @@ UIColor* BackgroundColorIncognito() {
     [row updateLeadingImage:image];
   }
 
+  row.tabMatch = match.isTabMatch;
+
   // Show append button for search history/search suggestions as the right
   // control element (aka an accessory element of a table view cell).
-  row.appendButton.hidden = !match.isAppendable;
-  [row.appendButton cancelTrackingWithEvent:nil];
+  row.trailingButton.hidden = !match.isAppendable && !match.isTabMatch;
+  [row.trailingButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
   if (match.isAppendable || alignmentRight) {
     LayoutRect layout =
         LayoutRectForRectInBoundingRect(textLabel.frame, self.view.frame);
-    layout.size.width -= kAppendButtonWidth;
+    layout.size.width -= kTrailingButtonWidth;
     textLabel.frame = LayoutRectGetRect(layout);
     layout =
         LayoutRectForRectInBoundingRect(detailTextLabel.frame, self.view.frame);
     layout.size.width -=
-        kAppendButtonWidth + (match.hasImage ? answerImagePadding : 0);
+        kTrailingButtonWidth + (match.hasImage ? answerImagePadding : 0);
     detailTextLabel.frame = LayoutRectGetRect(layout);
   }
 
@@ -524,9 +526,10 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark -
 #pragma mark Action for append UIButton
 
-- (void)appendButtonTapped:(id)sender {
+- (void)trailingButtonTapped:(id)sender {
   NSUInteger row = [sender tag];
-  [self.delegate autocompleteResultConsumer:self didSelectRowForAppending:row];
+  [self.delegate autocompleteResultConsumer:self
+                 didTapTrailingButtonForRow:row];
 }
 
 #pragma mark -

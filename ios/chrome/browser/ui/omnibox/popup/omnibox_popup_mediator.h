@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 
+@protocol BrowserCommands;
 @class OmniboxPopupPresenter;
 
 namespace image_fetcher {
@@ -48,6 +49,7 @@ class OmniboxPopupMediatorDelegate {
 // Updates the popup with the |results|.
 - (void)updateWithResults:(const AutocompleteResult&)results;
 
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 @property(nonatomic, weak) id<AutocompleteResultConsumer> consumer;
 @property(nonatomic, assign, getter=isIncognito) BOOL incognito;
 // Whether the popup is open.
