@@ -633,7 +633,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const;
 
   bool PaintsWithFilters() const;
-  bool PaintsWithBackdropFilters() const;
   FilterEffect* LastFilterEffect() const;
 
   // Maps "forward" to determine which pixels in a destination rect are

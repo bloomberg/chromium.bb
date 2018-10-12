@@ -283,15 +283,6 @@ bool PaintLayer::PaintsWithFilters() const {
          GetCompositingState() != kPaintsIntoOwnBacking;
 }
 
-bool PaintLayer::PaintsWithBackdropFilters() const {
-  if (!GetLayoutObject().HasBackdropFilter())
-    return false;
-
-  // https://code.google.com/p/chromium/issues/detail?id=343759
-  DisableCompositingQueryAsserts disabler;
-  return !GetCompositedLayerMapping() ||
-         GetCompositingState() != kPaintsIntoOwnBacking;
-}
 
 LayoutSize PaintLayer::SubpixelAccumulation() const {
   return rare_data_ ? rare_data_->subpixel_accumulation : LayoutSize();
