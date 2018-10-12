@@ -135,7 +135,6 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
   credentials.account_id = account_info.account_id;
   credentials.email = account_info.email;
   credentials.sync_token = access_token_;
-  credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
   return credentials;
 }

@@ -62,7 +62,6 @@
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/fake_sync_scheduler.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -936,9 +935,6 @@ class SyncManagerTest : public testing::Test,
     credentials.account_id = "foo@bar.com";
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
-    OAuth2TokenService::ScopeSet scope_set;
-    scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-    credentials.scope_set = scope_set;
 
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _))

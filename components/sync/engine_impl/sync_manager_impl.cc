@@ -201,7 +201,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(!args->long_poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
     DCHECK(!args->credentials.account_id.empty());
-    DCHECK(!args->credentials.scope_set.empty());
   }
   DCHECK(args->cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
@@ -472,7 +471,6 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_);
   DCHECK(!credentials.account_id.empty());
-  DCHECK(!credentials.scope_set.empty());
   cycle_context_->set_account_name(credentials.email);
 
   observing_network_connectivity_changes_ = true;
