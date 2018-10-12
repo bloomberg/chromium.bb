@@ -85,9 +85,10 @@ bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
     return false;
 
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off"))
+          html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off") &&
+      !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
     return false;
-
+  }
   // Avoid lazyloading if width and height attributes are small. This
   // heuristic helps avoid double fetching tracking pixels.
   double width, height;
