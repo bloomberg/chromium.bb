@@ -146,8 +146,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kDefaultCharset,
                                l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kRateThisAppDialogLastShownTime, 0,
-                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kNetworkPredictionEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

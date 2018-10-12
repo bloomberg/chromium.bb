@@ -50,8 +50,6 @@ extern const char kSigninShouldPromptForSigninAgain[];
 extern const char kOmniboxGeolocationAuthorizationState[];
 extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[];
 
-extern const char kRateThisAppDialogLastShownTime[];
-
 extern const char kDesktopIOSPromotionSMSEntryPoint[];
 extern const char kDesktopIOSPromotionShownEntryPoints[];
 extern const char kDesktopIOSPromotionLastImpression[];

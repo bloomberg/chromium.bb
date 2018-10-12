@@ -61,9 +61,6 @@ const char kNTPHelpURL[] =
 
 // The What's New promo command that shows the Bookmarks Manager.
 const char kBookmarkCommand[] = "bookmark";
-
-// The What's New promo command that launches Rate This App.
-const char kRateThisAppCommand[] = "ratethisapp";
 }  // namespace
 
 @interface NTPHomeMediator ()<CRWWebStateObserver,
@@ -359,8 +356,6 @@ const char kRateThisAppCommand[] = "ratethisapp";
     std::string command = notificationPromo->command();
     if (command == kBookmarkCommand) {
       [self.dispatcher showBookmarksManager];
-    } else if (command == kRateThisAppCommand) {
-      [self.dispatcher showRateThisAppDialog];
     } else {
       NOTREACHED() << "Promo command is not valid.";
     }

@@ -78,7 +78,6 @@
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #include "ios/chrome/browser/passwords/password_tab_helper.h"
-#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
@@ -239,7 +238,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/net/request_tracker.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/ui/app_rating_prompt.h"
 #include "ios/public/provider/chrome/browser/ui/default_ios_web_view_factory.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -415,7 +413,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - BVC
 
 @interface BrowserViewController ()<ActivityServicePresentation,
-                                    AppRatingPromptDelegate,
                                     BubblePresenterDelegate,
                                     CaptivePortalDetectorTabHelperDelegate,
                                     ConsentBumpCoordinatorDelegate,
@@ -531,9 +528,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The controller that shows the bookmarking UI after the user taps the star
   // button.
   BookmarkInteractionController* _bookmarkInteractionController;
-
-  // The currently displayed "Rate This App" dialog, if one exists.
-  id<AppRatingPrompt> _rateThisAppDialog;
 
   // Native controller vended to tab before Tab is added to the tab model.
   __weak id _temporaryNativeController;
@@ -778,11 +772,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Sets the frame for the headers.
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset;
-
-// Showing and Dismissing child UI
-// -------------------------------
-// Dismisses the "rate this app" dialog.
-- (void)dismissRateThisAppDialog;
 
 // Find Bar UI
 // -----------
@@ -1524,7 +1513,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [_contextMenuCoordinator stop];
   [_passKitCoordinator stop];
-  [self dismissRateThisAppDialog];
 
   if (self.presentedViewController) {
     // Dismisses any other modal controllers that may be present, e.g. Recent
@@ -1581,7 +1569,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(nil);
-  [_rateThisAppDialog setDelegate:nil];
   [_model closeAllTabs];
   [_paymentRequestManager setActiveWebState:nullptr];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -2665,17 +2652,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     if (header.view == self.tabStripView)
       [self setNeedsStatusBarAppearanceUpdate];
-  }
-}
-
-#pragma mark - Private Methods: Showing and Dismissing Child UI
-
-- (void)dismissRateThisAppDialog {
-  if (_rateThisAppDialog) {
-    base::RecordAction(base::UserMetricsAction(
-        "IOSRateThisAppDialogDismissedProgramatically"));
-    [_rateThisAppDialog dismiss];
-    _rateThisAppDialog = nil;
   }
 }
 
@@ -4525,39 +4501,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 #endif  // !defined(NDEBUG)
 
-// TODO(crbug.com/634507) Remove base::TimeXXX::ToInternalValue().
-- (void)showRateThisAppDialog {
-  DCHECK(!_rateThisAppDialog);
-
-  // Store the current timestamp whenever this dialog is shown.
-  _browserState->GetPrefs()->SetInt64(prefs::kRateThisAppDialogLastShownTime,
-                                      base::Time::Now().ToInternalValue());
-
-  // iOS11 no longer supports the itms link to the app store. So, use a deep
-  // link for iOS11 and the itms link for prior versions.
-  NSURL* storeURL;
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    storeURL =
-        [NSURL URLWithString:(@"https://itunes.apple.com/us/app/"
-                              @"google-chrome-the-fast-and-secure-web-browser/"
-                              @"id535886823?action=write-review")];
-  } else {
-    storeURL = [NSURL
-        URLWithString:(@"itms-apps://itunes.apple.com/WebObjects/"
-                       @"MZStore.woa/wa/"
-                       @"viewContentsUserReviews?type=Purple+Software&id="
-                       @"535886823&pt=9008&ct=rating")];
-  }
-
-  base::RecordAction(base::UserMetricsAction("IOSRateThisAppDialogShown"));
-  [self clearPresentedStateWithCompletion:nil dismissOmnibox:YES];
-
-  _rateThisAppDialog = ios::GetChromeBrowserProvider()->CreateAppRatingPrompt();
-  [_rateThisAppDialog setAppStoreURL:storeURL];
-  [_rateThisAppDialog setDelegate:self];
-  [_rateThisAppDialog show];
-}
-
 - (void)showFindInPage {
   if (!self.canShowFindBar)
     return;
@@ -5287,24 +5230,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 
 - (void)cancelDialogForTab:(Tab*)tab {
   [self.dialogPresenter cancelDialogForWebState:tab.webState];
-}
-
-#pragma mark - AppRatingPromptDelegate
-
-- (void)userTappedRateApp:(UIView*)view {
-  base::RecordAction(base::UserMetricsAction("IOSRateThisAppRateChosen"));
-  _rateThisAppDialog = nil;
-}
-
-- (void)userTappedSendFeedback:(UIView*)view {
-  base::RecordAction(base::UserMetricsAction("IOSRateThisAppFeedbackChosen"));
-  _rateThisAppDialog = nil;
-  [self.dispatcher showReportAnIssueFromViewController:self];
-}
-
-- (void)userTappedDismiss:(UIView*)view {
-  base::RecordAction(base::UserMetricsAction("IOSRateThisAppDismissChosen"));
-  _rateThisAppDialog = nil;
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner (Public)
