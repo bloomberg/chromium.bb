@@ -79,9 +79,9 @@ class MockDRTPort(object):
     def _driver_class(self, delegate):
         return self._mocked_driver_maker
 
-    def _mocked_driver_maker(self, port, worker_number, pixel_tests, no_timeout=False):
+    def _mocked_driver_maker(self, port, worker_number, no_timeout=False):
         path_to_this_file = self.host.filesystem.abspath(__file__.replace('.pyc', '.py'))
-        driver = self.__delegate_driver_class()(self, worker_number, pixel_tests, no_timeout)
+        driver = self.__delegate_driver_class()(self, worker_number, no_timeout)
         driver.cmd_line = self._overriding_cmd_line(driver.cmd_line,
                                                     self.__delegate._path_to_driver(),
                                                     sys.executable,
@@ -91,8 +91,8 @@ class MockDRTPort(object):
 
     @staticmethod
     def _overriding_cmd_line(original_cmd_line, driver_path, python_exe, this_file, port_name):
-        def new_cmd_line(pixel_tests, per_test_args):
-            cmd_line = original_cmd_line(pixel_tests, per_test_args)
+        def new_cmd_line(per_test_args):
+            cmd_line = original_cmd_line(per_test_args)
             index = cmd_line.index(driver_path)
             cmd_line[index:index + 1] = [python_exe, this_file, '--platform', port_name]
             return cmd_line
