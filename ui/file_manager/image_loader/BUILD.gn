@@ -85,8 +85,7 @@ js_library("image_loader_client") {
 js_library("image_loader_client_unittest") {
   deps = [
     ":image_loader_client",
-    "../file_manager/common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -100,8 +99,7 @@ js_library("piex_loader") {
 js_library("piex_loader_unittest") {
   deps = [
     ":piex_loader",
-    "../file_manager/common/js:unittest_util",
-    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 

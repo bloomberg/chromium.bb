@@ -8,6 +8,14 @@ import("//third_party/closure_compiler/js_unit_tests.gni")
 # TODO(tapted): This entire folder should move to //ui/file_manager/base.
 visibility = [ "//ui/file_manager/*" ]
 
+group("closure_compile") {
+  deps = [
+    ":closure_compile_module",
+    ":test_support_type_check",
+    ":unit_tests_type_check",
+  ]
+}
+
 js_type_check("closure_compile_module") {
   deps = [
     ":async_util",
@@ -21,9 +29,15 @@ js_type_check("closure_compile_module") {
     ":metrics_events",
     ":mock_entry",
     ":progress_center_common",
-    ":unittest_util",
     ":util",
     ":volume_manager_common",
+  ]
+}
+
+js_type_check("test_support_type_check") {
+  deps = [
+    ":test_importer_common",
+    ":unittest_util",
   ]
 }
 
@@ -33,7 +47,7 @@ js_library("async_util") {
 js_library("async_util_unittest") {
   deps = [
     ":async_util",
-    ":unittest_util",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -50,8 +64,8 @@ js_library("files_app_entry_types") {
 js_library("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
-    ":unittest_util",
     ":volume_manager_common",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -85,6 +99,7 @@ js_library("test_importer_common") {
   deps = [
     ":importer_common",
     ":unittest_util",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
@@ -141,6 +156,9 @@ js_library("progress_center_common") {
 }
 
 js_library("unittest_util") {
+  # Only files app tests use this util file.
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     "//ui/webui/resources/js:webui_resource_test",
   ]
@@ -168,8 +186,8 @@ js_library("util") {
 js_library("util_unittest") {
   deps = [
     ":mock_entry",
-    ":unittest_util",
     ":util",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -186,19 +204,5 @@ js_unit_tests("unit_tests") {
     ":importer_common_unittest",
     ":lru_cache_unittest",
     ":util_unittest",
-  ]
-}
-
-js_type_check("test_support_type_check") {
-  deps = [
-    ":test_importer_common",
-  ]
-}
-
-group("closure_compile") {
-  deps = [
-    ":closure_compile_module",
-    ":test_support_type_check",
-    ":unit_tests_type_check",
   ]
 }

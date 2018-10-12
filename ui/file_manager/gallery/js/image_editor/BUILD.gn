@@ -124,8 +124,8 @@ js_library("image_encoder_unittest") {
   deps = [
     ":image_encoder",
     ":test_util",
-    "../../../file_manager/common/js:unittest_util",
     "../../../file_manager/foreground/js/metadata:metadata_parser",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
   externs_list = [ "../../../externs/metadata_worker_window.js" ]
 }
