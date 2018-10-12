@@ -168,7 +168,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // num_exclusions_ is how many exclusions *this* instance of an exclusion
   // space has, which may differ to the number of exclusions in the Vector.
   scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions_;
-  size_t num_exclusions_;
+  wtf_size_t num_exclusions_;
   LayoutUnit both_clear_offset_;
 
   // The derived geometry struct, is the data-structure which handles all of the

@@ -698,9 +698,9 @@ ALWAYS_INLINE void BreakingContext::SetCurrentCharacterIsSpace(UChar c) {
 }
 
 inline float FirstPositiveWidth(const WordMeasurements& word_measurements) {
-  for (size_t i = 0; i < word_measurements.size(); ++i) {
-    if (word_measurements[i].width > 0)
-      return word_measurements[i].width;
+  for (const WordMeasurement& word_measurement : word_measurements) {
+    if (word_measurement.width > 0)
+      return word_measurement.width;
   }
   return 0;
 }

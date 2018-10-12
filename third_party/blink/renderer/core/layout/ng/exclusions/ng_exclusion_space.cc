@@ -25,7 +25,7 @@ void InsertOpportunity(const NGLayoutOpportunity& opportunity,
 
   // We go backwards through the list as there is a higher probability that a
   // new opportunity will be at the end of the list.
-  for (size_t j = opportunities->size() - 1; j >= 0; --j) {
+  for (wtf_size_t j = opportunities->size() - 1; j >= 0; --j) {
     const NGLayoutOpportunity& other = opportunities->at(j);
     if (other.rect.BlockStartOffset() <= opportunity.rect.BlockStartOffset()) {
 #if DCHECK_IS_ON()
@@ -263,7 +263,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
   //
   // NOTE: This could potentially be done lazily when we query the exclusion
   // space for a layout opportunity.
-  for (size_t i = 0; i < shelves_.size(); ++i) {
+  for (wtf_size_t i = 0; i < shelves_.size(); ++i) {
     // We modify the current shelf in-place. However we need to keep a copy of
     // the shelf if we need to insert a new shelf later in the loop.
     base::Optional<NGShelf> shelf_copy;
@@ -610,7 +610,7 @@ NGExclusionSpaceInternal::GetDerivedGeometry() const {
   if (!derived_geometry_) {
     derived_geometry_ = std::make_unique<DerivedGeometry>();
     DCHECK_LE(num_exclusions_, exclusions_->size());
-    for (size_t i = 0; i < num_exclusions_; ++i)
+    for (wtf_size_t i = 0; i < num_exclusions_; ++i)
       derived_geometry_->Add(*exclusions_->GetVector()[i]);
   }
 

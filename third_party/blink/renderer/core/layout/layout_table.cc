@@ -242,7 +242,7 @@ void LayoutTable::AddCaption(const LayoutTableCaption* caption) {
 }
 
 void LayoutTable::RemoveCaption(const LayoutTableCaption* old_caption) {
-  size_t index = captions_.Find(old_caption);
+  wtf_size_t index = captions_.Find(old_caption);
   DCHECK_NE(index, kNotFound);
   if (index == kNotFound)
     return;
@@ -842,7 +842,7 @@ void LayoutTable::AdjustWidthsForCollapsedColumns(
   unsigned n_eff_cols = NumEffectiveColumns();
 
   // Update vector of collapsed widths.
-  for (size_t i = 0; i < n_eff_cols; ++i) {
+  for (unsigned i = 0; i < n_eff_cols; ++i) {
     // TODO(joysyu): Here, we are at O(n^2) for every table that has ever had a
     // collapsed column. ColElementAtAbsoluteColumn() is currently O(n);
     // ideally, it would be O(1). We have to improve the runtime before shipping
@@ -861,7 +861,7 @@ void LayoutTable::AdjustWidthsForCollapsedColumns(
 
   // Adjust column positions according to collapsed widths.
   int total_collapsed_width = 0;
-  for (size_t i = 0; i < n_eff_cols; ++i) {
+  for (unsigned i = 0; i < n_eff_cols; ++i) {
     total_collapsed_width += col_collapsed_width[i];
     SetEffectiveColumnPosition(
         i + 1, EffectiveColumnPositions()[i + 1] - total_collapsed_width);

@@ -238,7 +238,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
   NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
 
   DCHECK_EQ(children_.size(), offsets_.size());
-  for (size_t i = 0; i < children_.size(); i++) {
+  for (wtf_size_t i = 0; i < children_.size(); i++) {
     auto& child = children_[i];
     child.offset_ = offsets_[i].ConvertToPhysical(
         block_or_line_writing_mode, Direction(), physical_size, child->Size());
@@ -312,7 +312,7 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
   DCHECK_GE(BlockSize(), LayoutUnit());
   *container_size = Size();
 
-  for (size_t i = 0; i < children_.size(); i++) {
+  for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
       const NGPhysicalLineBoxFragment* linebox =
           ToNGPhysicalLineBoxFragment(children_[i].get());

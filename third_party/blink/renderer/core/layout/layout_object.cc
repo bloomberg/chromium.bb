@@ -1090,12 +1090,12 @@ FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
   Vector<FloatQuad> quads;
   AbsoluteQuads(quads, flags);
 
-  size_t n = quads.size();
+  wtf_size_t n = quads.size();
   if (n == 0)
     return FloatRect();
 
   FloatRect result = quads[0].BoundingBox();
-  for (size_t i = 1; i < n; ++i)
+  for (wtf_size_t i = 1; i < n; ++i)
     result.Unite(quads[i].BoundingBox());
   return result;
 }
@@ -1104,12 +1104,12 @@ IntRect LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
   Vector<FloatQuad> quads;
   AbsoluteQuads(quads, flags);
 
-  size_t n = quads.size();
+  wtf_size_t n = quads.size();
   if (!n)
     return IntRect();
 
   IntRect result = quads[0].EnclosingBoundingBox();
-  for (size_t i = 1; i < n; ++i)
+  for (wtf_size_t i = 1; i < n; ++i)
     result.Unite(quads[i].EnclosingBoundingBox());
   return result;
 }
@@ -1119,12 +1119,12 @@ IntRect LayoutObject::AbsoluteBoundingBoxRectIgnoringTransforms() const {
   Vector<IntRect> rects;
   AbsoluteRects(rects, FlooredLayoutPoint(abs_pos));
 
-  size_t n = rects.size();
+  wtf_size_t n = rects.size();
   if (!n)
     return IntRect();
 
   IntRect result = rects[0];
-  for (size_t i = 1; i < n; ++i)
+  for (wtf_size_t i = 1; i < n; ++i)
     result.Unite(rects[i]);
   return result;
 }
@@ -2752,7 +2752,7 @@ void LayoutObject::LocalToAncestorRects(Vector<LayoutRect>& rects,
                                         const LayoutBoxModelObject* ancestor,
                                         const LayoutPoint& pre_offset,
                                         const LayoutPoint& post_offset) const {
-  for (size_t i = 0; i < rects.size(); ++i) {
+  for (wtf_size_t i = 0; i < rects.size(); ++i) {
     LayoutRect& rect = rects[i];
     rect.MoveBy(pre_offset);
     FloatQuad container_quad =
@@ -2901,7 +2901,7 @@ void LayoutObject::AddLayerHitTestRects(
   // testing.
   // FIXME: This limit needs to be low due to the O(n^2) algorithm in
   // ScrollingCoordinator::SetTouchEventTargetRects() - crbug.com/300282.
-  const size_t kMaxRectsPerLayer = 100;
+  const wtf_size_t kMaxRectsPerLayer = 100;
 
   LayerHitTestRects::iterator iter = layer_rects.find(current_layer);
   Vector<HitTestRect>* iter_value;
@@ -2913,7 +2913,7 @@ void LayoutObject::AddLayerHitTestRects(
   }
   TouchAction whitelisted_touch_action =
       StyleRef().GetEffectiveTouchAction() & supported_fast_actions;
-  for (size_t i = 0; i < own_rects.size(); i++) {
+  for (wtf_size_t i = 0; i < own_rects.size(); i++) {
     // If we have a different touch action than the container the rect needs to
     // be reported even if it is contained.
     if (whitelisted_touch_action != container_whitelisted_touch_action ||

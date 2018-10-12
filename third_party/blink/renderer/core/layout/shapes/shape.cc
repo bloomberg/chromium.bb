@@ -162,10 +162,10 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
     case BasicShape::kBasicShapePolygonType: {
       const BasicShapePolygon* polygon = ToBasicShapePolygon(basic_shape);
       const Vector<Length>& values = polygon->Values();
-      size_t values_size = values.size();
+      wtf_size_t values_size = values.size();
       DCHECK(!(values_size % 2));
       Vector<FloatPoint> vertices(values_size / 2);
-      for (unsigned i = 0; i < values_size; i += 2) {
+      for (wtf_size_t i = 0; i < values_size; i += 2) {
         FloatPoint vertex(FloatValueForLength(values.at(i), box_width),
                           FloatValueForLength(values.at(i + 1), box_height));
         vertices[i / 2] = PhysicalPointToLogical(

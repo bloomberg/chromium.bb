@@ -123,15 +123,15 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       children_ = std::move(other.children_);
     }
 
-    Child& operator[](unsigned i) { return children_[i]; }
+    Child& operator[](wtf_size_t i) { return children_[i]; }
 
-    unsigned size() const { return children_.size(); }
+    wtf_size_t size() const { return children_.size(); }
     bool IsEmpty() const { return children_.IsEmpty(); }
     void ReserveInitialCapacity(unsigned capacity) {
       children_.ReserveInitialCapacity(capacity);
     }
     void clear() { children_.clear(); }
-    void resize(size_t size) { children_.resize(size); }
+    void resize(wtf_size_t size) { children_.resize(size); }
 
     using iterator = Vector<Child, 16>::iterator;
     iterator begin() { return children_.begin(); }
