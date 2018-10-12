@@ -28,6 +28,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -342,7 +343,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      */
     public static boolean isPackageSpecializedHandler(String packageName, Intent intent) {
         Context context = ContextUtils.getApplicationContext();
-        try {
+        // On certain Samsung devices, queryIntentActivities can trigger a
+        // StrictModeDiskReadViolation (https://crbug.com/894160).
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()){
             List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
             return getSpecializedHandlersWithFilter(handlers, packageName, intent).size() > 0;
