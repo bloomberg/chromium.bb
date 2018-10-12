@@ -32,12 +32,12 @@ public class HostBrowserUtils {
     private static final String TAG = "cr_HostBrowserUtils";
 
     /**
-     * The package names of the channels of Chrome that support WebAPKs. The most preferred one
-     * comes first.
+     * The package names of the browsers that support WebAPKs. The most preferred one comes first.
      */
-    private static List<String> sBrowsersSupportingWebApk = new ArrayList<String>(
-            Arrays.asList("com.google.android.apps.chrome", "com.android.chrome", "com.chrome.beta",
-                    "com.chrome.dev", "com.chrome.canary", "org.chromium.chrome"));
+    private static List<String> sBrowsersSupportingWebApk =
+            new ArrayList<String>(Arrays.asList("com.google.android.apps.chrome",
+                    "com.android.chrome", "com.chrome.beta", "com.chrome.dev", "com.chrome.canary",
+                    "org.chromium.chrome", "org.chromium.arc.intent_helper"));
 
     /** Caches the package name of the host browser. */
     private static String sHostPackage;
