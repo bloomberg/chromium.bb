@@ -41,7 +41,8 @@ InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
                                      AppListControllerDelegate* controller,
                                      bool is_recommendation)
-    : AppResult(profile, app_id, controller, is_recommendation) {
+    : AppResult(profile, app_id, controller, is_recommendation),
+      weak_factory_(this) {
   set_id(app_id);
   SetResultType(ResultType::kInternalApp);
   SetIcon(GetIconForResourceId(
@@ -101,7 +102,8 @@ void InternalAppResult::UpdateContinueReadingFavicon(
         url_for_continuous_reading_, min_source_size_in_pixel,
         desired_size_in_pixel,
         base::BindRepeating(&InternalAppResult::OnGetFaviconFromCacheFinished,
-                            base::Unretained(this), continue_to_google_server),
+                            weak_factory_.GetWeakPtr(),
+                            continue_to_google_server),
         &task_tracker_);
   }
 }
@@ -147,7 +149,7 @@ void InternalAppResult::OnGetFaviconFromCacheFinished(
           /*may_page_url_be_private=*/false, traffic_annotation,
           base::BindRepeating(
               &InternalAppResult::OnGetFaviconFromGoogleServerFinished,
-              base::Unretained(this)));
+              weak_factory_.GetWeakPtr()));
 }
 
 void InternalAppResult::OnGetFaviconFromGoogleServerFinished(
