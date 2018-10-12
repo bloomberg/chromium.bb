@@ -1,0 +1,149 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+const crostiniShare = {};
+
+crostiniShare.testSharePathCrostiniSuccess = (done) => {
+  const oldSharePath = chrome.fileManagerPrivate.sharePathWithCrostini;
+  let sharePathCalled = false;
+  chrome.fileManagerPrivate.sharePathWithCrostini = (entry, callback) => {
+    oldSharePath(entry, () => {
+      sharePathCalled = true;
+      callback();
+    });
+  };
+  chrome.metricsPrivate.smallCounts_ = [];
+  chrome.metricsPrivate.values_ = [];
+
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        // Right-click 'photos' directory.
+        // Check 'Share with Linux' is shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
+            'right-click photos');
+        return test.waitForElement(
+            '#file-context-menu:not([hidden]) ' +
+            '[command="#share-with-linux"]:not([hidden]):not([disabled])');
+      })
+      .then(() => {
+        // Click on 'Share with Linux'.
+        assertTrue(
+            test.fakeMouseClick(
+                '#file-context-menu [command="#share-with-linux"]'),
+            'Share with Linux');
+        // Check sharePathWithCrostini is called.
+        return test.repeatUntil(() => {
+          return sharePathCalled || test.pending('wait for sharePathCalled');
+        });
+      })
+      .then(() => {
+        // Validate UMAs.
+        assertEquals(1, chrome.metricsPrivate.smallCounts_.length);
+        assertArrayEquals(
+            ['FileBrowser.CrostiniSharedPaths.Depth.downloads', 1],
+            chrome.metricsPrivate.smallCounts_[0]);
+        const lastEnumUma = chrome.metricsPrivate.values_.pop();
+        assertEquals('FileBrowser.MenuItemSelected', lastEnumUma[0].metricName);
+        assertEquals(12 /* Share with Linux */, lastEnumUma[1]);
+
+        // Restore fmp.*.
+        chrome.fileManagerPrivate.sharePathWithCrostini = oldSharePath;
+        done();
+      });
+};
+
+// Verify right-click menu with 'Share with Linux' is not shown for:
+// * Files (not directory)
+// * Any folder already shared
+// * Root Downloads folder
+// * Any folder outside of downloads (e.g. crostini or orive)
+crostiniShare.testSharePathNotShown = (done) => {
+  const myFiles = '#directory-tree .tree-item [root-type-icon="my_files"]';
+  const downloads = '#file-list li [file-type-icon="downloads"]';
+  const linuxFiles = '#directory-tree .tree-item [root-type-icon="crostini"]';
+  const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
+  const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"][hidden][disabled="disabled"]';
+  let alreadySharedPhotosDir;
+
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        // Right-click 'hello.txt' file.
+        // Check 'Share with Linux' is not shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="hello.txt"]'),
+            'right-click hello.txt');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
+        // Set a folder as already shared.
+        alreadySharedPhotosDir =
+            mockVolumeManager
+                .getCurrentProfileVolumeInfo(
+                    VolumeManagerCommon.VolumeType.DOWNLOADS)
+                .fileSystem.entries['/photos'];
+        Crostini.registerSharedPath(alreadySharedPhotosDir, mockVolumeManager);
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
+            'right-click hello.txt');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
+        // Select 'My files' in directory tree to show Downloads in file list.
+        assertTrue(test.fakeMouseClick(myFiles), 'click My files');
+        return test.waitForElement(downloads);
+      })
+      .then(() => {
+        // Right-click 'Downloads' directory.
+        // Check 'Share with Linux' is not shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick(downloads), 'right-click downloads');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
+        // Select 'Linux files' in directory tree to show dir A in file list.
+        return test.waitForElement(linuxFiles);
+      })
+      .then(() => {
+        assertTrue(test.fakeMouseClick(linuxFiles), 'click Linux files');
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
+      })
+      .then(() => {
+        // Check 'Share with Linux' is not shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="A"]'),
+            'right-click directory A');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
+        // Select 'Google Drive' to show dir photos in file list.
+        return test.waitForElement(googleDrive);
+      })
+      .then(() => {
+        assertTrue(test.fakeMouseClick(googleDrive), 'click Google Drive');
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows(test.BASIC_DRIVE_ENTRY_SET));
+      })
+      .then(() => {
+        // Check 'Share with Linux' is not shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
+            'right-click photos');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
+        // Reset Linux files back to unmounted.
+        chrome.fileManagerPrivate.removeMount('crostini');
+        return test.waitForElement(
+            '#directory-tree .tree-item [root-type-icon="crostini"]');
+      })
+      .then(() => {
+        // Clear Crostini shared folders.
+        Crostini.unregisterSharedPath(
+            alreadySharedPhotosDir, mockVolumeManager);
+        done();
+      });
+};
