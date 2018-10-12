@@ -63,8 +63,8 @@ class TestServerSession : public QuicServerSessionBase {
   ~TestServerSession() override { delete connection(); };
 
  protected:
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
-    if (!ShouldCreateIncomingDynamicStream(id)) {
+  QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override {
+    if (!ShouldCreateIncomingStream(id)) {
       return nullptr;
     }
     QuicSpdyStream* stream = new QuicSimpleServerStream(
@@ -79,7 +79,7 @@ class TestServerSession : public QuicServerSessionBase {
   }
 
   QuicSpdyStream* CreateOutgoingUnidirectionalStream() override {
-    if (!ShouldCreateOutgoingDynamicStream()) {
+    if (!ShouldCreateOutgoingStream()) {
       return nullptr;
     }
 
@@ -355,7 +355,7 @@ TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_QUIC_BUG(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
                       session_.get(), GetNthClientInitiatedId(0)),
-                  "ShouldCreateIncomingDynamicStream called when disconnected");
+                  "ShouldCreateIncomingStream called when disconnected");
 }
 
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {

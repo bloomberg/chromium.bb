@@ -115,7 +115,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                void(QuicErrorCode error,
                     const QuicString& error_details,
                     ConnectionCloseSource source));
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,

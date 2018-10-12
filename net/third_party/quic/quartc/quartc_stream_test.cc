@@ -58,7 +58,7 @@ class MockQuicSession : public QuicSession {
     return QuicConsumedData(write_length, state != StreamSendingState::NO_FIN);
   }
 
-  QuartcStream* CreateIncomingDynamicStream(QuicStreamId id) override {
+  QuartcStream* CreateIncomingStream(QuicStreamId id) override {
     return nullptr;
   }
 

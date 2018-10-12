@@ -158,7 +158,7 @@ class TestSession : public QuicSession {
     return stream;
   }
 
-  TestStream* CreateIncomingDynamicStream(QuicStreamId id) override {
+  TestStream* CreateIncomingStream(QuicStreamId id) override {
     // Enforce the limit on the number of open streams.
     if (GetNumOpenIncomingStreams() + 1 > max_open_incoming_streams()) {
       connection()->CloseConnection(

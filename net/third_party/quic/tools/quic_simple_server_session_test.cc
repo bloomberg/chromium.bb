@@ -58,9 +58,9 @@ class QuicSimpleServerSessionPeer {
     s->RegisterStaticStream(kCryptoStreamId, crypto_stream);
   }
 
-  static QuicSpdyStream* CreateIncomingDynamicStream(QuicSimpleServerSession* s,
-                                                     QuicStreamId id) {
-    return s->CreateIncomingDynamicStream(id);
+  static QuicSpdyStream* CreateIncomingStream(QuicSimpleServerSession* s,
+                                              QuicStreamId id) {
+    return s->CreateIncomingStream(id);
   }
 
   static QuicSimpleServerStream* CreateOutgoingUnidirectionalStream(
@@ -326,7 +326,7 @@ TEST_P(QuicSimpleServerSessionTest, AcceptClosedStream) {
   EXPECT_TRUE(connection_->connected());
 }
 
-TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStreamDisconnected) {
+TEST_P(QuicSimpleServerSessionTest, CreateIncomingStreamDisconnected) {
   // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
   if (GetParam() != AllSupportedVersions()[0]) {
     return;
@@ -335,9 +335,9 @@ TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStreamDisconnected) {
   // Tests that incoming stream creation fails when connection is not connected.
   size_t initial_num_open_stream = session_->GetNumOpenIncomingStreams();
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
-  EXPECT_QUIC_BUG(QuicSimpleServerSessionPeer::CreateIncomingDynamicStream(
+  EXPECT_QUIC_BUG(QuicSimpleServerSessionPeer::CreateIncomingStream(
                       session_.get(), GetNthClientInitiatedId(0)),
-                  "ShouldCreateIncomingDynamicStream called when disconnected");
+                  "ShouldCreateIncomingStream called when disconnected");
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenIncomingStreams());
 }
 
@@ -347,14 +347,13 @@ TEST_P(QuicSimpleServerSessionTest, CreateEvenIncomingDynamicStream) {
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID,
                               "Client created even numbered stream", _));
-  QuicSimpleServerSessionPeer::CreateIncomingDynamicStream(session_.get(), 2);
+  QuicSimpleServerSessionPeer::CreateIncomingStream(session_.get(), 2);
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenIncomingStreams());
 }
 
-TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStream) {
-  QuicSpdyStream* stream =
-      QuicSimpleServerSessionPeer::CreateIncomingDynamicStream(
-          session_.get(), GetNthClientInitiatedId(0));
+TEST_P(QuicSimpleServerSessionTest, CreateIncomingStream) {
+  QuicSpdyStream* stream = QuicSimpleServerSessionPeer::CreateIncomingStream(
+      session_.get(), GetNthClientInitiatedId(0));
   EXPECT_NE(nullptr, stream);
   EXPECT_EQ(GetNthClientInitiatedId(0), stream->id());
 }
@@ -371,7 +370,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
   EXPECT_QUIC_BUG(
       QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
           session_.get()),
-      "ShouldCreateOutgoingDynamicStream called when disconnected");
+      "ShouldCreateOutgoingStream called when disconnected");
 
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenOutgoingStreams());
 }

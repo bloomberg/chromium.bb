@@ -41,7 +41,7 @@ void QuicSpdyClientSession::OnProofValid(
 void QuicSpdyClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& /*verify_details*/) {}
 
-bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
+bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
   if (!crypto_stream_->encryption_established()) {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
@@ -70,7 +70,7 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
 
 QuicSpdyClientStream*
 QuicSpdyClientSession::CreateOutgoingBidirectionalStream() {
-  if (!ShouldCreateOutgoingDynamicStream()) {
+  if (!ShouldCreateOutgoingStream()) {
     return nullptr;
   }
   std::unique_ptr<QuicSpdyClientStream> stream = CreateClientStream();
@@ -113,9 +113,9 @@ int QuicSpdyClientSession::GetNumReceivedServerConfigUpdates() const {
   return crypto_stream_->num_scup_messages_received();
 }
 
-bool QuicSpdyClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateIncomingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
   if (goaway_received() && respect_goaway_) {
@@ -133,9 +133,8 @@ bool QuicSpdyClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-QuicSpdyStream* QuicSpdyClientSession::CreateIncomingDynamicStream(
-    QuicStreamId id) {
-  if (!ShouldCreateIncomingDynamicStream(id)) {
+QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(QuicStreamId id) {
+  if (!ShouldCreateIncomingStream(id)) {
     return nullptr;
   }
   QuicSpdyStream* stream =

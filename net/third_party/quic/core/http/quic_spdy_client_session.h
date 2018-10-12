@@ -65,12 +65,12 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
 
  protected:
   // QuicSession methods:
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
   // If an outgoing stream can be created, return true.
-  bool ShouldCreateOutgoingDynamicStream() override;
+  bool ShouldCreateOutgoingStream() override;
 
   // If an incoming stream can be created, return true.
-  bool ShouldCreateIncomingDynamicStream(QuicStreamId id) override;
+  bool ShouldCreateIncomingStream(QuicStreamId id) override;
 
   // Create the crypto stream. Called by Initialize().
   virtual std::unique_ptr<QuicCryptoClientStreamBase> CreateQuicCryptoStream();

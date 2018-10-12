@@ -86,9 +86,8 @@ void QuicSimpleServerSession::PromisePushResources(
   HandlePromisedPushRequests();
 }
 
-QuicSpdyStream* QuicSimpleServerSession::CreateIncomingDynamicStream(
-    QuicStreamId id) {
-  if (!ShouldCreateIncomingDynamicStream(id)) {
+QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(QuicStreamId id) {
+  if (!ShouldCreateIncomingStream(id)) {
     return nullptr;
   }
 
@@ -106,7 +105,7 @@ QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
 
 QuicSimpleServerStream*
 QuicSimpleServerSession::CreateOutgoingUnidirectionalStream() {
-  if (!ShouldCreateOutgoingDynamicStream()) {
+  if (!ShouldCreateOutgoingStream()) {
     return nullptr;
   }
 
@@ -187,7 +186,7 @@ void QuicSimpleServerSession::SendPushPromise(QuicStreamId original_stream_id,
 }
 
 void QuicSimpleServerSession::HandlePromisedPushRequests() {
-  while (!promised_streams_.empty() && ShouldCreateOutgoingDynamicStream()) {
+  while (!promised_streams_.empty() && ShouldCreateOutgoingStream()) {
     PromisedStreamInfo& promised_info = promised_streams_.front();
     DCHECK_EQ(next_outgoing_stream_id(), promised_info.stream_id);
 

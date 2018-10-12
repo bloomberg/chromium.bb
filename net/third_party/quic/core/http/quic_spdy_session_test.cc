@@ -168,7 +168,7 @@ class TestSession : public QuicSpdySession {
     return stream;
   }
 
-  TestStream* CreateIncomingDynamicStream(QuicStreamId id) override {
+  TestStream* CreateIncomingStream(QuicStreamId id) override {
     // Enforce the limit on the number of open streams.
     if (GetNumOpenIncomingStreams() + 1 > max_open_incoming_streams()) {
       connection()->CloseConnection(
@@ -182,11 +182,9 @@ class TestSession : public QuicSpdySession {
     }
   }
 
-  bool ShouldCreateIncomingDynamicStream(QuicStreamId /*id*/) override {
-    return true;
-  }
+  bool ShouldCreateIncomingStream(QuicStreamId /*id*/) override { return true; }
 
-  bool ShouldCreateOutgoingDynamicStream() override { return true; }
+  bool ShouldCreateOutgoingStream() override { return true; }
 
   bool IsClosedStream(QuicStreamId id) {
     return QuicSession::IsClosedStream(id);
@@ -1605,7 +1603,7 @@ TEST_P(QuicSpdySessionTestServer, RetransmitFrames) {
 
 TEST_P(QuicSpdySessionTestServer, OnPriorityFrame) {
   QuicStreamId stream_id = GetNthClientInitiatedId(0);
-  TestStream* stream = session_.CreateIncomingDynamicStream(stream_id);
+  TestStream* stream = session_.CreateIncomingStream(stream_id);
   session_.OnPriorityFrame(stream_id, kV3HighestPriority);
   EXPECT_EQ(kV3HighestPriority, stream->priority());
 }

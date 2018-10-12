@@ -60,7 +60,7 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                void(quic::QuicErrorCode error,
                     const std::string& error_details,
                     quic::ConnectionCloseSource source));
-  MOCK_METHOD1(CreateIncomingDynamicStream,
+  MOCK_METHOD1(CreateIncomingStream,
                quic::QuicSpdyStream*(quic::QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicChromiumClientStream*());
@@ -129,8 +129,8 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
   bool IsAuthorized(const std::string& hostname) override { return true; }
 
  protected:
-  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(quic::QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
+  MOCK_METHOD1(ShouldCreateIncomingStream, bool(quic::QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingStream, bool());
 
  private:
   std::unique_ptr<quic::QuicCryptoStream> crypto_stream_;

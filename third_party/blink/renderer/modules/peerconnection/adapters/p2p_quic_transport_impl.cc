@@ -237,7 +237,7 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingUnidirectionalStream() {
   return nullptr;
 }
 
-P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingDynamicStream(
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
     quic::QuicStreamId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   P2PQuicStreamImpl* stream = CreateStreamInternal(id);

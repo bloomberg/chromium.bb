@@ -104,7 +104,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new stream initiated from the remote side. The caller does not
   // own the stream, so the stream is activated and ownership is moved to the
   // quic::QuicSession.
-  P2PQuicStreamImpl* CreateIncomingDynamicStream(
+  P2PQuicStreamImpl* CreateIncomingStream(
       quic::QuicStreamId id) override;
 
   // Creates a new outgoing stream. The caller does not own the

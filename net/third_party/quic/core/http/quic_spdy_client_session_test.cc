@@ -58,8 +58,7 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSession {
                                                     this, BIDIRECTIONAL);
   }
 
-  MockQuicSpdyClientStream* CreateIncomingDynamicStream(
-      QuicStreamId id) override {
+  MockQuicSpdyClientStream* CreateIncomingStream(QuicStreamId id) override {
     MockQuicSpdyClientStream* stream =
         new MockQuicSpdyClientStream(id, this, READ_UNIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));

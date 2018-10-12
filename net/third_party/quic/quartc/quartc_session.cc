@@ -309,7 +309,7 @@ void QuartcSession::OnProofVerifyDetailsAvailable(
   // TODO(zhihuang): Handle the proof verification.
 }
 
-QuicStream* QuartcSession::CreateIncomingDynamicStream(QuicStreamId id) {
+QuicStream* QuartcSession::CreateIncomingStream(QuicStreamId id) {
   return ActivateDataStream(CreateDataStream(id, QuicStream::kDefaultPriority));
 }
 

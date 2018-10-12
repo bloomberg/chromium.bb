@@ -931,7 +931,7 @@ QuicStream* QuicSession::GetOrCreateDynamicStream(
     return nullptr;
   }
 
-  return CreateIncomingDynamicStream(stream_id);
+  return CreateIncomingStream(stream_id);
 }
 
 void QuicSession::set_max_open_incoming_streams(
