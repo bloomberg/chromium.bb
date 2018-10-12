@@ -628,10 +628,10 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertTrue(!!backspaceButton);
         assertTrue(backspaceButton.disabled);
 
-        pinKeyboard.value = '11';
+        pinKeyboard.$$('cr-input').value = '11';
         assertFalse(backspaceButton.disabled);
 
-        pinKeyboard.value = '';
+        pinKeyboard.$$('cr-input').value = '';
         assertTrue(backspaceButton.disabled);
       });
     });
