@@ -97,7 +97,8 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
       std::vector<std::string>* run_until);
 
   // Create the right AccessibilityTreeFormatter subclass.
-  AccessibilityTreeFormatter* CreateAccessibilityTreeFormatter();
+  std::unique_ptr<AccessibilityTreeFormatter>
+  CreateAccessibilityTreeFormatter();
 
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 
