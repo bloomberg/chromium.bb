@@ -89,7 +89,7 @@ import testserver_base
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
 
-# Policy for extensions is not supported on Android nor iOS.
+# Policy for extensions is not supported on Android.
 try:
   import chrome_extension_policy_pb2 as ep
 except ImportError:
@@ -592,8 +592,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               'google/chromeos/device',
               'google/chromeos/publicaccount',
               'google/chromeos/user',
-              'google/chrome/user',
-              'google/ios/user')):
+              'google/chrome/user')):
         fetch_response = response.policy_response.response.add()
         self.ProcessCloudPolicy(request, token_info, fetch_response, username)
       elif (request.policy_type in
@@ -992,8 +991,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       if msg.policy_type in ('google/android/user',
                              'google/chromeos/publicaccount',
                              'google/chromeos/user',
-                             'google/chrome/user',
-                             'google/ios/user'):
+                             'google/chrome/user'):
         settings = cp.CloudPolicySettings()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
