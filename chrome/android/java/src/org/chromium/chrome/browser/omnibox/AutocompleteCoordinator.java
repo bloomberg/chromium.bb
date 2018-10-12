@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.WindowManager;
 import android.widget.ListView;
 
 import org.chromium.base.Log;
@@ -346,17 +349,52 @@ public class AutocompleteCoordinator
             }
 
             @Override
+            public void onLongPress(OmniboxSuggestion suggestion, int position) {
+                RecordUserAction.record("MobileOmniboxDeleteGesture");
+                if (!suggestion.isDeletable()) return;
+
+                // TODO(tedchoc): Migrate to modal dialog manager.
+                AlertDialog.Builder b =
+                        new AlertDialog.Builder(mParent.getContext(), R.style.AlertDialogTheme);
+                b.setTitle(suggestion.getDisplayText());
+                b.setMessage(R.string.omnibox_confirm_delete);
+
+                DialogInterface.OnClickListener clickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (which == DialogInterface.BUTTON_POSITIVE) {
+                                    RecordUserAction.record("MobileOmniboxDeleteRequested");
+                                    mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
+                                } else if (which == DialogInterface.BUTTON_NEGATIVE) {
+                                    dialog.cancel();
+                                }
+                            }
+                        };
+                b.setPositiveButton(android.R.string.ok, clickListener);
+                b.setNegativeButton(android.R.string.cancel, clickListener);
+
+                AlertDialog dialog = b.create();
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        mSuggestionModalShown = false;
+                    }
+                });
+
+                mSuggestionModalShown = true;
+                try {
+                    dialog.show();
+                } catch (WindowManager.BadTokenException ex) {
+                    mSuggestionModalShown = false;
+                }
+            }
+
+            @Override
             public void onSetUrlToSuggestion(OmniboxSuggestion suggestion) {
                 if (mIgnoreOmniboxItemSelection) return;
                 mDelegate.setOmniboxEditingText(suggestion.getFillIntoEdit());
                 mIgnoreOmniboxItemSelection = true;
-            }
-
-            @Override
-            public void onDeleteSuggestion(OmniboxSuggestion suggestion, int position) {
-                if (mAutocomplete != null) {
-                    mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
-                }
             }
 
             @Override
@@ -367,16 +405,6 @@ public class AutocompleteCoordinator
             @Override
             public void onGestureUp(long timestamp) {
                 mLastActionUpTimestamp = timestamp;
-            }
-
-            @Override
-            public void onShowModal() {
-                mSuggestionModalShown = true;
-            }
-
-            @Override
-            public void onHideModal() {
-                mSuggestionModalShown = false;
             }
 
             @Override
