@@ -45644,6 +45644,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Regular to None"/>
   <int value="7" label="Load Regular"/>
   <int value="8" label="Load Invalid"/>
+  <int value="9" label="Load Invalid (no token for primary)"/>
 </enum>
 
 <enum name="SigninTokenTableReadTokenFromDBResult">

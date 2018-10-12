@@ -51,6 +51,7 @@ enum class TokenStateTransition {
   // Load events.
   kLoadRegular,
   kLoadInvalid,
+  kLoadInvalidNoTokenForPrimaryAccount,
 
   kCount
 };
@@ -556,6 +557,8 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_MISSING));
+    RecordTokenStateTransition(
+        TokenStateTransition::kLoadInvalidNoTokenForPrimaryAccount);
     FireRefreshTokenAvailable(loading_primary_account_id_);
   }
 
