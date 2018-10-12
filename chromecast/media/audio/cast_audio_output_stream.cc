@@ -51,8 +51,8 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
   void Initialize(const std::string& application_session_id,
                   chromecast::mojom::MultiroomInfoPtr multiroom_info);
   void Start(AudioSourceCallback* source_callback);
-  void Stop(base::OnceClosure closure);
-  void Pause();
+  void Stop();
+  void Close(base::OnceClosure closure);
   void SetVolume(double volume);
 
  private:
@@ -187,8 +187,6 @@ void CastAudioOutputStream::CmaWrapper::Start(
   if (media_thread_state_ == kOpened) {
     media_thread_state_ = kStarted;
     cma_backend_->Start(0);
-  } else {
-    cma_backend_->Resume();
   }
 
   next_push_time_ = base::TimeTicks::Now();
@@ -198,12 +196,23 @@ void CastAudioOutputStream::CmaWrapper::Start(
   }
 }
 
-void CastAudioOutputStream::CmaWrapper::Stop(base::OnceClosure closure) {
+void CastAudioOutputStream::CmaWrapper::Stop() {
+  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  if (cma_backend_ && media_thread_state_ == kStarted) {
+    cma_backend_->Stop();
+  }
+  push_in_progress_ = false;
+  media_thread_state_ = kOpened;
+  source_callback_ = nullptr;
+}
+
+void CastAudioOutputStream::CmaWrapper::Close(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   // Only stop the backend if it was started.
   if (cma_backend_ && media_thread_state_ == kStarted) {
     cma_backend_->Stop();
   }
+  push_in_progress_ = false;
   media_thread_state_ = kPendingClose;
 
   cma_backend_task_runner_.reset();
@@ -211,16 +220,6 @@ void CastAudioOutputStream::CmaWrapper::Stop(base::OnceClosure closure) {
   audio_bus_.reset();
 
   audio_task_runner_->PostTask(FROM_HERE, std::move(closure));
-}
-
-void CastAudioOutputStream::CmaWrapper::Pause() {
-  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-
-  if (cma_backend_) {
-    cma_backend_->Pause();
-  }
-
-  source_callback_ = nullptr;
 }
 
 void CastAudioOutputStream::CmaWrapper::SetVolume(double volume) {
@@ -236,13 +235,15 @@ void CastAudioOutputStream::CmaWrapper::SetVolume(double volume) {
 
 void CastAudioOutputStream::CmaWrapper::PushBuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
-  DCHECK(push_in_progress_);
 
+  // It is possible that this function is called when we are stopped.
+  // Return quickly if so.
   if (!source_callback_ || encountered_error_ ||
       media_thread_state_ != kStarted) {
     push_in_progress_ = false;
     return;
   }
+  DCHECK(push_in_progress_);
 
   CmaBackend::AudioDecoder::RenderingDelay rendering_delay =
       audio_decoder_->GetRenderingDelay();
@@ -389,7 +390,7 @@ void CastAudioOutputStream::Close() {
   base::OnceClosure finish_callback = base::BindOnce(
       &CastAudioOutputStream::FinishClose, audio_weak_factory_.GetWeakPtr());
   if (cma_wrapper_)
-    POST_TO_CMA_WRAPPER(Stop, std::move(finish_callback));
+    POST_TO_CMA_WRAPPER(Close, std::move(finish_callback));
   else
     std::move(finish_callback).Run();
 }
@@ -427,7 +428,7 @@ void CastAudioOutputStream::Stop() {
   pending_start_.Reset();
   pending_volume_.Reset();
   if (cma_wrapper_)
-    POST_TO_CMA_WRAPPER(Pause);
+    POST_TO_CMA_WRAPPER(Stop);
 }
 
 void CastAudioOutputStream::SetVolume(double volume) {
