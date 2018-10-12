@@ -1074,8 +1074,8 @@ void URLLoader::OnCertificateRequestedResponse(
     url_request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   } else {
     if (x509_certificate) {
-      scoped_refptr<net::SSLPrivateKey> key(new SSLPrivateKeyInternal(
-          algorithm_preferences, std::move(ssl_private_key)));
+      auto key = base::MakeRefCounted<SSLPrivateKeyInternal>(
+          algorithm_preferences, std::move(ssl_private_key));
       url_request_->ContinueWithCertificate(std::move(x509_certificate),
                                             std::move(key));
     } else {
