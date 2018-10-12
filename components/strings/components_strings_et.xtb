@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Pole turvaline</translation>
 <translation id="1080116354587839789">Sobita laiusesse</translation>
 <translation id="1088860948719068836">Kaardil oleva nime lisamine</translation>
+<translation id="1089439967362294234">Parooli muutmine</translation>
 <translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Kui see on märgitud, salvestab Chrome teie kaardi koopia sellesse seadmesse, et vormi kiiremini täita.</translation>
 <translation id="1110994991967754504">Valige luba üksuse <ph name="PERMISSION_NAME" /> jaoks</translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chrome neid sertifikaate kinnitada.</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, praegu valitud. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Aita mul seda parandada</translation>
 <translation id="2985306909656435243">Kui see on lubatud, salvestab Chromium teie kaardi koopia vormide kiiremaks täitmiseks sellesse seadmesse.</translation>
 <translation id="2985398929374701810">Sisestage kehtiv aadress</translation>
 <translation id="2986368408720340940">See kättesaamisviis pole saadaval. Proovige mõnda teist kättesaamisviisi.</translation>
@@ -530,7 +530,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Keelake laiendused.</translation>
 <translation id="457875822857220463">Kohaletoimetamine</translation>
-<translation id="4582800630050655161">Võite kaotada juurdepääsu oma Google'i kontole või teie identiteet võidakse varastada. Chromium soovitab teil kohe oma parooli muuta.</translation>
 <translation id="4587425331216688090">Kas eemaldada Chrome'ist aadress?</translation>
 <translation id="4592951414987517459">Teie ühendus domeeniga <ph name="DOMAIN" /> on krüpteeritud tänapäevase šifreerimiskomplektiga.</translation>
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
@@ -539,7 +538,6 @@
 <translation id="467662567472608290">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat sisaldab vigu. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690462567478992370">Lõpeta kehtetu sertifikaadi kasutamine</translation>
-<translation id="4690954380545377795">Võite kaotada juurdepääsu oma Google'i kontole või teie identiteet võidakse varastada. Chrome soovitab teil kohe oma parooli muuta.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Teie ühendus katkes</translation>
 <translation id="471880041731876836">Teil ei ole selle saidi külastamiseks luba</translation>
@@ -582,7 +580,6 @@
 <translation id="495170559598752135">Toimingud</translation>
 <translation id="4958444002117714549">Laienda loendit</translation>
 <translation id="4974590756084640048">Luba hoiatused uuesti</translation>
-<translation id="4988217478422488391">Võimaldab veebis kiiremini maksta</translation>
 <translation id="4989163558385430922">Kuva kõik</translation>
 <translation id="4989809363548539747">Seda pistikprogrammi ei toetata</translation>
 <translation id="5002932099480077015">Kui see on lubatud, salvestab Chrome teie kaardi koopia vormide kiiremini täitmiseks sellesse seadmesse.</translation>
@@ -1162,7 +1159,6 @@ Lisateave:
 <translation id="9080712759204168376">Tellimuse kokkuvõte</translation>
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9106062320799175032">Arveldusaadressi lisamine</translation>
-<translation id="910908805481542201">Aita mul seda parandada</translation>
 <translation id="9114524666733003316">Kaardi kinnitamine …</translation>
 <translation id="9128870381267983090">Ühendumine Internetiga</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>

@@ -3338,7 +3338,6 @@
 <translation id="6042308850641462728">আরও</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সাথে একটি Chrome ট্যাব শেয়ার করছে।</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সাথে একটি Chrome ট্যাব এবং অডিও শেয়ার করছে।</translation>
-<translation id="6047938872139769630">সাইন-আউট করা থাকলে আপনি আপনার ডিভাইস আনলক করার জন্য পিন ব্যবহার করতে পারেন</translation>
 <translation id="6049004884579590341">সম্পূর্ণ স্ক্রিন মোড থেকে বেরোতে |<ph name="ACCELERATOR" />| টিপে ধরে রাখুন</translation>
 <translation id="6049065490165456785">অভ্যন্তরীণ ক্যামেরা থেকে ফটো</translation>
 <translation id="6051354611314852653">ওহো! সিস্টেমটি এই ডিভাইসের জন্য API অ্যাক্সেস অনুমোদন করতে ব্যর্থ হয়েছে৷</translation>
@@ -3694,7 +3693,6 @@
 <translation id="6580151766480067746">ARC সংস্করণ</translation>
 <translation id="6581162200855843583">Google ড্রাইভ লিঙ্ক</translation>
 <translation id="6582080224869403177">আপনার নিরাপত্তা আপগ্রেড করতে <ph name="DEVICE_TYPE" /> রিসেট করুন।</translation>
-<translation id="6582421931165117398">আপনার ব্যক্তিগত তথ্য রক্ষা করতে, এখনই এখনই আপনার পাসওয়ার্ড পরিবর্তন করুন। আপনার পাসওয়ার্ড পরিবর্তন করার আগে, আপনাকে সাইন ইন করতে বলা হবে।</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">প্রাথমিক মাউস বোতাম অদল-বদল করুন</translation>
 <translation id="6589660129740381104">আরও সহজে <ph name="IDS_SHORT_PRODUCT_NAME" />-এ আপনার অভিজ্ঞতা পরিচালনা করতে, সিঙ্ক এবং ব্যক্তিগতকরণের সাথে সম্পর্কিত বৈশিষ্ট্য এখন একই জায়গা থেকে নিয়ন্ত্রণ করা যাবে। এটি চালু করলে আপনার বর্তমান সেটিংস পরিবর্তন হতে পারে।</translation>
@@ -4120,7 +4118,6 @@
 <translation id="7229570126336867161">EVDO এর প্রয়োজন</translation>
 <translation id="7230787553283372882">আপনার পাঠ্যের আকার কাস্টমাইজ করুন</translation>
 <translation id="7232750842195536390">নাম পরিবর্তন করা যায়নি</translation>
-<translation id="7234406375359457793">শেয়ার মাউন্ট করা যায়নি। নির্দিষ্ট শেয়ারটি সমর্থিত নয়।</translation>
 <translation id="7238585580608191973">SHA-256 আঙুলের ছাপ</translation>
 <translation id="7240120331469437312">শংসাপত্র বিষয় বিকল্প নাম</translation>
 <translation id="7240339475467890413">নতুন হটস্পটে সংযোগ করতে চান?</translation>

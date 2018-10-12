@@ -3342,7 +3342,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" />, bir Chrome sekmesini <ph name="TAB_NAME" /> ile paylaşıyor.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" />, bir Chrome sekmesini ve sesi <ph name="TAB_NAME" /> ile paylaşıyor.</translation>
-<translation id="6047938872139769630">Oturumunuz kapalıyken cihazınızın kilidini açmak için PIN'i kullanabilirsiniz</translation>
 <translation id="6049004884579590341">Tam ekrandan çıkmak için |<ph name="ACCELERATOR" />| tuşunu basılı tutun</translation>
 <translation id="6049065490165456785">Dahili kamera fotoğrafı</translation>
 <translation id="6051354611314852653">Hata!  Sistem bu cihaz için API erişimini yetkilendiremedi.</translation>
@@ -3697,7 +3696,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6580151766480067746">ARC Sürümü</translation>
 <translation id="6581162200855843583">Google Drive bağlantısı</translation>
 <translation id="6582080224869403177">Güvenliğinizi yeni sürüme geçirmek için <ph name="DEVICE_TYPE" /> cihazınızı sıfırlayın.</translation>
-<translation id="6582421931165117398">Kişisel bilgilerinizi korumak için şifrenizi hemen değiştirin. Şifrenizi değiştirebilmek için önce oturum açmanız gerekir.</translation>
 <translation id="6584878029876017575">Microsoft Ömür Boyu İmzalama</translation>
 <translation id="6586451623538375658">Birincil fare düğmesini değiştir</translation>
 <translation id="6589660129740381104"><ph name="IDS_SHORT_PRODUCT_NAME" /> deneyiminizi daha kolay yönetmenize yardımcı olmak için senkronizasyon ve kişiselleştirmeyle ilgili özellikler artık tek bir kontrol altında. Bu ayar açıldığında geçerli ayarlarınız değişebilir.</translation>
@@ -4123,7 +4121,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7229570126336867161">EVDO gerekli</translation>
 <translation id="7230787553283372882">Metin boyutunu özelleştir</translation>
 <translation id="7232750842195536390">Yeniden adlandırma başarısız oldu</translation>
-<translation id="7234406375359457793">Paylaşım eklenirken hata oluştu. Belirtilen paylaşım desteklenmiyor.</translation>
 <translation id="7238585580608191973">SHA-256 Parmak İzi</translation>
 <translation id="7240120331469437312">Sertifika Konusu Diğer Adı</translation>
 <translation id="7240339475467890413">Yeni hotspot'a bağlanılsın mı?</translation>

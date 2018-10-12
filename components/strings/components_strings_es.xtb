@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">No es seguro</translation>
 <translation id="1080116354587839789">Se ajusta al ancho</translation>
 <translation id="1088860948719068836">Añade el nombre de la tarjeta</translation>
+<translation id="1089439967362294234">Cambiar contraseña</translation>
 <translation id="1103523840287552314">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si se selecciona, Chrome almacenará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="1110994991967754504">Seleccionar permiso de <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que utilizan los sitios web para identificarse solo son válidos para períodos de tiempo específicos. Como el reloj de tu dispositivo no está configurado correctamente, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, opción seleccionada actualmente. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Ayuda para solucionarlo</translation>
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="2985398929374701810">Introduce una dirección válida</translation>
 <translation id="2986368408720340940">Este método de recogida no está disponible. Selecciona otro.</translation>
@@ -530,7 +530,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Inhabilita las extensiones.</translation>
 <translation id="457875822857220463">Envío</translation>
-<translation id="4582800630050655161">Podrías perder el acceso a tu cuenta de Google o experimentar problemas de suplantación de identidad. Chromium te recomienda que cambies la contraseña ahora.</translation>
 <translation id="4587425331216688090">¿Eliminar dirección de Chrome?</translation>
 <translation id="4592951414987517459">Tu conexión con <ph name="DOMAIN" /> está cifrada con un conjunto de cifrado moderno.</translation>
 <translation id="4594403342090139922">&amp;Deshacer eliminación</translation>
@@ -539,7 +538,6 @@
 <translation id="467662567472608290">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, su certificado de seguridad contiene errores. El problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="467809019005607715">Presentaciones de Google</translation>
 <translation id="4690462567478992370">Dejar de utilizar un certificado no válido</translation>
-<translation id="4690954380545377795">Podrías perder el acceso a tu cuenta de Google o experimentar problemas de suplantación de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Se ha interrumpido la conexión</translation>
 <translation id="471880041731876836">No tienes permiso para acceder a este sitio web</translation>
@@ -582,7 +580,6 @@
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4974590756084640048">Volver a habilitar advertencias</translation>
-<translation id="4988217478422488391">Te permite pagar online más rápido</translation>
 <translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome guardará una copia de tu tarjeta en este dispositivo para rellenar la información más rápido.</translation>
@@ -1162,7 +1159,6 @@ Más información:
 <translation id="9080712759204168376">Resumen del pedido</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="9106062320799175032">Añade una dirección de facturación</translation>
-<translation id="910908805481542201">Ayuda para solucionarlo</translation>
 <translation id="9114524666733003316">Confirmando tarjeta...</translation>
 <translation id="9128870381267983090">Conectarse a la red</translation>
 <translation id="9137013805542155359">Mostrar original</translation>

@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Ikke sikker</translation>
 <translation id="1080116354587839789">Tilpass til vindusbredden</translation>
 <translation id="1088860948719068836">Legg til navnet på kortet</translation>
+<translation id="1089439967362294234">Endre passord</translation>
 <translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Hvis det er merket av for dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
 <translation id="1110994991967754504">Velg tillatelse for <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, for øyeblikket valgt. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Hjelp meg med å fikse dette</translation>
 <translation id="2985306909656435243">Hvis du slår på dette alternativet, lagrer Chromium en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
 <translation id="2985398929374701810">Angi en gyldig adresse</translation>
 <translation id="2986368408720340940">Denne hentemetoden er ikke tilgjengelig. Prøv en annen metode.</translation>
@@ -530,7 +530,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Prøv å slå av utvidelsene dine.</translation>
 <translation id="457875822857220463">Levering</translation>
-<translation id="4582800630050655161">Du kan miste tilgangen til Google-kontoen din eller bli utsatt for identitetstyveri. Chromium anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4592951414987517459">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en moderne chifferserie.</translation>
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
@@ -539,7 +538,6 @@
 <translation id="467662567472608290">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren inneholder feil. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="467809019005607715">Google Presentasjoner</translation>
 <translation id="4690462567478992370">Slutt å bruke et ugyldig sertifikat</translation>
-<translation id="4690954380545377795">Du kan miste tilgangen til Google-kontoen din eller bli utsatt for identitetstyveri. Chrome anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Tilkoblingen ble avbrutt</translation>
 <translation id="471880041731876836">Du har ikke tillatelse til å besøke dette nettstedet</translation>
@@ -582,7 +580,6 @@
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Utvid liste</translation>
 <translation id="4974590756084640048">Slå på advarsler på nytt</translation>
-<translation id="4988217478422488391">Gjør det raskere å betale for ting på nettet</translation>
 <translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette programtillegget støttes ikke</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
@@ -1161,7 +1158,6 @@ Mer informasjon:
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
-<translation id="910908805481542201">Hjelp meg med å fikse dette</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>

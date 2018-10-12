@@ -3342,7 +3342,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6043317578411397101">O app <ph name="APP_NAME" /> está compartilhando uma guia do Chrome com <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844">O app <ph name="APP_NAME" /> está compartilhando áudio e uma guia do Chrome com <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Você pode usar o PIN para desbloquear o dispositivo quando estiver desconectado</translation>
 <translation id="6049004884579590341">Toque em |<ph name="ACCELERATOR" />| e mantenha essa tecla pressionada para sair do modo tela cheia</translation>
 <translation id="6049065490165456785">Foto da câmera interna</translation>
 <translation id="6051354611314852653">Ops! O sistema encontrou uma falha ao autorizar o acesso à API para este dispositivo.</translation>
@@ -3698,7 +3697,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6580151766480067746">Versão de ARC</translation>
 <translation id="6581162200855843583">Link do Google Drive</translation>
 <translation id="6582080224869403177">Redefina seu <ph name="DEVICE_TYPE" /> para aumentar a segurança.</translation>
-<translation id="6582421931165117398">Para proteger suas informações pessoais, altere sua senha agora. Antes de alterar sua senha, você precisará fazer login.</translation>
 <translation id="6584878029876017575">Assinatura de tempo de vida da Microsoft</translation>
 <translation id="6586451623538375658">Trocar botão principal do mouse</translation>
 <translation id="6589660129740381104">Para ajudar você a gerenciar sua experiência no <ph name="IDS_SHORT_PRODUCT_NAME" />, os recursos relacionados à sincronização e à personalização estão agora sob um único controle. A ativação pode alterar suas configurações atuais.</translation>
@@ -4124,7 +4122,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7229570126336867161">EVDO ausente</translation>
 <translation id="7230787553283372882">Personalizar o tamanho do texto</translation>
 <translation id="7232750842195536390">Falha na renomeação</translation>
-<translation id="7234406375359457793">Erro ao ativar o compartilhamento. O compartilhamento especificado não é compatível.</translation>
 <translation id="7238585580608191973">Assinatura digital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7240339475467890413">Conectar-se a um novo ponto de acesso?</translation>

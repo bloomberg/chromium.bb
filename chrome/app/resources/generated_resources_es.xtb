@@ -3338,7 +3338,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6042308850641462728">Más</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> está compartiendo una pestaña de Chrome con <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> está compartiendo audio y una pestaña de Chrome con <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Si no has iniciado sesión, puedes desbloquear el dispositivo con el PIN</translation>
 <translation id="6049004884579590341">Mantén pulsado |<ph name="ACCELERATOR" />| para salir del modo pantalla completa</translation>
 <translation id="6049065490165456785">Foto de cámara interna</translation>
 <translation id="6051354611314852653">¡Vaya! El sistema no ha podido autorizar el acceso de este dispositivo a la API.</translation>
@@ -3693,7 +3692,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6580151766480067746">Versión de ARC</translation>
 <translation id="6581162200855843583">Enlace de Google Drive</translation>
 <translation id="6582080224869403177">Restablece tu <ph name="DEVICE_TYPE" /> para actualizar la seguridad.</translation>
-<translation id="6582421931165117398">Cambia tu contraseña ahora para proteger tu información personal. Antes de cambiarla, se te solicitará que inicies sesión.</translation>
 <translation id="6584878029876017575">Firma de vigencia de Microsoft</translation>
 <translation id="6586451623538375658">Cambiar botón principal del ratón</translation>
 <translation id="6589660129740381104">Para que gestiones más fácilmente tu experiencia en <ph name="IDS_SHORT_PRODUCT_NAME" />, las funciones relacionadas con la sincronización y personalización se controlan desde un único ajuste. Es posible que, si lo activas, cambie la configuración actual.</translation>
@@ -4119,7 +4117,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7229570126336867161">Es necesario el estándar EVDO.</translation>
 <translation id="7230787553283372882">Personalizar el tamaño del texto</translation>
 <translation id="7232750842195536390">No se ha podido cambiar el nombre</translation>
-<translation id="7234406375359457793">No se ha podido activar el recurso compartido. El recurso especificado no es compatible.</translation>
 <translation id="7238585580608191973">Huella digital SHA-256</translation>
 <translation id="7240120331469437312">Nombre alternativo de la entidad receptora del certificado</translation>
 <translation id="7240339475467890413">¿Quieres conectarte a un nuevo punto de acceso?</translation>

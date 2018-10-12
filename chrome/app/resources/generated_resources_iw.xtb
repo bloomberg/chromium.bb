@@ -3339,7 +3339,6 @@
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6043317578411397101">‏<ph name="APP_NAME" /> משתף כרטיסיית Chrome עם <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844">‏<ph name="APP_NAME" /> משתף כרטיסייה ואודיו של Chrome עם <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">אם לא התחברת לחשבון, אפשר להשתמש בקוד כדי לבטל את הנעילה של המכשיר</translation>
 <translation id="6049004884579590341">לחץ לחיצה ארוכה על |<ph name="ACCELERATOR" />| כדי לצאת ממסך מלא</translation>
 <translation id="6049065490165456785">תמונה מהמצלמה הפנימית</translation>
 <translation id="6051354611314852653">‏אופס!  המערכת לא הצליחה לאמת את הגישה של מכשיר זה לממשק ה-API.</translation>
@@ -3694,7 +3693,6 @@
 <translation id="6580151766480067746">‏גירסת ARC</translation>
 <translation id="6581162200855843583">‏קישור ל-Google Drive</translation>
 <translation id="6582080224869403177">יש לאתחל את <ph name="DEVICE_TYPE" /> כדי לשדרג את האבטחה.</translation>
-<translation id="6582421931165117398">כדאי לשנות את הסיסמה עכשיו כדי להגן על המידע האישי. תוצג לך בקשה להיכנס לחשבונך לפני שינוי הסיסמה.</translation>
 <translation id="6584878029876017575">‏חתימה לכל החיים של Microsoft</translation>
 <translation id="6586451623538375658">החלף את לחצן העכבר העיקרי</translation>
 <translation id="6589660129740381104">כדי לעזור לך לנהל בקלות את החוויה ב-<ph name="IDS_SHORT_PRODUCT_NAME" />, התכונות הקשורות לסינכרון ולהתאמה אישית נשלטות עכשיו דרך פקד אחד. הפעלת הפקד הזה עשויה לשנות את ההגדרות הנוכחיות.</translation>
@@ -4120,7 +4118,6 @@
 <translation id="7229570126336867161">‏יש צורך ב-EVDO</translation>
 <translation id="7230787553283372882">התאם אישית את גודל הטקסט</translation>
 <translation id="7232750842195536390">המערכת לא הצליחה לשנות את השם</translation>
-<translation id="7234406375359457793">קרתה שגיאה בטעינת התקן הרשת לשיתוף קבצים. ההתקן שצוין אינו נתמך.</translation>
 <translation id="7238585580608191973">‏טביעת אצבע SHA-256</translation>
 <translation id="7240120331469437312">שם חלופי של נושא האישור</translation>
 <translation id="7240339475467890413">להתחבר לנקודה חדשה לשיתוף אינטרנט?</translation>

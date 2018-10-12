@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Nezabezpečeno</translation>
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
 <translation id="1088860948719068836">Přidání jména na kartě</translation>
+<translation id="1089439967362294234">Změnit heslo</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Pokud je tato možnost zaškrtnuta, Chrome v tomto zařízení bude za účelem rychlejšího vyplňování formulářů uchovávat kopii vaší karty.</translation>
 <translation id="1110994991967754504">Vyberte oprávnění pro <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Aby bylo možné navázat zabezpečené spojení, musejí být správně nastaveny hodiny. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro konkrétní období. Jelikož hodiny v zařízení nejsou nastaveny správně, Google Chrome tyto certifikáty nemůže ověřit.</translation>
 <translation id="2972581237482394796">&amp;Opakovat</translation>
 <translation id="2977665033722899841">Aktuálně je vybrán řádek <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Pomozte mi to opravit</translation>
 <translation id="2985306909656435243">Pokud je tato možnost aktivována, prohlížeč Chromium do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="2985398929374701810">Zadejte platnou adresu</translation>
 <translation id="2986368408720340940">Tento způsob vyzvednutí není k dispozici. Zkuste použít jiný způsob.</translation>
@@ -526,7 +526,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Zkuste zakázat rozšíření.</translation>
 <translation id="457875822857220463">Doručení</translation>
-<translation id="4582800630050655161">Mohli byste ztratit přístup k účtu Google nebo by mohlo dojít k odcizení vaší identity. Chromium doporučuje okamžitě změnit heslo.</translation>
 <translation id="4587425331216688090">Odstranit adresu z Chromu?</translation>
 <translation id="4592951414987517459">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití moderní šifrovací sady.</translation>
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
@@ -535,7 +534,6 @@
 <translation id="467662567472608290">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />, protože jeho bezpečnostní certifikát obsahuje chyby. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="467809019005607715">Prezentace Google</translation>
 <translation id="4690462567478992370">Přestat používat neplatný certifikát</translation>
-<translation id="4690954380545377795">Mohli byste ztratit přístup k účtu Google nebo by mohlo dojít k odcizení vaší identity. Chrome doporučuje okamžitě změnit heslo.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Připojení bylo přerušeno</translation>
 <translation id="471880041731876836">K návštěvě tohoto webu nemáte povolení</translation>
@@ -578,7 +576,6 @@
 <translation id="495170559598752135">Akce</translation>
 <translation id="4958444002117714549">Rozbalit seznam</translation>
 <translation id="4974590756084640048">Znovu zapnout upozornění</translation>
-<translation id="4988217478422488391">Urychluje placení za nákupy na internetu</translation>
 <translation id="4989163558385430922">Zobrazit vše</translation>
 <translation id="4989809363548539747">Tento plugin není podporován</translation>
 <translation id="5002932099480077015">Pokud je tato možnost aktivována, Chrome do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
@@ -1157,7 +1154,6 @@ Další podrobnosti:
 <translation id="9080712759204168376">Přehled objednávky</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>
-<translation id="910908805481542201">Pomozte mi to opravit</translation>
 <translation id="9114524666733003316">Ověřování karty...</translation>
 <translation id="9128870381267983090">Připojit k síti</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>

@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">غير آمن</translation>
 <translation id="1080116354587839789">ملاءمة مع العرض</translation>
 <translation id="1088860948719068836">إضافة الاسم الوارد في البطاقة</translation>
+<translation id="1089439967362294234">تغيير كلمة المرور</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1107591249535594099">‏إذا تم وضع علامة على هذا الخيار، سيخزّن Chrome نسخة من هذه البطاقة على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="1110994991967754504">اختيار إذن لـ <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Google Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />، تم تحديده حاليًا. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">ساعدني في إصلاح ذلك</translation>
 <translation id="2985306909656435243">‏عند التمكين، سيُخزن Chromium نسخة من بطاقتك على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="2985398929374701810">أدخِل عنوانًا صحيحًا</translation>
 <translation id="2986368408720340940">طريقة الاستلام هذه غير متاحة. جرِّب طريقة أخرى.</translation>
@@ -530,7 +530,6 @@
 <translation id="4552089082226364758">الفلاش</translation>
 <translation id="4558551763791394412">جرّب إيقاف الإضافات.</translation>
 <translation id="457875822857220463">التسليم</translation>
-<translation id="4582800630050655161">‏من الممكن أن تفقد إمكانية الوصول إلى حسابك في Google أو تتعرض لسرقة هويتك. لذا يوصي Chromium بتغيير كلمة مرورك الآن.</translation>
 <translation id="4587425331216688090">‏هل تريد إزالة العنوان من Chrome؟</translation>
 <translation id="4592951414987517459">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير حديثة.</translation>
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
@@ -539,7 +538,6 @@
 <translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="467809019005607715">‏العروض التقديمية من Google</translation>
 <translation id="4690462567478992370">التوقف عن استخدام شهادة غير صالحة</translation>
-<translation id="4690954380545377795">‏من الممكن أن تفقد إمكانية الوصول إلى حسابك في Google أو تتعرض لسرقة هويتك. لذا يوصي Chrome بتغيير كلمة مرورك الآن.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" />‏ <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">تم قطع اتصالك</translation>
 <translation id="471880041731876836">ليس لديك إذن لزيارة هذا الموقع</translation>
@@ -582,7 +580,6 @@
 <translation id="495170559598752135">إجراءات</translation>
 <translation id="4958444002117714549">توسيع القائمة</translation>
 <translation id="4974590756084640048">إعادة تفعيل التحذيرات</translation>
-<translation id="4988217478422488391">دفع ثمن المشتريات على الإنترنت بشكلِ أسرع</translation>
 <translation id="4989163558385430922">عرض الكل</translation>
 <translation id="4989809363548539747">هذا المكوِّن الإضافي غير مدعوم</translation>
 <translation id="5002932099480077015">‏إذا تم التمكين، سيخزن Chrome نسخة من بطاقتك على هذا الجهاز لملء النموذج بشكل أسرع.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="9080712759204168376">ملخص الطلبات</translation>
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>
-<translation id="910908805481542201">ساعدني لإصلاح ذلك</translation>
 <translation id="9114524666733003316">جارٍ التحقق من البطاقة...</translation>
 <translation id="9128870381267983090">الاتصال بالشبكة</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>

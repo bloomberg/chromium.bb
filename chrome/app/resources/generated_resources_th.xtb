@@ -3341,7 +3341,6 @@
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> กำลังแชร์แท็บใน Chrome กับ <ph name="TAB_NAME" /></translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> กำลังแชร์แท็บและเสียงใน Chrome กับ <ph name="TAB_NAME" /></translation>
-<translation id="6047938872139769630">คุณใช้ PIN เพื่อปลดล็อกอุปกรณ์เมื่อออกจากระบบไปแล้วได้</translation>
 <translation id="6049004884579590341">กด |<ph name="ACCELERATOR" />| ค้างไว้เพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="6049065490165456785">รูปภาพจากกล้องภายใน</translation>
 <translation id="6051354611314852653">อ๊ะ!  ระบบล้มเหลวในการให้สิทธิ์การเข้าถึง API สำหรับอุปกรณ์นี้</translation>
@@ -3696,7 +3695,6 @@
 <translation id="6580151766480067746">เวอร์ชัน ARC</translation>
 <translation id="6581162200855843583">ลิงก์ Google ไดรฟ์</translation>
 <translation id="6582080224869403177">รีเซ็ต <ph name="DEVICE_TYPE" /> เพื่ออัปเกรดความปลอดภัย</translation>
-<translation id="6582421931165117398">เปลี่ยนรหัสผ่านตอนนี้เลยเพื่อปกป้องข้อมูลส่วนบุคคล ระบบจะขอให้คุณลงชื่อเข้าใช้ก่อนเปลี่ยนรหัสผ่าน</translation>
 <translation id="6584878029876017575">การรับรองตลอดชีพของ Microsoft</translation>
 <translation id="6586451623538375658">สลับปุ่มเมาส์หลัก</translation>
 <translation id="6589660129740381104">ตอนนี้ฟีเจอร์ที่เกี่ยวกับการซิงค์และการปรับเปลี่ยนในแบบของคุณรวมอยู่ในส่วนควบคุมเดียวแล้วเพื่อช่วยให้คุณจัดการประสบการณ์การใช้งาน <ph name="IDS_SHORT_PRODUCT_NAME" /> ได้ง่ายขึ้น การเปิดใช้ตัวเลือกนี้อาจเปลี่ยนการตั้งค่าปัจจุบัน</translation>
@@ -4122,7 +4120,6 @@
 <translation id="7229570126336867161">ต้องใช้ EVDO</translation>
 <translation id="7230787553283372882">กำหนดขนาดข้อความของคุณ</translation>
 <translation id="7232750842195536390">การเปลี่ยนชื่อล้มเหลว</translation>
-<translation id="7234406375359457793">เกิดข้อผิดพลาดขณะต่อเชื่อมพื้นที่แชร์ ไม่รองรับพื้นที่แชร์ที่ระบุ</translation>
 <translation id="7238585580608191973">ลายนิ้วมือ SHA-256</translation>
 <translation id="7240120331469437312">ชื่อสำรองของหัวเรื่องใบรับรอง</translation>
 <translation id="7240339475467890413">เชื่อมต่อกับฮอตสปอตใหม่ใช่ไหม</translation>

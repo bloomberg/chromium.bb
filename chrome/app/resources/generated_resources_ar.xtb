@@ -3336,7 +3336,6 @@
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="6043317578411397101">‏يشارك <ph name="APP_NAME" /> علامة تبويب متصفح Chrome من خلال <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844">‏يشارك <ph name="APP_NAME" /> علامة تبويب متصفح Chrome والصوت من خلال <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">يمكنك استخدام رقم التعريف الشخصي لفتح قفل جهازك عند تسجيل الخروج.</translation>
 <translation id="6049004884579590341">الضغط مع الاستمرار على |<ph name="ACCELERATOR" />| للخروج من وضع ملء الشاشة</translation>
 <translation id="6049065490165456785">صور من الكاميرا الداخلية</translation>
 <translation id="6051354611314852653">عفوًا! تعذّر النظام في السماح بالدخول إلى واجهة برمجة التطبيقات على هذا الجهاز.</translation>
@@ -3692,7 +3691,6 @@
 <translation id="6580151766480067746">‏إصدار ARC</translation>
 <translation id="6581162200855843583">‏رابط Google Drive</translation>
 <translation id="6582080224869403177">إعادة ضبط <ph name="DEVICE_TYPE" /> لترقية الأمان</translation>
-<translation id="6582421931165117398">لحماية معلوماتك الشخصية، غيِّر كلمة مرورك الآن. قبل أن تتمكن من تغيير كلمة مرورك، سيُطلب منك تسجيل الدخول.</translation>
 <translation id="6584878029876017575">‏التوقيع مدى الحياة لـ Microsoft</translation>
 <translation id="6586451623538375658">تبديل زر الماوس الرئيسي</translation>
 <translation id="6589660129740381104">لمساعدتك في إدارة تجربتك بسهولة أكبر في <ph name="IDS_SHORT_PRODUCT_NAME" />، يتم التحكُّم حاليًا بشكلٍ موحَّد بالميزات المرتبطة بالمزامنة والتخصيص، وقد يؤدي تفعيل هذا الخيار إلى تغيير الإعدادات الحالية.</translation>
@@ -3919,7 +3917,7 @@
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="694592694773692225">تم حظر إعادة التوجيه في هذه الصفحة.</translation>
 <translation id="6949306908218145636">وضع إشارة مرجعية على الصفحات المفتوحة...</translation>
-<translation id="6949434160682548041">كلمة المرور (اختياري)</translation>
+<translation id="6949434160682548041">كلمة المرور (اختياريّة)</translation>
 <translation id="6950627417367801484">استعادة التطبيقات</translation>
 <translation id="6950943362443484797">سنعمل على تثبيت هذا التطبيق من أجلك</translation>
 <translation id="6951153907720526401">معالجات الدفع</translation>
@@ -4118,7 +4116,6 @@
 <translation id="7229570126336867161">‏يلزم توفر EVDO</translation>
 <translation id="7230787553283372882">تخصيص حجم النَّص</translation>
 <translation id="7232750842195536390">تعذّرت إعادة التسمية</translation>
-<translation id="7234406375359457793">حدث خطأ في تحميل المشاركة. المشاركة المُحدَّدة غير متاحة.</translation>
 <translation id="7238585580608191973">‏بصمة أصبع SHA-256</translation>
 <translation id="7240120331469437312">الاسم البديل لصاحب الشهادة</translation>
 <translation id="7240339475467890413">هل تريد الاتصال بنقطة اتصال جديدة؟</translation>

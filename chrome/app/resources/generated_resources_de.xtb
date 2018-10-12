@@ -3337,7 +3337,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> teilt einen Chrome-Tab mit <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> teilt einen Chrome-Tab und Audio mit <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Sie können die PIN nun zum Entsperren Ihres Geräts verwenden, wenn Sie abgemeldet sind</translation>
 <translation id="6049004884579590341">|<ph name="ACCELERATOR" />| gedrückt halten, um den Vollbildmodus zu beenden</translation>
 <translation id="6049065490165456785">Foto von interner Kamera</translation>
 <translation id="6051354611314852653">Hoppla! Das System konnte das Gerät nicht für den API-Zugriff autorisieren.</translation>
@@ -3692,7 +3691,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6580151766480067746">ARC-Version</translation>
 <translation id="6581162200855843583">Google Drive-Link</translation>
 <translation id="6582080224869403177">Setzen Sie Ihr <ph name="DEVICE_TYPE" /> zurück, um das Sicherheitsupdate durchzuführen.</translation>
-<translation id="6582421931165117398">Ändern Sie jetzt Ihr Passwort, um Ihre persönlichen Informationen zu schützen. Bevor Sie Ihr Passwort ändern können, werden Sie aufgefordert, sich anzumelden.</translation>
 <translation id="6584878029876017575">Microsoft-Lebensdauersignatur</translation>
 <translation id="6586451623538375658">Primäre Maustaste tauschen</translation>
 <translation id="6589660129740381104">Zur einfacheren Anpassung von <ph name="IDS_SHORT_PRODUCT_NAME" /> auf die eigenen Vorlieben sind Funktionen zur Synchronisierung und Personalisierung jetzt über ein einzelnes Steuerelement verfügbar. Wenn Sie dieses aktivieren, können sich Ihre aktuellen Einstellungen ändern.</translation>
@@ -4118,7 +4116,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>
 <translation id="7230787553283372882">Textgröße anpassen</translation>
 <translation id="7232750842195536390">Fehler beim Umbenennen</translation>
-<translation id="7234406375359457793">Fehler beim Bereitstellen der Freigabe. Die angegebene Freigabe wird nicht unterstützt.</translation>
 <translation id="7238585580608191973">SHA-256-Fingerabdruck</translation>
 <translation id="7240120331469437312">Alternativer Name für den Zertifikatsinhaber</translation>
 <translation id="7240339475467890413">Mit neuem Hotspot verbinden?</translation>

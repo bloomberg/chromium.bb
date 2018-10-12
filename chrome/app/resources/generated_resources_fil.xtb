@@ -3341,7 +3341,6 @@
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="6043317578411397101">Nagbabahagi ang <ph name="APP_NAME" /> ng tab ng Chrome sa <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844">Nagbabahagi ang <ph name="APP_NAME" /> ng tab ng Chrome at audio sa <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Maaari kang gumamit ng PIN para i-unlock ang iyong device kapag nag-sign out</translation>
 <translation id="6049004884579590341">I-press nang matagal ang |<ph name="ACCELERATOR" />| upang lumabas sa full screen</translation>
 <translation id="6049065490165456785">Larawan mula sa panloob na camera</translation>
 <translation id="6051354611314852653">Oops! Nabigong pahintulutan ng system ang pag-access sa API para sa device na ito.</translation>
@@ -3696,7 +3695,6 @@
 <translation id="6580151766480067746">Bersyon ng ARC</translation>
 <translation id="6581162200855843583">link ng Google Drive</translation>
 <translation id="6582080224869403177">I-reset ang iyong <ph name="DEVICE_TYPE" /> para i-upgrade ang iyong seguridad.</translation>
-<translation id="6582421931165117398">Upang maprotektahan ang iyong personal na impormasyon, palitan na ang password mo. Bago mo palitan ang iyong password, hihilingin sa iyong mag-sign in.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">Palitan ang pangunahing button ng mouse</translation>
 <translation id="6589660129740381104">Para matulungan kang pamahalaan ang iyong karanasan sa <ph name="IDS_SHORT_PRODUCT_NAME" /> sa mas madaling paraan, nasa iisang kontrol na ang mga feature na nauugnay sa pag-sync at pag-personalize. Kapag na-on mo ito, maaaring magbago ang iyong mga kasalukuyang setting.</translation>
@@ -4122,7 +4120,6 @@
 <translation id="7229570126336867161">Kailangan ng EVDO</translation>
 <translation id="7230787553283372882">I-customize ang laki ng iyong text</translation>
 <translation id="7232750842195536390">Hindi napalitan ang pangalan</translation>
-<translation id="7234406375359457793">Nagka-error sa pag-mount ng share. Hindi sinusuportahan ang isinaad na share.</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Kahaliling Pangalan ng Paksa ng Certificate</translation>
 <translation id="7240339475467890413">Kumonekta sa bagong hotspot?</translation>

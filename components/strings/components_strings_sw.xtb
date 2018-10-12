@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Si salama</translation>
 <translation id="1080116354587839789">Fanya itoshe kwenye upana</translation>
 <translation id="1088860948719068836">Ongeza Jina kwenye Kadi</translation>
+<translation id="1089439967362294234">Badilisha Nenosiri</translation>
 <translation id="1103523840287552314">Tafsiri <ph name="LANGUAGE" /> kila wakati</translation>
 <translation id="1107591249535594099">Ikiteuliwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka.</translation>
 <translation id="1110994991967754504">Chagua ruhusa ya <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Ili kutambua muunganisho salama, saa yako inahitaji kusahihishwa. Hii ni kwa sababu vyeti ambavyo tovuti hutumia kujitambua ni sahihi kwa vipindi mahususi pekee. Kwa kuwa saa ya kifaa chako si sahihi, Google Chrome haiwezi kuthibitisha vyeti hivi.</translation>
 <translation id="2972581237482394796">&amp;Rudia</translation>
 <translation id="2977665033722899841">Umechagua <ph name="ROW_NAME" /> wakati huu. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Nisaidie Kutatua Tatizo Hili</translation>
 <translation id="2985306909656435243">Ikiwashwa, Chromium itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
 <translation id="2985398929374701810">Andika anwani sahihi</translation>
 <translation id="2986368408720340940">Mbinu hii ya kuchukua haipatikani. Jaribu mbinu tofauti.</translation>
@@ -530,7 +530,6 @@
 <translation id="4552089082226364758">Mmweko</translation>
 <translation id="4558551763791394412">Jaribu kuzima viendelezi vyako.</translation>
 <translation id="457875822857220463">Usafirishaji</translation>
-<translation id="4582800630050655161">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya Google au kuibiwa utambulisho. Chromium inapendekeza ubadilishe nenosiri lako la sasa.</translation>
 <translation id="4587425331216688090">Ungependa kuondoa anwani kutoka kwenye Chrome?</translation>
 <translation id="4592951414987517459">Muunganisho wako kwenye <ph name="DOMAIN" /> umesimbwa kwa njia fiche kwa kutumia mipangilio ya kriptografia ya kisasa.</translation>
 <translation id="4594403342090139922">Tendua Kufuta</translation>
@@ -539,7 +538,6 @@
 <translation id="467662567472608290">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama kina hitilafu. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="467809019005607715">Slaidi za Google</translation>
 <translation id="4690462567478992370">Acha kutumia cheti kisicho sahihi</translation>
-<translation id="4690954380545377795">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya Google au kuibiwa utambulisho. Chrome inapendekeza ubadilishe nenosiri lako sasa.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Muunganisho wako umekatizwa</translation>
 <translation id="471880041731876836">Huna ruhusa ya kutembelea tovuti hii</translation>
@@ -582,7 +580,6 @@
 <translation id="495170559598752135">Vitendo</translation>
 <translation id="4958444002117714549">Panua orodha</translation>
 <translation id="4974590756084640048">Onyesha maonyo tena</translation>
-<translation id="4988217478422488391">Huharakisha mchakato wa kulipia bidhaa mtandoani</translation>
 <translation id="4989163558385430922">Angalia vyote</translation>
 <translation id="4989809363548539747">Programu-jalizi hii haitumiki</translation>
 <translation id="5002932099480077015">Ikiwashwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
@@ -1159,7 +1156,6 @@
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
-<translation id="910908805481542201">Nisaidie kutatua tatizo hili</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>
 <translation id="9128870381267983090">Unganisha kwenye mtandao</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>

@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Nem biztonságos</translation>
 <translation id="1080116354587839789">Szélességhez igazítás</translation>
 <translation id="1088860948719068836">Adja meg a kártyán szereplő nevet</translation>
+<translation id="1089439967362294234">Jelszó módosítása</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> - mindig legyen lefordítva</translation>
 <translation id="1107591249535594099">Ha be van jelölve, a Chrome ezen az eszközön tárolja a kártya egy példányát az űrlapok gyorsabb kitöltéséhez.</translation>
 <translation id="1110994991967754504">Engedély kiválasztása a következőhöz: <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Google Chrome nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> van jelenleg kiválasztva. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Segítséget kérek a probléma megoldásához</translation>
 <translation id="2985306909656435243">Ha engedélyezi, a Chromium megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
 <translation id="2985398929374701810">Érvényes címet adjon meg</translation>
 <translation id="2986368408720340940">Ez az átvételi mód nem áll rendelkezésre. Próbálkozzon másik móddal.</translation>
@@ -528,7 +528,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Próbálkozzon a bővítmények letiltásával.</translation>
 <translation id="457875822857220463">Szállítás</translation>
-<translation id="4582800630050655161">Elveszítheti hozzáférést Google-fiókjához, vagy visszaélhetnek személyes adataival. A Chromium azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
 <translation id="4592951414987517459">A(z) <ph name="DOMAIN" /> domainnel való kapcsolata modern kriptográfiával van titkosítva.</translation>
 <translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
@@ -537,7 +536,6 @@
 <translation id="467662567472608290">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa hibákat tartalmaz. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="467809019005607715">Google Diák</translation>
 <translation id="4690462567478992370">Érvénytelen tanúsítvány használatának befejezése</translation>
-<translation id="4690954380545377795">Elveszítheti hozzáférést Google-fiókjához, vagy visszaélhetnek személyes adataival. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Kapcsolata megszakadt</translation>
 <translation id="471880041731876836">Nincs jogosultsága a webhely felkereséséhez</translation>
@@ -580,7 +578,6 @@
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4958444002117714549">Lista részletes nézete</translation>
 <translation id="4974590756084640048">Figyelmeztetések újbóli engedélyezése</translation>
-<translation id="4988217478422488391">Meggyorsítja az internetes vásárlást</translation>
 <translation id="4989163558385430922">Összes megtekintése</translation>
 <translation id="4989809363548539747">Ez a beépülő modul nem támogatott</translation>
 <translation id="5002932099480077015">Ha engedélyezi, a Chrome megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
@@ -1161,7 +1158,6 @@ További részletek:
 <translation id="9080712759204168376">Megrendelés összegzése</translation>
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9106062320799175032">Számlázási cím hozzáadása</translation>
-<translation id="910908805481542201">Segítséget kérek a probléma megoldásához</translation>
 <translation id="9114524666733003316">Kártya ellenőrzése…</translation>
 <translation id="9128870381267983090">Csatlakozás hálózathoz</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>

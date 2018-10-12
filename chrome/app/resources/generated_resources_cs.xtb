@@ -3337,7 +3337,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6042308850641462728">Více</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> sdílí kartu Chrome s kartou <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> sdílí kartu Chrome a zvuk s kartou <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Když budete odhlášeni, můžete zařízení odemknout pomocí kódu PIN</translation>
 <translation id="6049004884579590341">Režim celé obrazovky ukončíte podržením klávesy |<ph name="ACCELERATOR" />|</translation>
 <translation id="6049065490165456785">Fotka z interního fotoaparátu</translation>
 <translation id="6051354611314852653">Jejda! Systému se pro toto zařízení nepodařilo autorizovat přístup k rozhraní API.</translation>
@@ -3692,7 +3691,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6580151766480067746">Verze ARC</translation>
 <translation id="6581162200855843583">Odkaz na Disk Google</translation>
 <translation id="6582080224869403177">Resetujte zařízení <ph name="DEVICE_TYPE" />, aby se upgradovalo zabezpečení</translation>
-<translation id="6582421931165117398">Chcete-li ochránit své osobní údaje, neprodleně změňte heslo. Před změnou hesla budete požádáni o přihlášení.</translation>
 <translation id="6584878029876017575">Životnost podepisování Microsoft</translation>
 <translation id="6586451623538375658">Zaměnit primární tlačítko myši</translation>
 <translation id="6589660129740381104">Abychom vám usnadnili správu prostředí v prohlížeči <ph name="IDS_SHORT_PRODUCT_NAME" />, jsou funkce související se synchronizací a personalizací nyní pod jedním ovládacím prvkem. Pokud tuto možnost zapnete, mohou se vaše aktuální nastavení změnit.</translation>
@@ -4118,7 +4116,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7229570126336867161">Je zapotřebí technologie EVDO.</translation>
 <translation id="7230787553283372882">Přizpůsobení velikosti textu</translation>
 <translation id="7232750842195536390">Přejmenování se nezdařilo</translation>
-<translation id="7234406375359457793">Při připojování sdílené složky došlo k chybě. Zadaná sdílená složka není podporována.</translation>
 <translation id="7238585580608191973">Digitální otisk SHA-256</translation>
 <translation id="7240120331469437312">Alternativní název subjektu certifikátu</translation>
 <translation id="7240339475467890413">Připojit k novému hotspotu?</translation>

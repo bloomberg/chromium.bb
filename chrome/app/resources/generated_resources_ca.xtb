@@ -3341,7 +3341,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> està compartint una pestanya de Chrome amb <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> està compartint una pestanya de Chrome i àudio amb <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Pots utilitzar un PIN per desbloquejar el dispositiu quan tinguis la sessió tancada</translation>
 <translation id="6049004884579590341">Mantén premut |<ph name="ACCELERATOR" />| per sortir del mode de pantalla completa</translation>
 <translation id="6049065490165456785">Foto de la càmera interna</translation>
 <translation id="6051354611314852653">El sistema no ha pogut autoritzar l'accés a l'API per a aquest dispositiu.</translation>
@@ -3696,7 +3695,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6580151766480067746">Versió d'ARC</translation>
 <translation id="6581162200855843583">Enllaç de Google Drive</translation>
 <translation id="6582080224869403177">Restableix el dispositiu <ph name="DEVICE_TYPE" /> per actualitzar-ne el sistema de seguretat.</translation>
-<translation id="6582421931165117398">Per protegir la teva informació personal, canvia la contrasenya ara. Per poder-la canviar se't demanarà que iniciïs la sessió.</translation>
 <translation id="6584878029876017575">Signatura de durada de Microsoft</translation>
 <translation id="6586451623538375658">Canvia el botó principal del ratolí</translation>
 <translation id="6589660129740381104">Per ajudar-te a gestionar més fàcilment la teva experiència a <ph name="IDS_SHORT_PRODUCT_NAME" />, les funcions relacionades amb la sincronització i la personalització ara s'engloben en un mateix control. En activar-lo, pot ser que la configuració actual canviï.</translation>
@@ -4122,7 +4120,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7229570126336867161">Es necessita EVDO</translation>
 <translation id="7230787553283372882">Personalitza la mida del text</translation>
 <translation id="7232750842195536390">S'ha produït un error en canviar el nom</translation>
-<translation id="7234406375359457793">S'ha produït un error en activar l'ús compartit especificat perquè no s'admet.</translation>
 <translation id="7238585580608191973">Empremta SHA-256</translation>
 <translation id="7240120331469437312">Nom alternatiu del subjecte del certificat</translation>
 <translation id="7240339475467890413">Vols connectar-te al punt d'accés Wi-Fi nou?</translation>

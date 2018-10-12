@@ -3341,7 +3341,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> trimite conținutul unei file Chrome către <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> trimite conținutul unei file Chrome și conținutul audio către <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Poți folosi codul PIN pentru a-ți debloca dispozitivul când te deconectezi</translation>
 <translation id="6049004884579590341">Pentru a ieși din ecranul complet, apasă lung |<ph name="ACCELERATOR" />|</translation>
 <translation id="6049065490165456785">Fotografii de pe camera foto internă</translation>
 <translation id="6051354611314852653">Hopa! Sistemul nu a putut să autorizeze accesul la API pentru acest dispozitiv.</translation>
@@ -3696,7 +3695,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6580151766480067746">Versiunea ARC</translation>
 <translation id="6581162200855843583">Link Disc Google</translation>
 <translation id="6582080224869403177">Resetează <ph name="DEVICE_TYPE" /> pentru a îmbunătăți securitatea.</translation>
-<translation id="6582421931165117398">Pentru a proteja informațiile personale, schimbă parola acum. Pentru a putea modifica parola, trebuie să te conectezi.</translation>
 <translation id="6584878029876017575">Semnare Microsoft pe durata de viață</translation>
 <translation id="6586451623538375658">Comutați butonul principal al mouse-ului</translation>
 <translation id="6589660129740381104">Ca să-ți gestionezi mai ușor experiența în <ph name="IDS_SHORT_PRODUCT_NAME" />, funcțiile legate de sincronizare și personalizare sunt acum sub o comandă unică. Dacă activezi această funcție, este posibil să modifici setările actuale.</translation>
@@ -4122,7 +4120,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7229570126336867161">Este necesar EVDO</translation>
 <translation id="7230787553283372882">Personalizează dimensiunea textului</translation>
 <translation id="7232750842195536390">Redenumirea nu a reușit</translation>
-<translation id="7234406375359457793">Eroare la montarea dispozitivului de stocare în rețea. Dispozitivul indicat nu este acceptat.</translation>
 <translation id="7238585580608191973">Amprentă digitală SHA-256</translation>
 <translation id="7240120331469437312">Nume alternativ subiect certificat</translation>
 <translation id="7240339475467890413">Te conectezi la noul hotspot?</translation>

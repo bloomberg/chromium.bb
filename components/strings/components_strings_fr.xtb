@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Non sécurisé</translation>
 <translation id="1080116354587839789">Ajuster à la largeur</translation>
 <translation id="1088860948719068836">Ajouter le nom du titulaire de la carte</translation>
+<translation id="1089439967362294234">Modifier le mot de passe</translation>
 <translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si cette case est cochée, une copie de votre carte est stockée sur cet appareil pour compléter les formulaires plus rapidement.</translation>
 <translation id="1110994991967754504">Sélectionnez une autorisation pour <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Comme l'horloge de votre appareil est incorrecte, Google Chrome n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="2972581237482394796">&amp;Rétablir</translation>
 <translation id="2977665033722899841">La ligne "<ph name="ROW_NAME" />" est sélectionnée. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">M'aider à régler le problème</translation>
 <translation id="2985306909656435243">Si cette option est activée, Chromium enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="2985398929374701810">Saisissez une adresse valide</translation>
 <translation id="2986368408720340940">Mode d'enlèvement non disponible. Choisissez-en un autre.</translation>
@@ -530,7 +530,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Essayez de désactiver les extensions.</translation>
 <translation id="457875822857220463">Livraison</translation>
-<translation id="4582800630050655161">Vous pourriez perdre l'accès à votre compte Google ou vous faire dérober votre identité. L'équipe Chromium vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
 <translation id="4592951414987517459">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement récente.</translation>
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
@@ -539,7 +538,6 @@
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690462567478992370">Arrêter d'utiliser un certificat non valide</translation>
-<translation id="4690954380545377795">Vous pourriez perdre l'accès à votre compte Google ou vous faire dérober votre identité. L'équipe Chrome vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Votre connexion a été interrompue</translation>
 <translation id="471880041731876836">Vous n'êtes pas autorisé à consulter ce site</translation>
@@ -582,7 +580,6 @@
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
 <translation id="4974590756084640048">Réactiver les avertissements</translation>
-<translation id="4988217478422488391">Payez vos achats en ligne plus rapidement</translation>
 <translation id="4989163558385430922">Tout afficher</translation>
 <translation id="4989809363548539747">Ce plug-in n'est pas compatible.</translation>
 <translation id="5002932099480077015">Si cette option est activée, Chrome enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
@@ -1162,7 +1159,6 @@ Informations supplémentaires :
 <translation id="9080712759204168376">Récapitulatif de la commande</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>
-<translation id="910908805481542201">M'aider à régler le problème</translation>
 <translation id="9114524666733003316">Validation de la carte…</translation>
 <translation id="9128870381267983090">Se connecter au réseau</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>

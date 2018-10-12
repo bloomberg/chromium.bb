@@ -16,6 +16,7 @@
 <translation id="1074497978438210769">Niet beveiligd</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
 <translation id="1088860948719068836">Naam op kaart toevoegen</translation>
+<translation id="1089439967362294234">Wachtwoord wijzigen</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> altijd vertalen</translation>
 <translation id="1107591249535594099">Als deze optie is aangevinkt, bewaart Chrome een exemplaar van je kaart op dit apparaat om formulieren sneller te kunnen invullen.</translation>
 <translation id="1110994991967754504">Rechten selecteren voor <ph name="PERMISSION_NAME" /></translation>
@@ -297,7 +298,6 @@
 <translation id="2969319727213777354">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok correct zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chrome deze certificaten niet verifiëren.</translation>
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, momenteel geselecteerd. <ph name="ROW_CONTENT" /></translation>
-<translation id="298138621710431427">Help me dit op te lossen</translation>
 <translation id="2985306909656435243">Als deze instelling is ingeschakeld, slaat Chromium een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
 <translation id="2985398929374701810">Geef een geldig adres op</translation>
 <translation id="2986368408720340940">Deze ophaalmethode is niet beschikbaar. Kies een andere methode.</translation>
@@ -526,7 +526,6 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Probeer je extensies uit te schakelen.</translation>
 <translation id="457875822857220463">Bezorging</translation>
-<translation id="4582800630050655161">Je kunt de toegang tot je Google-account kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="4587425331216688090">Adres verwijderen uit Chrome?</translation>
 <translation id="4592951414987517459">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een moderne Cipher Suite.</translation>
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
@@ -535,7 +534,6 @@
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="467809019005607715">Google Presentaties</translation>
 <translation id="4690462567478992370">Stoppen met het gebruik van een ongeldig certificaat</translation>
-<translation id="4690954380545377795">Je kunt de toegang tot je Google-account kwijtraken of slachtoffer worden van identiteitsdiefstal. Chrome raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Je verbinding is onderbroken</translation>
 <translation id="471880041731876836">Je hebt geen toestemming om deze site te bezoeken</translation>
@@ -578,7 +576,6 @@
 <translation id="495170559598752135">Acties</translation>
 <translation id="4958444002117714549">Lijst uitvouwen</translation>
 <translation id="4974590756084640048">Waarschuwingen opnieuw inschakelen</translation>
-<translation id="4988217478422488391">Hiermee kun je sneller online betalen</translation>
 <translation id="4989163558385430922">Alles weergeven</translation>
 <translation id="4989809363548539747">Deze plug-in wordt niet ondersteund</translation>
 <translation id="5002932099480077015">Indien ingeschakeld, slaat Chrome een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
@@ -1157,7 +1154,6 @@ Aanvullende informatie:
 <translation id="9080712759204168376">Besteloverzicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>
-<translation id="910908805481542201">Help me dit op te lossen</translation>
 <translation id="9114524666733003316">Creditcard bevestigen...</translation>
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>

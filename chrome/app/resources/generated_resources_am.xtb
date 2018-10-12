@@ -3338,7 +3338,6 @@
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> አንድ የChrome ትር ለ<ph name="TAB_NAME" /> እያጋራ ነው።</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> አንድ የChrome ትር እና ኦዲዮ ለ<ph name="TAB_NAME" /> እያጋራ ነው።</translation>
-<translation id="6047938872139769630">ዘግተው ሲወጡ መሣሪያዎን ለመክፈት ፒን መጠቀም ይችላሉ</translation>
 <translation id="6049004884579590341">ከሙሉ ማያ ገጽ ለመውጣት |<ph name="ACCELERATOR" />|ን ተጭነው ይያዙ</translation>
 <translation id="6049065490165456785">ፎቶ ከውስጣዊ ካሜራ</translation>
 <translation id="6051354611314852653">ውይ!  ስርዓቱ የዚህ መሣሪያ ኤ ፒ አይ መዳረሻ መፍቀድ አልቻለም።</translation>
@@ -3693,7 +3692,6 @@
 <translation id="6580151766480067746">የኤአርሲ ስሪት</translation>
 <translation id="6581162200855843583">Google Drive አገናኝ</translation>
 <translation id="6582080224869403177">ደህንነትዎን ለማላቅ የእርስዎን <ph name="DEVICE_TYPE" /> ዳግም ያስጀምሩት።</translation>
-<translation id="6582421931165117398">የግል መረጃዎን ለመጠበቅ የይለፍ ቃልዎን አሁን ይቀይሩት። የይለፍ ቃልዎን መቀየር ከመቻልዎ በፊት በመለያ እንዲገቡ ይጠየቃሉ።</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">የዋና መዳፊት አዘራር ይቀይሩ</translation>
 <translation id="6589660129740381104">በ<ph name="IDS_SHORT_PRODUCT_NAME" /> ውስጥ ያለዎት ተሞክሮ በቀለለ ሁኔታ እንዲያቀናብሩ እርስዎን ለማገዝ ከስምረት እና ግላዊነት ማላበስ ጋር የሚዛመዱ ባህሪያት አሁን በአንድ ነጠላ ቁጥጥር ስር ናቸው። ይህን ማብራት የአሁኖቹን ቅንብሮችዎ ሊቀይረው ይችላል።</translation>
@@ -4119,7 +4117,6 @@
 <translation id="7229570126336867161">ኢቪዲኦ ያስፈልጋል</translation>
 <translation id="7230787553283372882">የእርስዎን የጽሑፍ መጠን ያብጁ</translation>
 <translation id="7232750842195536390">ዳግም መሰየም አልተሳካም</translation>
-<translation id="7234406375359457793">ማፈናጠጥ ላይ ስህተት። የተገለጸው ማጋራት የሚደገፍ አይደለም።</translation>
 <translation id="7238585580608191973">SHA-256 የጣት አሻራ</translation>
 <translation id="7240120331469437312">የሰርቲፊኬት ርዕስ ተለዋጭ ስም</translation>
 <translation id="7240339475467890413">ከአዲስ መገናኛ ነጥብ ጋር ይገናኝ?</translation>

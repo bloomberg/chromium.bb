@@ -3339,7 +3339,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> deler en Chrome-fane med <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> deler en Chrome-fane og lyd med <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Du kan bruge pinkoden til at låse din enhed op, når du er logget ud</translation>
 <translation id="6049004884579590341">Hold |<ph name="ACCELERATOR" />| nede for at afslutte fuld skærm</translation>
 <translation id="6049065490165456785">Billede fra internt kamera</translation>
 <translation id="6051354611314852653">Ups! Systemet har ikke godkendt API-adgang for denne enhed.</translation>
@@ -3695,7 +3694,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6580151766480067746">ARC-version</translation>
 <translation id="6581162200855843583">Link til Google Drev</translation>
 <translation id="6582080224869403177">Nulstil din <ph name="DEVICE_TYPE" /> for at opgradere din beskyttelse.</translation>
-<translation id="6582421931165117398">Skift din adgangskode nu for at beskytte dine personlige oplysninger. Du bliver bedt om at logge ind, før du kan skifte din adgangskode.</translation>
 <translation id="6584878029876017575">Microsoft-signering af levetid</translation>
 <translation id="6586451623538375658">Skift primær museknap</translation>
 <translation id="6589660129740381104">Funktioner, som er relateret til synkronisering og tilpasning, ligger nu under et enkelt kontrolelement, så du nemmere kan administrere din oplevelse i <ph name="IDS_SHORT_PRODUCT_NAME" />. Hvis du aktiverer dette, kan det ændre dine nuværende indstillinger.</translation>
@@ -4121,7 +4119,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7229570126336867161">EVDO mangler</translation>
 <translation id="7230787553283372882">Tilpas din tekststørrelse</translation>
 <translation id="7232750842195536390">Omdøbningen mislykkedes</translation>
-<translation id="7234406375359457793">Der opstod en fejl ved anvendelse af deling. Den angivne deling understøttes ikke.</translation>
 <translation id="7238585580608191973">SHA-256-fingeraftryk</translation>
 <translation id="7240120331469437312">Alternativt navn på certifikatemne</translation>
 <translation id="7240339475467890413">Vil du oprette forbindelse til et nyt hotspot?</translation>

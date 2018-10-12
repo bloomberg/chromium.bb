@@ -3342,7 +3342,6 @@
 <translation id="6042308850641462728">Lagi</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> berkongsi tab Chrome dengan <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> berkongsi tab dan audio Chrome dengan <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">Anda boleh menggunakan PIN untuk membuka kunci peranti anda apabila log keluar</translation>
 <translation id="6049004884579590341">Tekan dan tahan |<ph name="ACCELERATOR" />| untuk keluar daripada skrin penuh</translation>
 <translation id="6049065490165456785">Foto dari kamera dalaman</translation>
 <translation id="6051354611314852653">Op!  Sistem gagal membenarkan akses API untuk peranti ini.</translation>
@@ -3697,7 +3696,6 @@
 <translation id="6580151766480067746">Versi ARC</translation>
 <translation id="6581162200855843583">Pautan Google Drive</translation>
 <translation id="6582080224869403177">Tetapkan semula <ph name="DEVICE_TYPE" /> anda untuk meningkatkan keselamatan anda.</translation>
-<translation id="6582421931165117398">Untuk melindungi maklumat peribadi anda, tukar kata laluan anda sekarang. Sebelum anda boleh menukar kata laluan, anda akan diminta untuk log masuk.</translation>
 <translation id="6584878029876017575">Menandatangani Microsoft Sepanjang Hayat</translation>
 <translation id="6586451623538375658">Tukar butang tetikus utama</translation>
 <translation id="6589660129740381104">Untuk membantu anda mengurus pengalaman dengan lebih mudah dalam <ph name="IDS_SHORT_PRODUCT_NAME" />, ciri-ciri yang berkaitan dengan penyegerakan dan pemperibadian kini berada di bawah satu kawalan. Tindakan menghidupkan pilihan ini mungkin mengubah tetapan semasa anda.</translation>
@@ -4123,7 +4121,6 @@
 <translation id="7229570126336867161">Perlukan EVDO</translation>
 <translation id="7230787553283372882">Sesuaikan saiz teks anda</translation>
 <translation id="7232750842195536390">Penamaan semula gagal</translation>
-<translation id="7234406375359457793">Ralat melekapkan perkongsian. Perkongsian yang dinyatakan tidak disokong.</translation>
 <translation id="7238585580608191973">Cap jari SHA-256</translation>
 <translation id="7240120331469437312">Nama Alternatif Subjek Sijil</translation>
 <translation id="7240339475467890413">Sambungkan ke tempat liputan baharu?</translation>
