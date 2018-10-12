@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -31,6 +33,9 @@ const char kPageContentDataBetterTogetherStateKey[] = "betterTogetherState";
 const char kPageContentDataInstantTetheringStateKey[] = "instantTetheringState";
 const char kPageContentDataMessagesStateKey[] = "messagesState";
 const char kPageContentDataSmartLockStateKey[] = "smartLockState";
+
+constexpr char kAndroidSmsInfoOriginKey[] = "origin";
+constexpr char kAndroidSmsInfoEnabledKey[] = "enabled";
 
 void OnRetrySetHostNowResult(bool success) {
   if (success)
@@ -90,6 +95,10 @@ void MultideviceHandler::RegisterMessages() {
       "setSmartLockSignInEnabled",
       base::BindRepeating(&MultideviceHandler::HandleSetSmartLockSignInEnabled,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getAndroidSmsInfo",
+      base::BindRepeating(&MultideviceHandler::HandleGetAndroidSmsInfo,
+                          base::Unretained(this)));
 }
 
 void MultideviceHandler::OnJavascriptAllowed() {
@@ -109,12 +118,14 @@ void MultideviceHandler::OnHostStatusChanged(
     const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
         host_status_with_device) {
   UpdatePageContent();
+  NotifyAndroidSmsInfoChange();
 }
 
 void MultideviceHandler::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
   UpdatePageContent();
+  NotifyAndroidSmsInfoChange();
 }
 
 void MultideviceHandler::UpdatePageContent() {
@@ -125,6 +136,11 @@ void MultideviceHandler::UpdatePageContent() {
                << *page_content_dictionary << ".";
   FireWebUIListener("settings.updateMultidevicePageContentData",
                     *page_content_dictionary);
+}
+
+void MultideviceHandler::NotifyAndroidSmsInfoChange() {
+  auto android_sms_info = GenerateAndroidSmsInfo();
+  FireWebUIListener("settings.onAndroidSmsInfoChange", *android_sms_info);
 }
 
 void MultideviceHandler::HandleShowMultiDeviceSetupDialog(
@@ -226,6 +242,37 @@ void MultideviceHandler::HandleSetSmartLockSignInEnabled(
 
   prefs_->SetBoolean(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled, enabled);
+}
+
+std::unique_ptr<base::DictionaryValue>
+MultideviceHandler::GenerateAndroidSmsInfo() {
+  auto android_sms_info = std::make_unique<base::DictionaryValue>();
+  android_sms_info->SetString(
+      kAndroidSmsInfoOriginKey,
+      ContentSettingsPattern::FromURLNoWildcard(
+          chromeos::android_sms::GetAndroidMessagesURL())
+          .ToString());
+
+  chromeos::multidevice_setup::mojom::FeatureState messages_state =
+      multidevice_setup_client_->GetFeatureState(
+          chromeos::multidevice_setup::mojom::Feature::kMessages);
+  bool enabled_state =
+      messages_state ==
+          chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser ||
+      messages_state == chromeos::multidevice_setup::mojom::FeatureState::
+                            kFurtherSetupRequired;
+  android_sms_info->SetBoolean(kAndroidSmsInfoEnabledKey, enabled_state);
+
+  return android_sms_info;
+}
+
+void MultideviceHandler::HandleGetAndroidSmsInfo(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  ResolveJavascriptCallback(*callback_id, *GenerateAndroidSmsInfo());
 }
 
 void MultideviceHandler::OnSetFeatureStateEnabledResult(

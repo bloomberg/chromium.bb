@@ -2,22 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @implements {settings.MultideviceBrowserProxy}
- */
-class TestMultideviceBrowserProxy extends TestBrowserProxy {
-  constructor() {
-    super([
-      'setUpAndroidSms',
-    ]);
-  }
-
-  /** @override */
-  setUpAndroidSms() {
-    this.methodCalled('setUpAndroidSms');
-  }
-}
-
 suite('Multidevice', function() {
   let multideviceSubpage = null;
   let browserProxy = null;
@@ -90,7 +74,7 @@ suite('Multidevice', function() {
   });
 
   setup(function() {
-    browserProxy = new TestMultideviceBrowserProxy();
+    browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
 
     PolymerTest.clearBody();

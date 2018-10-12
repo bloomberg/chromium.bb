@@ -7,6 +7,7 @@
 suite('SiteListEntry', function() {
   let testElement;
   setup(function() {
+    PolymerTest.clearBody();
     testElement = document.createElement('site-list-entry');
     document.body.appendChild(testElement);
   });
@@ -34,4 +35,19 @@ suite('SiteListEntry', function() {
       assertEquals('none', tooltip.computedStyleMap().get('display').value);
     });
   });
+
+  if (cr.isChromeOS) {
+    test('shows androidSms note', function() {
+      testElement.model = {
+        origin: 'http://example.com',
+        showAndroidSmsNote: true,
+        category: settings.ContentSettingsTypes.NOTIFICATIONS
+      };
+      Polymer.dom.flush();
+      const siteDescription = testElement.$$('#siteDescription');
+      assertEquals(
+          loadTimeData.getString('androidSmsNote'),
+          siteDescription.textContent);
+    });
+  }
 });

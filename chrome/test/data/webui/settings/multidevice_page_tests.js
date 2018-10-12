@@ -3,65 +3,9 @@
 // found in the LICENSE file.
 
 suite('Multidevice', function() {
-  /**
-   * Builds fake pageContentData for the specified mode. If it is a mode
-   * corresponding to a set host, it will set the hostDeviceName to the provided
-   * name or else default to HOST_DEVICE.
-   * @param {settings.MultiDeviceSettingsMode} mode
-   * @param {string=} opt_hostDeviceName Overrides default if |mode| corresponds
-   *     to a set host.
-   * @return {!MultiDevicePageContentData}
-   */
-  function createFakePageContentData(mode, opt_hostDeviceName) {
-    let pageContentData = {mode: mode};
-    if ([
-          settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
-          settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
-          settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED,
-        ].includes(mode)) {
-      pageContentData.hostDeviceName = opt_hostDeviceName || HOST_DEVICE;
-    }
-    return pageContentData;
-  }
-
-  /**
-   * @implements {settings.MultideviceBrowserProxy}
-   * Note: Only showMultiDeviceSetupDialog is used by the multidevice-page
-   * element.
-   */
-  class TestMultideviceBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super([
-        'showMultiDeviceSetupDialog',
-        'getPageContentData',
-        'setFeatureEnabledState',
-      ]);
-      this.data = createFakePageContentData(
-          settings.MultiDeviceSettingsMode.NO_HOST_SET);
-    }
-
-    /** @override */
-    getPageContentData() {
-      this.methodCalled('getPageContentData');
-      return Promise.resolve(this.data);
-    }
-
-    /** @override */
-    showMultiDeviceSetupDialog() {
-      this.methodCalled('showMultiDeviceSetupDialog');
-    }
-
-    /** @override */
-    setFeatureEnabledState(feature, enabled, opt_authToken) {
-      this.methodCalled(
-          'setFeatureEnabledState', [feature, enabled, opt_authToken]);
-    }
-  }
-
   let multidevicePage = null;
   let browserProxy = null;
   let ALL_MODES;
-  const HOST_DEVICE = 'Pixel XL';
 
   /**
    * Sets pageContentData via WebUI Listener and flushes.
@@ -76,14 +20,14 @@ suite('Multidevice', function() {
   /**
    * Sets pageContentData to the specified mode. If it is a mode corresponding
    * to a set host, it will set the hostDeviceName to the provided name or else
-   * default to HOST_DEVICE.
+   * default to multidevice.HOST_DEVICE.
    * @param {settings.MultiDeviceSettingsMode} newMode
    * @param {string=} opt_newHostDeviceName Overrides default if |newMode|
    *     corresponds to a set host.
    */
   function setHostData(newMode, opt_newHostDeviceName) {
     setPageContentData(
-        createFakePageContentData(newMode, opt_newHostDeviceName));
+        multidevice.createFakePageContentData(newMode, opt_newHostDeviceName));
   }
 
   function setSuiteState(newState) {
@@ -139,7 +83,7 @@ suite('Multidevice', function() {
 
   setup(function() {
     settings.navigateTo(settings.routes.MULTIDEVICE);
-    browserProxy = new TestMultideviceBrowserProxy();
+    browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
     const whenInitialized = browserProxy.whenCalled('getPageContentData');
 
@@ -172,14 +116,15 @@ suite('Multidevice', function() {
   test('headings render based on mode and host', function() {
     for (const mode of ALL_MODES) {
       setHostData(mode);
-      assertEquals(multidevicePage.isHostSet(), getLabel() === HOST_DEVICE);
+      assertEquals(
+          multidevicePage.isHostSet(), getLabel() === multidevice.HOST_DEVICE);
     }
   });
 
   test('changing host device changes header', function() {
     setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-    assertEquals(getLabel(), HOST_DEVICE);
-    const anotherHost = 'Super Duper ' + HOST_DEVICE;
+    assertEquals(getLabel(), multidevice.HOST_DEVICE);
+    const anotherHost = 'Super Duper ' + multidevice.HOST_DEVICE;
     setHostData(
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED, anotherHost);
     assertEquals(getLabel(), anotherHost);
@@ -209,7 +154,7 @@ suite('Multidevice', function() {
       function() {
         setHostData(
             settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
-            HOST_DEVICE);
+            multidevice.HOST_DEVICE);
         assertFalse(!!getSubpage());
         multidevicePage.$$('#multidevice-item').click();
         assertTrue(!!getSubpage());
