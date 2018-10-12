@@ -242,4 +242,5 @@
 -ExtensionTabUtilBrowserTest.*
 -NativeBindingsApiTest.*
 -PasswordManagerBrowserTest.*
+-PictureInPictureWindowControllerBrowserTest.*
 -UpdateServiceTest.*
