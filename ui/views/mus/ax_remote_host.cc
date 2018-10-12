@@ -99,13 +99,10 @@ void AXRemoteHost::StopMonitoringWidget() {
 }
 
 void AXRemoteHost::HandleEvent(View* view, ax::mojom::Event event_type) {
+  CHECK(view);
+
   if (!enabled_)
     return;
-
-  if (!view) {
-    SendEvent(tree_source_->GetRoot(), event_type);
-    return;
-  }
 
   // Can return null for views without a widget.
   AXAuraObjWrapper* aura_obj = AXAuraObjCache::GetInstance()->GetOrCreate(view);
