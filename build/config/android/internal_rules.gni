@@ -1131,6 +1131,13 @@ if (enable_java_templates) {
           args += invoker.proguard_args
         }
 
+        if (_proguarding_with_r8 && defined(invoker.min_sdk_version)) {
+          args += [
+            "--min-api",
+            "${invoker.min_sdk_version}",
+          ]
+        }
+
         output_path = _proguard_output_path
       }
     }
