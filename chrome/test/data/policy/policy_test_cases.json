@@ -2855,6 +2855,14 @@
     ]
   },
 
+  "AllowWakeLocks": {
+    "os": ["chromeos"],
+    "test_policy": { "AllowWakeLocks": false },
+    "pref_mappings": [
+      { "pref": "power.allow_wake_locks" }
+    ]
+  },
+
   "AllowScreenWakeLocks": {
     "os": ["chromeos"],
     "test_policy": { "AllowScreenWakeLocks": false },

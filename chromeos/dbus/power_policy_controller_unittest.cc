@@ -162,6 +162,18 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
+
+  // Set the "allow wake locks" pref to false and add a screen wake lock.
+  // It should be ignored.
+  prefs.allow_wake_locks = false;
+  policy_controller_->ApplyPrefs(prefs);
+  policy_controller_->AddScreenWakeLock(PowerPolicyController::REASON_OTHER,
+                                        "Screen");
+  expected_policy.clear_system_wake_lock();
+  expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason));
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
 }
 
 TEST_F(PowerPolicyControllerTest, SystemWakeLock) {

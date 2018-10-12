@@ -71,6 +71,7 @@ class CHROMEOS_EXPORT PowerPolicyController
     bool use_video_activity;
     double ac_brightness_percent;
     double battery_brightness_percent;
+    bool allow_wake_locks;
     bool allow_screen_wake_locks;
     bool enable_auto_screen_lock;
     double presentation_screen_dim_delay_factor;
@@ -178,7 +179,11 @@ class CHROMEOS_EXPORT PowerPolicyController
   // to details about the request.
   WakeLockMap wake_locks_;
 
-  // Should TYPE_SCREEN or TYPE_DIM entries in |wake_locks_| be honored?
+  // Should |wake_locks_| be honored?
+  bool honor_wake_locks_;
+
+  // If wake locks are honored, should TYPE_SCREEN or TYPE_DIM entries in
+  // |wake_locks_| be honored?
   // If false, screen wake locks are just treated as TYPE_SYSTEM instead.
   bool honor_screen_wake_locks_;
 

@@ -87,6 +87,7 @@ ASH_PUBLIC_EXPORT extern const char kPowerBatteryIdleAction[];
 ASH_PUBLIC_EXPORT extern const char kPowerLidClosedAction[];
 ASH_PUBLIC_EXPORT extern const char kPowerUseAudioActivity[];
 ASH_PUBLIC_EXPORT extern const char kPowerUseVideoActivity[];
+ASH_PUBLIC_EXPORT extern const char kPowerAllowWakeLocks[];
 ASH_PUBLIC_EXPORT extern const char kPowerAllowScreenWakeLocks[];
 ASH_PUBLIC_EXPORT extern const char kPowerPresentationScreenDimDelayFactor[];
 ASH_PUBLIC_EXPORT extern const char kPowerUserActivityScreenDimDelayFactor[];
