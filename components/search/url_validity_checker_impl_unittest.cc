@@ -10,7 +10,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -27,10 +26,8 @@ class UrlValidityCheckerImplTest : public testing::Test {
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        url_checker_(test_shared_loader_factory_) {
-    // Start |clock_| at non-zero.
-    clock_.Advance(base::TimeDelta::FromSeconds(1));
-  }
+        url_checker_(test_shared_loader_factory_,
+                     scoped_task_environment_.GetMockTickClock()) {}
 
   ~UrlValidityCheckerImplTest() override {}
 
@@ -38,7 +35,6 @@ class UrlValidityCheckerImplTest : public testing::Test {
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             url_loader_factory());
-    url_checker()->SetTimeTicksForTesting(clock_.NowTicks());
   }
 
   UrlValidityCheckerImpl* url_checker() { return &url_checker_; }
@@ -47,18 +43,12 @@ class UrlValidityCheckerImplTest : public testing::Test {
     return &test_url_loader_factory_;
   }
 
-  void AdvanceClock(const base::TimeDelta& delta) {
-    clock_.Advance(delta);
-    url_checker()->SetTimeTicksForTesting(clock_.NowTicks());
-  }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
-  base::SimpleTestTickClock clock_;
   UrlValidityCheckerImpl url_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlValidityCheckerImplTest);
@@ -75,7 +65,7 @@ TEST_F(UrlValidityCheckerImplTest, DoesUrlResolve_OnSuccess) {
       "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
   url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        AdvanceClock(expected_duration);
+        scoped_task_environment_.FastForwardBy(expected_duration);
         url_loader_factory()->AddResponse(
             request.url, response, std::string(),
             network::URLLoaderCompletionStatus(net::OK));
@@ -107,7 +97,7 @@ TEST_F(UrlValidityCheckerImplTest, DoesUrlResolve_OnFailure) {
 
   url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        AdvanceClock(expected_duration);
+        scoped_task_environment_.FastForwardBy(expected_duration);
         url_loader_factory()->AddResponse(
             request.url, network::ResourceResponseHead(), std::string(),
             network::URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -134,7 +124,7 @@ TEST_F(UrlValidityCheckerImplTest, DoesUrlResolve_OnRedirect) {
       {redirect_info, network::ResourceResponseHead()}};
   url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        AdvanceClock(expected_duration);
+        scoped_task_environment_.FastForwardBy(expected_duration);
         url_loader_factory()->AddResponse(
             request.url, network::ResourceResponseHead(), std::string(),
             network::URLLoaderCompletionStatus(), redirects);

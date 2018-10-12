@@ -15,7 +15,7 @@ class UrlValidityChecker {
   // The callback invoked when the request completes. Returns true if the
   // response was |valid| and the request |duration|.
   using UrlValidityCheckerCallback =
-      base::OnceCallback<void(bool valid, const base::TimeDelta& duration)>;
+      base::OnceCallback<void(bool valid, base::TimeDelta duration)>;
 
   virtual ~UrlValidityChecker() = default;
 
