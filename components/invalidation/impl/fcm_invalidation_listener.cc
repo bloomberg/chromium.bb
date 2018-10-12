@@ -52,9 +52,11 @@ void FCMInvalidationListener::Start(
 }
 
 void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
-  ids_update_requested_ = true;
   registered_topics_ = topics;
-  DoRegistrationUpdate();
+  if (ticl_state_ == INVALIDATIONS_ENABLED &&
+      per_user_topic_registration_manager_ && !token_.empty()) {
+    DoRegistrationUpdate();
+  }
 }
 
 void FCMInvalidationListener::Ready(InvalidationClient* client) {
@@ -139,11 +141,6 @@ void FCMInvalidationListener::Drop(const invalidation::ObjectId& id,
 }
 
 void FCMInvalidationListener::DoRegistrationUpdate() {
-  if (ticl_state_ != INVALIDATIONS_ENABLED ||
-      !per_user_topic_registration_manager_ || token_.empty() ||
-      !ids_update_requested_) {
-    return;
-  }
   per_user_topic_registration_manager_->UpdateRegisteredTopics(
       registered_topics_, token_);
 
