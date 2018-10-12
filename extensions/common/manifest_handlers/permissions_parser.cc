@@ -277,6 +277,39 @@ bool PermissionsParser::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
+  // If permissions are specified as both required and optional
+  // add an install warning for each permission and remove them from the
+  // optional set while keeping them in the required set.
+  APIPermissionSet overlap_permissions;
+  APIPermissionSet::Intersection(initial_required_permissions_->api_permissions,
+                                 initial_optional_permissions_->api_permissions,
+                                 &overlap_permissions);
+
+  if (!overlap_permissions.empty()) {
+    std::vector<InstallWarning> install_warnings;
+    install_warnings.reserve(overlap_permissions.size());
+
+    for (const auto* api_permission : overlap_permissions) {
+      install_warnings.emplace_back(
+          ErrorUtils::FormatErrorMessage(
+              manifest_errors::kPermissionMarkedOptionalAndRequired,
+              api_permission->name()),
+          keys::kOptionalPermissions, api_permission->name());
+    }
+
+    extension->AddInstallWarnings(std::move(install_warnings));
+
+    APIPermissionSet new_optional_api_permissions;
+    APIPermissionSet::Difference(initial_optional_permissions_->api_permissions,
+                                 initial_required_permissions_->api_permissions,
+                                 &new_optional_api_permissions);
+
+    initial_optional_permissions_->api_permissions =
+        new_optional_api_permissions;
+  }
+
+  // TODO(kelvinjiang): Use URLPatternSet to check for cases where a url pattern
+  // in required permissions contains another pattern in optional permissions.
   return true;
 }
 
