@@ -525,6 +525,7 @@ test("browser_tests") {
       "../browser/browsing_data/browsing_data_local_storage_helper_browsertest.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest.cc",
       "../browser/browsing_data/counters/autofill_counter_browsertest.cc",
+      "../browser/browsing_data/counters/browsing_data_counter_utils_browsertest.cc",
       "../browser/browsing_data/counters/cache_counter_browsertest.cc",
       "../browser/browsing_data/counters/conditional_cache_counting_helper_browsertest.cc",
       "../browser/browsing_data/counters/downloads_counter_browsertest.cc",
