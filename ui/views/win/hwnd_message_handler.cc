@@ -2988,7 +2988,10 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     if (event_type == ui::ET_TOUCH_RELEASED)
       id_generator_.ReleaseNumber(pointer_id);
 
-    SetMsgHandled(event.handled());
+    // Mark all touch released events handled. These will usually turn into tap
+    // gestures, and doing this avoids propagating the event to other windows.
+    const bool always_mark_handled = event_type == ui::ET_TOUCH_RELEASED;
+    SetMsgHandled(always_mark_handled || event.handled());
   }
   return 0;
 }
