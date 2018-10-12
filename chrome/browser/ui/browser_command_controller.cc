@@ -1297,7 +1297,7 @@ void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
     return;
 
   command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_SYNC_SETUP, show_main_ui && pref_signin_allowed_.GetValue());
+      IDC_SHOW_SIGNIN, show_main_ui && pref_signin_allowed_.GetValue());
 }
 
 // static
