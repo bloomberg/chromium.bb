@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/resources/grit/media_controls_resources.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/modules/media_controls/resources/grit/media_controls_resources.h"
 #include "third_party/blink/renderer/platform/media/resource_bundle_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
