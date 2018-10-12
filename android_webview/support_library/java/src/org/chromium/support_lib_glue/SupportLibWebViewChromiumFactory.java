@@ -118,13 +118,14 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         }
 
         @Override
-        public void setProxyOverride(String host, int port, String[] exclusionList) {
-            mSharedStatics.setProxyOverride(host, port, exclusionList);
+        public void setProxyOverride(
+                String host, int port, String[] exclusionList, Runnable callback) {
+            mSharedStatics.setProxyOverride(host, port, exclusionList, callback);
         }
 
         @Override
-        public void clearProxyOverride() {
-            mSharedStatics.clearProxyOverride();
+        public void clearProxyOverride(Runnable callback) {
+            mSharedStatics.clearProxyOverride(callback);
         }
     }
 

@@ -415,15 +415,17 @@ void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {
 void AwURLRequestContextGetter::SetProxyOverride(
     const std::string& host,
     int port,
-    const std::vector<std::string>& exclusion_list) {
+    const std::vector<std::string>& exclusion_list,
+    base::OnceClosure callback) {
   if (proxy_config_service_android_ != NULL) {
-    proxy_config_service_android_->SetProxyOverride(host, port, exclusion_list);
+    proxy_config_service_android_->SetProxyOverride(host, port, exclusion_list,
+                                                    std::move(callback));
   }
 }
 
-void AwURLRequestContextGetter::ClearProxyOverride() {
+void AwURLRequestContextGetter::ClearProxyOverride(base::OnceClosure callback) {
   if (proxy_config_service_android_ != NULL) {
-    proxy_config_service_android_->ClearProxyOverride();
+    proxy_config_service_android_->ClearProxyOverride(std::move(callback));
   }
 }
 
