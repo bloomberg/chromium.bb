@@ -70,6 +70,14 @@ const int kLabelColorRGB = 0x6D6D72;
 
 #pragma mark - ContentSuggestionsArticlesHeaderCell
 
+@interface ContentSuggestionsArticlesHeaderCell ()
+
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* standardConstraints;
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* accessibilityConstraints;
+
+@end
+
 @implementation ContentSuggestionsArticlesHeaderCell
 
 @synthesize button = _button;
@@ -83,34 +91,62 @@ const int kLabelColorRGB = 0x6D6D72;
     _label.translatesAutoresizingMaskIntoConstraints = NO;
     _label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _label.textColor = UIColorFromRGB(kLabelColorRGB, 1.0);
+    _label.adjustsFontForContentSizeCategory = YES;
     _label.adjustsFontSizeToFitWidth = YES;
 
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
     _button.titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _button.titleLabel.adjustsFontForContentSizeCategory = YES;
     [_button addTarget:self
                   action:@selector(buttonTapped)
         forControlEvents:UIControlEventTouchUpInside];
 
     [self.contentView addSubview:_button];
     [self.contentView addSubview:_label];
+
+    _standardConstraints = @[
+      [_label.bottomAnchor
+          constraintEqualToAnchor:self.contentView.bottomAnchor],
+      [_button.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+      [_label.trailingAnchor
+          constraintLessThanOrEqualToAnchor:_button.leadingAnchor],
+      [_button.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kTextMargin],
+    ];
+    _accessibilityConstraints = @[
+      [_label.bottomAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+      [_button.topAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+      [_label.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
+                                   constant:-kTextMargin],
+      [_button.leadingAnchor
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kTextMargin],
+      [_button.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
+                                   constant:-kTextMargin],
+    ];
+
     [NSLayoutConstraint activateConstraints:@[
       [_label.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTextMargin],
       [_label.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
-      [_label.bottomAnchor
-          constraintEqualToAnchor:self.contentView.bottomAnchor],
-      [_button.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kTextMargin],
-      [_button.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
       [_button.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor],
-      [_label.trailingAnchor
-          constraintLessThanOrEqualToAnchor:_button.leadingAnchor]
     ]];
+
+    if (ContentSizeCategoryIsAccessibilityCategory(
+            self.traitCollection.preferredContentSizeCategory)) {
+      [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
+    } else {
+      [NSLayoutConstraint activateConstraints:_standardConstraints];
+    }
   }
   return self;
 }
@@ -118,6 +154,27 @@ const int kLabelColorRGB = 0x6D6D72;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.delegate = nil;
+}
+
+#pragma mark - UIView
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  BOOL isCurrentCategoryAccessibility =
+      ContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory);
+  BOOL isPreviousCategoryAccessibility =
+      ContentSizeCategoryIsAccessibilityCategory(
+          previousTraitCollection.preferredContentSizeCategory);
+  if (isCurrentCategoryAccessibility != isPreviousCategoryAccessibility) {
+    if (isCurrentCategoryAccessibility) {
+      [NSLayoutConstraint deactivateConstraints:self.standardConstraints];
+      [NSLayoutConstraint activateConstraints:self.accessibilityConstraints];
+    } else {
+      [NSLayoutConstraint deactivateConstraints:self.accessibilityConstraints];
+      [NSLayoutConstraint activateConstraints:self.standardConstraints];
+    }
+  }
 }
 
 #pragma mark Private

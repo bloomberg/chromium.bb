@@ -439,9 +439,16 @@ const CGFloat kCardBorderRadius = 11;
   if ([self.collectionUpdater isHeaderSection:section]) {
     return CGSizeMake(0, [self.headerSynchronizer headerHeight]);
   }
-  return [super collectionView:collectionView
-                               layout:collectionViewLayout
-      referenceSizeForHeaderInSection:section];
+  CGSize defaultSize = [super collectionView:collectionView
+                                      layout:collectionViewLayout
+             referenceSizeForHeaderInSection:section];
+  if (ContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory) &&
+      [self.collectionUpdater isContentSuggestionsSection:section]) {
+    // Double the size of the header as it is now on two lines.
+    defaultSize.height *= 2;
+  }
+  return defaultSize;
 }
 
 - (BOOL)collectionView:(nonnull UICollectionView*)collectionView
