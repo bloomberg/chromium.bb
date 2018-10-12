@@ -713,14 +713,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return NO;
   BOOL result = [super becomeFirstResponder];
   if (result && bridge_)
-    bridge_->host()->SetIsFirstResponder(true);
+    bridge_->host()->OnIsFirstResponderChanged(true);
   return result;
 }
 
 - (BOOL)resignFirstResponder {
   BOOL result = [super resignFirstResponder];
   if (result && bridge_)
-    bridge_->host()->SetIsFirstResponder(false);
+    bridge_->host()->OnIsFirstResponderChanged(false);
   return result;
 }
 
@@ -753,7 +753,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   [super setFrameSize:newSize];
 
   if (bridge_)
-    bridge_->host()->SetViewSize(gfx::Size(newSize.width, newSize.height));
+    bridge_->host()->OnViewSizeChanged(
+        gfx::Size(newSize.width, newSize.height));
 }
 
 - (BOOL)isOpaque {
