@@ -19,8 +19,6 @@ class FlingBooster;
 
 namespace content {
 
-class GestureEventQueue;
-
 class FlingController;
 
 // Interface with which the FlingController can forward generated fling progress
@@ -73,8 +71,7 @@ class CONTENT_EXPORT FlingController {
     ActiveFlingParameters() : modifiers(0) {}
   };
 
-  FlingController(GestureEventQueue* gesture_event_queue,
-                  FlingControllerEventSenderClient* event_sender_client,
+  FlingController(FlingControllerEventSenderClient* event_sender_client,
                   FlingControllerSchedulerClient* scheduler_client,
                   const Config& config);
 
@@ -151,8 +148,6 @@ class CONTENT_EXPORT FlingController {
 
   bool UpdateCurrentFlingState(const blink::WebGestureEvent& fling_start_event,
                                const gfx::Vector2dF& velocity);
-
-  GestureEventQueue* gesture_event_queue_;
 
   FlingControllerEventSenderClient* event_sender_client_;
 

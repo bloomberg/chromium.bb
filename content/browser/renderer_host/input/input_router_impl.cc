@@ -116,7 +116,6 @@ void InputRouterImpl::SendWheelEvent(
 void InputRouterImpl::SendKeyboardEvent(
     const NativeWebKeyboardEventWithLatencyInfo& key_event) {
   gesture_event_queue_.StopFling();
-  gesture_event_queue_.FlingHasBeenHalted();
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
       &InputRouterImpl::KeyboardEventHandled, weak_this_, key_event);
   FilterAndSendWebInputEvent(key_event.event, key_event.latency,
