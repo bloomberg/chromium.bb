@@ -1164,7 +1164,6 @@
       },
       {
         "args": [
-          "--gtest_filter=-*UsingRealWebcam*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3702,7 +3701,6 @@
       },
       {
         "args": [
-          "--gtest_filter=-*UsingRealWebcam*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -5245,7 +5243,6 @@
       },
       {
         "args": [
-          "--gtest_filter=-*UsingRealWebcam*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
