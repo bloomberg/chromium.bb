@@ -328,8 +328,7 @@ function testEntryListAddEntrySetsPrefix() {
  * Test FakeEntry, which is only static data.
  */
 function testFakeEntry(testReportCallback) {
-  let fakeEntry =
-      new FakeEntry('label', VolumeManagerCommon.RootType.CROSTINI, true);
+  let fakeEntry = new FakeEntry('label', VolumeManagerCommon.RootType.CROSTINI);
 
   assertEquals(undefined, fakeEntry.sourceRestriction);
   assertEquals('FakeEntry', fakeEntry.type_name);
@@ -342,15 +341,12 @@ function testFakeEntry(testReportCallback) {
   assertTrue(fakeEntry.isDirectory);
   assertFalse(fakeEntry.isFile);
 
-  // Check the isDirectory and sourceRestriction constructor args.
+  // Check sourceRestriction constructor args.
   const kSourceRestriction =
       /** @type{chrome.fileManagerPrivate.SourceRestriction} */ ('fake');
   fakeEntry = new FakeEntry(
-      'label', VolumeManagerCommon.RootType.CROSTINI, false,
-      kSourceRestriction);
+      'label', VolumeManagerCommon.RootType.CROSTINI, kSourceRestriction);
   assertEquals(kSourceRestriction, fakeEntry.sourceRestriction);
-  assertFalse(fakeEntry.isDirectory);
-  assertTrue(fakeEntry.isFile);
 
   let callCounter = 0;
 

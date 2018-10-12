@@ -65,12 +65,12 @@ function VolumeInfoImpl(
     this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] =
         new FakeEntry(
             str('DRIVE_OFFLINE_COLLECTION_LABEL'),
-            VolumeManagerCommon.RootType.DRIVE_OFFLINE, true);
+            VolumeManagerCommon.RootType.DRIVE_OFFLINE);
 
     this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME] =
         new FakeEntry(
             str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
-            VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME, true);
+            VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME);
   }
 
   // Note: This represents if the mounting of the volume is successfully done
