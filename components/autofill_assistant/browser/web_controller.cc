@@ -113,9 +113,10 @@ void WebController::LoadURL(const GURL& url) {
 void WebController::ClickElement(const std::vector<std::string>& selectors,
                                  base::OnceCallback<void(bool)> callback) {
   DCHECK(!selectors.empty());
-  FindElement(selectors, base::BindOnce(&WebController::OnFindElementForClick,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        std::move(callback)));
+  FindElement(
+      selectors, /* strict_mode= */ true,
+      base::BindOnce(&WebController::OnFindElementForClick,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebController::OnFindElementForClick(
@@ -218,9 +219,12 @@ void WebController::OnDispatchReleaseMoustEvent(
 void WebController::ElementExists(const std::vector<std::string>& selectors,
                                   base::OnceCallback<void(bool)> callback) {
   DCHECK(!selectors.empty());
-  FindElement(selectors, base::BindOnce(&WebController::OnFindElementForExist,
-                                        weak_ptr_factory_.GetWeakPtr(),
-                                        std::move(callback)));
+  // We don't use strict_mode because we only check for the existence of an
+  // element and we don't act on it.
+  FindElement(
+      selectors, /* strict_mode= */ false,
+      base::BindOnce(&WebController::OnFindElementForExist,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebController::OnFindElementForExist(
@@ -230,15 +234,17 @@ void WebController::OnFindElementForExist(
 }
 
 void WebController::FindElement(const std::vector<std::string>& selectors,
+                                bool strict_mode,
                                 FindElementCallback callback) {
   devtools_client_->GetDOM()->Enable();
   devtools_client_->GetDOM()->GetDocument(base::BindOnce(
       &WebController::OnGetDocument, weak_ptr_factory_.GetWeakPtr(), selectors,
-      std::move(callback)));
+      strict_mode, std::move(callback)));
 }
 
 void WebController::OnGetDocument(
     const std::vector<std::string>& selectors,
+    bool strict_mode,
     FindElementCallback callback,
     std::unique_ptr<dom::GetDocumentResult> result) {
   std::unique_ptr<FindElementResult> element_result =
@@ -247,25 +253,29 @@ void WebController::OnGetDocument(
   element_result->container_frame_selector_index = 0;
   element_result->object_id = "";
   RecursiveFindElement(result->GetRoot()->GetNodeId(), 0, selectors,
-                       std::move(element_result), std::move(callback));
+                       strict_mode, std::move(element_result),
+                       std::move(callback));
 }
 
 void WebController::RecursiveFindElement(
     int node_id,
     size_t index,
     const std::vector<std::string>& selectors,
+    bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback) {
   devtools_client_->GetDOM()->QuerySelectorAll(
       node_id, selectors[index],
       base::BindOnce(&WebController::OnQuerySelectorAll,
                      weak_ptr_factory_.GetWeakPtr(), index, selectors,
-                     std::move(element_result), std::move(callback)));
+                     strict_mode, std::move(element_result),
+                     std::move(callback)));
 }
 
 void WebController::OnQuerySelectorAll(
     size_t index,
     const std::vector<std::string>& selectors,
+    bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
     std::unique_ptr<dom::QuerySelectorAllResult> result) {
@@ -274,7 +284,7 @@ void WebController::OnQuerySelectorAll(
     return;
   }
 
-  if (result->GetNodeIds()->size() != 1) {
+  if (strict_mode && result->GetNodeIds()->size() != 1) {
     DLOG(ERROR) << "Have " << result->GetNodeIds()->size()
                 << " elements exist.";
     std::move(callback).Run(std::move(element_result));
@@ -293,14 +303,17 @@ void WebController::OnQuerySelectorAll(
     return;
   }
 
+  // TODO(crbug.com/806868): Given than now result->GetNodeIds().size() can be
+  // greater than 1, we should fan-out and try all different nodes here instead
+  // of only the first.
   devtools_client_->GetDOM()->DescribeNode(
       dom::DescribeNodeParams::Builder()
           .SetNodeId(result->GetNodeIds()->front())
           .Build(),
-      base::BindOnce(&WebController::OnDescribeNode,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     result->GetNodeIds()->front(), index, selectors,
-                     std::move(element_result), std::move(callback)));
+      base::BindOnce(
+          &WebController::OnDescribeNode, weak_ptr_factory_.GetWeakPtr(),
+          result->GetNodeIds()->front(), index, selectors, strict_mode,
+          std::move(element_result), std::move(callback)));
 }
 
 void WebController::OnResolveNode(
@@ -322,6 +335,7 @@ void WebController::OnDescribeNode(
     int node_id,
     size_t index,
     const std::vector<std::string>& selectors,
+    bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
     std::unique_ptr<dom::DescribeNodeResult> result) {
@@ -383,12 +397,13 @@ void WebController::OnDescribeNode(
                 .Build(),
             base::BindOnce(&WebController::OnPushNodesByBackendIds,
                            weak_ptr_factory_.GetWeakPtr(), index, selectors,
-                           std::move(element_result), std::move(callback)));
+                           strict_mode, std::move(element_result),
+                           std::move(callback)));
     return;
   }
 
-  RecursiveFindElement(node_id, ++index, selectors, std::move(element_result),
-                       std::move(callback));
+  RecursiveFindElement(node_id, ++index, selectors, strict_mode,
+                       std::move(element_result), std::move(callback));
 }
 
 content::RenderFrameHost* WebController::FindCorrespondingRenderFrameHost(
@@ -409,12 +424,14 @@ content::RenderFrameHost* WebController::FindCorrespondingRenderFrameHost(
 void WebController::OnPushNodesByBackendIds(
     size_t index,
     const std::vector<std::string>& selectors,
+    bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
     std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result) {
   DCHECK(result->GetNodeIds()->size() == 1);
   RecursiveFindElement(result->GetNodeIds()->front(), ++index, selectors,
-                       std::move(element_result), std::move(callback));
+                       strict_mode, std::move(element_result),
+                       std::move(callback));
 }
 
 void WebController::OnResult(bool result,
@@ -474,6 +491,7 @@ void WebController::FillAddressForm(const std::string& guid,
   auto data_to_autofill = std::make_unique<FillFormInputData>();
   data_to_autofill->autofill_data_guid = guid;
   FindElement(selectors,
+              /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForFillingForm,
                              weak_ptr_factory_.GetWeakPtr(),
                              std::move(data_to_autofill), selectors,
@@ -545,6 +563,7 @@ void WebController::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
   data_to_autofill->card = std::move(card);
   data_to_autofill->cvc = cvc;
   FindElement(selectors,
+              /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForFillingForm,
                              weak_ptr_factory_.GetWeakPtr(),
                              std::move(data_to_autofill), selectors,
@@ -555,6 +574,7 @@ void WebController::SelectOption(const std::vector<std::string>& selectors,
                                  const std::string& selected_option,
                                  base::OnceCallback<void(bool)> callback) {
   FindElement(selectors,
+              /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSelectOption,
                              weak_ptr_factory_.GetWeakPtr(), selected_option,
                              std::move(callback)));
@@ -607,6 +627,7 @@ void WebController::HighlightElement(const std::vector<std::string>& selectors,
                                      base::OnceCallback<void(bool)> callback) {
   FindElement(
       selectors,
+      /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForHighlightElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -655,6 +676,7 @@ void WebController::FocusElement(const std::vector<std::string>& selectors,
   DCHECK(!selectors.empty());
   FindElement(
       selectors,
+      /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForFocusElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -664,6 +686,7 @@ void WebController::GetFieldValue(
     base::OnceCallback<void(bool, const std::string&)> callback) {
   FindElement(
       selectors,
+      /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForGetFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -707,6 +730,7 @@ void WebController::SetFieldValue(const std::vector<std::string>& selectors,
                                   const std::string& value,
                                   base::OnceCallback<void(bool)> callback) {
   FindElement(selectors,
+              /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSetFieldValue,
                              weak_ptr_factory_.GetWeakPtr(), value,
                              std::move(callback)));
@@ -750,6 +774,7 @@ void WebController::GetOuterHtml(
     base::OnceCallback<void(bool, const std::string&)> callback) {
   FindElement(
       selectors,
+      /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
