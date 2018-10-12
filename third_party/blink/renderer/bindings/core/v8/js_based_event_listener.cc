@@ -73,7 +73,7 @@ void JSBasedEventListener::handleEvent(
     return;
 
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope handle_scope(isolate);
 
     // Calling |GetListenerObject()| here may cause compilation of the
     // uncompiled script body in eventHandler's value earlier than standard's
@@ -92,7 +92,7 @@ void JSBasedEventListener::handleEvent(
   if (!script_state_of_listener->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(script_state_of_listener);
+  ScriptState::Scope listener_script_state_scope(script_state_of_listener);
 
   // https://dom.spec.whatwg.org/#firing-events
   // Step 2. of firing events: Let event be the result of creating an event
@@ -101,11 +101,12 @@ void JSBasedEventListener::handleEvent(
   // |js_event|, a V8 wrapper object for |event|, must be created in the
   // relevant realm of the event target. The world must match the event
   // listener's world.
-  v8::Local<v8::Context> v8_context =
+  v8::Local<v8::Context> v8_context_of_event_target =
       ToV8Context(execution_context_of_event_target, GetWorld());
-  if (v8_context.IsEmpty())
+  if (v8_context_of_event_target.IsEmpty())
     return;
-  v8::Local<v8::Value> js_event = ToV8(event, v8_context->Global(), isolate);
+  v8::Local<v8::Value> js_event =
+      ToV8(event, v8_context_of_event_target->Global(), isolate);
   if (js_event.IsEmpty())
     return;
 
