@@ -828,18 +828,6 @@ class DriveTestVolume : public TestVolume {
     return integration_service_;
   }
 
-  bool Mount(Profile* profile) {
-    if (profile != profile_)
-      return false;
-
-    if (!integration_service_)
-      return false;
-
-    integration_service_->SetEnabled(true);
-    CreateDriveFsConnectionDelegate();
-    return true;
-  }
-
   void Unmount() { integration_service_->SetEnabled(false); }
 
  private:
@@ -1364,11 +1352,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
-    return;
-  }
-
-  if (name == "mountDrive") {
-    ASSERT_TRUE(drive_volume_->Mount(profile()));
     return;
   }
 
