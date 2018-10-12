@@ -660,6 +660,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       in_process_(false),
       kind_(kind),
       process_launched_(false),
+      connection_filter_id_(
+          ServiceManagerConnection::kInvalidConnectionFilterId),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
@@ -774,6 +776,11 @@ GpuProcessHost::~GpuProcessHost() {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
+
+  if (ServiceManagerConnection::GetForProcess()) {
+    ServiceManagerConnection::GetForProcess()->RemoveConnectionFilter(
+        connection_filter_id_);
+  }
 }
 
 bool GpuProcessHost::Init() {
@@ -783,8 +790,9 @@ bool GpuProcessHost::Init() {
 
   // May be null during test execution.
   if (ServiceManagerConnection::GetForProcess()) {
-    ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
-        std::make_unique<ConnectionFilterImpl>(process_->GetData().id));
+    connection_filter_id_ =
+        ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
+            std::make_unique<ConnectionFilterImpl>(process_->GetData().id));
   }
 
   process_->GetHost()->CreateChannelMojo();
