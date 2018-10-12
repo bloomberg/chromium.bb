@@ -49,7 +49,6 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
-#include "third_party/blink/public/resources/grit/media_controls_resources.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/layout.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"

@@ -622,19 +622,6 @@ grit("image_resources") {
 group("scaled_resources") {
   public_deps = [
     ":image_resources",
-    ":media_controls_resources_header",
-    "//third_party/blink/renderer/modules/media_controls:media_controls_resources",
-  ]
-}
-
-copy("media_controls_resources_header") {
-  sources = [
-    "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/grit/media_controls_resources.h",
-  ]
-  outputs = [
-    "$resources_out_dir/grit/media_controls_resources.h",
-  ]
-  deps = [
     "//third_party/blink/renderer/modules/media_controls:media_controls_resources",
   ]
 }
