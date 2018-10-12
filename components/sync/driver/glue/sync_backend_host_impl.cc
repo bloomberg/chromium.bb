@@ -149,9 +149,11 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
   DCHECK(!host_);
 
   if (invalidation_handler_registered_) {
-    bool success =
-        invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet());
-    DCHECK(success);
+    if (reason != BROWSER_SHUTDOWN) {
+      bool success =
+          invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet());
+      DCHECK(success);
+    }
     invalidator_->UnregisterInvalidationHandler(this);
     invalidator_ = nullptr;
   }

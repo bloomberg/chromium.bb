@@ -25,6 +25,8 @@ static_library("impl") {
     "invalidator.h",
     "invalidator_registrar.cc",
     "invalidator_registrar.h",
+    "invalidator_registrar_with_memory.cc",
+    "invalidator_registrar_with_memory.h",
     "invalidator_storage.cc",
     "invalidator_storage.h",
     "mock_ack_handler.cc",
