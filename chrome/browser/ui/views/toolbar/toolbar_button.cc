@@ -222,32 +222,9 @@ std::unique_ptr<views::InkDrop> ToolbarButton::CreateInkDrop() {
   return CreateToolbarInkDrop<LabelButton>(this);
 }
 
-std::unique_ptr<views::InkDropRipple> ToolbarButton::CreateInkDropRipple()
-    const {
-  return CreateToolbarInkDropRipple<LabelButton>(
-      this, GetInkDropCenterBasedOnLastEvent(),
-      gfx::Insets(0, leading_margin_, 0, 0));
-}
-
 std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
     const {
-  if (highlight_color_) {
-    const int highlight_radius =
-        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-            views::EMPHASIS_MAXIMUM, size());
-
-    // TODO(pbos): Unify with CreateToolbarInkDropHighlight which currently
-    // assumes a square inkdrop and uses different bounds for the center point.
-    auto highlight = std::make_unique<views::InkDropHighlight>(
-        size(), highlight_radius,
-        gfx::PointF(GetMirroredRect(GetLocalBounds()).CenterPoint()),
-        GetInkDropBaseColor());
-    highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
-    return highlight;
-  }
-
-  return CreateToolbarInkDropHighlight<LabelButton>(
-      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+  return CreateToolbarInkDropHighlight(this);
 }
 
 SkColor ToolbarButton::GetInkDropBaseColor() const {

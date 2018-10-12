@@ -157,26 +157,14 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-gfx::Insets GetInkDropInsets() {
-  // Slight insets are required for older layouts as they use a slightly smaller
-  // 24dp inkdrop.
-  return gfx::Insets(ui::MaterialDesignController::IsNewerMaterialUi() ? 0 : 2);
-}
-
-int GetInkDropCornerRadius(const views::View* host_view) {
-  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, host_view->size());
-}
-
 // Returns a |SkPath| for bookmark inkdrops and focus rings.
 std::unique_ptr<SkPath> CreateBookmarkHighlightPath(
     views::InkDropHostView* host_view) {
-  gfx::Rect rect(host_view->size());
-  rect.Inset(GetInkDropInsets());
-
   auto path = std::make_unique<SkPath>();
-  const int radius = GetInkDropCornerRadius(host_view);
-  path->addRoundRect(gfx::RectToSkRect(rect), radius, radius);
+  const int radius = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, host_view->size());
+  path->addRoundRect(gfx::RectToSkRect(gfx::Rect(host_view->size())), radius,
+                     radius);
   return path;
 }
 
@@ -184,26 +172,6 @@ std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
     std::unique_ptr<views::InkDropImpl> ink_drop) {
   ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropRipple> CreateBookmarkButtonInkDropRipple(
-    const views::InkDropHostView* host_view,
-    const gfx::Point& center_point) {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      host_view->size(), GetInkDropInsets(), center_point,
-      GetToolbarInkDropBaseColor(host_view),
-      host_view->ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
-    const views::InkDropHostView* host_view) {
-  std::unique_ptr<views::InkDropHighlight> highlight(
-      new views::InkDropHighlight(
-          host_view->size(), GetInkDropCornerRadius(host_view),
-          gfx::RectF(gfx::Rect(host_view->size())).CenterPoint(),
-          GetToolbarInkDropBaseColor(host_view)));
-  highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
-  return highlight;
 }
 
 std::unique_ptr<views::LabelButtonBorder> CreateBookmarkButtonBorder() {
@@ -262,14 +230,13 @@ class BookmarkButtonBase : public views::LabelButton {
     return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
 
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return CreateBookmarkButtonInkDropRipple(
-        this, GetInkDropCenterBasedOnLastEvent());
-  }
-
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return CreateBookmarkButtonInkDropHighlight(this);
+    return CreateToolbarInkDropHighlight(this);
+  }
+
+  SkColor GetInkDropBaseColor() const override {
+    return GetToolbarInkDropBaseColor(this);
   }
 
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()
@@ -386,14 +353,13 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     return CreateBookmarkButtonInkDrop(CreateDefaultFloodFillInkDropImpl());
   }
 
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    return CreateBookmarkButtonInkDropRipple(
-        this, GetInkDropCenterBasedOnLastEvent());
-  }
-
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return CreateBookmarkButtonInkDropHighlight(this);
+    return CreateToolbarInkDropHighlight(this);
+  }
+
+  SkColor GetInkDropBaseColor() const override {
+    return GetToolbarInkDropBaseColor(this);
   }
 
   std::unique_ptr<views::LabelButtonBorder> CreateDefaultBorder()

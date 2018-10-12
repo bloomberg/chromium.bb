@@ -39,6 +39,14 @@ std::unique_ptr<SkPath> CreateToolbarHighlightPath(
   return path;
 }
 
+std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
+    const views::InkDropHostView* host_view) {
+  constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
+  auto highlight = host_view->views::InkDropHostView::CreateInkDropHighlight();
+  highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
+  return highlight;
+}
+
 SkColor GetToolbarInkDropBaseColor(const views::View* host_view) {
   const auto* theme_provider = host_view->GetThemeProvider();
   // There may be no theme provider in unit tests.

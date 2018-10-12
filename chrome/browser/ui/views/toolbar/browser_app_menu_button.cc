@@ -357,17 +357,7 @@ std::unique_ptr<views::InkDrop> BrowserAppMenuButton::CreateInkDrop() {
   return CreateToolbarInkDrop<MenuButton>(this);
 }
 
-std::unique_ptr<views::InkDropRipple>
-BrowserAppMenuButton::CreateInkDropRipple() const {
-  // FIXME: GetInkDropCenterBasedOnLastEvent() will always return the center
-  // of this view. https://crbug.com/819878.
-  return CreateToolbarInkDropRipple<MenuButton>(
-      this, GetInkDropCenterBasedOnLastEvent(),
-      gfx::Insets(0, 0, 0, margin_trailing_));
-}
-
 std::unique_ptr<views::InkDropHighlight>
 BrowserAppMenuButton::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight<MenuButton>(
-      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+  return CreateToolbarInkDropHighlight(this);
 }
