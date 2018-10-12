@@ -120,13 +120,13 @@ source_set("gbm") {
 
   deps = [
     "//base",
+    "//build/config/linux/libdrm",
     "//gpu/vulkan:buildflags",
     "//ipc",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ws/public/mojom:constants",
     "//skia",
-    "//third_party/libdrm",
     "//third_party/libsync",
     "//third_party/minigbm",
     "//ui/base",
@@ -185,9 +185,9 @@ source_set("gbm_unittests") {
   deps = [
     ":gbm",
     "//base/test:test_support",
+    "//build/config/linux/libdrm",
     "//skia",
     "//testing/gtest",
-    "//third_party/libdrm",
     "//ui/gfx",
     "//ui/ozone:platform",
     "//ui/ozone/common",
