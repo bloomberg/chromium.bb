@@ -57,6 +57,8 @@ const char kContextualSearchCaption[] = "caption";
 const char kContextualSearchThumbnail[] = "thumbnail";
 const char kContextualSearchAction[] = "action";
 const char kContextualSearchCategory[] = "category";
+const char kContextualSearchDocIdParam[] = "docid";
+const char kContextualSearchSnippetParam[] = "snippet";
 
 const char kActionCategoryAddress[] = "ADDRESS";
 const char kActionCategoryEmail[] = "EMAIL";
@@ -213,11 +215,14 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string caption = "";
   std::string quick_action_uri = "";
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
+  long long doc_id = 0;
+  long long snippet_hash = 0;
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
-      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category);
+      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
+      &doc_id, &snippet_hash);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -239,7 +244,7 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
       is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language, thumbnail_url, caption, quick_action_uri,
-      quick_action_category));
+      quick_action_category, doc_id, snippet_hash));
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(
@@ -427,7 +432,9 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     std::string* thumbnail_url,
     std::string* caption,
     std::string* quick_action_uri,
-    QuickActionCategory* quick_action_category) {
+    QuickActionCategory* quick_action_category,
+    long long* doc_id,
+    long long* snippet_hash) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -498,6 +505,18 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
       *quick_action_category = QUICK_ACTION_CATEGORY_WEBSITE;
     }
   }
+
+  // Check for development-data for the offline click-log.
+  // TODO(donnd): remove before the next release.  See https://crbug.com/894568
+  // for details.
+  std::string doc_id_string;
+  std::string snippet_hash_string;
+  dict->GetString(kContextualSearchDocIdParam, &doc_id_string);
+  dict->GetString(kContextualSearchSnippetParam, &snippet_hash_string);
+  if (!doc_id_string.empty())
+    *doc_id = std::stoll(doc_id_string, nullptr);
+  if (!snippet_hash_string.empty())
+    *snippet_hash = std::stoll(snippet_hash_string, nullptr);
 
   // Any Contextual Cards integration.
   // For testing purposes check if there was a diagnostic from Contextual

@@ -679,17 +679,21 @@ public class ContextualSearchManager
      * @param caption The caption to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
+     * @param docId The ID of the document identified by the server, or 0 for not known.
+     * @param snippetHash The hash of a snippet from the surrounding text, as identified by the
+     *        server, or 0 for not known.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
-            final String caption, final String quickActionUri, final int quickActionCategory) {
+            final String caption, final String quickActionUri, final int quickActionCategory,
+            final long docId, final long snippetHash) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                quickActionCategory);
+                quickActionCategory, docId, snippetHash);
     }
 
     @Override
@@ -697,7 +701,7 @@ public class ContextualSearchManager
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory) {
+            int quickActionCategory, long docId, long snippetHash) {
         if (!mInternalStateController.isStillWorkingOn(InternalState.RESOLVING)) return;
 
         // Show an appropriate message for what to search for.
@@ -788,6 +792,10 @@ public class ContextualSearchManager
                 mContext.onSelectionAdjusted(selectionStartAdjust, selectionEndAdjust);
             }
         }
+
+        // Tell the interaction recorder about the docId and snippetHash, so we can correlate the
+        // signals and outcomes with this crawled document (when available).
+        mTapSuppressionInteractionRecorder.recordSnippetData(docId, snippetHash);
 
         mInternalStateController.notifyFinishedWorkOn(InternalState.RESOLVING);
     }
