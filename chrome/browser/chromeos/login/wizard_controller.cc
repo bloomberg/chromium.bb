@@ -1124,6 +1124,10 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnSyncConsentFinished() {
+  ShowDiscoverScreen();
+}
+
+void WizardController::OnDiscoverScreenFinished() {
   ShowMarketingOptInScreen();
 }
 
@@ -1742,7 +1746,7 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       OnDemoPreferencesCanceled();
       break;
     case ScreenExitCode::DISCOVER_FINISHED:
-      OnOobeFlowFinished();
+      OnDiscoverScreenFinished();
       break;
     case ScreenExitCode::FINGERPRINT_SETUP_FINISHED:
       OnFingerprintSetupFinished();

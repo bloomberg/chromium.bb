@@ -79,6 +79,9 @@ constexpr size_t kMinLengthForNonWeakPin = 2U;
 constexpr const char* kMostCommonPins[] = {"1212", "1004", "2000", "6969",
                                            "1122", "1313", "2001", "1010"};
 
+// QuickUnlockPrivateGetAuthTokenFunction test observer.
+QuickUnlockPrivateGetAuthTokenFunction::TestObserver* test_observer;
+
 // Returns the active set of quick unlock modes.
 void ComputeActiveModes(Profile* profile, ActiveModeCallback result) {
   user_manager::User* user =
@@ -221,6 +224,12 @@ void QuickUnlockPrivateGetAuthTokenFunction::
   authenticator_allocator_ = allocator;
 }
 
+// static
+void QuickUnlockPrivateGetAuthTokenFunction::SetTestObserver(
+    QuickUnlockPrivateGetAuthTokenFunction::TestObserver* observer) {
+  test_observer = observer;
+}
+
 ExtensionFunction::ResponseAction
 QuickUnlockPrivateGetAuthTokenFunction::Run() {
   std::unique_ptr<quick_unlock_private::GetAuthToken::Params> params =
@@ -232,6 +241,9 @@ QuickUnlockPrivateGetAuthTokenFunction::Run() {
           GetActiveProfile(browser_context()));
   chromeos::UserContext user_context(*user);
   user_context.SetKey(chromeos::Key(params->account_password));
+
+  if (test_observer)
+    test_observer->OnGetAuthTokenCalled(params->account_password);
 
   // Alter |user_context| if the user is supervised.
   if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
