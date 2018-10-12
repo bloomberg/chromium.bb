@@ -4,6 +4,7 @@
 
 package org.chromium.components.gcm_driver.instance_id;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -26,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 @JNINamespace("instance_id")
 public class InstanceIDBridge {
     private static final String FCM_LAZY_SUBSCRIPTIONS = "fcm_lazy_subscriptions";
+    private static final String PREF_PACKAGE = "org.chromium.components.gcm_driver.instance_id";
     private final String mSubtype;
     private long mNativeInstanceIDAndroid;
     /**
@@ -47,7 +49,9 @@ public class InstanceIDBridge {
     @VisibleForTesting
     public void storeLazinessInformation(final String authorizedEntity, boolean isLazy) {
         if (isLazy) {
-            SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+            Context context = ContextUtils.getApplicationContext();
+            SharedPreferences sharedPrefs =
+                    context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
             Set<String> lazyIds = new HashSet<>(
                     sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
             lazyIds.add(buildSubscriptionUniqueId(mSubtype, authorizedEntity));
@@ -62,7 +66,9 @@ public class InstanceIDBridge {
      * Returns whether the subscription with the |appId| and |senderId| is lazy.
      */
     public static boolean isSubscriptionLazy(final String appId, final String senderId) {
-        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        Context context = ContextUtils.getApplicationContext();
+        SharedPreferences sharedPrefs =
+                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
         Set<String> lazyIds = new HashSet<>(
                 sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
         return lazyIds.contains(buildSubscriptionUniqueId(appId, senderId));
