@@ -24,8 +24,6 @@
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -66,12 +64,11 @@ bool IsGAIACookie(const base::Time& saml_start_time,
 class ProfileAuthDataTransferer
     : public base::RefCountedDeleteOnSequence<ProfileAuthDataTransferer> {
  public:
-  ProfileAuthDataTransferer(
-      content::StoragePartition* from_partition,
-      content::StoragePartition* to_partition,
-      bool transfer_auth_cookies_and_channel_ids_on_first_login,
-      bool transfer_saml_auth_cookies_on_subsequent_login,
-      const base::Closure& completion_callback);
+  ProfileAuthDataTransferer(content::StoragePartition* from_partition,
+                            content::StoragePartition* to_partition,
+                            bool transfer_auth_cookies_on_first_login,
+                            bool transfer_saml_auth_cookies_on_subsequent_login,
+                            const base::Closure& completion_callback);
 
   void BeginTransfer();
 
@@ -105,20 +102,11 @@ class ProfileAuthDataTransferer
   void ImportCookies(const net::CookieList& cookies);
   void OnCookieSet(bool result);
 
-  // Retrieve |from_context_|'s channel IDs. When the retrieval finishes,
-  // OnChannelIDsToTransferRetrieved will be called with the result.
-  void RetrieveChannelIDsToTransfer();
-
-  // Callback that receives |from_context_|'s channel IDs and transfers them to
-  // |to_context_|.
-  void OnChannelIDsToTransferRetrieved(
-      const net::ChannelIDStore::ChannelIDList& channel_ids_to_transfer);
-
   content::StoragePartition* from_partition_;
   scoped_refptr<net::URLRequestContextGetter> from_context_;
   content::StoragePartition* to_partition_;
   scoped_refptr<net::URLRequestContextGetter> to_context_;
-  bool transfer_auth_cookies_and_channel_ids_on_first_login_;
+  bool transfer_auth_cookies_on_first_login_;
   bool transfer_saml_auth_cookies_on_subsequent_login_;
   base::OnceClosure completion_callback_;
 
@@ -128,7 +116,7 @@ class ProfileAuthDataTransferer
 ProfileAuthDataTransferer::ProfileAuthDataTransferer(
     content::StoragePartition* from_partition,
     content::StoragePartition* to_partition,
-    bool transfer_auth_cookies_and_channel_ids_on_first_login,
+    bool transfer_auth_cookies_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback)
     : RefCountedDeleteOnSequence<ProfileAuthDataTransferer>(
@@ -137,8 +125,8 @@ ProfileAuthDataTransferer::ProfileAuthDataTransferer(
       from_context_(from_partition->GetURLRequestContext()),
       to_partition_(to_partition),
       to_context_(to_partition->GetURLRequestContext()),
-      transfer_auth_cookies_and_channel_ids_on_first_login_(
-          transfer_auth_cookies_and_channel_ids_on_first_login),
+      transfer_auth_cookies_on_first_login_(
+          transfer_auth_cookies_on_first_login),
       transfer_saml_auth_cookies_on_subsequent_login_(
           transfer_saml_auth_cookies_on_subsequent_login),
       completion_callback_(completion_callback) {}
@@ -156,7 +144,7 @@ void ProfileAuthDataTransferer::BeginTransfer() {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ProfileAuthDataTransferer::TransferProxyAuthCache, this));
 
-  if (transfer_auth_cookies_and_channel_ids_on_first_login_ ||
+  if (transfer_auth_cookies_on_first_login_ ||
       transfer_saml_auth_cookies_on_subsequent_login_) {
     // Retrieve the contents of |to_partition_|'s cookie jar.
     network::mojom::CookieManager* to_manager =
@@ -182,16 +170,12 @@ void ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved(
     const net::CookieList& target_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool transfer_auth_cookies = false;
-  bool transfer_channel_ids = false;
 
   first_login_ = target_cookies.empty();
   if (first_login_) {
-    // On first login, transfer all auth cookies and channel IDs if
-    // |transfer_auth_cookies_and_channel_ids_on_first_login_| is true.
-    transfer_auth_cookies =
-        transfer_auth_cookies_and_channel_ids_on_first_login_;
-    transfer_channel_ids =
-        transfer_auth_cookies_and_channel_ids_on_first_login_;
+    // On first login, transfer all auth cookies if
+    // |transfer_auth_cookies_on_first_login_| is true.
+    transfer_auth_cookies = transfer_auth_cookies_on_first_login_;
   } else {
     // On subsequent login, transfer auth cookies set by the SAML IdP if
     // |transfer_saml_auth_cookies_on_subsequent_login_| is true.
@@ -200,13 +184,6 @@ void ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved(
 
   if (transfer_auth_cookies)
     RetrieveCookiesToTransfer();
-
-  if (transfer_channel_ids) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&ProfileAuthDataTransferer::RetrieveChannelIDsToTransfer,
-                       this));
-  }
 }
 
 void ProfileAuthDataTransferer::RetrieveCookiesToTransfer() {
@@ -269,36 +246,17 @@ void ProfileAuthDataTransferer::OnCookieSet(bool result) {
   // all cookies have been transferred.
 }
 
-void ProfileAuthDataTransferer::RetrieveChannelIDsToTransfer() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::ChannelIDService* from_service =
-      from_context_->GetURLRequestContext()->channel_id_service();
-  from_service->GetChannelIDStore()->GetAllChannelIDs(base::BindOnce(
-      &ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved, this));
-}
-
-void ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved(
-    const net::ChannelIDStore::ChannelIDList& channel_ids_to_transfer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(first_login_);
-
-  net::ChannelIDService* to_cert_service =
-      to_context_->GetURLRequestContext()->channel_id_service();
-  to_cert_service->GetChannelIDStore()->InitializeFrom(channel_ids_to_transfer);
-}
-
 }  // namespace
 
 void ProfileAuthData::Transfer(
     content::StoragePartition* from_partition,
     content::StoragePartition* to_partition,
-    bool transfer_auth_cookies_and_channel_ids_on_first_login,
+    bool transfer_auth_cookies_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login,
     const base::Closure& completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::MakeRefCounted<ProfileAuthDataTransferer>(
-      from_partition, to_partition,
-      transfer_auth_cookies_and_channel_ids_on_first_login,
+      from_partition, to_partition, transfer_auth_cookies_on_first_login,
       transfer_saml_auth_cookies_on_subsequent_login, completion_callback)
       ->BeginTransfer();
 }
