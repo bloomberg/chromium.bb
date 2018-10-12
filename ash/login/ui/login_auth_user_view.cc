@@ -777,6 +777,7 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
     OnOnlineSignInMessageTap();
   } else if (sender == external_binary_auth_button_) {
     password_view_->SetReadOnly(true);
+    external_binary_auth_button_->SetEnabled(false);
     Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
         current_user()->basic_user_info->account_id,
         base::BindOnce(&LoginAuthUserView::OnAuthComplete,
@@ -812,6 +813,7 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
   if (!auth_success.value()) {
     password_view_->Clear();
     password_view_->SetReadOnly(false);
+    external_binary_auth_button_->SetEnabled(true);
   }
 
   on_auth_.Run(auth_success.value());
