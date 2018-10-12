@@ -15,24 +15,12 @@
         android:id="@+id/overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/white_alpha_90"
         android:gravity="center"
         android:clickable="true"
         android:visibility="gone"
         android:focusable="false"
         android:orientation="vertical">
-
-        <ProgressBar
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="16dp"
-            android:indeterminate="true" />
-
-        <TextView
-            android:id="@+id/overlay_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center_horizontal" />
     </LinearLayout>
 
     <LinearLayout
@@ -40,16 +28,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@drawable/popup_bg_bottom"
+        android:background="@drawable/autofill_assistant_bottombar_bg"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
             <android.support.v7.widget.AppCompatImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -59,10 +48,13 @@
                 android:id="@+id/status_message"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
                 android:paddingStart="24dp"
-                android:maxLines="1"
-                android:layout_weight="1.0"/>
+                android:paddingEnd="24dp"
+                android:textAppearance="@style/BlackTitle2"
+                android:layout_weight="1.0"
+                android:maxLines="2"
+                android:ellipsize="end"/>
 
             <ImageButton
                 android:id="@+id/feedback_button"
@@ -87,7 +79,9 @@
         <RelativeLayout
             android:id="@+id/details"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="@dimen/autofill_assistant_details_image_size"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:layout_marginBottom="8dp"
             android:visibility="gone">
             <TextView
@@ -96,7 +90,11 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/details_image"/>
+                android:layout_toStartOf="@+id/details_image"
+                android:gravity="center_vertical"
+                android:textAppearance="@style/BlackTitle2"
+                android:maxLines="1"
+                android:ellipsize="end"/>
             <TextView
                 android:id="@+id/details_text"
                 android:layout_width="wrap_content"
@@ -105,14 +103,20 @@
                 android:layout_above="@+id/details_time"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@+id/details_image"
-                android:gravity="center_vertical" />
+                android:gravity="center_vertical"
+                android:textAppearance="@style/BlackBody"
+                android:maxLines="1"
+                android:ellipsize="end"/>
             <TextView
                 android:id="@+id/details_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/details_image"/>
+                android:gravity="center_vertical"
+                android:textAppearance="@style/TextAppearance.AutofillAssistantDetailsTime"
+                android:maxLines="1"
+                android:ellipsize="end"/>
             <android.support.v7.widget.AppCompatImageView
                 android:id="@+id/details_image"
                 android:layout_width="@dimen/autofill_assistant_details_image_size"
@@ -132,10 +136,10 @@
                 android:id="@+id/carousel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
             </LinearLayout>
