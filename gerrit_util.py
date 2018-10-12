@@ -982,7 +982,7 @@ def ChangeIdentifier(project, change_number):
 
 
 # TODO(crbug/881860): remove this hack.
-_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3']
+_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3', 'eu1']
 assert all(3 == len(p) for p in _GERRIT_MIRROR_PREFIXES)
 
 
