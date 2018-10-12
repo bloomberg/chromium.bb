@@ -28771,6 +28771,7 @@ from previous Chrome versions.
   <int value="-1956747298" label="LayeredAPI:enabled"/>
   <int value="-1956349722" label="disable-smooth-scrolling"/>
   <int value="-1955923385" label="EnableGamepadButtonAxisEvents:enabled"/>
+  <int value="-1953121360" label="EphemeralTab:disabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
@@ -28866,7 +28867,6 @@ from previous Chrome versions.
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
   <int value="-1812579951" label="ContentSuggestionsCategoryRanker:enabled"/>
-  <int value="-1811887751" label="ChromeModernFullRoll:disabled"/>
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
   <int value="-1810294310" label="AndroidPaymentApps:enabled"/>
   <int value="-1809891158" label="WebAuthenticationCable:enabled"/>
@@ -29420,7 +29420,6 @@ from previous Chrome versions.
   <int value="-812461825" label="AutofillCreditCardSigninPromo:enabled"/>
   <int value="-810684526"
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
-  <int value="-810373609" label="ChromeModernFullRoll:enabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
   <int value="-803233334" label="AutofillRefreshStyleAndroid:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
@@ -29834,6 +29833,7 @@ from previous Chrome versions.
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="29212695" label="OfflineIndicator:enabled"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
+  <int value="32488630" label="EphemeralTab:enabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
   <int value="36422284"
       label="AutofillSaveCardDialogUnlabeledExpirationDate:enabled"/>

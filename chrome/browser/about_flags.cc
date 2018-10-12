@@ -2116,10 +2116,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-memex", flag_descriptions::kChromeMemexName,
      flag_descriptions::kChromeMemexDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeMemexFeature)},
-    {"enable-chrome-modern-full-roll",
-     flag_descriptions::kChromeModernFullRollName,
-     flag_descriptions::kChromeModernFullRollDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeModernFullRoll)},
     {"force-enable-home-page-button", flag_descriptions::kHomePageButtonName,
      flag_descriptions::kHomePageButtonDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kHomePageButtonForceEnabled)},
@@ -4450,6 +4446,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, kOsAll,
      FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
+#if defined(OS_ANDROID)
+    {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
+     flag_descriptions::kEphemeralTabDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kEphemeralTab)},
+#endif  // defined(OS_ANDROID)
 
 };
 

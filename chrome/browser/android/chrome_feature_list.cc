@@ -93,7 +93,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeSwipeLogicVelocity,
     &kChromeSmartSelection,
     &kChromeMemexFeature,
-    &kChromeModernFullRoll,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
     &kContentSuggestionsThumbnailDominantColor,
@@ -108,6 +107,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadHomeV2,
     &kDownloadHomeShowStorageInfo,
     &data_reduction_proxy::features::kDataReductionMainMenu,
+    &kEphemeralTab,
     &kExploreSites,
     &kFullscreenActivity,
     &kHandleMediaIntents,
@@ -251,9 +251,6 @@ const base::Feature kChromeHomeSwipeLogicVelocity{
 const base::Feature kChromeMemexFeature{"ChromeMemex",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kChromeModernFullRoll{"ChromeModernFullRoll",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -299,6 +296,9 @@ const base::Feature kDownloadHomeV2{"DownloadHomeV2",
 
 const base::Feature kDownloadHomeShowStorageInfo{
     "DownloadHomeShowStorageInfo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEphemeralTab{"EphemeralTab",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

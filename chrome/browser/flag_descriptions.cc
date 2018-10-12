@@ -2249,10 +2249,6 @@ const char kChromeHomeSwipeLogicDescription[] =
 const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
 const char kChromeHomeSwipeLogicVelocity[] = "Velocity suppression model";
 
-const char kChromeModernFullRollName[] = "Chrome Modern Full-Roll";
-const char kChromeModernFullRollDescription[] =
-    "Enable modern full-roll animation for Chrome.";
-
 const char kChromeMemexName[] = "Chrome Memex";
 const char kChromeMemexDescription[] =
     "Enables Chrome Memex homepage on Android. Restricted to opted-in "
@@ -2453,6 +2449,10 @@ const char kEnableWebPaymentsMethodSectionOrderV2Name[] =
 const char kEnableWebPaymentsMethodSectionOrderV2Description[] =
     "Enable this option to display payment method section above address "
     "section instead of below it.";
+
+const char kEphemeralTabName[] = "An Ephemeral Tab in an Overlay Panel";
+const char kEphemeralTabDescription[] =
+    "Enable a 'sneak peek' at a linked page in an overlay.";
 
 const char kGrantNotificationsToDSEName[] =
     "Grant notifications to the Default Search Engine";
