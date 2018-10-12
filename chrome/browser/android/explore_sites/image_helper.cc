@@ -5,6 +5,7 @@
 #include "chrome/browser/android/explore_sites/image_helper.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -123,11 +124,17 @@ void ImageHelper::Job::DecodeImageBytes(
                             std::move(callback));
 }
 
-void ImageHelper::Job::OnDecodeSiteImageDone(const SkBitmap& decoded_image) {
-  DVLOG(1) << "Decoded site image, result "
-           << (decoded_image.isNull() ? "null" : "non-null");
+void RecordImageDecodedUMA(bool decoded) {
+  UMA_HISTOGRAM_BOOLEAN("ExploreSites.ImageDecoded", decoded);
+}
 
-  if (decoded_image.isNull()) {
+void ImageHelper::Job::OnDecodeSiteImageDone(const SkBitmap& decoded_image) {
+  bool decode_success = !decoded_image.isNull();
+  DVLOG(1) << "Decoded site image, result "
+           << (decode_success ? "non-null" : "null");
+  RecordImageDecodedUMA(decode_success);
+
+  if (!decode_success) {
     std::move(bitmap_callback_).Run(nullptr);
   } else {
     std::move(bitmap_callback_).Run(std::make_unique<SkBitmap>(decoded_image));
@@ -137,10 +144,12 @@ void ImageHelper::Job::OnDecodeSiteImageDone(const SkBitmap& decoded_image) {
 
 void ImageHelper::Job::OnDecodeCategoryImageDone(
     const SkBitmap& decoded_image) {
+  bool decode_success = !decoded_image.isNull();
   DVLOG(1) << "Decoded image for category, result "
-           << (decoded_image.isNull() ? "null" : "non-null");
+           << (decode_success ? "non-null" : "null");
+  RecordImageDecodedUMA(decode_success);
 
-  if (decoded_image.isNull()) {
+  if (!decode_success) {
     num_icons_--;
   } else {
     bitmaps_.push_back(decoded_image);
