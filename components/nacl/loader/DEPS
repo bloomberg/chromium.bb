@@ -9,7 +9,6 @@ include_rules = [
   "+sandbox/linux/services",
   "+sandbox/linux/suid",
   "+sandbox/linux/system_headers",
-  "+sandbox/mac",
   "+sandbox/sandbox_buildflags.h",
   "+sandbox/win/src",
   "+services/service_manager/sandbox",
