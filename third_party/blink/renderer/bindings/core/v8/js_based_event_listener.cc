@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -105,6 +106,22 @@ void JSBasedEventListener::handleEvent(
       ToV8Context(execution_context_of_event_target, GetWorld());
   if (v8_context_of_event_target.IsEmpty())
     return;
+
+  if (v8_context_of_event_target != script_state_of_listener->GetContext()) {
+    // Catch exceptions thrown in the event listener if any and report them to
+    // DevTools console.
+    v8::TryCatch try_catch(isolate);
+    try_catch.SetVerbose(true);
+
+    // Check if the current context, which is set to the listener's relevant
+    // context by creating |listener_script_state_scope|, has access to the
+    // event target's relevant context before creating |js_event|. SecurityError
+    // is thrown if it doesn't have access.
+    if (!BindingSecurity::ShouldAllowAccessToCreationContext(
+            v8_context_of_event_target, event->GetWrapperTypeInfo()))
+      return;
+  }
+
   v8::Local<v8::Value> js_event =
       ToV8(event, v8_context_of_event_target->Global(), isolate);
   if (js_event.IsEmpty())
