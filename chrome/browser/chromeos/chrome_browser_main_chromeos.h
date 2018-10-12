@@ -35,6 +35,7 @@ namespace chromeos {
 
 class ArcKioskAppManager;
 class DemoModeResourcesRemover;
+class DiscoverManager;
 class EventRewriterDelegateImpl;
 class IdleActionWarningObserver;
 class LowDiskNotification;
@@ -143,6 +144,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
+  std::unique_ptr<DiscoverManager> discover_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

@@ -107,6 +107,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -660,6 +661,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
+
+  discover_manager_ = std::make_unique<DiscoverManager>();
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
