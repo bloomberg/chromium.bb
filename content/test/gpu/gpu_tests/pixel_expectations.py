@@ -138,6 +138,3 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
-
-    # TODO(yiyix): remove expectation after rebaseline.
-    self.Fail("Pixel_CSS3DBlueBox", bug=879379)
