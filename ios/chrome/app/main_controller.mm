@@ -956,6 +956,10 @@ enum class ShowTabSwitcherSnapshotResult {
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
       ->RemoveMailtoHandling();
+  // _localStatePrefChangeRegistrar is observing the PrefService, which is owned
+  // indirectly by _chromeMain (through the ChromeBrowserState).
+  // Unregister the observer before the service is destroyed.
+  _localStatePrefChangeRegistrar.RemoveAll();
 
   _chromeMain.reset();
 }
