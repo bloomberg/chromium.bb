@@ -17,6 +17,7 @@
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
@@ -56,7 +57,7 @@ class ASH_EXPORT AppListControllerImpl
       public TabletModeObserver,
       public keyboard::KeyboardControllerObserver,
       public WallpaperControllerObserver,
-      public mojom::VoiceInteractionObserver {
+      public DefaultVoiceInteractionObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -204,15 +205,9 @@ class ASH_EXPORT AppListControllerImpl
   void OnWallpaperPreviewEnded() override;
 
   // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override {}
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionContextEnabled(bool enabled) override {}
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
-  void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
-  void OnLocaleChanged(const std::string& locale) override {}
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 

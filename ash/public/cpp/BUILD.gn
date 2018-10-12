@@ -47,6 +47,7 @@ component("cpp") {
     "ash_typography.cc",
     "ash_typography.h",
     "ash_view_ids.h",
+    "assistant/default_voice_interaction_observer.h",
     "caption_buttons/caption_button_model.h",
     "caption_buttons/caption_button_types.h",
     "caption_buttons/frame_back_button.cc",

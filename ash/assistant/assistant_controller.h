@@ -13,6 +13,7 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
@@ -45,7 +46,7 @@ class ASH_EXPORT AssistantController
     : public mojom::AssistantController,
       public AssistantControllerObserver,
       public mojom::ManagedWebContentsOpenUrlDelegate,
-      public mojom::VoiceInteractionObserver,
+      public DefaultVoiceInteractionObserver,
       public mojom::AssistantVolumeControl,
       public chromeos::CrasAudioHandler::AudioObserver,
       public AccessibilityObserver {
@@ -175,13 +176,6 @@ class ASH_EXPORT AssistantController
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
-  void OnVoiceInteractionContextEnabled(bool enabled) override {}
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
-  void OnVoiceInteractionSetupCompleted(bool completed) override {}
-  void OnAssistantFeatureAllowedChanged(
-      mojom::AssistantAllowedState state) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
 
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.
