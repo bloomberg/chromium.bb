@@ -186,7 +186,7 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
   on_setup_success_ = std::move(on_setup_success);
   on_setup_error_ = std::move(on_setup_error);
 
-  VLOG(1) << "Starting demo mode enrollment "
+  VLOG(1) << "Starting demo setup "
           << DemoSession::DemoConfigToString(demo_config_);
 
   switch (demo_config_) {
@@ -206,6 +206,7 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
 }
 
 void DemoSetupController::LoadDemoResourcesCrOSComponent() {
+  VLOG(1) << "Loading demo resources component";
   component_updater::CrOSComponentManager* cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   // In tests, use the desired error code.
@@ -238,6 +239,7 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
     return;
   }
 
+  VLOG(1) << "Starting online enrollment";
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
@@ -266,6 +268,7 @@ void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
     return;
   }
 
+  VLOG(1) << "Checking if offline policy exists";
   std::string* message = new std::string();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
@@ -285,6 +288,7 @@ void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
     return;
   }
 
+  VLOG(1) << "Starting offline enrollment";
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
   config.management_domain = DemoSetupController::kDemoModeDomain;
@@ -323,6 +327,7 @@ void DemoSetupController::OnDeviceEnrolled(
 
   // Try to load the policy for the device local account.
   if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
+    VLOG(1) << "Loading offline policy";
     DCHECK(!policy_dir_.empty());
     const base::FilePath file_path =
         policy_dir_.AppendASCII(kOfflineDeviceLocalAccountPolicyFileName);
@@ -334,7 +339,7 @@ void DemoSetupController::OnDeviceEnrolled(
                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-
+  VLOG(1) << "Marking device registered";
   StartupUtils::MarkDeviceRegistered(
       base::BindOnce(&DemoSetupController::OnDeviceRegistered,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -394,6 +399,7 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
     return;
   }
 
+  VLOG(1) << "Storing offline policy";
   // On the unittest, the device_local_account_policy_store_ is already
   // initialized. Otherwise attempts to get the store.
   if (!device_local_account_policy_store_) {
@@ -449,6 +455,7 @@ void DemoSetupController::Reset() {
 
 void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {
   DCHECK_EQ(store, device_local_account_policy_store_);
+  VLOG(1) << "Marking device registered";
   StartupUtils::MarkDeviceRegistered(
       base::BindOnce(&DemoSetupController::OnDeviceRegistered,
                      weak_ptr_factory_.GetWeakPtr()));
