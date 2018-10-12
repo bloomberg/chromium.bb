@@ -247,6 +247,7 @@ void JavaBooleanArrayToBoolVector(JNIEnv* env,
   for (size_t i = 0; i < len; ++i) {
     out->at(i) = static_cast<bool>(values[i]);
   }
+  env->ReleaseBooleanArrayElements(boolean_array.obj(), values, JNI_ABORT);
 }
 
 void JavaIntArrayToIntVector(JNIEnv* env,

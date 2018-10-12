@@ -152,7 +152,8 @@ class FakeServerHelperAndroid {
 
   // Deserializes |serialized_entity_specifics| into |entity_specifics|.
   void DeserializeEntitySpecifics(JNIEnv* env,
-                                  jbyteArray serialized_entity_specifics,
+                                  const base::android::JavaParamRef<jbyteArray>&
+                                      serialized_entity_specifics,
                                   sync_pb::EntitySpecifics* entity_specifics);
 
   // Creates a bookmark entity.

@@ -198,13 +198,11 @@ void FakeServerHelperAndroid::DeserializeEntity(JNIEnv* env,
 
 void FakeServerHelperAndroid::DeserializeEntitySpecifics(
     JNIEnv* env,
-    jbyteArray serialized_entity_specifics,
+    const JavaParamRef<jbyteArray>& serialized_entity_specifics,
     sync_pb::EntitySpecifics* entity_specifics) {
-  int specifics_bytes_length = env->GetArrayLength(serialized_entity_specifics);
-  jbyte* specifics_bytes =
-      env->GetByteArrayElements(serialized_entity_specifics, nullptr);
-  std::string specifics_string(reinterpret_cast<char*>(specifics_bytes),
-                               specifics_bytes_length);
+  std::string specifics_string;
+  base::android::JavaByteArrayToString(env, serialized_entity_specifics,
+                                       &specifics_string);
 
   if (!entity_specifics->ParseFromString(specifics_string))
     NOTREACHED() << "Could not deserialize EntitySpecifics";
