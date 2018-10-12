@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('settings');
+
+/**
+ * An object containing messages for web permissisions origin
+ * and the messages multidevice feature state.
+ *
+ * @typedef {{origin: string,
+ *            enabled: boolean}}
+ */
+settings.AndroidSmsInfo;
+
 cr.define('settings', function() {
   /** @interface */
   class MultiDeviceBrowserProxy {
@@ -46,6 +57,13 @@ cr.define('settings', function() {
      *    edit access to the Smart Lock sign-in pref.
      */
     setSmartLockSignInEnabled(enabled, opt_authToken) {}
+
+    /**
+     * Returns android messages info with messages feature state
+     * and messages for web permissions origin.
+     * @return {!Promise<!settings.AndroidSmsInfo>} Android SMS Info
+     */
+    getAndroidSmsInfo() {}
   }
 
   /**
@@ -91,6 +109,11 @@ cr.define('settings', function() {
     /** @override */
     setSmartLockSignInEnabled(enabled, opt_authToken) {
       chrome.send('setSmartLockSignInEnabled', [enabled, opt_authToken]);
+    }
+
+    /** @override */
+    getAndroidSmsInfo() {
+      return cr.sendWithPromise('getAndroidSmsInfo');
     }
   }
 

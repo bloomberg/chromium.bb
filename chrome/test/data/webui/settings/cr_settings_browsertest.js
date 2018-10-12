@@ -1157,6 +1157,7 @@ CrSettingsSiteListTest.prototype = {
     '../test_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
     'site_list_tests.js',
   ]),
 };
@@ -1952,6 +1953,7 @@ CrSettingsMultidevicePageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
     'multidevice_page_tests.js',
   ]),
 };
@@ -1976,6 +1978,7 @@ CrSettingsMultideviceSubpageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
     'multidevice_subpage_tests.js',
   ]),
 };

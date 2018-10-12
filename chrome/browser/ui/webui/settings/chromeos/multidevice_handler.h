@@ -69,12 +69,17 @@ class MultideviceHandler
   void HandleSetUpAndroidSms(const base::ListValue* args);
   void HandleGetSmartLockSignInEnabled(const base::ListValue* args);
   void HandleSetSmartLockSignInEnabled(const base::ListValue* args);
+  void HandleGetAndroidSmsInfo(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
 
   void RegisterPrefChangeListeners();
   void NotifySmartLockSignInEnabledChanged();
+  // Generate android sms info dictionary containing the messages for web
+  // content settings origin url and messages feature state.
+  std::unique_ptr<base::DictionaryValue> GenerateAndroidSmsInfo();
+  void NotifyAndroidSmsInfoChange();
 
   // Returns true if |auth_token| matches the current auth token stored in
   // QuickUnlockStorage, i.e., the user has successfully authenticated recently.
