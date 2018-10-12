@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_AUTOCLICK_COMMON_AUTOCLICK_RING_HANDLER_H_
-#define ASH_AUTOCLICK_COMMON_AUTOCLICK_RING_HANDLER_H_
+#ifndef ASH_AUTOCLICK_AUTOCLICK_RING_HANDLER_H_
+#define ASH_AUTOCLICK_AUTOCLICK_RING_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -57,4 +57,4 @@ class AutoclickRingHandler : public gfx::LinearAnimation {
 
 }  // namespace ash
 
-#endif  // ASH_AUTOCLICK_COMMON_AUTOCLICK_RING_HANDLER_H_
+#endif  // ASH_AUTOCLICK_AUTOCLICK_RING_HANDLER_H_

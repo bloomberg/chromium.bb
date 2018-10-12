@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/autoclick/common/autoclick_ring_handler.h"
+#include "ash/autoclick/autoclick_ring_handler.h"
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"

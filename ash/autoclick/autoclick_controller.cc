@@ -4,7 +4,7 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
-#include "ash/autoclick/common/autoclick_ring_handler.h"
+#include "ash/autoclick/autoclick_ring_handler.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
