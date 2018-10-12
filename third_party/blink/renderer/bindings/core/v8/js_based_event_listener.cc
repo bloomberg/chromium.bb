@@ -161,7 +161,7 @@ void JSBasedEventListener::handleEvent(
 
 std::unique_ptr<SourceLocation> JSBasedEventListener::GetSourceLocation(
     EventTarget& target) {
-  v8::HandleScope(GetIsolate());
+  v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Value> effective_function = GetEffectiveFunction(target);
   if (effective_function->IsFunction())
     return SourceLocation::FromFunction(effective_function.As<v8::Function>());
