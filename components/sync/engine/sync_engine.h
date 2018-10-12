@@ -99,8 +99,8 @@ class SyncEngine : public ModelTypeConfigurer {
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
   // Updates the engine's SyncCredentials. The credentials must be fully
-  // specified (account ID, sync token and scope). To invalidate the credentials
-  // use InvalisateCredentials() instead.
+  // specified (account ID, email, and sync token). To invalidate the
+  // credentials, use InvalidateCredentials() instead.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
 
   // Invalidates the SyncCredentials.
