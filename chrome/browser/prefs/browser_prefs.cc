@@ -373,6 +373,9 @@ const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
 const char kSupervisedUserCreationAllowed[] =
     "profile.managed_user_creation_allowed";
 
+// Deprecated 10/2018
+const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -396,6 +399,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kOptionsWindowLastTabIndex, 0);
   registry->RegisterStringPref(kTrustedDownloadSources, std::string());
   registry->RegisterBooleanPref(kSupervisedUserCreationAllowed, true);
+
+  registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
 }
 
 }  // namespace
@@ -851,4 +856,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kOptionsWindowLastTabIndex);
   profile_prefs->ClearPref(kTrustedDownloadSources);
   profile_prefs->ClearPref(kSupervisedUserCreationAllowed);
+
+  // Added 10/2018
+  profile_prefs->ClearPref(kReverseAutologinEnabled);
 }

@@ -181,11 +181,6 @@ class SigninManager : public SigninManagerBase,
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetUsernameForAuthInProgress() const;
 
-  // Set the preference to turn off one-click sign-in so that it won't ever
-  // show it again for the user associated with |prefs| (even if the user tries
-  // a new account).
-  static void DisableOneClickSignIn(PrefService* prefs);
-
  protected:
   // The sign out process which is started by SigninClient::PreSignOut()
   virtual void OnSignoutDecisionReached(

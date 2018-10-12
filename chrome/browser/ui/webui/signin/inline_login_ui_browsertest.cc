@@ -274,7 +274,6 @@ class InlineLoginUIBrowserTest : public InProcessBrowserTest {
 
   void SetUpSigninManager(const std::string& username);
   void EnableSigninAllowed(bool enable);
-  void EnableOneClick(bool enable);
   void AddEmailToOneClickRejectedList(const std::string& email);
   void AllowSigninCookies(bool enable);
   void SetAllowedUsernamePattern(const std::string& pattern);
@@ -295,11 +294,6 @@ void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
 void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kSigninAllowed, enable);
-}
-
-void InlineLoginUIBrowserTest::EnableOneClick(bool enable) {
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, enable);
 }
 
 void InlineLoginUIBrowserTest::AddEmailToOneClickRejectedList(
@@ -380,12 +374,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoProfile) {
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
-  EnableOneClick(true);
   EXPECT_TRUE(CanOfferSignin(browser()->profile(),
                              CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS, "12345",
                              "user@gmail.com", NULL));
-
-  EnableOneClick(false);
 
   std::string error_message;
 

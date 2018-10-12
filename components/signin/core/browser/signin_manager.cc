@@ -392,10 +392,6 @@ const std::string& SigninManager::GetUsernameForAuthInProgress() const {
   return possibly_invalid_email_;
 }
 
-void SigninManager::DisableOneClickSignIn(PrefService* prefs) {
-  prefs->SetBoolean(prefs::kReverseAutologinEnabled, false);
-}
-
 void SigninManager::MergeSigninCredentialIntoCookieJar() {
   if (account_consistency_ == signin::AccountConsistencyMethod::kMirror)
     return;
@@ -456,8 +452,6 @@ void SigninManager::OnSignedIn() {
 
   signin_metrics::LogSigninProfile(client_->IsFirstRun(),
                                    client_->GetInstallDate());
-
-  DisableOneClickSignIn(client_->GetPrefs());  // Don't ever offer again.
 
   PostSignedIn();
 }
