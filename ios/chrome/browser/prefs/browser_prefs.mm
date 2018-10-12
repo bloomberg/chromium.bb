@@ -62,6 +62,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
+}
+
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
@@ -164,6 +168,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
+
+  registry->RegisterBooleanPref(kReverseAutologinEnabled, true);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -183,4 +189,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 8/2018.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(prefs);
+
+  // Added 10/2018.
+  prefs->ClearPref(kReverseAutologinEnabled);
 }
