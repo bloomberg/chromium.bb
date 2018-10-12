@@ -5,6 +5,8 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/ui_page.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/ui_page_container_behavior.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="start-setup-page">
@@ -78,7 +80,7 @@
     </style>
 
     <ui-page header-text="[[headerText]]" icon-name="google-g">
-      <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
+      <span slot="message" id="multidevice-summary-message" inner-h-t-m-l="[[messageHtml]]"></span>
       <div slot="additional-content">
         <div id="selector-and-details-container">
           <div id="deviceSelectionContainer" class="flex">
@@ -109,7 +111,7 @@
             </div>
             <div class="feature-detail">
               <iron-icon icon="multidevice-setup-icons-20:messages"></iron-icon>
-              <span inner-h-t-m-l="
+              <span id="awm-summary-message" inner-h-t-m-l="
                   [[i18nAdvanced('startSetupPageFeatureListAwm')]]">
               </span>
             </div>
