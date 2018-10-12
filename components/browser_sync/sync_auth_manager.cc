@@ -117,6 +117,7 @@ syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
   DCHECK(partial_token_status_.next_token_request_time.is_null());
 
   syncer::SyncTokenStatus token_status = partial_token_status_;
+  token_status.has_token = !access_token_.empty();
   if (request_access_token_retry_timer_.IsRunning()) {
     base::TimeDelta delta =
         request_access_token_retry_timer_.desired_run_time() -
