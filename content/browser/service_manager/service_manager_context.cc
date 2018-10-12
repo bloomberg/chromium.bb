@@ -65,6 +65,7 @@
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
@@ -304,6 +305,47 @@ class ServiceBinaryLauncherFactory
   DISALLOW_COPY_AND_ASSIGN(ServiceBinaryLauncherFactory);
 };
 
+// SharedURLLoaderFactory for device service, backed by
+// GetContentClient()->browser()->GetSystemSharedURLLoaderFactory().
+class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
+ public:
+  DeviceServiceURLLoaderFactory() = default;
+
+  // mojom::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    GetContentClient()
+        ->browser()
+        ->GetSystemSharedURLLoaderFactory()
+        ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
+                               options, url_request, std::move(client),
+                               traffic_annotation);
+  }
+
+  // SharedURLLoaderFactory implementation:
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    GetContentClient()->browser()->GetSystemSharedURLLoaderFactory()->Clone(
+        std::move(request));
+  }
+
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+        this);
+  }
+
+ private:
+  friend class base::RefCounted<DeviceServiceURLLoaderFactory>;
+  ~DeviceServiceURLLoaderFactory() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceServiceURLLoaderFactory);
+};
+
 bool ShouldEnableVizService() {
 #if defined(USE_AURA)
   // aura::Env can be null in tests.
@@ -530,7 +572,7 @@ ServiceManagerContext::ServiceManagerContext(
   device_info.factory = base::Bind(
       &device::CreateDeviceService, device_blocking_task_runner,
       service_manager_thread_task_runner_,
-      GetContentClient()->browser()->GetSystemSharedURLLoaderFactory(),
+      base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
       GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
       base::Bind(&WakeLockContextHost::GetNativeViewForContext),
@@ -541,7 +583,7 @@ ServiceManagerContext::ServiceManagerContext(
   device_info.factory = base::Bind(
       &device::CreateDeviceService, device_blocking_task_runner,
       service_manager_thread_task_runner_,
-      GetContentClient()->browser()->GetSystemSharedURLLoaderFactory(),
+      base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
       base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
                  base::Unretained(GetContentClient()->browser())));

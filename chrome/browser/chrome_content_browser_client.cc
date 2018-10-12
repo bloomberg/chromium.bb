@@ -2582,11 +2582,13 @@ net::CookieStore* ChromeContentBrowserClient::OverrideCookieStoreForURL(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeContentBrowserClient::GetSystemSharedURLLoaderFactory() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!g_browser_process->system_network_context_manager())
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
+  if (!SystemNetworkContextManager::GetInstance())
     return nullptr;
 
-  return g_browser_process->system_network_context_manager()
+  return SystemNetworkContextManager::GetInstance()
       ->GetSharedURLLoaderFactory();
 }
 
