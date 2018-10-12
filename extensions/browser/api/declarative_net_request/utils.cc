@@ -16,6 +16,7 @@
 #include "base/hash.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -226,9 +227,16 @@ void OnSafeJSONParserSuccess(const Extension* extension,
       IndexAndPersistRulesResult::CreateErrorResult(std::move(error)));
 }
 
+std::string GetJSONParseError(const std::string& json_ruleset_filename,
+                              const std::string& json_parse_error) {
+  return base::StrCat({json_ruleset_filename, ": ", json_parse_error});
+}
+
 void OnSafeJSONParserError(IndexAndPersistRulesCallback callback,
-                           const std::string& error) {
-  std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(error));
+                           const std::string& json_ruleset_filename,
+                           const std::string& json_parse_error) {
+  std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
+      GetJSONParseError(json_ruleset_filename, json_parse_error)));
 }
 
 }  // namespace
@@ -271,8 +279,10 @@ IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
   std::string error;
   std::unique_ptr<base::Value> root = deserializer.Deserialize(
       nullptr /*error_code*/, &error /*error_message*/);
-  if (!root)
-    return IndexAndPersistRulesResult::CreateErrorResult(std::move(error));
+  if (!root) {
+    return IndexAndPersistRulesResult::CreateErrorResult(
+        GetJSONParseError(GetJSONRulesetFilename(extension), error));
+  }
 
   std::vector<InstallWarning> warnings;
   int ruleset_checksum;
@@ -311,7 +321,8 @@ void IndexAndPersistRules(service_manager::Connector* connector,
       base::BindRepeating(&OnSafeJSONParserSuccess,
                           base::RetainedRef(&extension), repeating_callback);
   auto error_callback =
-      base::BindRepeating(&OnSafeJSONParserError, repeating_callback);
+      base::BindRepeating(&OnSafeJSONParserError, repeating_callback,
+                          GetJSONRulesetFilename(extension));
 
   if (identity) {
     data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,
