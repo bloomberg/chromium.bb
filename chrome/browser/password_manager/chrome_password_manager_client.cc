@@ -121,8 +121,8 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
   return nullptr;
 }
 
-const SigninManagerBase* GetSigninManager(Profile* profile) {
-  return SigninManagerFactory::GetForProfile(profile);
+const SigninManagerBase* GetSigninManagerForOriginalProfile(Profile* profile) {
+  return SigninManagerFactory::GetForProfile(profile->GetOriginalProfile());
 }
 
 #if !defined(OS_ANDROID)
@@ -167,9 +167,10 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_manager_client_bindings_(web_contents, this),
       password_manager_driver_bindings_(web_contents, this),
       observer_(nullptr),
-      credentials_filter_(this,
-                          base::Bind(&GetSyncService, profile_),
-                          base::Bind(&GetSigninManager, profile_)),
+      credentials_filter_(
+          this,
+          base::BindRepeating(&GetSyncService, profile_),
+          base::BindRepeating(&GetSigninManagerForOriginalProfile, profile_)),
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
@@ -186,7 +187,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
       *saving_and_filling_passwords_enabled_, this, GetSyncService(profile_),
-      GetSigninManager(profile_), GetPrefs());
+      GetSigninManagerForOriginalProfile(profile_), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 }
 
