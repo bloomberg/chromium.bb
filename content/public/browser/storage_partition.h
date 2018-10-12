@@ -58,7 +58,6 @@ class GeneratedCodeCacheContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
-class WebPackageContext;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -114,7 +113,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
 #endif  // !defined(OS_ANDROID)
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
-  virtual WebPackageContext* GetWebPackageContext() = 0;
 
   enum : uint32_t {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,
