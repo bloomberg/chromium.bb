@@ -77,9 +77,6 @@ cryptauth::RemoteDeviceRefList CreateTestDevices() {
   for (size_t i = 0; i < kNumTestDevices; ++i) {
     list.push_back(cryptauth::RemoteDeviceRefBuilder()
                        .SetSupportsMobileHotspot(true)
-                       .SetSoftwareFeatureState(
-                           cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
-                           cryptauth::SoftwareFeatureState::kSupported)
                        .Build());
   }
   return list;
@@ -718,7 +715,6 @@ TEST_F(TetherServiceTest, TestDeviceSyncClientNotReady) {
 
 TEST_F(TetherServiceTest,
        TestMultiDeviceSetupClientInitiallyHasNoVerifiedHost) {
-  fake_tether_host_fetcher_factory_->SetNoInitialDevices();
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {chromeos::features::kMultiDeviceApi,
@@ -737,8 +733,6 @@ TEST_F(TetherServiceTest,
           chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(false /* expected_active */);
 
-  fake_tether_host_fetcher_factory_->last_created()->set_tether_hosts(
-      test_devices_);
   fake_multidevice_setup_client_->SetFeatureState(
       chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
       chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser);
@@ -768,7 +762,6 @@ TEST_F(TetherServiceTest, TestMultiDeviceSetupClientLosesVerifiedHost) {
                 chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(true /* expected_active */);
 
-  fake_tether_host_fetcher_factory_->last_created()->set_tether_hosts({});
   fake_multidevice_setup_client_->SetFeatureState(
       chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
       chromeos::multidevice_setup::mojom::FeatureState::
@@ -780,7 +773,6 @@ TEST_F(TetherServiceTest, TestMultiDeviceSetupClientLosesVerifiedHost) {
           chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(false /* expected_active */);
 
-  mock_timer_->Fire();
   ShutdownTetherService();
   VerifyTetherFeatureStateRecorded(
       TetherService::TetherFeatureState::NO_AVAILABLE_HOSTS,

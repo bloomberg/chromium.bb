@@ -30,11 +30,12 @@ namespace tether {
 // Note: TetherHostFetcherImpl, and the Tether feature as a whole, is currently
 // in the middle of a migration from using RemoteDeviceProvider to
 // DeviceSyncClient and eventually to MultiDeviceSetupClient. Its constructor
-// accepts all three objects, but some may be null. (This is controlled at a
-// higher level by features::kMultiDeviceApi and
-// features::kEnableUnifiedMultiDeviceSetup.). Once Tether has been fully
-// migrated, RemoteDeviceProvider and eventually DeviceSyncClient will be ripped
-// out of this class. See https://crbug.com/848956.
+// accepts all three objects, but expects only of one of them to be valid, and
+// the others null. (This is controlled at a higher level by
+// features::kMultiDeviceApi and features::kEnableUnifiedMultiDeviceSetup.).
+// Once Tether has been fully migrated, RemoteDeviceProvider and eventually
+// DeviceSyncClient will be ripped out of this class. See
+// https://crbug.com/848956.
 class TetherHostFetcherImpl
     : public TetherHostFetcher,
       public cryptauth::RemoteDeviceProvider::Observer,
@@ -93,24 +94,9 @@ class TetherHostFetcherImpl
                             multidevice_setup_client_);
 
  private:
-  enum class TetherHostSource {
-    UNKNOWN,
-    MULTIDEVICE_SETUP_CLIENT,
-    DEVICE_SYNC_CLIENT,
-    REMOTE_DEVICE_PROVIDER
-  };
-
   void CacheCurrentTetherHosts();
   cryptauth::RemoteDeviceRefList GenerateHostDeviceList();
-  TetherHostSource GetTetherHostSourceBasedOnFlags();
-  // This returns true if there is no BETTER_TOGETHER_HOST supported or enabled,
-  // but there *are* MAGIC_TETHER_HOSTs supported or enabled. This can only
-  // happen if the user's phone has not yet fully updated to the new multidevice
-  // world.
-  // TODO(crbug.com/894585): Remove this legacy special case after M71.
-  bool IsInLegacyHostMode();
 
-  bool started_in_legacy_mode_ = false;
   cryptauth::RemoteDeviceProvider* remote_device_provider_;
   device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::multidevice_setup::MultiDeviceSetupClient*
