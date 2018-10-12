@@ -27,7 +27,8 @@ void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   if (FetchIfLayeredAPI(fetch_params))
     return;
 
-  ScriptResource::Fetch(fetch_params, fetcher_, this);
+  ScriptResource::Fetch(fetch_params, fetcher_, this,
+                        ScriptResource::kNoStreaming);
 }
 
 void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
