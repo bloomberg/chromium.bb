@@ -98,8 +98,9 @@ long CustomArchiveSeek(void* compressor,
     return 0 /* Success */;
   }
   if (origin == ZLIB_FILEFUNC_SEEK_END) {
-    compressor_minizip->set_offset(std::max(
-        compressor_minizip->length() - static_cast<int64_t>(offset), 0LL));
+    compressor_minizip->set_offset(
+        std::max(compressor_minizip->length() - static_cast<int64_t>(offset),
+                 static_cast<int64_t>(0)));
     return 0 /* Success */;
   }
   if (origin == ZLIB_FILEFUNC_SEEK_SET) {

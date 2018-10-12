@@ -12,9 +12,9 @@
 #include <utility>
 
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "ppapi/cpp/logging.h"
 
 namespace {
 
@@ -80,7 +80,7 @@ int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unzip_size) {
 
   int64_t bytes_to_read = std::min(kMaximumDataChunkSize,
                                    archive->reader()->archive_size() - offset);
-  PP_DCHECK(bytes_to_read > 0);
+  DCHECK_GT(bytes_to_read, 0);
   int64_t left_length = bytes_to_read;
   char* buffer_pointer = archive->dynamic_cache_.get();
   const void* destination_buffer;
@@ -461,7 +461,7 @@ void VolumeArchiveMinizip::DecompressData(int64_t offset, int64_t length) {
     size = unzReadCurrentFile(
         zip_file_, dummy_buffer_.get(),
         std::min(offset - last_read_data_offset_, kDummyBufferSize));
-    PP_DCHECK(size != 0);  // The actual read is done below. We shouldn't get to
+    DCHECK_NE(size, 0);    // The actual read is done below. We shouldn't get to
                            // end of file here.
     if (size < 0) {        // Error.
       set_error_message(kArchiveReadDataError);
@@ -512,7 +512,7 @@ void VolumeArchiveMinizip::DecompressData(int64_t offset, int64_t length) {
 int64_t VolumeArchiveMinizip::ReadData(int64_t offset,
                                        int64_t length,
                                        const char** buffer) {
-  PP_DCHECK(length > 0);  // Length must be at least 1.
+  DCHECK_GT(length, 0);  // Length must be at least 1.
   // In case of first read or no more available data in the internal buffer or
   // offset is different from the last_read_data_offset_, then force
   // VolumeArchiveMinizip::DecompressData as the decompressed data is
@@ -538,8 +538,8 @@ int64_t VolumeArchiveMinizip::ReadData(int64_t offset,
   decompressed_data_size_ -= read_bytes;
   last_read_data_offset_ += read_bytes;
 
-  PP_DCHECK(decompressed_data_ + decompressed_data_size_ <=
-            decompressed_data_buffer_.get() + kDecompressBufferSize);
+  DCHECK(decompressed_data_ + decompressed_data_size_ <=
+         decompressed_data_buffer_.get() + kDecompressBufferSize);
 
   return read_bytes;
 }
