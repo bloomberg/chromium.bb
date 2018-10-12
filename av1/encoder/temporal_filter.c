@@ -47,7 +47,8 @@ static void temporal_filter_predictors_mb_c(
   int uv_stride;
   // TODO(angiebird): change plane setting accordingly
   ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
-  const InterpFilters interp_filters = xd->mi[0]->interp_filters;
+  const InterpFilters interp_filters =
+      av1_make_interp_filters(MULTITAP_SHARP, MULTITAP_SHARP);
   WarpTypesAllowed warp_types;
   memset(&warp_types, 0, sizeof(WarpTypesAllowed));
 
@@ -262,7 +263,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
         cpi->common.allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[BLOCK_16X16], 0, mv_sf->subpel_iters_per_step,
         cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
-        NULL, 0, 0, 0, 0, 0, 1);
+        NULL, 0, 0, 16, 16, USE_2_TAPS_ORIG, 1);
   }
 
   x->e_mbd.mi[0]->mv[0] = x->best_mv;
