@@ -116,7 +116,7 @@ void MouseEventManager::Clear() {
   svg_pan_ = false;
   drag_start_pos_ = LayoutPoint();
   fake_mouse_move_event_timer_.Stop();
-  ResetDragState();
+  ResetDragSource();
   ClearDragDataTransfer();
 }
 
@@ -662,7 +662,7 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
     const MouseEventWithHitTestResults& event) {
   TRACE_EVENT0("blink", "MouseEventManager::handleMousePressEvent");
 
-  ResetDragState();
+  ResetDragSource();
   CancelFakeMouseMoveEvent();
 
   frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -762,7 +762,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         EventHandlingUtil::PerformMouseEventHitTest(frame_, request,
                                                     mouse_drag_event);
     mouse_down_may_start_drag_ = true;
-    ResetDragState();
+    ResetDragSource();
     mouse_down_pos_ = frame_->View()->ConvertFromRootFrame(
         FlooredIntPoint(mouse_drag_event.PositionInRootFrame()));
     return HandleDrag(mev, DragInitiator::kTouch);
@@ -895,7 +895,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
               frame_, node, mouse_down_pos_, selection_drag_policy,
               GetDragState().drag_type_);
     } else {
-      ResetDragState();
+      ResetDragSource();
     }
 
     if (!GetDragState().drag_src_)
@@ -913,7 +913,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
   if (initiator == DragInitiator::kMouse &&
       !DragThresholdExceeded(
           FlooredIntPoint(event.Event().PositionInRootFrame()))) {
-    ResetDragState();
+    ResetDragSource();
     return true;
   }
 
@@ -924,7 +924,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
   if (!TryStartDrag(event)) {
     // Something failed to start the drag, clean up.
     ClearDragDataTransfer();
-    ResetDragState();
+    ResetDragSource();
   } else {
     // Since drag operation started we need to send a pointercancel for the
     // corresponding pointer.
@@ -1084,7 +1084,7 @@ void MouseEventManager::DragSourceEndedAt(const WebMouseEvent& event,
     DispatchDragSrcEvent(EventTypeNames::dragend, event);
   }
   ClearDragDataTransfer();
-  ResetDragState();
+  ResetDragSource();
   // In case the drag was ended due to an escape key press we need to ensure
   // that consecutive mousemove events don't reinitiate the drag and drop.
   mouse_down_may_start_drag_ = false;
@@ -1095,7 +1095,7 @@ DragState& MouseEventManager::GetDragState() {
   return frame_->GetPage()->GetDragController().GetDragState();
 }
 
-void MouseEventManager::ResetDragState() {
+void MouseEventManager::ResetDragSource() {
   if (!frame_->GetPage())
     return;
   GetDragState().drag_src_ = nullptr;

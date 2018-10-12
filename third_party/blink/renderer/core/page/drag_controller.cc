@@ -207,9 +207,7 @@ bool DragController::DragIsMove(FrameSelection& selection,
          !IsCopyKeyDown(drag_data);
 }
 
-// FIXME: This method is poorly named.  We're just clearing the selection from
-// the document this drag is exiting.
-void DragController::CancelDrag() {
+void DragController::ClearDragCaret() {
   page_->GetDragCaret().Clear();
 }
 
@@ -277,7 +275,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     }
     if (prevented_default) {
       document_under_mouse_ = nullptr;
-      CancelDrag();
+      ClearDragCaret();
       return;
     }
   }
@@ -318,7 +316,7 @@ void DragController::MouseMovedIntoDocument(Document* new_document) {
 
   // If we were over another document clear the selection
   if (document_under_mouse_)
-    CancelDrag();
+    ClearDragCaret();
   document_under_mouse_ = new_document;
 }
 

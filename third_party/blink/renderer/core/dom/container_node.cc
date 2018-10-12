@@ -282,7 +282,8 @@ bool ContainerNode::EnsurePreInsertionValidity(
 }
 
 // We need this extra structural check because prior DOM mutation operations
-// dispatched synchronous events, and their handlers might modified DOM trees.
+// dispatched synchronous events, so their handlers may have modified DOM
+// trees.
 bool ContainerNode::RecheckNodeInsertionStructuralPrereq(
     const NodeVector& new_children,
     const Node* next,
@@ -622,13 +623,13 @@ void ContainerNode::WillRemoveChild(Node& child) {
   DispatchChildRemovalEvents(child);
   ChildFrameDisconnector(child).Disconnect();
   if (GetDocument() != child.GetDocument()) {
-    // |child| was moved another document by DOM mutation event handler.
+    // |child| was moved to another document by the DOM mutation event handler.
     return;
   }
 
   // |nodeWillBeRemoved()| must be run after |ChildFrameDisconnector|, because
-  // |ChildFrameDisconnector| can run script which may cause state that is to
-  // be invalidated by removing the node.
+  // |ChildFrameDisconnector| may remove the node, resulting in an invalid
+  // state.
   ScriptForbiddenScope script_forbidden_scope;
   EventDispatchForbiddenScope assert_no_event_dispatch;
   // e.g. mutation event listener can create a new range.
