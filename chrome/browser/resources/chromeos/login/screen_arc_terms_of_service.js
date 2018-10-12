@@ -207,7 +207,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       if (this.language_ && this.language_ == language && this.countryCode_ &&
           this.countryCode_ == countryCode &&
-          !this.classList.contains('error') && !this.usingOfflineTerms_) {
+          !this.classList.contains('error') && !this.usingOfflineTerms_ &&
+          this.tosContent_) {
         this.enableButtons_(true);
         return;
       }
@@ -252,6 +253,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     setTosForTesting: function(terms) {
       this.tosContent_ = terms;
+      this.usingOfflineTerms_ = true;
+      this.setTermsViewContentLoadedState_();
     },
 
     /**
@@ -333,7 +336,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
           this.getElement_('arc-enable-backup-restore').checked;
       var isLocationServiceEnabled =
           this.getElement_('arc-enable-location-service').checked;
-
       chrome.send(
           'arcTermsOfServiceAccept',
           [isBackupRestoreEnabled, isLocationServiceEnabled, this.tosContent_]);

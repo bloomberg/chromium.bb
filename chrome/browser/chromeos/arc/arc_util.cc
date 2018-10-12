@@ -23,8 +23,10 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -448,6 +450,25 @@ bool IsArcOobeOptInActive() {
   // Later in the same user session user activates Assistant and we show
   // Assistant Wizard with ARC terms. This case is not considered as OOBE OptIn.
   return !IsArcOptInWizardForAssistantActive();
+}
+
+bool IsArcOobeOptInConfigurationBased() {
+  // Ignore if not applicable.
+  if (!IsArcOobeOptInActive())
+    return false;
+  // Check that configuration exist.
+  auto* oobe_configuration = chromeos::OobeConfiguration::Get();
+  if (!oobe_configuration)
+    return false;
+  if (!oobe_configuration->CheckCompleted())
+    return false;
+  // Check configuration value that triggers automatic ARC TOS acceptance.
+  auto& configuration = oobe_configuration->GetConfiguration();
+  auto* auto_accept = configuration.FindKeyOfType(
+      chromeos::configuration::kArcTosAutoAccept, base::Value::Type::BOOLEAN);
+  if (!auto_accept)
+    return false;
+  return auto_accept->GetBool();
 }
 
 bool IsArcOptInWizardForAssistantActive() {
