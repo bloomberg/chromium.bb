@@ -908,7 +908,7 @@ class Port(object):
 
     def driver_cmd_line(self):
         """Prints the DRT (DumpRenderTree) command that will be used."""
-        return self.create_driver(0).cmd_line(self.get_option('pixel_tests'), [])
+        return self.create_driver(0).cmd_line([])
 
     def update_baseline(self, baseline_path, data):
         """Updates the baseline for a test.
@@ -1167,7 +1167,7 @@ class Port(object):
         """Returns a newly created Driver subclass for starting/stopping the
         test driver.
         """
-        return self._driver_class()(self, worker_number, pixel_tests=self.get_option('pixel_tests'), no_timeout=no_timeout)
+        return self._driver_class()(self, worker_number, no_timeout=no_timeout)
 
     def requires_http_server(self):
         # Does the port require an HTTP server for running tests? This could
@@ -1721,7 +1721,8 @@ class Port(object):
 
         This provides the *default* value for whether a test should run as
         pixel test. When reference files exist (checked by layout_test_runner
-        before calling this method), the test always runs as pixel test.
+        before calling this method), the test always runs as pixel test
+        regardless of this function.
         """
         if not self._options.pixel_tests:
             return False

@@ -473,7 +473,7 @@ class AndroidPort(base.Port):
         super(AndroidPort, self).start_http_server(additional_dirs, number_of_drivers)
 
     def create_driver(self, worker_number, no_timeout=False):
-        return ChromiumAndroidDriver(self, worker_number, pixel_tests=self.get_option('pixel_tests'),
+        return ChromiumAndroidDriver(self, worker_number,
                                      driver_details=self._driver_details,
                                      android_devices=self._devices,
                                      # Force no timeout to avoid test driver timeouts before NRWT.
@@ -481,7 +481,7 @@ class AndroidPort(base.Port):
 
     def driver_cmd_line(self):
         # Override to return the actual test driver's command line.
-        return self.create_driver(0)._android_driver_cmd_line(self.get_option('pixel_tests'), [])
+        return self.create_driver(0)._android_driver_cmd_line([])
 
     def clobber_old_port_specific_results(self):
         if not self.get_option('disable_breakpad'):
@@ -643,8 +643,8 @@ http://crbug.com/165250 discusses making these pre-built binaries externally ava
 
 class ChromiumAndroidDriver(driver.Driver):
 
-    def __init__(self, port, worker_number, pixel_tests, driver_details, android_devices, no_timeout=False):
-        super(ChromiumAndroidDriver, self).__init__(port, worker_number, pixel_tests, no_timeout)
+    def __init__(self, port, worker_number, driver_details, android_devices, no_timeout=False):
+        super(ChromiumAndroidDriver, self).__init__(port, worker_number, no_timeout)
         self._write_stdin_process = None
         self._read_stdout_process = None
         self._read_stderr_process = None
@@ -802,13 +802,13 @@ class ChromiumAndroidDriver(driver.Driver):
         return super(ChromiumAndroidDriver, self)._get_crash_log(
             stdout, stderr, newer_than)
 
-    def cmd_line(self, pixel_tests, per_test_args):
+    def cmd_line(self, per_test_args):
         # The returned command line is used to start _server_process. In our case, it's an interactive 'adb shell'.
         # The command line passed to the driver process is returned by _driver_cmd_line() instead.
         return [self._device.adb.GetAdbPath(), '-s', self._device.serial, 'shell']
 
-    def _android_driver_cmd_line(self, pixel_tests, per_test_args):
-        return driver.Driver.cmd_line(self, pixel_tests, per_test_args)
+    def _android_driver_cmd_line(self, per_test_args):
+        return driver.Driver.cmd_line(self, per_test_args)
 
     @staticmethod
     def _loop_with_timeout(condition, timeout_secs):
@@ -818,10 +818,10 @@ class ChromiumAndroidDriver(driver.Driver):
                 return True
         return False
 
-    def start(self, pixel_tests, per_test_args, deadline):
+    def start(self, per_test_args, deadline):
         # We override the default start() so that we can call _android_driver_cmd_line()
         # instead of cmd_line().
-        new_cmd_line = self._android_driver_cmd_line(pixel_tests, per_test_args)
+        new_cmd_line = self._android_driver_cmd_line(per_test_args)
 
         # Since _android_driver_cmd_line() is different than cmd_line() we need to provide
         # our own mechanism for detecting when the process should be stopped.
@@ -831,15 +831,15 @@ class ChromiumAndroidDriver(driver.Driver):
             self.stop()
         self._current_android_cmd_line = new_cmd_line
 
-        super(ChromiumAndroidDriver, self).start(pixel_tests, per_test_args, deadline)
+        super(ChromiumAndroidDriver, self).start(per_test_args, deadline)
 
-    def _start(self, pixel_tests, per_test_args):
+    def _start(self, per_test_args):
         if not self._android_devices.is_device_prepared(self._device.serial):
             raise driver.DeviceFailure('%s is not prepared in _start()' % self._device.serial)
 
         for retries in range(3):
             try:
-                if self._start_once(pixel_tests, per_test_args):
+                if self._start_once(per_test_args):
                     return
             except ScriptError as error:
                 self._abort('ScriptError("%s") in _start()' % error)
@@ -849,8 +849,8 @@ class ChromiumAndroidDriver(driver.Driver):
             time.sleep(2)
         self._abort('Failed to start the content_shell application multiple times. Giving up.')
 
-    def _start_once(self, pixel_tests, per_test_args):
-        super(ChromiumAndroidDriver, self)._start(pixel_tests, per_test_args, wait_for_ready=False)
+    def _start_once(self, per_test_args):
+        super(ChromiumAndroidDriver, self)._start(per_test_args, wait_for_ready=False)
 
         self._device.adb.Logcat(clear=True)
 
@@ -909,7 +909,7 @@ class ChromiumAndroidDriver(driver.Driver):
             '--android-stdin-port=%s' % forwarder.Forwarder.DevicePortForHostPort(stdin_port),
             '--android-stdout-port=%s' % forwarder.Forwarder.DevicePortForHostPort(stdout_port),
         ]
-        cmd_line_contents = self._android_driver_cmd_line(pixel_tests, per_test_args + stream_port_args)
+        cmd_line_contents = self._android_driver_cmd_line(per_test_args + stream_port_args)
         self._device.WriteFile(
             self._driver_details.command_line_file(),
             ' '.join(cmd_line_contents))
