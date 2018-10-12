@@ -22,12 +22,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
+import org.chromium.chrome.browser.browsing_data.CookieOrCacheDeletionChoice;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -42,6 +44,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -280,8 +283,8 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
     /**
      * @return All available {@link DialogOption} entries.
      */
-    protected final static ArraySet<Integer> getAllOptions() {
-        ArraySet<Integer> all = new ArraySet<>();
+    protected final static Set<Integer> getAllOptions() {
+        Set<Integer> all = new ArraySet<>();
         for (@DialogOption int i = DialogOption.CLEAR_HISTORY; i < DialogOption.NUM_ENTRIES; i++) {
             all.add(i);
         }
@@ -293,11 +296,10 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
      * @param options The set of selected {@link DialogOption} entries.
      * @return int[] List of {@link BrowsingDataType} that should be deleted.
      */
-    protected int[] getDataTypesFromOptions(ArraySet<Integer> options) {
-        int[] dataTypes = new int[options.size()];
-        int i = 0;
+    protected Set<Integer> getDataTypesFromOptions(Set<Integer> options) {
+        Set<Integer> dataTypes = new ArraySet<>();
         for (@DialogOption Integer option : options) {
-            dataTypes[i++] = getDataType(option);
+            dataTypes.add(getDataType(option));
         }
         return dataTypes;
     }
@@ -305,8 +307,8 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
     /**
      * @return The currently selected {@link DialogOption} entries.
      */
-    protected final ArraySet<Integer> getSelectedOptions() {
-        ArraySet<Integer> selected = new ArraySet<>();
+    protected final Set<Integer> getSelectedOptions() {
+        Set<Integer> selected = new ArraySet<>();
         for (Item item : mItems) {
             if (item.isSelected()) selected.add(item.getOption());
         }
@@ -334,26 +336,41 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
      * Requests the browsing data corresponding to the given dialog options to be deleted.
      * @param options The dialog options whose corresponding data should be deleted.
      */
-    private void clearBrowsingData(ArraySet<Integer> options, @Nullable String[] blacklistedDomains,
+    private void clearBrowsingData(Set<Integer> options, @Nullable String[] blacklistedDomains,
             @Nullable int[] blacklistedDomainReasons, @Nullable String[] ignoredDomains,
             @Nullable int[] ignoredDomainReasons) {
         onClearBrowsingData();
         showProgressDialog();
+        Set<Integer> dataTypes = getDataTypesFromOptions(options);
 
         RecordHistogram.recordMediumTimesHistogram("History.ClearBrowsingData.TimeSpentInDialog",
                 SystemClock.elapsedRealtime() - mDialogOpened, TimeUnit.MILLISECONDS);
 
-        int[] dataTypes = getDataTypesFromOptions(options);
+        final @CookieOrCacheDeletionChoice int choice;
+        if (dataTypes.contains(BrowsingDataType.COOKIES)) {
+            choice = dataTypes.contains(BrowsingDataType.CACHE)
+                    ? CookieOrCacheDeletionChoice.BOTH_COOKIES_AND_CACHE
+                    : CookieOrCacheDeletionChoice.ONLY_COOKIES;
+        } else {
+            choice = dataTypes.contains(BrowsingDataType.CACHE)
+                    ? CookieOrCacheDeletionChoice.ONLY_CACHE
+                    : CookieOrCacheDeletionChoice.NEITHER_COOKIES_NOR_CACHE;
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                "History.ClearBrowsingData.UserDeletedCookieOrCacheFromDialog", choice,
+                CookieOrCacheDeletionChoice.MAX_CHOICE_VALUE);
 
         Object spinnerSelection =
                 ((SpinnerPreference) findPreference(PREF_TIME_RANGE)).getSelectedOption();
         int timePeriod = ((TimePeriodSpinnerOption) spinnerSelection).getTimePeriod();
+        // TODO(bsazonov): Change integerListToIntArray to handle Collection<Integer>.
+        int[] dataTypesArray = CollectionUtil.integerListToIntArray(new ArrayList<>(dataTypes));
         if (blacklistedDomains != null && blacklistedDomains.length != 0) {
-            BrowsingDataBridge.getInstance().clearBrowsingDataExcludingDomains(this, dataTypes,
+            BrowsingDataBridge.getInstance().clearBrowsingDataExcludingDomains(this, dataTypesArray,
                     timePeriod, blacklistedDomains, blacklistedDomainReasons, ignoredDomains,
                     ignoredDomainReasons);
         } else {
-            BrowsingDataBridge.getInstance().clearBrowsingData(this, dataTypes, timePeriod);
+            BrowsingDataBridge.getInstance().clearBrowsingData(this, dataTypesArray, timePeriod);
         }
 
         // Clear all reported entities.
@@ -454,7 +471,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
      * </ol>
      */
     private boolean shouldShowImportantSitesDialog() {
-        ArraySet<Integer> selectedOptions = getSelectedOptions();
+        Set<Integer> selectedOptions = getSelectedOptions();
         if (!selectedOptions.contains(DialogOption.CLEAR_CACHE)
                 && !selectedOptions.contains(DialogOption.CLEAR_COOKIES_AND_SITE_DATA)) {
             return false;
@@ -555,7 +572,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
 
         // Not all checkboxes defined in the layout are necessarily handled by this class
         // or a particular subclass. Hide those that are not.
-        ArraySet<Integer> unboundOptions = getAllOptions();
+        Set<Integer> unboundOptions = getAllOptions();
         unboundOptions.removeAll(options);
         for (@DialogOption Integer option : unboundOptions) {
             getPreferenceScreen().removePreference(findPreference(getPreferenceKey(option)));
