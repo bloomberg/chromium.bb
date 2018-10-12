@@ -6297,6 +6297,20 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
 
+  // The first animation frame will not produce any delta, it will establish
+  // the animation.
+  {
+    begin_frame_args.frame_time = start_time;
+    begin_frame_args.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+    host_impl_->DidFinishImplFrame();
+    float delta =
+        host_impl_->active_tree()->top_controls_shown_ratio()->Delta();
+    ASSERT_EQ(delta, 0);
+  }
+
   // Pump an animation frame to put some delta in the browser controls.
   {
     begin_frame_args.frame_time =

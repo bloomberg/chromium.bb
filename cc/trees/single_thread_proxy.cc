@@ -50,6 +50,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
+      needs_impl_frame_(false),
       layer_tree_frame_sink_creation_requested_(false),
       layer_tree_frame_sink_lost_(true),
       frame_sink_bound_weak_factory_(this),
@@ -258,7 +259,7 @@ void SingleThreadProxy::SetNextCommitWaitsForActivation() {
 }
 
 bool SingleThreadProxy::RequestedAnimatePending() {
-  return animate_requested_ || commit_requested_;
+  return animate_requested_ || commit_requested_ || needs_impl_frame_;
 }
 
 void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
@@ -346,6 +347,7 @@ void SingleThreadProxy::SetNeedsOneBeginImplFrameOnImplThread() {
   single_thread_client_->RequestScheduleComposite();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsOneBeginImplFrame();
+  needs_impl_frame_ = true;
 }
 
 void SingleThreadProxy::SetNeedsPrepareTilesOnImplThread() {
@@ -358,6 +360,7 @@ void SingleThreadProxy::SetNeedsCommitOnImplThread() {
   single_thread_client_->RequestScheduleComposite();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
+  commit_requested_ = true;
 }
 
 void SingleThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
@@ -528,6 +531,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
     DCHECK(inside_impl_frame_);
 #endif
     animate_requested_ = false;
+    needs_impl_frame_ = false;
     // Prevent new commits from being requested inside DoBeginMainFrame.
     // Note: We do not want to prevent SetNeedsAnimate from requesting
     // a commit here.
@@ -713,6 +717,7 @@ void SingleThreadProxy::BeginMainFrame(
   }
 
   commit_requested_ = false;
+  needs_impl_frame_ = false;
   animate_requested_ = false;
 
   if (defer_commits_) {

@@ -81,6 +81,9 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // The client manages the lifecycle of this.
   BrowserControlsOffsetManagerClient* client_;
 
+  // animation_initialized_ tracks if we've initialized the start and end
+  // times since that must happen at a BeginFrame.
+  bool animation_initialized_;
   base::TimeTicks animation_start_time_;
   float animation_start_value_;
   base::TimeTicks animation_stop_time_;

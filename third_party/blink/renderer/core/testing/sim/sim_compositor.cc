@@ -77,6 +77,10 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
   return canvas.GetCommands();
 }
 
+void SimCompositor::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
+  web_view_->ApplyViewportChanges(args);
+}
+
 void SimCompositor::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
   // Make a valid LayerTreeFrameSink so the compositor will generate begin main

@@ -38,6 +38,7 @@ BrowserControlsOffsetManager::BrowserControlsOffsetManager(
     float controls_show_threshold,
     float controls_hide_threshold)
     : client_(client),
+      animation_initialized_(false),
       animation_start_value_(0.f),
       animation_stop_value_(0.f),
       animation_direction_(NO_ANIMATION),
@@ -197,6 +198,16 @@ gfx::Vector2dF BrowserControlsOffsetManager::Animate(
   if (!has_animation() || !client_->HaveRootScrollNode())
     return gfx::Vector2dF();
 
+  if (!animation_initialized_) {
+    // Setup the animation start and time here so that they use the same clock
+    // as frame times. This is helpful for tests that mock time.
+    animation_start_time_ = monotonic_time;
+    animation_stop_time_ =
+        animation_start_time_ +
+        base::TimeDelta::FromMilliseconds(kShowHideMaxDurationMs);
+    animation_initialized_ = true;
+  }
+
   float old_offset = ContentTopOffset();
   float new_ratio = gfx::Tween::ClampedFloatValueBetween(
       monotonic_time, animation_start_time_, animation_start_value_,
@@ -211,6 +222,7 @@ gfx::Vector2dF BrowserControlsOffsetManager::Animate(
 }
 
 void BrowserControlsOffsetManager::ResetAnimations() {
+  animation_initialized_ = false;
   animation_start_time_ = base::TimeTicks();
   animation_start_value_ = 0.f;
   animation_stop_time_ = base::TimeTicks();
@@ -234,13 +246,9 @@ void BrowserControlsOffsetManager::SetupAnimation(
     return;
   }
 
-  animation_start_time_ = base::TimeTicks::Now();
   animation_start_value_ = TopControlsShownRatio();
 
   const float max_ending_ratio = (direction == SHOWING_CONTROLS ? 1 : -1);
-  animation_stop_time_ =
-      animation_start_time_ +
-      base::TimeDelta::FromMilliseconds(kShowHideMaxDurationMs);
   animation_stop_value_ = animation_start_value_ + max_ending_ratio;
 
   animation_direction_ = direction;
