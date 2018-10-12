@@ -373,6 +373,7 @@ void SignedExchangeLoader::FinishReadingBody(int result) {
   // TODO(https://crbug.com/803774): Fill the data length information too.
   network::URLLoaderCompletionStatus status;
   status.error_code = result;
+  status.completion_time = base::TimeTicks::Now();
 
   if (ssl_info_) {
     DCHECK((url_loader_options_ &
