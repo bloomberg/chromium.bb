@@ -66,6 +66,8 @@ class SyncCredentialsFilter : public CredentialsFilter {
 
   const SyncServiceFactoryFunction sync_service_factory_function_;
 
+  // For incognito profile, |signin_manager_factory_function_| returns the
+  // sign in manager of its original profile.
   const SigninManagerFactoryFunction signin_manager_factory_function_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncCredentialsFilter);

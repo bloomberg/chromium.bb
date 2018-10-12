@@ -42,7 +42,9 @@ class CredentialsFilter {
   virtual void ReportFormLoginSuccess(
       const PasswordFormManagerInterface& form_manager) const {}
 
-  // If |username| matches Chrome sync account email.
+  // If |username| matches Chrome sync account email. For incognito profile,
+  // it matches |username| against the sync account email used in its original
+  // profile.
   virtual bool IsSyncAccountEmail(const std::string& username) const = 0;
 
  private:
