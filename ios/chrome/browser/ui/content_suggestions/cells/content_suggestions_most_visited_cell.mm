@@ -31,7 +31,7 @@
     _titleLabel.preferredMaxLayoutWidth = [[self class] defaultSize].width;
     _titleLabel.numberOfLines = kLabelNumLines;
 
-    _faviconView = [[FaviconViewNew alloc] init];
+    _faviconView = [[FaviconView alloc] init];
     _faviconView.font = [UIFont systemFontOfSize:22];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;

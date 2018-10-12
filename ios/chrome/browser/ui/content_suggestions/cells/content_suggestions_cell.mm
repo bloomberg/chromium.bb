@@ -90,7 +90,7 @@ const CGFloat kAnimationDuration = 0.3;
     _noImageIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
     _additionalInformationLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    _faviconView = [[FaviconViewNew alloc] init];
+    _faviconView = [[FaviconView alloc] init];
 
     _contentImageView.contentMode = UIViewContentModeScaleAspectFill;
     _contentImageView.clipsToBounds = YES;
