@@ -13,13 +13,12 @@
 #include <string>
 #include <unordered_set>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 // Contains map of default pre-installed apps and packages.
 class ArcDefaultAppList {
@@ -61,7 +60,7 @@ class ArcDefaultAppList {
   // Defines App id to default AppInfo mapping.
   using AppInfoMap = std::map<std::string, std::unique_ptr<AppInfo>>;
 
-  ArcDefaultAppList(Delegate* delegate, content::BrowserContext* context);
+  ArcDefaultAppList(Delegate* delegate, Profile* profile);
   ~ArcDefaultAppList();
 
   static void UseTestAppsDirectory();
@@ -93,16 +92,21 @@ class ArcDefaultAppList {
   // Defines mapping package name to uninstalled state.
   using PackageMap = std::map<std::string, bool>;
 
-  // Called when default apps are read.
-  void OnAppsReady(std::unique_ptr<AppInfoMap> apps);
+  // Called when default apps are read from the provided source.
+  void OnAppsRead(std::unique_ptr<AppInfoMap> apps);
+  // Called when default apps from all sources are read.
+  void OnAppsReady();
 
   // Unowned pointer.
   Delegate* const delegate_;
-  content::BrowserContext* const context_;
+  Profile* const profile_;
   FilterLevel filter_level_ = FilterLevel::ALL;
 
   AppInfoMap apps_;
   PackageMap packages_;
+
+  // To wait until all sources with apps are loaded.
+  base::RepeatingClosure barrier_closure_;
 
   base::WeakPtrFactory<ArcDefaultAppList> weak_ptr_factory_;
 

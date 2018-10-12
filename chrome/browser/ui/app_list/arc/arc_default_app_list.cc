@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 
+#include "base/barrier_closure.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_paths.h"
@@ -28,87 +31,78 @@ const char kPackageName[] = "package_name";
 const base::FilePath::CharType kArcDirectory[] = FILE_PATH_LITERAL("arc");
 const base::FilePath::CharType kArcTestDirectory[] =
     FILE_PATH_LITERAL("arc_default_apps");
+const base::FilePath::CharType kArcTestBoardDirectory[] =
+    FILE_PATH_LITERAL("arc_board_default_apps");
+const base::FilePath::CharType kBoardDirectory[] =
+    FILE_PATH_LITERAL("/var/cache/arc_default_apps");
 
 bool use_test_apps_directory = false;
 
-std::unique_ptr<ArcDefaultAppList::AppInfoMap>
-ReadAppsFromFileThread() {
+std::unique_ptr<ArcDefaultAppList::AppInfoMap> ReadAppsFromFileThread(
+    const base::FilePath& base_path) {
+  base::FilePath root_dir;
+  // FileEnumerator does not work with a symbolic link dir. So map link
+  // to real folder in case |base_path| specifies a symbolic link.
+  if (!base::ReadSymbolicLink(base_path, &root_dir))
+    root_dir = base_path;
+
   std::unique_ptr<ArcDefaultAppList::AppInfoMap> apps =
       std::make_unique<ArcDefaultAppList::AppInfoMap>();
 
-  base::FilePath base_path;
-  if (!use_test_apps_directory) {
-    if (!base::PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                                &base_path))
-      return apps;
-    base_path = base_path.Append(kArcDirectory);
-  } else {
-    if (!base::PathService::Get(chrome::DIR_TEST_DATA, &base_path))
-      return apps;
-    base_path = base_path.AppendASCII(kArcTestDirectory);
-  }
-
   base::FilePath::StringType extension(".json");
-  base::FileEnumerator json_files(
-      base_path,
-      false,  // Recursive.
-      base::FileEnumerator::FILES);
+  base::FileEnumerator json_files(root_dir,
+                                  false,  // Recursive.
+                                  base::FileEnumerator::FILES);
 
   for (base::FilePath file = json_files.Next(); !file.empty();
       file = json_files.Next()) {
-
-    if (file.MatchesExtension(extension)) {
-      JSONFileValueDeserializer deserializer(file);
-      std::string error_msg;
-      std::unique_ptr<base::Value> app_info =
-          deserializer.Deserialize(nullptr, &error_msg);
-      if (!app_info) {
-        VLOG(2) << "Unable to deserialize json data: " << error_msg
-                << " in file " << file.value() << ".";
-        continue;
-      }
-
-      std::unique_ptr<base::DictionaryValue> app_info_dictionary =
-          base::DictionaryValue::From(std::move(app_info));
-      CHECK(app_info_dictionary);
-
-      std::string name;
-      std::string package_name;
-      std::string activity;
-      std::string app_path;
-      bool oem = false;
-
-      app_info_dictionary->GetString(kName, &name);
-      app_info_dictionary->GetString(kPackageName, &package_name);
-      app_info_dictionary->GetString(kActivity, &activity);
-      app_info_dictionary->GetString(kAppPath, &app_path);
-      app_info_dictionary->GetBoolean(kOem, &oem);
-
-      if (name.empty() ||
-          package_name.empty() ||
-          activity.empty() ||
-          app_path.empty()) {
-        VLOG(2) << "ARC app declaration is incomplete in file " << file.value()
-                << ".";
-        continue;
-      }
-
-      const std::string app_id = ArcAppListPrefs::GetAppId(
-          package_name, activity);
-      std::unique_ptr<ArcDefaultAppList::AppInfo> app =
-          std::make_unique<ArcDefaultAppList::AppInfo>(name,
-                                         package_name,
-                                         activity,
-                                         oem,
-                                         base_path.Append(app_path));
-      apps.get()->insert(
-          std::pair<std::string,
-                    std::unique_ptr<ArcDefaultAppList::AppInfo>>(
-                        app_id, std::move(app)));
-    } else {
+    if (!file.MatchesExtension(extension)) {
       DVLOG(1) << "Not considering: " << file.LossyDisplayName()
                << " (does not have a .json extension)";
+      continue;
     }
+
+    JSONFileValueDeserializer deserializer(file);
+    std::string error_msg;
+    std::unique_ptr<base::Value> app_info =
+        deserializer.Deserialize(nullptr, &error_msg);
+    if (!app_info) {
+      VLOG(2) << "Unable to deserialize json data: " << error_msg << " in file "
+              << file.value() << ".";
+      continue;
+    }
+
+    std::unique_ptr<base::DictionaryValue> app_info_dictionary =
+        base::DictionaryValue::From(std::move(app_info));
+    CHECK(app_info_dictionary);
+
+    std::string name;
+    std::string package_name;
+    std::string activity;
+    std::string app_path;
+    bool oem = false;
+
+    app_info_dictionary->GetString(kName, &name);
+    app_info_dictionary->GetString(kPackageName, &package_name);
+    app_info_dictionary->GetString(kActivity, &activity);
+    app_info_dictionary->GetString(kAppPath, &app_path);
+    app_info_dictionary->GetBoolean(kOem, &oem);
+
+    if (name.empty() || package_name.empty() || activity.empty() ||
+        app_path.empty()) {
+      VLOG(2) << "ARC app declaration is incomplete in file " << file.value()
+              << ".";
+      continue;
+    }
+
+    const std::string app_id =
+        ArcAppListPrefs::GetAppId(package_name, activity);
+    std::unique_ptr<ArcDefaultAppList::AppInfo> app =
+        std::make_unique<ArcDefaultAppList::AppInfo>(
+            name, package_name, activity, oem, root_dir.Append(app_path));
+    apps.get()->insert(
+        std::pair<std::string, std::unique_ptr<ArcDefaultAppList::AppInfo>>(
+            app_id, std::move(app)));
   }
 
   return apps;
@@ -121,31 +115,66 @@ void ArcDefaultAppList::UseTestAppsDirectory() {
   use_test_apps_directory = true;
 }
 
-ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate,
-                                     content::BrowserContext* context)
-    : delegate_(delegate), context_(context), weak_ptr_factory_(this) {
+ArcDefaultAppList::ArcDefaultAppList(Delegate* delegate, Profile* profile)
+    : delegate_(delegate), profile_(profile), weak_ptr_factory_(this) {
   CHECK(delegate_);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  // Load default apps from two sources.
+  // /usr/share/google-chrome/extensions/arc - contains default apps for all
+  //     boards that share the same image.
+  // /var/cache/arc_default_apps that is link to
+  //     /usr/share/google-chrome/extensions/arc/BOARD_NAME - contains default
+  //     apps for particular current board.
+  //
+  std::vector<base::FilePath> sources;
+
+  base::FilePath base_path;
+  if (!use_test_apps_directory) {
+    const bool valid_path = base::PathService::Get(
+        chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, &base_path);
+    DCHECK(valid_path);
+    sources.push_back(base_path.Append(kArcDirectory));
+    sources.push_back(base::FilePath(kBoardDirectory));
+  } else {
+    const bool valid_path =
+        base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
+    DCHECK(valid_path);
+    sources.push_back(base_path.Append(kArcTestDirectory));
+    sources.push_back(base_path.Append(kArcTestBoardDirectory));
+  }
+
+  // Using base::Unretained(this) here is safe since we own barrier_closure_.
+  barrier_closure_ = base::BarrierClosure(
+      sources.size(),
+      base::BindOnce(&ArcDefaultAppList::OnAppsReady, base::Unretained(this)));
+
   // Once ready OnAppsReady is called.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ReadAppsFromFileThread),
-      base::Bind(&ArcDefaultAppList::OnAppsReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+  for (const auto& source : sources) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&ReadAppsFromFileThread, source),
+        base::BindOnce(&ArcDefaultAppList::OnAppsRead,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 ArcDefaultAppList::~ArcDefaultAppList() {}
 
-void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
+void ArcDefaultAppList::OnAppsRead(std::unique_ptr<AppInfoMap> apps) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  apps_.swap(*apps.get());
+  for (auto& entry : *apps.get())
+    apps_[entry.first] = std::move(entry.second);
 
+  barrier_closure_.Run();
+}
+
+void ArcDefaultAppList::OnAppsReady() {
   // Register Play Store as default app. Some services and ArcSupportHost may
   // not be available in tests.
   extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(context_)->extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   const extensions::Extension* arc_host =
       service ? service->GetInstalledExtension(arc::kPlayStoreAppId) : nullptr;
   if (arc_host && arc::IsPlayStoreAvailable()) {
