@@ -392,7 +392,8 @@ void DefaultState::SetBounds(WindowState* window_state,
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     if (event->animate()) {
-      window_state->SetBoundsDirectAnimated(event->requested_bounds());
+      window_state->SetBoundsDirectAnimated(event->requested_bounds(),
+                                            event->duration());
     } else {
       window_state->SetBoundsConstrained(event->requested_bounds());
     }

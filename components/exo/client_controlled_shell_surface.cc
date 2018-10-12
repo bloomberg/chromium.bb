@@ -881,8 +881,15 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   ash::wm::WindowState* window_state = GetWindowState();
-  if (window_state->GetStateType() == pending_window_state_)
+  if (window_state->GetStateType() == pending_window_state_) {
+    // Animate PIP window movement unless it is being dragged.
+    if (window_state->IsPip() && !window_state->is_dragged()) {
+      client_controlled_state_->set_next_bounds_change_animation_type(
+          ash::wm::ClientControlledState::kAnimationAnimated);
+    }
+
     return true;
+  }
 
   if (IsPinned(window_state)) {
     VLOG(1) << "State change was requested while pinned";
@@ -920,8 +927,12 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
     widget_->widget_delegate()->set_can_activate(true);
   }
 
-  client_controlled_state_->EnterNextState(window_state, pending_window_state_,
-                                           animation_type);
+  if (client_controlled_state_->EnterNextState(window_state,
+                                               pending_window_state_)) {
+    client_controlled_state_->set_next_bounds_change_animation_type(
+        animation_type);
+  }
+
   return true;
 }
 

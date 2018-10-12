@@ -146,6 +146,8 @@ void MoveAllTransientChildrenToNewRoot(aura::Window* window) {
 
 }  // namespace
 
+constexpr base::TimeDelta WindowState::kBoundsChangeSlideDuration;
+
 WindowState::~WindowState() {
   // WindowState is registered as an owned property of |window_|, and window
   // unregisters all of its observers in its d'tor before destroying its
@@ -621,15 +623,13 @@ void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
   SetBoundsDirect(child_bounds);
 }
 
-void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
-  const int kBoundsChangeSlideDurationMs = 120;
-
+void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
+                                          base::TimeDelta duration) {
   ui::Layer* layer = window_->layer();
   ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
   slide_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  slide_settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBoundsChangeSlideDurationMs));
+  slide_settings.SetTransitionDuration(duration);
   SetBoundsDirect(bounds);
 }
 

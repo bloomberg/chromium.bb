@@ -61,6 +61,10 @@ ASH_EXPORT const WindowState* GetWindowState(const aura::Window* window);
 // accessing the window using |window()| is cheap.
 class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
+  // The default duration for an animation between two sets of bounds.
+  static constexpr base::TimeDelta kBoundsChangeSlideDuration =
+      base::TimeDelta::FromMilliseconds(120);
+
   // A subclass of State class represents one of the window's states
   // that corresponds to WindowStateType in Ash environment, e.g.
   // maximized, minimized or side snapped, as subclass.
@@ -391,8 +395,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void SetBoundsConstrained(const gfx::Rect& bounds);
 
   // Sets the wndow's |bounds| and transitions to the new bounds with
-  // a scale animation.
-  void SetBoundsDirectAnimated(const gfx::Rect& bounds);
+  // a scale animation, with duration specified by |duration|.
+  void SetBoundsDirectAnimated(
+      const gfx::Rect& bounds,
+      base::TimeDelta duration = kBoundsChangeSlideDuration);
 
   // Sets the window's |bounds| and transition to the new bounds with
   // a cross fade animation.

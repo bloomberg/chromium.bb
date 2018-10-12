@@ -47,6 +47,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -1883,6 +1885,53 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
                                      ash::mojom::WindowStateType::MINIMIZED, 0,
                                      gfx::Rect(0, 0, 100, 100), 0);
   ASSERT_EQ(1, bounds_change_count());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, SetPipWindowBoundsAnimates) {
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  window->SetBounds(gfx::Rect(10, 10, 10, 10));
+  EXPECT_EQ(gfx::Rect(10, 10, 10, 10), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->bounds());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  std::unique_ptr<ash::WindowResizer> resizer(ash::CreateWindowResizer(
+      window, gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
+  resizer->Drag(gfx::Point(10, 0), 0);
+  EXPECT_EQ(gfx::Rect(10, 0, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(10, 0, 256, 256), window->layer()->bounds());
+  resizer->CompleteDrag();
 }
 
 }  // namespace exo
