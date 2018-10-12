@@ -1597,7 +1597,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    return @[ bridge_->host_helper()->GetNativeViewAccessible() ];
+    if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
+      return @[ accessible ];
   }
 
   return [super accessibilityAttributeValue:attribute];

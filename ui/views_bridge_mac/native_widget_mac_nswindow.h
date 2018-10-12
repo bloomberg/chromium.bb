@@ -11,6 +11,10 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/util_mac.h"
 
+namespace views {
+class BridgedNativeWidgetImpl;
+}  // namespace views
+
 @protocol WindowTouchBarDelegate;
 
 // Weak lets Chrome launch even if a future macOS doesn't have the below classes
@@ -51,6 +55,9 @@ VIEWS_EXPORT
 // may be used to look up the BridgedNativeWidgetHostImpl in the browser process
 // or the BridgedNativeWidgetImpl in a display process.
 @property(assign, nonatomic) uint64_t bridgedNativeWidgetId;
+
+// The BridgedNativeWidgetImpl that this will use to call back to the host.
+@property(assign, nonatomic) views::BridgedNativeWidgetImpl* bridgeImpl;
 @end
 
 #endif  // UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_
