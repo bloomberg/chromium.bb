@@ -653,7 +653,7 @@ GURL GetFileUrlWithQuery(const base::FilePath& path,
 void ResetTouchAction(RenderWidgetHost* host) {
   static_cast<InputRouterImpl*>(
       static_cast<RenderWidgetHostImpl*>(host)->input_router())
-      ->OnHasTouchEventHandlersForTest(true);
+      ->ForceResetTouchActionForTest();
 }
 
 void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,

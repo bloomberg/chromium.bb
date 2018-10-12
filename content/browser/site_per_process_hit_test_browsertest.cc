@@ -4788,7 +4788,7 @@ class SitePerProcessGestureHitTestBrowserTest
       static_cast<InputRouterImpl*>(
           static_cast<RenderWidgetHostImpl*>(rwhva_root_->GetRenderWidgetHost())
               ->input_router())
-          ->OnHasTouchEventHandlersForTest(true);
+          ->ForceResetTouchActionForTest();
     }
     SendPinchBeginEndSequence(rwhva_root_, bounds.CenterPoint(), rwhi_child_);
 

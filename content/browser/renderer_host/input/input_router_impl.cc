@@ -590,9 +590,8 @@ void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);
 }
 
-void InputRouterImpl::OnHasTouchEventHandlersForTest(bool has_handlers) {
-  touch_action_filter_.OnHasTouchEventHandlers(has_handlers);
-  // TODO(ajwong): Why doesn't this change |touch_event_queue_|?
+void InputRouterImpl::ForceResetTouchActionForTest() {
+  touch_action_filter_.ForceResetTouchActionForTest();
 }
 
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
