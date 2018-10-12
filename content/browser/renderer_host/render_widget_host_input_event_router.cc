@@ -293,9 +293,6 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   if (view == last_fling_start_target_)
     last_fling_start_target_ = nullptr;
 
-  if (view == last_fling_start_bubbled_target_)
-    last_fling_start_bubbled_target_ = nullptr;
-
   event_targeter_->ViewWillBeDestroyed(view);
 }
 
@@ -1004,8 +1001,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
          event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
          event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-         event.GetType() == blink::WebInputEvent::kGestureFlingStart ||
-         event.GetType() == blink::WebInputEvent::kGestureFlingCancel);
+         event.GetType() == blink::WebInputEvent::kGestureFlingStart);
 
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
@@ -1034,20 +1030,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     }
 
     bubbling_gesture_scroll_target_.target = target_view;
-  } else if (event.GetType() == blink::WebInputEvent::kGestureFlingCancel) {
-    // GFC event must get bubbled to the same target view that the last GFS has
-    // been bubbled.
-    if (last_fling_start_bubbled_target_) {
-      last_fling_start_bubbled_target_->ProcessGestureEvent(
-          GestureEventInTarget(event, last_fling_start_bubbled_target_),
-          latency_info);
-      last_fling_start_bubbled_target_ = nullptr;
-    }
-    return;
   } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
-            // && !(event.GetType() ==
-            // blink::WebInputEvent::kGestureFlingCancel)
-
     if (!bubbling_gesture_scroll_target_.target) {
       // The GestureScrollBegin event is not bubbled, don't bubble the rest of
       // the scroll events.
@@ -1079,12 +1062,6 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
       GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
       latency_info);
-
-  // The GFC should be sent to the view that handles the GFS.
-  if (event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
-    last_fling_start_bubbled_target_ = bubbling_gesture_scroll_target_.target;
-  }
-
   if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
       event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     first_bubbling_scroll_target_.target = nullptr;
