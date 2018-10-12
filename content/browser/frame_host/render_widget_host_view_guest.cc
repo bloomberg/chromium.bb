@@ -679,24 +679,24 @@ void RenderWidgetHostViewGuest::GestureEventAck(
     GetOwnerRenderWidgetHostView()->GestureEventAck(event, ack_result);
   }
 
-  if (blink::WebInputEvent::IsPinchGestureEventType(event.GetType()))
-    ProcessTouchpadPinchAckInRoot(event, ack_result);
+  if (event.IsTouchpadZoomEvent())
+    ProcessTouchpadZoomEventAckInRoot(event, ack_result);
 }
 
-void RenderWidgetHostViewGuest::ProcessTouchpadPinchAckInRoot(
+void RenderWidgetHostViewGuest::ProcessTouchpadZoomEventAckInRoot(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  DCHECK(blink::WebInputEvent::IsPinchGestureEventType(event.GetType()));
+  DCHECK(event.IsTouchpadZoomEvent());
 
   RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
   if (!root_rwhv)
     return;
 
-  blink::WebGestureEvent pinch_event(event);
+  blink::WebGestureEvent root_event(event);
   const gfx::PointF root_point =
       TransformPointToRootCoordSpaceF(event.PositionInWidget());
-  pinch_event.SetPositionInWidget(root_point);
-  root_rwhv->GestureEventAck(pinch_event, ack_result);
+  root_event.SetPositionInWidget(root_point);
+  root_rwhv->GestureEventAck(root_event, ack_result);
 }
 
 InputEventAckState RenderWidgetHostViewGuest::FilterInputEvent(

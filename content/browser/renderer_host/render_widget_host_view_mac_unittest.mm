@@ -223,6 +223,26 @@ id MockPinchEvent(NSEventPhase phase, double magnification) {
   return event;
 }
 
+id MockSmartMagnifyEvent() {
+  id event = [OCMockObject mockForClass:[NSEvent class]];
+  NSEventType type = NSEventTypeSmartMagnify;
+  NSPoint locationInWindow = NSMakePoint(0, 0);
+  CGFloat deltaX = 0;
+  CGFloat deltaY = 0;
+  NSTimeInterval timestamp = 1;
+  NSUInteger modifierFlags = 0;
+
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(type)] type];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(locationInWindow)]
+      locationInWindow];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(deltaX)] deltaX];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(deltaY)] deltaY];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(timestamp)] timestamp];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(modifierFlags)]
+      modifierFlags];
+  return event;
+}
+
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
  public:
   ~MockRenderWidgetHostImpl() override {}
@@ -1580,6 +1600,41 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     events = host_->GetAndResetDispatchedMessages();
     EXPECT_EQ("MouseWheel", GetMessageNames(events));
   }
+}
+
+// Tests that the NSEventTypeSmartMagnify event is first offered as a mouse
+// wheel event and is then sent as a GestureDoubleTap to invoke the double-tap
+// to zoom logic.
+TEST_F(RenderWidgetHostViewMacTest, DoubleTapZoom) {
+  NSEvent* smartMagnifyEvent = MockSmartMagnifyEvent();
+  [rwhv_cocoa_ smartMagnifyWithEvent:smartMagnifyEvent];
+  base::RunLoop().RunUntilIdle();
+
+  MockWidgetInputHandler::MessageVector events =
+      host_->GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+
+  events = host_->GetAndResetDispatchedMessages();
+  EXPECT_EQ("GestureDoubleTap", GetMessageNames(events));
+}
+
+// Tests that the NSEventTypeSmartMagnify event may be consumed by a wheel
+// listener to prevent the scale change.
+TEST_F(RenderWidgetHostViewMacTest, DoubleTapZoomConsumed) {
+  NSEvent* smartMagnifyEvent = MockSmartMagnifyEvent();
+  [rwhv_cocoa_ smartMagnifyWithEvent:smartMagnifyEvent];
+  base::RunLoop().RunUntilIdle();
+
+  MockWidgetInputHandler::MessageVector events =
+      host_->GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  events = host_->GetAndResetDispatchedMessages();
+  EXPECT_EQ(0U, events.size());
 }
 
 TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {

@@ -520,8 +520,8 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
   if (!frame_connector_)
     return;
 
-  if (blink::WebInputEvent::IsPinchGestureEventType(event.GetType()))
-    ProcessTouchpadPinchAckInRoot(event, ack_result);
+  if (event.IsTouchpadZoomEvent())
+    ProcessTouchpadZoomEventAckInRoot(event, ack_result);
 
   const bool should_bubble =
       ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
@@ -551,19 +551,19 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
   }
 }
 
-void RenderWidgetHostViewChildFrame::ProcessTouchpadPinchAckInRoot(
+void RenderWidgetHostViewChildFrame::ProcessTouchpadZoomEventAckInRoot(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  DCHECK(blink::WebInputEvent::IsPinchGestureEventType(event.GetType()));
+  DCHECK(event.IsTouchpadZoomEvent());
 
-  frame_connector_->ForwardAckedTouchpadPinchGestureEvent(event, ack_result);
+  frame_connector_->ForwardAckedTouchpadZoomEvent(event, ack_result);
 }
 
-void RenderWidgetHostViewChildFrame::ForwardTouchpadPinchIfNecessary(
+void RenderWidgetHostViewChildFrame::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  // ACKs of synthetic wheel events for touchpad pinch are processed in the
-  // root RWHV.
+  // ACKs of synthetic wheel events for touchpad pinch or double tap are
+  // processed in the root RWHV.
   NOTREACHED();
 }
 

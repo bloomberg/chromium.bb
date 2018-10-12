@@ -144,8 +144,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       gfx::PointF* transformed_point,
       viz::EventSource source = viz::EventSource::ANY);
 
-  // Pass acked touchpad pinch gesture events to the root view for processing.
-  virtual void ForwardAckedTouchpadPinchGestureEvent(
+  // Pass acked touchpad pinch or double tap gesture events to the root view
+  // for processing.
+  virtual void ForwardAckedTouchpadZoomEvent(
       const blink::WebGestureEvent& event,
       InputEventAckState ack_result) {}
 

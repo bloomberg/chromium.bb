@@ -627,7 +627,7 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
 
 void RenderWidgetHostInputEventRouter::RouteGestureEvent(
     RenderWidgetHostViewBase* root_view,
-    blink::WebGestureEvent* event,
+    const blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
   if (event->IsTargetViewport()) {
     root_view->ProcessGestureEvent(*event, latency);
@@ -1404,7 +1404,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
 
 void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     RenderWidgetHostViewBase* root_view,
-    blink::WebGestureEvent* event,
+    const blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
   DCHECK_EQ(blink::kWebGestureDeviceTouchscreen, event->SourceDevice());
   event_targeter_->FindTargetAndDispatch(root_view, *event, latency);
@@ -1415,7 +1415,8 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
     RenderWidgetHostViewBase* root_view,
     const blink::WebGestureEvent& event) const {
   if (event.GetType() != blink::WebInputEvent::kGesturePinchBegin &&
-      event.GetType() != blink::WebInputEvent::kGestureFlingCancel) {
+      event.GetType() != blink::WebInputEvent::kGestureFlingCancel &&
+      event.GetType() != blink::WebInputEvent::kGestureDoubleTap) {
     return {nullptr, false, base::nullopt, true, false};
   }
 
@@ -1427,7 +1428,7 @@ RenderWidgetHostInputEventRouter::FindTouchpadGestureEventTarget(
 
 void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
     RenderWidgetHostViewBase* root_view,
-    blink::WebGestureEvent* event,
+    const blink::WebGestureEvent* event,
     const ui::LatencyInfo& latency) {
   DCHECK_EQ(blink::kWebGestureDeviceTouchpad, event->SourceDevice());
   event_targeter_->FindTargetAndDispatch(root_view, *event, latency);
@@ -1505,7 +1506,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
   touchpad_gesture_target_.target->ProcessGestureEvent(gesture_event, latency);
 
   if (touchpad_gesture_event.GetType() ==
-      blink::WebInputEvent::kGesturePinchEnd) {
+          blink::WebInputEvent::kGesturePinchEnd ||
+      touchpad_gesture_event.GetType() ==
+          blink::WebInputEvent::kGestureDoubleTap) {
     touchpad_gesture_target_.target = nullptr;
   }
 }

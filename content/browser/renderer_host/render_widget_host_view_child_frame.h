@@ -305,10 +305,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
-  void ProcessTouchpadPinchAckInRoot(const blink::WebGestureEvent& event,
-                                     InputEventAckState ack_result);
-  void ForwardTouchpadPinchIfNecessary(const blink::WebGestureEvent& event,
-                                       InputEventAckState ack_result) override;
+  void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
+                                         InputEventAckState ack_result);
+  void ForwardTouchpadZoomEventIfNecessary(
+      const blink::WebGestureEvent& event,
+      InputEventAckState ack_result) override;
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 

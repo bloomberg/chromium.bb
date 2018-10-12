@@ -627,10 +627,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   ws::mojom::WindowTreeClientPtr GetWindowTreeClientFromRenderer();
 #endif
 
-  // If |event| is a touchpad pinch event for which we've sent a synthetic
-  // wheel event, forward the |event| to the renderer, subject to |ack_result|
-  // which is the ACK result of the synthetic wheel.
-  virtual void ForwardTouchpadPinchIfNecessary(
+  // If |event| is a touchpad pinch or double tap event for which we've sent a
+  // synthetic wheel event, forward the |event| to the renderer, subject to
+  // |ack_result| which is the ACK result of the synthetic wheel.
+  virtual void ForwardTouchpadZoomEventIfNecessary(
       const blink::WebGestureEvent& event,
       InputEventAckState ack_result);
 

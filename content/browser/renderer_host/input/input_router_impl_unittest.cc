@@ -2204,7 +2204,7 @@ class InputRouterImplScaleGestureEventTest
   WebGestureEvent BuildGestureEvent(WebInputEvent::Type type,
                                     const gfx::PointF& point) {
     WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
-        type, blink::kWebGestureDeviceTouchpad);
+        type, blink::kWebGestureDeviceTouchscreen);
     event.SetPositionInWidget(point);
     event.SetPositionInScreen(point);
     return event;
@@ -2213,6 +2213,14 @@ class InputRouterImplScaleGestureEventTest
   void TestTap(const std::string& name, WebInputEvent::Type type) {
     SCOPED_TRACE(name);
     const gfx::PointF orig(10, 20), scaled(20, 40);
+
+    WebGestureEvent tap_down =
+        BuildGestureEvent(WebInputEvent::kGestureTapDown, orig);
+    tap_down.data.tap_down.width = 30;
+    tap_down.data.tap_down.height = 40;
+    SimulateGestureEvent(tap_down);
+    FlushGestureEvent(WebInputEvent::kGestureTapDown);
+
     WebGestureEvent event = BuildGestureEvent(type, orig);
     event.data.tap.width = 30;
     event.data.tap.height = 40;

@@ -1161,7 +1161,7 @@ RenderWidgetHostViewMac::GetKeyboardLayoutMap() {
 
 void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
                                               InputEventAckState ack_result) {
-  ForwardTouchpadPinchIfNecessary(event, ack_result);
+  ForwardTouchpadZoomEventIfNecessary(event, ack_result);
 
   bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   switch (event.GetType()) {
@@ -1229,11 +1229,10 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
   return host()->delegate() && host()->delegate()->GetInputEventRouter();
 }
 
-void RenderWidgetHostViewMac::SendGesturePinchEvent(WebGestureEvent* event) {
-  DCHECK(WebInputEvent::IsPinchGestureEventType(event->GetType()));
+void RenderWidgetHostViewMac::SendTouchpadZoomEvent(
+    const WebGestureEvent* event) {
+  DCHECK(event->IsTouchpadZoomEvent());
   if (ShouldRouteEvent(*event)) {
-    DCHECK(event->SourceDevice() ==
-           blink::WebGestureDevice::kWebGestureDeviceTouchpad);
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, event, ui::LatencyInfo(ui::SourceEventType::TOUCHPAD));
     return;
@@ -1635,27 +1634,27 @@ void RenderWidgetHostViewMac::GestureUpdate(
     begin_event.SetSourceDevice(
         blink::WebGestureDevice::kWebGestureDeviceTouchpad);
     begin_event.SetNeedsWheelEvent(true);
-    SendGesturePinchEvent(&begin_event);
+    SendTouchpadZoomEvent(&begin_event);
     gesture_begin_pinch_sent_ = YES;
   }
 
   // Send a GesturePinchUpdate event.
   update_event.data.pinch_update.zoom_disabled =
       !pinch_has_reached_zoom_threshold_;
-  SendGesturePinchEvent(&update_event);
+  SendTouchpadZoomEvent(&update_event);
 }
 
 void RenderWidgetHostViewMac::GestureEnd(blink::WebGestureEvent end_event) {
   gesture_begin_event_.reset();
   if (gesture_begin_pinch_sent_) {
-    SendGesturePinchEvent(&end_event);
+    SendTouchpadZoomEvent(&end_event);
     gesture_begin_pinch_sent_ = false;
   }
 }
 
 void RenderWidgetHostViewMac::SmartMagnify(
     const blink::WebGestureEvent& smart_magnify_event) {
-  host()->ForwardGestureEvent(smart_magnify_event);
+  SendTouchpadZoomEvent(&smart_magnify_event);
 }
 
 void RenderWidgetHostViewMac::ImeSetComposition(

@@ -384,13 +384,10 @@ void RenderWidgetHostViewBase::GestureEventAck(
     InputEventAckState ack_result) {
 }
 
-void RenderWidgetHostViewBase::ForwardTouchpadPinchIfNecessary(
+void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  if (!blink::WebInputEvent::IsPinchGestureEventType(event.GetType()))
-    return;
-  if (event.SourceDevice() !=
-      blink::WebGestureDevice::kWebGestureDeviceTouchpad)
+  if (!event.IsTouchpadZoomEvent())
     return;
   if (!event.NeedsWheelEvent())
     return;
@@ -423,6 +420,18 @@ void RenderWidgetHostViewBase::ForwardTouchpadPinchIfNecessary(
         blink::WebGestureEvent pinch_end_event(event);
         pinch_end_event.SetNeedsWheelEvent(false);
         host()->ForwardGestureEvent(pinch_end_event);
+      }
+      break;
+    case blink::WebInputEvent::kGestureDoubleTap:
+      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
+        blink::WebGestureEvent double_tap(event);
+        double_tap.SetNeedsWheelEvent(false);
+        // TODO(mcnee): Support double-tap zoom gesture for OOPIFs. For now,
+        // we naively send this to the main frame. If this is over an OOPIF,
+        // then the iframe element will incorrectly be used for the scale
+        // calculation rather than the element in the OOPIF.
+        // https://crbug.com/758348
+        host()->ForwardGestureEvent(double_tap);
       }
       break;
     default:
