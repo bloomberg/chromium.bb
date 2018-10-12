@@ -456,9 +456,6 @@ class FormStructure {
   // The name of the form.
   base::string16 form_name_;
 
-  // The title of form submission button.
-  base::string16 button_title_;
-
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
   PasswordForm::SubmissionIndicatorEvent submission_event_;

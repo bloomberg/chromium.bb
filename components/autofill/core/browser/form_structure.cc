@@ -337,7 +337,6 @@ void EncodePasswordAttributesVote(
 
 FormStructure::FormStructure(const FormData& form)
     : form_name_(form.name),
-      button_title_(form.button_title),
       submission_event_(PasswordForm::SubmissionIndicatorEvent::NONE),
       source_url_(form.origin),
       target_url_(form.action),

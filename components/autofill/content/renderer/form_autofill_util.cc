@@ -779,41 +779,6 @@ bool InferLabelForElement(const WebFormControlElement& element,
   return false;
 }
 
-base::string16 InferButtonTitleForForm(const WebFormElement& form_element) {
-  CR_DEFINE_STATIC_LOCAL(WebString, kSubmit, ("submit"));
-  CR_DEFINE_STATIC_LOCAL(WebString, kButton, ("button"));
-
-  base::string16 title;
-  WebVector<WebFormControlElement> control_elements;
-  form_element.GetFormControlElements(control_elements);
-  for (const WebFormControlElement& control_element : control_elements) {
-    bool is_submit_input =
-        control_element.FormControlTypeForAutofill() == kSubmit;
-    bool is_button_input =
-        control_element.FormControlTypeForAutofill() == kButton;
-    if (!is_submit_input && !is_button_input)
-      continue;
-    if (!control_element.Value().IsEmpty())
-      title = control_element.Value().Utf16() +
-              base::ASCIIToUTF16(is_submit_input ? "$" : "#") + title;
-    if (title.length() >= kMaxDataLength)
-      break;
-  }
-  WebElementCollection buttons = form_element.GetElementsByHTMLTagName(kButton);
-  for (WebElement item = buttons.FirstItem();
-       !item.IsNull() && title.length() <= kMaxDataLength;
-       item = buttons.NextItem()) {
-    if (!item.TextContent().IsEmpty()) {
-      bool is_submit_button =
-          item.HasAttribute("type") && item.GetAttribute("type") == kSubmit;
-      title = item.TextContent().Utf16() +
-              base::ASCIIToUTF16(is_submit_button ? "&" : "%") + title;
-    }
-  }
-  TruncateString(&title, kMaxDataLength);
-  return title;
-}
-
 // Fills |option_strings| with the values of the <option> elements present in
 // |select_element|.
 void GetOptionStringsFromElement(const WebSelectElement& select_element,
@@ -1642,7 +1607,6 @@ bool WebFormElementToFormData(
   form->unique_renderer_id = form_element.UniqueRendererFormId();
   form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
-  form->button_title = InferButtonTitleForForm(form_element);
   if (frame->Top()) {
     form->main_frame_origin = frame->Top()->GetSecurityOrigin();
   } else {
@@ -2010,10 +1974,6 @@ bool InferLabelForElementForTesting(const WebFormControlElement& element,
                                     base::string16* label,
                                     FormFieldData::LabelSource* label_source) {
   return InferLabelForElement(element, stop_words, label, label_source);
-}
-
-base::string16 InferButtonTitleForTesting(const WebFormElement& form_element) {
-  return InferButtonTitleForForm(form_element);
 }
 
 WebFormElement FindFormByUniqueRendererId(WebDocument doc,

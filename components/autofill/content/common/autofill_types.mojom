@@ -136,7 +136,6 @@ struct FormFieldData {
 // autofill::FormData
 struct FormData {
   mojo_base.mojom.String16 name;
-  mojo_base.mojom.String16 button_title;
   // TODO(crbug.com/788181): Either change type to Origin or rename to URL.
   url.mojom.Url origin;
   url.mojom.Url action;
