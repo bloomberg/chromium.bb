@@ -133,9 +133,6 @@ copy("resources") {
 build_closure("inputview") {
   sources = inputview_sources
   target = "$target_gen_dir/resources/inputview.js"
-  json_file = "//third_party/google_input_tools/inputview.gypi"
-  sources += [ json_file ]
-  json_sources = "variables.inputview_sources"
   path = rebase_path("//third_party/google_input_tools")
 }
 
