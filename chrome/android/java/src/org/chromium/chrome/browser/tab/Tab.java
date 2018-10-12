@@ -1505,7 +1505,8 @@ public class Tab
 
         if (getWebContents() != null) {
             nativeUpdateDelegates(mNativeTabAndroid, mWebContentsDelegate,
-                    mDelegateFactory.createContextMenuPopulator(this));
+                    new TabContextMenuPopulator(
+                            mDelegateFactory.createContextMenuPopulator(this), this));
             setInterceptNavigationDelegate(
                     mDelegateFactory.createInterceptNavigationDelegate(this));
             getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
