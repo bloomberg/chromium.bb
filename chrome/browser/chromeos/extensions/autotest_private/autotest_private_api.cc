@@ -19,6 +19,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -45,6 +47,7 @@
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -67,6 +70,10 @@ namespace {
 
 constexpr char kCrostiniNotAvailableForCurrentUserError[] =
     "Crostini is not available for the current user";
+
+// Amount of time to give other processes to report their histograms.
+constexpr base::TimeDelta kHistogramsRefreshTimeout =
+    base::TimeDelta::FromSeconds(10);
 
 int AccessArray(const volatile int arr[], const volatile int* index) {
   return arr[*index];
@@ -603,12 +610,30 @@ ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateGetHistogramFunction " << params->name;
 
+  // Collect histogram data from other processes before responding. Otherwise,
+  // we'd report stale data for histograms that are e.g. recorded by renderers.
+  content::FetchHistogramsAsynchronously(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::BindRepeating(
+          &AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched,
+          this, params->name),
+      kHistogramsRefreshTimeout);
+  return RespondLater();
+}
+
+void AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched(
+    const std::string& name) {
+  // Incorporate the data collected by content::FetchHistogramsAsynchronously().
+  base::StatisticsRecorder::ImportProvidedHistograms();
+  Respond(GetHistogram(name));
+}
+
+ExtensionFunction::ResponseValue
+AutotestPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
   const base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(params->name);
-  if (!histogram) {
-    return RespondNow(
-        Error(base::StrCat({"Histogram ", params->name, " not found"})));
-  }
+      base::StatisticsRecorder::FindHistogram(name);
+  if (!histogram)
+    return Error(base::StrCat({"Histogram ", name, " not found"}));
 
   std::unique_ptr<base::HistogramSamples> samples =
       histogram->SnapshotSamples();
@@ -628,7 +653,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
     result.buckets.push_back(std::move(bucket));
   }
 
-  return RespondNow(OneArgument(result.ToValue()));
+  return OneArgument(result.ToValue());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
