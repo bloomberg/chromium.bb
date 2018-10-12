@@ -436,6 +436,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                                        const NavigationEntryImpl& entry) {
     // Tests currently only navigate using main frame FrameNavigationEntries.
     FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
+    FrameTreeNode* frame_tree_node =
+        manager->current_frame_host()->frame_tree_node();
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(manager->current_frame_host()
                                                    ->frame_tree_node()
@@ -445,13 +447,37 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
         entry.restore_type() == RestoreType::NONE
             ? FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT
             : FrameMsg_Navigate_Type::RESTORE;
+    scoped_refptr<network::ResourceRequestBody> request_body;
+    std::string post_content_type;
+    if (frame_entry->method() == "POST") {
+      request_body = frame_entry->GetPostData(&post_content_type);
+      // Might have a LF at end.
+      post_content_type =
+          base::TrimWhitespaceASCII(post_content_type, base::TRIM_ALL)
+              .as_string();
+    }
+
+    CommonNavigationParams common_params =
+        entry.ConstructCommonNavigationParams(
+            *frame_entry, request_body, frame_entry->url(),
+            frame_entry->referrer(), navigate_type, PREVIEWS_UNSPECIFIED,
+            base::TimeTicks::Now(), base::TimeTicks::Now());
+    RequestNavigationParams request_params =
+        entry.ConstructRequestNavigationParams(
+            *frame_entry, common_params.url, common_params.method, false,
+            entry.GetSubframeUniqueNames(frame_tree_node),
+            controller->GetPendingEntryIndex() ==
+                -1 /* intended_as_new_entry */,
+            controller->GetIndexOfEntry(&entry),
+            controller->GetLastCommittedEntryIndex(),
+            controller->GetEntryCount());
+    request_params.post_content_type = post_content_type;
+
     std::unique_ptr<NavigationRequest> navigation_request =
         NavigationRequest::CreateBrowserInitiated(
-            manager->frame_tree_node_, frame_entry->url(),
-            frame_entry->referrer(), *frame_entry, entry, navigate_type,
-            PREVIEWS_UNSPECIFIED, false, false, nullptr, base::TimeTicks::Now(),
-            controller, nullptr, base::TimeTicks(),
-            WasActivatedOption::kUnknown);
+            frame_tree_node, common_params, request_params,
+            !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
+            entry, request_body, nullptr /* navigation_ui_data */);
 
     // Simulates request creation that triggers the 1st internal call to
     // GetFrameHostForNavigation.
@@ -2818,14 +2844,27 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
       nullptr /* blob_url_loader_factory */);
   FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
+  FrameTreeNode* frame_tree_node =
+      manager->current_frame_host()->frame_tree_node();
+  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
+      *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
+      base::TimeTicks::Now(), base::TimeTicks::Now());
+  RequestNavigationParams request_params =
+      entry.ConstructRequestNavigationParams(
+          *frame_entry, common_params.url, common_params.method, false,
+          entry.GetSubframeUniqueNames(frame_tree_node),
+          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+          static_cast<NavigationControllerImpl&>(controller())
+              .GetIndexOfEntry(&entry),
+          controller().GetLastCommittedEntryIndex(),
+          controller().GetEntryCount());
+
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          contents()->GetFrameTree()->root(), frame_entry->url(),
-          frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-          false, false, nullptr, base::TimeTicks::Now(),
-          static_cast<NavigationControllerImpl*>(&controller()), nullptr,
-          base::TimeTicks(), WasActivatedOption::kUnknown);
+          frame_tree_node, common_params, request_params,
+          !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
+          entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // As the initial RenderFrame was not live, the new RenderFrameHost should be
@@ -2881,14 +2920,27 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
       nullptr /* blob_url_loader_factory */);
   FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
+  FrameTreeNode* frame_tree_node =
+      manager->current_frame_host()->frame_tree_node();
+  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
+      *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
+      base::TimeTicks::Now(), base::TimeTicks::Now());
+  RequestNavigationParams request_params =
+      entry.ConstructRequestNavigationParams(
+          *frame_entry, common_params.url, common_params.method, false,
+          entry.GetSubframeUniqueNames(frame_tree_node),
+          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+          static_cast<NavigationControllerImpl&>(controller())
+              .GetIndexOfEntry(&entry),
+          controller().GetLastCommittedEntryIndex(),
+          controller().GetEntryCount());
+
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          contents()->GetFrameTree()->root(), frame_entry->url(),
-          frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-          false, false, nullptr, base::TimeTicks::Now(),
-          static_cast<NavigationControllerImpl*>(&controller()), nullptr,
-          base::TimeTicks(), WasActivatedOption::kUnknown);
+          frame_tree_node, common_params, request_params,
+          !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
+          entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // The current WebUI should still be in place and the pending WebUI should be
@@ -2941,14 +2993,27 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
       nullptr /* blob_url_loader_factory */);
   FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
+  FrameTreeNode* frame_tree_node =
+      manager->current_frame_host()->frame_tree_node();
+  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
+      *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
+      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
+      base::TimeTicks::Now(), base::TimeTicks::Now());
+  RequestNavigationParams request_params =
+      entry.ConstructRequestNavigationParams(
+          *frame_entry, common_params.url, common_params.method, false,
+          entry.GetSubframeUniqueNames(frame_tree_node),
+          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+          static_cast<NavigationControllerImpl&>(controller())
+              .GetIndexOfEntry(&entry),
+          controller().GetLastCommittedEntryIndex(),
+          controller().GetEntryCount());
+
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          contents()->GetFrameTree()->root(), frame_entry->url(),
-          frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-          false, false, nullptr, base::TimeTicks::Now(),
-          static_cast<NavigationControllerImpl*>(&controller()), nullptr,
-          base::TimeTicks(), WasActivatedOption::kUnknown);
+          frame_tree_node, common_params, request_params,
+          !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
+          entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 
   // The current WebUI should still be in place and there should be a new

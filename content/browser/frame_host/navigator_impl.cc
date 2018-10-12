@@ -324,6 +324,9 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
                              ReloadType reload_type,
                              RestoreType restore_type) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::Navigate");
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "navigation,rail", "NavigationTiming navigationStart",
+      TRACE_EVENT_SCOPE_GLOBAL, request->common_params().navigation_start);
 
   const GURL& dest_url = request->common_params().url;
   FrameTreeNode* frame_tree_node = request->frame_tree_node();

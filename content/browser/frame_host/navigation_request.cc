@@ -281,39 +281,17 @@ bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
 // static
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
-    const GURL& dest_url,
-    const Referrer& dest_referrer,
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    bool browser_initiated,
+    const std::string& extra_headers,
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
-    FrameMsg_Navigate_Type::Value navigation_type,
-    PreviewsState previews_state,
-    bool is_same_document_history_load,
-    bool is_history_navigation_in_new_child,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
-    base::TimeTicks navigation_start,
-    NavigationControllerImpl* controller,
-    std::unique_ptr<NavigationUIData> navigation_ui_data,
-    base::TimeTicks input_start,
-    WasActivatedOption was_activated) {
-  // A form submission happens either because the navigation is a
-  // renderer-initiated form submission that took the OpenURL path or a
-  // back/forward/reload navigation the does a form resubmission.
-  scoped_refptr<network::ResourceRequestBody> request_body;
-  std::string post_content_type;
-  if (post_body) {
-    // Standard form submission from the renderer.
-    request_body = post_body;
-  } else if (frame_entry.method() == "POST") {
-    // Form resubmission during a back/forward/reload navigation.
-    request_body = frame_entry.GetPostData(&post_content_type);
-    // Might have a LF at end.
-    post_content_type =
-        base::TrimWhitespaceASCII(post_content_type, base::TRIM_ALL)
-            .as_string();
-  }
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
   // This is not currently handled here.
-  bool is_form_submission = !!request_body;
+  bool is_form_submission = !!post_body;
 
   base::Optional<url::Origin> initiator =
       frame_tree_node->IsMainFrame()
@@ -321,31 +299,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           : base::Optional<url::Origin>(
                 frame_tree_node->frame_tree()->root()->current_origin());
 
-  // While the navigation was started via the LoadURL path it may have come from
-  // the renderer in the first place as part of OpenURL.
-  bool browser_initiated = !entry.is_renderer_initiated();
-
-  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
-      frame_entry, request_body, dest_url, dest_referrer, navigation_type,
-      previews_state, navigation_start, input_start);
-
-  RequestNavigationParams request_params =
-      entry.ConstructRequestNavigationParams(
-          frame_entry, common_params.url, common_params.method,
-          is_history_navigation_in_new_child,
-          entry.GetSubframeUniqueNames(frame_tree_node),
-          controller->GetPendingEntryIndex() == -1,
-          controller->GetIndexOfEntry(&entry),
-          controller->GetLastCommittedEntryIndex(),
-          controller->GetEntryCount());
-  request_params.post_content_type = post_content_type;
-  request_params.was_activated = was_activated;
-
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, common_params,
       mojom::BeginNavigationParams::New(
-          entry.extra_headers(), net::LOAD_NORMAL,
-          false /* skip_service_worker */,
+          extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
           blink::mojom::RequestContextType::LOCATION,
           blink::WebMixedContentContextType::kBlockable, is_form_submission,
           GURL() /* searchable_form_url */,
