@@ -7331,7 +7331,8 @@ class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
                       const WebString&,
                       WebNavigationPolicy,
                       bool,
-                      WebSandboxFlags) override {
+                      WebSandboxFlags,
+                      const SessionStorageNamespaceId&) override {
     EXPECT_TRUE(false);
     return nullptr;
   }

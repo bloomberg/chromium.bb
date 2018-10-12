@@ -131,6 +131,7 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
 }
 
 void StorageNamespace::CloneTo(const String& target) {
+  CHECK(base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
   DCHECK(IsSessionStorage()) << "Cannot clone a local storage namespace.";
   EnsureConnected();
   namespace_->Clone(target);

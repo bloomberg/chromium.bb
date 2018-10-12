@@ -256,11 +256,13 @@ bool ChromeClientImpl::AcceptsLoadDrops() const {
   return !web_view_->Client() || web_view_->Client()->AcceptsLoadDrops();
 }
 
-Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
-                                     const FrameLoadRequest& r,
-                                     const WebWindowFeatures& features,
-                                     NavigationPolicy navigation_policy,
-                                     SandboxFlags sandbox_flags) {
+Page* ChromeClientImpl::CreateWindow(
+    LocalFrame* frame,
+    const FrameLoadRequest& r,
+    const WebWindowFeatures& features,
+    NavigationPolicy navigation_policy,
+    SandboxFlags sandbox_flags,
+    const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!web_view_->Client())
     return nullptr;
 
@@ -277,7 +279,8 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
           static_cast<WebNavigationPolicy>(navigation_policy),
           r.GetShouldSetOpener() == kNeverSetOpener,
-          static_cast<WebSandboxFlags>(sandbox_flags)));
+          static_cast<WebSandboxFlags>(sandbox_flags),
+          session_storage_namespace_id));
   if (!new_view)
     return nullptr;
   return new_view->GetPage();

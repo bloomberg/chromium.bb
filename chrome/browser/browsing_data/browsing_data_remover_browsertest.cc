@@ -48,7 +48,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -61,6 +60,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -243,9 +243,9 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   BrowsingDataRemoverBrowserTest() {
     feature_list_.InitWithFeatures(
         {browsing_data::features::kRemoveNavigationHistory,
-         // Ensure that MojoSessionStorage is enabled because the old
+         // Ensure that kOnionSoupDOMStorage is enabled because the old
          // SessionStorage implementation causes flaky tests.
-         features::kMojoSessionStorage},
+         blink::features::kOnionSoupDOMStorage},
         {});
   }
 

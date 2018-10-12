@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_CLIENT_H_
 
 #include "base/strings/string_piece.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
@@ -66,13 +67,15 @@ class WebViewClient {
   // could be fulfilled.  The client should not load the request.
   // The policy parameter indicates how the new view will be displayed in
   // WebWidgetClient::show.
-  virtual WebView* CreateView(WebLocalFrame* creator,
-                              const WebURLRequest& request,
-                              const WebWindowFeatures& features,
-                              const WebString& name,
-                              WebNavigationPolicy policy,
-                              bool suppress_opener,
-                              WebSandboxFlags) {
+  virtual WebView* CreateView(
+      WebLocalFrame* creator,
+      const WebURLRequest& request,
+      const WebWindowFeatures& features,
+      const WebString& name,
+      WebNavigationPolicy policy,
+      bool suppress_opener,
+      WebSandboxFlags,
+      const SessionStorageNamespaceId& session_storage_namespace_id) {
     return nullptr;
   }
 

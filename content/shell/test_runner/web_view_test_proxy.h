@@ -193,7 +193,9 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener,
-                             blink::WebSandboxFlags sandbox_flags) override;
+                             blink::WebSandboxFlags sandbox_flags,
+                             const blink::SessionStorageNamespaceId&
+                                 session_storage_namespace_id) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;

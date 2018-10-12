@@ -26,12 +26,17 @@
 
 #include "third_party/blink/renderer/core/page/create_window.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -42,6 +47,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -258,8 +264,20 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
           ? opener_frame.GetSecurityContext()->GetSandboxFlags()
           : kSandboxNone;
 
+  SessionStorageNamespaceId new_namespace_id =
+      AllocateSessionStorageNamespaceId();
+
+  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
+    // TODO(dmurph): Don't copy session storage when features.noopener is true:
+    // https://html.spec.whatwg.org/multipage/browsers.html#copy-session-storage
+    // https://crbug.com/771959
+    CoreInitializer::GetInstance().CloneSessionStorage(old_page,
+                                                       new_namespace_id);
+  }
+
   Page* page = old_page->GetChromeClient().CreateWindow(
-      &opener_frame, request, features, policy, sandbox_flags);
+      &opener_frame, request, features, policy, sandbox_flags,
+      new_namespace_id);
   if (!page)
     return nullptr;
 
