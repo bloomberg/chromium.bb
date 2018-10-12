@@ -133,6 +133,18 @@ bool StylePropertyMapReadOnly::has(const ExecutionContext* execution_context,
   return !getAll(execution_context, property_name, exception_state).IsEmpty();
 }
 
+const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
+    const ExecutionContext& execution_context,
+    const AtomicString& property_name) {
+  const CSSValue* value = GetCustomProperty(property_name);
+
+  const auto* document = DynamicTo<Document>(execution_context);
+  if (!document)
+    return value;
+
+  return PropertyRegistry::ParseIfRegistered(*document, property_name, value);
+}
+
 StylePropertyMapReadOnly::IterationSource*
 StylePropertyMapReadOnly::StartIteration(ScriptState* script_state,
                                          ExceptionState&) {
@@ -174,18 +186,6 @@ CSSStyleValue* StylePropertyMapReadOnly::GetShorthandProperty(
     return nullptr;
   return CSSUnsupportedStyleValue::Create(property.PropertyID(), g_null_atom,
                                           serialization);
-}
-
-const CSSValue* StylePropertyMapReadOnly::GetCustomProperty(
-    const ExecutionContext& execution_context,
-    const AtomicString& property_name) {
-  const CSSValue* value = GetCustomProperty(property_name);
-
-  const auto* document = DynamicTo<Document>(execution_context);
-  if (!document)
-    return value;
-
-  return PropertyRegistry::ParseIfRegistered(*document, property_name, value);
 }
 
 }  // namespace blink

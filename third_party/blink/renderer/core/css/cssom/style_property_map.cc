@@ -408,13 +408,55 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
     return;
   }
 
+  const CSSProperty& property = CSSProperty::Get(property_id);
+
   if (property_id == CSSPropertyVariable) {
+    AtomicString custom_property_name(property_name);
+
+    const PropertyRegistration* registration =
+        PropertyRegistration::From(execution_context, custom_property_name);
+
+    if (registration && IsListValuedProperty(property, registration)) {
+      CSSStyleValueVector style_values;
+
+      // Add existing CSSStyleValues:
+      if (const CSSValue* css_value =
+              GetCustomProperty(*execution_context, custom_property_name)) {
+        DCHECK(css_value->IsValueList());
+        style_values = StyleValueFactory::CssValueToStyleValueVector(
+            property_id, custom_property_name, *css_value);
+      }
+
+      // Append incoming CSSStyleValues:
+      CSSStyleValueVector incoming_style_values =
+          StyleValueFactory::CoerceStyleValuesOrStrings(
+              property, custom_property_name, registration, values,
+              *execution_context);
+
+      const CSSValue* result = nullptr;
+
+      if (!incoming_style_values.IsEmpty()) {
+        style_values.AppendVector(incoming_style_values);
+        CSSParserContext* context =
+            CSSParserContext::Create(*execution_context);
+        result =
+            CreateVariableReferenceValue(property, custom_property_name,
+                                         *registration, style_values, *context);
+      }
+
+      if (!result) {
+        exception_state.ThrowTypeError("Invalid type for property");
+        return;
+      }
+
+      SetCustomProperty(custom_property_name, *result);
+      return;
+    }
     exception_state.ThrowTypeError(
         "Appending to custom properties is not supported");
     return;
   }
 
-  const CSSProperty& property = CSSProperty::Get(property_id);
   if (!property.IsRepeated()) {
     exception_state.ThrowTypeError("Property does not support multiple values");
     return;
@@ -428,8 +470,6 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
     current_value = CssValueListForPropertyID(property_id);
   }
 
-  // TODO(andruud): Don't pass g_null_atom as custom property name and
-  // nullptr registration once appending to custom properties is supported.
   const CSSValue* result = CoerceStyleValuesOrStrings(
       property, g_null_atom, nullptr, values, *execution_context);
   if (!result || !result->IsValueList()) {
