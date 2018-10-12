@@ -15,7 +15,9 @@
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "components/sync/driver/fake_sync_client.h"
@@ -47,7 +49,15 @@ class CWVSyncControllerTest : public PlatformTest {
   CWVSyncControllerTest()
       : browser_state_(/*off_the_record=*/false),
         signin_client_(browser_state_.GetPrefs()),
-        token_service_(browser_state_.GetPrefs()),
+        sigin_error_controller_(
+            SigninErrorController::AccountMode::ANY_ACCOUNT),
+        token_service_(
+            browser_state_.GetPrefs(),
+            std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
+                &signin_client_,
+                std::make_unique<FakeProfileOAuth2TokenServiceIOSProvider>(),
+                &account_tracker_service_,
+                &sigin_error_controller_)),
         gaia_cookie_manager_service_(&token_service_,
                                      "cookie-source",
                                      &signin_client_),
@@ -99,6 +109,9 @@ class CWVSyncControllerTest : public PlatformTest {
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> profile_sync_service_;
   AccountTrackerService account_tracker_service_;
   TestSigninClient signin_client_;
+  SigninErrorController sigin_error_controller_;
+  //  FakeProfileOAuth2TokenServiceIOSProvider token_service_provider_;
+  //  ProfileOAuth2TokenServiceIOSDelegate token_service_delegate_;
   FakeProfileOAuth2TokenService token_service_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   FakeSigninManager signin_manager_;
