@@ -28,9 +28,6 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(ClickElement,
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback));
-  MOCK_METHOD2(ElementExists,
-               void(const std::vector<std::string>& selectors,
-                    base::OnceCallback<void(bool)> callback));
 
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override {

@@ -71,9 +71,9 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     base::RunLoop run_loop;
     web_controller_->ElementExists(
         selectors,
-        base::BindOnce(
-            &WebControllerBrowserTest::OnWaitForElementRemove,
-            base::Unretained(this), run_loop.QuitClosure(), selectors));
+        base::BindOnce(&WebControllerBrowserTest::OnWaitForElementRemove,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       selectors));
     run_loop.Run();
   }
 
@@ -167,6 +167,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     base::RunLoop run_loop;
     web_controller_->FindElement(
         selectors,
+        /* strict_mode= */ true,
         base::BindOnce(&WebControllerBrowserTest::OnFindElement,
                        base::Unretained(this), run_loop.QuitClosure(),
                        expected_index, is_main_frame));

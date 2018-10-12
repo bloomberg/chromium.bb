@@ -67,7 +67,8 @@ class WebController {
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
-  // Check whether the element given by |selectors| exists on the web page.
+  // Check whether at least one element given by |selectors| exists on the web
+  // page.
   virtual void ElementExists(const std::vector<std::string>& selectors,
                              base::OnceCallback<void(bool)> callback);
 
@@ -169,18 +170,26 @@ class WebController {
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnFindElementForExist(base::OnceCallback<void(bool)> callback,
                              std::unique_ptr<FindElementResult> result);
+
+  // Find the element given by |selectors|. If multiple elements match
+  // |selectors| and if |strict_mode| is false, return the first one that is
+  // found. Otherwise if |strict-mode| is true, do not return any.
   void FindElement(const std::vector<std::string>& selectors,
+                   bool strict_mode,
                    FindElementCallback callback);
   void OnGetDocument(const std::vector<std::string>& selectors,
+                     bool strict_mode,
                      FindElementCallback callback,
                      std::unique_ptr<dom::GetDocumentResult> result);
   void RecursiveFindElement(int node_id,
                             size_t index,
                             const std::vector<std::string>& selectors,
+                            bool strict_mode,
                             std::unique_ptr<FindElementResult> element_result,
                             FindElementCallback callback);
   void OnQuerySelectorAll(size_t index,
                           const std::vector<std::string>& selectors,
+                          bool strict_mode,
                           std::unique_ptr<FindElementResult> element_result,
                           FindElementCallback callback,
                           std::unique_ptr<dom::QuerySelectorAllResult> result);
@@ -190,6 +199,7 @@ class WebController {
   void OnDescribeNode(int node_id,
                       size_t index,
                       const std::vector<std::string>& selectors,
+                      bool strict_mode,
                       std::unique_ptr<FindElementResult> element_result,
                       FindElementCallback callback,
                       std::unique_ptr<dom::DescribeNodeResult> result);
@@ -199,6 +209,7 @@ class WebController {
   void OnPushNodesByBackendIds(
       size_t index,
       const std::vector<std::string>& selectors,
+      bool strict_mode,
       std::unique_ptr<FindElementResult> element_result,
       FindElementCallback callback,
       std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
