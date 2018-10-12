@@ -128,6 +128,9 @@ Polymer({
    * @private
    */
   onDestinationSelected_: function(e) {
+    if (e.composedPath()[0].tagName === 'A')
+      return;
+
     this.fire('destination-selected', e.target);
   },
 });

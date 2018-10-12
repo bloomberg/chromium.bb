@@ -317,9 +317,7 @@ js_library("destination_list") {
 js_library("destination_list_item") {
   deps = [
     ":highlight_utils",
-    "..:native_layer",
     "../data:destination",
-    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
