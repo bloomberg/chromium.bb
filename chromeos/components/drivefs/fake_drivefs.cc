@@ -256,8 +256,6 @@ void FakeDriveFs::RegisterMountingForAccountId(
 std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
 FakeDriveFs::CreateConnectionDelegate() {
   drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap;
-  if (bootstrap_binding_.is_bound())
-    bootstrap_binding_.Unbind();
   bootstrap_binding_.Bind(mojo::MakeRequest(&bootstrap));
   pending_delegate_request_ = mojo::MakeRequest(&delegate_);
   delegate_->OnMounted();
@@ -289,8 +287,6 @@ void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
                        drivefs::mojom::DriveFsDelegatePtr delegate) {
   mojo::FuseInterface(std::move(pending_delegate_request_),
                       delegate.PassInterface());
-  if (binding_.is_bound())
-    binding_.Unbind();
   binding_.Bind(std::move(drive_fs_request));
 }
 
