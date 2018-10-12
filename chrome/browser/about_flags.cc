@@ -82,6 +82,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
+#include "components/safe_browsing/features.h"
 #include "components/search_provider_logos/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
@@ -4453,6 +4454,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ephemeral-tab", flag_descriptions::kEphemeralTabName,
      flag_descriptions::kEphemeralTabDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kEphemeralTab)},
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"safe-browsing-use-local-blacklists-v2",
+     flag_descriptions::kSafeBrowsingUseLocalBlacklistsV2Name,
+     flag_descriptions::kSafeBrowsingUseLocalBlacklistsV2Description,
+     kOsAndroid, FEATURE_VALUE_TYPE(safe_browsing::kUseLocalBlacklistsV2)},
 #endif  // defined(OS_ANDROID)
 
 };
