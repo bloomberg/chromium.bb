@@ -181,8 +181,9 @@ class AboutSigninInternals
                                   const OAuth2TokenService::ScopeSet& scopes,
                                   GoogleServiceAuthError error,
                                   base::Time expiration_time) override;
-  void OnTokenRemoved(const std::string& account_id,
-                      const OAuth2TokenService::ScopeSet& scopes) override;
+  void OnAccessTokenRemoved(
+      const std::string& account_id,
+      const OAuth2TokenService::ScopeSet& scopes) override;
 
   // OAuth2TokenServiceDelegate::Observer implementations.
   void OnRefreshTokensLoaded() override;

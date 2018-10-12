@@ -142,8 +142,9 @@ class OAuth2TokenService {
                                             const ScopeSet& scopes,
                                             GoogleServiceAuthError error,
                                             base::Time expiration_time) {}
-    virtual void OnTokenRemoved(const std::string& account_id,
-                                const ScopeSet& scopes) {}
+    // Called when an access token was removed.
+    virtual void OnAccessTokenRemoved(const std::string& account_id,
+                                      const ScopeSet& scopes) {}
   };
 
   explicit OAuth2TokenService(
