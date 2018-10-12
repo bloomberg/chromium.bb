@@ -31,6 +31,8 @@ class DiscoverManager {
   // Returns vector of WebUI message handlers for visible modules.
   std::vector<std::unique_ptr<DiscoverHandler>> CreateWebUIHandlers() const;
 
+  DiscoverModule* GetModule(const std::string& module_name) const;
+
   const ModulesMap& get_modules() const { return modules_; }
 
  private:
