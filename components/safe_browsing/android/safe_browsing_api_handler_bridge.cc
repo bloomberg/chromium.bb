@@ -82,6 +82,14 @@ ScopedJavaLocalRef<jintArray> SBThreatTypeSetToJavaArray(
 
 }  // namespace
 
+// Java->Native call, to check whether the feature to use local blacklists is
+// enabled.
+jboolean JNI_SafeBrowsingApiBridge_AreLocalBlacklistsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&) {
+  return base::FeatureList::IsEnabled(kUseLocalBlacklistsV2);
+}
+
 // Java->Native call, invoked when a check is done.
 //   |callback_id| is an int form of pointer to a URLCheckCallbackMeta
 //                 that will be called and then deleted here.
