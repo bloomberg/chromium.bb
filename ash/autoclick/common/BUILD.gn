@@ -6,9 +6,6 @@ import("//build/config/ui.gni")
 
 source_set("autoclick") {
   sources = [
-    "autoclick_controller_common.cc",
-    "autoclick_controller_common.h",
-    "autoclick_controller_common_delegate.h",
     "autoclick_ring_handler.cc",
     "autoclick_ring_handler.h",
   ]
