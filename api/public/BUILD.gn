@@ -9,7 +9,6 @@ source_set("api") {
     "network_metrics.h",
     "network_service_manager.cc",
     "network_service_manager.h",
-    "presentation/presentation_common.cc",
     "presentation/presentation_common.h",
     "presentation/presentation_controller.h",
     "presentation/presentation_receiver.h",
