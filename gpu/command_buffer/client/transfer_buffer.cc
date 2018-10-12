@@ -63,6 +63,7 @@ void TransferBuffer::Free() {
     buffer_ = nullptr;
     result_buffer_ = nullptr;
     result_shm_offset_ = 0;
+    DCHECK_EQ(ring_buffer_->NumUsedBlocks(), 0u);
     previous_ring_buffers_.push_back(std::move(ring_buffer_));
     last_allocated_size_ = 0;
     high_water_mark_ = GetPreviousRingBufferUsedBytes();
@@ -167,6 +168,11 @@ unsigned int TransferBuffer::GetPreviousRingBufferUsedBytes() {
 
 void TransferBuffer::ShrinkOrExpandRingBufferIfNecessary(
     unsigned int size_to_allocate) {
+  // Don't resize the buffer while blocks are in use to avoid throwing away
+  // live allocations.
+  if (HaveBuffer() && ring_buffer_->NumUsedBlocks() > 0)
+    return;
+
   unsigned int available_size = GetFreeSize();
   high_water_mark_ =
       std::max(high_water_mark_, last_allocated_size_ - available_size +
