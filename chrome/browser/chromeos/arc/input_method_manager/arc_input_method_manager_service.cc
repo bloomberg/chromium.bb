@@ -120,9 +120,10 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
       const std::string& engine_id,
       const input_method::InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {
-    if (event.key == "HistoryBack") {
+    if (event.key_code == ui::VKEY_BROWSER_BACK &&
+        owner_->IsVirtualKeyboardShown()) {
       // Back button on the shelf is pressed.
-      owner_->imm_bridge_->SendHideVirtualKeyboard();
+      owner_->SendHideVirtualKeyboard();
       std::move(key_data).Run(true);
       return;
     }
@@ -185,7 +186,7 @@ class ArcInputMethodManagerService::InputMethodObserver
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
   void OnShowVirtualKeyboardIfEnabled() override {
-    owner_->imm_bridge_->SendShowVirtualKeyboard();
+    owner_->SendShowVirtualKeyboard();
   }
 
  private:
@@ -234,6 +235,7 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
       imm_bridge_(
           std::make_unique<ArcInputMethodManagerBridgeImpl>(this,
                                                             bridge_service)),
+      is_virtual_keyboard_shown_(false),
       proxy_ime_extension_id_(
           crx_file::id_util::GenerateId(kArcIMEProxyExtensionName)),
       proxy_ime_engine_(std::make_unique<chromeos::InputMethodEngine>()),
@@ -472,6 +474,7 @@ void ArcInputMethodManagerService::Focus(int context_id) {
 
 void ArcInputMethodManagerService::Blur() {
   active_connection_.reset();
+  is_virtual_keyboard_shown_ = false;
 }
 
 void ArcInputMethodManagerService::UpdateTextInputState() {
@@ -633,6 +636,22 @@ void ArcInputMethodManagerService::OnArcImeDeactivated() {
       ui::IMEBridge::Get()->GetInputContextHandler()->GetInputMethod();
   if (input_method)
     input_method->RemoveObserver(input_method_observer_.get());
+}
+
+bool ArcInputMethodManagerService::IsVirtualKeyboardShown() const {
+  return is_virtual_keyboard_shown_;
+}
+
+void ArcInputMethodManagerService::SendShowVirtualKeyboard() {
+  imm_bridge_->SendShowVirtualKeyboard();
+  // TODO(yhanada): Should observe IME window size changes.
+  is_virtual_keyboard_shown_ = true;
+}
+
+void ArcInputMethodManagerService::SendHideVirtualKeyboard() {
+  imm_bridge_->SendHideVirtualKeyboard();
+  // TODO(yhanada): Should observe IME window size changes.
+  is_virtual_keyboard_shown_ = false;
 }
 
 }  // namespace arc
