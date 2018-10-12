@@ -551,6 +551,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
   short_lived_user_context_.reset();
+  pref_manager_.reset();
 
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
