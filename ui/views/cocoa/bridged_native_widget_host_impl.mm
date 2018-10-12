@@ -550,7 +550,7 @@ bool BridgedNativeWidgetHostImpl::GetHasMenuController(
   return true;
 }
 
-void BridgedNativeWidgetHostImpl::SetViewSize(const gfx::Size& new_size) {
+void BridgedNativeWidgetHostImpl::OnViewSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
 }
 
@@ -561,11 +561,17 @@ void BridgedNativeWidgetHostImpl::SetKeyboardAccessible(bool enabled) {
     focus_manager->SetKeyboardAccessible(enabled);
 }
 
-void BridgedNativeWidgetHostImpl::SetIsFirstResponder(bool is_first_responder) {
-  if (is_first_responder)
+void BridgedNativeWidgetHostImpl::OnIsFirstResponderChanged(
+    bool is_first_responder) {
+  if (is_first_responder) {
     root_view_->GetWidget()->GetFocusManager()->RestoreFocusedView();
-  else
-    root_view_->GetWidget()->GetFocusManager()->StoreFocusedView(true);
+  } else {
+    // Do not call ClearNativeFocus because that will re-make the
+    // BridgedNativeWidget first responder (and this is called to indicate that
+    // it is no longer first responder).
+    root_view_->GetWidget()->GetFocusManager()->StoreFocusedView(
+        false /* clear_native_focus */);
+  }
 }
 
 void BridgedNativeWidgetHostImpl::OnMouseCaptureActiveChanged(bool is_active) {
