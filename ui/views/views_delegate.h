@@ -126,6 +126,7 @@ class VIEWS_EXPORT ViewsDelegate {
                                        gfx::Rect* bounds,
                                        ui::WindowShowState* show_state) const;
 
+  // Handles an event on a |view|. The |view| must not be null.
   virtual void NotifyAccessibilityEvent(View* view,
                                         ax::mojom::Event event_type);
 

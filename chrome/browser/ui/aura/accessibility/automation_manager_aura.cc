@@ -71,13 +71,10 @@ void AutomationManagerAura::Disable() {
 
 void AutomationManagerAura::HandleEvent(views::View* view,
                                         ax::mojom::Event event_type) {
+  CHECK(view);
+
   if (!enabled_)
     return;
-
-  if (!view) {
-    SendEvent(current_tree_->GetRoot(), event_type);
-    return;
-  }
 
   views::AXAuraObjWrapper* obj =
       views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
