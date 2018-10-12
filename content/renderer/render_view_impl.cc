@@ -1110,7 +1110,7 @@ void RenderViewImpl::DidCloseWidget() {
 
 void RenderViewImpl::ApplyNewSizeForWidget(const gfx::Size& old_size,
                                            const gfx::Size& new_size) {
-  if (webview() && new_size != old_size) {
+  if (new_size != old_size) {
     // Only hide popups when the size changes. There are situations (e.g. hiding
     // the ChromeOS virtual keyboard) where we send a resize message with no
     // change in size, but we don't want to close popups.
@@ -1121,8 +1121,7 @@ void RenderViewImpl::ApplyNewSizeForWidget(const gfx::Size& old_size,
 
 void RenderViewImpl::ApplyNewDisplayModeForWidget(
     const blink::WebDisplayMode& new_display_mode) {
-  if (webview())
-    webview()->SetDisplayMode(new_display_mode);
+  webview()->SetDisplayMode(new_display_mode);
 }
 
 void RenderViewImpl::ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
@@ -1187,12 +1186,10 @@ void RenderViewImpl::RequestScheduleAnimationForWidget() {
 void RenderViewImpl::SetScreenMetricsEmulationParametersForWidget(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {
-  if (webview() && GetWidget()->layer_tree_view()) {
-    if (enabled)
-      webview()->EnableDeviceEmulation(params);
-    else
-      webview()->DisableDeviceEmulation();
-  }
+  if (enabled)
+    webview()->EnableDeviceEmulation(params);
+  else
+    webview()->DisableDeviceEmulation();
 }
 
 // IPC message handlers -----------------------------------------

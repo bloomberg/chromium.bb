@@ -1594,7 +1594,14 @@ void RenderWidget::CloseWidgetSoon() {
 }
 
 void RenderWidget::Close() {
+  // If the browser has not sent OnDisableDeviceEmulation, we have an emulator
+  // hanging out still. Its destruction is normally part of an IPC and expects
+  // objects to be alive that would be alive while the IPC route is active such
+  // as the |layer_tree_view_|. So we ensure that it is the first thing to be
+  // destroyed here before deleting things from the RenderWidget or the
+  // |owner_delegate_|.
   screen_metrics_emulator_.reset();
+
   CloseWebWidget();
   layer_tree_view_.reset();
   if (owner_delegate_)
