@@ -2182,22 +2182,6 @@ config("afdo") {
 #   configs -= [ "//build/config/compiler:default_symbols" ]
 #   configs += [ "//build/config/compiler:symbols" ]
 
-# A helper config that all configs passing /DEBUG to the linker should
-# include as sub-config.
-config("win_pdbaltpath") {
-  visibility = [
-    ":symbols",
-    ":minimal_symbols",
-  ]
-
-  # /DEBUG causes the linker to generate a pdb file, and to write the absolute
-  # path to it in the executable file it generates.  This flag turns that
-  # absolute path into just the basename of the pdb file, which helps with
-  # build reproducibility. Debuggers look for pdb files next to executables,
-  # so there's no downside to always using this.
-  ldflags = [ "/pdbaltpath:%_PDB%" ]
-}
-
 # Full symbols.
 config("symbols") {
   if (is_win) {
@@ -2227,9 +2211,6 @@ config("symbols") {
     } else {
       ldflags = [ "/DEBUG" ]
     }
-
-    # All configs using /DEBUG should include this:
-    configs = [ ":win_pdbaltpath" ]
 
     if (is_clang) {
       # /DEBUG:FASTLINK requires every object file to have standalone debug
@@ -2305,9 +2286,6 @@ config("minimal_symbols") {
     # Linker symbols for backtraces only.
     cflags = []
     ldflags = [ "/DEBUG" ]
-
-    # All configs using /DEBUG should include this:
-    configs = [ ":win_pdbaltpath" ]
 
     # For win/asan, get stack traces with full line numbers.
     # AddressSanitizerTests.TestAddressSanitizer needs this, and since
