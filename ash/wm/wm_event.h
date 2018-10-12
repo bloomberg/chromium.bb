@@ -6,7 +6,9 @@
 #define ASH_WM_WM_EVENT_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/window_state.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -131,18 +133,23 @@ class ASH_EXPORT WMEvent {
 // An WMEvent to request new bounds for the window.
 class ASH_EXPORT SetBoundsEvent : public WMEvent {
  public:
-  SetBoundsEvent(WMEventType type,
-                 const gfx::Rect& requested_bounds,
-                 bool animate = false);
+  SetBoundsEvent(
+      WMEventType type,
+      const gfx::Rect& requested_bounds,
+      bool animate = false,
+      base::TimeDelta duration = WindowState::kBoundsChangeSlideDuration);
   ~SetBoundsEvent() override;
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
 
   bool animate() const { return animate_; }
 
+  base::TimeDelta duration() const { return duration_; }
+
  private:
   gfx::Rect requested_bounds_;
   bool animate_;
+  base::TimeDelta duration_;
 
   DISALLOW_COPY_AND_ASSIGN(SetBoundsEvent);
 };
