@@ -74,7 +74,8 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL) {
+      state_(PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL),
+      pending_state_(PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
   SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
@@ -296,6 +297,17 @@ bool WaylandWindow::HasCapture() const {
 void WaylandWindow::ToggleFullscreen() {
   DCHECK(xdg_surface_);
 
+  // There are some cases, when Chromium triggers a fullscreen state change
+  // before the surface is activated. In such cases, Wayland may ignore state
+  // changes and such flags as --kiosk or --start-fullscreen will be ignored.
+  // To overcome this, set a pending state, and once the surface is activated,
+  // trigger the change.
+  if (!is_active_) {
+    DCHECK(!IsFullscreen());
+    pending_state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+    return;
+  }
+
   // TODO(msisov, tonikitoo): add multiscreen support. As the documentation says
   // if xdg_surface_set_fullscreen() is not provided with wl_output, it's up to
   // the compositor to choose which display will be used to map this surface.
@@ -468,7 +480,7 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
 
   // Ensure that manually handled state changes to fullscreen correspond to the
   // configuration events from a compositor.
-  DCHECK(is_fullscreen == IsFullscreen());
+  DCHECK_EQ(is_fullscreen, IsFullscreen());
 
   // There are two cases, which must be handled for the minimized state.
   // The first one is the case, when the surface goes into the minimized state
@@ -525,6 +537,8 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
 
   if (did_active_change)
     delegate_->OnActivationChanged(is_active_);
+
+  MaybeTriggerPendingStateChange();
 }
 
 void WaylandWindow::OnCloseRequest() {
@@ -569,6 +583,16 @@ bool WaylandWindow::IsMaximized() const {
 
 bool WaylandWindow::IsFullscreen() const {
   return state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+}
+
+void WaylandWindow::MaybeTriggerPendingStateChange() {
+  if (pending_state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN ||
+      !is_active_)
+    return;
+  DCHECK_EQ(pending_state_,
+            PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN);
+  pending_state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+  ToggleFullscreen();
 }
 
 WaylandWindow* WaylandWindow::GetParentWindow(
