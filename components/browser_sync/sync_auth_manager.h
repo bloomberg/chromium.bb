@@ -180,7 +180,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Info about the state of our access token, for display in the internals UI.
   // "Partial" because this instance is not fully populated - in particular,
-  // |next_token_request_time| gets computed on demand.
+  // |have_token| and |next_token_request_time| get computed on demand.
   syncer::SyncTokenStatus partial_token_status_;
 
   base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;

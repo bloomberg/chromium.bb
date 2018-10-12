@@ -323,12 +323,14 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   Section* section_identity = section_list.AddSection(kIdentityTitle);
   section_identity->MarkSensitive();
-  Stat<std::string>* sync_id =
+  Stat<std::string>* sync_client_id =
       section_identity->AddStringStat("Sync Client ID");
   Stat<std::string>* invalidator_id =
       section_identity->AddStringStat("Invalidator Client ID");
   Stat<std::string>* username = section_identity->AddStringStat("Username");
   Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
+  Stat<std::string>* auth_error = section_identity->AddStringStat("Auth Error");
+  // TODO(treib): Add the *time* of the auth error?
 
   Section* section_credentials = section_list.AddSection("Credentials");
   Stat<std::string>* request_token_time =
@@ -337,6 +339,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_credentials->AddStringStat("Received Token");
   Stat<std::string>* last_token_request_result =
       section_credentials->AddStringStat("Last Token Request Result");
+  Stat<bool>* has_token = section_credentials->AddBoolStat("Has Token");
   Stat<std::string>* next_token_request =
       section_credentials->AddStringStat("Next Token Request");
 
@@ -460,17 +463,20 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   // Identity.
   if (is_status_valid && !full_status.sync_id.empty())
-    sync_id->Set(full_status.sync_id);
+    sync_client_id->Set(full_status.sync_id);
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id->Set(full_status.invalidator_client_id);
   username->Set(service->GetAuthenticatedAccountInfo().email);
   user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
+  std::string auth_error_str = service->GetAuthError().ToString();
+  auth_error->Set(auth_error_str.empty() ? "None" : auth_error_str);
 
   // Credentials.
   request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
   receive_token_time->Set(GetTimeStr(token_status.token_receive_time, "n/a"));
   std::string err = token_status.last_get_token_error.error_message();
   last_token_request_result->Set(err.empty() ? "OK" : err);
+  has_token->Set(token_status.has_token);
   next_token_request->Set(
       GetTimeStr(token_status.next_token_request_time, "not scheduled"));
 
