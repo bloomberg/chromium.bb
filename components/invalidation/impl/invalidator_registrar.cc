@@ -134,7 +134,7 @@ InvalidatorRegistrar::GetSanitizedHandlersIdsMap() {
   return clean_handlers_to_topics;
 }
 
-bool InvalidatorRegistrar::IsHandlerRegistered(
+bool InvalidatorRegistrar::IsHandlerRegisteredForTest(
     const InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return handlers_.HasObserver(handler);

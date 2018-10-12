@@ -9,7 +9,7 @@
 #include "base/timer/timer.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/invalidation/impl/invalidation_logger.h"
-#include "components/invalidation/impl/invalidator_registrar_with_memory.h"
+#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -93,9 +93,7 @@ class FCMInvalidationService : public InvalidationService,
   void OnInstanceIdRecieved(const std::string& id);
   void OnDeleteIDCompleted(instance_id::InstanceID::Result);
 
-  void DoUpdateRegisteredIdsIfNeeded();
-
-  syncer::InvalidatorRegistrarWithMemory invalidator_registrar_;
+  syncer::InvalidatorRegistrar invalidator_registrar_;
   std::unique_ptr<syncer::Invalidator> invalidator_;
 
   // The invalidation logger object we use to record state changes
@@ -110,7 +108,6 @@ class FCMInvalidationService : public InvalidationService,
   PrefService* pref_service_;
   syncer::ParseJSONCallback parse_json_;
   network::mojom::URLLoaderFactory* loader_factory_;
-  bool update_was_requested_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

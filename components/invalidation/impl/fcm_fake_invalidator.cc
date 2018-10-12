@@ -16,7 +16,7 @@ FCMFakeInvalidator::~FCMFakeInvalidator() {}
 
 bool FCMFakeInvalidator::IsHandlerRegistered(
     InvalidationHandler* handler) const {
-  return registrar_.IsHandlerRegistered(handler);
+  return registrar_.IsHandlerRegisteredForTest(handler);
 }
 
 ObjectIdSet FCMFakeInvalidator::GetRegisteredIds(

@@ -29,14 +29,12 @@ FCMInvalidationService::FCMInvalidationService(
     PrefService* pref_service,
     const syncer::ParseJSONCallback& parse_json,
     network::mojom::URLLoaderFactory* loader_factory)
-    : invalidator_registrar_(pref_service),
-      gcm_driver_(gcm_driver),
+    : gcm_driver_(gcm_driver),
       instance_id_driver_(instance_id_driver),
       identity_provider_(identity_provider),
       pref_service_(pref_service),
       parse_json_(parse_json),
-      loader_factory_(loader_factory),
-      update_was_requested_(false) {}
+      loader_factory_(loader_factory) {}
 
 FCMInvalidationService::~FCMInvalidationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -63,7 +61,8 @@ void FCMInvalidationService::InitForTest(syncer::Invalidator* invalidator) {
   invalidator_.reset(invalidator);
 
   invalidator_->RegisterHandler(this);
-  DoUpdateRegisteredIdsIfNeeded();
+  CHECK(invalidator_->UpdateRegisteredIds(
+      this, invalidator_registrar_.GetAllRegisteredIds()));
 }
 
 void FCMInvalidationService::RegisterInvalidationHandler(
@@ -78,12 +77,14 @@ bool FCMInvalidationService::UpdateRegisteredInvalidationIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  update_was_requested_ = true;
   DVLOG(2) << "Registering ids: " << ids.size();
   syncer::TopicSet topics = ConvertIdsToTopics(ids);
   if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
-  DoUpdateRegisteredIdsIfNeeded();
+  if (invalidator_) {
+    CHECK(invalidator_->UpdateRegisteredIds(
+        this, invalidator_registrar_.GetAllRegisteredIds()));
+  }
   logger_.OnUpdateTopics(invalidator_registrar_.GetSanitizedHandlersIdsMap());
   return true;
 }
@@ -93,6 +94,10 @@ void FCMInvalidationService::UnregisterInvalidationHandler(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Unregistering";
   invalidator_registrar_.UnregisterHandler(handler);
+  if (invalidator_) {
+    CHECK(invalidator_->UpdateRegisteredIds(
+        this, invalidator_registrar_.GetAllRegisteredIds()));
+  }
   logger_.OnUnregistration(handler->GetOwnerName());
 }
 
@@ -185,8 +190,10 @@ void FCMInvalidationService::StartInvalidator() {
   invalidator_ = std::make_unique<syncer::FCMInvalidator>(
       std::move(network), identity_provider_, pref_service_, loader_factory_,
       parse_json_);
+
   invalidator_->RegisterHandler(this);
-  DoUpdateRegisteredIdsIfNeeded();
+  CHECK(invalidator_->UpdateRegisteredIds(
+      this, invalidator_registrar_.GetAllRegisteredIds()));
 }
 
 void FCMInvalidationService::StopInvalidator() {
@@ -224,14 +231,6 @@ void FCMInvalidationService::OnInstanceIdRecieved(const std::string& id) {
 void FCMInvalidationService::OnDeleteIDCompleted(
     instance_id::InstanceID::Result) {
   // TODO(meandory): report metric in case of unsucesfull deletion.
-}
-
-void FCMInvalidationService::DoUpdateRegisteredIdsIfNeeded() {
-  if (!invalidator_ || !update_was_requested_)
-    return;
-  auto registered_ids = invalidator_registrar_.GetAllRegisteredIds();
-  CHECK(invalidator_->UpdateRegisteredIds(this, registered_ids));
-  update_was_requested_ = false;
 }
 
 }  // namespace invalidation
