@@ -2290,9 +2290,8 @@ TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
 
   EXPECT_EQ(2u, composited_element_ids.size());
   EXPECT_TRUE(
-      composited_element_ids.Contains(transform->GetCompositorElementId()));
-  EXPECT_TRUE(
-      composited_element_ids.Contains(effect->GetCompositorElementId()));
+      composited_element_ids.count(transform->GetCompositorElementId()));
+  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
 }
 
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {

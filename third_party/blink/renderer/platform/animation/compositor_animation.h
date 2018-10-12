@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace cc {
 class AnimationCurve;

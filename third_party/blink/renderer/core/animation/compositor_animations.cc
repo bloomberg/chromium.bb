@@ -262,7 +262,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
                 target_element.GetLayoutObject()->UniqueId(),
                 property_namespace);
         DCHECK(target_element_id);
-        if (!composited_element_ids->Contains(target_element_id)) {
+        if (!composited_element_ids->count(target_element_id)) {
           return FailureCode::NonActionable(
               "Target element does not have its own compositing layer");
         }

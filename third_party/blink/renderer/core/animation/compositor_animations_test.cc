@@ -821,7 +821,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   CompositorElementId different_id = CompositorElementIdFromUniqueObjectId(
       layout_object->UniqueId(), CompositorElementIdNamespace::kEffectClipPath);
   // Check that we got something effectively different.
-  EXPECT_FALSE(compositor_ids.Contains(different_id));
+  EXPECT_FALSE(compositor_ids.count(different_id));
   CompositorElementIdSet disjoint_ids;
   compositor_ids.insert(different_id);
 
@@ -998,7 +998,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   CompositorElementId different_id = CompositorElementIdFromUniqueObjectId(
       layout_object->UniqueId(), CompositorElementIdNamespace::kPrimary);
   // Check that we got something effectively different.
-  EXPECT_FALSE(compositor_ids.Contains(different_id));
+  EXPECT_FALSE(compositor_ids.count(different_id));
   CompositorElementIdSet disjoint_ids;
   compositor_ids.insert(different_id);
 
@@ -1061,7 +1061,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   CompositorElementId different_id = CompositorElementIdFromUniqueObjectId(
       layout_object->UniqueId(), CompositorElementIdNamespace::kEffectFilter);
   // Check that we got something effectively different.
-  EXPECT_FALSE(compositor_ids.Contains(different_id));
+  EXPECT_FALSE(compositor_ids.count(different_id));
   CompositorElementIdSet disjoint_ids;
   compositor_ids.insert(different_id);
 
