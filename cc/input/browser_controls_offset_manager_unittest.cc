@@ -167,7 +167,12 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -199,7 +204,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->BottomControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -229,7 +239,12 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -256,7 +271,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->BottomControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -283,7 +303,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -310,7 +335,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -341,7 +371,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -372,7 +407,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -435,7 +475,12 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   EXPECT_TRUE(manager->has_animation());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  float previous;
+
+  // First animate will establish the animaion.
+  float previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
@@ -456,6 +501,12 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   EXPECT_TRUE(manager->has_animation());
 
   time = base::TimeTicks::Now();
+
+  // First animate will establish the animaion.
+  previous = manager->TopControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->TopControlsShownRatio(), previous);
+
   while (manager->has_animation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;

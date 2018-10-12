@@ -11,6 +11,7 @@
 #include "content/test/stub_layer_tree_view_delegate.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 
 namespace blink {
 
@@ -75,8 +76,11 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
     return layer_tree_view_->layer_tree_host()->background_color();
   }
 
+  base::TimeTicks LastFrameTime() const { return last_frame_time_; }
+
  private:
   // content::LayerTreeViewDelegate implementation.
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
