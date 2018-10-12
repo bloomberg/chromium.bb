@@ -364,7 +364,7 @@ void AboutSigninInternals::OnEndBatchChanges() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnTokenRemoved(
+void AboutSigninInternals::OnAccessTokenRemoved(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
   for (const std::unique_ptr<TokenInfo>& token :

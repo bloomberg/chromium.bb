@@ -676,8 +676,8 @@ bool OAuth2TokenService::RemoveCachedTokenResponse(
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
     for (auto& observer : diagnostics_observer_list_) {
-      observer.OnTokenRemoved(request_parameters.account_id,
-                              request_parameters.scopes);
+      observer.OnAccessTokenRemoved(request_parameters.account_id,
+                                    request_parameters.scopes);
     }
     token_cache_.erase(token_iterator);
     return true;
@@ -704,7 +704,7 @@ void OAuth2TokenService::ClearCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& entry : token_cache_) {
     for (auto& observer : diagnostics_observer_list_)
-      observer.OnTokenRemoved(entry.first.account_id, entry.first.scopes);
+      observer.OnAccessTokenRemoved(entry.first.account_id, entry.first.scopes);
   }
 
   token_cache_.clear();
@@ -717,7 +717,7 @@ void OAuth2TokenService::ClearCacheForAccount(const std::string& account_id) {
        /* iter incremented in body */) {
     if (iter->first.account_id == account_id) {
       for (auto& observer : diagnostics_observer_list_)
-        observer.OnTokenRemoved(account_id, iter->first.scopes);
+        observer.OnAccessTokenRemoved(account_id, iter->first.scopes);
       token_cache_.erase(iter++);
     } else {
       ++iter;
