@@ -402,6 +402,7 @@ test("ios_web_view_unittests") {
     "//components/browser_sync:test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
+    "//components/signin/ios/browser:test_support",
     "//components/sync:test_support_driver",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

@@ -219,7 +219,7 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
     ProfileOAuth2TokenServiceIOSDelegate* tokenDelegate =
         static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
             _tokenService->GetDelegate());
-    tokenDelegate->LoadCredentials(authenticatedID);
+    tokenDelegate->ReloadCredentials(authenticatedID);
   }
 }
 
