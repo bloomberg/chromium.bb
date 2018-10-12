@@ -734,18 +734,6 @@
       ]
     },
     {
-      "name": "kalista",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "kefka",
       "configs": [
         {
@@ -1940,6 +1928,21 @@
         {
           "board_name": "grunt",
           "name": "liara",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "kalista",
+      "reference_board_name": "kalista",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "kalista",
+          "name": "karma",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
