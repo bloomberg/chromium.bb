@@ -595,9 +595,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.navigation_.disabled = value;
 
       if (value)
-        $('navigation-buttons').setAttribute('disabled', null);
+        $('gaia-screen-buttons-overlay').removeAttribute('hidden');
       else
-        $('navigation-buttons').removeAttribute('disabled');
+        $('gaia-screen-buttons-overlay').setAttribute('hidden', null);
 
       if ($('signin-back-button'))
         $('signin-back-button').disabled = value;
