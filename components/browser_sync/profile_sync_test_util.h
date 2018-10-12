@@ -22,7 +22,7 @@
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/model/test_model_type_store_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace history {
@@ -131,7 +131,13 @@ class ProfileSyncServiceBundle {
 
   FakeSigninManagerType* signin_manager() { return &signin_manager_; }
 
-  identity::IdentityManager* identity_manager() { return &identity_manager_; }
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return &identity_test_env_;
+  }
+
+  identity::IdentityManager* identity_manager() {
+    return identity_test_env_.identity_manager();
+  }
 
   AccountTrackerService* account_tracker() { return &account_tracker_; }
 
@@ -163,7 +169,7 @@ class ProfileSyncServiceBundle {
   FakeSigninManagerType signin_manager_;
   FakeProfileOAuth2TokenService auth_service_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
-  identity::IdentityManager identity_manager_;
+  identity::IdentityTestEnvironment identity_test_env_;
   testing::NiceMock<syncer::SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
   invalidation::FakeInvalidationService fake_invalidation_service_;

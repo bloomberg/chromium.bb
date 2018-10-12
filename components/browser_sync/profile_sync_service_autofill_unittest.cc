@@ -426,11 +426,9 @@ class ProfileSyncServiceAutofillTest
   }
 
   void StartAutofillProfileSyncService(base::OnceClosure callback) {
-    identity::MakePrimaryAccountAvailable(
-        profile_sync_service_bundle()->signin_manager(),
-        profile_sync_service_bundle()->auth_service(),
-        profile_sync_service_bundle()->identity_manager(),
-        "test_user@gmail.com");
+    profile_sync_service_bundle()
+        ->identity_test_env()
+        ->MakePrimaryAccountAvailable("test_user@gmail.com");
     CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),

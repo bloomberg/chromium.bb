@@ -134,6 +134,7 @@ static_library("test_support") {
     "//google_apis",
     "//net:test_support",
     "//services/identity/public/cpp",
+    "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//testing/gmock",
