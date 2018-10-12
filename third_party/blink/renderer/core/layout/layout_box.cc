@@ -3765,21 +3765,6 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
         }
       }
 
-      if (cb->IsOutOfFlowPositioned() && cb->StyleRef().Height().IsAuto() &&
-          !(cb->StyleRef().Top().IsAuto() ||
-            cb->StyleRef().Bottom().IsAuto())) {
-        SECURITY_DCHECK(cb->IsLayoutBlock());
-        LayoutBlock* block = ToLayoutBlock(cb);
-        LogicalExtentComputedValues computed_values;
-        block->ComputeLogicalHeight(block->LogicalHeight(), LayoutUnit(),
-                                    computed_values);
-        LayoutUnit new_content_height = computed_values.extent_ -
-                                        block->BorderAndPaddingLogicalHeight() -
-                                        block->ScrollbarLogicalHeight();
-        return AdjustContentBoxLogicalHeightForBoxSizing(
-            ValueForLength(logical_height, new_content_height));
-      }
-
       LayoutUnit available_height;
       if (IsOutOfFlowPositioned()) {
         available_height = ContainingBlockLogicalHeightForPositioned(
