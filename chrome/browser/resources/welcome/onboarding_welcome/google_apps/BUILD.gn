@@ -23,5 +23,8 @@ js_library("nux_google_apps") {
 }
 
 js_library("nux_google_apps_proxy") {
-  deps = []
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
 }
