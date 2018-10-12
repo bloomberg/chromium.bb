@@ -194,8 +194,6 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
 
   ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
   void SetUpOnMainThread() override {
-    g_browser_process->subresource_filter_ruleset_service()
-        ->SetIsAfterStartupForTesting();
     host_resolver()->AddRule("*", "127.0.0.1");
     SetRulesetWithRules(
         {subresource_filter::testing::CreateSuffixRule("ad_script.js"),

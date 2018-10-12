@@ -206,11 +206,9 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Get the ruleset version associated with the current local_state_.
   IndexedRulesetVersion GetMostRecentlyIndexedVersion() const;
 
-  // Publishes the most recently indexed version of the ruleset if one is
-  // available according to prefs.
-  void Initialize();
-
-  void set_is_after_startup_for_testing() { is_after_startup_ = true; }
+  // Starts initialization of the RulesetService, performing tasks that won't
+  // slow down Chrome startup, then queues the FinishInitialization task.
+  void StartInitialization();
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
@@ -258,8 +256,10 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   static decltype(&IndexRuleset) g_index_ruleset_func;
   static decltype(&base::ReplaceFile) g_replace_file_func;
 
-  // Performs indexing of the queued unindexed ruleset (if any) after start-up.
-  void InitializeAfterStartup();
+  // Runs as a BEST_EFFORT task to complete portions of the initialization that
+  // could potentially block Chrome startup.  Once this task is reached, the
+  // RulesetService is considered initialized.
+  void FinishInitialization();
 
   // Posts a task to the |background_task_runner| to index and persist the
   // given unindexed ruleset. Then, on success, updates the most recently
@@ -283,7 +283,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   RulesetServiceDelegate* delegate_;
 
   UnindexedRulesetInfo queued_unindexed_ruleset_info_;
-  bool is_after_startup_;
+  bool is_initialized_;
 
   const base::FilePath indexed_ruleset_base_dir_;
 
@@ -329,13 +329,12 @@ class ContentRulesetService : public RulesetServiceDelegate,
   void SetRulesetPublishedCallbackForTesting(base::OnceClosure callback);
 
   // RulesetServiceDelegate:
-  void PostAfterStartupTask(base::OnceClosure task) override;
   void TryOpenAndSetRulesetFile(
       const base::FilePath& file_path,
       int expected_checksum,
       base::OnceCallback<void(base::File)> callback) override;
-
   void PublishNewRulesetVersion(base::File ruleset_data) override;
+  scoped_refptr<base::SingleThreadTaskRunner> BestEffortTaskRunner() override;
 
   // Sets the ruleset_service_ member and calls its Initialize function.
   void SetAndInitializeRulesetService(
@@ -353,9 +352,6 @@ class ContentRulesetService : public RulesetServiceDelegate,
   VerifiedRulesetDealer::Handle* ruleset_dealer() {
     return ruleset_dealer_.get();
   }
-
-  void SetIsAfterStartupForTesting();
-
  private:
   // content::NotificationObserver:
   void Observe(int type,
@@ -368,6 +364,7 @@ class ContentRulesetService : public RulesetServiceDelegate,
 
   std::unique_ptr<RulesetService> ruleset_service_;
   std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
+  scoped_refptr<base::SingleThreadTaskRunner> best_effort_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentRulesetService);
 };

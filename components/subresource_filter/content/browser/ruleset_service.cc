@@ -266,14 +266,14 @@ RulesetService::RulesetService(
     : local_state_(local_state),
       background_task_runner_(std::move(background_task_runner)),
       delegate_(delegate),
-      is_after_startup_(false),
+      is_initialized_(false),
       indexed_ruleset_base_dir_(indexed_ruleset_base_dir) {
   DCHECK(delegate_);
   DCHECK_NE(local_state_->GetInitializationStatus(),
             PrefService::INITIALIZATION_STATUS_WAITING);
 }
 
-void RulesetService::Initialize() {
+void RulesetService::StartInitialization() {
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -286,8 +286,10 @@ void RulesetService::Initialize() {
     IndexedRulesetVersion().SaveToPrefs(local_state_);
   }
 
-  delegate_->PostAfterStartupTask(
-      base::BindOnce(&RulesetService::InitializeAfterStartup, AsWeakPtr()));
+  DCHECK(delegate_->BestEffortTaskRunner()->BelongsToCurrentThread());
+  delegate_->BestEffortTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RulesetService::FinishInitialization, AsWeakPtr()));
 }
 
 RulesetService::~RulesetService() {}
@@ -309,9 +311,9 @@ void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
     return;
   }
 
-  // During start-up, retain information about the most recently supplied
-  // unindexed ruleset, to be processed after start-up is complete.
-  if (!is_after_startup_) {
+  // Before initialization, retain information about the most recently supplied
+  // unindexed ruleset, to be processed during initialization.
+  if (!is_initialized_) {
     queued_unindexed_ruleset_info_ = unindexed_ruleset_info;
     return;
   }
@@ -486,8 +488,8 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   return IndexAndWriteRulesetResult::SUCCESS;
 }
 
-void RulesetService::InitializeAfterStartup() {
-  is_after_startup_ = true;
+void RulesetService::FinishInitialization() {
+  is_initialized_ = true;
 
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
@@ -556,6 +558,9 @@ ContentRulesetService::ContentRulesetService(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : ruleset_dealer_(std::make_unique<VerifiedRulesetDealer::Handle>(
           std::move(blocking_task_runner))) {
+  best_effort_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
+  DCHECK(best_effort_task_runner_->BelongsToCurrentThread());
   // Must rely on notifications as RenderProcessHostObserver::RenderProcessReady
   // would only be called after queued IPC messages (potentially triggering a
   // navigation) had already been sent to the new renderer.
@@ -571,14 +576,6 @@ ContentRulesetService::~ContentRulesetService() {
 void ContentRulesetService::SetRulesetPublishedCallbackForTesting(
     base::OnceClosure callback) {
   ruleset_published_callback_ = std::move(callback);
-}
-
-void ContentRulesetService::PostAfterStartupTask(base::OnceClosure task) {
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
-      std::move(task));
 }
 
 void ContentRulesetService::TryOpenAndSetRulesetFile(
@@ -611,10 +608,15 @@ void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
     std::move(ruleset_published_callback_).Run();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+ContentRulesetService::BestEffortTaskRunner() {
+  return best_effort_task_runner_;
+}
+
 void ContentRulesetService::SetAndInitializeRulesetService(
     std::unique_ptr<RulesetService> ruleset_service) {
   ruleset_service_ = std::move(ruleset_service);
-  ruleset_service_->Initialize();
+  ruleset_service_->StartInitialization();
 }
 
 void ContentRulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
@@ -622,11 +624,6 @@ void ContentRulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
   DCHECK(ruleset_service_);
   ruleset_service_->IndexAndStoreAndPublishRulesetIfNeeded(
       unindexed_ruleset_info);
-}
-
-void ContentRulesetService::SetIsAfterStartupForTesting() {
-  DCHECK(ruleset_service_);
-  ruleset_service_->set_is_after_startup_for_testing();
 }
 
 void ContentRulesetService::Observe(
