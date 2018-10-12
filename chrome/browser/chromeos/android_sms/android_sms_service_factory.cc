@@ -70,6 +70,10 @@ bool AndroidSmsServiceFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
+bool AndroidSmsServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 }  // namespace android_sms
 
 }  // namespace chromeos
