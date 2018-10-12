@@ -30,18 +30,14 @@ class SharedURLLoaderFactory;
 
 class UrlValidityCheckerImpl : public UrlValidityChecker {
  public:
-  explicit UrlValidityCheckerImpl(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  UrlValidityCheckerImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const base::TickClock* tick_clock);
   ~UrlValidityCheckerImpl() override;
 
   void DoesUrlResolve(const GURL& url,
                       net::NetworkTrafficAnnotationTag traffic_annotation,
                       UrlValidityCheckerCallback callback) override;
-
-  // Used for testing.
-  void SetTimeTicksForTesting(const base::TimeTicks& time_ticks) {
-    time_ticks_for_testing_ = time_ticks;
-  }
 
  private:
   struct PendingRequest;
@@ -62,16 +58,10 @@ class UrlValidityCheckerImpl : public UrlValidityChecker {
   void OnSimpleLoaderHandler(std::list<PendingRequest>::iterator request_iter,
                              bool valid);
 
-  // Returns base::TimeTicks::Now() or the test TimeTicks if not null.
-  base::TimeTicks NowTicks() const;
-
   // Stores any ongoing network requests. Once a request is completed, it is
   // deleted from the list.
   std::list<PendingRequest> pending_requests_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  // Test time ticks used for testing.
-  base::TimeTicks time_ticks_for_testing_;
 
   // Non-owned pointer to TickClock. Used for request timeouts.
   const base::TickClock* const clock_;

@@ -485,7 +485,7 @@ void InstantService::OnDoesUrlResolveComplete(
     const GURL& url,
     chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback,
     bool resolves,
-    const base::TimeDelta& duration) {
+    base::TimeDelta duration) {
   bool timeout = false;
   if (!resolves) {
     // Internally update the default "https" scheme to "http" if UI dialog has
@@ -819,7 +819,7 @@ void InstantService::FallbackToDefaultThemeInfo() {
 UrlValidityChecker* InstantService::GetUrlValidityChecker() {
   if (url_checker_for_testing_ != nullptr)
     return url_checker_for_testing_;
-  return UrlValidityCheckerFactory::GetInstance();
+  return UrlValidityCheckerFactory::GetUrlValidityChecker();
 }
 
 // static
