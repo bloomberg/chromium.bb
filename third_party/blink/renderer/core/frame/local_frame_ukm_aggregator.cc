@@ -140,9 +140,6 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   record.total_duration += duration;
   ++record.sample_count;
 
-  // Record the UMA
-  record.uma_counter->CountMicroseconds(duration);
-
   // Just record the duration for ratios. We compute the ratio later
   // when we know the frame time.
   ratio_metric_records_[metric_index].interval_duration += duration;
@@ -167,14 +164,24 @@ void LocalFrameUkmAggregator::RecordPrimarySample(TimeTicks start,
   ++primary_metric_.sample_count;
 
   // Compute all the dependent metrics
-  for (auto& record : ratio_metric_records_) {
-    double ratio =
-        record.interval_duration.InMicrosecondsF() / duration.InMicrosecondsF();
-    if (ratio > record.worst_case_ratio)
-      record.worst_case_ratio = ratio;
-    record.total_ratio += ratio;
-    ++record.sample_count;
-    record.interval_duration = TimeDelta();
+  for (int i = 0; i < kCount; ++i) {
+    auto& absolute_record = absolute_metric_records_[i];
+    auto& ratio_record = ratio_metric_records_[i];
+
+    // Record the UMA for the absolute metrics. This enables aggregating UMA
+    // over the entire lifecycle, important for steps (forced style and layout)
+    // that might take place more than once per lifecycle update.
+    absolute_record.uma_counter->CountMicroseconds(
+        ratio_record.interval_duration);
+
+    // Aggregate the UKM ratio information
+    double ratio = ratio_record.interval_duration.InMicrosecondsF() /
+                   duration.InMicrosecondsF();
+    if (ratio > ratio_record.worst_case_ratio)
+      ratio_record.worst_case_ratio = ratio;
+    ratio_record.total_ratio += ratio;
+    ++ratio_record.sample_count;
+    ratio_record.interval_duration = TimeDelta();
   }
 
   has_data_ = true;
