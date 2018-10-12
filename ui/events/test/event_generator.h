@@ -83,11 +83,6 @@ class EventGeneratorDelegate {
   virtual ui::EventDispatchDetails DispatchKeyEventToIME(EventTarget* target,
                                                          ui::KeyEvent* event)
       WARN_UNUSED_RESULT = 0;
-
-  // Offers the event to pointer watchers on systems that provide them.
-  // Does not consume the event (pointer watchers cannot consume events).
-  virtual void DispatchEventToPointerWatchers(EventTarget* target,
-                                              const PointerEvent& event) {}
 };
 
 // ui::test::EventGenerator is a tool that generates and dispatches events.
@@ -470,10 +465,6 @@ class EventGenerator {
 
   void DispatchNextPendingEvent();
   void DoDispatchEvent(Event* event, bool async);
-
-  // Offers event to pointer watchers (via delegate) if the event is a mouse or
-  // touch event.
-  void MaybeDispatchToPointerWatchers(const Event& event);
 
   std::unique_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;

@@ -271,9 +271,8 @@ void TestWindowTree::ReleaseCapture(uint32_t change_id, ws::Id window_id) {
   OnChangeReceived(change_id, WindowTreeChangeType::CAPTURE);
 }
 
-void TestWindowTree::StartPointerWatcher(bool want_moves) {}
-
-void TestWindowTree::StopPointerWatcher() {}
+void TestWindowTree::ObserveEventTypes(
+    const std::vector<ui::mojom::EventType>& types) {}
 
 void TestWindowTree::Embed(ws::Id window_id,
                            ws::mojom::WindowTreeClientPtr client,

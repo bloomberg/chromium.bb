@@ -1833,7 +1833,7 @@ TEST_F(ShelfViewTest,
 
 TEST_F(ShelfViewTest, TestHideOverflow) {
   // Use an event generator instead of SimulateClick because the overflow bubble
-  // is a PointerWatcher and gets the events directly.
+  // uses a Shell pre-target EventHandler to observe input events.
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Add one app (which is on the main shelf) and then add buttons until

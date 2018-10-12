@@ -15,10 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
-#include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget.h"
-
-using views::PointerWatcher;
 
 namespace ash {
 namespace {

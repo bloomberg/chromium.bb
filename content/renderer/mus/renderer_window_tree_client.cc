@@ -315,14 +315,12 @@ void RendererWindowTreeClient::OnWindowInputEvent(
     ws::Id window_id,
     int64_t display_id,
     std::unique_ptr<ui::Event> event,
-    bool matches_pointer_watcher) {
+    bool matches_event_observer) {
   NOTREACHED();
 }
 
-void RendererWindowTreeClient::OnPointerEventObserved(
-    std::unique_ptr<ui::Event> event,
-    ws::Id window_id,
-    int64_t display_id) {
+void RendererWindowTreeClient::OnObservedInputEvent(
+    std::unique_ptr<ui::Event> event) {
   NOTREACHED();
 }
 

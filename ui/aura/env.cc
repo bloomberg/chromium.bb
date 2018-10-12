@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/observer_list_types.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
@@ -24,6 +25,7 @@
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_port_for_shutdown.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/event_observer.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -41,6 +43,47 @@ namespace {
 Env* g_primary_instance = nullptr;
 
 }  // namespace
+
+// EventObserverAdapter is an aura::Env pre-target handler that forwards
+// read-only events to its observer when they match the requested types.
+class EventObserverAdapter : public ui::EventHandler,
+                             public base::CheckedObserver {
+ public:
+  EventObserverAdapter(ui::EventObserver* observer,
+                       ui::EventTarget* target,
+                       const std::set<ui::EventType>& types)
+      : observer_(observer), target_(target), types_(types) {
+    target_->AddPreTargetHandler(this);
+  }
+
+  ~EventObserverAdapter() override { target_->RemovePreTargetHandler(this); }
+
+  ui::EventObserver* observer() { return observer_; }
+  ui::EventTarget* target() { return target_; }
+  const std::set<ui::EventType>& types() const { return types_; }
+
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    if (types_.count(event->type()) > 0) {
+      std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
+      ui::Event::DispatcherApi(cloned_event.get()).set_target(event->target());
+      // The root location of located events should be in screen coordinates.
+      if (cloned_event->IsLocatedEvent() && cloned_event->target()) {
+        ui::LocatedEvent* located_event = cloned_event->AsLocatedEvent();
+        auto root = located_event->target()->GetScreenLocationF(*located_event);
+        located_event->set_root_location_f(root);
+      }
+      observer_->OnEvent(*cloned_event);
+    }
+  }
+
+ private:
+  ui::EventObserver* observer_;
+  ui::EventTarget* target_;
+  const std::set<ui::EventType> types_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventObserverAdapter);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Env, public:
@@ -198,6 +241,38 @@ WindowOcclusionTracker* Env::GetWindowOcclusionTracker() {
   return window_occlusion_tracker_.get();
 }
 
+void Env::AddEventObserver(ui::EventObserver* observer,
+                           ui::EventTarget* target,
+                           const std::set<ui::EventType>& types) {
+  DCHECK(!types.empty()) << "Observers must observe at least one event type";
+  auto adapter(std::make_unique<EventObserverAdapter>(observer, target, types));
+  event_observer_adapter_list_.AddObserver(adapter.get());
+  event_observer_adapters_.insert(std::move(adapter));
+  if (window_tree_client_ && target == this)
+    window_tree_client_->OnEventObserverAdded(observer, types);
+}
+
+void Env::RemoveEventObserver(ui::EventObserver* observer) {
+  for (auto& adapter : event_observer_adapters_) {
+    if (adapter->observer() == observer) {
+      if (window_tree_client_ && adapter->target() == this)
+        window_tree_client_->OnEventObserverRemoved(observer, adapter->types());
+      event_observer_adapter_list_.RemoveObserver(adapter.get());
+      event_observer_adapters_.erase(adapter);
+      return;
+    }
+  }
+}
+
+void Env::NotifyEventObservers(const ui::Event& event) {
+  for (auto& adapter : event_observer_adapter_list_) {
+    if (adapter.types().count(event.type()) > 0 &&
+        (adapter.target() == event.target() || adapter.target() == this)) {
+      adapter.observer()->OnEvent(event);
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
 
@@ -295,7 +370,7 @@ bool Env::CanAcceptEvent(const ui::Event& event) {
 }
 
 ui::EventTarget* Env::GetParentTarget() {
-  return NULL;
+  return nullptr;
 }
 
 std::unique_ptr<ui::EventTargetIterator> Env::GetChildIterator() const {
@@ -304,7 +379,7 @@ std::unique_ptr<ui::EventTargetIterator> Env::GetChildIterator() const {
 
 ui::EventTargeter* Env::GetEventTargeter() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 std::unique_ptr<ui::OSExchangeData::Provider> Env::BuildProvider() {

@@ -207,7 +207,6 @@ jumbo_component("views") {
     "native_theme_delegate.h",
     "paint_info.h",
     "painter.h",
-    "pointer_watcher.h",
     "rect_based_targeting_utils.h",
     "repeat_controller.h",
     "round_rect_painter.h",
@@ -413,7 +412,6 @@ jumbo_component("views") {
     "view_targeter_delegate.cc",
     "view_tracker.cc",
     "views_delegate.cc",
-    "views_exports.cc",
     "views_switches.cc",
     "views_touch_selection_controller_factory_mac.cc",
     "widget/drop_helper.cc",
@@ -665,6 +663,7 @@ jumbo_component("views") {
     deps += [
       "//services/ws/public/mojom",
       "//ui/aura",
+      "//ui/events",
       "//ui/platform_window",
       "//ui/platform_window/platform_window_handler",
       "//ui/touch_selection",

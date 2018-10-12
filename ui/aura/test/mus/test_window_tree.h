@@ -197,8 +197,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void GetWindowTree(ws::Id window_id, GetWindowTreeCallback callback) override;
   void SetCapture(uint32_t change_id, ws::Id window_id) override;
   void ReleaseCapture(uint32_t change_id, ws::Id window_id) override;
-  void StartPointerWatcher(bool want_moves) override;
-  void StopPointerWatcher() override;
+  void ObserveEventTypes(
+      const std::vector<ui::mojom::EventType>& types) override;
   void Embed(ws::Id window_id,
              ws::mojom::WindowTreeClientPtr client,
              uint32_t flags,

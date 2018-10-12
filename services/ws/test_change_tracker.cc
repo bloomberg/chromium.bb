@@ -113,15 +113,14 @@ std::string ChangeToDescription(const Change& change,
       std::string result = base::StringPrintf(
           "InputEvent window=%s event_action=%d",
           WindowIdToString(change.window_id).c_str(), change.event_action);
-      if (change.matches_pointer_watcher)
-        result += " matches_pointer_watcher";
+      if (change.matches_event_observer)
+        result += " matches_event_observer";
       return result;
     }
 
-    case CHANGE_TYPE_POINTER_WATCHER_EVENT:
-      return base::StringPrintf("PointerWatcherEvent event_action=%d window=%s",
-                                change.event_action,
-                                WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_OBSERVED_EVENT:
+      return base::StringPrintf("ObservedEvent event_action=%d",
+                                change.event_action);
 
     case CHANGE_TYPE_PROPERTY_CHANGED:
       return base::StringPrintf("PropertyChanged window=%s key=%s value=%s",
@@ -267,27 +266,15 @@ bool ContainsChange(const std::vector<Change>& changes,
   return false;
 }
 
-Change::Change()
-    : type(CHANGE_TYPE_EMBED),
-      window_id(0),
-      window_id2(0),
-      window_id3(0),
-      event_action(0),
-      matches_pointer_watcher(false),
-      direction(mojom::OrderDirection::ABOVE),
-      bool_value(false),
-      float_value(0.f),
-      cursor_type(ui::CursorType::kNull),
-      change_id(0u),
-      display_id(0) {}
+Change::Change() = default;
 
 Change::Change(const Change& other) = default;
 
-Change::~Change() {}
+Change::~Change() = default;
 
-TestChangeTracker::TestChangeTracker() : delegate_(NULL) {}
+TestChangeTracker::TestChangeTracker() : delegate_(nullptr) {}
 
-TestChangeTracker::~TestChangeTracker() {}
+TestChangeTracker::~TestChangeTracker() = default;
 
 void TestChangeTracker::OnEmbed(mojom::WindowDataPtr root, bool drawn) {
   Change change;
@@ -449,12 +436,12 @@ void TestChangeTracker::OnWindowParentDrawnStateChanged(Id window_id,
 void TestChangeTracker::OnWindowInputEvent(Id window_id,
                                            const ui::Event& event,
                                            int64_t display_id,
-                                           bool matches_pointer_watcher) {
+                                           bool matches_event_observer) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.window_id = window_id;
   change.event_action = static_cast<int32_t>(event.type());
-  change.matches_pointer_watcher = matches_pointer_watcher;
+  change.matches_event_observer = matches_event_observer;
   change.display_id = display_id;
   if (event.IsLocatedEvent())
     change.location1 = event.AsLocatedEvent()->root_location();
@@ -463,12 +450,10 @@ void TestChangeTracker::OnWindowInputEvent(Id window_id,
   AddChange(change);
 }
 
-void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
-                                               Id window_id) {
+void TestChangeTracker::OnObservedInputEvent(const ui::Event& event) {
   Change change;
-  change.type = CHANGE_TYPE_POINTER_WATCHER_EVENT;
+  change.type = CHANGE_TYPE_OBSERVED_EVENT;
   change.event_action = static_cast<int32_t>(event.type());
-  change.window_id = window_id;
   AddChange(change);
 }
 
@@ -600,11 +585,11 @@ void TestChangeTracker::AddChange(const Change& change) {
     delegate_->OnChangeAdded();
 }
 
-TestWindow::TestWindow() {}
+TestWindow::TestWindow() = default;
 
 TestWindow::TestWindow(const TestWindow& other) = default;
 
-TestWindow::~TestWindow() {}
+TestWindow::~TestWindow() = default;
 
 std::string TestWindow::ToString() const {
   return base::StringPrintf("window=%s parent=%s",

@@ -419,9 +419,10 @@ void WindowEventDispatcher::UpdateCapture(Window* old_capture,
 
   if (old_capture && old_capture->GetRootWindow() == window() &&
       old_capture->delegate()) {
-    // Send a capture changed event with bogus location data.
-    ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
-                         gfx::Point(), ui::EventTimeForNow(), 0, 0);
+    // Send a capture changed event with the most recent mouse screen location.
+    const gfx::Point location = host_->window()->env()->last_mouse_location();
+    ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, location, location,
+                         ui::EventTimeForNow(), 0, 0);
 
     DispatchDetails details = DispatchEvent(old_capture, &event);
     if (details.dispatcher_destroyed)

@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/views/pointer_watcher.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -50,7 +50,7 @@ class ImmersiveGestureHandler;
 class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
     : public aura::WindowObserver,
       public gfx::AnimationDelegate,
-      public views::PointerWatcher,
+      public ui::EventObserver,
       public views::ViewObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
@@ -118,10 +118,8 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // Processes a GestureEvent. This may call SetHandled() on the supplied event.
   void OnGestureEvent(ui::GestureEvent* event);
 
-  // views::PointerWatcher:
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              const gfx::Point& location_in_screen,
-                              gfx::NativeView target) override;
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override;
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,

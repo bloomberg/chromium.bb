@@ -10,11 +10,10 @@
 namespace gfx {
 class Rect;
 }
+
 namespace views {
-class PointerWatcher;
-enum class PointerWatcherEventTypes;
 class Widget;
-}  // namespace views
+}
 
 namespace ash {
 
@@ -37,11 +36,6 @@ class ASH_PUBLIC_EXPORT ImmersiveContext {
 
   // Returns the bounds of the display the widget is on, in screen coordinates.
   virtual gfx::Rect GetDisplayBoundsInScreen(views::Widget* widget) = 0;
-
-  // See Shell::AddPointerWatcher for details.
-  virtual void AddPointerWatcher(views::PointerWatcher* watcher,
-                                 views::PointerWatcherEventTypes events) = 0;
-  virtual void RemovePointerWatcher(views::PointerWatcher* watcher) = 0;
 
   // Returns true if any window has capture.
   virtual bool DoesAnyWindowHaveCapture() = 0;

@@ -28,7 +28,6 @@
 #include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_property_mirror.h"
-#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -108,9 +107,6 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   } else {
     window_tree_client_ = params.window_tree_client;
   }
-
-  pointer_watcher_event_router_ =
-      std::make_unique<PointerWatcherEventRouter>(window_tree_client_);
 
   if (connector && !params.running_in_ws_process) {
     input_device_client_ = std::make_unique<ws::InputDeviceClient>();
@@ -316,14 +312,12 @@ void MusClient::OnWidgetInitDone(Widget* widget) {
 
 void MusClient::OnCaptureClientSet(
     aura::client::CaptureClient* capture_client) {
-  pointer_watcher_event_router_->AttachToCaptureClient(capture_client);
   window_tree_client_->capture_synchronizer()->AttachToCaptureClient(
       capture_client);
 }
 
 void MusClient::OnCaptureClientUnset(
     aura::client::CaptureClient* capture_client) {
-  pointer_watcher_event_router_->DetachFromCaptureClient(capture_client);
   window_tree_client_->capture_synchronizer()->DetachFromCaptureClient(
       capture_client);
 }
@@ -374,13 +368,6 @@ void MusClient::OnEmbedRootDestroyed(
     aura::WindowTreeHostMus* window_tree_host) {
   static_cast<DesktopWindowTreeHostMus*>(window_tree_host)
       ->ServerDestroyedWindow();
-}
-
-void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
-                                       const gfx::Point& location_in_screen,
-                                       aura::Window* target) {
-  pointer_watcher_event_router_->OnPointerEventObserved(
-      event, location_in_screen, target);
 }
 
 void MusClient::OnDisplaysChanged(

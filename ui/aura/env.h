@@ -6,6 +6,7 @@
 #define UI_AURA_ENV_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -15,7 +16,6 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
-#include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/geometry/point.h"
@@ -36,6 +36,7 @@ class Connector;
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
+class EventObserver;
 class GestureRecognizer;
 class PlatformEventSource;
 }  // namespace ui
@@ -54,6 +55,7 @@ class EnvWindowTreeClientSetter;
 
 class EnvInputStateController;
 class EnvObserver;
+class EventObserverAdapter;
 class InputStateLookup;
 class MouseLocationManager;
 class MusMouseLocationUpdater;
@@ -195,6 +197,17 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // Get WindowOcclusionTracker instance. Create it if it is not yet created.
   WindowOcclusionTracker* GetWindowOcclusionTracker();
 
+  // Add, remove, or notify EventObservers. EventObservers are essentially
+  // pre-target EventHandlers that can not modify the events nor alter dispatch.
+  // On Chrome OS, observers receive system-wide events if |target| is this Env.
+  // On desktop platforms, observers may only receive events targeting Chrome.
+  // Observers must be removed before their target is destroyed.
+  void AddEventObserver(ui::EventObserver* observer,
+                        ui::EventTarget* target,
+                        const std::set<ui::EventType>& types);
+  void RemoveEventObserver(ui::EventObserver* observer);
+  void NotifyEventObservers(const ui::Event& event);
+
  private:
   friend class test::EnvTestHelper;
   friend class test::EnvWindowTreeClientSetter;
@@ -256,6 +269,10 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // observers.
   base::ObserverList<WindowEventDispatcherObserver>::Unchecked
       window_event_dispatcher_observers_;
+
+  // The ObserverList and set of owned EventObserver adapters.
+  base::ObserverList<EventObserverAdapter> event_observer_adapter_list_;
+  std::set<std::unique_ptr<EventObserverAdapter>> event_observer_adapters_;
 
   std::unique_ptr<EnvInputStateController> env_controller_;
   int mouse_button_flags_;

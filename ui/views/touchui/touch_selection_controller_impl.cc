@@ -417,18 +417,19 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
   // Observe client widget moves and resizes to update the selection handles.
   if (client_widget_)
     client_widget_->AddObserver(this);
-  if (ViewsDelegate::GetInstance()->IsPointerWatcherSupported())
-    ViewsDelegate::GetInstance()->AddPointerWatcher(this, true);
-  aura::Env::GetInstance()->AddPreTargetHandler(this);
+
+  // Observe certain event types sent to other event targets, to hide this ui.
+  aura::Env* env = aura::Env::GetInstance();
+  std::set<ui::EventType> types = {ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_MOVED,
+                                   ui::ET_KEY_PRESSED, ui::ET_MOUSEWHEEL};
+  env->AddEventObserver(this, env, types);
 }
 
 TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
   UMA_HISTOGRAM_BOOLEAN("Event.TouchSelection.EndedWithAction",
                         command_executed_);
   HideQuickMenu();
-  aura::Env::GetInstance()->RemovePreTargetHandler(this);
-  if (ViewsDelegate::GetInstance()->IsPointerWatcherSupported())
-    ViewsDelegate::GetInstance()->RemovePointerWatcher(this);
+  aura::Env::GetInstance()->RemoveEventObserver(this);
   if (client_widget_)
     client_widget_->RemoveObserver(this);
 }
@@ -626,40 +627,23 @@ void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
   SelectionChanged();
 }
 
-void TouchSelectionControllerImpl::OnPointerEventObserved(
-    const ui::PointerEvent& event,
-    const gfx::Point& location_in_screen,
-    gfx::NativeView target) {
-  // Disregard CursorClient::IsMouseEventsEnabled, it is disabled for touch
-  // events in this client, but not re-enabled for mouse events sent elsewhere.
-  if (event.pointer_details().pointer_type ==
-      ui::EventPointerType::POINTER_TYPE_MOUSE) {
+void TouchSelectionControllerImpl::OnEvent(const ui::Event& event) {
+  if (event.IsKeyEvent() || event.IsScrollEvent()) {
     client_view_->DestroyTouchSelection();
+    return;
   }
-}
 
-void TouchSelectionControllerImpl::OnKeyEvent(ui::KeyEvent* event) {
-  client_view_->DestroyTouchSelection();
-}
-
-void TouchSelectionControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
-  aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
-      client_view_->GetNativeView()->GetRootWindow());
-  if (cursor_client && !cursor_client->IsMouseEventsEnabled())
+  if (event.IsMouseEvent()) {
+    aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
+        client_view_->GetNativeView()->GetRootWindow());
+    // Disregard IsMouseEventsEnabled on Mus, it is disabled on touch events in
+    // this client, but not re-enabled when mouse events are sent elsewhere.
+    if ((cursor_client && cursor_client->IsMouseEventsEnabled()) ||
+        aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+      client_view_->DestroyTouchSelection();
+    }
     return;
-
-  // Do not hide handles on mouse-capture-changed event which might occur when a
-  // selection handle is released. Normally, cursor client should report mouse
-  // events as disabled (the above check), but there are crashes on Windows
-  // devices suggesting it is not always the case (see crbug.com/459423).
-  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
-    return;
-
-  client_view_->DestroyTouchSelection();
-}
-
-void TouchSelectionControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
-  client_view_->DestroyTouchSelection();
+  }
 }
 
 void TouchSelectionControllerImpl::QuickMenuTimerFired() {

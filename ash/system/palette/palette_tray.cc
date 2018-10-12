@@ -45,7 +45,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/pointer_watcher.h"
 
 namespace ash {
 

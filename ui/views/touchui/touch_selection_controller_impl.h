@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/base/touch/touch_editing_controller.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
-#include "ui/views/pointer_watcher.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
@@ -30,8 +30,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
     : public ui::TouchEditingControllerDeprecated,
       public ui::TouchSelectionMenuClient,
       public WidgetObserver,
-      public PointerWatcher,
-      public ui::EventHandler {
+      public ui::EventObserver {
  public:
   class EditingHandleView;
 
@@ -80,15 +79,8 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
-  // PointerWatcher:
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              const gfx::Point& location_in_screen,
-                              gfx::NativeView target) override;
-
-  // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnScrollEvent(ui::ScrollEvent* event) override;
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override;
 
   // Time to show quick menu.
   void QuickMenuTimerFired();

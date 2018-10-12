@@ -35,8 +35,8 @@ namespace ws {
 class ClientChangeTracker;
 class ClientRoot;
 class Embedding;
+class EventObserverHelper;
 class FocusHandler;
-class PointerWatcher;
 class ServerWindow;
 class TopmostWindowObserver;
 class WindowManagerInterface;
@@ -82,10 +82,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Notifies the client than an event has been received.
   void SendEventToClient(aura::Window* window, const ui::Event& event);
 
-  // Notifies the client that an event matching a pointer watcher has been
-  // received.
-  void SendPointerWatcherEventToClient(int64_t display_id,
-                                       std::unique_ptr<ui::Event> event);
+  // Notifies the client that an event matching an observer has been received.
+  void SendObservedEventToClient(int64_t display_id,
+                                 std::unique_ptr<ui::Event> event);
 
   // Returns the aura::Window associated with the specified transport id; null
   // if |transport_window_id| is not a valid id for a window.
@@ -374,8 +373,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
   void SetCapture(uint32_t change_id, Id transport_window_id) override;
   void ReleaseCapture(uint32_t change_id, Id transport_window_id) override;
-  void StartPointerWatcher(bool want_moves) override;
-  void StopPointerWatcher() override;
+  void ObserveEventTypes(
+      const std::vector<ui::mojom::EventType>& types) override;
   void SetWindowBounds(
       uint32_t change_id,
       Id window_id,
@@ -515,9 +514,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Used to track the active change from the client.
   std::unique_ptr<ClientChangeTracker> property_change_tracker_;
 
-  // If non-null the client has requested pointer events the client would not
+  // If non-null, the client requested to observe events the client would not
   // normally get.
-  std::unique_ptr<PointerWatcher> pointer_watcher_;
+  std::unique_ptr<EventObserverHelper> event_observer_helper_;
 
   FocusHandler focus_handler_{this};
 

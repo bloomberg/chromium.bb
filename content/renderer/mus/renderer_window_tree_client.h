@@ -169,10 +169,8 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
                           ws::Id window_id,
                           int64_t display_id,
                           std::unique_ptr<ui::Event> event,
-                          bool matches_pointer_watcher) override;
-  void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              ws::Id window_id,
-                              int64_t display_id) override;
+                          bool matches_event_observer) override;
+  void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override;
   void OnWindowFocused(ws::Id focused_window_id) override;
   void OnWindowCursorChanged(ws::Id window_id, ui::CursorData cursor) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&

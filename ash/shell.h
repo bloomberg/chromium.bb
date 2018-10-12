@@ -64,8 +64,6 @@ class UserActivityPowerManagerNotifier;
 
 namespace views {
 class NonClientFrameView;
-class PointerWatcher;
-enum class PointerWatcherEventTypes;
 class Widget;
 namespace corewm {
 class TooltipController;
@@ -151,7 +149,6 @@ class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
 class PersistentWindowController;
-class PointerWatcherAdapter;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
@@ -594,16 +591,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
 
-  // If |events| is PointerWatcherEventTypes::MOVES,
-  // PointerWatcher::OnPointerEventObserved() is called for pointer move events.
-  // If |events| is PointerWatcherEventTypes::DRAGS,
-  // PointerWatcher::OnPointerEventObserved() is called for pointer drag events.
-  // Requesting pointer moves or drags may incur a performance hit and should be
-  // avoided if possible.
-  void AddPointerWatcher(views::PointerWatcher* watcher,
-                         views::PointerWatcherEventTypes events);
-  void RemovePointerWatcher(views::PointerWatcher* watcher);
-
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
@@ -760,7 +747,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<NewWindowController> new_window_controller_;
-  std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
