@@ -53,6 +53,8 @@ class CORE_EXPORT FetchDataLoader
     }
     // This is called after all data are read from |handle| and written
     // to |out_data_pipe|, and |out_data_pipe| is closed or aborted.
+    // This may be called synchronously from FetchDataLoader::Start() or
+    // delayed to a later task.
     virtual void DidFetchDataLoadedDataPipe() { NOTREACHED(); }
 
     // This function is called when a "custom" FetchDataLoader (none of the
