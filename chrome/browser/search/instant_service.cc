@@ -309,11 +309,8 @@ void InstantService::UndoAllMostVisitedDeletions() {
 }
 
 bool InstantService::AddCustomLink(const GURL& url, const std::string& title) {
-  if (most_visited_sites_) {
-    // Initializes custom links if they have not been initialized yet.
-    most_visited_sites_->InitializeCustomLinks();
+  if (most_visited_sites_)
     return most_visited_sites_->AddCustomLink(url, base::UTF8ToUTF16(title));
-  }
   return false;
 }
 
@@ -321,8 +318,6 @@ bool InstantService::UpdateCustomLink(const GURL& url,
                                       const GURL& new_url,
                                       const std::string& new_title) {
   if (most_visited_sites_) {
-    // Initializes custom links if they have not been initialized yet.
-    most_visited_sites_->InitializeCustomLinks();
     return most_visited_sites_->UpdateCustomLink(url, new_url,
                                                  base::UTF8ToUTF16(new_title));
   }
@@ -330,11 +325,8 @@ bool InstantService::UpdateCustomLink(const GURL& url,
 }
 
 bool InstantService::DeleteCustomLink(const GURL& url) {
-  if (most_visited_sites_) {
-    // Initializes custom links if they have not been initialized yet.
-    most_visited_sites_->InitializeCustomLinks();
+  if (most_visited_sites_)
     return most_visited_sites_->DeleteCustomLink(url);
-  }
   return false;
 }
 
