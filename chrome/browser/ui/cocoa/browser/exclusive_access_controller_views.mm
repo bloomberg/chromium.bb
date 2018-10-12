@@ -153,6 +153,10 @@ ExclusiveAccessController::GetExclusiveAccessBubble() {
   return views_bubble_.get();
 }
 
+bool ExclusiveAccessController::CanUserExitFullscreen() const {
+  return true;
+}
+
 bool ExclusiveAccessController::GetAcceleratorForCommandId(
     int cmd_id,
     ui::Accelerator* accelerator) const {

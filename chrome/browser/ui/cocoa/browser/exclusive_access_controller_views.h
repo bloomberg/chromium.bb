@@ -70,6 +70,7 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   void HideDownloadShelf() override;
   bool ShouldHideUIForFullscreen() const override;
   ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
+  bool CanUserExitFullscreen() const override;
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
