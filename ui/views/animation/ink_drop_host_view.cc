@@ -171,7 +171,7 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
 }
 
 std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
-  if (gfx::Path* highlight_path = GetProperty(kHighlightPathKey))
+  if (SkPath* highlight_path = GetProperty(kHighlightPathKey))
     return std::make_unique<views::PathInkDropMask>(size(), *highlight_path);
 
   return nullptr;

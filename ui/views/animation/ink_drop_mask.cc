@@ -78,7 +78,7 @@ void CircleInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
 // PathInkDropMask
 
 PathInkDropMask::PathInkDropMask(const gfx::Size& layer_size,
-                                 const gfx::Path& path)
+                                 const SkPath& path)
     : InkDropMask(layer_size), path_(path) {}
 
 void PathInkDropMask::OnPaintLayer(const ui::PaintContext& context) {

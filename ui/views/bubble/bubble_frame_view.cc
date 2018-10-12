@@ -134,7 +134,7 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   close_button->SizeToPreferredSize();
 
   // Let the close button use a circular inkdrop shape.
-  auto highlight_path = std::make_unique<gfx::Path>();
+  auto highlight_path = std::make_unique<SkPath>();
   highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button->size())));
   close_button->SetProperty(kHighlightPathKey, highlight_path.release());
 

@@ -44,7 +44,7 @@ gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
 // focus rings so that they are derived from the same actual SkPath or other
 // shared primitive. That way they would be significantly easier to keep in
 // sync. This method at least reuses GetToolbarInkDropInsets.
-std::unique_ptr<gfx::Path> CreateToolbarHighlightPath(
+std::unique_ptr<SkPath> CreateToolbarHighlightPath(
     const views::View* host_view,
     const gfx::Insets& margin_insets);
 

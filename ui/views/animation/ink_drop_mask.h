@@ -80,13 +80,13 @@ class VIEWS_EXPORT CircleInkDropMask : public InkDropMask {
 // An ink-drop mask that paints a specified path.
 class VIEWS_EXPORT PathInkDropMask : public InkDropMask {
  public:
-  PathInkDropMask(const gfx::Size& layer_size, const gfx::Path& path);
+  PathInkDropMask(const gfx::Size& layer_size, const SkPath& path);
 
  private:
   // InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
-  gfx::Path path_;
+  SkPath path_;
 
   DISALLOW_COPY_AND_ASSIGN(PathInkDropMask);
 };
