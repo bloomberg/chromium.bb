@@ -207,37 +207,70 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(content::ExecuteScript(GetWebContents(), script));
   }
 
-  GURL NavigatedURL() const { return GetWebContents()->GetURL(); }
+  // Returns the loaded, non-virtual URL, of the current visible
+  // NavigationEntry.
+  GURL GetLoadedURL() const {
+    return GetWebContents()->GetController().GetVisibleEntry()->GetURL();
+  }
 
   void VerifyPreviewLoaded() const {
-    const GURL navigated_url = NavigatedURL();
+    // The Virtual URL is set in a WebContentsObserver::OnFinishNavigation.
+    // Since |ui_test_utils::NavigationToURL| uses the same signal to stop
+    // waiting, there is sometimes a race condition between the two, causing
+    // this validation to flake. Waiting for the load stop on the page will
+    // ensure that the Virtual URL has been set.
+    content::WaitForLoadStop(GetWebContents());
+
+    const GURL loaded_url = GetLoadedURL();
     const GURL previews_host = previews_server();
-    EXPECT_TRUE(navigated_url.DomainIs(previews_host.host()) &&
-                navigated_url.EffectiveIntPort() ==
+    EXPECT_TRUE(loaded_url.DomainIs(previews_host.host()) &&
+                loaded_url.EffectiveIntPort() ==
                     previews_host.EffectiveIntPort());
+
+    content::NavigationEntry* entry =
+        GetWebContents()->GetController().GetVisibleEntry();
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+    const GURL virtual_url = entry->GetVirtualURL();
+
+    // The loaded url should be the previews version of the virtual url.
+    EXPECT_EQ(
+        loaded_url,
+        PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(virtual_url));
+
+    // The Virtual URL should not be on the previews server.
+    // TODO(crbug.com/894854): Use a different hostname and check that here.
+    EXPECT_FALSE(virtual_url.DomainIs(previews_host.host()) &&
+                 virtual_url.EffectiveIntPort() ==
+                     previews_host.EffectiveIntPort());
   }
 
   void VerifyPreviewNotLoaded() const {
-    const GURL navigated_url = NavigatedURL();
+    // The Virtual URL is set in a |WebContentsObserver::OnFinishNavigation|.
+    // Since |ui_test_utils::NavigationToURL| uses the same signal to stop
+    // waiting, there is sometimes a race condition between the two, causing
+    // this validation to flake. Waiting for the load stop on the page will
+    // ensure that the Virtual URL has been set.
+    content::WaitForLoadStop(GetWebContents());
+
+    const GURL loaded_url = GetLoadedURL();
     const GURL previews_host = previews_server();
-    EXPECT_FALSE(navigated_url.DomainIs(previews_host.host()) &&
-                 navigated_url.EffectiveIntPort() ==
+    EXPECT_FALSE(loaded_url.DomainIs(previews_host.host()) &&
+                 loaded_url.EffectiveIntPort() ==
                      previews_host.EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
 
-    // Clear the decider's single bypass map so that future page loads aren't
-    // bypassed for the wrong reason.
-    ClearSingleBypass();
+    // The Virtual URL and the loaded URL should be the same.
+    EXPECT_EQ(loaded_url, entry->GetVirtualURL());
   }
 
   void VerifyErrorPageLoaded() const {
-    const GURL navigated_url = NavigatedURL();
+    const GURL loaded_url = GetLoadedURL();
     const GURL previews_host = previews_server();
-    EXPECT_FALSE(navigated_url.DomainIs(previews_host.host()) &&
-                 navigated_url.EffectiveIntPort() ==
+    EXPECT_FALSE(loaded_url.DomainIs(previews_host.host()) &&
+                 loaded_url.EffectiveIntPort() ==
                      previews_host.EffectiveIntPort());
 
     content::NavigationEntry* entry =
@@ -500,6 +533,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme,
@@ -522,6 +556,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), https_media_url());
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
         PreviewsLitePageNavigationThrottle::BlacklistReason::
@@ -544,6 +579,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         post_data.data(), post_data.size());
     ui_test_utils::NavigateToURL(&params);
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kHttpPost, 1);
@@ -556,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     // server.
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), previews_server());
-    EXPECT_EQ(NavigatedURL(), previews_server());
+    EXPECT_EQ(GetLoadedURL(), previews_server());
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
         PreviewsLitePageNavigationThrottle::BlacklistReason::
@@ -631,6 +667,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
 
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
         PreviewsLitePageNavigationThrottle::IneligibleReason::kNetworkNotSlow,
@@ -676,6 +713,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirect));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectBucketCount(
@@ -700,6 +738,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kBypass));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
@@ -715,6 +754,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
@@ -729,6 +769,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
     histogram_tester.ExpectTotalCount(
@@ -765,10 +806,12 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // duration [1 min, 5 mins).
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
 
   clock->Advance(base::TimeDelta::FromMinutes(1));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
 
   clock->Advance(base::TimeDelta::FromMinutes(4));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -780,9 +823,11 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                HttpsLitePageURL(kLoadshed, &headers));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
 
   clock->Advance(base::TimeDelta::FromSeconds(31));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -813,6 +858,45 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
   EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
   EXPECT_EQ(GetDataUsage(), 20U);
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsNavigation LitePagePreviewsNavigation
+#else
+#define MAYBE_LitePagePreviewsNavigation DISABLED_LitePagePreviewsNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsNavigation) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  // Go to a new page that doesn't Preview.
+  ui_test_utils::NavigateToURL(browser(), http_url());
+  VerifyPreviewNotLoaded();
+  ClearSingleBypass();
+
+  // Note: |VerifyPreviewLoaded| calls |content::WaitForLoadStop()| so these are
+  // safe.
+
+  // Navigate back.
+  GetWebContents()->GetController().GoBack();
+  VerifyPreviewLoaded();
+
+  // Navigate forward.
+  GetWebContents()->GetController().GoForward();
+  VerifyPreviewNotLoaded();
+  ClearSingleBypass();
+
+  // Navigate back again.
+  GetWebContents()->GetController().GoBack();
+  VerifyPreviewLoaded();
+
+  // Reload.
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  VerifyPreviewLoaded();
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest
@@ -846,6 +930,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
     ui_test_utils::NavigateToURL(browser(),
                                  HttpsLitePageURL(kSuccess, nullptr, -1));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
@@ -856,6 +941,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), slow_http_url());
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
     histogram_tester.ExpectTotalCount("Previews.ServerLitePage.ServerResponse",
                                       0);
   }
@@ -896,6 +982,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
+    ClearSingleBypass();
 
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 1);
@@ -936,6 +1023,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
 }
 
 class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
@@ -972,6 +1060,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
 }
 
 class PreviewsLitePageNotificationDSEnabledBrowserTest
@@ -1014,6 +1103,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSEnabledBrowserTest,
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
 
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
   EXPECT_EQ(1U, GetInfoBarService()->infobar_count());
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.IneligibleReasons",
@@ -1070,5 +1160,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageNotificationDSDisabledBrowserTest,
                        MAYBE_LitePagePreviewsInfoBarNonDataSaverUser) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
+  ClearSingleBypass();
   EXPECT_EQ(0U, GetInfoBarService()->infobar_count());
 }

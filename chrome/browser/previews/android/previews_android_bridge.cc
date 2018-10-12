@@ -50,6 +50,9 @@ PreviewsAndroidBridge::GetOriginalHost(
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents)
     return base::android::ScopedJavaLocalRef<jstring>();
+
+  // TODO(crbug.com/894881): Add the Lite Pages URL rewriting during a pending
+  // navigation.
   return base::android::ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(
           env, web_contents->GetVisibleURL().host()));
