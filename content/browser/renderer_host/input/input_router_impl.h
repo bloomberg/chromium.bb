@@ -107,7 +107,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
     return frame_host_binding_;
   }
 
-  void OnHasTouchEventHandlersForTest(bool has_handlers);
+  void ForceResetTouchActionForTest();
 
  private:
   friend class InputRouterImplTest;

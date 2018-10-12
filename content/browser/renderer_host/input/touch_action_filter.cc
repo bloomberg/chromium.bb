@@ -231,6 +231,11 @@ bool TouchActionFilter::FilterManipulationEventAndResetState() {
   return false;
 }
 
+void TouchActionFilter::ForceResetTouchActionForTest() {
+  allowed_touch_action_.reset();
+  scrolling_touch_action_.reset();
+}
+
 void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   // TODO(https://crbug.com/849819): add a DCHECK for
   // |has_touch_event_handler_|.

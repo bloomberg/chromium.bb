@@ -69,6 +69,8 @@ class CONTENT_EXPORT TouchActionFilter {
   void IncreaseActiveTouches();
   void DecreaseActiveTouches();
 
+  void ForceResetTouchActionForTest();
+
   // Debugging only.
   void AppendToGestureSequenceForDebugging(const char* str);
 
