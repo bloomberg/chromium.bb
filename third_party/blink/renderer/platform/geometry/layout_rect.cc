@@ -159,12 +159,6 @@ LayoutRect UnionRectEvenIfEmpty(const Vector<LayoutRect>& rects) {
   return result;
 }
 
-LayoutRect EnclosingLayoutRect(const FloatRect& rect) {
-  LayoutPoint location = FlooredLayoutPoint(rect.MinXMinYCorner());
-  LayoutPoint max_point = CeiledLayoutPoint(rect.MaxXMaxYCorner());
-  return LayoutRect(location, max_point - location);
-}
-
 std::ostream& operator<<(std::ostream& ostream, const LayoutRect& rect) {
   return ostream << rect.ToString();
 }
