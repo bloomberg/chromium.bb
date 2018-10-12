@@ -47,24 +47,32 @@ void NamesMap::Add(const AtomicString& key, const AtomicString& value) {
 
 // The states that can occur while parsing the part map and their transitions.
 // A "+" indicates that this transition should consume the current character.
+// A "*" indicates that this is invalid input, usually the decision here is
+// to just do our best and recover gracefully.
 enum State {
   kPreKey,     // Searching for the start of a key:
-               //   space, comma -> kPreKey+
+               //   space, comma, colon* -> kPreKey+
                //   else -> kKey
   kKey,        // Searching for the end of a key:
-               //   space, comma -> kPreValue
-               //   else -> kKey+
-  kPreValue,   // Searching for the start of a value:
-               //   space -> kPreValue+
                //   comma -> kPreKey+
+               //   colon -> kPreValue+
+               //   space -> kPostKey+
+               //   else -> kKey+
+  kPostKey,    // Searching for a delimiter:
+               //   comma -> kPreKey+
+               //   colon -> kPreValue+
+               //   space, else* -> kPostKey+
+  kPreValue,   // Searching for the start of a value:
+               //   comma -> kPreKey+
+               //   colon*, space -> kPreValue+
                //   else -> kValue+
   kValue,      // Searching for the end of a value:
                //   comma -> kPreKey+
-               //   space -> kPostValue+
+               //   colon*, space -> kPostValue+
                //   else -> kValue+
   kPostValue,  // Searching for the comma after the value:
                //   comma -> kPreKey+
-               //   else -> kPostValue+
+               //   colon*, else -> kPostValue+
 };
 
 template <typename CharacterType>
@@ -80,24 +88,55 @@ void NamesMap::Set(const AtomicString& source,
   State state = kPreKey;
   AtomicString key;
   while (cur < length) {
+    // Almost all cases break, ensuring that some input is consumed and we avoid
+    // an infinite loop. For the few transitions which should happen without
+    // consuming input we fall through into the new state's case. This makes it
+    // easy to see the cases which don't consume input and check that they lead
+    // to a case which does.
+    //
+    // The only state which should set a value for key is kKey, as we leave the
+    // state.
     switch (state) {
       case kPreKey:
-        // Skip any number of spaces and commas. When we find something else, it
-        // is the start of a key.
-        if (!IsHTMLSpaceOrComma<CharacterType>(characters[cur])) {
-          start = cur;
-          state = kKey;
-        }
-        break;
-      case kKey:
-        // At a space or comma, we have found the end of the key.
-        if (IsHTMLSpaceOrComma<CharacterType>(characters[cur])) {
-          key = AtomicString(characters + start, cur - start);
-          state = kPreValue;
-        } else {
+        // Skip any number of spaces, commas and colons. When we find something
+        // else, it is the start of a key.
+        if ((IsHTMLSpaceOrComma<CharacterType>(characters[cur]) ||
+             IsColon<CharacterType>(characters[cur]))) {
           break;
         }
+        start = cur;
+        state = kKey;
         FALLTHROUGH;
+      case kKey:
+        // At a comma this was a key without a value, the implicit value is the
+        // same as the key.
+        if (IsComma<CharacterType>(characters[cur])) {
+          key = AtomicString(characters + start, cur - start);
+          Add(key, key);
+          state = kPreKey;
+          // At a colon, we have found the end of the key and we expect a value.
+        } else if (IsColon<CharacterType>(characters[cur])) {
+          key = AtomicString(characters + start, cur - start);
+          state = kPreValue;
+          // At a space, we have found the end of the key.
+        } else if (IsHTMLSpace<CharacterType>(characters[cur])) {
+          key = AtomicString(characters + start, cur - start);
+          state = kPostKey;
+        }
+        break;
+      case kPostKey:
+        // At a comma this was a key without a value, the implicit value is the
+        // same as the key.
+        if (IsComma<CharacterType>(characters[cur])) {
+          Add(key, key);
+          state = kPreKey;
+          // At a colon this was a key with a value, we expect a value.
+        } else if (IsColon<CharacterType>(characters[cur])) {
+          state = kPreValue;
+        }
+        // Spaces should be consumed. We consume other characters too
+        // although the input is invalid
+        break;
       case kPreValue:
         // At a comma this was a key without a value, the implicit value is the
         // same as the key.
@@ -106,20 +145,26 @@ void NamesMap::Set(const AtomicString& source,
           state = kPreKey;
           // If we reach a non-space character, we have found the start of the
           // value.
-        } else if (IsNotHTMLSpace<CharacterType>(characters[cur])) {
+        } else if (IsColon<CharacterType>(characters[cur]) ||
+                   IsHTMLSpace<CharacterType>(characters[cur])) {
+          break;
+        } else {
           start = cur;
           state = kValue;
         }
         break;
       case kValue:
-        // At a comma or space, we have found the end of the value.
-        if (IsHTMLSpaceOrComma<CharacterType>(characters[cur])) {
+        // At a comma, we have found the end of the value and expect
+        // the next key.
+        if (IsComma<CharacterType>(characters[cur])) {
           Add(key, AtomicString(characters + start, cur - start));
-          if (IsComma<CharacterType>(characters[cur])) {
-            state = kPreKey;
-          } else {
-            state = kPostValue;
-          }
+          state = kPreKey;
+          // At a space or colon, we have found the end of the value,
+          // although a colon is invalid here.
+        } else if (IsHTMLSpace<CharacterType>(characters[cur]) ||
+                   IsColon<CharacterType>(characters[cur])) {
+          Add(key, AtomicString(characters + start, cur - start));
+          state = kPostValue;
         }
         break;
       case kPostValue:
@@ -141,6 +186,7 @@ void NamesMap::Set(const AtomicString& source,
       // The string ends with a key.
       key = AtomicString(characters + start, cur - start);
       FALLTHROUGH;
+    case kPostKey:
     case kPreValue:
       // The string ends after a key but with nothing else useful.
       Add(key, key);
