@@ -3057,8 +3057,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (BOOL)isTabScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
   DCHECK(bubblePresenter == self.bubblePresenter);
-  CGPoint scrollOffset =
-      self.currentWebState->GetWebViewProxy().scrollViewProxy.contentOffset;
+  CRWWebViewScrollViewProxy* scrollProxy =
+      self.currentWebState->GetWebViewProxy().scrollViewProxy;
+  CGPoint scrollOffset = scrollProxy.contentOffset;
+  UIEdgeInsets contentInset = scrollProxy.contentInset;
 
   // If there is a native controller, use the native controller's scroll offset.
   id nativeController =
@@ -3068,7 +3070,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     scrollOffset = [nativeController scrollOffset];
   }
 
-  return CGPointEqualToPoint(scrollOffset, CGPointZero);
+  return AreCGFloatsEqual(scrollOffset.y, -contentInset.top);
 }
 
 #pragma mark - SnapshotGeneratorDelegate methods
