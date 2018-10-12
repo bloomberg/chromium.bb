@@ -254,6 +254,17 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   histogram_tester_.ExpectTotalCount(
       "SignedExchange.Time.CertificateFetch.Success",
       PrefetchIsEnabled() ? 2 : 1);
+  if (PrefetchIsEnabled()) {
+    histogram_tester_.ExpectUniqueSample("SignedExchange.Prefetch.LoadResult",
+                                         SignedExchangeLoadResult::kSuccess, 1);
+    histogram_tester_.ExpectUniqueSample(
+        "SignedExchange.Prefetch.Recall.30Seconds", true, 1);
+    histogram_tester_.ExpectUniqueSample(
+        "SignedExchange.Prefetch.Precision.30Seconds", true, 1);
+  } else {
+    histogram_tester_.ExpectUniqueSample(
+        "SignedExchange.Prefetch.Recall.30Seconds", false, 1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
