@@ -1786,7 +1786,6 @@ void RenderTextHarfBuzz::ShapeRuns(
   TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRuns", "run_count", runs.size());
 
   const Font& primary_font = font_list().GetPrimaryFont();
-  Font best_font(primary_font);
 
   for (const Font& font : font_list().GetFonts()) {
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
@@ -1816,33 +1815,40 @@ void RenderTextHarfBuzz::ShapeRuns(
   }
 #endif
 
-  std::vector<Font> fallback_font_list = GetFallbackFonts(primary_font);
+  std::vector<Font> fallback_font_list;
+  {
+    TRACE_EVENT0("ui", "RenderTextHarfBuzz::GetFallbackFonts");
+    fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
-  // Append fonts in the fallback list of the preferred fallback font.
-  // TODO(tapted): Investigate whether there's a case that benefits from this on
-  // Mac.
-  if (!preferred_fallback_family.empty()) {
-    std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
-    fallback_font_list.insert(fallback_font_list.end(), fallback_fonts.begin(),
-                              fallback_fonts.end());
-  }
+    // Append fonts in the fallback list of the preferred fallback font.
+    // TODO(tapted): Investigate whether there's a case that benefits from this
+    // on Mac.
+    if (!preferred_fallback_family.empty()) {
+      std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
+      fallback_font_list.insert(fallback_font_list.end(),
+                                fallback_fonts.begin(), fallback_fonts.end());
+    }
 
-  // Add Segoe UI and its associated linked fonts to the fallback font list to
-  // ensure that the fallback list covers the basic cases.
-  // http://crbug.com/467459. On some Windows configurations the default font
-  // could be a raster font like System, which would not give us a reasonable
-  // fallback font list.
-  if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
-      !base::LowerCaseEqualsASCII(preferred_fallback_family, "segoe ui")) {
-    std::vector<Font> default_fallback_families =
-        GetFallbackFonts(Font("Segoe UI", 13));
-    fallback_font_list.insert(fallback_font_list.end(),
-        default_fallback_families.begin(), default_fallback_families.end());
-  }
+    // Add Segoe UI and its associated linked fonts to the fallback font list to
+    // ensure that the fallback list covers the basic cases.
+    // http://crbug.com/467459. On some Windows configurations the default font
+    // could be a raster font like System, which would not give us a reasonable
+    // fallback font list.
+    if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
+        !base::LowerCaseEqualsASCII(preferred_fallback_family, "segoe ui")) {
+      std::vector<Font> default_fallback_families =
+          GetFallbackFonts(Font("Segoe UI", 13));
+      fallback_font_list.insert(fallback_font_list.end(),
+                                default_fallback_families.begin(),
+                                default_fallback_families.end());
+    }
 #endif
+  }
 
   // Use a set to track the fallback fonts and avoid duplicate entries.
+  TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRunsWithFallbackFonts",
+               "fonts_count", fallback_font_list.size());
   std::set<Font, CaseInsensitiveCompare> fallback_fonts;
 
   // Try shaping with the fallback fonts.
@@ -1865,8 +1871,12 @@ void RenderTextHarfBuzz::ShapeRuns(
     if (test_font_params.SetFontAndRenderParams(font, fallback_render_params)) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
-    if (runs.empty())
+    if (runs.empty()) {
+      TRACE_EVENT_INSTANT1("ui", "RenderTextHarfBuzz::FallbackFont",
+                           TRACE_EVENT_SCOPE_THREAD, "font_name",
+                           TRACE_STR_COPY(font_name.c_str()));
       return;
+    }
   }
 
   for (internal::TextRunHarfBuzz*& run : runs) {
