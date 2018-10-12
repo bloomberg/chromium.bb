@@ -354,11 +354,17 @@ Polymer({
    * @param {!KeyboardEvent} e The keyboard event
    */
   onKeydown_: function(e) {
-    e.stopPropagation();
-    if (e.key == 'Enter') {
+    if (e.key === 'Escape')
+      return;
+
+    if (e.key === 'Enter') {
       this.resetAndUpdate();
       this.resetIfEmpty_();
-    } else if (e.shiftKey && e.key == 'Tab') {
+      return;
+    }
+
+    e.stopPropagation();
+    if (e.shiftKey && e.key === 'Tab') {
       this.$.customRadioButton.focus();
       e.preventDefault();
     }
