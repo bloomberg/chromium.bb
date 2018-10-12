@@ -207,13 +207,9 @@
 
   # https://crbug.com/330260
   'win': [
-    # These two targets force symbol_level to be at least 1, they will work
-    # once we've figured out the PDB aging field.
-    'crashpad_snapshot_test_image_reader.exe',
-    'crashpad_snapshot_test_image_reader_module.dll',
-
-    # TODO(thakis): Figure out what's up with these two.
+    # TODO(thakis): Figure out what's up with these three.
     'mini_installer.exe',
+    'mini_installer.exe.pdb',
     'previous_version_mini_installer.exe',
 
     # These probably have mtimes in the zip headers and the scripts creating
@@ -245,7 +241,6 @@
     'content_browsertests.isolated',
     'content_shell_crash_test.isolated',
     'content_unittests.isolated',
-    'crashpad_tests.isolated',
     'extensions_browsertests.isolated',
     'extensions_unittests.isolated',
     'gin_unittests.isolated',
