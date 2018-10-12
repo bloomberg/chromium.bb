@@ -351,11 +351,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile.get());
     EXPECT_TRUE(user->profile_ever_initialized());
 #endif
-
-    // Creating a profile causes an implicit connection attempt to a Mojo
-    // service, which occurs as part of a new task. Before deleting |profile|,
-    // ensure this task runs to prevent a crash.
-    FlushIoTaskRunnerAndSpinThreads();
   }
 
   FlushIoTaskRunnerAndSpinThreads();
@@ -376,11 +371,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
     std::unique_ptr<Profile> profile(CreateProfile(
         temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), false);
-
-    // Creating a profile causes an implicit connection attempt to a Mojo
-    // service, which occurs as part of a new task. Before deleting |profile|,
-    // ensure this task runs to prevent a crash.
-    FlushIoTaskRunnerAndSpinThreads();
   }
 
   FlushIoTaskRunnerAndSpinThreads();
@@ -509,11 +499,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
     profile->SetExitType(Profile::EXIT_CRASHED);
     std::string final_value(prefs->GetString(prefs::kSessionExitType));
     EXPECT_EQ(crash_value, final_value);
-
-    // Creating a profile causes an implicit connection attempt to a Mojo
-    // service, which occurs as part of a new task. Before deleting |profile|,
-    // ensure this task runs to prevent a crash.
-    FlushIoTaskRunnerAndSpinThreads();
   }
 
   FlushIoTaskRunnerAndSpinThreads();

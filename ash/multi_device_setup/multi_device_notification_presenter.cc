@@ -183,10 +183,7 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
     return;
 
   std::string service_user_id = user_session->user_info->service_user_id;
-
-  // Cannot proceed if there is no service user ID.
-  if (service_user_id.empty())
-    return;
+  DCHECK(!service_user_id.empty());
 
   connector_->BindInterface(
       service_manager::Identity(

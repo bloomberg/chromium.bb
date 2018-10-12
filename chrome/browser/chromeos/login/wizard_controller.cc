@@ -856,20 +856,10 @@ void WizardController::ShowMultiDeviceSetupScreen() {
     return;
   }
 
-  // Only attempt the setup flow for non-guest users.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
   multidevice_setup::MultiDeviceSetupClient* client =
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile());
-
-  if (!client) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
+  DCHECK(client);
 
   // If there is no eligible multi-device host phone or if there is a phone and
   // it has already been set, skip the setup flow.
