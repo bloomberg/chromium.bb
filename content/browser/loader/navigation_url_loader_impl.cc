@@ -327,6 +327,33 @@ bool IsRedirectSafe(const GURL& from_url,
                                                              resource_context);
 }
 
+// URLLoaderFactory for handling about: URLs. This treats everything as
+// about:blank since no other about: features should be available to web
+// content.
+class AboutURLLoaderFactory : public network::mojom::URLLoaderFactory {
+ private:
+  // network::mojom::URLLoaderFactory:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    network::ResourceResponseHead response;
+    response.mime_type = "text/html";
+    client->OnReceiveResponse(response);
+    client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest loader) override {
+    bindings_.AddBinding(this, std::move(loader));
+  }
+
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+};
+
 }  // namespace
 
 // Kept around during the lifetime of the navigation request, and is
@@ -1532,6 +1559,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
                                          partition->GetFileSystemContext(),
                                          storage_domain);
   }
+
+  non_network_url_loader_factories_[url::kAboutScheme] =
+      std::make_unique<AboutURLLoaderFactory>();
 
   non_network_url_loader_factories_[url::kFileScheme] =
       std::make_unique<FileURLLoaderFactory>(
