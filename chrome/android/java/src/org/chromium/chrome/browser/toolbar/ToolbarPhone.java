@@ -2947,8 +2947,8 @@ public class ToolbarPhone extends ToolbarLayout
             @Override
             public void onDismiss() {
                 if (mControlsVisibilityDelegate != null) {
-                    mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenCalloutToken);
-                    mFullscreenCalloutToken = FullscreenManager.INVALID_TOKEN;
+                    mControlsVisibilityDelegate.releasePersistentShowingToken(
+                            mFullscreenCalloutToken);
                 }
                 mTabSwitcherCallout = null;
             }

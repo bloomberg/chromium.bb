@@ -22,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
+import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -50,6 +51,7 @@ public class ChromeFullscreenManager
     private final BrowserStateBrowserControlsVisibilityDelegate mBrowserVisibilityDelegate;
     @ControlsPosition private final int mControlsPosition;
     private final boolean mExitFullscreenOnStop;
+    private final TokenHolder mHidingTokenHolder = new TokenHolder(this::scheduleVisibilityUpdate);
 
     private ControlContainer mControlContainer;
     private int mTopControlContainerHeight;
@@ -68,8 +70,6 @@ public class ChromeFullscreenManager
 
     private boolean mInGesture;
     private boolean mContentViewScrolling;
-
-    private boolean mBrowserControlsAndroidViewHidden;
 
     private final ArrayList<FullscreenListener> mListeners = new ArrayList<>();
 
@@ -539,18 +539,32 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * @param hide Whether or not to force the browser controls Android view to hide.  If this is
-     *             {@code false} the browser controls Android view will show/hide based on position,
-     *             if it is {@code true} the browser controls Android view will always be hidden.
+     * Forces the Android controls to hide. While there are acquired tokens the browser controls
+     * Android view will always be hidden, otherwise they will show/hide based on position.
+     *
+     * NB: this only affects the Android controls. For controlling composited toolbar visibility,
+     * implement {@link BrowserControlsVisibilityDelegate#canShowBrowserControls()}.
      */
-    public void setHideBrowserControlsAndroidView(boolean hide) {
-        if (mBrowserControlsAndroidViewHidden == hide) return;
-        mBrowserControlsAndroidViewHidden = hide;
-        scheduleVisibilityUpdate();
+    public int hideAndroidControls() {
+        return mHidingTokenHolder.acquireToken();
+    }
+
+    /** Similar to {@link #hideAndroidControls}, but also replaces an old token */
+    public int hideAndroidControlsAndClearOldToken(int oldToken) {
+        int newToken = hideAndroidControls();
+        mHidingTokenHolder.releaseToken(oldToken);
+        return newToken;
+    }
+
+    /** Release a hiding token. */
+    public void releaseAndroidControlsHidingToken(int token) {
+        mHidingTokenHolder.releaseToken(token);
     }
 
     private boolean shouldShowAndroidControls() {
-        if (mBrowserControlsAndroidViewHidden) return false;
+        if (mHidingTokenHolder.hasTokens()) {
+            return false;
+        }
         if (getTab() != null
                 && TabBrowserControlsOffsetHelper.from(getTab()).isControlsOffsetOverridden()) {
             return true;
@@ -672,5 +686,11 @@ public class ChromeFullscreenManager
     public void onContentViewScrollingStateChanged(boolean scrolling) {
         mContentViewScrolling = scrolling;
         if (!scrolling) updateVisuals();
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        mBrowserVisibilityDelegate.destroy();
     }
 }

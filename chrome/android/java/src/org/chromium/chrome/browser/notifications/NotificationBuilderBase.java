@@ -508,7 +508,7 @@ public abstract class NotificationBuilderBase {
         }
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
                 && (Build.MANUFACTURER.equalsIgnoreCase("samsung")
-                           || Build.MANUFACTURER.equalsIgnoreCase("yulong"))) {
+                || Build.MANUFACTURER.equalsIgnoreCase("yulong"))) {
             // Updating a notification with a bitmap status bar icon leads to a crash on Samsung
             // and Coolpad (Yulong) devices on Marshmallow, see https://crbug.com/829367.
             return false;

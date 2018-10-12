@@ -79,7 +79,7 @@ import org.chromium.chrome.browser.dependency_injection.CustomTabActivityCompone
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
@@ -313,9 +313,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return new TrustedWebActivityUi(
                 new TrustedWebActivityUi.TrustedWebActivityUiDelegate() {
                     @Override
-                    public BrowserStateBrowserControlsVisibilityDelegate
-                    getBrowserStateBrowserControlsVisibilityDelegate() {
-                        return getFullscreenManager().getBrowserVisibilityDelegate();
+                    public ChromeFullscreenManager getFullscreenManager() {
+                        return CustomTabActivity.this.getFullscreenManager();
                     }
 
                     @Override
@@ -486,6 +485,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 getFullscreenManager());
         mBottomBarDelegate.showBottomBarIfNecessary();
         mTopBarDelegate = new CustomTabTopBarDelegate(this);
+
+        if (mTrustedWebActivityUi != null) {
+            mTrustedWebActivityUi.onPostInflationStartup();
+        }
     }
 
     @Override

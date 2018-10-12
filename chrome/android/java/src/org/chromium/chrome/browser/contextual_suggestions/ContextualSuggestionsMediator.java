@@ -515,9 +515,8 @@ class ContextualSuggestionsMediator
         }
         mHelpBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
-            mFullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
+            mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
                     mFullscreenToken);
-            mFullscreenToken = FullscreenManager.INVALID_TOKEN;
             mHelpBubble = null;
         });
         mFullscreenToken =

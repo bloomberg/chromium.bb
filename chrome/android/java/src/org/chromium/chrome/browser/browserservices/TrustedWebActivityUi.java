@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.browserservices;
 
 import android.support.customtabs.CustomTabsService;
 
-import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -34,6 +35,8 @@ public class TrustedWebActivityUi {
 
     private boolean mInTrustedWebActivity = true;
 
+    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
+
     /**
      * A delegate for embedders to implement to inject information into this class. The reason for
      * using this instead of passing these dependencies into the constructor is because they may not
@@ -41,11 +44,10 @@ public class TrustedWebActivityUi {
      */
     public interface TrustedWebActivityUiDelegate {
         /**
-         * Provides a {@link BrowserStateBrowserControlsVisibilityDelegate} that is used to
-         * temporarily force showing the browser controls when we leave a trusted origin.
+         * Provides a {@link ChromeFullscreenManager} that is used to control visibility of the
+         * toolbar.
          */
-        BrowserStateBrowserControlsVisibilityDelegate
-            getBrowserStateBrowserControlsVisibilityDelegate();
+        ChromeFullscreenManager getFullscreenManager();
 
         /**
          * Provides the package name of the client for verification.
@@ -156,6 +158,14 @@ public class TrustedWebActivityUi {
         }, packageName, RELATIONSHIP).start(origin);
     }
 
+    public void onPostInflationStartup() {
+        // TODO(pshmakov): Move this over to LifecycleObserver or something similar once available.
+        if (mInTrustedWebActivity) {
+            // Hide Android controls as soon as they are inflated.
+            mControlsHidingToken = mDelegate.getFullscreenManager().hideAndroidControls();
+        }
+    }
+
     /** Notify (for metrics purposes) that the TWA has been resumed. */
     public void onResume() {
         // TODO(peconn): Move this over to LifecycleObserver or something similar once available.
@@ -176,17 +186,22 @@ public class TrustedWebActivityUi {
 
         mInTrustedWebActivity = enabled;
 
+        ChromeFullscreenManager fullscreenManager = mDelegate.getFullscreenManager();
+
         if (enabled) {
+            mControlsHidingToken =
+                    fullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
             mDisclosure.showSnackbarIfNeeded(mDelegate.getSnackbarManager(),
                     mDelegate.getClientPackageName());
 
         } else {
+            fullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
             // Force showing the controls for a bit when leaving Trusted Web Activity mode.
-            mDelegate.getBrowserStateBrowserControlsVisibilityDelegate().showControlsTransient();
+            fullscreenManager.getBrowserVisibilityDelegate().showControlsTransient();
             mDisclosure.dismissSnackbarIfNeeded(mDelegate.getSnackbarManager());
         }
 
-        // Reflect the browser controls update in the Tab.
+        // Apply the change in the BrowserControlsVisibilityDelegate
         tab.updateFullscreenEnabledState();
     }
 

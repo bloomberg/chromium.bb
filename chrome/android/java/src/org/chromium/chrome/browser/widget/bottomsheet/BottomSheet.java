@@ -987,7 +987,7 @@ public class BottomSheet extends FrameLayout
         mIsSheetOpen = false;
 
         // Update the browser controls since they are permanently shown while the sheet is open.
-        mFullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
+        mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
                 mPersistentControlsToken);
 
         for (BottomSheetObserver o : mObservers) o.onSheetClosed(reason);
