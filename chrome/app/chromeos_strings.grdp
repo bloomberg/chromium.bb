@@ -271,6 +271,12 @@
   <message name="IDS_UPDATE_CANCELLED" desc="Message shown when the update has been cancelled by user">
     Cancelling update...
   </message>
+  <message name="IDS_UPDATE_OVER_CELLULAR_PROMPT_TITLE" desc="Title for the dialog shown to the user in Chrome OS OOBE before forced auto-update is attempted if the Chrome OS device is connected to a cellular/metered network. The dialog warns the user that procceeding with OOBE on a mobile network can cause overage charges.">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> needs an update
+  </message>
+  <message name="IDS_UPDATE_OVER_CELLULAR_PROMPT_MESSAGE" desc="Contens of the dialog shown to the user in Chrome OS OOBE before forced auto-update is attempted if the Chrome OS device is connected to a cellular/metered network. The dialog warns the user that procceeding with OOBE on a mobile network can cause overage charges. The dialog title states that the Chromebook needs an update.">
+    If you download the update over your mobile network, it could result in overage charges.
+  </message>
   <message name="IDS_REMORA_CONFIRM_MESSAGE" desc="Remora confirm message on the first OOBE screen">
     Your Hangouts Meet hardware is ready to be set up.
   </message>

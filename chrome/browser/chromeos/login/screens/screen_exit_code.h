@@ -73,6 +73,7 @@ enum class ScreenExitCode {
   MARKETING_OPT_IN_FINISHED = 46,
   ASSISTANT_OPTIN_FLOW_FINISHED = 47,
   MULTIDEVICE_SETUP_FINISHED = 48,
+  UPDATE_REJECT_OVER_CELLULAR = 49,
   EXIT_CODES_COUNT  // not a real code, must be the last
 };
 
