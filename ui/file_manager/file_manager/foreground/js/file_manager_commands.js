@@ -395,6 +395,7 @@ CommandHandler.MenuCommandsForUMA = {
   HIDDEN_ANDROID_FOLDERS_SHOW: 'toggle-hidden-android-folders-on',
   HIDDEN_ANDROID_FOLDERS_HIDE: 'toggle-hidden-android-folders-off',
   SHARE_WITH_LINUX: 'share-with-linux',
+  MANAGE_LINUX_SHARING: 'manage-linux-sharing',
 };
 
 /**
@@ -420,6 +421,7 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE,
   CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX,
+  CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -1669,6 +1671,31 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
         !Crostini.isPathShared(entries[0], fileManager.volumeManager) &&
         Crostini.canSharePath(entries[0], fileManager.volumeManager);
+    event.command.setHidden(!event.canExecute);
+  }
+});
+
+/**
+ * Link to settings page to manage files and folders shared with crostini
+ * container.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['manage-linux-sharing'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    chrome.fileManagerPrivate.openSettingsSubpage('crostini/sharedPaths');
+    CommandHandler.recordMenuItemSelected_(
+        CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING);
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    event.canExecute = Crostini.IS_CROSTINI_FILES_ENABLED;
     event.command.setHidden(!event.canExecute);
   }
 });

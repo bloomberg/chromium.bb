@@ -147,3 +147,58 @@ crostiniShare.testSharePathNotShown = (done) => {
         done();
       });
 };
+
+// Verify gear menu 'Manage Linux sharing'.
+crostiniShare.testGearMenuManageLinuxSharing = (done) => {
+  const gearMenuClosed = '#gear-menu[hidden]';
+  const manageLinuxSharingOptionHidden =
+      '#gear-menu:not([hidden]) #gear-menu-manage-linux-sharing[hidden]';
+  const manageLinuxSharingOptionShown =
+      '#gear-menu:not([hidden]) #gear-menu-manage-linux-sharing:not([hidden])';
+  chrome.metricsPrivate.values_ = [];
+
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        // Setup with crostini disabled.
+        chrome.fileManagerPrivate.crostiniEnabled_ = false;
+        fileManager.setupCrostini_();
+        return test.repeatUntil(
+            () => !Crostini.IS_CROSTINI_FILES_ENABLED ||
+                test.pending('crostini setup'));
+      })
+      .then(() => {
+        // Click gear menu, ensure 'Manage Linux sharing' is hidden.
+        assertTrue(test.fakeMouseClick('#gear-button'));
+        return test.waitForElement(manageLinuxSharingOptionHidden);
+      })
+      .then(() => {
+        // Close gear menu.
+        assertTrue(test.fakeMouseClick('#gear-button'));
+        return test.waitForElement(gearMenuClosed);
+      })
+      .then(() => {
+        // Setup with crostini enabled.
+        chrome.fileManagerPrivate.crostiniEnabled_ = true;
+        fileManager.setupCrostini_();
+        return test.repeatUntil(
+            () => Crostini.IS_CROSTINI_FILES_ENABLED ||
+                test.pending('crostini setup'));
+      })
+      .then(() => {
+        // Click gear menu, ensure 'Manage Linux sharing' is shown.
+        assertTrue(test.fakeMouseClick('#gear-button'));
+        return test.waitForElement(manageLinuxSharingOptionShown);
+      })
+      .then(() => {
+        // Click 'Manage Linux sharing'.
+        assertTrue(test.fakeMouseClick('#gear-menu-manage-linux-sharing'));
+        return test.waitForElement(gearMenuClosed);
+      })
+      .then(() => {
+        // Verify UMA.
+        const lastEnumUma = chrome.metricsPrivate.values_.pop();
+        assertEquals('FileBrowser.MenuItemSelected', lastEnumUma[0].metricName);
+        assertEquals(13 /* Manage Linux sharing */, lastEnumUma[1]);
+        done();
+      });
+};

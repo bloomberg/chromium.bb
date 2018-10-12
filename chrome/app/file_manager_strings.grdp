@@ -513,6 +513,9 @@
   <message name="IDS_FILE_BROWSER_SHARE_WITH_LINUX_BUTTON_LABEL" desc="Label for menu that will share a folder with the crostini Linux container.">
     Share with Linux
   </message>
+  <message name="IDS_FILE_BROWSER_MANAGE_LINUX_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the crostini Linux container.">
+    Manage Linux sharing
+  </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files
   </message>

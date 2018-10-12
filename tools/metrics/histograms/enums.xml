@@ -21401,6 +21401,7 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="Toggle show hidden Android folders (on)"/>
   <int value="11" label="Toggle show hidden Android folders (off)"/>
   <int value="12" label="Share with Linux"/>
+  <int value="13" label="Manage Linux sharing"/>
 </enum>
 
 <enum name="FileManagerQuickViewWayToOpen">
