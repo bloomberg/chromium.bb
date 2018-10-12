@@ -14,6 +14,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
+#include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -52,6 +53,30 @@ const int kMinControlButtonSize = 48;
 // Colors for the control buttons.
 SkColor kBgColor = SK_ColorWHITE;
 SkColor kControlIconColor = SK_ColorBLACK;
+
+// Returns the quadrant the OverlayWindowViews is primarily in on the current
+// work area.
+OverlayWindowViews::WindowQuadrant GetCurrentWindowQuadrant(
+    const gfx::Rect window_bounds,
+    content::PictureInPictureWindowController* controller) {
+  gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(
+              controller->GetInitiatorWebContents()->GetTopLevelNativeWindow())
+          .work_area();
+  gfx::Point window_center = window_bounds.CenterPoint();
+
+  // Check which quadrant the center of the window appears in.
+  if (window_center.x() < work_area.width() / 2) {
+    return (window_center.y() < work_area.height() / 2)
+               ? OverlayWindowViews::WindowQuadrant::kTopLeft
+               : OverlayWindowViews::WindowQuadrant::kBottomLeft;
+  }
+  return (window_center.y() < work_area.height() / 2)
+             ? OverlayWindowViews::WindowQuadrant::kTopRight
+             : OverlayWindowViews::WindowQuadrant::kBottomRight;
+}
+
 }  // namespace
 
 // OverlayWindow implementation of NonClientFrameView.
@@ -142,6 +167,9 @@ OverlayWindowViews::OverlayWindowViews(
       controls_scrim_view_(new views::View()),
       controls_parent_view_(new views::View()),
       close_controls_view_(new views::CloseImageButton(this)),
+#if defined(OS_CHROMEOS)
+      resize_handle_view_(new views::ResizeHandleButton(this)),
+#endif
       play_pause_controls_view_(new views::ToggleImageButton(this)),
       hide_controls_timer_(
           FROM_HERE,
@@ -266,6 +294,13 @@ void OverlayWindowViews::SetUpViews() {
   play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
   play_pause_controls_view_->set_owned_by_client();
 
+#if defined(OS_CHROMEOS)
+  // views::View that shows the affordance that the window can be resized. ----
+  resize_handle_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  resize_handle_view_->layer()->SetFillsBoundsOpaquely(false);
+  resize_handle_view_->set_owned_by_client();
+#endif
+
   // Accessibility.
   play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
   const base::string16 play_pause_accessible_button_label(
@@ -286,6 +321,9 @@ void OverlayWindowViews::SetUpViews() {
   GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(close_controls_view_.get());
+#if defined(OS_CHROMEOS)
+  GetContentsView()->AddChildView(resize_handle_view_.get());
+#endif
 
   UpdatePlayPauseControlsSize();
   UpdateControlsVisibility(false);
@@ -323,6 +361,11 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
     play_pause_controls_view_->SetVisible(false);
 
   GetCloseControlsLayer()->SetVisible(is_visible);
+
+#if defined(OS_CHROMEOS)
+  GetResizeHandleLayer()->SetVisible(is_visible);
+#endif
+
   GetControlsScrimLayer()->SetVisible(
       (playback_state_ == kNoVideo) ? false : is_visible);
   GetControlsParentLayer()->SetVisible(
@@ -337,7 +380,11 @@ void OverlayWindowViews::UpdateControlsBounds() {
   controls_scrim_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), larger_window_bounds.size()));
 
-  close_controls_view_->SetPosition(GetBounds().size());
+  WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
+  close_controls_view_->SetPosition(GetBounds().size(), quadrant);
+#if defined(OS_CHROMEOS)
+  resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
+#endif
 
   controls_parent_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
@@ -609,6 +656,13 @@ void OverlayWindowViews::OnNativeWidgetMove() {
   // the window to reappear with the same origin point when a new video is
   // shown.
   window_bounds_ = GetBounds();
+
+#if defined(OS_CHROMEOS)
+  // Update the positioning of some icons when the window is moved.
+  WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
+  close_controls_view_->SetPosition(GetBounds().size(), quadrant);
+  resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
+#endif
 }
 
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
@@ -771,6 +825,10 @@ ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
   return close_controls_view_->layer();
 }
 
+ui::Layer* OverlayWindowViews::GetResizeHandleLayer() {
+  return resize_handle_view_->layer();
+}
+
 ui::Layer* OverlayWindowViews::GetControlsParentLayer() {
   return controls_parent_view_->layer();
 }
@@ -786,6 +844,14 @@ void OverlayWindowViews::TogglePlayPause() {
 views::ToggleImageButton*
 OverlayWindowViews::play_pause_controls_view_for_testing() const {
   return play_pause_controls_view_.get();
+}
+
+gfx::Point OverlayWindowViews::close_image_position_for_testing() const {
+  return close_controls_view_->origin();
+}
+
+gfx::Point OverlayWindowViews::resize_handle_position_for_testing() const {
+  return resize_handle_view_->origin();
 }
 
 views::View* OverlayWindowViews::controls_parent_view_for_testing() const {
