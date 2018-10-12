@@ -45,6 +45,10 @@ struct CSSSyntaxComponent {
   }
 
   bool IsRepeatable() const { return repeat_ != CSSSyntaxRepeat::kNone; }
+  char Separator() const {
+    DCHECK(IsRepeatable());
+    return repeat_ == CSSSyntaxRepeat::kSpaceSeparated ? ' ' : ',';
+  }
 
   bool CanTake(const CSSStyleValue&) const;
 

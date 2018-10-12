@@ -22,6 +22,21 @@ namespace blink {
 
 namespace {
 
+bool IsListValuedProperty(const CSSProperty& property,
+                          const PropertyRegistration* registration) {
+  if (property.IsRepeated())
+    return true;
+  // TODO(andruud): The concept of "list-valued properties" doesn't fully work
+  // in all cases. See https://github.com/w3c/css-houdini-drafts/issues/823
+  // For now we only consider a custom property list-valued if it has a single
+  // syntax component that is repeatable (e.g. <length>+).
+  if (property.IDEquals(CSSPropertyVariable) && registration) {
+    const auto& components = registration->Syntax().Components();
+    return components.size() == 1 && components[0].IsRepeatable();
+  }
+  return false;
+}
+
 CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
   DCHECK(CSSProperty::Get(property_id).IsRepeated());
   char separator = CSSProperty::Get(property_id).RepetitionSeparator();
@@ -36,6 +51,44 @@ CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
       NOTREACHED();
       return nullptr;
   }
+}
+
+const CSSVariableReferenceValue* CreateVariableReferenceValue(
+    const String& value,
+    const CSSParserContext& context) {
+  CSSTokenizer tokenizer(value);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange range(tokens);
+  scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
+      range, false, false, context.BaseURL(), context.Charset());
+  return CSSVariableReferenceValue::Create(variable_data, context);
+}
+
+const CSSVariableReferenceValue* CreateVariableReferenceValue(
+    const CSSProperty& property,
+    const AtomicString& custom_property_name,
+    const PropertyRegistration& registration,
+    const CSSStyleValueVector& values,
+    const CSSParserContext& context) {
+  DCHECK(IsListValuedProperty(property, &registration));
+  DCHECK_EQ(registration.Syntax().Components().size(), 1U);
+
+  char separator = registration.Syntax().Components()[0].Separator();
+
+  StringBuilder builder;
+
+  for (const auto& value : values) {
+    if (!CSSOMTypes::PropertyCanTake(property.PropertyID(),
+                                     custom_property_name, &registration,
+                                     *value)) {
+      return nullptr;
+    }
+    if (!builder.IsEmpty())
+      builder.Append(separator);
+    builder.Append(value->toString());
+  }
+
+  return CreateVariableReferenceValue(builder.ToString(), context);
 }
 
 const CSSValue* StyleValueToCSSValue(
@@ -69,13 +122,8 @@ const CSSValue* StyleValueToCSSValue(
     case CSSPropertyVariable:
       if (registration &&
           style_value.GetType() != CSSStyleValue::kUnparsedType) {
-        CSSTokenizer tokenizer(style_value.toString());
-        const auto tokens = tokenizer.TokenizeToEOF();
-        CSSParserTokenRange range(tokens);
         CSSParserContext* context = CSSParserContext::Create(execution_context);
-        scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
-            range, false, false, context->BaseURL(), context->Charset());
-        return CSSVariableReferenceValue::Create(variable_data, *context);
+        return CreateVariableReferenceValue(style_value.toString(), *context);
       }
       break;
     case CSSPropertyBorderBottomLeftRadius:
@@ -207,7 +255,7 @@ const CSSValue* CoerceStyleValueOrString(
     const PropertyRegistration* registration,
     const CSSStyleValueOrString& value,
     const ExecutionContext& execution_context) {
-  DCHECK(!property.IsRepeated());
+  DCHECK(!IsListValuedProperty(property, registration));
   DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
             !custom_property_name.IsNull());
 
@@ -233,9 +281,10 @@ const CSSValue* CoerceStyleValueOrString(
 const CSSValue* CoerceStyleValuesOrStrings(
     const CSSProperty& property,
     const AtomicString& custom_property_name,
+    const PropertyRegistration* registration,
     const HeapVector<CSSStyleValueOrString>& values,
     const ExecutionContext& execution_context) {
-  DCHECK(property.IsRepeated());
+  DCHECK(IsListValuedProperty(property, registration));
   DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
             !custom_property_name.IsNull());
   if (values.IsEmpty())
@@ -243,10 +292,17 @@ const CSSValue* CoerceStyleValuesOrStrings(
 
   CSSStyleValueVector style_values =
       StyleValueFactory::CoerceStyleValuesOrStrings(
-          property, custom_property_name, nullptr, values, execution_context);
+          property, custom_property_name, registration, values,
+          execution_context);
 
   if (style_values.IsEmpty())
     return nullptr;
+
+  if (property.IDEquals(CSSPropertyVariable) && registration) {
+    CSSParserContext* context = CSSParserContext::Create(execution_context);
+    return CreateVariableReferenceValue(property, custom_property_name,
+                                        *registration, style_values, *context);
+  }
 
   CSSValueList* result = CssValueListForPropertyID(property.PropertyID());
   for (const auto& style_value : style_values) {
@@ -317,9 +373,10 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
   }
 
   const CSSValue* result = nullptr;
-  if (property.IsRepeated()) {
-    result = CoerceStyleValuesOrStrings(property, custom_property_name, values,
-                                        *execution_context);
+  if (IsListValuedProperty(property, registration)) {
+    result =
+        CoerceStyleValuesOrStrings(property, custom_property_name, registration,
+                                   values, *execution_context);
   } else if (values.size() == 1U) {
     result =
         CoerceStyleValueOrString(property, custom_property_name, registration,
@@ -371,10 +428,10 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
     current_value = CssValueListForPropertyID(property_id);
   }
 
-  // TODO(andruud): Don't pass g_null_atom as custom property name
-  // once appending to custom properties is supported.
+  // TODO(andruud): Don't pass g_null_atom as custom property name and
+  // nullptr registration once appending to custom properties is supported.
   const CSSValue* result = CoerceStyleValuesOrStrings(
-      property, g_null_atom, values, *execution_context);
+      property, g_null_atom, nullptr, values, *execution_context);
   if (!result || !result->IsValueList()) {
     exception_state.ThrowTypeError("Invalid type for property");
     return;
