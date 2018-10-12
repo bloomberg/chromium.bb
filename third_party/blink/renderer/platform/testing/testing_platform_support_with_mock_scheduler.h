@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/test/test_mock_time_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/testing/scoped_main_thread_overrider.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -35,6 +36,8 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
  public:
   TestingPlatformSupportWithMockScheduler();
   ~TestingPlatformSupportWithMockScheduler() override;
+
+  std::unique_ptr<Thread> CreateMainThread();
 
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner() {
     return test_task_runner_;
@@ -77,7 +80,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   std::unique_ptr<scheduler::MainThreadSchedulerImpl> scheduler_;
   base::sequence_manager::SequenceManager*
       sequence_manager_;  // Owned by scheduler_.
-  std::unique_ptr<Thread> thread_;
+  std::unique_ptr<ScopedMainThreadOverrider> main_thread_overrider_;
 };
 
 }  // namespace blink

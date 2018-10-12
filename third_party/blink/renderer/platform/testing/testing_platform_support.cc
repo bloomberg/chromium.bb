@@ -96,7 +96,6 @@ TestingPlatformSupport::TestingPlatformSupport()
       interface_provider_(new TestingInterfaceProvider) {
   DCHECK(old_platform_);
   DCHECK(WTF::IsMainThread());
-  main_thread_ = old_platform_->CurrentThread();
 }
 
 TestingPlatformSupport::~TestingPlatformSupport() {
@@ -159,11 +158,21 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_memory_allocator_.get());
 
+  // TODO(yutak): The initialization steps below are essentially a subset of
+  // Platform::Initialize() steps with a few modifications for tests.
+  // We really shouldn't have those initialization steps in two places,
+  // because they are a very fragile piece of code (the initialization order
+  // is so sensitive) and we want it to be consistent between tests and
+  // production. Fix this someday.
   dummy_platform_ = std::make_unique<Platform>();
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize(nullptr);
   WTF::Initialize(nullptr);
+
+  // This must be called after WTF::Initialize(), because ThreadSpecific<>
+  // used in this function depends on WTF::IsMainThread().
+  Platform::CreateMainThreadForTesting();
 
   testing_platform_support_ = std::make_unique<TestingPlatformSupport>();
   Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());

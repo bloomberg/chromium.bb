@@ -27,8 +27,8 @@ TestingPlatformSupportWithMockScheduler::
 
   scheduler_ = std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::move(sequence_manager), base::nullopt);
-  thread_ = scheduler_->CreateMainThread();
-  main_thread_ = thread_.get();
+  main_thread_overrider_ = std::make_unique<ScopedMainThreadOverrider>(
+      scheduler_->CreateMainThread());
   // Set the work batch size to one so TakePendingTasks behaves as expected.
   scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
 

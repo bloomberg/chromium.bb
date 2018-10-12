@@ -1160,7 +1160,7 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
 }
 
 void RenderThreadImpl::InitializeCompositorThread() {
-  blink_platform_impl_->InitializeCompositorThread();
+  blink_platform_impl_->CreateAndSetCompositorThread();
   compositor_task_runner_ = blink_platform_impl_->CompositorThreadTaskRunner();
   compositor_task_runner_->PostTask(
       FROM_HERE,
