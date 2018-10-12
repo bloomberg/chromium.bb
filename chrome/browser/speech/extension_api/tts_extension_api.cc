@@ -191,7 +191,7 @@ bool TtsSpeakFunction::RunAsync() {
   UMA_HISTOGRAM_BOOLEAN("TextToSpeech.Utterance.HasGender",
                         !gender_str.empty());
 
-  double rate = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
+  double rate = blink::kWebSpeechSynthesisDoublePrefNotSet;
   if (options->HasKey(constants::kRateKey)) {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kRateKey, &rate));
@@ -201,7 +201,7 @@ bool TtsSpeakFunction::RunAsync() {
     }
   }
 
-  double pitch = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
+  double pitch = blink::kWebSpeechSynthesisDoublePrefNotSet;
   if (options->HasKey(constants::kPitchKey)) {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kPitchKey, &pitch));
@@ -211,7 +211,7 @@ bool TtsSpeakFunction::RunAsync() {
     }
   }
 
-  double volume = blink::SpeechSynthesisConstants::kDoublePrefNotSet;
+  double volume = blink::kWebSpeechSynthesisDoublePrefNotSet;
   if (options->HasKey(constants::kVolumeKey)) {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kVolumeKey, &volume));

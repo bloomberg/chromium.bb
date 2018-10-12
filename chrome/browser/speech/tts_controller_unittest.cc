@@ -213,20 +213,20 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
 
   std::unique_ptr<Utterance> utterance1 = std::make_unique<Utterance>(nullptr);
   // Initialized to default (unset constant) values.
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
+  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
             utterance1->continuous_parameters().rate);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
+  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
             utterance1->continuous_parameters().pitch);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDoublePrefNotSet,
+  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
             utterance1->continuous_parameters().volume);
 
   controller->UpdateUtteranceDefaults(utterance1.get());
   // Updated to global defaults.
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate,
+  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
             utterance1->continuous_parameters().rate);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch,
+  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
             utterance1->continuous_parameters().pitch);
-  EXPECT_EQ(blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume,
+  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
             utterance1->continuous_parameters().volume);
 
   // Now we will set prefs and expect those to be used as defaults.

@@ -79,9 +79,9 @@ bool IsFinalTtsEventType(TtsEventType event_type) {
 //
 
 UtteranceContinuousParameters::UtteranceContinuousParameters()
-    : rate(blink::SpeechSynthesisConstants::kDoublePrefNotSet),
-      pitch(blink::SpeechSynthesisConstants::kDoublePrefNotSet),
-      volume(blink::SpeechSynthesisConstants::kDoublePrefNotSet) {}
+    : rate(blink::kWebSpeechSynthesisDoublePrefNotSet),
+      pitch(blink::kWebSpeechSynthesisDoublePrefNotSet),
+      volume(blink::kWebSpeechSynthesisDoublePrefNotSet) {}
 
 //
 // VoiceData
@@ -577,28 +577,27 @@ void TtsControllerImpl::UpdateUtteranceDefaults(Utterance* utterance) {
   // Update pitch, rate and volume from user prefs if not set explicitly
   // on this utterance.
   const PrefService* prefs = GetPrefService(utterance);
-  if (rate == blink::SpeechSynthesisConstants::kDoublePrefNotSet) {
+  if (rate == blink::kWebSpeechSynthesisDoublePrefNotSet) {
     rate = prefs ? prefs->GetDouble(prefs::kTextToSpeechRate)
-                 : blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate;
+                 : blink::kWebSpeechSynthesisDefaultTextToSpeechRate;
   }
-  if (pitch == blink::SpeechSynthesisConstants::kDoublePrefNotSet) {
+  if (pitch == blink::kWebSpeechSynthesisDoublePrefNotSet) {
     pitch = prefs ? prefs->GetDouble(prefs::kTextToSpeechPitch)
-                  : blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch;
+                  : blink::kWebSpeechSynthesisDefaultTextToSpeechPitch;
   }
-  if (volume == blink::SpeechSynthesisConstants::kDoublePrefNotSet) {
-    volume = prefs
-                 ? prefs->GetDouble(prefs::kTextToSpeechVolume)
-                 : blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume;
+  if (volume == blink::kWebSpeechSynthesisDoublePrefNotSet) {
+    volume = prefs ? prefs->GetDouble(prefs::kTextToSpeechVolume)
+                   : blink::kWebSpeechSynthesisDefaultTextToSpeechVolume;
   }
 #else
   // Update pitch, rate and volume to defaults if not explicity set on
   // this utterance.
-  if (rate == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
-    rate = blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate;
-  if (pitch == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
-    pitch = blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch;
-  if (volume == blink::SpeechSynthesisConstants::kDoublePrefNotSet)
-    volume = blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume;
+  if (rate == blink::kWebSpeechSynthesisDoublePrefNotSet)
+    rate = blink::kWebSpeechSynthesisDefaultTextToSpeechRate;
+  if (pitch == blink::kWebSpeechSynthesisDoublePrefNotSet)
+    pitch = blink::kWebSpeechSynthesisDefaultTextToSpeechPitch;
+  if (volume == blink::kWebSpeechSynthesisDoublePrefNotSet)
+    volume = blink::kWebSpeechSynthesisDefaultTextToSpeechVolume;
 #endif  // defined(OS_CHROMEOS)
   utterance->set_continuous_parameters(rate, pitch, volume);
 }
