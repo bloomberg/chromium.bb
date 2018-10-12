@@ -239,7 +239,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                 mContext.getResources().getString(R.string.new_tab_otr_subtitle);
         boolean learnMoreInSubtitle = mWidthDp > WIDE_LAYOUT_THRESHOLD_DP;
 
-        mSubtitle.setClickable(learnMoreInSubtitle);
         mLearnMore.setVisibility(learnMoreInSubtitle ? View.GONE : View.VISIBLE);
 
         if (!learnMoreInSubtitle) {
