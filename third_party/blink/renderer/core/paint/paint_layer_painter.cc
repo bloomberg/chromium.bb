@@ -361,7 +361,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   bool should_paint_self_outline =
       is_self_painting_layer && !is_painting_overlay_scrollbars &&
       (is_painting_composited_decoration ||
-       (!is_painting_scrolling_content && !is_painting_mask)) &&
+       (!is_painting_overflow_contents && !is_painting_mask)) &&
       paint_layer_.GetLayoutObject().StyleRef().HasOutline();
 
   LayoutSize subpixel_accumulation =
