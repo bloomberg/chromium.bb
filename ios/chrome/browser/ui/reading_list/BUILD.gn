@@ -73,8 +73,6 @@ source_set("reading_list") {
 source_set("reading_list_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "empty_reading_list_background_view.h",
-    "empty_reading_list_background_view.mm",
     "empty_reading_list_message_util.h",
     "empty_reading_list_message_util.mm",
     "number_badge_view.h",
