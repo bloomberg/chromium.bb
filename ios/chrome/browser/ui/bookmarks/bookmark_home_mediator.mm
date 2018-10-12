@@ -375,7 +375,7 @@ const int kMaxBookmarksSearchResults = 50;
   }
 
   // Get the favicon from cache directly. (no need to fetch from server)
-  [self.consumer loadFaviconAtIndexPath:indexPath continueToGoogleServer:NO];
+  [self.consumer loadFaviconAtIndexPath:indexPath fallbackToGoogleServer:NO];
 }
 
 - (BookmarkHomeNodeItem*)itemForNode:
