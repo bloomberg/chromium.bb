@@ -226,8 +226,9 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
 };
 
 // static
-AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
-  return new AccessibilityTreeFormatterMac();
+std::unique_ptr<AccessibilityTreeFormatter>
+AccessibilityTreeFormatter::Create() {
+  return std::make_unique<AccessibilityTreeFormatterMac>();
 }
 
 AccessibilityTreeFormatterMac::AccessibilityTreeFormatterMac() {

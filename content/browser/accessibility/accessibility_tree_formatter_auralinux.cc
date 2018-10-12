@@ -59,8 +59,9 @@ class AccessibilityTreeFormatterAuraLinux
 };
 
 // static
-AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
-  return new AccessibilityTreeFormatterAuraLinux();
+std::unique_ptr<AccessibilityTreeFormatter>
+AccessibilityTreeFormatter::Create() {
+  return std::make_unique<AccessibilityTreeFormatterAuraLinux>();
 }
 
 AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {
