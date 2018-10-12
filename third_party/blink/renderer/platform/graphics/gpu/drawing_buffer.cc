@@ -711,7 +711,9 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       webgl_preferences.max_active_webgl_contexts_on_worker;
 
   int max_sample_count = 0;
-  gl_->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &max_sample_count);
+  if (use_multisampling) {
+    gl_->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &max_sample_count);
+  }
   if (webgl_preferences.anti_aliasing_mode ==
       gpu::kAntialiasingModeUnspecified) {
     if (use_multisampling) {
@@ -727,7 +729,6 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       }
     } else {
       anti_aliasing_mode_ = gpu::kAntialiasingModeNone;
-      max_sample_count = 0;
     }
   } else {
     if ((webgl_preferences.anti_aliasing_mode ==
