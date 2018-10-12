@@ -1220,14 +1220,14 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.setupCrostini_ = function() {
-    chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+    chrome.fileManagerPrivate.isCrostiniEnabled((crostiniEnabled) => {
       // Check for 'crostini-files' cmd line flag.
       chrome.commandLinePrivate.hasSwitch('crostini-files', (filesEnabled) => {
-        Crostini.IS_CROSTINI_FILES_ENABLED = filesEnabled;
+        Crostini.IS_CROSTINI_FILES_ENABLED = crostiniEnabled && filesEnabled;
       });
 
       // Setup Linux files fake root.
-      this.directoryTree.dataModel.linuxFilesItem = enabled ?
+      this.directoryTree.dataModel.linuxFilesItem = crostiniEnabled ?
           new NavigationModelFakeItem(
               str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
               new FakeEntry(
@@ -1238,7 +1238,7 @@ FileManager.prototype = /** @struct */ {
       // Redraw the tree even if not enabled.  This is required for testing.
       this.directoryTree.redraw(false);
 
-      if (!enabled)
+      if (!crostiniEnabled)
         return;
 
       // Load any existing shared paths.
