@@ -94,7 +94,8 @@
             pref="{{prefs.signin.allowed_on_next_startup}}"
             label="$i18n{signinAllowedTitle}"
             sub-label="$i18n{signinAllowedDescription}"
-            on-settings-boolean-control-change="onSigninAllowedChange_">
+            on-settings-boolean-control-change="onSigninAllowedChange_"
+            disabled="[[syncStatus.signedIn]]">
         </settings-toggle-button>
 </if><!-- not chromeos -->
         <template is="dom-if" if="[[!unifiedConsentEnabled_]]">
