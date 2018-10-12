@@ -152,7 +152,7 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     _faviconContainerView = [[UIImageView alloc]
         initWithImage:[UIImage
                           imageNamed:@"table_view_cell_favicon_background"]];
-    _faviconView = [[FaviconViewNew alloc] init];
+    _faviconView = [[FaviconView alloc] init];
     _faviconView.contentMode = UIViewContentModeScaleAspectFit;
     _faviconView.clipsToBounds = YES;
     [_faviconContainerView addSubview:_faviconView];
