@@ -5,13 +5,9 @@
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
-
-// TODO(scottchen): remove #if guard once components/nux/ is moved to
-// chrome/browser/ui/webui/welcome/ and included by non-win platforms.
-// Also check if it makes sense to merge nux_helper.* with nux/constants.*.
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace nux {
 // This feature flag is used to force the feature to be turned on for non-win
@@ -19,12 +15,20 @@ namespace nux {
 extern const base::Feature kNuxOnboardingForceEnabled{
     "NuxOnboardingForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsNuxOnboardingEnabled() {
+bool IsNuxOnboardingEnabled(Profile* profile) {
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
     return true;
   } else {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
+    // To avoid diluting data collection, existing users should not be assigned
+    // an NUX group. So, the kOnboardDuringNUX flag is used to short-circuit the
+    // feature checks below.
+    PrefService* prefs = profile->GetPrefs();
+    bool onboard_during_nux =
+        prefs && prefs->GetBoolean(prefs::kOnboardDuringNUX);
+
+    return onboard_during_nux &&
+           base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
 #else
     return false;
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
