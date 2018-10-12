@@ -79,6 +79,10 @@ NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {
   return navigation_preload_;
 }
 
+int64_t ServiceWorkerRegistration::RegistrationId() const {
+  return handle_->Registration()->RegistrationId();
+}
+
 String ServiceWorkerRegistration::scope() const {
   return handle_->Registration()->Scope().GetString();
 }
@@ -94,6 +98,31 @@ String ServiceWorkerRegistration::updateViaCache() const {
   }
   NOTREACHED();
   return "";
+}
+
+void ServiceWorkerRegistration::EnableNavigationPreload(
+    bool enable,
+    std::unique_ptr<
+        WebServiceWorkerRegistration::WebEnableNavigationPreloadCallbacks>
+        callbacks) {
+  handle_->Registration()->EnableNavigationPreload(enable,
+                                                   std::move(callbacks));
+}
+
+void ServiceWorkerRegistration::GetNavigationPreloadState(
+    std::unique_ptr<
+        WebServiceWorkerRegistration::WebGetNavigationPreloadStateCallbacks>
+        callbacks) {
+  handle_->Registration()->GetNavigationPreloadState(std::move(callbacks));
+}
+
+void ServiceWorkerRegistration::SetNavigationPreloadHeader(
+    const WebString& value,
+    std::unique_ptr<
+        WebServiceWorkerRegistration::WebSetNavigationPreloadHeaderCallbacks>
+        callbacks) {
+  handle_->Registration()->SetNavigationPreloadHeader(value,
+                                                      std::move(callbacks));
 }
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {

@@ -73,9 +73,19 @@ class ServiceWorkerRegistration final
   String scope() const;
   String updateViaCache() const;
 
-  WebServiceWorkerRegistration* WebRegistration() {
-    return handle_->Registration();
-  }
+  int64_t RegistrationId() const;
+
+  void EnableNavigationPreload(
+      bool enable,
+      std::unique_ptr<
+          WebServiceWorkerRegistration::WebEnableNavigationPreloadCallbacks>);
+  void GetNavigationPreloadState(
+      std::unique_ptr<
+          WebServiceWorkerRegistration::WebGetNavigationPreloadStateCallbacks>);
+  void SetNavigationPreloadHeader(
+      const WebString& value,
+      std::unique_ptr<WebServiceWorkerRegistration::
+                          WebSetNavigationPreloadHeaderCallbacks>);
 
   ScriptPromise update(ScriptState*);
   ScriptPromise unregister(ScriptState*);

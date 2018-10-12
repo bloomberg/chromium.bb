@@ -348,7 +348,7 @@ ScriptPromise CookieStore::subscribeToChanges(
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   int64_t service_worker_registration_id =
-      scope->registration()->WebRegistration()->RegistrationId();
+      scope->registration()->RegistrationId();
   subscription_backend_->AppendSubscriptions(
       service_worker_registration_id, std::move(backend_subscriptions),
       WTF::Bind(&CookieStore::OnSubscribeToCookieChangesResult,
@@ -374,7 +374,7 @@ ScriptPromise CookieStore::getChangeSubscriptions(
   ServiceWorkerGlobalScope* scope =
       ToServiceWorkerGlobalScope(GetExecutionContext());
   int64_t service_worker_registration_id =
-      scope->registration()->WebRegistration()->RegistrationId();
+      scope->registration()->RegistrationId();
   subscription_backend_->GetSubscriptions(
       service_worker_registration_id,
       WTF::Bind(&CookieStore::OnGetCookieChangeSubscriptionResult,

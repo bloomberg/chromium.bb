@@ -98,7 +98,7 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* script_state) {
   DCHECK(web_push_provider);
 
   web_push_provider->Unsubscribe(
-      service_worker_registration_->WebRegistration(),
+      service_worker_registration_->RegistrationId(),
       std::make_unique<CallbackPromiseAdapter<bool, PushError>>(resolver));
   return promise;
 }

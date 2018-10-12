@@ -36,7 +36,7 @@ ScriptPromise NavigationPreloadManager::setHeaderValue(
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  registration_->WebRegistration()->SetNavigationPreloadHeader(
+  registration_->SetNavigationPreloadHeader(
       value, std::make_unique<SetNavigationPreloadHeaderCallbacks>(resolver));
   return promise;
 }
@@ -44,7 +44,7 @@ ScriptPromise NavigationPreloadManager::setHeaderValue(
 ScriptPromise NavigationPreloadManager::getState(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  registration_->WebRegistration()->GetNavigationPreloadState(
+  registration_->GetNavigationPreloadState(
       std::make_unique<GetNavigationPreloadStateCallbacks>(resolver));
   return promise;
 }
@@ -57,7 +57,7 @@ ScriptPromise NavigationPreloadManager::SetEnabled(bool enable,
                                                    ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  registration_->WebRegistration()->EnableNavigationPreload(
+  registration_->EnableNavigationPreload(
       enable, std::make_unique<EnableNavigationPreloadCallbacks>(resolver));
   return promise;
 }

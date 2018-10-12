@@ -129,7 +129,7 @@ void NotificationManager::CloseNonPersistentNotification(const String& token) {
 }
 
 void NotificationManager::DisplayPersistentNotification(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
+    int64_t service_worker_registration_id,
     mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
     ScriptPromiseResolver* resolver) {
@@ -165,8 +165,8 @@ void NotificationManager::DisplayPersistentNotification(
   }
 
   GetNotificationService()->DisplayPersistentNotification(
-      service_worker_registration->RegistrationId(),
-      std::move(notification_data), std::move(notification_resources),
+      service_worker_registration_id, std::move(notification_data),
+      std::move(notification_resources),
       WTF::Bind(&NotificationManager::DidDisplayPersistentNotification,
                 WrapPersistent(this), WrapPersistent(resolver)));
 }
@@ -193,11 +193,11 @@ void NotificationManager::ClosePersistentNotification(
 }
 
 void NotificationManager::GetNotifications(
-    WebServiceWorkerRegistration* service_worker_registration,
+    int64_t service_worker_registration_id,
     const WebString& filter_tag,
     ScriptPromiseResolver* resolver) {
   GetNotificationService()->GetNotifications(
-      service_worker_registration->RegistrationId(), filter_tag,
+      service_worker_registration_id, filter_tag,
       WTF::Bind(&NotificationManager::DidGetNotifications, WrapPersistent(this),
                 WrapPersistent(resolver)));
 }
