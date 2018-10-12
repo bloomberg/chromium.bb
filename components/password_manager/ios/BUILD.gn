@@ -25,6 +25,8 @@ component("ios") {
     "js_password_manager.mm",
     "password_controller_helper.h",
     "password_controller_helper.mm",
+    "password_suggestion_helper.h",
+    "password_suggestion_helper.mm",
   ]
 }
 
