@@ -127,12 +127,11 @@ can email one of the people in third_party/OWNERS for help.
   When adding a new package that could potentially carry security risk, make
   sure to highlight risk to security@chromium.org. You may be asked to add
   a README.security or, in dangerous cases, README.SECURITY.URGENTLY file.
-* Add chromium-third-party@google.com as a reviewer on your change. This
-  will trigger an automatic round-robin assignment of the review to an
-  appropriate reviewer. This list does not receive or deliver email, so only
-  use it as a reviewer, not for other communication.
+* Get licensing approval. Email opensource-licensing@google.com with relevant
+  details and a link to the CL.
 
-Please send separate emails to the eng review and security lists.
+Please send separate emails to the eng review, opensource licensing, and
+security lists.
 
 Subsequent changes don't require third-party-owners approval; you can modify the
 code as much as you want. When you update code, be mindful of security-related
