@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "components/offline_pages/task/task.h"
 #include "components/offline_pages/task/task_test_base.h"
@@ -52,11 +53,36 @@ void ValidateTestingCatalog(GetCatalogTask::CategoryList* catalog) {
   EXPECT_EQ("example_2", site->title);
 }
 
+// Same as above, categories with no sites left after blacklisting are removed.
+void ValidateBlacklistTestingCatalog(GetCatalogTask::CategoryList* catalog) {
+  EXPECT_FALSE(catalog == nullptr);
+
+  EXPECT_EQ(1U, catalog->size());
+  ExploreSitesCategory* cat = &catalog->at(0);
+  EXPECT_EQ(3, cat->category_id);
+  EXPECT_EQ("5678", cat->version_token);
+  EXPECT_EQ(1, cat->category_type);
+  EXPECT_EQ("label_1", cat->label);
+
+  EXPECT_EQ(1U, cat->sites.size());
+  ExploreSitesSite* site = &cat->sites[0];
+  EXPECT_EQ("https://www.example.com/1", site->url.spec());
+  EXPECT_EQ(3, site->category_id);
+  EXPECT_EQ("example_1", site->title);
+}
+
 void ExpectSuccessGetCatalogResult(
     GetCatalogStatus status,
     std::unique_ptr<GetCatalogTask::CategoryList> catalog) {
   EXPECT_EQ(GetCatalogStatus::kSuccess, status);
   ValidateTestingCatalog(catalog.get());
+}
+
+void ExpectBlacklistGetCatalogResult(
+    GetCatalogStatus status,
+    std::unique_ptr<GetCatalogTask::CategoryList> catalog) {
+  EXPECT_EQ(GetCatalogStatus::kSuccess, status);
+  ValidateBlacklistTestingCatalog(catalog.get());
 }
 
 void ExpectEmptyGetCatalogResult(
@@ -100,6 +126,7 @@ class ExploreSitesGetCatalogTaskTest : public TaskTestBase {
   std::pair<std::string, std::string> GetCurrentAndDownloadingVersion();
   int GetNumberOfCategoriesInDB();
   int GetNumberOfSitesInDB();
+  void BlacklistSite(std::string url);
 
  private:
   std::unique_ptr<ExploreSitesStore> store_;
@@ -199,6 +226,13 @@ int ExploreSitesGetCatalogTaskTest::GetNumberOfSitesInDB() {
   return result;
 }
 
+void ExploreSitesGetCatalogTaskTest::BlacklistSite(std::string url) {
+  BlacklistSiteTask task(store(), url);
+  RunTask(&task);
+  // We don't actively wait for completion, so we rely on the blacklist request
+  // clearing the task queue before the task in the test proper runs.
+}
+
 TEST_F(ExploreSitesGetCatalogTaskTest, StoreFailure) {
   store()->SetInitializationStatusForTest(InitializationStatus::FAILURE);
 
@@ -225,6 +259,16 @@ TEST_F(ExploreSitesGetCatalogTaskTest, SimpleCatalog) {
   // DB.
   EXPECT_EQ(4, GetNumberOfCategoriesInDB());
   EXPECT_EQ(4, GetNumberOfSitesInDB());
+}
+
+// This tests that sites on the blacklist do not show up when we do a get
+// catalog task.
+TEST_F(ExploreSitesGetCatalogTaskTest, BlasklistedSitesDoNotAppear) {
+  BlacklistSite("https://www.example.com/2");
+  PopulateTestingCatalog();
+  GetCatalogTask task(store(), false,
+                      base::BindOnce(&ExpectBlacklistGetCatalogResult));
+  RunTask(&task);
 }
 
 TEST_F(ExploreSitesGetCatalogTaskTest, CatalogWithVersionUpdate) {
