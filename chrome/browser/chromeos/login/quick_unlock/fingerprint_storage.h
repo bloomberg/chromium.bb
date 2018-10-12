@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 
 class PrefRegistrySimple;
-class PrefService;
+class Profile;
 
 namespace chromeos {
 
@@ -25,7 +25,7 @@ class FingerprintStorage {
   // Registers profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  explicit FingerprintStorage(PrefService* pref_service);
+  explicit FingerprintStorage(Profile* profile);
   ~FingerprintStorage();
 
   // Returns true if fingerprint unlock is currently available.
@@ -50,7 +50,7 @@ class FingerprintStorage {
   friend class chromeos::FingerprintStorageTestApi;
   friend class QuickUnlockStorage;
 
-  PrefService* pref_service_;
+  Profile* const profile_;
   // Number of fingerprint unlock attempt.
   int unlock_attempt_count_ = 0;
 

@@ -108,17 +108,15 @@ bool IsPinEnabled(PrefService* pref_service) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
 }
 
-bool IsFingerprintEnabled() {
+bool IsFingerprintEnabled(Profile* profile) {
   if (enable_for_testing_)
     return true;
 
-  // Disable fingerprint for secondary user.
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (user_manager->GetActiveUser() != user_manager->GetPrimaryUser())
+  // Disable fingerprint if the profile does not belong to the primary user.
+  if (profile != ProfileManager::GetPrimaryUserProfile())
     return false;
 
-  // Disable fingerprint if forbidden by policy.
-  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  // Disable fingerprint if disallowed by policy.
   if (IsFingerprintDisabledByPolicy(profile->GetPrefs()))
     return false;
 
