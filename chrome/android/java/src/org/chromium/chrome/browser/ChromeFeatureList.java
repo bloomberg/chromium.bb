@@ -243,7 +243,6 @@ public abstract class ChromeFeatureList {
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
     public static final String NTP_ARTICLE_SUGGESTIONS = "NTPArticleSuggestions";
     public static final String NTP_BUTTON = "NTPButton";
-    public static final String NTP_FOREIGN_SESSIONS_SUGGESTIONS = "NTPForeignSessionsSuggestions";
     public static final String NTP_LAUNCH_AFTER_INACTIVITY = "NTPLaunchAfterInactivity";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";

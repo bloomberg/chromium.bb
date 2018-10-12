@@ -152,7 +152,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &media::kCafMediaRouterImpl,
     &ntp_snippets::kArticleSuggestionsFeature,
     &ntp_snippets::kIncreasedVisibility,
-    &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kNotificationsFeature,
     &ntp_snippets::kPublisherFaviconsFromNewServerFeature,
     &ntp_tiles::kSiteExplorationUiFeature,
