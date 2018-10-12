@@ -428,7 +428,7 @@ class PageLoadMetricsObserver {
                                        const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when there is data use for loading a resource on the page
-  // acrosss all frames. This only contains resources that have had new
+  // across all frames. This only contains resources that have had new
   // data use since the last callback.
   virtual void OnResourceDataUseObserved(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) {}
