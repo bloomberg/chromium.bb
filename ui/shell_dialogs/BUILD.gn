@@ -120,4 +120,8 @@ test("shell_dialogs_unittests") {
   if (is_mac) {
     deps += [ ":shell_dialogs_unittests_bundle" ]
   }
+
+  if (is_win) {
+    deps += [ "//ui/strings:ui_strings_grit" ]
+  }
 }
