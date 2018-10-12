@@ -18,7 +18,7 @@ Polymer({
     searchQuery: Object,
 
     /** @type {boolean} */
-    hasActionLink: {
+    hasManageLink: {
       type: Boolean,
       value: false,
     },
@@ -110,11 +110,6 @@ Polymer({
     const count = this.matchingDestinations_.length;
     this.hasDestinations_ = count > 0;
     this.showDestinationsTotal_ = count > 4;
-  },
-
-  /** @private */
-  onActionLinkClick_: function() {
-    print_preview.NativeLayer.getInstance().managePrinters();
   },
 
   /**

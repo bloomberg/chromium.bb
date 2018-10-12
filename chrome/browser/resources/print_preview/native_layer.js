@@ -272,6 +272,7 @@ cr.define('print_preview', function() {
     /**
      * Navigates the user to the Chrome printing setting page to manage local
      * printers and Google cloud printers.
+     * TODO (rbpotter): Delete this when the old Print Preview page is removed.
      */
     managePrinters() {
       chrome.send('managePrinters');
