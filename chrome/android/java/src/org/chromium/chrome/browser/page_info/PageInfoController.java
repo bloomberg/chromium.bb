@@ -56,6 +56,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -119,9 +120,8 @@ public class PageInfoController
     // URL'.
     private String mFullUrl;
 
-    // A parsed version of mFullUrl. Is null if the URL is invalid/cannot be
-    // parsed.
-    private URI mParsedUrl;
+    // The scheme of the URL of this page.
+    private String mScheme;
 
     // Whether or not this page is an internal chrome page (e.g. the
     // chrome://settings page).
@@ -198,12 +198,11 @@ public class PageInfoController
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
 
+        mScheme = GURLUtils.getScheme(mFullUrl);
         try {
-            mParsedUrl = new URI(mFullUrl);
-            mIsInternalPage = UrlUtilities.isInternalScheme(mParsedUrl);
+            mIsInternalPage = UrlUtilities.isInternalScheme(new URI(mFullUrl));
         } catch (URISyntaxException e) {
-            mParsedUrl = null;
-            mIsInternalPage = false;
+            // Ignore exception since this is for displaying some specific content on page info.
         }
 
         String displayUrl = UrlFormatter.formatUrlForCopy(mFullUrl);
@@ -227,7 +226,7 @@ public class PageInfoController
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
                 displayUrlBuilder.toString(), mTab.getProfile());
 
-        if (shouldShowSiteSettingsButton(mParsedUrl)) {
+        if (shouldShowSiteSettingsButton()) {
             viewParams.siteSettingsButtonClickCallback = () -> {
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
@@ -365,8 +364,7 @@ public class PageInfoController
      */
     private boolean isConnectionDetailsLinkVisible() {
         return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview()
-                && mParsedUrl != null && mParsedUrl.getScheme() != null
-                && mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME);
+                && UrlConstants.HTTPS_SCHEME.equals(mScheme);
     }
 
     /**
@@ -517,21 +515,12 @@ public class PageInfoController
     }
 
     /**
-     *  Whether the site settings button should be displayed for the given URI.
-     *
-     * @param uri The URI used to determine if the site settings button should be displayed.
+     * Whether the site settings button should be displayed for the given URL.
      */
-    private boolean shouldShowSiteSettingsButton(URI uri) {
-        if (uri == null || uri.getScheme() == null) {
-            return false;
-        }
-
-        if (isShowingOfflinePage() || isShowingPreview()) {
-            return false;
-        }
-
-        return uri.getScheme().equals(UrlConstants.HTTP_SCHEME)
-                || uri.getScheme().equals(UrlConstants.HTTPS_SCHEME);
+    private boolean shouldShowSiteSettingsButton() {
+        return !isShowingOfflinePage() && !isShowingPreview()
+                && (UrlConstants.HTTP_SCHEME.equals(mScheme)
+                           || UrlConstants.HTTPS_SCHEME.equals(mScheme));
     }
 
     private boolean isSheet() {
