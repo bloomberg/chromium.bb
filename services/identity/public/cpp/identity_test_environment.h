@@ -6,21 +6,52 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include "base/optional.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
 namespace identity {
 
-class IdentityTestEnvironmentInternal;
+// Internal class that creates and owns dependencies of IdentityManager
+// when those dependencies are not passed in externally.
+class IdentityManagerDependenciesOwner;
 
 // Class that creates an IdentityManager for use in testing contexts and
 // provides facilities for driving that IdentityManager. The IdentityManager
 // instance is brought up in an environment where the primary account is
 // not available; call MakePrimaryAccountAvailable() as needed.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
+#if defined(OS_CHROMEOS)
+  using SigninManagerForTest = FakeSigninManagerBase;
+#else
+  using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
+
  public:
+  // Preferred constructor: constructs an IdentityManager object and its
+  // dependencies internally. Cannot be used if the client of this class
+  // is still interacting directly with those dependencies (e.g., if
+  // IdentityTestEnvironment is being introduced to incrementally convert
+  // a test). In that case, use the below constructor and switch to this
+  // constructor once the conversion is complete.
   IdentityTestEnvironment(
       bool use_fake_url_loader_for_gaia_cookie_manager = false);
+
+  // Constructor that takes in instances of the dependencies of
+  // IdentityManager and constructs an IdentityManager instance from those
+  // dependencies. For use in contexts where those dependencies are still
+  // being used directly by the creator of this object (i.e., while a test is
+  // being incrementally converted). Prefer the above constructor, and switch to
+  // that constructor once possible (e.g., when an incremental conversion is
+  // completed). NOTE: The passed-in objects must all outlive this object.
+  IdentityTestEnvironment(
+      AccountTrackerService* account_tracker_service,
+      FakeProfileOAuth2TokenService* token_service,
+      SigninManagerForTest* signin_manager,
+      FakeGaiaCookieManagerService* gaia_cookie_manager_service);
   ~IdentityTestEnvironment() override;
 
   // The IdentityManager instance created and owned by this instance.
@@ -180,6 +211,17 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
     base::OnceClosure on_available;
   };
 
+  // Constructs this object and its IdentityManager instance from the supplied
+  // dependencies of IdentityManager, which must be either:
+  // (1) non-null instances of the backing classes, OR
+  // (2) a non-null instance of |dependencies_owner|.
+  IdentityTestEnvironment(
+      AccountTrackerService* account_tracker_service,
+      FakeProfileOAuth2TokenService* token_service,
+      SigninManagerForTest* signin_manager,
+      FakeGaiaCookieManagerService* gaia_cookie_manager_service,
+      std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner);
+
   // IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(
       const std::string& account_id,
@@ -199,7 +241,16 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void WaitForAccessTokenRequestIfNecessary(
       base::Optional<std::string> account_id);
 
-  std::unique_ptr<IdentityTestEnvironmentInternal> internals_;
+  // NOTE: This object must be first in the list, as it owns the objects
+  // pointed to below in the case where those objects are not passed in via
+  // the IdentityTestEnvironment constructor.
+  std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
+  AccountTrackerService* account_tracker_service_ = nullptr;
+  FakeProfileOAuth2TokenService* token_service_ = nullptr;
+  SigninManagerForTest* signin_manager_ = nullptr;
+  FakeGaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
+  std::unique_ptr<IdentityManager> identity_manager_;
+
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
 
