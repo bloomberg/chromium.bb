@@ -25,6 +25,16 @@ void JSEventHandler::SetCompiledHandler(
     v8::Local<v8::Function> listener,
     const V8PrivateProperty::Symbol& property) {
   DCHECK(!HasCompiledHandler());
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // Step 12: Set eventHandler's value to the result of creating a Web IDL
+  // EventHandler callback function object whose object reference is function
+  // and whose callback context is settings object.
+  //
+  // Push |script_state|'s context onto the backup incumbent settings object
+  // stack because appropriate incumbent realm does not always exist when
+  // content attribute gets lazily compiled. This context is the same one of the
+  // relevant realm of |listener| and its event target.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       script_state->GetContext());
   event_handler_ = V8EventHandlerNonNull::Create(listener);
