@@ -539,7 +539,7 @@ jumbo_source_set("memory_buffer_sources") {
       "linux/native_pixmap_dmabuf.h",
     ]
 
-    deps += [ "//third_party/libdrm" ]
+    deps += [ "//build/config/linux/libdrm" ]
   }
 
   if (is_linux || is_android) {

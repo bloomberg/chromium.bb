@@ -88,9 +88,9 @@ source_set("wayland") {
 
   deps = [
     "//base",
+    "//build/config/linux/libdrm",
     "//mojo/public/cpp/bindings",
     "//skia",
-    "//third_party/libdrm",
     "//third_party/minigbm",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -135,7 +135,7 @@ source_set("wayland") {
     ]
 
     deps += [
-      "//third_party/libdrm",
+      "//build/config/linux/libdrm",
       "//third_party/minigbm",
       "//ui/gfx:memory_buffer",
       "//ui/ozone/common/linux",
