@@ -23,7 +23,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/js_password_manager.h"
-#import "components/password_manager/ios/password_controller_helper.h"
+#import "components/password_manager/ios/password_form_helper.h"
 #include "components/password_manager/ios/test_helpers.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -150,8 +150,8 @@ ACTION(InvokeEmptyConsumerWithForms) {
 @interface PasswordController (
     Testing)<CRWWebStateObserver, FormSuggestionProvider>
 
-// Provides access to common helper logic for testing with mocks.
-@property(readonly) PasswordControllerHelper* helper;
+// Provides access to common form helper logic for testing with mocks.
+@property(readonly) PasswordFormHelper* formHelper;
 
 - (void)fillPasswordForm:(const PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler;
@@ -160,7 +160,7 @@ ACTION(InvokeEmptyConsumerWithForms) {
 
 @end
 
-@interface PasswordControllerHelper (Testing)
+@interface PasswordFormHelper (Testing)
 
 // Provides access to JavaScript Manager for testing with mocks.
 @property(readonly) JsPasswordManager* jsPasswordManager;
@@ -254,7 +254,7 @@ class PasswordControllerTest : public ChromeWebTest {
   // |failure_count| reaches |target_failure_count|, stop the partial mock
   // and let the original JavaScript manager execute.
   void SetFillPasswordFormFailureCount(int target_failure_count) {
-    id original_manager = passwordController_.helper.jsPasswordManager;
+    id original_manager = passwordController_.formHelper.jsPasswordManager;
     OCPartialMockObject* failing_manager =
         [OCMockObject partialMockForObject:original_manager];
     __block int failure_count = 0;
@@ -388,11 +388,12 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
     LoadHtml(data.html_string);
     __block std::vector<PasswordForm> forms;
     __block BOOL block_was_called = NO;
-    [passwordController_.helper findPasswordFormsWithCompletionHandler:^(
-                                    const std::vector<PasswordForm>& result) {
-      block_was_called = YES;
-      forms = result;
-    }];
+    [passwordController_.formHelper
+        findPasswordFormsWithCompletionHandler:^(
+            const std::vector<PasswordForm>& result) {
+          block_was_called = YES;
+          forms = result;
+        }];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
@@ -489,7 +490,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
                   form.username_element);
       }
     };
-    [passwordController_.helper
+    [passwordController_.formHelper
         extractSubmittedPasswordForm:FormName(data.number_of_forms_to_submit)
                    completionHandler:completion_handler];
     EXPECT_TRUE(

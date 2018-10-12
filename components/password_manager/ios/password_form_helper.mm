@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/password_manager/ios/password_controller_helper.h"
+#import "components/password_manager/ios/password_form_helper.h"
 
 #include <stddef.h>
 
@@ -48,9 +48,9 @@ namespace {
 constexpr char kCommandPrefix[] = "passwordForm";
 }  // namespace
 
-@interface PasswordControllerHelper ()
+@interface PasswordFormHelper ()
 
-@property(nonatomic, weak) id<PasswordControllerHelperDelegate> delegate;
+@property(nonatomic, weak) id<PasswordFormHelperDelegate> delegate;
 
 // Handler for injected JavaScript callbacks.
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
@@ -80,14 +80,14 @@ constexpr char kCommandPrefix[] = "passwordForm";
 @end
 
 // Category for test only.
-@interface PasswordControllerHelper (Testing)
+@interface PasswordFormHelper (Testing)
 
 // Replaces JsPasswordManager for test.
 - (void)setJsPasswordManager:(JsPasswordManager*)jsPasswordManager;
 
 @end
 
-@implementation PasswordControllerHelper {
+@implementation PasswordFormHelper {
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
   web::WebState* _webState;
@@ -112,8 +112,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 #pragma mark - Initialization
 
 - (instancetype)initWithWebState:(web::WebState*)webState
-                        delegate:
-                            (id<PasswordControllerHelperDelegate>)delegate {
+                        delegate:(id<PasswordFormHelperDelegate>)delegate {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -127,7 +126,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
     _jsPasswordManager = [[JsPasswordManager alloc]
         initWithReceiver:_webState->GetJSInjectionReceiver()];
 
-    __weak PasswordControllerHelper* weakSelf = self;
+    __weak PasswordFormHelper* weakSelf = self;
     auto callback = base::BindRepeating(
         ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
               bool interacting, bool isMainFrame, web::WebFrame* senderFrame) {
@@ -181,20 +180,20 @@ constexpr char kCommandPrefix[] = "passwordForm";
     // origin.
     return;
   }
-  __weak PasswordControllerHelper* weakSelf = self;
+  __weak PasswordFormHelper* weakSelf = self;
   // This code is racing against the new page loading and will not get the
   // password form data if the page has changed. In most cases this code wins
   // the race.
   // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
   id completionHandler = ^(BOOL found, const autofill::PasswordForm& form) {
-    PasswordControllerHelper* strongSelf = weakSelf;
-    id<PasswordControllerHelperDelegate> strongDelegate = strongSelf.delegate;
+    PasswordFormHelper* strongSelf = weakSelf;
+    id<PasswordFormHelperDelegate> strongDelegate = strongSelf.delegate;
     if (!strongSelf || !strongSelf->_webState || !strongDelegate) {
       return;
     }
-    [strongDelegate helper:strongSelf
-             didSubmitForm:form
-               inMainFrame:formInMainFrame];
+    [strongDelegate formHelper:strongSelf
+                 didSubmitForm:form
+                   inMainFrame:formInMainFrame];
   };
   // TODO(crbug.com/418827): Use |formData| instead of extracting form again.
   [self extractSubmittedPasswordForm:formName
@@ -231,7 +230,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
   }
 
   if (_webState && self.delegate) {
-    [self.delegate helper:self didSubmitForm:*form inMainFrame:YES];
+    [self.delegate formHelper:self didSubmitForm:*form inMainFrame:YES];
     return YES;
   }
 
@@ -343,7 +342,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
     return;
   }
 
-  __weak PasswordControllerHelper* weakSelf = self;
+  __weak PasswordFormHelper* weakSelf = self;
   [self.jsPasswordManager findPasswordFormsWithCompletionHandler:^(
                               NSString* jsonString) {
     std::vector<autofill::PasswordForm> forms;
@@ -386,10 +385,10 @@ constexpr char kCommandPrefix[] = "passwordForm";
                                     password:(NSString*)password
                            completionHandler:
                                (nullable void (^)(BOOL))completionHandler {
-  __weak PasswordControllerHelper* weakSelf = self;
+  __weak PasswordFormHelper* weakSelf = self;
   [self findPasswordFormsWithCompletionHandler:^(
             const std::vector<autofill::PasswordForm>& forms) {
-    PasswordControllerHelper* strongSelf = weakSelf;
+    PasswordFormHelper* strongSelf = weakSelf;
     for (const auto& form : forms) {
       autofill::PasswordFormFillData formData;
       std::map<base::string16, const autofill::PasswordForm*> matches;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_IOS_PASSWORD_CONTROLLER_HELPER_H_
-#define COMPONENTS_PASSWORD_MANAGER_IOS_PASSWORD_CONTROLLER_HELPER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_IOS_PASSWORD_FORM_HELPER_H_
+#define COMPONENTS_PASSWORD_MANAGER_IOS_PASSWORD_FORM_HELPER_H_
 
 #import <Foundation/Foundation.h>
 
@@ -14,7 +14,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class JsPasswordManager;
-@class PasswordControllerHelper;
+@class PasswordFormHelper;
 
 namespace autofill {
 struct PasswordForm;
@@ -33,18 +33,17 @@ namespace web {
 class WebState;
 }  // namespace web
 
-// A protocol implemented by a delegate of PasswordControllerHelper.
-@protocol PasswordControllerHelperDelegate
+// A protocol implemented by a delegate of PasswordFormHelper.
+@protocol PasswordFormHelperDelegate
 // Called when the password form is submitted.
-- (void)helper:(PasswordControllerHelper*)helper
-    didSubmitForm:(const autofill::PasswordForm&)form
-      inMainFrame:(BOOL)inMainFrame;
+- (void)formHelper:(PasswordFormHelper*)formHelper
+     didSubmitForm:(const autofill::PasswordForm&)form
+       inMainFrame:(BOOL)inMainFrame;
 @end
 
-// Handles common logic of password controller for both ios/chrome and
-// ios/web_view.
-// TODO(crbug.com/865114): Rename to PasswordFormHelper.
-@interface PasswordControllerHelper
+// Handles common form processing logic of password controller for both
+// ios/chrome and ios/web_view.
+@interface PasswordFormHelper
     : NSObject<FormActivityObserver, CRWWebStateObserver>
 
 // The JsPasswordManager processing password form via javascript.
@@ -82,8 +81,9 @@ class WebState;
 
 // Creates a instance with the given WebState, observer and delegate.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                        delegate:(nullable id<PasswordControllerHelperDelegate>)
-                                     delegate NS_DESIGNATED_INITIALIZER;
+                        delegate:
+                            (nullable id<PasswordFormHelperDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -91,4 +91,4 @@ class WebState;
 
 NS_ASSUME_NONNULL_END
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_IOS_PASSWORD_CONTROLLER_HELPER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_IOS_PASSWORD_FORM_HELPER_H_

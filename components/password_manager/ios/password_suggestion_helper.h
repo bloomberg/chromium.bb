@@ -72,7 +72,7 @@ retrieveSuggestionsWithFormName:(NSString*)formName
                              (SuggestionsAvailableCompletion)completion;
 
 // Retrieves password form fill data for |username| for use in
-// |PasswordControllerHelper|'s
+// |PasswordFormHelper|'s
 // -fillPasswordFormWithFillData:completionHandler:.
 - (std::unique_ptr<password_manager::FillData>)getFillDataForUsername:
     (NSString*)username;

@@ -12,7 +12,7 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#import "components/password_manager/ios/password_controller_helper.h"
+#import "components/password_manager/ios/password_form_helper.h"
 #import "ios/web/public/origin_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -36,14 +36,14 @@ using password_manager::PasswordFormManagerForUI;
 @interface CWVPasswordController ()<CRWWebStateObserver,
                                     CWVPasswordManagerClientDelegate,
                                     CWVPasswordManagerDriverDelegate,
-                                    PasswordControllerHelperDelegate>
+                                    PasswordFormHelperDelegate>
 
 // The PasswordManagerDriver owned by this PasswordController.
 @property(nonatomic, readonly)
     password_manager::PasswordManagerDriver* passwordManagerDriver;
 
-// Helper contains common password controller logic.
-@property(nonatomic, readonly) PasswordControllerHelper* helper;
+// Helper contains common password form processing logic.
+@property(nonatomic, readonly) PasswordFormHelper* formHelper;
 
 // Delegate to receive password autofill suggestion callbacks.
 @property(nonatomic, weak, nullable) id<CWVPasswordControllerDelegate> delegate;
@@ -83,7 +83,7 @@ using password_manager::PasswordFormManagerForUI;
 
 #pragma mark - Properties
 
-@synthesize helper = _helper;
+@synthesize formHelper = _formHelper;
 @synthesize delegate = _delegate;
 
 - (password_manager::PasswordManagerDriver*)passwordManagerDriver {
@@ -102,8 +102,8 @@ using password_manager::PasswordFormManagerForUI;
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
-    _helper = [[PasswordControllerHelper alloc] initWithWebState:webState
-                                                        delegate:self];
+    _formHelper =
+        [[PasswordFormHelper alloc] initWithWebState:webState delegate:self];
 
     _passwordManagerClient =
         std::make_unique<WebViewPasswordManagerClient>(self);
@@ -186,7 +186,7 @@ using password_manager::PasswordFormManagerForUI;
 }
 
 - (const GURL&)lastCommittedURL {
-  return self.helper.lastCommittedURL;
+  return self.formHelper.lastCommittedURL;
 }
 
 - (void)showSavePasswordInfoBar:
@@ -259,7 +259,7 @@ using password_manager::PasswordFormManagerForUI;
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData {
   // TODO(crbug.com/865114): Add suggestion related logic.
-  [self.helper fillPasswordForm:formData completionHandler:nil];
+  [self.formHelper fillPasswordForm:formData completionHandler:nil];
 }
 
 // Informs delegate that there are no saved credentials for the current page.
@@ -267,11 +267,11 @@ using password_manager::PasswordFormManagerForUI;
   // TODO(crbug.com/865114): Implement remaining logic.
 }
 
-#pragma mark - PasswordControllerHelperDelegate
+#pragma mark - PasswordFormHelperDelegate
 
-- (void)helper:(PasswordControllerHelper*)helper
-    didSubmitForm:(const PasswordForm&)form
-      inMainFrame:(BOOL)inMainFrame {
+- (void)formHelper:(PasswordFormHelper*)formHelper
+     didSubmitForm:(const PasswordForm&)form
+       inMainFrame:(BOOL)inMainFrame {
   if (inMainFrame) {
     self.passwordManager->OnPasswordFormSubmitted(self.passwordManagerDriver,
                                                   form);
@@ -314,8 +314,8 @@ using password_manager::PasswordFormManagerForUI;
   // Read all password forms from the page and send them to the password
   // manager.
   __weak CWVPasswordController* weakSelf = self;
-  [self.helper findPasswordFormsWithCompletionHandler:^(
-                   const std::vector<autofill::PasswordForm>& forms) {
+  [self.formHelper findPasswordFormsWithCompletionHandler:^(
+                       const std::vector<autofill::PasswordForm>& forms) {
     [weakSelf didFinishPasswordFormExtraction:forms];
   }];
 }
