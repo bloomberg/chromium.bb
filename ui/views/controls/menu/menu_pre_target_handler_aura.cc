@@ -25,7 +25,7 @@ MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
                                                    Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
   if (root_) {
-    root_->env()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+    aura_env_ = root_->env();
     wm::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
   } else {
@@ -35,16 +35,13 @@ MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
       LOG(WARNING) << "MenuPreTargetHandlerAura is created without owner "
                    << "widget. This may not work well in SingleProcessMash.";
     }
-    aura::Env::GetInstance()->AddPreTargetHandler(
-        this, ui::EventTarget::Priority::kSystem);
+    aura_env_ = aura::Env::GetInstance();
   }
+  aura_env_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 }
 
 MenuPreTargetHandlerAura::~MenuPreTargetHandlerAura() {
-  if (root_)
-    root_->env()->RemovePreTargetHandler(this);
-  else
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  aura_env_->RemovePreTargetHandler(this);
   Cleanup();
 }
 
