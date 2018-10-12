@@ -44,6 +44,11 @@ TestNetworkConnectionTracker::TestNetworkConnectionTracker() {
     return;
   }
   g_test_network_connection_tracker_instance = this;
+
+  // Make sure the real NetworkConnectionTracker thinks there's always a
+  // connection available. GetConnectionType asynchronisity will be implemented
+  // in the override in this class.
+  OnNetworkChanged(network::mojom::ConnectionType::CONNECTION_UNKNOWN);
 }
 
 TestNetworkConnectionTracker::~TestNetworkConnectionTracker() {
@@ -54,20 +59,23 @@ TestNetworkConnectionTracker::~TestNetworkConnectionTracker() {
 bool TestNetworkConnectionTracker::GetConnectionType(
     network::mojom::ConnectionType* type,
     ConnectionTypeCallback callback) {
+  network::mojom::ConnectionType current_type;
+  bool sync = NetworkConnectionTracker::GetConnectionType(&current_type,
+                                                          base::DoNothing());
+  DCHECK(sync);
   if (respond_synchronously_) {
-    *type = type_;
+    *type = current_type;
     return true;
   }
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), type_));
+      FROM_HERE, base::BindOnce(std::move(callback), current_type));
   return false;
 }
 
 void TestNetworkConnectionTracker::SetConnectionType(
     network::mojom::ConnectionType type) {
-  type_ = type;
-  OnNetworkChanged(type_);
+  OnNetworkChanged(type);
 }
 
 void TestNetworkConnectionTracker::SetRespondSynchronously(

@@ -405,9 +405,12 @@ class DriveIntegrationService::PreferenceWatcher
 
   void UpdateSyncPauseState() {
     auto type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
-    content::GetNetworkConnectionTracker()->GetConnectionType(
-        &type, base::DoNothing());
-    OnConnectionChanged(type);
+    if (content::GetNetworkConnectionTracker()->GetConnectionType(
+            &type, base::BindOnce(&DriveIntegrationService::PreferenceWatcher::
+                                      OnConnectionChanged,
+                                  weak_ptr_factory_.GetWeakPtr()))) {
+      OnConnectionChanged(type);
+    }
   }
 
  private:

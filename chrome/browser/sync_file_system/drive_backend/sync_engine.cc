@@ -362,10 +362,11 @@ void SyncEngine::InitializeInternal(
 
   service_state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
   auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
-  content::GetNetworkConnectionTracker()->GetConnectionType(
-      &connection_type, base::BindOnce(&SyncEngine::OnConnectionChanged,
-                                       weak_ptr_factory_.GetWeakPtr()));
-  OnConnectionChanged(connection_type);
+  if (content::GetNetworkConnectionTracker()->GetConnectionType(
+          &connection_type, base::BindOnce(&SyncEngine::OnConnectionChanged,
+                                           weak_ptr_factory_.GetWeakPtr()))) {
+    OnConnectionChanged(connection_type);
+  }
   if (drive_service_->HasRefreshToken())
     OnReadyToSendRequests();
   else

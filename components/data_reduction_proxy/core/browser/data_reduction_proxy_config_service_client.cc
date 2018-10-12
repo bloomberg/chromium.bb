@@ -345,12 +345,9 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
 
   RetrieveConfig();
 
-  auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
-  network_connection_tracker_->GetConnectionType(&connection_type,
-                                                 base::DoNothing());
   if (!load_timing_info.send_start.is_null() &&
       !load_timing_info.request_start.is_null() &&
-      connection_type != network::mojom::ConnectionType::CONNECTION_NONE &&
+      !network_connection_tracker_->IsOffline() &&
       last_ip_address_change_ < load_timing_info.request_start) {
     // Record only if there was no change in the IP address since the
     // request started.
@@ -506,12 +503,8 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   ClientConfig config;
   bool succeeded = false;
 
-  auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
-  network_connection_tracker_->GetConnectionType(&connection_type,
-                                                 base::DoNothing());
-  if (connection_type != network::mojom::ConnectionType::CONNECTION_NONE) {
+  if (!network_connection_tracker_->IsOffline())
     base::UmaHistogramSparse(kUMAConfigServiceFetchResponseCode, response_code);
-  }
 
   if (status == net::OK && response_code == net::HTTP_OK &&
       config.ParseFromString(config_data)) {
