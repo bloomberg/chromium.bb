@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/net_benchmarking_extension.h"
 
+#include "base/no_destructor.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
@@ -74,9 +75,9 @@ class NetBenchmarkingWrapper : public v8::Extension {
   }
 
   static chrome::mojom::NetBenchmarking& GetNetBenchmarking() {
-    CR_DEFINE_STATIC_LOCAL(chrome::mojom::NetBenchmarkingPtr, net_benchmarking,
-                           (ConnectToBrowser()));
-    return *net_benchmarking;
+    static base::NoDestructor<chrome::mojom::NetBenchmarkingPtr>
+        net_benchmarking(ConnectToBrowser());
+    return **net_benchmarking;
   }
 
   static chrome::mojom::NetBenchmarkingPtr ConnectToBrowser() {

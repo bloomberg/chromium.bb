@@ -343,15 +343,6 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
 
 bool CheckForIllegalFilenames(const base::FilePath& extension_path,
                               std::string* error) {
-  // Reserved underscore names.
-  static const base::FilePath::CharType* const reserved_names[] = {
-      kLocaleFolder, kPlatformSpecificFolder, FILE_PATH_LITERAL("__MACOSX"),
-  };
-  CR_DEFINE_STATIC_LOCAL(
-      std::set<base::FilePath::StringType>,
-      reserved_underscore_names,
-      (reserved_names, reserved_names + arraysize(reserved_names)));
-
   // Enumerate all files and directories in the extension root.
   // There is a problem when using pattern "_*" with FileEnumerator, so we have
   // to cheat with find_first_of and match all.
@@ -363,17 +354,21 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
   while (!(file = all_files.Next()).empty()) {
     base::FilePath::StringType filename = file.BaseName().value();
 
-    // Skip all that don't start with "_".
+    // Skip all filenames that don't start with "_".
     if (filename.find_first_of(FILE_PATH_LITERAL("_")) != 0)
       continue;
-    if (reserved_underscore_names.find(filename) ==
-        reserved_underscore_names.end()) {
-      *error = base::StringPrintf(
-          "Cannot load extension with file or directory name %s. "
-          "Filenames starting with \"_\" are reserved for use by the system.",
-          file.BaseName().AsUTF8Unsafe().c_str());
-      return false;
+
+    // Some filenames are special and allowed to start with "_".
+    if (filename == kLocaleFolder || filename == kPlatformSpecificFolder ||
+        filename == FILE_PATH_LITERAL("__MACOSX")) {
+      continue;
     }
+
+    *error = base::StringPrintf(
+        "Cannot load extension with file or directory name %s. "
+        "Filenames starting with \"_\" are reserved for use by the system.",
+        file.BaseName().AsUTF8Unsafe().c_str());
+    return false;
   }
 
   return true;

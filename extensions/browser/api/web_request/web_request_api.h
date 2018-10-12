@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
@@ -469,6 +470,7 @@ class ExtensionWebRequestEventRouter {
 
  private:
   friend class WebRequestAPI;
+  friend class base::NoDestructor<ExtensionWebRequestEventRouter>;
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
                            BlockingEventPrecedenceRedirect);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,

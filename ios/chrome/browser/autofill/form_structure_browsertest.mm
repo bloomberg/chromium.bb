@@ -43,10 +43,9 @@ namespace {
 
 const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
 
-const base::FilePath& GetTestDataDir() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
-  if (dir.empty())
-    base::PathService::Get(ios::DIR_TEST_DATA, &dir);
+base::FilePath GetTestDataDir() {
+  base::FilePath dir;
+  base::PathService::Get(ios::DIR_TEST_DATA, &dir);
   return dir;
 }
 

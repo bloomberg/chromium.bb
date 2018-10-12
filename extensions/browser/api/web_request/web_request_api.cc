@@ -885,8 +885,8 @@ ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
 
 // static
 ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
-  CR_DEFINE_STATIC_LOCAL(ExtensionWebRequestEventRouter, instance, ());
-  return &instance;
+  static base::NoDestructor<ExtensionWebRequestEventRouter> instance;
+  return instance.get();
 }
 
 ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()

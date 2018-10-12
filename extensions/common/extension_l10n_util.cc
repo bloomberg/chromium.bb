@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -101,8 +102,8 @@ bool LocalizeManifestListValue(const std::string& key,
 }
 
 std::string& GetProcessLocale() {
-  CR_DEFINE_STATIC_LOCAL(std::string, locale, ());
-  return locale;
+  static base::NoDestructor<std::string> locale;
+  return *locale;
 }
 
 }  // namespace
