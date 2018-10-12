@@ -20,7 +20,6 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -62,12 +61,12 @@ class MockProximityMonitorObserver : public ProximityMonitorObserver {
 
 class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
  public:
-  MockProximityAuthPrefManager(
-      chromeos::multidevice_setup::FakeMultiDeviceSetupClient*
-          fake_multidevice_setup_client)
-      : ProximityAuthProfilePrefManager(nullptr,
-                                        fake_multidevice_setup_client) {}
+  MockProximityAuthPrefManager()
+      : ProximityAuthProfilePrefManager(
+            nullptr,
+            nullptr /* multidevice_setup_client */) {}
   ~MockProximityAuthPrefManager() override {}
+
   MOCK_CONST_METHOD0(GetProximityThreshold,
                      ProximityAuthPrefManager::ProximityThreshold(void));
 
@@ -104,40 +103,27 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                            .SetName(kRemoteDeviceName)
                            .Build()),
         connection_(remote_device_),
+        pref_manager_(new NiceMock<MockProximityAuthPrefManager>()),
+        monitor_(remote_device_,
+                 fake_client_channel_.get(),
+                 &connection_,
+                 pref_manager_.get()),
         task_runner_(new base::TestSimpleTaskRunner()),
-        thread_task_runner_handle_(task_runner_) {}
-
-  ~ProximityAuthProximityMonitorImplTest() override {}
-
-  void InitializeTest(bool multidevice_flags_enabled) {
-    SetMultiDeviceApiState(multidevice_flags_enabled /* enabled */);
-
-    fake_multidevice_setup_client_ = std::make_unique<
-        chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
-    pref_manager_ = std::make_unique<NiceMock<MockProximityAuthPrefManager>>(
-        fake_multidevice_setup_client_.get());
-
-    monitor_ = std::make_unique<ProximityMonitorImpl>(
-        remote_device_, fake_client_channel_.get(), &connection_,
-        pref_manager_.get());
-
+        thread_task_runner_handle_(task_runner_) {
     ON_CALL(*bluetooth_adapter_, GetDevice(std::string()))
         .WillByDefault(Return(&remote_bluetooth_device_));
     ON_CALL(remote_bluetooth_device_, GetConnectionInfo(_))
         .WillByDefault(SaveArg<0>(&connection_info_callback_));
-    monitor_->AddObserver(&observer_);
+    monitor_.AddObserver(&observer_);
     ON_CALL(*pref_manager_, GetProximityThreshold())
         .WillByDefault(Return(kProximityThresholdPrefValue));
   }
 
-  void SetMultiDeviceApiState(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kMultiDeviceApi);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::features::kMultiDeviceApi);
-    }
+  ~ProximityAuthProximityMonitorImplTest() override {}
+
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kMultiDeviceApi);
   }
 
   void RunPendingTasks() { task_runner_->RunPendingTasks(); }
@@ -187,12 +173,10 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   cryptauth::FakeConnection connection_;
 
   // ProximityAuthPrefManager mock.
-  std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
-      fake_multidevice_setup_client_;
   std::unique_ptr<NiceMock<MockProximityAuthPrefManager>> pref_manager_;
 
   // The proximity monitor under test.
-  std::unique_ptr<ProximityMonitorImpl> monitor_;
+  ProximityMonitorImpl monitor_;
 
  private:
   void ProvideConnectionInfo(
@@ -215,211 +199,201 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
 };
 
 TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_NeverStarted) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_Started_NoRssiReceivedYet) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  monitor_.Start();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_Started_NoRssiReceivedYet_MultiDeviceApiEnabled) {
-  InitializeTest(false /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  monitor_.Start();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_RssiInRange) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(4);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RssiInRange_MultiDeviceApiEnabled) {
-  InitializeTest(false /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(4);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_UnknownRssi) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   ProvideRssi(0);
   ProvideRssi(base::nullopt);
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_UnknownRssi_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
 
   ProvideRssi(0);
   ProvideRssi(base::nullopt);
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_InformsObserverOfChanges) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   // Initially, the device is not in proximity.
-  monitor_->Start();
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  monitor_.Start();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 
   // Simulate receiving an RSSI reading in proximity.
   EXPECT_CALL(observer_, OnProximityStateChanged()).Times(1);
   ProvideRssi(kRssiThreshold / 2);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate a reading indicating non-proximity.
   EXPECT_CALL(observer_, OnProximityStateChanged()).Times(1);
   ProvideRssi(kRssiThreshold * 2);
   ProvideRssi(kRssiThreshold * 2);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_InformsObserverOfChanges_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
   // Initially, the device is not in proximity.
-  monitor_->Start();
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  monitor_.Start();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 
   // Simulate receiving an RSSI reading in proximity.
   EXPECT_CALL(observer_, OnProximityStateChanged()).Times(1);
   ProvideRssi(kRssiThreshold / 2);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate a reading indicating non-proximity.
   EXPECT_CALL(observer_, OnProximityStateChanged()).Times(1);
   ProvideRssi(kRssiThreshold * 2);
   ProvideRssi(kRssiThreshold * 2);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_StartThenStop) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
-  monitor_->Stop();
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  monitor_.Stop();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_StartThenStop_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
 
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
-  monitor_->Stop();
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  monitor_.Stop();
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_StartThenStopThenStartAgain) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
-  monitor_->Stop();
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
+  monitor_.Stop();
 
   // Restarting the monitor should immediately reset the proximity state, rather
   // than building on the previous rolling average.
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(kRssiThreshold - 1);
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_StartThenStopThenStartAgain_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
   ProvideRssi(kRssiThreshold / 2);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
-  monitor_->Stop();
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
+  monitor_.Stop();
 
   // Restarting the monitor should immediately reset the proximity state, rather
   // than building on the previous rolling average.
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(kRssiThreshold - 1);
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RemoteDeviceRemainsInProximity) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(kRssiThreshold / 2 + 1);
   ProvideRssi(kRssiThreshold / 2 - 1);
   ProvideRssi(kRssiThreshold / 2 + 2);
   ProvideRssi(kRssiThreshold / 2 - 3);
 
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Brief drops in RSSI should be handled by weighted averaging.
   ProvideRssi(kRssiThreshold - 5);
 
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RemoteDeviceRemainsInProximity_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(kRssiThreshold / 2 + 1);
   ProvideRssi(kRssiThreshold / 2 - 1);
   ProvideRssi(kRssiThreshold / 2 + 2);
   ProvideRssi(kRssiThreshold / 2 - 3);
 
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Brief drops in RSSI should be handled by weighted averaging.
   ProvideRssi(kRssiThreshold - 5);
 
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RemoteDeviceLeavesProximity) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with a device in proximity.
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate readings for the remote device leaving proximity.
   ProvideRssi(-1);
@@ -435,18 +409,18 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   ProvideRssi(kRssiThreshold - 20);
   ProvideRssi(kRssiThreshold - 20);
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RemoteDeviceLeavesProximity_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with a device in proximity.
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate readings for the remote device leaving proximity.
   ProvideRssi(-1);
@@ -462,17 +436,16 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   ProvideRssi(kRssiThreshold - 20);
   ProvideRssi(kRssiThreshold - 20);
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RemoteDeviceEntersProximity) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with a device out of proximity.
   ProvideRssi(kRssiThreshold * 2);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 
   // Simulate readings for the remote device entering proximity.
   ProvideRssi(-15);
@@ -485,17 +458,16 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   ProvideRssi(0);
   ProvideRssi(0);
 
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_RemoteDeviceEntersProximity_MultiDeviceApiEnabled) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with a device out of proximity.
   ProvideRssi(kRssiThreshold * 2);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 
   // Simulate readings for the remote device entering proximity.
   ProvideRssi(-15);
@@ -508,17 +480,16 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   ProvideRssi(0);
   ProvideRssi(0);
 
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_DeviceNotKnownToAdapter) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with the device known to the adapter and in proximity.
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate it being forgotten.
   ON_CALL(*bluetooth_adapter_, GetDevice(std::string()))
@@ -526,17 +497,16 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   EXPECT_CALL(observer_, OnProximityStateChanged());
   RunPendingTasks();
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_DeviceNotKnownToAdapter_MultiDeviceApiEnabled) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with the device known to the adapter and in proximity.
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate it being forgotten.
   ON_CALL(*bluetooth_adapter_, GetDevice(std::string()))
@@ -544,74 +514,71 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   EXPECT_CALL(observer_, OnProximityStateChanged());
   RunPendingTasks();
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_DeviceNotConnected) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with the device connected and in proximity.
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate it disconnecting.
   ON_CALL(remote_bluetooth_device_, IsConnected()).WillByDefault(Return(false));
   EXPECT_CALL(observer_, OnProximityStateChanged());
   RunPendingTasks();
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_DeviceNotConnected_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
 
   // Start with the device connected and in proximity.
   ProvideRssi(0);
-  EXPECT_TRUE(monitor_->IsUnlockAllowed());
+  EXPECT_TRUE(monitor_.IsUnlockAllowed());
 
   // Simulate it disconnecting.
   fake_client_channel_->NotifyDisconnected();
   EXPECT_CALL(observer_, OnProximityStateChanged());
   RunPendingTasks();
 
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        IsUnlockAllowed_ConnectionInfoReceivedAfterStopping) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
-  monitor_->Stop();
+  monitor_.Start();
+  monitor_.Stop();
   ProvideRssi(0);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(
     ProximityAuthProximityMonitorImplTest,
     IsUnlockAllowed_ConnectionInfoReceivedAfterStopping_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
-  monitor_->Stop();
+  monitor_.Start();
+  monitor_.Stop();
   ProvideRssi(0);
-  EXPECT_FALSE(monitor_->IsUnlockAllowed());
+  EXPECT_FALSE(monitor_.IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_NormalValues) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(0);
 
   ProvideRssi(-20);
 
   base::HistogramTester histogram_tester;
-  monitor_->RecordProximityMetricsOnAuthSuccess();
+  monitor_.RecordProximityMetricsOnAuthSuccess();
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       -6, 1);
   histogram_tester.ExpectUniqueSample(
@@ -621,15 +588,15 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_NormalValues_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(0);
 
   ProvideRssi(-20);
 
   base::HistogramTester histogram_tester;
-  monitor_->RecordProximityMetricsOnAuthSuccess();
+  monitor_.RecordProximityMetricsOnAuthSuccess();
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       -6, 1);
   histogram_tester.ExpectUniqueSample(
@@ -639,12 +606,11 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_ClampedValues) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(-99999);
 
   base::HistogramTester histogram_tester;
-  monitor_->RecordProximityMetricsOnAuthSuccess();
+  monitor_.RecordProximityMetricsOnAuthSuccess();
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       -100, 1);
 }
@@ -652,20 +618,19 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
 TEST_F(
     ProximityAuthProximityMonitorImplTest,
     RecordProximityMetricsOnAuthSuccess_ClampedValues_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
-  monitor_->Start();
+  monitor_.Start();
   ProvideRssi(-99999);
 
   base::HistogramTester histogram_tester;
-  monitor_->RecordProximityMetricsOnAuthSuccess();
+  monitor_.RecordProximityMetricsOnAuthSuccess();
   histogram_tester.ExpectUniqueSample("EasyUnlock.AuthProximity.RollingRssi",
                                       -100, 1);
 }
 
 TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_UnknownValues) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   // Note: A device without a recorded name will have "Unknown" as its name.
   cryptauth::RemoteDeviceRef remote_device = cryptauth::RemoteDeviceRefBuilder()
                                                  .SetUserId(kRemoteDeviceUserId)
@@ -691,7 +656,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
 TEST_F(
     ProximityAuthProximityMonitorImplTest,
     RecordProximityMetricsOnAuthSuccess_UnknownValues_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
+  SetMultiDeviceApiEnabled();
 
   // Note: A device without a recorded name will have "Unknown" as its name.
   cryptauth::RemoteDeviceRef remote_device = cryptauth::RemoteDeviceRefBuilder()

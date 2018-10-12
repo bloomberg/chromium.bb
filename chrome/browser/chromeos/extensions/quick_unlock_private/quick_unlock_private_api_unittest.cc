@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
@@ -32,9 +31,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
-#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api_test_utils.h"
@@ -67,17 +63,11 @@ constexpr char kInvalidPassword[] = "invalid";
 
 class FakeEasyUnlockService : public EasyUnlockServiceRegular {
  public:
-  FakeEasyUnlockService(
-      Profile* profile,
-      chromeos::device_sync::FakeDeviceSyncClient* fake_device_sync_client,
-      chromeos::secure_channel::FakeSecureChannelClient*
-          fake_secure_channel_client,
-      chromeos::multidevice_setup::FakeMultiDeviceSetupClient*
-          fake_multidevice_setup_client)
+  explicit FakeEasyUnlockService(Profile* profile)
       : EasyUnlockServiceRegular(profile,
-                                 fake_secure_channel_client,
-                                 fake_device_sync_client,
-                                 fake_multidevice_setup_client),
+                                 nullptr /* secure_channel_client */,
+                                 nullptr /* device_sync_client */,
+                                 nullptr /* multidevice_setup_client */),
         reauth_count_(0) {}
   ~FakeEasyUnlockService() override {}
 
@@ -100,17 +90,8 @@ class FakeEasyUnlockService : public EasyUnlockServiceRegular {
 
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  static base::NoDestructor<chromeos::device_sync::FakeDeviceSyncClient>
-      fake_device_sync_client;
-  static base::NoDestructor<chromeos::secure_channel::FakeSecureChannelClient>
-      fake_secure_channel_client;
-  static base::NoDestructor<
-      chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
-      fake_multidevice_setup_client;
-
   return std::make_unique<FakeEasyUnlockService>(
-      Profile::FromBrowserContext(context), fake_device_sync_client.get(),
-      fake_secure_channel_client.get(), fake_multidevice_setup_client.get());
+      Profile::FromBrowserContext(context));
 }
 
 ExtendedAuthenticator* CreateFakeAuthenticator(

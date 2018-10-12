@@ -203,14 +203,9 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
         std::move(fake_connection_attempt));
   }
 
-  void SetMultiDeviceApiState(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kMultiDeviceApi);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::features::kMultiDeviceApi);
-    }
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kMultiDeviceApi);
   }
 
   void StartLifeCycle() {
@@ -331,7 +326,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Success) {
-  SetMultiDeviceApiState(true /* enabled */);
+  SetMultiDeviceApiEnabled();
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -340,7 +335,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Failure) {
-  SetMultiDeviceApiState(true /* enabled */);
+  SetMultiDeviceApiEnabled();
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -353,7 +348,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Failure_BluetoothNotPresent) {
-  SetMultiDeviceApiState(true /* enabled */);
+  SetMultiDeviceApiEnabled();
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -365,7 +360,7 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        MultiDeviceApiEnabled_Failure_BluetoothNotPowered) {
-  SetMultiDeviceApiState(true /* enabled */);
+  SetMultiDeviceApiEnabled();
   CreateFakeConnectionAttempt();
 
   StartLifeCycle();
@@ -376,7 +371,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
 }
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {
-  SetMultiDeviceApiState(false /* enabled */);
   StartLifeCycle();
   for (size_t i = 0; i < 3; ++i) {
     cryptauth::Connection* connection = OnConnectionFound();
@@ -393,7 +387,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {
 }
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticationFails) {
-  SetMultiDeviceApiState(false /* enabled */);
   // Simulate an authentication failure after connecting to the device.
   StartLifeCycle();
   OnConnectionFound();
@@ -424,7 +417,6 @@ TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticationFails) {
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest,
        AuthenticationFailsThenSucceeds) {
-  SetMultiDeviceApiState(false /* enabled */);
   // Authentication fails on first pass.
   StartLifeCycle();
   OnConnectionFound();

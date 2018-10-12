@@ -92,18 +92,14 @@ class ProximityAuthMessengerImplTest : public testing::Test {
  protected:
   ProximityAuthMessengerImplTest() = default;
 
-  void SetMultiDeviceApiState(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          chromeos::features::kMultiDeviceApi);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          chromeos::features::kMultiDeviceApi);
-    }
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kMultiDeviceApi);
   }
 
   void CreateMessenger(bool is_multi_device_api_enabled) {
-    SetMultiDeviceApiState(is_multi_device_api_enabled);
+    if (is_multi_device_api_enabled)
+      SetMultiDeviceApiEnabled();
 
     auto fake_channel =
         std::make_unique<chromeos::secure_channel::FakeClientChannel>();
@@ -123,8 +119,6 @@ class ProximityAuthMessengerImplTest : public testing::Test {
     return message_copy;
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   chromeos::secure_channel::FakeClientChannel* fake_channel_;
 
   std::unique_ptr<TestMessenger> messenger_;
@@ -132,6 +126,7 @@ class ProximityAuthMessengerImplTest : public testing::Test {
   std::unique_ptr<MockMessengerObserver> observer_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthMessengerImplTest);
 };
