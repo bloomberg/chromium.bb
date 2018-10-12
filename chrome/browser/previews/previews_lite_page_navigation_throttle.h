@@ -11,7 +11,24 @@
 
 namespace content {
 struct OpenURLParams;
+class BrowserContext;
 }
+
+// If the given URL is a LitePage Preview URL, this returns true but does not
+// change the |url|. This will set |update_virtual_url_with_url| on
+// NavigationEntry so that |HandlePreviewsLitePageURLRewriteReverse| is called
+// when the navigation finishes.
+// Note: This means the virtual URL will not be set during the navigation load.
+// This is handled separately in UI on Android.
+bool HandlePreviewsLitePageURLRewrite(GURL* url,
+                                      content::BrowserContext* browser_context);
+
+// Handles translating the given Lite Page URL to the original URL. Returns true
+// if the given |url| was a preview, otherwise returns false and does not change
+// |url|.
+bool HandlePreviewsLitePageURLRewriteReverse(
+    GURL* url,
+    content::BrowserContext* browser_context);
 
 // This class does the actual decision making about when to serve a Lite Page
 // Server Preview, and the legwork to trigger the Preview navigation. When a

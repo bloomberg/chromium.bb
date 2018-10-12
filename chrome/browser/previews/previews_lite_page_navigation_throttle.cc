@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -152,6 +153,25 @@ class WebContentsLifetimeHelper
   base::WeakPtrFactory<WebContentsLifetimeHelper> weak_factory_;
 };
 
+bool HandlePreviewsLitePageURLRewrite(
+    GURL* url,
+    content::BrowserContext* browser_context) {
+  // Don't change the |url|, just register our interest in reversing it before
+  // it is displayed to the user in |HandlePreviewsLitePageURLRewriteReverse|.
+  return !!PreviewsLitePageNavigationThrottle::GetOriginalURL(*url, nullptr);
+}
+
+bool HandlePreviewsLitePageURLRewriteReverse(
+    GURL* url,
+    content::BrowserContext* browser_context) {
+  std::string original_url;
+  if (PreviewsLitePageNavigationThrottle::GetOriginalURL(*url, &original_url)) {
+    *url = GURL(original_url);
+    return true;
+  }
+  return false;
+}
+
 PreviewsLitePageNavigationThrottle::PreviewsLitePageNavigationThrottle(
     content::NavigationHandle* handle,
     PreviewsLitePageNavigationThrottleManager* manager)
@@ -256,7 +276,6 @@ bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
-  DCHECK(!IsPreviewsDomain(original_url));
 
   std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
       crypto::SHA256HashString(
@@ -275,6 +294,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
 }
 
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
+  DCHECK(!IsPreviewsDomain(navigation_handle()->GetURL()));
   return GetPreviewsURLForURL(navigation_handle()->GetURL());
 }
 
