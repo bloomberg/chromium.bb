@@ -9,6 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("dbus") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
     ":dbus_switches",
   ]
@@ -229,10 +230,10 @@ source_set("dbus") {
     "volume_state.cc",
     "volume_state.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("dbus_switches") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//base",
     "//chromeos:chromeos_export",
@@ -241,7 +242,6 @@ source_set("dbus_switches") {
     "dbus_switches.cc",
     "dbus_switches.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("test_support") {
