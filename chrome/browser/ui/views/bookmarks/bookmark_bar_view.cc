@@ -168,13 +168,13 @@ int GetInkDropCornerRadius(const views::View* host_view) {
       views::EMPHASIS_MAXIMUM, host_view->size());
 }
 
-// Returns a gfx::Path for bookmark inkdrops and focus rings.
-std::unique_ptr<gfx::Path> CreateBookmarkHighlightPath(
+// Returns a |SkPath| for bookmark inkdrops and focus rings.
+std::unique_ptr<SkPath> CreateBookmarkHighlightPath(
     views::InkDropHostView* host_view) {
   gfx::Rect rect(host_view->size());
   rect.Inset(GetInkDropInsets());
 
-  auto path = std::make_unique<gfx::Path>();
+  auto path = std::make_unique<SkPath>();
   const int radius = GetInkDropCornerRadius(host_view);
   path->addRoundRect(gfx::RectToSkRect(rect), radius, radius);
   return path;

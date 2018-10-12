@@ -8,9 +8,10 @@
 #include "ui/base/class_property.h"
 #include "ui/views/views_export.h"
 
+class SkPath;
+
 namespace gfx {
 class Insets;
-class Path;
 }  // namespace gfx
 
 namespace views {
@@ -34,8 +35,7 @@ VIEWS_EXPORT extern const ui::ClassProperty<BubbleDialogDelegateView*>* const
 // A property to store a highlight path related to the view. This is nominally
 // used by the default inkdrop and focus ring that are both used to highlight
 // the view in different ways.
-VIEWS_EXPORT extern const ui::ClassProperty<gfx::Path*>* const
-    kHighlightPathKey;
+VIEWS_EXPORT extern const ui::ClassProperty<SkPath*>* const kHighlightPathKey;
 
 }  // namespace views
 
@@ -47,5 +47,5 @@ VIEWS_EXPORT extern const ui::ClassProperty<gfx::Path*>* const
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*);
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                         views::BubbleDialogDelegateView*);
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Path*);
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, SkPath*);
 #endif  // UI_VIEWS_VIEW_PROPERTIES_H_

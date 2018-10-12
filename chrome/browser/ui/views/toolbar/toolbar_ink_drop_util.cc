@@ -25,7 +25,7 @@ gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
   return inkdrop_insets;
 }
 
-std::unique_ptr<gfx::Path> CreateToolbarHighlightPath(
+std::unique_ptr<SkPath> CreateToolbarHighlightPath(
     const views::View* host_view,
     const gfx::Insets& margin_insets) {
   gfx::Rect rect(host_view->size());
@@ -34,7 +34,7 @@ std::unique_ptr<gfx::Path> CreateToolbarHighlightPath(
   const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MAXIMUM, rect.size());
 
-  auto path = std::make_unique<gfx::Path>();
+  auto path = std::make_unique<SkPath>();
   path->addRoundRect(gfx::RectToSkRect(rect), radii, radii);
   return path;
 }

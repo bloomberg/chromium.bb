@@ -20,7 +20,7 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*);
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                        views::BubbleDialogDelegateView*);
 
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Path*);
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, SkPath*);
 
 namespace views {
 
@@ -29,6 +29,6 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Insets, kMarginsKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(views::BubbleDialogDelegateView*,
                              kAnchoredDialogKey,
                              nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Path, kHighlightPathKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(SkPath, kHighlightPathKey, nullptr);
 
 }  // namespace views
