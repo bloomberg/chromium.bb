@@ -211,9 +211,6 @@
 -SigninProfileAppsPolicyPerChannelTest.*
 -SigninProfileAppsPolicyTest.*
 
-# Clock policy tests.
--SystemUse24HourClockPolicyTest.*
-
 # Unmanaged platform keys tests.
 -Unmanaged/UnmanagedPlatformKeysTest.*
 
