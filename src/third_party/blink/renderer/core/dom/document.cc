@@ -2150,7 +2150,8 @@ void Document::UpdateStyleAndLayoutTree() {
     return;
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-  ScriptForbiddenScope forbid_script;
+  // blpwtk2: We need to run script for plugins
+  //ScriptForbiddenScope forbid_script;
 
   if (HTMLFrameOwnerElement* owner = LocalOwner()) {
     owner->GetDocument().UpdateStyleAndLayoutTree();
@@ -2754,7 +2755,8 @@ void Document::Shutdown() {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   // Don't allow script to run in the middle of detachLayoutTree() because a
   // detaching Document is not in a consistent state.
-  ScriptForbiddenScope forbid_script;
+  // blpwtk2: We need to run script for plugins
+  //ScriptForbiddenScope forbid_script;
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopping);
   View()->Dispose();
