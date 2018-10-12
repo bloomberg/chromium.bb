@@ -81,10 +81,13 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
   dialog->GetDocument().ClearFocusedElement();
 }
 
-static void InertSubtreesChanged(Document& document) {
+static void InertSubtreesChanged(Document& document,
+                                 HTMLDialogElement& dialog_element) {
+  // SetIsInert recurses through subframes to propagate the inert bit and that
+  // needs an up-to-date dialog flat tree distribution: see crbug.com/789094 &
+  // crbug.com/804047 crash reports.
   if (document.GetFrame()) {
-    // SetIsInert recurses through subframes to propagate the inert bit as
-    // needed.
+    dialog_element.UpdateDistributionForFlatTreeTraversal();
     document.GetFrame()->SetIsInert(document.LocalOwner() &&
                                     document.LocalOwner()->IsInert());
   }
@@ -116,7 +119,7 @@ void HTMLDialogElement::close(const String& return_value) {
   HTMLDialogElement* active_modal_dialog = GetDocument().ActiveModalDialog();
   GetDocument().RemoveFromTopLayer(this);
   if (active_modal_dialog == this)
-    InertSubtreesChanged(GetDocument());
+    InertSubtreesChanged(GetDocument(), *this);
 
   if (!return_value.IsNull())
     return_value_ = return_value;
@@ -175,7 +178,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   // Throw away the AX cache first, so the subsequent steps don't have a chance
   // of queuing up AX events on objects that would be invalidated when the cache
   // is thrown away.
-  InertSubtreesChanged(GetDocument());
+  InertSubtreesChanged(GetDocument(), *this);
 
   ForceLayoutForCentering();
   SetFocusForDialog(this);
@@ -184,7 +187,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
 void HTMLDialogElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   SetNotCentered();
-  InertSubtreesChanged(GetDocument());
+  InertSubtreesChanged(GetDocument(), *this);
 }
 
 void HTMLDialogElement::SetCentered(LayoutUnit centered_position) {
