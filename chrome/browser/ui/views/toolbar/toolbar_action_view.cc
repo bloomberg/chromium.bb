@@ -146,16 +146,9 @@ std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
   return ink_drop;
 }
 
-std::unique_ptr<views::InkDropRipple> ToolbarActionView::CreateInkDropRipple()
-    const {
-  return CreateToolbarInkDropRipple<MenuButton>(
-      this, GetInkDropCenterBasedOnLastEvent(), gfx::Insets());
-}
-
 std::unique_ptr<views::InkDropHighlight>
 ToolbarActionView::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight<MenuButton>(
-      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+  return CreateToolbarInkDropHighlight(this);
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {

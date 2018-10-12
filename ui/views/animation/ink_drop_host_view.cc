@@ -9,6 +9,7 @@
 #include "ui/events/scoped_target_handler.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -160,12 +161,23 @@ std::unique_ptr<InkDrop> InkDropHostView::CreateInkDrop() {
 }
 
 std::unique_ptr<InkDropRipple> InkDropHostView::CreateInkDropRipple() const {
+  if (GetProperty(kHighlightPathKey)) {
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
+        GetInkDropBaseColor(), ink_drop_visible_opacity());
+  }
+
   return CreateDefaultInkDropRipple(
       GetMirroredRect(GetContentsBounds()).CenterPoint());
 }
 
 std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
     const {
+  if (GetProperty(kHighlightPathKey)) {
+    return std::make_unique<views::InkDropHighlight>(
+        size(), 0, gfx::RectF(GetMirroredRect(GetLocalBounds())).CenterPoint(),
+        GetInkDropBaseColor());
+  }
   return CreateDefaultInkDropHighlight(
       gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint());
 }

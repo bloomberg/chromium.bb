@@ -15,7 +15,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -23,7 +22,6 @@
 #include "ui/views/style/platform_style.h"
 
 constexpr float kToolbarInkDropVisibleOpacity = 0.06f;
-constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
 constexpr SkAlpha kToolbarButtonBackgroundAlpha = 32;
 
 // The below utility functions are templated since we have two different types
@@ -69,47 +67,9 @@ std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
   return ink_drop;
 }
 
-// Creates the appropriate ink drop ripple for the calling button. When the
-// newer material UI is not enabled, it uses the default implementation of the
-// calling button's base class (the template argument BaseInkDropHostView).
-// Otherwise, it uses a |FloodFillInkDropRipple|.
-template <class BaseInkDropHostView>
-std::unique_ptr<views::InkDropRipple> CreateToolbarInkDropRipple(
-    const BaseInkDropHostView* host_view,
-    const gfx::Point& center_point,
-    const gfx::Insets& margin_insets) {
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
-    return host_view->BaseInkDropHostView::CreateInkDropRipple();
-
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      host_view->size(), GetToolbarInkDropInsets(host_view, margin_insets),
-      center_point, host_view->GetInkDropBaseColor(),
-      host_view->ink_drop_visible_opacity());
-}
-
-// Creates the appropriate ink drop highlight for the calling button. When the
-// newer material UI is not enabled, it uses the default implementation of the
-// calling button's base class (the template argument BaseInkDropHostView).
-// Otherwise, it uses a circular highlight with the same height as the location
-// bar.
-template <class BaseInkDropHostView>
+// Creates the default inkdrop highlight but using the toolbar visible opacity.
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
-    const BaseInkDropHostView* host_view,
-    const gfx::Point& center_point) {
-  if (!ui::MaterialDesignController::IsNewerMaterialUi())
-    return host_view->BaseInkDropHostView::CreateInkDropHighlight();
-
-  const int highlight_dimensions = GetLayoutConstant(LOCATION_BAR_HEIGHT);
-  const gfx::Size highlight_size(highlight_dimensions, highlight_dimensions);
-
-  auto highlight = std::make_unique<views::InkDropHighlight>(
-      highlight_size,
-      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MAXIMUM, highlight_size),
-      gfx::PointF(center_point), host_view->GetInkDropBaseColor());
-  highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
-  return highlight;
-}
+    const views::InkDropHostView* host_view);
 
 // Returns the ink drop base color that should be used by all toolbar buttons.
 SkColor GetToolbarInkDropBaseColor(const views::View* host_view);
