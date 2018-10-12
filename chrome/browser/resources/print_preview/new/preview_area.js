@@ -539,17 +539,6 @@ Polymer({
     this.pluginProxy_.setPointerEvents(!e.detail);
   },
 
-  /**
-   * Called when the learn more link for a cloud destination with an invalid
-   * certificate is clicked. Calls nativeLayer to open a new tab with the help
-   * page.
-   * @private
-   */
-  onGcpErrorLearnMoreClick_: function() {
-    this.nativeLayer_.forceOpenNewTab(
-        this.i18n('gcpCertificateErrorLearnMoreURL'));
-  },
-
   /** @private */
   onMarginsChanged_: function() {
     if (this.getSettingValue('margins') !=

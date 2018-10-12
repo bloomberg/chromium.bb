@@ -247,6 +247,7 @@ class PrintPreviewHandler
   // Javascript's "window.open" opens a new window popup (since initiated from
   // async HTTP request) and worse yet, on Windows and Chrome OS, the opened
   // window opens behind the initiator window.
+  // TODO(rbpotter): Remove this when the old Print Preview page is deleted.
   void HandleForceOpenNewTab(const base::ListValue* args);
 
   void SendInitialSettings(const std::string& callback_id,

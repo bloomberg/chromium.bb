@@ -278,7 +278,10 @@ cr.define('print_preview', function() {
       chrome.send('managePrinters');
     }
 
-    /** Forces browser to open a new tab with the given URL address. */
+    /**
+     * Forces browser to open a new tab with the given URL address.
+     * TODO (rbpotter): Delete this when the old Print Preview page is removed.
+     */
     forceOpenNewTab(url) {
       chrome.send('forceOpenNewTab', [url]);
     }
