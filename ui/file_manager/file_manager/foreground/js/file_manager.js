@@ -1207,7 +1207,7 @@ FileManager.prototype = /** @struct */ {
                 str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT,
                 new FakeEntry(
                     str('RECENT_ROOT_LABEL'),
-                    VolumeManagerCommon.RootType.RECENT, true,
+                    VolumeManagerCommon.RootType.RECENT,
                     this.getSourceRestriction_())) :
             null,
         this.commandLineFlags_['disable-my-files-navigation']);
@@ -1232,7 +1232,7 @@ FileManager.prototype = /** @struct */ {
               str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
               new FakeEntry(
                   str('LINUX_FILES_ROOT_LABEL'),
-                  VolumeManagerCommon.RootType.CROSTINI, true)) :
+                  VolumeManagerCommon.RootType.CROSTINI)) :
           null;
 
       // Redraw the tree even if not enabled.  This is required for testing.
