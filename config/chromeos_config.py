@@ -71,6 +71,7 @@ class HWTestList(object):
                                 **bvt_inline_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                 **bvt_inline_kwargs),
+        self.TastConfig(constants.HWTEST_TAST_CQ_SUITE, **bvt_inline_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
                                 blocking=True, **installer_kwargs),
         config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
@@ -90,9 +91,7 @@ class HWTestList(object):
     # the suite job for canary builds.
     kwargs.setdefault('minimum_duts', 4)
     kwargs.setdefault('file_bugs', True)
-    suite_list = self.DefaultList(**kwargs)
-    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CQ_SUITE, **kwargs))
-    return suite_list
+    return self.DefaultList(**kwargs)
 
   def AFDOList(self, **kwargs):
     """Returns a default list of HWTestConfigs for a AFDO build.
@@ -334,6 +333,8 @@ class HWTestList(object):
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict),
+            self.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                            **default_dict),
             config_lib.HWTestConfig('security',
                                     **default_dict),
             config_lib.HWTestConfig('kernel_daily_regression',
@@ -355,6 +356,8 @@ class HWTestList(object):
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict),
+            self.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                            **default_dict),
             config_lib.HWTestConfig('security',
                                     **default_dict)]
 
@@ -828,14 +831,11 @@ def GeneralTemplates(site_config, ge_build_config):
   # TryjobMirrors uses hw_tests_override to ensure that tryjobs run all suites
   # rather than just the ones that are assigned to the board being used. Add
   # bvt-tast-cq here since it includes system, Chrome, and Android tests.
-  suite_list = hw_test_list.DefaultList(
-      pool=constants.HWTEST_TRYBOT_POOL,
-      file_bugs=False)
-  suite_list.append(hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
-                                            pool=constants.HWTEST_TRYBOT_POOL))
   site_config.AddTemplate(
       'default_hw_tests_override',
-      hw_tests_override=suite_list,
+      hw_tests_override=hw_test_list.DefaultList(
+          pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False),
   )
 
   # Config parameters for builders that do not run tests on the builder.
@@ -880,9 +880,12 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'paladin',
-      hw_tests_override=hw_test_list.DefaultListNonCanary(
-          pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False),
+      hw_tests_override=(
+          hw_test_list.DefaultListNonCanary(pool=constants.HWTEST_TRYBOT_POOL,
+                                            file_bugs=False) +
+          [hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                                   pool=constants.HWTEST_TRYBOT_POOL,
+                                   file_bugs=False)]),
       chroot_replace=False,
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
@@ -1430,6 +1433,8 @@ def GeneralTemplates(site_config, ge_build_config):
           config_lib.HWTestConfig(constants.HWTEST_MOBLAB_SUITE,
                                   timeout=120*60),
           config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                  warn_only=True),
+          hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
                                   warn_only=True),
           config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
                                   warn_only=True)],
