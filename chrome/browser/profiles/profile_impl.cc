@@ -176,6 +176,7 @@
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/service.h"
+#include "content/public/browser/network_service_instance.h"
 #endif
 
 #endif
@@ -1164,8 +1165,11 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   {
     service_manager::EmbeddedServiceInfo info;
     info.factory = base::BindRepeating([] {
+      network::NetworkConnectionTracker* network_connection_tracker =
+          content::GetNetworkConnectionTracker();
       return std::unique_ptr<service_manager::Service>(
-          std::make_unique<chromeos::assistant::Service>());
+          std::make_unique<chromeos::assistant::Service>(
+              network_connection_tracker));
     });
     info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
         {content::BrowserThread::UI});
