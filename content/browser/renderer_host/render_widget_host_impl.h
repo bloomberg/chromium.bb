@@ -828,6 +828,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
+  void OnHasTouchEventHandlers(bool has_handlers);
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
@@ -842,7 +843,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const ui::LatencyInfo& latency_info) override;
   void IncrementInFlightEventCount() override;
   void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
-  void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStartScrollingViewport() override;
   void OnSetWhiteListedTouchAction(

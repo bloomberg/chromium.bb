@@ -12,7 +12,6 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "ipc/ipc_listener.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 namespace content {
@@ -21,7 +20,7 @@ namespace content {
 // sent to the renderer, and how responses are dispatched to the browser.
 // While the router should respect the relative order in which events are
 // received, it is free to customize when those events are dispatched.
-class InputRouter : public IPC::Listener {
+class InputRouter {
  public:
   struct CONTENT_EXPORT Config {
     Config();
@@ -29,7 +28,7 @@ class InputRouter : public IPC::Listener {
     PassthroughTouchEventQueue::Config touch_config;
   };
 
-  ~InputRouter() override {}
+  virtual ~InputRouter() = default;
 
   // WebInputEvents
   virtual void SendMouseEvent(
@@ -84,6 +83,10 @@ class InputRouter : public IPC::Listener {
   // frame, we set the touch action in the main frame Auto even if there is no
   // pending touch start.
   virtual void ForceSetTouchActionAuto() = 0;
+
+  // Called when the renderer notifies a change in whether or not it has touch
+  // event handlers registered.
+  virtual void OnHasTouchEventHandlers(bool has_handlers) = 0;
 };
 
 }  // namespace content

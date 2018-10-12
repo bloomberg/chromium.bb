@@ -31,7 +31,6 @@
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -126,10 +125,6 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     input_router_client_.DecrementInFlightEventCount(ack_source);
   }
 
-  void OnHasTouchEventHandlers(bool has_handlers) override {
-    input_router_client_.OnHasTouchEventHandlers(has_handlers);
-  }
-
   void DidOverscroll(const ui::DidOverscrollParams& params) override {
     input_router_client_.DidOverscroll(params);
   }
@@ -174,10 +169,6 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void set_input_router(InputRouter* input_router) {
     input_router_client_.set_input_router(input_router);
-  }
-
-  bool has_touch_handler() const {
-    return input_router_client_.has_touch_handler();
   }
 
   void set_filter_state(InputEventAckState filter_state) {
@@ -388,8 +379,7 @@ class InputRouterImplTest : public testing::Test {
   bool HasPendingEvents() const { return input_router_->HasPendingEvents(); }
 
   void OnHasTouchEventHandlers(bool has_handlers) {
-    input_router_->OnMessageReceived(
-        ViewHostMsg_HasTouchEventHandlers(0, has_handlers));
+    input_router_->OnHasTouchEventHandlers(has_handlers);
   }
 
   void CancelTouchTimeout() { input_router_->CancelTouchTimeout(); }
@@ -718,7 +708,6 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
 // events and the outstanding ack is received.
 TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   OnHasTouchEventHandlers(true);
-  EXPECT_TRUE(client_->has_touch_handler());
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_TRUE(TouchEventQueueEmpty());
 
@@ -735,7 +724,6 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   // The page stops listening for touch-events. Note that flushing is deferred
   // until the outstanding ack is received.
   OnHasTouchEventHandlers(false);
-  EXPECT_FALSE(client_->has_touch_handler());
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_FALSE(TouchEventQueueEmpty());
 

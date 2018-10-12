@@ -99,7 +99,7 @@ class MockInputRouter : public InputRouter {
         sent_keyboard_event_(false),
         sent_gesture_event_(false),
         send_touch_event_not_cancelled_(false),
-        message_received_(false),
+        has_handlers_(false),
         client_(client) {}
   ~MockInputRouter() override {}
 
@@ -138,11 +138,8 @@ class MockInputRouter : public InputRouter {
   bool FlingCancellationIsDeferred() override { return false; }
   void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}
-
-  // IPC::Listener
-  bool OnMessageReceived(const IPC::Message& message) override {
-    message_received_ = true;
-    return false;
+  void OnHasTouchEventHandlers(bool has_handlers) override {
+    has_handlers_ = has_handlers;
   }
 
   bool sent_mouse_event_;
@@ -150,7 +147,7 @@ class MockInputRouter : public InputRouter {
   bool sent_keyboard_event_;
   bool sent_gesture_event_;
   bool send_touch_event_not_cancelled_;
-  bool message_received_;
+  bool has_handlers_;
 
  private:
   InputRouterClient* client_;
@@ -1791,9 +1788,10 @@ TEST_F(RenderWidgetHostTest, MouseEventCallbackCanHandleEvent) {
 TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
   host_->SetupForInputRouterTest();
 
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  ASSERT_FALSE(host_->mock_input_router()->has_handlers_);
 
-  EXPECT_TRUE(host_->mock_input_router()->message_received_);
+  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_TRUE(host_->mock_input_router()->has_handlers_);
 }
 
 void CheckLatencyInfoComponentInMessage(
@@ -1831,7 +1829,7 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
 // ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
 // event's LatencyInfo.
 TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
 
   // Tests RWHI::ForwardWheelEvent().
   SimulateWheelEvent(-5, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
@@ -2030,7 +2028,7 @@ TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
 // Tests that event dispatch after the delegate has been detached doesn't cause
 // a crash. See crbug.com/563237.
 TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
   process_->sink().ClearMessages();
 
   host_->DetachDelegate();

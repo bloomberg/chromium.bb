@@ -2907,7 +2907,7 @@ void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
   has_touch_handlers_ = has_handlers;
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHasTouchHandler(has_handlers);
-  Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
+  Send(new WidgetHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {

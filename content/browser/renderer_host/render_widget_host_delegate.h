@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/input_event_shim.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
@@ -313,6 +314,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Returns true if there is context menu shown on page.
   virtual bool IsShowingContextMenuOnPage() const;
+
+  // Returns an object that will override handling of Text Input and Mouse
+  // Lock events from the renderer.
+  virtual InputEventShim* GetInputEventShim() const;
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

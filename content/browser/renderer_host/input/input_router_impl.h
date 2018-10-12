@@ -99,15 +99,13 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const gfx::Range& range,
       const std::vector<gfx::Rect>& bounds) override;
   void SetMouseCapture(bool capture) override;
+  void OnHasTouchEventHandlers(bool has_handlers) override;
 
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::Binding<mojom::WidgetInputHandlerHost>&
   frame_host_binding_for_testing() {
     return frame_host_binding_;
   }
-
-  // IPC::Listener
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnHasTouchEventHandlersForTest(bool has_handlers);
 
@@ -201,9 +199,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       InputEventAckState state,
       const base::Optional<ui::DidOverscrollParams>& overscroll,
       const base::Optional<cc::TouchAction>& touch_action);
-
-  // IPC message handlers
-  void OnHasTouchEventHandlers(bool has_handlers);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input
