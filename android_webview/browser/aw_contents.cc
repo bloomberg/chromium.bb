@@ -50,6 +50,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -116,13 +117,13 @@ namespace {
 bool g_should_download_favicons = false;
 
 std::string* g_locale() {
-  CR_DEFINE_STATIC_LOCAL(std::string, locale, ());
-  return &locale;
+  static base::NoDestructor<std::string> locale;
+  return locale.get();
 }
 
 std::string* g_locale_list() {
-  CR_DEFINE_STATIC_LOCAL(std::string, locale_list, ());
-  return &locale_list;
+  static base::NoDestructor<std::string> locale_list;
+  return locale_list.get();
 }
 
 const void* const kAwContentsUserDataKey = &kAwContentsUserDataKey;

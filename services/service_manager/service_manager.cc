@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -111,8 +112,8 @@ Identity CreateCatalogIdentity() {
 }
 
 const InterfaceProviderSpec& GetEmptyInterfaceProviderSpec() {
-  CR_DEFINE_STATIC_LOCAL(InterfaceProviderSpec, spec, ());
-  return spec;
+  static base::NoDestructor<InterfaceProviderSpec> spec;
+  return *spec;
 }
 
 bool HasCapability(const InterfaceProviderSpec& spec,

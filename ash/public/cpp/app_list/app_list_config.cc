@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "ui/gfx/color_palette.h"
 
 namespace app_list {
@@ -101,8 +102,8 @@ AppListConfig::~AppListConfig() = default;
 
 // static
 const AppListConfig& AppListConfig::instance() {
-  CR_DEFINE_STATIC_LOCAL(AppListConfig, instance, ());
-  return instance;
+  static const base::NoDestructor<AppListConfig> instance;
+  return *instance;
 }
 
 int AppListConfig::GetPreferredIconDimension(
