@@ -26,21 +26,15 @@ namespace content {
 
 class FakeFlingController : public FlingController {
  public:
-  FakeFlingController(GestureEventQueue* gesture_event_queue,
-
-                      FlingControllerEventSenderClient* event_sender_client,
+  FakeFlingController(FlingControllerEventSenderClient* event_sender_client,
                       FlingControllerSchedulerClient* scheduler_client,
                       const Config& config)
-      : FlingController(gesture_event_queue,
-                        event_sender_client,
-                        scheduler_client,
-                        config) {}
+      : FlingController(event_sender_client, scheduler_client, config) {}
 
   bool FlingBoosted() const { return fling_booster_->fling_boosted(); }
 };
 
-class FlingControllerTest : public GestureEventQueueClient,
-                            public FlingControllerEventSenderClient,
+class FlingControllerTest : public FlingControllerEventSenderClient,
                             public FlingControllerSchedulerClient,
                             public testing::TestWithParam<bool> {
  public:
@@ -53,20 +47,11 @@ class FlingControllerTest : public GestureEventQueueClient,
   ~FlingControllerTest() override {}
 
   void SetUp() override {
-    queue_ = std::make_unique<GestureEventQueue>(this, this, this,
-                                                 GestureEventQueue::Config());
     fling_controller_ = std::make_unique<FakeFlingController>(
-        queue_.get(), this, this, FlingController::Config());
+        this, this, FlingController::Config());
     fling_controller_->set_clock_for_testing(&mock_clock_);
     AdvanceTime();
   }
-
-  // GestureEventQueueClient
-  void SendGestureEventImmediately(
-      const GestureEventWithLatencyInfo& event) override {}
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override {}
 
   // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
@@ -159,7 +144,6 @@ class FlingControllerTest : public GestureEventQueueClient,
 
   bool needs_begin_frame_for_fling_progress_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<GestureEventQueue> queue_;
   DISALLOW_COPY_AND_ASSIGN(FlingControllerTest);
 };
 
