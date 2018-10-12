@@ -45,10 +45,6 @@ class TestNetworkConnectionTracker : public NetworkConnectionTracker {
 
   // Whether GetConnectionType() will respond synchronously.
   bool respond_synchronously_ = true;
-
-  // Keep local copy of the type, for when a synchronous response is requested.
-  network::mojom::ConnectionType type_ =
-      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
 };
 
 }  // namespace network
