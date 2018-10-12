@@ -343,6 +343,7 @@ bool GpuServiceImpl::GetGrContextForGLSurface(gl::GLSurface* surface,
 
     GrContextOptions options;
     options.fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kYes;
+    options.fSortRenderTargets = GrContextOptions::Enable::kYes;
     options.fUseGLBufferDataNullHint = GrContextOptions::Enable::kYes;
     data.gr_context = GrContext::MakeGL(std::move(native_interface), options);
     DCHECK(data.gr_context);
