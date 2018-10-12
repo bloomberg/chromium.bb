@@ -105,8 +105,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // type of WebContentsView to construct on initialization. The content
   // embedder needs to be aware of |guest_site_instance| on the guest's
   // construction and so we pass it in here.
-  static BrowserPluginGuest* Create(WebContentsImpl* web_contents,
-                                    BrowserPluginGuestDelegate* delegate);
+  //
+  // After this, a new BrowserPluginGuest is created with ownership transferred
+  // into the |web_contents|.
+  static void CreateInWebContents(WebContentsImpl* web_contents,
+                                  BrowserPluginGuestDelegate* delegate);
 
   // Returns whether the given WebContents is a BrowserPlugin guest.
   static bool IsGuest(WebContentsImpl* web_contents);

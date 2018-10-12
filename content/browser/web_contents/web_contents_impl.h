@@ -180,7 +180,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Sets a BrowserPluginGuest object for this WebContents. If this WebContents
   // has a BrowserPluginGuest then that implies that it is being hosted by
   // a BrowserPlugin object in an embedder renderer process.
-  void SetBrowserPluginGuest(BrowserPluginGuest* guest);
+  void SetBrowserPluginGuest(std::unique_ptr<BrowserPluginGuest> guest);
 
   // Returns embedder browser plugin object, or NULL if this WebContents is not
   // an embedder.
