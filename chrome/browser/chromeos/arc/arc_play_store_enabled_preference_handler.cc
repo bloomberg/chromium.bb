@@ -100,9 +100,16 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
     // For example, if a user opts-in ARC on OOBE, and later opts-out via
     // settings page, OOBE_OPTED_IN and SESSION_OPTED_OUT will be recorded.
     if (IsArcOobeOptInActive()) {
-      UpdateOptInActionUMA(is_play_store_enabled
-                               ? OptInActionType::OOBE_OPTED_IN
-                               : OptInActionType::OOBE_OPTED_OUT);
+      OptInActionType type;
+      if (IsArcOobeOptInConfigurationBased()) {
+        type = is_play_store_enabled
+                   ? OptInActionType::OOBE_OPTED_IN_CONFIGURATION
+                   : OptInActionType::OOBE_OPTED_OUT;
+      } else {
+        type = is_play_store_enabled ? OptInActionType::OOBE_OPTED_IN
+                                     : OptInActionType::OOBE_OPTED_OUT;
+      }
+      UpdateOptInActionUMA(type);
     } else {
       UpdateOptInActionUMA(is_play_store_enabled
                                ? OptInActionType::SESSION_OPTED_IN

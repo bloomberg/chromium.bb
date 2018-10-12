@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/dbus/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -32,6 +35,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
+using chromeos::test::SetupDummyOfflinePolicyDir;
 using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -602,7 +606,14 @@ class EnterpriseEnrollmentConfigurationTest
     InitializeWebContents();
   }
 
-  void ResetHelper() { enrollment_screen()->enrollment_helper_.reset(); }
+  void SimulateOfflineEnvironment() {
+    DemoSetupController* controller =
+        WizardController::default_controller()->demo_setup_controller();
+
+    // Simulate offline data directory.
+    ASSERT_TRUE(test::SetupDummyOfflinePolicyDir("test", &fake_policy_dir_));
+    controller->SetOfflineDataDirForTest(fake_policy_dir_.GetPath());
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     OobeConfiguration::set_skip_check_for_testing(true);
@@ -631,6 +642,10 @@ class EnterpriseEnrollmentConfigurationTest
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    file);
 
+    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
+    command_line->AppendSwitchASCII(switches::kArcAvailability,
+                                    "officially-supported");
+
     EnterpriseEnrollmentTestBase::SetUpCommandLine(command_line);
   }
 
@@ -656,9 +671,16 @@ class EnterpriseEnrollmentConfigurationTest
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
 
+  void TearDownOnMainThread() override {
+    enrollment_screen()->enrollment_helper_.reset();
+    EnterpriseEnrollmentTestBase::TearDownOnMainThread();
+  }
+
  protected:
   // Owned by DBusThreadManagerSetter
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+
+  base::ScopedTempDir fake_policy_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTest);
@@ -906,60 +928,6 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_screen()->enrollment_helper_.reset();
 }
 
-// Check that configuration lets correctly pass Welcome screen.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestLeaveWelcomeScreen) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that configuration lets correctly select a network by GUID.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestSelectNetwork) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that when configuration has ONC and EULA, we get to update screen.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
-  UpdateEngineClient::Status status;
-  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
-  status.download_progress = 0.1;
-  fake_update_engine_client_->set_default_status(status);
-
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that when configuration has ONC and EULA, we get to update screen.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
-  EXPECT_TRUE(IsStepDisplayed("signin"));
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that when configuration has requisition, it gets applied at the
-// beginning.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestDeviceRequisition) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  auto* policy_manager = g_browser_process->platform_part()
-                             ->browser_policy_connector_chromeos()
-                             ->GetDeviceCloudPolicyManager();
-  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
@@ -1004,6 +972,99 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   // Go through configuration.
   CheckPossibleConfiguration(kAdDomainJoinUnlockedConfig);
   enrollment_screen()->enrollment_helper_.reset();
+}
+
+// Check that configuration lets correctly pass Welcome screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestLeaveWelcomeScreen) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+}
+
+// Check that configuration lets correctly start Demo mode setup.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestEnableDemoMode) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+}
+
+// Check that configuration lets correctly pass through demo preferences.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModePreferences) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+}
+
+// Check that configuration lets correctly use offline demo mode on network
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModeOfflineNetwork) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that configuration lets correctly use offline demo mode on EULA
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModeAcceptEula) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+}
+
+// Check that configuration lets correctly use offline demo mode on ARC++ ToS
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModeAcceptArcTos) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+
+  js_checker().Evaluate(
+      "login.ArcTermsOfServiceScreen.setTosForTesting('Test "
+      "Play Store Terms of Service');");
+  SimulateOfflineEnvironment();
+  js_checker().Evaluate(
+      "$('demo-preferences-content').$$('oobe-dialog')."
+      "querySelector('oobe-text-button').click();");
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+}
+
+// Check that configuration lets correctly select a network by GUID.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSelectNetwork) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that when configuration has ONC and EULA, we get to update screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
+  UpdateEngineClient::Status status;
+  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
+  status.download_progress = 0.1;
+  fake_update_engine_client_->set_default_status(status);
+
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+}
+
+// Check that configuration allows to skip Update screen and get to Enrollment
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  EXPECT_TRUE(IsStepDisplayed("signin"));
+}
+
+// Check that when configuration has requisition, it gets applied at the
+// beginning.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDeviceRequisition) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  auto* policy_manager = g_browser_process->platform_part()
+                             ->browser_policy_connector_chromeos()
+                             ->GetDeviceCloudPolicyManager();
+  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
 }
 
 }  // namespace chromeos
