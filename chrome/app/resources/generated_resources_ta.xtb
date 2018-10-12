@@ -3342,7 +3342,6 @@
 <translation id="6042308850641462728">மேலும்</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> உடன் Chrome தாவலைப் பகிர்கிறது.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> உடன் Chrome தாவலையும் ஆடியோவையும் பகிர்கிறது.</translation>
-<translation id="6047938872139769630">வெளியேறியுள்ளபோது உங்கள் சாதனத்தைத் திறக்க, பின்னைப் பயன்படுத்தலாம்</translation>
 <translation id="6049004884579590341">முழுத் திரையிலிருந்து வெளியேற, |<ph name="ACCELERATOR" />| என்பதை அழுத்திப் பிடித்திருக்கவும்</translation>
 <translation id="6049065490165456785">உட்புற கேமராவிலிருந்து படம்</translation>
 <translation id="6051354611314852653">அச்சச்சோ! அமைப்பானது இந்தச் சாதனத்திற்கான API அணுகலை அங்கீகரிக்க தவறியது.</translation>
@@ -3697,7 +3696,6 @@
 <translation id="6580151766480067746">ARC பதிப்பு</translation>
 <translation id="6581162200855843583">Google இயக்கக இணைப்பு</translation>
 <translation id="6582080224869403177">உங்கள் <ph name="DEVICE_TYPE" /> இன் பாதுகாப்பை மேம்படுத்த, அதை மீட்டமைக்கவும்.</translation>
-<translation id="6582421931165117398">உங்கள் தனிப்பட்ட தகவலைப் பாதுகாக்க, இப்போதே கடவுச்சொல்லை மாற்றவும். கடவுச்சொல்லை மாற்றும் முன், உள்நுழையும்படி கேட்கப்படுவீர்கள்.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">முதன்மை சுட்டிப் பொத்தானை மாற்று</translation>
 <translation id="6589660129740381104"><ph name="IDS_SHORT_PRODUCT_NAME" /> இல் உங்கள் அனுபவத்தை இன்னும் எளிதாக நிர்வகிக்க உதவ, ஒத்திசைவு மற்றும் தனிப்பயனாக்கம் தொடர்பான அம்சங்கள் இப்போது ஒரே கட்டுப்பாட்டில் கிடைக்கின்றன. இதை இயக்குவது உங்களின் தற்போதைய அமைப்புகளை மாற்றக்கூடும்.</translation>
@@ -4123,7 +4121,6 @@
 <translation id="7229570126336867161">EVDO தேவை</translation>
 <translation id="7230787553283372882">உரை அளவைத் தனிப்பயனாக்கலாம்</translation>
 <translation id="7232750842195536390">பெயரை மாற்ற முடியவில்லை</translation>
-<translation id="7234406375359457793">பகிர்வை ஏற்றுவதில் பிழை. குறிப்பிட்ட பகிர்வானது ஆதரிக்கப்படவில்லை.</translation>
 <translation id="7238585580608191973">SHA-256 விரல்அச்சு</translation>
 <translation id="7240120331469437312">சான்றிதழ் பொருள் மாற்றுப் பெயர்</translation>
 <translation id="7240339475467890413">புதிய ஹாட்ஸ்பாட்டுடன் இணைக்கவா?</translation>
