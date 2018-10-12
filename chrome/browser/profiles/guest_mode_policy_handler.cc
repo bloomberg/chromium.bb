@@ -32,8 +32,10 @@ void GuestModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   const base::Value* browser_signin_value =
       policies.GetValue(key::kBrowserSignin);
   int int_browser_signin_value;
-  if (browser_signin_value &&
-      browser_signin_value->GetAsInteger(&int_browser_signin_value) &&
+  bool is_browser_signin_policy_set =
+      (browser_signin_value &&
+       browser_signin_value->GetAsInteger(&int_browser_signin_value));
+  if (is_browser_signin_policy_set &&
       static_cast<BrowserSigninMode>(int_browser_signin_value) ==
           BrowserSigninMode::kForced) {
     prefs->SetBoolean(prefs::kBrowserGuestModeEnabled, false);
@@ -43,7 +45,7 @@ void GuestModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   const base::Value* force_signin_value =
       policies.GetValue(key::kForceBrowserSignin);
   bool is_force_signin_enabled;
-  if (force_signin_value &&
+  if (!is_browser_signin_policy_set && force_signin_value &&
       force_signin_value->GetAsBoolean(&is_force_signin_enabled) &&
       is_force_signin_enabled) {
     prefs->SetBoolean(prefs::kBrowserGuestModeEnabled, false);
