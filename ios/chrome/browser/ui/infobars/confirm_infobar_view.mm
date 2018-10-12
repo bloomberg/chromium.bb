@@ -201,32 +201,32 @@ UIImage* InfoBarCloseImage() {
 @end
 
 @implementation SwitchView {
-  UISwitch* switch_;
-  CGFloat preferredTotalWidth_;
+  UISwitch* _switch;
+  CGFloat _preferredTotalWidth;
   // Layout metrics for calculating item placement.
-  const LayoutMetrics* metrics_;
+  const LayoutMetrics* _metrics;
 }
 
 - (instancetype)initWithText:(NSString*)labelText isOn:(BOOL)isOn {
-  metrics_ = &kLayoutMetrics;
+  _metrics = &kLayoutMetrics;
 
   self = [super initWithText:labelText];
   if (!self)
     return nil;
 
   self.label.textColor = [UIColor blackColor];
-  switch_ = [[UISwitch alloc] initWithFrame:CGRectZero];
-  switch_.exclusiveTouch = YES;
-  switch_.accessibilityLabel = labelText;
-  switch_.onTintColor = [[MDCPalette cr_bluePalette] tint500];
-  switch_.on = isOn;
+  _switch = [[UISwitch alloc] initWithFrame:CGRectZero];
+  _switch.exclusiveTouch = YES;
+  _switch.accessibilityLabel = labelText;
+  _switch.onTintColor = [[MDCPalette cr_bluePalette] tint500];
+  _switch.on = isOn;
 
   // Computes the size and initializes the view.
   CGSize labelSize = self.label.frame.size;
-  CGSize switchSize = switch_.frame.size;
+  CGSize switchSize = _switch.frame.size;
   CGRect frameRect = CGRectMake(
       0, 0,
-      labelSize.width + metrics_->space_between_widgets + switchSize.width,
+      labelSize.width + _metrics->space_between_widgets + switchSize.width,
       std::max(labelSize.height, switchSize.height));
   [self setFrame:frameRect];
 
@@ -244,30 +244,30 @@ UIImage* InfoBarCloseImage() {
   switchFrame = AlignRectOriginAndSizeToPixels(switchFrame);
 
   [self.label setFrame:labelFrame];
-  [switch_ setFrame:switchFrame];
-  preferredTotalWidth_ = CGRectGetMaxX(switchFrame);
+  [_switch setFrame:switchFrame];
+  _preferredTotalWidth = CGRectGetMaxX(switchFrame);
   self.preferredLabelWidth = CGRectGetMaxX(labelFrame);
 
   [self addSubview:self.label];
-  [self addSubview:switch_];
+  [self addSubview:_switch];
   return self;
 }
 
 - (void)setTag:(NSInteger)tag target:(id)target action:(SEL)action {
-  [switch_ setTag:tag];
-  [switch_ addTarget:target
+  [_switch setTag:tag];
+  [_switch addTarget:target
                 action:action
       forControlEvents:UIControlEventValueChanged];
 }
 
 - (CGFloat)heightRequiredForFooterWithWidth:(CGFloat)width layout:(BOOL)layout {
   CGFloat widthLeftForLabel =
-      width - [switch_ frame].size.width - metrics_->space_between_widgets;
+      width - [_switch frame].size.width - _metrics->space_between_widgets;
   CGSize maxSize = CGSizeMake(widthLeftForLabel, CGFLOAT_MAX);
   CGSize labelSize =
       [[self.label text] cr_boundingSizeWithSize:maxSize
                                             font:[self.label font]];
-  CGFloat viewHeight = std::max(labelSize.height, [switch_ frame].size.height);
+  CGFloat viewHeight = std::max(labelSize.height, [_switch frame].size.height);
   if (layout) {
     // Lays out the label and the switch to fit in {width, viewHeight}.
     CGRect newLabelFrame;
@@ -278,17 +278,17 @@ UIImage* InfoBarCloseImage() {
     [self.label setFrame:newLabelFrame];
     CGRect newSwitchFrame;
     newSwitchFrame.origin.x =
-        CGRectGetMaxX(newLabelFrame) + metrics_->space_between_widgets;
-    newSwitchFrame.origin.y = (viewHeight - [switch_ frame].size.height) / 2;
-    newSwitchFrame.size = [switch_ frame].size;
+        CGRectGetMaxX(newLabelFrame) + _metrics->space_between_widgets;
+    newSwitchFrame.origin.y = (viewHeight - [_switch frame].size.height) / 2;
+    newSwitchFrame.size = [_switch frame].size;
     newSwitchFrame = AlignRectOriginAndSizeToPixels(newSwitchFrame);
-    [switch_ setFrame:newSwitchFrame];
+    [_switch setFrame:newSwitchFrame];
   }
   return viewHeight;
 }
 
 - (CGFloat)preferredWidth {
-  return preferredTotalWidth_;
+  return _preferredTotalWidth;
 }
 
 @end
