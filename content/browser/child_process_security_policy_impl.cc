@@ -1137,14 +1137,11 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
 
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& url) {
-  // It's important to call GetSiteForURL before acquiring |lock_|, since
-  // GetSiteForURL consults IsIsolatedOrigin, which needs to grab the same
-  // lock.
-  //
-  // TODO(creis): We must pass the valid browser_context to convert hosted apps
-  // URLs. Currently, hosted apps cannot set cookies in this mode. See
-  // http://crbug.com/160576.
-  GURL site_url = SiteInstance::GetSiteForURL(nullptr, url);
+  // It's important to call DetermineProcessLockURL before
+  // acquiring |lock_|, since DetermineProcessLockURL consults
+  // IsIsolatedOrigin, which needs to grab the same lock.
+  GURL expected_process_lock =
+      SiteInstanceImpl::DetermineProcessLockURL(nullptr, url);
 
   base::AutoLock lock(lock_);
   auto state = security_state_.find(child_id);
@@ -1153,12 +1150,13 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     // workaround for https://crbug.com/600441
     return true;
   }
-  bool can_access = state->second->CanAccessDataForOrigin(site_url);
+  bool can_access =
+      state->second->CanAccessDataForOrigin(expected_process_lock);
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
-                                   site_url.spec());
+                                   expected_process_lock.spec());
     base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
                                    state->second->origin_lock().spec());
 
