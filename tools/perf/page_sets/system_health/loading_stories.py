@@ -425,6 +425,13 @@ class LoadStackOverflowStory(_LoadingStory):
       'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
+class LoadStackOverflowStory2018(_LoadingStory):
+  """Load a typical question & answer page of stackoverflow.com"""
+  NAME = 'load:tools:stackoverflow:2018'
+  URL = (
+      'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
 
 class LoadDropboxStory(_LoadingStory):
   NAME = 'load:tools:dropbox'

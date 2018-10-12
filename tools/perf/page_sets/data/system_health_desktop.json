@@ -249,6 +249,9 @@
         "load:tools:stackoverflow": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },
+        "load:tools:stackoverflow:2018": {
+            "DEFAULT": "system_health_desktop_acb5e9444f.wprgo"
+        },
         "load:tools:weather": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },
