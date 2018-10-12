@@ -2671,6 +2671,13 @@ const char kReaderModeInCCTName[] = "Reader Mode in CCT";
 const char kReaderModeInCCTDescription[] =
     "Open Reader Mode in Chrome Custom Tabs.";
 
+const char kSafeBrowsingUseLocalBlacklistsV2Name[] =
+    "Use local Safe Browsing blacklists";
+const char kSafeBrowsingUseLocalBlacklistsV2Description[] =
+    "If enabled, maintain a copy of Safe Browsing blacklists in the browser "
+    "process to check the Safe Browsing reputation of URLs without calling "
+    "into GmsCore for every URL.";
+
 const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
 const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "

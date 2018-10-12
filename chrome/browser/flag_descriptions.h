@@ -1613,6 +1613,9 @@ extern const char kReaderModeHeuristicsAlwaysOn[];
 extern const char kReaderModeInCCTName[];
 extern const char kReaderModeInCCTDescription[];
 
+extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
+extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
+
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
 
