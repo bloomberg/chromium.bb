@@ -12,7 +12,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
-#include "base/time/time.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -215,26 +214,20 @@ void UiControllerAndroid::HideDetails() {
 }
 
 void UiControllerAndroid::ShowDetails(const DetailsProto& details) {
-  base::Time time;
-  base::Time::Exploded exploded;
-  exploded.year = details.datetime().date().year();
-  exploded.month = details.datetime().date().month();
-  exploded.day_of_month = details.datetime().date().day();
-  exploded.hour = details.datetime().time().hour();
-  exploded.minute = details.datetime().time().minute();
-  exploded.second = details.datetime().time().second();
-
-  long java_time = 0;
-  if (base::Time::FromUTCExploded(exploded, &time)) {
-    java_time = time.ToJavaTime();
-  }
+  int year = details.datetime().date().year();
+  int month = details.datetime().date().month();
+  int day = details.datetime().date().day();
+  int hour = details.datetime().time().hour();
+  int minute = details.datetime().time().minute();
+  int second = details.datetime().time().second();
 
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onShowDetails(
       env, java_autofill_assistant_ui_controller_,
       base::android::ConvertUTF8ToJavaString(env, details.title()),
-      base::android::ConvertUTF8ToJavaString(env, details.url()), java_time,
-      base::android::ConvertUTF8ToJavaString(env, details.description()));
+      base::android::ConvertUTF8ToJavaString(env, details.url()),
+      base::android::ConvertUTF8ToJavaString(env, details.description()), year,
+      month, day, hour, minute, second);
 }
 
 std::string UiControllerAndroid::GetApiKey() {

@@ -224,10 +224,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private void onShowDetails(String title, String url, long msSinceEpoch, String description) {
+    private void onShowDetails(String title, String url, String description, int year, int month,
+            int day, int hour, int minute, int second) {
         Date date = null;
-        if (msSinceEpoch > 0) {
-            date = new Date(msSinceEpoch);
+        if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
+            // Month in Java Date is 0-based, but the one we receive from the server is 1-based.
+            date = new Date(year, month - 1, day, hour, minute, second);
         }
 
         mUiDelegate.showDetails(
