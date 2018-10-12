@@ -1013,7 +1013,7 @@ void WizardController::OnEulaAccepted() {
 }
 
 void WizardController::OnEulaBack() {
-    ShowNetworkScreen();
+  ShowNetworkScreen();
 }
 
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
@@ -1132,10 +1132,12 @@ void WizardController::OnDiscoverScreenFinished() {
 }
 
 void WizardController::OnMarketingOptInFinished() {
-  if (chromeos::quick_unlock::IsFingerprintEnabled())
+  if (chromeos::quick_unlock::IsFingerprintEnabled(
+          ProfileManager::GetActiveUserProfile())) {
     ShowFingerprintSetupScreen();
-  else
+  } else {
     ShowArcTermsOfServiceScreen();
+  }
 }
 
 void WizardController::OnFingerprintSetupFinished() {

@@ -313,8 +313,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "quickUnlockDisabledByPolicy",
       chromeos::quick_unlock::IsPinDisabledByPolicy(profile->GetPrefs()));
-  html_source->AddBoolean("fingerprintUnlockEnabled",
-                          chromeos::quick_unlock::IsFingerprintEnabled());
+  html_source->AddBoolean(
+      "fingerprintUnlockEnabled",
+      chromeos::quick_unlock::IsFingerprintEnabled(profile));
   html_source->AddBoolean("lockScreenNotificationsEnabled",
                           ash::features::IsLockScreenNotificationsEnabled());
   html_source->AddBoolean(
