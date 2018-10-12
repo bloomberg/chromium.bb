@@ -397,9 +397,6 @@ void SetFileUrlPathAliasForIpcFuzzer() {
 }
 #endif
 
-const base::Feature kBrowserResponsivenessCalculator{
-    "BrowserResponsivenessCalculator", base::FEATURE_DISABLED_BY_DEFAULT};
-
 std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
     const base::CommandLine& command_line) {
   // Behavior of browser tests should not depend on things outside of their
@@ -1436,10 +1433,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
 #endif  // defined(OS_MACOSX)
 
-  if (base::FeatureList::IsEnabled(kBrowserResponsivenessCalculator)) {
-    responsiveness_watcher_ = new responsiveness::Watcher;
-    responsiveness_watcher_->SetUp();
-  }
+#if !defined(OS_ANDROID)
+  responsiveness_watcher_ = new responsiveness::Watcher;
+  responsiveness_watcher_->SetUp();
+#endif
 
 #if defined(OS_ANDROID)
   media::SetMediaDrmBridgeClient(GetContentClient()->GetMediaDrmBridgeClient());
