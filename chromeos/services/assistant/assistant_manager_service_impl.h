@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
@@ -54,7 +55,7 @@ class AssistantManagerServiceImpl
       public AssistantEventObserver,
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
-      public ash::mojom::VoiceInteractionObserver,
+      public ash::DefaultVoiceInteractionObserver,
       public assistant_client::DeviceStateListener {
  public:
   // |service| owns this class and must outlive this class.
@@ -133,15 +134,9 @@ class AssistantManagerServiceImpl
   std::string GetLastSearchSource() override;
 
   // ash::mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      ash::mojom::VoiceInteractionState state) override {}
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnVoiceInteractionSetupCompleted(bool completed) override {}
-  void OnAssistantFeatureAllowedChanged(
-      ash::mojom::AssistantAllowedState state) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
 
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
