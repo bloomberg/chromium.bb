@@ -496,15 +496,15 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
       prefs::kTextToSpeechRate,
-      blink::SpeechSynthesisConstants::kDefaultTextToSpeechRate,
+      blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
       prefs::kTextToSpeechPitch,
-      blink::SpeechSynthesisConstants::kDefaultTextToSpeechPitch,
+      blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
       prefs::kTextToSpeechVolume,
-      blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume,
+      blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
 
   // By default showing Sync Consent is set to true. It can changed by policy.
