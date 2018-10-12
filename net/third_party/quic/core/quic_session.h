@@ -356,7 +356,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Creates a new stream to handle a peer-initiated stream.
   // Caller does not own the returned stream.
   // Returns nullptr and does error handling if the stream can not be created.
-  virtual QuicStream* CreateIncomingDynamicStream(QuicStreamId id) = 0;
+  virtual QuicStream* CreateIncomingStream(QuicStreamId id) = 0;
 
   // Create a new stream to handle a locally-initiated bidirectional stream.
   // Caller does not own the returned stream.

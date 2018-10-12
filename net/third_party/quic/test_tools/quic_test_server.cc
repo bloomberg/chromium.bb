@@ -37,8 +37,8 @@ class CustomStreamSession : public QuicSimpleServerSession {
         stream_factory_(stream_factory),
         crypto_stream_factory_(crypto_stream_factory) {}
 
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
-    if (!ShouldCreateIncomingDynamicStream(id)) {
+  QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override {
+    if (!ShouldCreateIncomingStream(id)) {
       return nullptr;
     }
     if (stream_factory_) {
@@ -47,7 +47,7 @@ class CustomStreamSession : public QuicSimpleServerSession {
       ActivateStream(QuicWrapUnique(stream));
       return stream;
     }
-    return QuicSimpleServerSession::CreateIncomingDynamicStream(id);
+    return QuicSimpleServerSession::CreateIncomingStream(id);
   }
 
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(

@@ -137,7 +137,7 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
  protected:
   // QuicSession override.
-  QuicStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicStream* CreateIncomingStream(QuicStreamId id) override;
 
   std::unique_ptr<QuartcStream> CreateDataStream(QuicStreamId id,
                                                  spdy::SpdyPriority priority);

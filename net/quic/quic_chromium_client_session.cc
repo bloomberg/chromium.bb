@@ -1030,7 +1030,7 @@ void QuicChromiumClientSession::CancelRequest(StreamRequest* request) {
   }
 }
 
-bool QuicChromiumClientSession::ShouldCreateOutgoingDynamicStream() {
+bool QuicChromiumClientSession::ShouldCreateOutgoingStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return false;
@@ -1213,10 +1213,10 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
                               hostname);
 }
 
-bool QuicChromiumClientSession::ShouldCreateIncomingDynamicStream(
+bool QuicChromiumClientSession::ShouldCreateIncomingStream(
     quic::QuicStreamId id) {
   if (!connection()->connected()) {
-    LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
+    LOG(DFATAL) << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
   if (goaway_received()) {
@@ -1237,9 +1237,9 @@ bool QuicChromiumClientSession::ShouldCreateIncomingDynamicStream(
   return true;
 }
 
-QuicChromiumClientStream*
-QuicChromiumClientSession::CreateIncomingDynamicStream(quic::QuicStreamId id) {
-  if (!ShouldCreateIncomingDynamicStream(id)) {
+QuicChromiumClientStream* QuicChromiumClientSession::CreateIncomingStream(
+    quic::QuicStreamId id) {
+  if (!ShouldCreateIncomingStream(id)) {
     return nullptr;
   }
   net::NetworkTrafficAnnotationTag traffic_annotation =

@@ -557,11 +557,11 @@ class MockQuicSession : public QuicSession {
                void(QuicErrorCode error,
                     const QuicString& error_details,
                     ConnectionCloseSource source));
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicStream*());
-  MOCK_METHOD1(ShouldCreateIncomingDynamicStream2, bool(QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream2, bool());
+  MOCK_METHOD1(ShouldCreateIncomingStream2, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingStream2, bool());
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
@@ -635,11 +635,11 @@ class MockQuicSpdySession : public QuicSpdySession {
                void(QuicErrorCode error,
                     const QuicString& error_details,
                     ConnectionCloseSource source));
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
-  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
+  MOCK_METHOD1(ShouldCreateIncomingStream, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingStream, bool());
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
@@ -718,7 +718,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
       delete;
   ~TestQuicSpdyServerSession() override;
 
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
@@ -781,11 +781,11 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
                void(const ProofVerifyDetails& verify_details));
 
   // TestQuicSpdyClientSession
-  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
-  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
+  MOCK_METHOD1(ShouldCreateIncomingStream, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingStream, bool());
 
   // Override to not send max header list size.
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;

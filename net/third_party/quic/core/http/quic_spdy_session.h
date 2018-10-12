@@ -135,21 +135,20 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   }
 
  protected:
-  // Override CreateIncomingDynamicStream(),
-  // CreateOutgoingBidirectionalStream() and
+  // Override CreateIncomingStream(), CreateOutgoingBidirectionalStream() and
   // CreateOutgoingUnidirectionalStream() with QuicSpdyStream return type to
   // make sure that all data streams are QuicSpdyStreams.
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override = 0;
+  QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override = 0;
   QuicSpdyStream* CreateOutgoingBidirectionalStream() override = 0;
   QuicSpdyStream* CreateOutgoingUnidirectionalStream() override = 0;
 
   QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
 
   // If an incoming stream can be created, return true.
-  virtual bool ShouldCreateIncomingDynamicStream(QuicStreamId id) = 0;
+  virtual bool ShouldCreateIncomingStream(QuicStreamId id) = 0;
 
   // If an outgoing stream can be created, return true.
-  virtual bool ShouldCreateOutgoingDynamicStream() = 0;
+  virtual bool ShouldCreateOutgoingStream() = 0;
 
   // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
   // separate from QuicSpdySession::WriteHeaders because tests call

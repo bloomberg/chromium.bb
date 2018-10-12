@@ -192,9 +192,9 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
       connection()->sent_packet_manager().GetLargestSentPacket();
 }
 
-bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicServerSessionBase::ShouldCreateIncomingStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateIncomingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
 
@@ -208,9 +208,9 @@ bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-bool QuicServerSessionBase::ShouldCreateOutgoingDynamicStream() {
+bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateOutgoingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateOutgoingStream called when disconnected";
     return false;
   }
   if (!crypto_stream_->encryption_established()) {

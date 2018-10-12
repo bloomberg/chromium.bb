@@ -644,10 +644,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
  protected:
   // quic::QuicSession methods:
-  bool ShouldCreateIncomingDynamicStream(quic::QuicStreamId id) override;
-  bool ShouldCreateOutgoingDynamicStream() override;
+  bool ShouldCreateIncomingStream(quic::QuicStreamId id) override;
+  bool ShouldCreateOutgoingStream() override;
 
-  QuicChromiumClientStream* CreateIncomingDynamicStream(
+  QuicChromiumClientStream* CreateIncomingStream(
       quic::QuicStreamId id) override;
 
  private:
