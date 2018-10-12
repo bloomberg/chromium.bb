@@ -1547,27 +1547,47 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
 
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  html_source->AddBoolean("isUsingSecondaryPassphrase",
-                          sync_service->IsUsingSecondaryPassphrase());
-  html_source->AddBoolean(
-      "uploadToGoogleActive",
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnablePaymentsInteractionsOnAuthError) ||
-          syncer::GetUploadToGoogleState(
-              sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-              syncer::UploadState::ACTIVE);
-  const std::string& user_email =
-      personal_data_manager_->GetAccountInfoForPaymentsServer().email;
-  if (user_email.empty()) {
+  if (sync_service && sync_service->CanSyncFeatureStart() &&
+      sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
+    html_source->AddBoolean("isUsingSecondaryPassphrase",
+                            sync_service->IsUsingSecondaryPassphrase());
+    html_source->AddBoolean(
+        "uploadToGoogleActive",
+        base::FeatureList::IsEnabled(
+            autofill::features::
+                kAutofillEnablePaymentsInteractionsOnAuthError) ||
+            syncer::GetUploadToGoogleState(
+                sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
+                syncer::UploadState::ACTIVE);
+  } else {
+    html_source->AddBoolean("isUsingSecondaryPassphrase", false);
+    html_source->AddBoolean("uploadToGoogleActive", false);
+  }
+
+  bool isGuestMode = false;
+#if defined(OS_CHROMEOS)
+  isGuestMode = user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+                user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
+#else   // !defined(OS_CHROMEOS)
+  isGuestMode = profile->IsOffTheRecord();
+#endif  // defined(OS_CHROMEOS)
+
+  if (isGuestMode) {
     html_source->AddBoolean("userEmailDomainAllowed", false);
   } else {
-    std::string domain = gaia::ExtractDomainName(user_email);
-    html_source->AddBoolean(
-        "userEmailDomainAllowed",
-        base::FeatureList::IsEnabled(
-            autofill::features::kAutofillUpstreamAllowAllEmailDomains) ||
-            (domain == "googlemail.com" || domain == "gmail.com" ||
-             domain == "google.com" || domain == "chromium.org"));
+    const std::string& user_email =
+        personal_data_manager_->GetAccountInfoForPaymentsServer().email;
+    if (user_email.empty()) {
+      html_source->AddBoolean("userEmailDomainAllowed", false);
+    } else {
+      std::string domain = gaia::ExtractDomainName(user_email);
+      html_source->AddBoolean(
+          "userEmailDomainAllowed",
+          base::FeatureList::IsEnabled(
+              autofill::features::kAutofillUpstreamAllowAllEmailDomains) ||
+              (domain == "googlemail.com" || domain == "gmail.com" ||
+               domain == "google.com" || domain == "chromium.org"));
+    }
   }
 
   AddLocalizedStringsBulk(html_source, localized_strings,
