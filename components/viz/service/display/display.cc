@@ -7,10 +7,12 @@
 #include <stddef.h>
 #include <limits>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
@@ -80,7 +82,7 @@ Display::~Display() {
   observers_.Clear();
 
   for (auto& callback_list : pending_presented_callbacks_) {
-    for (auto& callback : callback_list)
+    for (auto& callback : callback_list.second)
       std::move(callback).Run(gfx::PresentationFeedback::Failure());
   }
 
@@ -314,10 +316,10 @@ bool Display::DrawAndSwap() {
   DisplayResourceProvider::ScopedBatchReturnResources returner(
       resource_provider_.get());
   base::ElapsedTimer aggregate_timer;
+  const base::TimeTicks now_time = aggregate_timer.Begin();
   CompositorFrame frame = aggregator_->Aggregate(
       current_surface_id_,
-      scheduler_ ? scheduler_->current_frame_display_time()
-                 : base::TimeTicks::Now(),
+      scheduler_ ? scheduler_->current_frame_display_time() : now_time,
       ++swapped_trace_id_);
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
@@ -432,7 +434,8 @@ bool Display::DrawAndSwap() {
         callbacks.emplace_back(std::move(callback));
       }
     }
-    pending_presented_callbacks_.emplace_back(std::move(callbacks));
+    pending_presented_callbacks_.emplace_back(
+        std::make_pair(now_time, std::move(callbacks)));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -516,7 +519,27 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!pending_presented_callbacks_.empty());
-  auto& callbacks = pending_presented_callbacks_.front();
+  auto& callbacks = pending_presented_callbacks_.front().second;
+#if defined(OS_ANDROID)
+  // Temporary to investigate large presentation times.
+  // https://crbug.com/894440
+  const auto swap_time = pending_presented_callbacks_.front().first;
+  DCHECK(!swap_time.is_null());
+  if (!feedback.timestamp.is_null()) {
+    if (feedback.timestamp > base::TimeTicks::Now()) {
+      base::debug::DumpWithoutCrashing();
+      // In debug builds, just crash immediately.
+      DCHECK(false);
+    }
+
+    const auto difference = feedback.timestamp - swap_time;
+    if (difference.InMinutes() > 3) {
+      base::debug::DumpWithoutCrashing();
+      // In debug builds, just crash immediately.
+      DCHECK(false);
+    }
+  }
+#endif
   for (auto& callback : callbacks) {
     std::move(callback).Run(feedback);
   }
