@@ -7,7 +7,6 @@ row head
 row head
 row head
 col head
-
 End of test
 
 AXRole: AXWebArea
@@ -44,7 +43,6 @@ AXRole: AXWebArea
                     AXRole: AXInlineTextBox "col head"
     AXRole: AXParagraph
         AXRole: AXStaticText "End of test"
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

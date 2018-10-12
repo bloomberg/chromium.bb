@@ -2,6 +2,7 @@ Tests structured cloning of AES-CBC keys
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -19,7 +20,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt"
 Serialized key bytes: 5c4b010110031030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -39,7 +39,6 @@ PASS clonedKey.usages.join(',') is "encrypt"
 Serialized key bytes: 5c4b010120032000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -57,7 +56,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
 Serialized key bytes: 5c4b010110451030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -77,7 +75,6 @@ PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
 Serialized key bytes: 5c4b010120452000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -95,7 +92,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 5c4b010110c3011030112233445566778899aabbccddeeff
 PASS: Cloned key exported data should be [30112233445566778899aabbccddeeff] and was
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -115,7 +111,6 @@ PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 5c4b010120c3012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 PASS: Cloned key exported data should be [00112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f] and was
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -132,7 +127,6 @@ PASS clonedKey.algorithm.name is "AES-CBC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt"
 Serialized key bytes: 5c4b010110021030112233445566778899aabbccddeeff
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -151,7 +145,6 @@ PASS clonedKey.algorithm.length is 256
 PASS clonedKey.usages.join(',') is "encrypt"
 Serialized key bytes: 5c4b010120022000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -168,7 +161,6 @@ PASS clonedKey.algorithm.name is "AES-CBC"
 PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
 Serialized key bytes: 5c4b010110441030112233445566778899aabbccddeeff
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -187,7 +179,6 @@ PASS clonedKey.algorithm.length is 256
 PASS clonedKey.usages.join(',') is "decrypt,wrapKey"
 Serialized key bytes: 5c4b010120442000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -205,7 +196,6 @@ PASS clonedKey.algorithm.length is 128
 PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 5c4b010110c2011030112233445566778899aabbccddeeff
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -222,7 +212,6 @@ PASS clonedKey.algorithm.name is "AES-CBC"
 PASS clonedKey.algorithm.length is 256
 PASS clonedKey.usages.join(',') is "encrypt,wrapKey,unwrapKey"
 Serialized key bytes: 5c4b010120c2012000112233445546778899aabbccddeeff000102030405060708090a0b0c0d0e0f
-
 
 PASS successfullyParsed is true
 

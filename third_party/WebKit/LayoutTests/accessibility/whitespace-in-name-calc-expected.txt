@@ -1,19 +1,13 @@
 HelloWorld HelloWorld HelloWorld HelloWorld HelloWorld
 HelloWorld
-Hello
-World
- 
-Hello
-World 
-Hello
-World
 
 Hello
 World
+ HelloWorld  HelloWorld
 Hello
 World
-Hello
-World
+HelloWorld
+HelloWorld
 PASS accessibleTitle("n1") is "HelloWorld"
 PASS accessibleTitle("n2") is "HelloWorld"
 PASS accessibleTitle("n3") is "HelloWorld"

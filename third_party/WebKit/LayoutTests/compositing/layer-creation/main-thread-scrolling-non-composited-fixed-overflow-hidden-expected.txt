@@ -20,5 +20,4 @@ TEST
     }
   ]
 }
-
 Has non-layer viewport-constrained objects

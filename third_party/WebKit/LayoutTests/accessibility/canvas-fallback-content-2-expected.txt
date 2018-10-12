@@ -1,9 +1,4 @@
-Link Button Button Button      
-1
-2
-1
-2
-
+Link  Button  Button  Button                 
 Focusable
 Heading
 ARIA button
@@ -12,10 +7,10 @@ ARIA enabled button
 ARIA required button
 ARIA toggle button
 ARIA link
-
 This tests a number of different elements in canvas fallback content to make sure their accessible attributes are essentially identical to the corresponding elements outside of canvas fallback content.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
 
 link1
 PASS document.activeElement == element1 is true
@@ -33,7 +28,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 button1
 PASS document.activeElement == element1 is true
 button2
@@ -49,7 +43,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 labeled-button1
 PASS document.activeElement == element1 is true
@@ -67,7 +60,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 button-with-title1
 PASS document.activeElement == element1 is true
 button-with-title2
@@ -83,7 +75,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 text1
 PASS document.activeElement == element1 is true
@@ -101,7 +92,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 checkbox1
 PASS document.activeElement == element1 is true
 checkbox2
@@ -117,7 +107,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 number1
 PASS document.activeElement == element1 is true
@@ -135,7 +124,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 radio1
 PASS document.activeElement == element1 is true
 radio2
@@ -151,7 +139,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 slider1
 PASS document.activeElement == element1 is true
@@ -169,7 +156,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 submit1
 PASS document.activeElement == element1 is true
 submit2
@@ -185,7 +171,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 combobox1
 PASS document.activeElement == element1 is true
@@ -203,7 +188,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 listbox1
 PASS document.activeElement == element1 is true
 listbox2
@@ -219,7 +203,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 textarea1
 PASS document.activeElement == element1 is true
@@ -237,7 +220,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 focusable1
 PASS document.activeElement == element1 is true
 focusable2
@@ -253,7 +235,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 heading1
 PASS document.activeElement == element1 is true
@@ -271,7 +252,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 aria-button1
 PASS document.activeElement == element1 is true
 aria-button2
@@ -287,7 +267,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 aria-disabledbutton1
 PASS document.activeElement == element1 is true
@@ -305,7 +284,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 aria-enabledbutton1
 PASS document.activeElement == element1 is true
 aria-enabledbutton2
@@ -321,7 +299,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 aria-requiredbutton1
 PASS document.activeElement == element1 is true
@@ -339,7 +316,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 aria-togglebutton1
 PASS document.activeElement == element1 is true
 aria-togglebutton2
@@ -356,7 +332,6 @@ PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
 
-
 aria-link1
 PASS document.activeElement == element1 is true
 aria-link2
@@ -372,7 +347,6 @@ PASS axElement2.isChecked is axElement1.isChecked
 PASS axElement2.intValue is axElement1.intValue
 PASS axElement2.minValue is axElement1.minValue
 PASS axElement2.maxValue is axElement1.maxValue
-
 
 PASS successfullyParsed is true
 

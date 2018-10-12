@@ -62,7 +62,6 @@ CASE 1, original layer tree:
     }
   ]
 }
-
 CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll properly.
 {
   "layers": [
@@ -148,7 +147,6 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
     }
   ]
 }
-
 CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos layer, then the stacking context of "container" includes the "innerScrolling" layer, and doubles in width:
 {
   "layers": [
