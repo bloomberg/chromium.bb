@@ -70,8 +70,6 @@
 namespace media {
 namespace {
 
-const VideoPixelFormat kInputFormat = PIXEL_FORMAT_I420;
-
 // The absolute differences between original frame and decoded frame usually
 // ranges aroud 1 ~ 7. So we pick 10 as an extreme value to detect abnormal
 // decoded frames.
@@ -116,10 +114,10 @@ const unsigned int kFlushTimeoutMs = 2000;
 // The syntax of each test stream is:
 // "in_filename:width:height:profile:out_filename:requested_bitrate
 //  :requested_framerate:requested_subsequent_bitrate
-//  :requested_subsequent_framerate"
+//  :requested_subsequent_framerate:pixel_format"
 // Instead of ":", "," can be used as a seperator as well. Note that ":" does
 // not work on Windows as it interferes with file paths.
-// - |in_filename| must be an I420 (YUV planar) raw stream
+// - |in_filename| is YUV raw stream. Its format must be |pixel_format|
 //   (see http://www.fourcc.org/yuv.php#IYUV).
 // - |width| and |height| are in pixels.
 // - |profile| to encode into (values of VideoCodecProfile).
@@ -132,12 +130,15 @@ const unsigned int kFlushTimeoutMs = 2000;
 // Further parameters are optional (need to provide preceding positional
 // parameters if a specific subsequent parameter is required):
 // - |requested_bitrate| requested bitrate in bits per second.
+//   Bitrate is only forced for tests that test bitrate.
 // - |requested_framerate| requested initial framerate.
 // - |requested_subsequent_bitrate| bitrate to switch to in the middle of the
 //                                  stream.
 // - |requested_subsequent_framerate| framerate to switch to in the middle
 //                                    of the stream.
-//   Bitrate is only forced for tests that test bitrate.
+// - |pixel_format| is the VideoPixelFormat of |in_filename|. Users needs to
+//   set the value corresponding to the desired format. If it is not specified,
+//   this would be PIXEL_FORMAT_I420.
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 const char* g_default_in_filename = "bear_320x192_40frames.yuv";
@@ -237,12 +238,12 @@ struct TestStream {
         requested_subsequent_framerate(0) {}
   ~TestStream() {}
 
+  VideoPixelFormat pixel_format;
   gfx::Size visible_size;
   gfx::Size coded_size;
   unsigned int num_frames;
 
-  // Original unaligned input file name provided as an argument to the test.
-  // And the file must be an I420 (YUV planar) raw stream.
+  // Original unaligned YUV input file name provided as an argument to the test.
   std::string in_filename;
 
   // A vector used to prepare aligned input buffers of |in_filename|. This
@@ -323,7 +324,9 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
               coded_size == test_stream->coded_size);
   test_stream->coded_size = coded_size;
 
-  size_t num_planes = VideoFrame::NumPlanes(kInputFormat);
+  ASSERT_NE(test_stream->pixel_format, PIXEL_FORMAT_UNKNOWN);
+  const VideoPixelFormat pixel_format = test_stream->pixel_format;
+  size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   std::vector<size_t> padding_sizes(num_planes);
   std::vector<size_t> coded_bpl(num_planes);
   std::vector<size_t> visible_bpl(num_planes);
@@ -338,18 +341,18 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   // copied into a row of coded_bpl bytes in the aligned file.
   for (size_t i = 0; i < num_planes; i++) {
     const size_t size =
-        VideoFrame::PlaneSize(kInputFormat, i, coded_size).GetArea();
+        VideoFrame::PlaneSize(pixel_format, i, coded_size).GetArea();
     test_stream->aligned_plane_size.push_back(
         AlignToPlatformRequirements(size));
     test_stream->aligned_buffer_size += test_stream->aligned_plane_size.back();
 
-    coded_bpl[i] = VideoFrame::RowBytes(i, kInputFormat, coded_size.width());
-    visible_bpl[i] = VideoFrame::RowBytes(i, kInputFormat,
+    coded_bpl[i] = VideoFrame::RowBytes(i, pixel_format, coded_size.width());
+    visible_bpl[i] = VideoFrame::RowBytes(i, pixel_format,
                                           test_stream->visible_size.width());
     visible_plane_rows[i] =
-        VideoFrame::Rows(i, kInputFormat, test_stream->visible_size.height());
+        VideoFrame::Rows(i, pixel_format, test_stream->visible_size.height());
     const size_t padding_rows =
-        VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
+        VideoFrame::Rows(i, pixel_format, coded_size.height()) -
         visible_plane_rows[i];
     padding_sizes[i] =
         padding_rows * coded_bpl[i] + AlignToPlatformRequirements(size) - size;
@@ -360,7 +363,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
   size_t visible_buffer_size =
-      VideoFrame::AllocationSize(kInputFormat, test_stream->visible_size);
+      VideoFrame::AllocationSize(pixel_format, test_stream->visible_size);
   LOG_ASSERT(src_file_size % visible_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
@@ -421,7 +424,7 @@ static void ParseAndReadTestStreamData(
                                  base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     }
     LOG_ASSERT(fields.size() >= 4U) << data;
-    LOG_ASSERT(fields.size() <= 9U) << data;
+    LOG_ASSERT(fields.size() <= 10U) << data;
     auto test_stream = std::make_unique<TestStream>();
 
     test_stream->in_filename = FilePathStringTypeToString(fields[0]);
@@ -438,6 +441,7 @@ static void ParseAndReadTestStreamData(
     LOG_ASSERT(profile > VIDEO_CODEC_PROFILE_UNKNOWN);
     LOG_ASSERT(profile <= VIDEO_CODEC_PROFILE_MAX);
     test_stream->requested_profile = static_cast<VideoCodecProfile>(profile);
+    test_stream->pixel_format = PIXEL_FORMAT_I420;
 
     if (fields.size() >= 5 && !fields[4].empty())
       test_stream->out_filename = FilePathStringTypeToString(fields[4]);
@@ -458,6 +462,12 @@ static void ParseAndReadTestStreamData(
     if (fields.size() >= 9 && !fields[8].empty()) {
       LOG_ASSERT(base::StringToUint(
           fields[8], &test_stream->requested_subsequent_framerate));
+    }
+
+    if (fields.size() >= 10 && !fields[9].empty()) {
+      unsigned int format = 0;
+      LOG_ASSERT(base::StringToUint(fields[9], &format));
+      test_stream->pixel_format = static_cast<VideoPixelFormat>(format);
     }
     test_streams->push_back(std::move(test_stream));
   }
@@ -748,6 +758,7 @@ class VideoFrameQualityValidator
     : public base::SupportsWeakPtr<VideoFrameQualityValidator> {
  public:
   VideoFrameQualityValidator(const VideoCodecProfile profile,
+                             const VideoPixelFormat pixel_format,
                              bool verify_quality,
                              const base::Closure& flush_complete_cb,
                              const base::Closure& decode_error_cb);
@@ -774,10 +785,11 @@ class VideoFrameQualityValidator
     uint64_t mse[VideoFrame::kMaxPlanes];
   };
 
-  static FrameStats CompareFrames(const VideoFrame& original_frame,
-                                  const VideoFrame& output_frame);
+  FrameStats CompareFrames(const VideoFrame& original_frame,
+                           const VideoFrame& output_frame);
   MediaLog media_log_;
   const VideoCodecProfile profile_;
+  const VideoPixelFormat pixel_format_;
   const bool verify_quality_;
   std::unique_ptr<FFmpegVideoDecoder> decoder_;
   VideoDecoder::DecodeCB decode_cb_;
@@ -795,10 +807,12 @@ class VideoFrameQualityValidator
 
 VideoFrameQualityValidator::VideoFrameQualityValidator(
     const VideoCodecProfile profile,
+    const VideoPixelFormat pixel_format,
     const bool verify_quality,
     const base::Closure& flush_complete_cb,
     const base::Closure& decode_error_cb)
     : profile_(profile),
+      pixel_format_(pixel_format),
       verify_quality_(verify_quality),
       decoder_(new FFmpegVideoDecoder(&media_log_)),
       decode_cb_(base::BindRepeating(&VideoFrameQualityValidator::DecodeDone,
@@ -820,12 +834,12 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   // The default output format of ffmpeg video decoder is YV12.
   VideoDecoderConfig config;
   if (IsVP8(profile_))
-    config.Initialize(kCodecVP8, VP8PROFILE_ANY, kInputFormat,
+    config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
                       COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   else if (IsH264(profile_))
-    config.Initialize(kCodecH264, H264PROFILE_MAIN, kInputFormat,
+    config.Initialize(kCodecH264, H264PROFILE_MAIN, pixel_format_,
                       COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
@@ -1077,12 +1091,6 @@ void GenerateMseAndSsim(double* ssim,
 VideoFrameQualityValidator::FrameStats
 VideoFrameQualityValidator::CompareFrames(const VideoFrame& original_frame,
                                           const VideoFrame& output_frame) {
-  // This code assumes I420/NV12 (e.g. 12bpp YUV planar) and needs to be updated
-  // to support anything else.
-  CHECK(original_frame.format() == PIXEL_FORMAT_I420 ||
-        original_frame.format() == PIXEL_FORMAT_YV12);
-  CHECK(output_frame.format() == PIXEL_FORMAT_I420 ||
-        output_frame.format() == PIXEL_FORMAT_YV12);
   CHECK(original_frame.visible_rect().size() ==
         output_frame.visible_rect().size());
 
@@ -1096,8 +1104,8 @@ VideoFrameQualityValidator::CompareFrames(const VideoFrame& original_frame,
         &frame_stats.ssim[plane], &frame_stats.mse[plane],
         original_frame.data(plane), original_frame.stride(plane),
         output_frame.data(plane), output_frame.stride(plane),
-        VideoFrame::Columns(plane, kInputFormat, frame_stats.width),
-        VideoFrame::Rows(plane, kInputFormat, frame_stats.height));
+        VideoFrame::Columns(plane, pixel_format_, frame_stats.width),
+        VideoFrame::Rows(plane, pixel_format_, frame_stats.height));
   }
   return frame_stats;
 }
@@ -1125,9 +1133,9 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
       uint8_t* output_plane = output_frame->data(plane);
 
       size_t rows =
-          VideoFrame::Rows(plane, kInputFormat, visible_size.height());
+          VideoFrame::Rows(plane, pixel_format_, visible_size.height());
       size_t columns =
-          VideoFrame::Columns(plane, kInputFormat, visible_size.width());
+          VideoFrame::Columns(plane, pixel_format_, visible_size.width());
       size_t stride = original_frame->stride(plane);
 
       for (size_t i = 0; i < rows; i++) {
@@ -1139,7 +1147,7 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
     }
 
     // Divide the difference by the size of frame.
-    difference /= VideoFrame::AllocationSize(kInputFormat, visible_size);
+    difference /= VideoFrame::AllocationSize(pixel_format_, visible_size);
     EXPECT_TRUE(difference <= kDecodeSimilarityThreshold)
         << "difference = " << difference << "  > decode similarity threshold";
   }
@@ -1435,7 +1443,8 @@ VEAClient::VEAClient(TestStream* test_stream,
     // validating encoder quality.
     if (verify_output_ || !g_env->frame_stats_path().empty()) {
       quality_validator_.reset(new VideoFrameQualityValidator(
-          test_stream_->requested_profile, verify_output_,
+          test_stream_->requested_profile, test_stream_->pixel_format,
+          verify_output_,
           base::BindRepeating(&VEAClient::DecodeCompleted,
                               base::Unretained(this)),
           base::BindRepeating(&VEAClient::DecodeFailed,
@@ -1489,8 +1498,9 @@ void VEAClient::CreateEncoder() {
            << ", initial bitrate: " << requested_bitrate_;
 
   const VideoEncodeAccelerator::Config config(
-      kInputFormat, test_stream_->visible_size, test_stream_->requested_profile,
-      requested_bitrate_, requested_framerate_);
+      test_stream_->pixel_format, test_stream_->visible_size,
+      test_stream_->requested_profile, requested_bitrate_,
+      requested_framerate_);
   encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";
@@ -1742,10 +1752,10 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   CHECK_GT(current_framerate_, 0U);
 
   scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      kInputFormat, input_coded_size_, gfx::Rect(test_stream_->visible_size),
-      test_stream_->visible_size, input_coded_size_.width(),
-      input_coded_size_.width() / 2, input_coded_size_.width() / 2,
-      frame_data_y, frame_data_u, frame_data_v,
+      test_stream_->pixel_format, input_coded_size_,
+      gfx::Rect(test_stream_->visible_size), test_stream_->visible_size,
+      input_coded_size_.width(), input_coded_size_.width() / 2,
+      input_coded_size_.width() / 2, frame_data_y, frame_data_u, frame_data_v,
       // Timestamp needs to avoid starting from 0.
       base::TimeDelta().FromMilliseconds((next_input_id_ + 1) *
                                          base::Time::kMillisecondsPerSecond /
@@ -2108,8 +2118,8 @@ void SimpleVEAClientBase::CreateEncoder() {
 
   gfx::Size visible_size(width_, height_);
   const VideoEncodeAccelerator::Config config(
-      kInputFormat, visible_size, g_env->test_streams_[0]->requested_profile,
-      bitrate_, fps_);
+      g_env->test_streams_[0]->pixel_format, visible_size,
+      g_env->test_streams_[0]->requested_profile, bitrate_, fps_);
   encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";
@@ -2268,20 +2278,21 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   if (!has_encoder())
     return;
 
+  const VideoPixelFormat pixel_format = g_env->test_streams_[0]->pixel_format;
   std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
       aligned_data_y, aligned_data_u, aligned_data_v;
   aligned_data_y.resize(
-      VideoFrame::PlaneSize(kInputFormat, 0, input_coded_size).GetArea());
+      VideoFrame::PlaneSize(pixel_format, 0, input_coded_size).GetArea());
   aligned_data_u.resize(
-      VideoFrame::PlaneSize(kInputFormat, 1, input_coded_size).GetArea());
+      VideoFrame::PlaneSize(pixel_format, 1, input_coded_size).GetArea());
   aligned_data_v.resize(
-      VideoFrame::PlaneSize(kInputFormat, 2, input_coded_size).GetArea());
+      VideoFrame::PlaneSize(pixel_format, 2, input_coded_size).GetArea());
   uint8_t* frame_data_y = reinterpret_cast<uint8_t*>(&aligned_data_y[0]);
   uint8_t* frame_data_u = reinterpret_cast<uint8_t*>(&aligned_data_u[0]);
   uint8_t* frame_data_v = reinterpret_cast<uint8_t*>(&aligned_data_v[0]);
 
   scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      kInputFormat, input_coded_size, gfx::Rect(input_coded_size),
+      pixel_format, input_coded_size, gfx::Rect(input_coded_size),
       input_coded_size, input_coded_size.width(), input_coded_size.width() / 2,
       input_coded_size.width() / 2, frame_data_y, frame_data_u, frame_data_v,
       base::TimeDelta().FromMilliseconds(base::Time::kMillisecondsPerSecond /

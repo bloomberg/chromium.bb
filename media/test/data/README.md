@@ -574,6 +574,18 @@ The frame sizes change between 1080p and 720p every 24 frames.
 First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
 video_encode_accelerator_unittest.
 
+#### bear_320x192_40frames.nv12.yuv
+First 40 raw nv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
+video_encode_accelerator_unittest.
+
+#### bear_320x192_40frames.nv21.yuv
+First 40 raw nv21 frames of bear-1280x720.mp4 scaled down to 320x192 for
+video_encode_accelerator_unittest.
+
+#### bear_320x192_40frames.yv12.yuv
+First 40 raw yv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
+video_encode_accelerator_unittest.
+
 ###  VP9 parser test files:
 
 #### bear-vp9.ivf
