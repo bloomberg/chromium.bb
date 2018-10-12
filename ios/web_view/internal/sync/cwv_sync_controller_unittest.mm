@@ -110,8 +110,6 @@ class CWVSyncControllerTest : public PlatformTest {
   AccountTrackerService account_tracker_service_;
   TestSigninClient signin_client_;
   SigninErrorController sigin_error_controller_;
-  //  FakeProfileOAuth2TokenServiceIOSProvider token_service_provider_;
-  //  ProfileOAuth2TokenServiceIOSDelegate token_service_delegate_;
   FakeProfileOAuth2TokenService token_service_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   FakeSigninManager signin_manager_;
