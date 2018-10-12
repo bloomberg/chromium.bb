@@ -22,6 +22,13 @@ class Error {
     kNone = 0,
     // CBOR parsing error.
     kCborParsing = 1,
+
+    // Presentation start errors.
+    kNoAvailableScreens,
+    kRequestCancelled,
+    kNoPresentationFound,
+    kPreviousStartInProgress,
+    kUnknownStartError,
   };
 
   Error();

@@ -35,6 +35,16 @@ std::string Error::CodeToString(Error::Code code) {
       return "None";
     case Error::Code::kCborParsing:
       return "CborParsingError";
+    case Error::Code::kNoAvailableScreens:
+      return "NoAvailableScreens";
+    case Error::Code::kRequestCancelled:
+      return "RequestCancelled";
+    case Error::Code::kNoPresentationFound:
+      return "NoPresentationFound";
+    case Error::Code::kPreviousStartInProgress:
+      return "PreviousStartInProgress";
+    case Error::Code::kUnknownStartError:
+      return "UnknownStartError";
     default:
       return "Unknown";
   }
