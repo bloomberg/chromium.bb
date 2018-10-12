@@ -129,6 +129,8 @@ class WaylandWindow : public PlatformWindow,
   bool IsMaximized() const;
   bool IsFullscreen() const;
 
+  void MaybeTriggerPendingStateChange();
+
   // Creates a popup window, which is visible as a menu window.
   void CreateXdgPopup();
   // Creates a surface window, which is visible as a main window.
@@ -171,6 +173,9 @@ class WaylandWindow : public PlatformWindow,
 
   // Stores current states of the window.
   ui::PlatformWindowState state_;
+  // Stores a pending state of the window, which is used before the surface is
+  // activated.
+  ui::PlatformWindowState pending_state_;
 
   bool is_active_ = false;
   bool is_minimizing_ = false;
