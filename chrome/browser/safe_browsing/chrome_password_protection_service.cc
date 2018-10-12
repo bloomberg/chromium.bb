@@ -1035,13 +1035,9 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
       web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
       // TODO(jialiul): Remove web_contents pointer when it is closed.
     } else {
-      // Opens chrome://settings page in a new tab.
-      OpenUrl(web_contents, GURL(chrome::kChromeUISettingsURL),
-              content::Referrer(),
+      // Opens accounts.google.com in a new tab.
+      OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
               /*in_new_tab=*/true);
-      LogWarningAction(WarningUIType::CHROME_SETTINGS, WarningAction::SHOWN,
-                       PasswordReuseEvent::SIGN_IN_PASSWORD,
-                       GetSyncAccountType());
     }
   } else if (action == WarningAction::IGNORE_WARNING) {
     // No need to change state.
@@ -1079,12 +1075,9 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
       return;
     }
 
-    // For sync password reuse, open chrome://settings page in a new tab.
-    OpenUrl(web_contents, GURL(chrome::kChromeUISettingsURL),
-            content::Referrer(), /*in_new_tab=*/true);
-    LogWarningAction(WarningUIType::CHROME_SETTINGS, WarningAction::SHOWN,
-                     PasswordReuseEvent::SIGN_IN_PASSWORD,
-                     GetSyncAccountType());
+    // For sync password reuse, open accounts.google.com page in a new tab.
+    OpenUrl(web_contents, GetDefaultChangePasswordURL(), content::Referrer(),
+            /*in_new_tab=*/true);
     return;
   }
 

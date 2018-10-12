@@ -517,7 +517,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
 void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"changePasswordPageTitle", IDS_SETTINGS_CHANGE_PASSWORD_TITLE},
-      {"changePasswordPageDetails", IDS_SETTINGS_CHANGE_PASSWORD_DETAIL},
+      {"changePasswordPageDetails", IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS},
       {"changePasswordPageButton", IDS_SETTINGS_CHANGE_PASSWORD_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
