@@ -234,3 +234,12 @@
 -WebrtcLoggingPrivateApiTest.*
 -WindowAppleScriptTest.*
 -WindowOpenApiTest.*
+
+# Potential 10.13 killers.
+-DisableExtensionsExceptBrowserTest.*
+-ExtensionActionRunnerBrowserTest.*
+-ExtensionFetchTest.*
+-ExtensionTabUtilBrowserTest.*
+-NativeBindingsApiTest.*
+-PasswordManagerBrowserTest.*
+-UpdateServiceTest.*
