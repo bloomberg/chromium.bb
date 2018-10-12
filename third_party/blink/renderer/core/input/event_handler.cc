@@ -621,7 +621,6 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(request, document_point,
                                                       mouse_event);
-
   if (!mev.InnerNode()) {
     mouse_event_manager_->InvalidateClick();
     return WebInputEventResult::kNotHandled;
@@ -656,7 +655,6 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       .GetEventHandler()
       .last_mouse_down_user_gesture_token_ =
       UserGestureIndicator::CurrentToken();
-
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     // We store whether middle click autoscroll is in progress before calling
     // stopAutoscroll() because it will set m_autoscrollType to NoAutoscroll on
@@ -720,8 +718,16 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     event_result = mouse_event_manager_->HandleMouseFocus(hit_test_result,
                                                           source_capabilities);
   }
-  mouse_event_manager_->SetCapturesDragging(
-      event_result == WebInputEventResult::kNotHandled || mev.GetScrollbar());
+
+  if (event_result == WebInputEventResult::kNotHandled || mev.GetScrollbar()) {
+    mouse_event_manager_->SetCapturesDragging(true);
+    // Main frames don't implicitly capture mouse input on MouseDown, just
+    // subframes do (regardless of whether local or remote).
+    if (!frame_->IsMainFrame())
+      CaptureMouseEventsToWidget(true);
+  } else {
+    mouse_event_manager_->SetCapturesDragging(false);
+  }
 
   // If the hit testing originally determined the event was in a scrollbar,
   // refetch the MouseEventWithHitTestResults in case the scrollbar
@@ -762,7 +768,6 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     result.SetToShadowHostIfInRestrictedShadowRoot();
     frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
   }
-
   return event_result;
 }
 
@@ -831,6 +836,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     mouse_event_manager_->ClearDragHeuristicState();
     if (event_handler_will_reset_capturing_mouse_events_node_)
       capturing_mouse_events_node_ = nullptr;
+    CaptureMouseEventsToWidget(false);
   }
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
@@ -1009,7 +1015,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   if (last_scrollbar_under_mouse_) {
     mouse_event_manager_->InvalidateClick();
     last_scrollbar_under_mouse_->MouseUp(mouse_event);
-    frame_->LocalFrameRoot().Client()->SetMouseCapture(false);
+    CaptureMouseEventsToWidget(false);
     return DispatchMousePointerEvent(
         WebInputEvent::kPointerUp, mouse_event_manager_->GetNodeUnderMouse(),
         String(), mouse_event, Vector<WebMouseEvent>());
@@ -1064,6 +1070,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
     event_result = mouse_event_manager_->HandleMouseReleaseEvent(mev);
 
   mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
+  CaptureMouseEventsToWidget(false);
 
   return EventHandlingUtil::MergeEventResult(click_event_result, event_result);
 }
@@ -1219,8 +1226,8 @@ void EventHandler::AnimateSnapFling(base::TimeTicks monotonic_time) {
 }
 
 void EventHandler::SetCapturingMouseEventsNode(Node* n) {
+  CaptureMouseEventsToWidget(n);
   capturing_mouse_events_node_ = n;
-  event_handler_will_reset_capturing_mouse_events_node_ = false;
 }
 
 Node* EventHandler::EffectiveMouseEventTargetNode(Node* target_node) {
@@ -2157,7 +2164,7 @@ bool EventHandler::PassMousePressEventToScrollbar(
     return false;
   scrollbar->MouseDown(mev.Event());
   if (scrollbar->PressedPart() == ScrollbarPart::kThumbPart)
-    frame_->LocalFrameRoot().Client()->SetMouseCapture(true);
+    CaptureMouseEventsToWidget(true);
   return true;
 }
 
@@ -2213,6 +2220,20 @@ WebInputEventResult EventHandler::PassMouseReleaseEventToSubframe(
   if (result != WebInputEventResult::kNotHandled)
     return result;
   return WebInputEventResult::kHandledSystem;
+}
+
+void EventHandler::CaptureMouseEventsToWidget(bool capture) {
+  if (!frame_->IsLocalRoot()) {
+    frame_->LocalFrameRoot().GetEventHandler().CaptureMouseEventsToWidget(
+        capture);
+    return;
+  }
+
+  if (capture == is_widget_capturing_mouse_events_)
+    return;
+
+  frame_->LocalFrameRoot().Client()->SetMouseCapture(capture);
+  is_widget_capturing_mouse_events_ = capture;
 }
 
 }  // namespace blink
