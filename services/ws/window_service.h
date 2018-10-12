@@ -103,6 +103,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Whether |window| hosts a remote client.
   static bool HasRemoteClient(const aura::Window* window);
 
+  // Returns true if |window| hosts a remote client and is a toplevel window.
+  static bool IsTopLevelWindow(const aura::Window* window);
+
   struct TreeAndWindowId {
     ClientWindowId id;
     WindowTree* tree = nullptr;

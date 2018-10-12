@@ -111,6 +111,12 @@ bool WindowService::HasRemoteClient(const aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
 }
 
+// static
+bool WindowService::IsTopLevelWindow(const aura::Window* window) {
+  const ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  return server_window && server_window->IsTopLevel();
+}
+
 WindowService::TreeAndWindowId
 WindowService::FindTreeWithScheduleEmbedForExistingClient(
     const base::UnguessableToken& embed_token) {
