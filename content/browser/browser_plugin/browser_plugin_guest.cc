@@ -136,8 +136,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
   DCHECK(web_contents);
   DCHECK(delegate);
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Create"));
-  web_contents->SetBrowserPluginGuest(this);
-  delegate->SetGuestHost(this);
 }
 
 int BrowserPluginGuest::GetGuestProxyRoutingID() {
@@ -399,11 +397,13 @@ BrowserPluginGuest::~BrowserPluginGuest() {
 }
 
 // static
-BrowserPluginGuest* BrowserPluginGuest::Create(
+void BrowserPluginGuest::CreateInWebContents(
     WebContentsImpl* web_contents,
     BrowserPluginGuestDelegate* delegate) {
-  return new BrowserPluginGuest(
-      web_contents->HasOpener(), web_contents, delegate);
+  auto guest = base::WrapUnique(new BrowserPluginGuest(
+      web_contents->HasOpener(), web_contents, delegate));
+  delegate->SetGuestHost(guest.get());
+  web_contents->SetBrowserPluginGuest(std::move(guest));
 }
 
 // static

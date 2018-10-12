@@ -366,7 +366,8 @@ std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
-    BrowserPluginGuest::Create(new_contents.get(), params.guest_delegate);
+    BrowserPluginGuest::CreateInWebContents(new_contents.get(),
+                                            params.guest_delegate);
   }
 
   new_contents->Init(params);
@@ -783,7 +784,8 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
-    BrowserPluginGuest::Create(new_contents.get(), params.guest_delegate);
+    BrowserPluginGuest::CreateInWebContents(new_contents.get(),
+                                            params.guest_delegate);
   }
 
   new_contents->Init(params);
@@ -6380,10 +6382,11 @@ BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
   return browser_plugin_guest_.get();
 }
 
-void WebContentsImpl::SetBrowserPluginGuest(BrowserPluginGuest* guest) {
-  CHECK(!browser_plugin_guest_);
-  CHECK(guest);
-  browser_plugin_guest_.reset(guest);
+void WebContentsImpl::SetBrowserPluginGuest(
+    std::unique_ptr<BrowserPluginGuest> guest) {
+  DCHECK(!browser_plugin_guest_);
+  DCHECK(guest);
+  browser_plugin_guest_ = std::move(guest);
 }
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
