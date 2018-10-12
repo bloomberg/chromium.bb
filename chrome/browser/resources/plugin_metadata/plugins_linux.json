@@ -1,5 +1,5 @@
 {
-  "x-version": 34,
+  "x-version": 35,
   "adobe-flash-player": {
     "mime_types": [
       "application/futuresplash",
@@ -10,9 +10,9 @@
     ],
     "versions": [
       {
-        "version": "31.0.0.108",
+        "version": "31.0.0.122",
         "status": "up_to_date",
-        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb18-31.html"
+        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb18-35.html"
       }
     ],
     "lang": "en-US",
