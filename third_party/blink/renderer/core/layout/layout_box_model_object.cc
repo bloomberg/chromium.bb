@@ -732,19 +732,15 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   // https://drafts.csswg.org/css-grid/#grid-item-sizing
   base::Optional<LayoutUnit> left;
   base::Optional<LayoutUnit> right;
-  LayoutUnit available_width = containing_block->AvailableWidth();
-  LayoutUnit available_height = containing_block->AvailableHeight();
-  bool has_override_containing_block_content = false;
-  if (HasOverrideContainingBlockContentWidth()) {
-    DCHECK(HasOverrideContainingBlockContentHeight());
-    has_override_containing_block_content = true;
-    available_width = OverrideContainingBlockContentWidth();
-    available_height = OverrideContainingBlockContentHeight();
+  if (!StyleRef().Left().IsAuto() || !StyleRef().Right().IsAuto()) {
+    LayoutUnit available_width = HasOverrideContainingBlockContentWidth()
+                                     ? OverrideContainingBlockContentWidth()
+                                     : containing_block->AvailableWidth();
+    if (!StyleRef().Left().IsAuto())
+      left = ValueForLength(StyleRef().Left(), available_width);
+    if (!StyleRef().Right().IsAuto())
+      right = ValueForLength(StyleRef().Right(), available_width);
   }
-  if (!StyleRef().Left().IsAuto())
-    left = ValueForLength(StyleRef().Left(), available_width);
-  if (!StyleRef().Right().IsAuto())
-    right = ValueForLength(StyleRef().Right(), available_width);
   if (!left && !right) {
     left = LayoutUnit();
     right = LayoutUnit();
@@ -784,19 +780,32 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
 
   base::Optional<LayoutUnit> top;
   base::Optional<LayoutUnit> bottom;
+  bool has_override_containing_block_content_height =
+      HasOverrideContainingBlockContentHeight();
   if (!StyleRef().Top().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !StyleRef().Top().IsPercentOrCalc() ||
        containing_block->StretchesToViewport() ||
-       has_override_containing_block_content)) {
-    top = ValueForLength(StyleRef().Top(), available_height);
+       has_override_containing_block_content_height)) {
+    // TODO(rego): The computation of the available height is repeated later for
+    // "bottom". We could refactor this and move it to some common code for both
+    // ifs, however moving it outside of the ifs is not possible as it'd cause
+    // performance regressions (see crbug.com/893884).
+    top = ValueForLength(StyleRef().Top(),
+                         has_override_containing_block_content_height
+                             ? OverrideContainingBlockContentHeight()
+                             : containing_block->AvailableHeight());
   }
   if (!StyleRef().Bottom().IsAuto() &&
       (!containing_block->HasAutoHeightOrContainingBlockWithAutoHeight() ||
        !StyleRef().Bottom().IsPercentOrCalc() ||
        containing_block->StretchesToViewport() ||
-       has_override_containing_block_content)) {
-    bottom = ValueForLength(StyleRef().Bottom(), available_height);
+       has_override_containing_block_content_height)) {
+    // TODO(rego): Check comment above for "top", it applies here too.
+    bottom = ValueForLength(StyleRef().Bottom(),
+                            has_override_containing_block_content_height
+                                ? OverrideContainingBlockContentHeight()
+                                : containing_block->AvailableHeight());
   }
   if (!top && !bottom) {
     top = LayoutUnit();
