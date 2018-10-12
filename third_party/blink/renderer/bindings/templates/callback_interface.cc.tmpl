@@ -34,7 +34,7 @@ const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = {
 #pragma clang diagnostic pop
 #endif
 
-{% from 'constants.cpp.tmpl' import install_constants with context %}
+{% from 'constants.cc.tmpl' import install_constants with context %}
 static void Install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interface_template) {
   // Legacy callback interface must not have a prototype object.
   interface_template->RemovePrototype();

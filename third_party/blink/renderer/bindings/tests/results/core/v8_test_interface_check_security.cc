@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/interface.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/interface.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -201,7 +201,7 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
   }
 
   // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
@@ -233,7 +233,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
   }
 
   // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
@@ -265,7 +265,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
   }
 
   // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
@@ -297,7 +297,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
   }
 
   // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
@@ -424,7 +424,7 @@ static void doNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(const v8:
   }
 
   // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol propertySymbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityVoidOverloadMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
@@ -466,7 +466,7 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Name>
 
   // |methodName| must be same with {{method.name}} in
   // {{method.name}}OriginSafeMethodGetter{{world_suffix}} defined in
-  // methods.cpp.tmpl
+  // methods.cc.tmpl
   V8PrivateProperty::GetSymbol(info.GetIsolate(), *methodName)
       .Set(v8::Local<v8::Object>::Cast(info.Holder()), v8Value);
 }

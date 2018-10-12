@@ -84,7 +84,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 
 {##############################################################################}
 {# Attributes #}
-{% from 'attributes.cpp.tmpl' import attribute_getter,
+{% from 'attributes.cc.tmpl' import attribute_getter,
        attribute_setter,
        with context %}
 {% for attribute in attributes %}
@@ -99,7 +99,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endfor %}
 {##############################################################################}
 {# Methods #}
-{% from 'methods.cpp.tmpl' import generate_method, overload_resolution_method,
+{% from 'methods.cc.tmpl' import generate_method, overload_resolution_method,
       origin_safe_method_getter, generate_constructor,
       runtime_determined_length_method, runtime_determined_maxarg_method
       with context %}
@@ -180,13 +180,13 @@ static const struct {
 } // namespace {{cpp_class_or_partial}}V8Internal
 
 {# Constants #}
-{% from 'constants.cpp.tmpl' import constant_getter_callback with context %}
+{% from 'constants.cc.tmpl' import constant_getter_callback with context %}
 {% for constant in constants | has_special_getter %}
 {{constant_getter_callback(constant)}}
 {% endfor %}
 
 {# Attributes #}
-{% from 'attributes.cpp.tmpl' import constructor_getter_callback,
+{% from 'attributes.cc.tmpl' import constructor_getter_callback,
        attribute_getter_callback, attribute_setter_callback with context %}
 {% for attribute in attributes %}
 {% for world_suffix in attribute.world_suffixes %}
@@ -202,7 +202,7 @@ static const struct {
 {% endfor %}
 
 {# Methods #}
-{% from 'methods.cpp.tmpl' import origin_safe_method_getter_callback,
+{% from 'methods.cc.tmpl' import origin_safe_method_getter_callback,
       method_callback with context %}
 {% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
@@ -350,7 +350,7 @@ void {{v8_class_or_partial}}::crossOriginIndexedGetter(uint32_t index, const v8:
 {% block visit_dom_wrapper %}{% endblock %}
 {##############################################################################}
 {% block install_attributes %}
-{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'attributes.cc.tmpl' import attribute_configuration with context %}
 {% if data_attributes %}
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
@@ -371,7 +371,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% endblock %}
 {##############################################################################}
 {% block install_accessors %}
-{% from 'attributes.cpp.tmpl' import accessor_configuration with context %}
+{% from 'attributes.cc.tmpl' import accessor_configuration with context %}
 {% if accessors %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for accessor in accessors %}
@@ -383,7 +383,7 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 {% endblock %}
 {##############################################################################}
 {% block install_methods %}
-{% from 'methods.cpp.tmpl' import method_configuration with context %}
+{% from 'methods.cc.tmpl' import method_configuration with context %}
 {% if methods | has_method_configuration(is_partial) %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in methods | has_method_configuration(is_partial) %}
@@ -400,12 +400,12 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {##############################################################################}
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
-{% from 'methods.cpp.tmpl' import install_custom_signature,
+{% from 'methods.cc.tmpl' import install_custom_signature,
         method_configuration with context %}
-{% from 'attributes.cpp.tmpl' import accessor_configuration,
+{% from 'attributes.cc.tmpl' import accessor_configuration,
         attribute_configuration,
         with context %}
-{% from 'constants.cpp.tmpl' import install_constants,
+{% from 'constants.cc.tmpl' import install_constants,
         constant_configuration with context %}
 {% if has_partial_interface or is_partial %}
 void {{v8_class_or_partial}}::install{{v8_class}}Template(
@@ -760,8 +760,8 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
 {##############################################################################}
 {% block install_runtime_enabled %}
 {% if needs_runtime_enabled_installer %}
-{% from 'attributes.cpp.tmpl' import accessor_configuration, attribute_configuration with context %}
-{% from 'methods.cpp.tmpl' import install_custom_signature with context %}
+{% from 'attributes.cc.tmpl' import accessor_configuration, attribute_configuration with context %}
+{% from 'methods.cc.tmpl' import install_custom_signature with context %}
 {% if not is_partial %}
 void {{v8_class}}::InstallRuntimeEnabledFeatures(
     v8::Isolate* isolate,
@@ -851,11 +851,11 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
 {% endblock %}
 {##############################################################################}
 {% block origin_trials %}
-{% from 'attributes.cpp.tmpl' import accessor_configuration,
+{% from 'attributes.cc.tmpl' import accessor_configuration,
         attribute_configuration,
         with context %}
-{% from 'constants.cpp.tmpl' import constant_configuration with context %}
-{% from 'methods.cpp.tmpl' import method_configuration with context %}
+{% from 'constants.cc.tmpl' import constant_configuration with context %}
+{% from 'methods.cc.tmpl' import method_configuration with context %}
 {% for feature in optional_features %}
 void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
   {% if feature.attributes or feature.methods %}
@@ -929,9 +929,9 @@ void {{v8_class_or_partial}}::install{{feature.name}}(ScriptState* scriptState) 
 {% block native_value_traits %}{% endblock %}
 {##############################################################################}
 {% block install_conditional_features %}
-{% from 'attributes.cpp.tmpl' import install_conditional_attributes,
+{% from 'attributes.cc.tmpl' import install_conditional_attributes,
       install_conditional_interface_objects with context %}
-{% from 'methods.cpp.tmpl' import install_conditional_methods with context %}
+{% from 'methods.cc.tmpl' import install_conditional_methods with context %}
 {% if install_conditional_features_func %}
 void {{v8_class_or_partial}}::InstallConditionalFeatures(
     v8::Local<v8::Context> context,
