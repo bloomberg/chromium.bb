@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chromeos/settings/install_attributes.h"
 
 namespace chromeos {
 
