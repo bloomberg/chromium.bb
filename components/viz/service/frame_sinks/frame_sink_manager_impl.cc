@@ -33,7 +33,9 @@ FrameSinkManagerImpl::FrameSinkSourceMapping&
 FrameSinkManagerImpl::FrameSinkSourceMapping::operator=(
     FrameSinkSourceMapping&& other) = default;
 
-FrameSinkManagerImpl::FrameSinkData::FrameSinkData() = default;
+FrameSinkManagerImpl::FrameSinkData::FrameSinkData(bool report_activation)
+    : report_activation(report_activation) {}
+
 FrameSinkManagerImpl::FrameSinkData::FrameSinkData(FrameSinkData&& other) =
     default;
 FrameSinkManagerImpl::FrameSinkData::~FrameSinkData() = default;
@@ -92,12 +94,12 @@ void FrameSinkManagerImpl::ForceShutdown() {
   sink_map_.clear();
 }
 
-void FrameSinkManagerImpl::RegisterFrameSinkId(
-    const FrameSinkId& frame_sink_id) {
+void FrameSinkManagerImpl::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
+                                               bool report_activation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!base::ContainsKey(frame_sink_data_, frame_sink_id));
 
-  frame_sink_data_.emplace(std::make_pair(frame_sink_id, FrameSinkData()));
+  frame_sink_data_.emplace(std::make_pair(frame_sink_id, report_activation));
 
   if (video_detector_)
     video_detector_->OnFrameSinkIdRegistered(frame_sink_id);
@@ -287,7 +289,13 @@ void FrameSinkManagerImpl::OnFirstSurfaceActivation(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
 
-  if (client_)
+  auto it = frame_sink_data_.find(surface_info.id().frame_sink_id());
+  if (it == frame_sink_data_.end())
+    return;
+
+  const FrameSinkData& frame_sink_data = it->second;
+
+  if (client_ && frame_sink_data.report_activation)
     client_->OnFirstSurfaceActivation(surface_info);
 }
 

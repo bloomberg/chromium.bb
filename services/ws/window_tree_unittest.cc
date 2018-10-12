@@ -2128,8 +2128,9 @@ TEST(WindowTreeTest, AttachFrameSinkId) {
 
   // Add the window to a parent, which should trigger registering the hierarchy.
   viz::FakeHostFrameSinkClient test_host_frame_sink_client;
-  host_frame_sink_manager->RegisterFrameSinkId(test_frame_sink_id,
-                                               &test_host_frame_sink_client);
+  host_frame_sink_manager->RegisterFrameSinkId(
+      test_frame_sink_id, &test_host_frame_sink_client,
+      viz::ReportFirstSurfaceActivation::kYes);
   EXPECT_EQ(test_frame_sink_id,
             ServerWindow::GetMayBeNull(child_window)->attached_frame_sink_id());
   top_level->AddChild(child_window);

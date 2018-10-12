@@ -36,6 +36,8 @@ class CompositorFrameSinkSupport;
 class FrameSinkManagerImpl;
 class SurfaceInfo;
 
+enum class ReportFirstSurfaceActivation { kYes, kNo };
+
 // Browser side wrapper of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace all usage of
 // FrameSinkManagerImpl.
@@ -75,7 +77,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Registers |frame_sink_id| will be used. This must be called before
   // CreateCompositorFrameSink(Support) is called.
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
-                           HostFrameSinkClient* client);
+                           HostFrameSinkClient* client,
+                           ReportFirstSurfaceActivation report_activation);
 
   // Returns true if RegisterFrameSinkId() was called with |frame_sink_id| and
   // InvalidateFrameSinkId() has not been called.
@@ -205,6 +208,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
     // The client to be notified of changes to this FrameSink.
     HostFrameSinkClient* client = nullptr;
+
+    // Indicates whether or not this client cares to receive
+    // FirstSurfaceActivation notifications.
+    ReportFirstSurfaceActivation report_activation =
+        ReportFirstSurfaceActivation::kYes;
 
     // The label to use whether this client would like reporting for
     // synchronization events.

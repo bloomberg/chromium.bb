@@ -104,7 +104,7 @@ class FrameSinkManagerTest : public testing::Test {
 };
 
 TEST_F(FrameSinkManagerTest, CreateRootCompositorFrameSink) {
-  manager_.RegisterFrameSinkId(kFrameSinkIdRoot);
+  manager_.RegisterFrameSinkId(kFrameSinkIdRoot, true /* report_activation */);
 
   // Create a RootCompositorFrameSinkImpl.
   RootCompositorFrameSinkData root_data;
@@ -118,7 +118,7 @@ TEST_F(FrameSinkManagerTest, CreateRootCompositorFrameSink) {
 }
 
 TEST_F(FrameSinkManagerTest, CreateCompositorFrameSink) {
-  manager_.RegisterFrameSinkId(kFrameSinkIdA);
+  manager_.RegisterFrameSinkId(kFrameSinkIdA, true /* report_activation */);
 
   // Create a CompositorFrameSinkImpl.
   MockCompositorFrameSinkClient compositor_frame_sink_client;
@@ -134,7 +134,7 @@ TEST_F(FrameSinkManagerTest, CreateCompositorFrameSink) {
 }
 
 TEST_F(FrameSinkManagerTest, CompositorFrameSinkConnectionLost) {
-  manager_.RegisterFrameSinkId(kFrameSinkIdA);
+  manager_.RegisterFrameSinkId(kFrameSinkIdA, true /* report_activation */);
 
   // Create a CompositorFrameSinkImpl.
   MockCompositorFrameSinkClient compositor_frame_sink_client;
@@ -451,7 +451,7 @@ TEST_F(FrameSinkManagerTest, EvictSurfaces) {
 TEST_F(FrameSinkManagerTest, DebugLabel) {
   const std::string label = "Test Label";
 
-  manager_.RegisterFrameSinkId(kFrameSinkIdA);
+  manager_.RegisterFrameSinkId(kFrameSinkIdA, true /* report_activation */);
   manager_.SetFrameSinkDebugLabel(kFrameSinkIdA, label);
   EXPECT_EQ(label, manager_.GetFrameSinkDebugLabel(kFrameSinkIdA));
 

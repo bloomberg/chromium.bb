@@ -65,7 +65,8 @@ class SurfaceReferencesTest : public testing::Test {
       const FrameSinkId& frame_sink_id) {
     auto& support_ptr = supports_[frame_sink_id];
     if (!support_ptr) {
-      manager_->RegisterFrameSinkId(frame_sink_id);
+      manager_->RegisterFrameSinkId(frame_sink_id,
+                                    true /* report_activation */);
       constexpr bool is_root = false;
       constexpr bool needs_sync_points = true;
       support_ptr = std::make_unique<CompositorFrameSinkSupport>(

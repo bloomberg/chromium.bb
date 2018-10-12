@@ -990,7 +990,8 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
 }
 
 void CompositorImpl::RegisterRootFrameSink() {
-  GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
+  GetHostFrameSinkManager()->RegisterFrameSinkId(
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
 }
