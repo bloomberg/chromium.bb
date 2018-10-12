@@ -175,7 +175,6 @@ TEST_F(QuicWriteBlockedListTest, BatchingWrites) {
   // Once the higher priority stream is out of the way, id2 will resume its 16k
   // write, with only 1 byte remaining of its guaranteed write allocation.
   EXPECT_EQ(id2, write_blocked_list.PopFront());
-  write_blocked_list.AddStream(id2);
   write_blocked_list.UpdateBytesForStream(id2, 1);
   write_blocked_list.AddStream(id2);
   EXPECT_EQ(2u, write_blocked_list.NumBlockedStreams());
