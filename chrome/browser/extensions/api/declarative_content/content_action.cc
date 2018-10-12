@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -25,6 +26,7 @@
 #include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/image_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -43,6 +45,10 @@ const char kNoPageAction[] =
     "Can't use declarativeContent.ShowPageAction without a page action";
 const char kNoPageOrBrowserAction[] =
     "Can't use declarativeContent.SetIcon without a page or browser action";
+const char kIconNotSufficientlyVisible[] =
+    "The specified icon is not sufficiently visible";
+
+bool g_allow_invisible_icons_content_action = true;
 
 //
 // The following are concrete actions.
@@ -396,7 +402,7 @@ std::unique_ptr<ContentAction> SetIcon::Create(
     type = ActionInfo::TYPE_BROWSER;
   } else {
     *error = kNoPageOrBrowserAction;
-    return std::unique_ptr<ContentAction>();
+    return nullptr;
   }
 
   gfx::ImageSkia icon;
@@ -404,9 +410,20 @@ std::unique_ptr<ContentAction> SetIcon::Create(
   if (dict->GetDictionary("imageData", &canvas_set) &&
       !ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon)) {
     *error = kInvalidIconDictionary;
-    return std::unique_ptr<ContentAction>();
+    return nullptr;
   }
-  return base::WrapUnique(new SetIcon(gfx::Image(icon), type));
+
+  gfx::Image image(icon);
+  const SkBitmap bitmap = image.AsBitmap();
+  const bool is_sufficiently_visible =
+      extensions::image_util::IsIconSufficientlyVisible(bitmap);
+  UMA_HISTOGRAM_BOOLEAN("Extensions.DeclarativeSetIconWasVisible",
+                        is_sufficiently_visible);
+  if (!is_sufficiently_visible && !g_allow_invisible_icons_content_action) {
+    *error = kIconNotSufficientlyVisible;
+    return nullptr;
+  }
+  return base::WrapUnique(new SetIcon(image, type));
 }
 
 //
@@ -439,6 +456,11 @@ std::unique_ptr<ContentAction> ContentAction::Create(
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
   return std::unique_ptr<ContentAction>();
+}
+
+// static
+void ContentAction::SetAllowInvisibleIconsForTest(bool value) {
+  g_allow_invisible_icons_content_action = value;
 }
 
 ContentAction::ContentAction() {}
