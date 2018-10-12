@@ -80,6 +80,8 @@ source_set("lib") {
       "//libassistant/shared/internal_api/c:api_wrappers_entrypoint",
       "//libassistant/shared/public",
       "//libassistant/shared/public:export",
+      "//services/network/public/cpp",
+      "//services/network/public/mojom",
       "//ui/base",
     ]
 
