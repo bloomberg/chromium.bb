@@ -660,11 +660,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
 // commit in the error page process when it is redirected to.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
                        RedirectErrorPageReloadToAboutBlank) {
-  // TODO(nasko): Skip running this test with Network Service until
-  // https://crbug.com/894480 is fixed.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
