@@ -30,7 +30,11 @@ namespace sync_bookmarks {
 namespace {
 
 const char kBookmarkBarTag[] = "bookmark_bar";
+const char kOtherBookmarksTag[] = "other_bookmarks";
+const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kBookmarkBarId[] = "bookmark_bar_id";
+const char kOtherBookmarksId[] = "other_bookmarks_id";
+const char kMobileBookmarksId[] = "mobile_bookmarks_id";
 const char kBookmarksRootId[] = "root_id";
 const char kCacheGuid[] = "generated_id";
 
@@ -79,8 +83,8 @@ void AssertState(const BookmarkModelTypeProcessor* processor,
   const SyncedBookmarkTracker* tracker = processor->GetTrackerForTest();
 
   // Make sure the tracker contains all bookmarks in |bookmarks| + the
-  // bookmark bar node.
-  ASSERT_THAT(tracker->TrackedEntitiesCountForTest(), Eq(bookmarks.size() + 1));
+  // 3 permanent nodes.
+  ASSERT_THAT(tracker->TrackedEntitiesCountForTest(), Eq(bookmarks.size() + 3));
 
   for (BookmarkInfo bookmark : bookmarks) {
     const SyncedBookmarkTracker::Entity* entity =
@@ -103,22 +107,26 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   syncer::UpdateResponseDataList updates;
   syncer::UniquePosition pos = syncer::UniquePosition::InitialPosition(
       syncer::UniquePosition::RandomSuffix());
-  // Add update for the permanent folder "Bookmarks bar".
+  // Add update for the permanent folders "Bookmarks bar", "Other Bookmarks" and
+  // "Mobile Bookmarks".
   updates.push_back(
       CreateUpdateResponseData({kBookmarkBarId, std::string(), std::string(),
                                 kBookmarksRootId, kBookmarkBarTag},
                                pos, /*response_version=*/0));
+  updates.push_back(
+      CreateUpdateResponseData({kOtherBookmarksId, std::string(), std::string(),
+                                kBookmarksRootId, kOtherBookmarksTag},
+                               pos, /*response_version=*/0));
+  updates.push_back(CreateUpdateResponseData(
+      {kMobileBookmarksId, std::string(), std::string(), kBookmarksRootId,
+       kMobileBookmarksTag},
+      pos, /*response_version=*/0));
   for (BookmarkInfo bookmark : bookmarks) {
     pos = syncer::UniquePosition::After(pos,
                                         syncer::UniquePosition::RandomSuffix());
     updates.push_back(
         CreateUpdateResponseData(bookmark, pos, /*response_version=*/0));
   }
-  // TODO(crbug.com/516866): Remove after a proper positioning for remote
-  // updates is implemented. Reversing the updates because the sorting algorithm
-  // isn't stable. This is OK for now because once proper positioning is
-  // implemented, the siblings update requests order would be irrelvant.
-  std::reverse(updates.begin(), updates.end());
   processor->OnUpdateReceived(CreateDummyModelTypeState(), updates);
   AssertState(processor, bookmarks);
 }
@@ -278,11 +286,20 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
   // within the processor.
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
-  // Add an entry for bookmark bar.
+  // Add entries for the permanent nodes. TestBookmarkClient adds all of them.
   sync_pb::BookmarkMetadata* bookmark_metadata =
       model_metadata.add_bookmarks_metadata();
   bookmark_metadata->set_id(bookmark_bar_node->id());
   bookmark_metadata->mutable_metadata()->set_server_id(kBookmarkBarId);
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(bookmark_model()->other_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id(kOtherBookmarksId);
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(bookmark_model()->mobile_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id(kMobileBookmarksId);
+
   // Add an entry for the bookmark node.
   bookmark_metadata = model_metadata.add_bookmarks_metadata();
   bookmark_metadata->set_id(bookmarknode->id());
@@ -329,6 +346,50 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
                                  bookmark_model());
 
   AssertState(&new_processor, bookmarks);
+}
+
+TEST_F(BookmarkModelTypeProcessorTest,
+       ShouldIgnoreNonEmptyMetadataWhileSyncNotDone) {
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(false);
+  // Add entries to the metadata.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(bookmark_model()->bookmark_bar_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id(kBookmarkBarId);
+
+  // Create a new processor and init it with the metadata str.
+  BookmarkModelTypeProcessor new_processor(bookmark_undo_service());
+
+  std::string metadata_str;
+  model_metadata.SerializeToString(&metadata_str);
+  new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
+                                 bookmark_model());
+  // Metadata are corrupted, so no tracker should have been created.
+  EXPECT_THAT(new_processor.GetTrackerForTest(), IsNull());
+}
+
+TEST_F(BookmarkModelTypeProcessorTest,
+       ShouldIgnoreMetadataNotMatchingTheModel) {
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  // Add entries for only the bookmark bar. However, the TestBookmarkClient will
+  // create all the 3 permanent nodes.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(bookmark_model()->bookmark_bar_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id(kBookmarkBarId);
+
+  // Create a new processor and init it with the metadata str.
+  BookmarkModelTypeProcessor new_processor(bookmark_undo_service());
+
+  std::string metadata_str;
+  model_metadata.SerializeToString(&metadata_str);
+  new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
+                                 bookmark_model());
+
+  // Metadata are corrupted, so no tracker should have been created.
+  EXPECT_THAT(new_processor.GetTrackerForTest(), IsNull());
 }
 
 // Verifies that the model type state stored in the tracker gets
