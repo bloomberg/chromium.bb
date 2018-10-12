@@ -323,6 +323,7 @@ ArcAppListPrefs::ArcAppListPrefs(
       prefs_(profile->GetPrefs()),
       app_connection_holder_(app_connection_holder),
       weak_ptr_factory_(this) {
+  VLOG(1) << "ARC app list prefs created";
   DCHECK(profile);
   DCHECK(app_connection_holder);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -335,8 +336,10 @@ ArcAppListPrefs::ArcAppListPrefs(
                               base::Unretained(this)));
 
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
-  if (!arc_session_manager)
+  if (!arc_session_manager) {
+    VLOG(1) << "ARC session manager is not available";
     return;
+  }
 
   DCHECK(arc::IsArcAllowedForProfile(profile));
 
@@ -377,6 +380,8 @@ void ArcAppListPrefs::StartPrefs() {
     }
     arc_session_manager->AddObserver(this);
   }
+
+  VLOG(1) << "Registering host...";
 
   app_connection_holder_->SetHost(this);
   app_connection_holder_->AddObserver(this);
@@ -863,6 +868,8 @@ void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
 }
 
 void ArcAppListPrefs::OnDefaultAppsReady() {
+  VLOG(1) << "Default apps ready";
+
   // Deprecated. Convert uninstalled packages info to hidden default apps and
   // erase pending perf entry afterward.
   // TODO (khmel): Remove in M73
@@ -960,6 +967,7 @@ void ArcAppListPrefs::SimulateDefaultAppAvailabilityTimeoutForTesting() {
 }
 
 void ArcAppListPrefs::OnConnectionReady() {
+  VLOG(1) << "App instance connection is ready.";
   // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
   is_initialized_ = false;
@@ -969,6 +977,7 @@ void ArcAppListPrefs::OnConnectionReady() {
 }
 
 void ArcAppListPrefs::OnConnectionClosed() {
+  VLOG(1) << "App instance connection is closed.";
   DisableAllApps();
   installing_packages_count_ = 0;
   default_apps_installations_.clear();
