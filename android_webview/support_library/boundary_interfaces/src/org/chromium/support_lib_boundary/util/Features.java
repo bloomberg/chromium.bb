@@ -127,7 +127,7 @@ public class Features {
 
     // WebViewCompat.setProxyOverride
     // WebViewCompat.clearProxyOverride
-    public static final String PROXY_OVERRIDE = "PROXY_OVERRIDE";
+    public static final String PROXY_OVERRIDE = "PROXY_OVERRIDE:2";
 
     // WebViewCompat.getWebViewRenderer
     public static final String GET_WEB_VIEW_RENDERER = "GET_WEB_VIEW_RENDERER";
