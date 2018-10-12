@@ -12,6 +12,6 @@ test(t => {
                                        'failureReason', 'recordsAvailable',
                                        'onprogress'],
        });
-}, 'Background Fetch API interfaces and properties in Origin-Trial enabled worker.');
+}, 'Background Fetch API interfaces in an Origin-Trial enabled worker.');
 
 done();
