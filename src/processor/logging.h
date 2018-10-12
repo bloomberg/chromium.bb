@@ -190,7 +190,9 @@ int ErrnoString(string *error_string);
                         __FILE__, __LINE__)
 #endif  // BPLOG_CRITICAL
 
+#ifndef BPLOG_IF
 #define BPLOG_IF(severity, condition) \
     BPLOG_LAZY_STREAM(severity, ((condition) && BPLOG_LOG_IS_ON(severity)))
+#endif  // BPLOG_IF
 
 #endif  // PROCESSOR_LOGGING_H__
