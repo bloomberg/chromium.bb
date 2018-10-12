@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_registry.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 
 namespace blink {
@@ -78,11 +77,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
       track->stopTrack(context);
       media_stream_->RemoveTrackByComponentAndFireEvents(track->Component());
     }
-    MediaStreamDescriptor* const descriptor =
-        media_element_->currentSrc().IsEmpty()
-            ? media_element_->GetSrcObject()
-            : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
-                  media_element_->currentSrc().GetString());
+    MediaStreamDescriptor* const descriptor = media_element_->GetSrcObject();
     DCHECK(descriptor);
     for (unsigned i = 0; i < descriptor->NumberOfAudioComponents(); i++) {
       media_stream_->AddTrackByComponentAndFireEvents(
@@ -182,11 +177,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
 
   // If |element| is actually playing a MediaStream, just clone it.
   if (element.GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream) {
-    MediaStreamDescriptor* const descriptor =
-        element.currentSrc().IsEmpty()
-            ? element.GetSrcObject()
-            : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
-                  element.currentSrc().GetString());
+    MediaStreamDescriptor* const descriptor = element.GetSrcObject();
     DCHECK(descriptor);
     return MediaStream::Create(context, descriptor);
   }
