@@ -770,13 +770,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
                             GetWindowState()->is_dragged() &&
                             !is_display_move_pending;
 
-  // Android PIP windows can be dismissed by swiping off the screen. Let them be
-  // positioned off-screen. Apart from swipe to dismiss, the PIP window will be
-  // kept on screen.
-  // TODO(edcourtney): This should be done as a client controlled move, not a
-  // special case.
-  if (set_bounds_locally || client_controlled_state_->set_bounds_locally() ||
-      GetWindowState()->IsPip()) {
+  if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
     gfx::Point origin = bounds.origin();
     wm::ConvertPointFromScreen(window->parent(), &origin);
