@@ -79,7 +79,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                             blink::WebMouseWheelEvent* event,
                             const ui::LatencyInfo& latency);
   void RouteGestureEvent(RenderWidgetHostViewBase* root_view,
-                         blink::WebGestureEvent* event,
+                         const blink::WebGestureEvent* event,
                          const ui::LatencyInfo& latency);
   void OnHandledTouchStartOrFirstTouchMove(uint32_t unique_touch_event_id);
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& event,
@@ -182,14 +182,14 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   bool IsViewInMap(const RenderWidgetHostViewBase* view) const;
   void RouteTouchscreenGestureEvent(RenderWidgetHostViewBase* root_view,
-                                    blink::WebGestureEvent* event,
+                                    const blink::WebGestureEvent* event,
                                     const ui::LatencyInfo& latency);
 
   RenderWidgetTargetResult FindTouchpadGestureEventTarget(
       RenderWidgetHostViewBase* root_view,
       const blink::WebGestureEvent& event) const;
   void RouteTouchpadGestureEvent(RenderWidgetHostViewBase* root_view,
-                                 blink::WebGestureEvent* event,
+                                 const blink::WebGestureEvent* event,
                                  const ui::LatencyInfo& latency);
   void DispatchTouchpadGestureEvent(
       RenderWidgetHostViewBase* root_view,

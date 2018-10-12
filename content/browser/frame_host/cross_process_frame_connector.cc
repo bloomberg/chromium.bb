@@ -260,18 +260,18 @@ bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
       *transformed_point, target_view, transformed_point, source);
 }
 
-void CrossProcessFrameConnector::ForwardAckedTouchpadPinchGestureEvent(
+void CrossProcessFrameConnector::ForwardAckedTouchpadZoomEvent(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
   auto* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
     return;
 
-  blink::WebGestureEvent pinch_event(event);
+  blink::WebGestureEvent root_event(event);
   const gfx::PointF root_point =
       view_->TransformPointToRootCoordSpaceF(event.PositionInWidget());
-  pinch_event.SetPositionInWidget(root_point);
-  root_view->GestureEventAck(pinch_event, ack_result);
+  root_event.SetPositionInWidget(root_point);
+  root_view->GestureEventAck(root_event, ack_result);
 }
 
 void CrossProcessFrameConnector::BubbleScrollEvent(

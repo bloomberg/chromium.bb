@@ -31,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -4146,6 +4147,81 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 }
 
 #endif  // defined(USE_AURA)
+
+// Tests that performing a touchpad double-tap zoom over an OOPIF offers the
+// synthetic wheel event to the child.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       TouchpadDoubleTapZoomOverOOPIF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  WebContentsImpl* contents = web_contents();
+
+  WebPreferences prefs = contents->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.double_tap_to_zoom_enabled = true;
+  contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_wheel_handler.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  auto* child_frame_host = root->child_at(0)->current_frame_host();
+
+  WaitForHitTestDataOrChildSurfaceReady(child_frame_host);
+
+  auto* root_view = static_cast<RenderWidgetHostViewBase*>(
+      contents->GetRenderWidgetHostView());
+
+  const float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
+  const gfx::Point root_location(gfx::ToCeiledInt(100 * scale_factor),
+                                 gfx::ToCeiledInt(100 * scale_factor));
+  blink::WebMouseEvent dummy_event_for_location;
+  SetWebEventPositions(&dummy_event_for_location, root_location, root_view);
+
+  RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
+
+  blink::WebGestureEvent double_tap_zoom(
+      blink::WebInputEvent::kGestureDoubleTap,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchpad);
+  double_tap_zoom.SetPositionInWidget(
+      dummy_event_for_location.PositionInWidget());
+  double_tap_zoom.SetPositionInScreen(
+      dummy_event_for_location.PositionInScreen());
+  double_tap_zoom.data.tap.tap_count = 1;
+  double_tap_zoom.SetNeedsWheelEvent(true);
+
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
+
+  router->RouteGestureEvent(root_view, &double_tap_zoom,
+                            ui::LatencyInfo(ui::SourceEventType::WHEEL));
+
+  // Ensure the child frame saw the wheel event.
+  bool default_prevented = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      child_frame_host,
+      "handlerPromise.then(function(e) {"
+      "  window.domAutomationController.send(e.defaultPrevented);"
+      "});",
+      &default_prevented));
+  EXPECT_FALSE(default_prevented);
+
+  // TODO(mcnee): Support double-tap zoom gesture for OOPIFs. For now, we
+  // only test that any scale change still happens in the main frame when
+  // the double tap is performed over the OOPIF. Once this works with OOPIFs,
+  // we should be able to test that the new scale is based on the target
+  // rect of the element in the OOPIF. https://crbug.com/758348
+  scale_observer.WaitForPageScaleUpdate();
+}
 
 // A WebContentsDelegate to capture ContextMenu creation events.
 class ContextMenuObserverDelegate : public WebContentsDelegate {

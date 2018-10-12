@@ -56,15 +56,16 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
     return WebInputEventResult::kNotHandled;
   }
 
+  // Synthetic wheel events generated from GestureDoubleTap are phaseless.
+  // Wheel events generated from plugin and tests may not have phase info.
   bool has_phase_info = event.phase != WebMouseWheelEvent::kPhaseNone ||
                         event.momentum_phase != WebMouseWheelEvent::kPhaseNone;
-  if (!has_phase_info) {
-    // Wheel events generated from plugin and tests may not have phase info.
-    // Send these events to the target under the cursor.
-    wheel_target_ = FindTargetNode(event, doc, view);
-  } else if (event.phase == WebMouseWheelEvent::kPhaseBegan || !wheel_target_) {
-    // Find and save the wheel_target_, this target will be used for the rest
-    // of the current scrolling sequence.
+
+  // Find and save the wheel_target_, this target will be used for the rest
+  // of the current scrolling sequence. In the absence of phase info, send the
+  // event to the target under the cursor.
+  if (event.phase == WebMouseWheelEvent::kPhaseBegan || !wheel_target_ ||
+      !has_phase_info) {
     wheel_target_ = FindTargetNode(event, doc, view);
   }
 

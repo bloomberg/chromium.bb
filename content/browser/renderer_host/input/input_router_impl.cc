@@ -165,8 +165,7 @@ void InputRouterImpl::SendGestureEvent(
     touch_event_queue_.OnGestureScrollEvent(gesture_event);
   }
 
-  if (blink::WebInputEvent::IsPinchGestureEventType(
-          gesture_event.event.GetType()) &&
+  if (gesture_event.event.IsTouchpadZoomEvent() &&
       gesture_event.event.NeedsWheelEvent()) {
     touchpad_pinch_event_queue_.QueueEvent(gesture_event);
     return;
