@@ -35,7 +35,6 @@
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -533,9 +532,7 @@ void HostContentSettingsMap::SetContentSettingCustomScope(
 
   // Record stats on Flash permission grants with ephemeral storage.
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
-      setting == CONTENT_SETTING_ALLOW &&
-      base::FeatureList::IsEnabled(
-          content_settings::features::kEnableEphemeralFlashPermission)) {
+      setting == CONTENT_SETTING_ALLOW) {
     GURL url(primary_pattern.ToString());
     ContentSettingsPattern temp_patterns[2];
     std::unique_ptr<base::Value> value(GetContentSettingValueAndPatterns(

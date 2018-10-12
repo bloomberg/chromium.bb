@@ -51,7 +51,6 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
@@ -4190,12 +4189,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCSSFragmentIdentifiersName,
      flag_descriptions::kEnableCSSFragmentIdentifiersDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kCSSFragmentIdentifiers)},
-
-    {"enable-ephemeral-flash-permission",
-     flag_descriptions::kEnableEphemeralFlashPermissionName,
-     flag_descriptions::kEnableEphemeralFlashPermissionDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         content_settings::features::kEnableEphemeralFlashPermission)},
 
 #if !defined(OS_ANDROID)
     {"infinite-session-restore", flag_descriptions::kInfiniteSessionRestoreName,
