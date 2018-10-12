@@ -70,7 +70,7 @@ CWV_EXPORT
                    dataSource:
                        (__weak id<CWVSyncControllerDataSource>)dataSource;
 
-// Stops syncs and nils out |currentIdentity|.
+// Stops syncs and nils out |currentIdentity|. This method is idempotent.
 - (void)stopSyncAndClearIdentity;
 
 // If |passphraseNeeded| is |YES|. Call this to unlock the sync data.
