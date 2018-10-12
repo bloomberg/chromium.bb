@@ -15,7 +15,7 @@ engineers to uncover potential security & stability problems.
 
 *** note
 **Requirements:** libFuzzer in Chromium is supported with Linux, Mac, and
-  Windows only.
+Windows only.
 ***
 
 ## Integration Status
