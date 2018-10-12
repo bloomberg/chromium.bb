@@ -51,7 +51,6 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_package_context.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -966,7 +965,7 @@ void BlinkTestController::OnTestFinished() {
       ShellContentBrowserClient::Get()->browser_context();
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      3, base::BindOnce(&BlinkTestController::OnCleanupFinished,
+      2, base::BindOnce(&BlinkTestController::OnCleanupFinished,
                         weak_factory_.GetWeakPtr()));
 
   StoragePartition* storage_partition =
@@ -980,16 +979,6 @@ void BlinkTestController::OnTestFinished() {
   TerminateAllSharedWorkersForTesting(
       BrowserContext::GetStoragePartition(
           ShellContentBrowserClient::Get()->browser_context(), nullptr),
-      barrier_closure);
-
-  // Resets the SignedHTTPExchange verification time overriding. The time for
-  // the verification may be changed in the LayoutTest using Mojo JS API.
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &WebPackageContext::SetSignedExchangeVerificationTimeForTesting,
-          base::Unretained(storage_partition->GetWebPackageContext()),
-          base::nullopt),
       barrier_closure);
 }
 
