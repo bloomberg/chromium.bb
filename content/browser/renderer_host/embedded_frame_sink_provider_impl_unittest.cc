@@ -128,8 +128,9 @@ class EmbeddedFrameSinkProviderImplTest : public testing::Test {
     provider_ = std::make_unique<EmbeddedFrameSinkProviderImpl>(
         host_frame_sink_manager_.get(), kRendererClientId);
 
-    host_frame_sink_manager_->RegisterFrameSinkId(kFrameSinkParent,
-                                                  &host_frame_sink_client_);
+    host_frame_sink_manager_->RegisterFrameSinkId(
+        kFrameSinkParent, &host_frame_sink_client_,
+        viz::ReportFirstSurfaceActivation::kYes);
   }
   void TearDown() override {
     host_frame_sink_manager_->InvalidateFrameSinkId(kFrameSinkParent);

@@ -21,7 +21,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
 
  private:
   // mojom::FrameSinkManager:
-  void RegisterFrameSinkId(const FrameSinkId& frame_sink_id) override {}
+  void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
+                           bool report_activation) override {}
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) override {}
   void EnableSynchronizationReporting(
       const FrameSinkId& frame_sink_id,

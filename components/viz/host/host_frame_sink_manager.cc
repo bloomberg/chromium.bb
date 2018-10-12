@@ -60,8 +60,10 @@ void HostFrameSinkManager::SetBadMessageReceivedFromGpuCallback(
   bad_message_received_from_gpu_callback_ = std::move(callback);
 }
 
-void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
-                                               HostFrameSinkClient* client) {
+void HostFrameSinkManager::RegisterFrameSinkId(
+    const FrameSinkId& frame_sink_id,
+    HostFrameSinkClient* client,
+    ReportFirstSurfaceActivation report_activation) {
   DCHECK(frame_sink_id.is_valid());
   DCHECK(client);
 
@@ -69,7 +71,9 @@ void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
   DCHECK(!data.IsFrameSinkRegistered());
   DCHECK(!data.has_created_compositor_frame_sink);
   data.client = client;
-  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+  data.report_activation = report_activation;
+  frame_sink_manager_->RegisterFrameSinkId(
+      frame_sink_id, report_activation == ReportFirstSurfaceActivation::kYes);
 }
 
 bool HostFrameSinkManager::IsFrameSinkIdRegistered(
@@ -348,8 +352,11 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
   for (auto& map_entry : frame_sink_data_map_) {
     const FrameSinkId& frame_sink_id = map_entry.first;
     FrameSinkData& data = map_entry.second;
-    if (data.client)
-      frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+    if (data.client) {
+      frame_sink_manager_->RegisterFrameSinkId(
+          frame_sink_id,
+          data.report_activation == ReportFirstSurfaceActivation::kYes);
+    }
     if (!data.synchronization_reporting_label.empty()) {
       frame_sink_manager_->EnableSynchronizationReporting(
           frame_sink_id, data.synchronization_reporting_label);

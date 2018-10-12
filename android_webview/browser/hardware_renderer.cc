@@ -33,7 +33,8 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_committed_layer_tree_frame_sink_id_(0u),
       last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
-  surfaces_->GetFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_);
+  surfaces_->GetFrameSinkManager()->RegisterFrameSinkId(
+      frame_sink_id_, true /* report_activation */);
   surfaces_->GetFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                            "HardwareRenderer");
   CreateNewCompositorFrameSinkSupport();

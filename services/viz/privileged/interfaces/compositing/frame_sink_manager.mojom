@@ -56,8 +56,10 @@ interface FrameSinkManager {
   // Starts the scope of temporary references tied to this |frame_sink_id|.
   // Temporary references tied to this |frame_sink_id| will be dropped on
   // InvalidateFrameSinkId.This must be called before Create(Root)
-  // CompositorFrameSink() is called.
-  RegisterFrameSinkId(FrameSinkId frame_sink_id);
+  // CompositorFrameSink() is called. |report_activation| indicates whether
+  // the Viz host is interested in FirstSurfaceActivation notifications of
+  // surfaces from this |frame_sink_id|.
+  RegisterFrameSinkId(FrameSinkId frame_sink_id, bool report_activation);
 
   // Invalidates |frame_sink_id| which cleans up any unsatisified surface
   // sequences or dangling temporary references assigned to it. If there is a

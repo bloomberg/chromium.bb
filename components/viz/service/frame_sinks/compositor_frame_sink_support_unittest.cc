@@ -90,7 +90,8 @@ class CompositorFrameSinkSupportTest : public testing::Test {
         consumer_sync_token_(GenTestSyncToken(5)) {
     manager_.SetLocalClient(&frame_sink_manager_client_);
     manager_.surface_manager()->AddObserver(&surface_observer_);
-    manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
+    manager_.RegisterFrameSinkId(kArbitraryFrameSinkId,
+                                 true /* report_activation */);
     support_ = std::make_unique<CompositorFrameSinkSupport>(
         &fake_support_client_, &manager_, kArbitraryFrameSinkId, kIsRoot,
         kNeedsSyncPoints);
@@ -522,7 +523,8 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId,
+                               true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
@@ -547,7 +549,8 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
 
 // Verifies that only monotonically increasing LocalSurfaceIds are accepted.
 TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId,
+                               true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
@@ -627,7 +630,8 @@ TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
 // Verifies that CopyOutputRequests submitted by unprivileged clients are
 // rejected.
 TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId,
+                               true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId,
@@ -660,7 +664,8 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
 
 // Tests doing an EvictLastActivatedSurface before shutting down the factory.
 TEST_F(CompositorFrameSinkSupportTest, EvictLastActivatedSurface) {
-  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId,
+                               true /* report_activation */);
   MockCompositorFrameSinkClient mock_client;
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
@@ -737,7 +742,8 @@ TEST_F(CompositorFrameSinkSupportTest, ResurectAndImmediatelyEvict) {
 TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithTemporaryReference) {
   constexpr FrameSinkId parent_frame_sink_id(1234, 5678);
 
-  manager_.RegisterFrameSinkId(parent_frame_sink_id);
+  manager_.RegisterFrameSinkId(parent_frame_sink_id,
+                               true /* report_activation */);
 
   const LocalSurfaceId local_surface_id(5, kArbitraryToken);
   const SurfaceId surface_id(support_->frame_sink_id(), local_surface_id);

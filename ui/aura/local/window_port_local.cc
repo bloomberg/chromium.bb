@@ -149,7 +149,8 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   viz::mojom::CompositorFrameSinkClientPtr client;
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
-  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
+  host_frame_sink_manager->RegisterFrameSinkId(
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
   window_->SetEmbedFrameSinkId(frame_sink_id_);
   host_frame_sink_manager->CreateCompositorFrameSink(
       frame_sink_id_, std::move(sink_request), std::move(client));

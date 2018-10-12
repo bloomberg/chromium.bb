@@ -73,7 +73,8 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     view_->GetLayer()->AddChild(content_layer_);
   }
 
-  host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
+  host_frame_sink_manager_->RegisterFrameSinkId(
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "DelegatedFrameHostAndroid");
   CreateCompositorFrameSinkSupport();

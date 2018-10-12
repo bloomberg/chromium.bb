@@ -60,7 +60,8 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
       ServerWindow::GetMayBeNull(window_)->frame_sink_id();
-  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id, this);
+  host_frame_sink_manager->RegisterFrameSinkId(
+      frame_sink_id, this, viz::ReportFirstSurfaceActivation::kYes);
   window_->SetEmbedFrameSinkId(frame_sink_id);
 
   UpdatePrimarySurfaceId();

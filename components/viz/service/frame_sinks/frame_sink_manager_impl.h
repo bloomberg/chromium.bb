@@ -78,7 +78,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void SetLocalClient(mojom::FrameSinkManagerClient* client);
 
   // mojom::FrameSinkManager implementation:
-  void RegisterFrameSinkId(const FrameSinkId& frame_sink_id) override;
+  void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
+                           bool report_activation) override;
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) override;
   void EnableSynchronizationReporting(
       const FrameSinkId& frame_sink_id,
@@ -195,7 +196,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // Metadata for a CompositorFrameSink.
   struct FrameSinkData {
-    FrameSinkData();
+    explicit FrameSinkData(bool report_activation);
     FrameSinkData(FrameSinkData&& other);
     ~FrameSinkData();
     FrameSinkData& operator=(FrameSinkData&& other);
@@ -205,6 +206,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
     // Record synchronization events for this FrameSinkId if not empty.
     std::string synchronization_label;
+
+    // Indicates whether the client wishes to receive FirstSurfaceActivation
+    // notification.
+    bool report_activation;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
