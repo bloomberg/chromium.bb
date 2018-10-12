@@ -27,6 +27,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -251,6 +252,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddString(
       "noDestsPromoLearnMoreUrl",
       chrome::kCloudPrintNoDestinationsLearnMoreURL);
+  source->AddString(
+      "settingsPrintingPage",
+      chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage).spec());
   source->AddString("gcpCertificateErrorLearnMoreURL",
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
   source->AddLocalizedString("pageRangeLimitInstruction",

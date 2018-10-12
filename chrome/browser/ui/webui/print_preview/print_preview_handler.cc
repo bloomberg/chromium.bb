@@ -975,6 +975,7 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   token_service_->RequestToken(type, callback_id);
 }
 
+// TODO (rbpotter): Remove this when the old Print Preview page is deleted.
 void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
   GURL local_printers_manage_url(
       chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
