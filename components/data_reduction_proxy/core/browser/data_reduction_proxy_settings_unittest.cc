@@ -220,7 +220,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 
     drp_test_context->DisableWarmupURLFetch();
 
-    context.set_net_log(drp_test_context->net_log());
     net::MockClientSocketFactory mock_socket_factory;
     context.set_client_socket_factory(&mock_socket_factory);
     context.Init();

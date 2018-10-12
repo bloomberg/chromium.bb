@@ -36,7 +36,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -51,7 +50,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
-#include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -182,9 +180,8 @@ class DataReductionProxyConfigTest : public testing::Test {
   std::unique_ptr<DataReductionProxyConfig> BuildConfig(
       std::unique_ptr<DataReductionProxyParams> params) {
     return std::make_unique<DataReductionProxyConfig>(
-        task_runner(), test_context_->net_log(),
-        network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
-        test_context_->configurator(), test_context_->event_creator());
+        task_runner(), network::TestNetworkConnectionTracker::GetInstance(),
+        std::move(params), test_context_->configurator());
   }
 
   MockDataReductionProxyConfig* mock_config() {
@@ -204,12 +201,6 @@ class DataReductionProxyConfigTest : public testing::Test {
   TestDataReductionProxyParams* params() const {
     return expected_params_.get();
   }
-
-  DataReductionProxyEventCreator* event_creator() const {
-    return test_context_->event_creator();
-  }
-
-  net::NetLog* net_log() const { return test_context_->net_log(); }
 
   void SetConnectionType(network::mojom::ConnectionType connection_type) {
     network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
@@ -429,8 +420,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
                                            "Enabled");
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
-    TestDataReductionProxyConfig config(task_runner(), nullptr,
-                                        configurator(), event_creator());
+    TestDataReductionProxyConfig config(task_runner(), configurator());
 
     NetworkPropertiesManager network_properties_manager(
         base::DefaultClock::GetInstance(), test_context_->pref_service(),
@@ -783,9 +773,8 @@ TEST_F(DataReductionProxyConfigTest,
   ASSERT_LT(0U, expected_proxies.size());
 
   DataReductionProxyConfig config(
-      task_runner(), net_log(),
-      network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
-      configurator(), event_creator());
+      task_runner(), network::TestNetworkConnectionTracker::GetInstance(),
+      std::move(params), configurator());
 
   for (size_t expected_proxy_index = 0U;
        expected_proxy_index < expected_proxies.size(); ++expected_proxy_index) {
@@ -858,9 +847,8 @@ TEST_F(DataReductionProxyConfigTest,
 
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-      task_runner(), net_log(),
-      network::TestNetworkConnectionTracker::GetInstance(),
-      std::move(config_values), configurator(), event_creator()));
+      task_runner(), network::TestNetworkConnectionTracker::GetInstance(),
+      std::move(config_values), configurator()));
   for (const auto& test : tests) {
     base::Optional<DataReductionProxyTypeInfo> proxy_type_info =
         config->FindConfiguredDataReductionProxy(

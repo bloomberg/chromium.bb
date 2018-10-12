@@ -124,7 +124,7 @@ class DataReductionProxyProtocolEmbeddedServerTest : public testing::Test {
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(
             test_context_->config(), test_context_->io_data()->config_client(),
-            nullptr /* bypass_stats */, test_context_->event_creator());
+            nullptr /* bypass_stats */);
 
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
@@ -290,7 +290,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(
             test_context_->config(), test_context_->io_data()->config_client(),
-            bypass_stats_.get(), test_context_->event_creator());
+            bypass_stats_.get());
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(

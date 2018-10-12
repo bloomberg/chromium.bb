@@ -26,7 +26,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/previews/core/previews_experiments.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -36,7 +35,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
-class NetLog;
 class ProxyServer;
 class URLRequest;
 class URLRequestContextGetter;
@@ -47,7 +45,6 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventCreator;
 class NetworkPropertiesManager;
 class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
@@ -88,18 +85,14 @@ class DataReductionProxyConfig
  public:
   // The caller must ensure that all parameters remain alive for the lifetime
   // of the |DataReductionProxyConfig| instance, with the exception of
-  // |config_values| which is owned by |this|. |event_creator| is used for
-  // logging the start and end of a secure proxy check; |net_log| is used to
-  // create a net::NetLogWithSource for correlating the start and end of the
-  // check. |config_values| contains the Data Reduction Proxy configuration
-  // values. |configurator| is the target for a configuration update.
+  // |config_values| which is owned by |this|. |config_values| contains the Data
+  // Reduction Proxy configuration values. |configurator| is the target for a
+  // configuration update.
   DataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      net::NetLog* net_log,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventCreator* event_creator);
+      DataReductionProxyConfigurator* configurator);
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
@@ -324,22 +317,11 @@ class DataReductionProxyConfig
   bool get_network_id_asynchronously_ = false;
 #endif
 
-  // The caller must ensure that the |net_log_|, if set, outlives this instance.
-  // It is used to create new instances of |net_log_with_source_| on secure
-  // proxy checks. |net_log_with_source_| permits the correlation of the begin
-  // and end phases of a given secure proxy check, and a new one is created for
-  // each secure proxy check (with |net_log_| as a parameter).
-  net::NetLog* net_log_;
-  net::NetLogWithSource net_log_with_source_;
-
   // Watches for network connection changes.
   network::NetworkConnectionTracker* network_connection_tracker_;
 
   // The caller must ensure that the |configurator_| outlives this instance.
   DataReductionProxyConfigurator* configurator_;
-
-  // The caller must ensure that the |event_creator_| outlives this instance.
-  DataReductionProxyEventCreator* event_creator_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

@@ -14,8 +14,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -26,24 +24,7 @@
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyHeadersTest : public testing::Test {
- protected:
-  void SetUp() override {
-    storage_delegate_.reset(new TestDataReductionProxyEventStorageDelegate());
-    event_creator_.reset(
-        new DataReductionProxyEventCreator(storage_delegate_.get()));
-  }
-
-  DataReductionProxyEventCreator* event_creator() const {
-    return event_creator_.get();
-  }
-
- private:
-  std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
-  std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
-};
-
-TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
+TEST(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -91,7 +72,7 @@ TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
+TEST(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   const struct {
     const char* chrome_proxy_content_transform_header;
     const char* chrome_proxy_header;
@@ -112,7 +93,7 @@ TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {
+TEST(DataReductionProxyHeadersTest, IsLitePagePreview) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -160,7 +141,7 @@ TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
+TEST(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   const struct {
      const char* headers;
      std::string action_key;
@@ -254,7 +235,7 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
+TEST(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   const struct {
      const char* headers;
      bool expected_result;
@@ -506,7 +487,7 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
+TEST(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
   std::string headers =
       "HTTP/1.1 200 OK\n"
       "connection: keep-alive\n"
@@ -523,7 +504,7 @@ TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
   EXPECT_FALSE(data_reduction_proxy_info.bypass_all);
 }
 
-TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
+TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   const struct {
     const char* headers;
     bool expected_result;
@@ -621,7 +602,7 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, MissingViaHeaderFallback) {
+TEST(DataReductionProxyHeadersTest, MissingViaHeaderFallback) {
   const struct {
     const char* headers;
     bool should_retry;
@@ -666,7 +647,7 @@ TEST_F(DataReductionProxyHeadersTest, MissingViaHeaderFallback) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
+TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
   const struct {
     const char* headers;
     std::map<std::string, std::string> feature_parameters;
@@ -716,7 +697,7 @@ TEST_F(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
+TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;
      DataReductionProxyBypassType expected_result;
@@ -850,8 +831,8 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   }
 }
 
-TEST_F(DataReductionProxyHeadersTest,
-       GetDataReductionProxyBypassEventTypeURLRedirectCycle) {
+TEST(DataReductionProxyHeadersTest,
+     GetDataReductionProxyBypassEventTypeURLRedirectCycle) {
   const struct {
     const char* headers;
     std::vector<GURL> url_chain;

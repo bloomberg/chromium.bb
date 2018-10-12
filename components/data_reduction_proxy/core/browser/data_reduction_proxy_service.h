@@ -19,7 +19,6 @@
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -31,7 +30,6 @@ namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 class TimeDelta;
-class Value;
 }
 
 namespace net {
@@ -42,7 +40,6 @@ class URLRequestContextGetter;
 namespace data_reduction_proxy {
 
 class DataReductionProxyCompressionStats;
-class DataReductionProxyEventStore;
 class DataReductionProxyIOData;
 class DataReductionProxyPingbackClient;
 class DataReductionProxyServiceObserver;
@@ -51,8 +48,7 @@ class DataReductionProxySettings;
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
 class DataReductionProxyService
-    : public DataReductionProxyEventStorageDelegate,
-      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
+    : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
       public network::NetworkQualityTracker::RTTAndThroughputEstimatesObserver {
  public:
   // The caller must ensure that |settings|, |prefs|, |request_context|, and
@@ -102,15 +98,6 @@ class DataReductionProxyService
       bool is_user_traffic,
       data_use_measurement::DataUseUserData::DataUseContentType content_type,
       int32_t service_hash_code);
-
-  // Overrides of DataReductionProxyEventStorageDelegate.
-  void AddEvent(std::unique_ptr<base::Value> event) override;
-  void AddEnabledEvent(std::unique_ptr<base::Value> event,
-                       bool enabled) override;
-  void AddEventAndSecureProxyCheckState(std::unique_ptr<base::Value> event,
-                                        SecureProxyCheckState state) override;
-  void AddAndSetLastBypassEvent(std::unique_ptr<base::Value> event,
-                                int64_t expiration_ticks) override;
 
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
@@ -165,10 +152,6 @@ class DataReductionProxyService
     return compression_stats_.get();
   }
 
-  DataReductionProxyEventStore* event_store() const {
-    return event_store_.get();
-  }
-
   net::URLRequestContextGetter* url_request_context_getter() const {
     return url_request_context_getter_;
   }
@@ -204,8 +187,6 @@ class DataReductionProxyService
 
   // Tracks compression statistics to be displayed to the user.
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
-
-  std::unique_ptr<DataReductionProxyEventStore> event_store_;
 
   std::unique_ptr<DataReductionProxyPingbackClient> pingback_client_;
 

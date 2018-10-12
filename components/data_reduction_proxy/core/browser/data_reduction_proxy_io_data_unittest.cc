@@ -26,8 +26,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_network_session.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -89,10 +87,6 @@ class DataReductionProxyIODataTest : public testing::Test {
     return context_;
   }
 
-  net::NetLog* net_log() {
-    return &net_log_;
-  }
-
   PrefService* prefs() {
     return &prefs_;
   }
@@ -103,14 +97,13 @@ class DataReductionProxyIODataTest : public testing::Test {
  private:
   net::TestDelegate delegate_;
   net::TestURLRequestContext context_;
-  net::NetLog net_log_;
   TestingPrefServiceSimple prefs_;
 };
 
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   std::unique_ptr<DataReductionProxyIOData> io_data(
       new DataReductionProxyIOData(
-          Client::UNKNOWN, prefs(), net_log(),
+          Client::UNKNOWN, prefs(),
           network::TestNetworkConnectionTracker::GetInstance(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
@@ -178,13 +171,13 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
           ->proxy_resolution_service();
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("http://foo2.com");
-  net::NetLogWithSource net_log_with_source;
   const net::ProxyRetryInfoMap& bad_proxy_list =
       proxy_resolution_service->proxy_retry_info();
 
   // Simulate network error to add proxies to the bad proxy list.
-  proxy_resolution_service->MarkProxiesAsBadUntil(proxy_info, base::TimeDelta::FromDays(1),
-                                       proxies, net_log_with_source);
+  proxy_resolution_service->MarkProxiesAsBadUntil(
+      proxy_info, base::TimeDelta::FromDays(1), proxies,
+      net::NetLogWithSource());
   base::RunLoop().RunUntilIdle();
 
   // Verify that there are 2 proxies in the bad proxies list.
@@ -298,7 +291,7 @@ TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigUpdatedOnECTChange) {
 TEST_F(DataReductionProxyIODataTest,
        TestCustomProxyConfigUpdatedOnHeaderChange) {
   DataReductionProxyIOData io_data(
-      Client::UNKNOWN, prefs(), net_log(),
+      Client::UNKNOWN, prefs(),
       network::TestNetworkConnectionTracker::GetInstance(),
       scoped_task_environment_.GetMainThreadTaskRunner(),
       scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,
@@ -324,7 +317,7 @@ TEST_F(DataReductionProxyIODataTest,
 TEST_F(DataReductionProxyIODataTest,
        TestCustomProxyConfigUpdatedOnProxyChange) {
   DataReductionProxyIOData io_data(
-      Client::UNKNOWN, prefs(), net_log(),
+      Client::UNKNOWN, prefs(),
       network::TestNetworkConnectionTracker::GetInstance(),
       scoped_task_environment_.GetMainThreadTaskRunner(),
       scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,

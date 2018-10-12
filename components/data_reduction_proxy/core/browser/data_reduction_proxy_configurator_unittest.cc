@@ -35,8 +35,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
     manager_->OnChangeInNetworkID("test");
 
     test_context_ = DataReductionProxyTestContext::Builder().Build();
-    config_.reset(new DataReductionProxyConfigurator(
-        test_context_->net_log(), test_context_->event_creator()));
+    config_.reset(new DataReductionProxyConfigurator());
   }
 
   void TearDown() override {

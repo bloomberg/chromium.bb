@@ -27,7 +27,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -44,7 +43,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/log/net_log_source_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -147,17 +145,13 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     DataReductionProxyRequestOptions* request_options,
     DataReductionProxyMutableConfigValues* config_values,
     DataReductionProxyConfig* config,
-    DataReductionProxyEventCreator* event_creator,
     DataReductionProxyIOData* io_data,
-    net::NetLog* net_log,
     network::NetworkConnectionTracker* network_connection_tracker,
     ConfigStorer config_storer)
     : request_options_(request_options),
       config_values_(config_values),
       config_(config),
-      event_creator_(event_creator),
       io_data_(io_data),
-      net_log_(net_log),
       network_connection_tracker_(network_connection_tracker),
       config_storer_(config_storer),
       backoff_entry_(&backoff_policy),
@@ -174,9 +168,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
-  DCHECK(event_creator);
   DCHECK(io_data);
-  DCHECK(net_log);
   DCHECK(config_service_url_.is_valid());
 
   const base::CommandLine& command_line =
@@ -267,15 +259,11 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
     return;
   }
 
-  net_log_with_source_ = net::NetLogWithSource::Make(
-      net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
   // Strip off query string parameters
   GURL::Replacements replacements;
   replacements.ClearQuery();
   GURL base_config_service_url =
       config_service_url_.ReplaceComponents(replacements);
-  event_creator_->BeginConfigRequest(net_log_with_source_,
-                                     base_config_service_url);
   config_fetch_start_time_ = base::TimeTicks::Now();
 
   RetrieveRemoteConfig();
@@ -560,11 +548,6 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
       succeeded, refresh_duration, GetBackoffEntry()->GetTimeUntilRelease());
 
   SetConfigRefreshTimer(next_config_refresh_time);
-  event_creator_->EndConfigRequest(
-      net_log_with_source_, status, response_code,
-      GetBackoffEntry()->failure_count(),
-      DataReductionProxyServer::ConvertToNetProxyServers(proxies),
-      refresh_duration, next_config_refresh_time);
 }
 
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(

@@ -21,19 +21,13 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
-namespace base {
-class Value;
-}
-
 namespace net {
-class NetLog;
 class URLRequestContextGetter;
 class URLRequestInterceptor;
 }
@@ -49,20 +43,18 @@ class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventCreator;
 class DataReductionProxyService;
 class NetworkPropertiesManager;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
-class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
+class DataReductionProxyIOData {
  public:
   // Constructs a DataReductionProxyIOData object. |enabled| sets the initial
   // state of the Data Reduction Proxy.
   DataReductionProxyIOData(
       Client client,
       PrefService* prefs,
-      net::NetLog* net_log,
       network::NetworkConnectionTracker* network_connection_tracker,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -124,16 +116,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       data_use_measurement::DataUseUserData::DataUseContentType content_type,
       int32_t service_hash_code);
 
-  // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
-  // thread objects.
-  void AddEvent(std::unique_ptr<base::Value> event) override;
-  void AddEnabledEvent(std::unique_ptr<base::Value> event,
-                       bool enabled) override;
-  void AddEventAndSecureProxyCheckState(std::unique_ptr<base::Value> event,
-                                        SecureProxyCheckState state) override;
-  void AddAndSetLastBypassEvent(std::unique_ptr<base::Value> event,
-                                int64_t expiration_ticks) override;
-
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.
   bool IsEnabled() const;
 
@@ -178,10 +160,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
     return config_.get();
   }
 
-  DataReductionProxyEventCreator* event_creator() const {
-    return event_creator_.get();
-  }
-
   DataReductionProxyRequestOptions* request_options() const {
     return request_options_.get();
   }
@@ -192,10 +170,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   net::ProxyDelegate* proxy_delegate() const {
     return proxy_delegate_.get();
-  }
-
-  net::NetLog* net_log() {
-    return net_log_;
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
@@ -281,9 +255,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Handles getting the content type of a request.
   std::unique_ptr<ResourceTypeProvider> resource_type_provider_;
 
-  // Creates Data Reduction Proxy-related events for logging.
-  std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
-
   // Setter of the Data Reduction Proxy-specific proxy configuration.
   std::unique_ptr<DataReductionProxyConfigurator> configurator_;
 
@@ -302,9 +273,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Requests new Data Reduction Proxy configurations from a remote service.
   std::unique_ptr<DataReductionProxyConfigServiceClient> config_client_;
-
-  // A net log.
-  net::NetLog* net_log_;
 
   // Watches for network connection changes.
   network::NetworkConnectionTracker* network_connection_tracker_;

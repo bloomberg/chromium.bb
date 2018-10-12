@@ -33,7 +33,6 @@ class Clock;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
-class DataReductionProxyEventStore;
 class DataReductionProxyIOData;
 class DataReductionProxyService;
 class DataReductionProxyCompressionStats;
@@ -169,10 +168,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // change.
   void RemoveDataReductionProxySettingsObserver(
       DataReductionProxySettingsObserver* observer);
-
-  // Returns the event store being used. May be null if
-  // InitDataReductionProxySettings has not been called.
-  DataReductionProxyEventStore* GetEventStore() const;
 
   // Sets a config client that can be used to update Data Reduction Proxy
   // settings when the network service is enabled.

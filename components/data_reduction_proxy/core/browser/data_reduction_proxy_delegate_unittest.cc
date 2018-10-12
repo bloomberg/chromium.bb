@@ -84,15 +84,9 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
   TestDataReductionProxyDelegate(
       DataReductionProxyConfig* config,
       const DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventCreator* event_creator,
       DataReductionProxyBypassStats* bypass_stats,
-      bool proxy_supports_quic,
-      net::NetLog* net_log)
-      : DataReductionProxyDelegate(config,
-                                   configurator,
-                                   event_creator,
-                                   bypass_stats,
-                                   net_log),
+      bool proxy_supports_quic)
+      : DataReductionProxyDelegate(config, configurator, bypass_stats),
         proxy_supports_quic_(proxy_supports_quic) {}
 
   ~TestDataReductionProxyDelegate() override {}
@@ -475,10 +469,9 @@ TEST_F(DataReductionProxyDelegateTest, AlternativeProxy) {
 
     params()->SetProxiesForHttpForTesting(proxies_for_http);
 
-    TestDataReductionProxyDelegate delegate(
-        config(), io_data()->configurator(), io_data()->event_creator(),
-        io_data()->bypass_stats(), test.proxy_supports_quic,
-        io_data()->net_log());
+    TestDataReductionProxyDelegate delegate(config(), io_data()->configurator(),
+                                            io_data()->bypass_stats(),
+                                            test.proxy_supports_quic);
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(
