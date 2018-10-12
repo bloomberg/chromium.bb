@@ -244,10 +244,10 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
       gaia_cookie_manager_service_(&auth_service_,
                                    "profile_sync_service_bundle",
                                    &signin_client_),
-      identity_manager_(&signin_manager_,
-                        &auth_service_,
-                        &account_tracker_,
-                        &gaia_cookie_manager_service_) {
+      identity_test_env_(&account_tracker_,
+                         &auth_service_,
+                         &signin_manager_,
+                         &gaia_cookie_manager_service_) {
   RegisterPrefsForProfileSyncService(pref_service_.registry());
   auth_service_.set_auto_post_fetch_response_on_message_loop(true);
   account_tracker_.Initialize(&pref_service_, base::FilePath());
