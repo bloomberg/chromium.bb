@@ -129,13 +129,18 @@ class FCMInvalidationListener : public InvalidationListener,
   // Stored to pass to |per_user_topic_registration_manager_| on start.
   TopicSet registered_topics_;
 
-  // The states of the ticl and FCN channel.
+  // The states of the ticl and FCM channel.
   InvalidatorState ticl_state_;
   InvalidatorState fcm_network_state_;
 
   std::unique_ptr<PerUserTopicRegistrationManager>
       per_user_topic_registration_manager_;
   std::string token_;
+  // Prevents call to DoRegistrationUpdate in cases when
+  // UpdateRegisteredTopics wasn't called. For example, InformTokenRecieved
+  // can trigger DoRegistrationUpdate before any invalidation handler has
+  // requested registration for topics.
+  bool ids_update_requested_ = false;
 
   base::WeakPtrFactory<FCMInvalidationListener> weak_factory_;
 
