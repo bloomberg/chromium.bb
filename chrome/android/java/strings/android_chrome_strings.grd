@@ -1413,7 +1413,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Operating system
       </message>
       <message name="IDS_DEPRECATION_WARNING" desc="Warning about Chrome updates no longer being supported">
-        Chrome updates are no longer supported for this version of Android.
+        Chrome updates are no longer supported for this version of Android
       </message>
 
       <!-- Account management UI strings. -->
@@ -2926,6 +2926,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_MENU_UPDATE_SUMMARY_DEFAULT" desc="Summary string for update menu item explaining that a newer version of Chrome is available. [CHAR-LIMIT=30]">
         Newer version is available
       </message>
+      <message name="IDS_MENU_UPDATE_UNSUPPORTED" desc="Menu item for when Chrome can not be updated. [CHAR-LIMIT=24]">
+        Chrome can’t update
+      </message>
+      <message name="IDS_MENU_UPDATE_UNSUPPORTED_SUMMARY_DEFAULT" desc="Summary string for update menu item explaining that the Android version on the device is unsupported. [CHAR-LIMIT=30]">
+        Android version is unsupported
+      </message>
       <message name="IDS_MENU_MOVE_TO_OTHER_WINDOW" desc="Menu item for moving the current tab into the other window. [CHAR-LIMIT=27]">
         Move to other window
       </message>
@@ -3177,6 +3183,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU_UPDATE" desc="Content description for the menu button when it is covered by the update icon that is displayed when a newer version of Chrome is available.">
         Update available. More options
+      </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU_OS_VERSION_UNSUPPORTED" desc="Content description for the menu button when it is covered by the warning icon that is displayed when the current Android OS version is unsupported.">
+        Chrome can’t update. More options
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_SEARCH_ACCELERATOR" desc="Content description for the search accelerator button">
         Search
