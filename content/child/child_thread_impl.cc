@@ -743,9 +743,13 @@ void ChildThreadImpl::OnAssociatedInterfaceRequest(
 
 void ChildThreadImpl::StartServiceManagerConnection() {
   DCHECK(service_manager_connection_);
-  service_manager_connection_->Start();
   GetContentClient()->OnServiceManagerConnected(
       service_manager_connection_.get());
+
+  // NOTE: You must register any ConnectionFilter instances on
+  // |service_manager_connection_| *before* this call to |Start()|, otherwise
+  // incoming interface requests may race with the registration.
+  service_manager_connection_->Start();
 }
 
 bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
