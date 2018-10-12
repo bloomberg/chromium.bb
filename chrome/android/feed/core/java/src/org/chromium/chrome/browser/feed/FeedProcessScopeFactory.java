@@ -34,6 +34,7 @@ public class FeedProcessScopeFactory {
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
     private static NetworkClient sTestNetworkClient;
+    private static FeedLoggingBridge sFeedLoggingBridge;
 
     /** @return The shared {@link FeedProcessScope} instance. Null if the Feed is disabled. */
     public static @Nullable FeedProcessScope getFeedProcessScope() {
@@ -72,6 +73,15 @@ public class FeedProcessScopeFactory {
         return sFeedAppLifecycle;
     }
 
+    /** @return The {@link FeedLoggingBridge} that was given to the {@link FeedStreamScope}. Null if
+     * the Feed is disabled. */
+    public static @Nullable FeedLoggingBridge getFeedLoggingBridge() {
+        if (sFeedLoggingBridge == null) {
+            initialize();
+        }
+        return sFeedLoggingBridge;
+    }
+
     /**
      * @return Whether the dependencies provided by this class are allowed to be created. The feed
      *         process is disabled if supervised user or enterprise policy has once been added
@@ -84,7 +94,7 @@ public class FeedProcessScopeFactory {
 
     private static void initialize() {
         assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null
-                && sFeedAppLifecycle == null;
+                && sFeedAppLifecycle == null && sFeedLoggingBridge == null;
         if (!isFeedProcessEnabled()) return;
 
         sPrefChangeRegistrar = new PrefChangeRegistrar();
@@ -107,6 +117,7 @@ public class FeedProcessScopeFactory {
         FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
+        sFeedLoggingBridge = new FeedLoggingBridge(profile);
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                             new LoggingApiImpl(), networkClient, schedulerBridge,
@@ -201,6 +212,10 @@ public class FeedProcessScopeFactory {
         if (sFeedAppLifecycle != null) {
             sFeedAppLifecycle.destroy();
             sFeedAppLifecycle = null;
+        }
+        if (sFeedLoggingBridge != null) {
+            sFeedLoggingBridge.destroy();
+            sFeedLoggingBridge = null;
         }
     }
 }

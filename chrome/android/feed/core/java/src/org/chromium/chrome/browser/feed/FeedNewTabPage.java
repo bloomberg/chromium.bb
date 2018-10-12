@@ -71,7 +71,6 @@ public class FeedNewTabPage extends NewTabPage {
     // Used when Feed is enabled.
     private @Nullable Stream mStream;
     private @Nullable FeedImageLoader mImageLoader;
-    private @Nullable FeedLoggingBridge mLoggingBridge;
     private @Nullable StreamLifecycleManager mStreamLifecycleManager;
     private @Nullable SectionHeaderView mSectionHeaderView;
     private @Nullable MarginResizer mSectionHeaderViewMarginResizer;
@@ -256,7 +255,6 @@ public class FeedNewTabPage extends NewTabPage {
         mMediator.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
         if (mImageLoader != null) mImageLoader.destroy();
-        if (mLoggingBridge != null) mLoggingBridge.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
     }
 
@@ -306,13 +304,13 @@ public class FeedNewTabPage extends NewTabPage {
         Profile profile = mTab.getProfile();
 
         mImageLoader = new FeedImageLoader(profile, activity);
-        mLoggingBridge = new FeedLoggingBridge(profile);
+        FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
         Runnable consumptionObserver =
                 () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed();
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile),
-                mLoggingBridge);
+                loggingBridge);
 
         FeedStreamScope streamScope =
                 feedProcessScope
@@ -320,7 +318,7 @@ public class FeedNewTabPage extends NewTabPage {
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(activity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                mLoggingBridge, offlineIndicator,
+                                loggingBridge, offlineIndicator,
                                 (FeedAppLifecycleListener)
                                         feedProcessScope.getAppLifecycleListener())
                         .build();
@@ -368,8 +366,6 @@ public class FeedNewTabPage extends NewTabPage {
             mStream = null;
             mImageLoader.destroy();
             mImageLoader = null;
-            mLoggingBridge.destroy();
-            mLoggingBridge = null;
             mSectionHeaderView = null;
             mSectionHeaderViewMarginResizer.detach();
             mSectionHeaderViewMarginResizer = null;

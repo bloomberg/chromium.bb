@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_FEED_FEED_LOGGING_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_FEED_FEED_LOGGING_BRIDGE_H_
 
+#include <utility>
+
 #include "base/android/scoped_java_ref.h"
 
 namespace feed {
@@ -23,30 +25,31 @@ class FeedLoggingBridge {
 
   void OnContentViewed(JNIEnv* j_env,
                        const base::android::JavaRef<jobject>& j_this,
-                       const jint position,
-                       const jlong publishedTimeSeconds,
-                       const jlong timeContentBecameAvailable,
-                       const jfloat score);
+                       const jint j_position,
+                       const jlong j_publishedTimeMs,
+                       const jlong j_timeContentBecameAvailableMs,
+                       const jfloat j_score);
 
   void OnContentDismissed(JNIEnv* j_env,
                           const base::android::JavaRef<jobject>& j_this,
+                          const jint j_position,
                           const base::android::JavaRef<jstring>& j_url);
 
   void OnContentClicked(JNIEnv* j_env,
                         const base::android::JavaRef<jobject>& j_this,
-                        const jint position,
-                        const jlong publishedTimeSeconds,
-                        const jfloat score);
+                        const jint j_position,
+                        const jlong j_publishedTimeMs,
+                        const jfloat j_score);
 
   void OnClientAction(JNIEnv* j_env,
                       const base::android::JavaRef<jobject>& j_this,
-                      const jint j_action_type);
+                      const jint j_window_open_disposition);
 
   void OnContentContextMenuOpened(JNIEnv* j_env,
                                   const base::android::JavaRef<jobject>& j_this,
-                                  const jint position,
-                                  const jlong publishedTimeSeconds,
-                                  const jfloat score);
+                                  const jint j_position,
+                                  const jlong j_publishedTimeMs,
+                                  const jfloat j_score);
 
   void OnMoreButtonViewed(JNIEnv* j_env,
                           const base::android::JavaRef<jobject>& j_this,
@@ -70,11 +73,11 @@ class FeedLoggingBridge {
 
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
-                              const jlong visit_time);
+                              const jlong visit_time_ms);
 
   void OnOfflinePageVisited(JNIEnv* j_env,
                             const base::android::JavaRef<jobject>& j_this,
-                            const jlong visit_time);
+                            const jlong visit_time_ms);
 
  private:
   FeedLoggingMetrics* feed_logging_metrics_;
