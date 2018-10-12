@@ -247,6 +247,12 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
   return kStatic;
 }
 
+String LayoutNGListItem::MarkerTextWithSuffix() const {
+  StringBuilder text;
+  MarkerText(&text, kWithSuffix);
+  return text.ToString();
+}
+
 String LayoutNGListItem::MarkerTextWithoutSuffix() const {
   StringBuilder text;
   MarkerText(&text, kWithoutSuffix);
