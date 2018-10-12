@@ -120,11 +120,7 @@
 -org.chromium.android_webview.test.ClientOnReceivedErrorTest.testOnReceivedErrorOnInvalidUrl
 
 # https://crbug.com/891722
--org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testAfterRedirect
--org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForMainResource
--org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForSubresource
 -org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForUserGesture
--org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testNotCalledIfNoHttpError
 
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testShouldInterceptRequestDeadlock

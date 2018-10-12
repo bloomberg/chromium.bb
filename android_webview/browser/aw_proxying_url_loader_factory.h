@@ -31,6 +31,7 @@ class AwInterceptedRequestHandler {};
 class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   AwProxyingURLLoaderFactory(
+      int process_id,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       std::unique_ptr<AwInterceptedRequestHandler> request_handler);
@@ -39,6 +40,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   // static
   static void CreateProxy(
+      int process_id,
       network::mojom::URLLoaderFactoryRequest loader,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       std::unique_ptr<AwInterceptedRequestHandler> request_handler);
@@ -58,6 +60,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   void OnTargetFactoryError();
   void OnProxyBindingError();
 
+  const int process_id_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
 
