@@ -18,6 +18,7 @@ js_type_check("closure_compile") {
     ":setup_succeeded_page",
     ":start_setup_page",
     ":ui_page_container_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 
@@ -116,6 +117,7 @@ js_library("setup_succeeded_page") {
 js_library("start_setup_page") {
   deps = [
     ":ui_page_container_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 
