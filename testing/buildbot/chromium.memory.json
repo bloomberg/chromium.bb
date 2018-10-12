@@ -435,6 +435,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -2777,6 +2778,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3578,6 +3580,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -4309,6 +4314,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5422,6 +5428,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -6916,6 +6923,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -8175,6 +8183,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -8932,6 +8941,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -9706,6 +9716,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
