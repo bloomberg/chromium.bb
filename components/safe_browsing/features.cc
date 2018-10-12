@@ -43,7 +43,7 @@ const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInspectDownloadedRarFiles{
-    "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InspectDownloadedRarFiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
