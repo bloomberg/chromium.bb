@@ -59,6 +59,7 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kDocumentDomainBlockedCrossOriginAccess,
           WebFeature::kDocumentDomainEnabledCrossOriginAccess,
           WebFeature::kSuppressHistoryEntryWithoutUserGesture,
+          WebFeature::kCursorImageGT32x32, WebFeature::kCursorImageLE32x32,
       }));
   return opt_in_features->count(feature);
 }
