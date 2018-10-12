@@ -22,7 +22,6 @@
 
 namespace blink {
 
-class DataPipeBytesConsumer;
 class ExceptionState;
 class FetchRespondWithObserver;
 class Request;
@@ -96,7 +95,6 @@ class MODULES_EXPORT FetchEvent final
   TraceWrapperMember<Request> request_;
   Member<PreloadResponseProperty> preload_response_property_;
   std::unique_ptr<WebURLResponse> preload_response_;
-  Member<DataPipeBytesConsumer> data_pipe_consumer_;
   String client_id_;
   bool is_reload_;
 };

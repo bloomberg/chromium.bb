@@ -506,7 +506,12 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
     // the pipe to be closed to signal completion.
     mojo::ScopedDataPipeConsumerHandle pipe_consumer =
         consumer->DrainAsDataPipe();
-    if (!pipe_consumer.is_valid()) {
+    if (pipe_consumer.is_valid()) {
+      data_pipe_watcher_.Watch(
+          pipe_consumer.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+          WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnClosed,
+                             WrapWeakPersistent(this)));
+    } else {
       // If we cannot drain the pipe from the consumer then we must copy
       // data from the consumer into a new pipe.
       MojoCreateDataPipeOptions options;
@@ -530,20 +535,18 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
           out_data_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
           WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnWritable,
                              WrapWeakPersistent(this)));
-
-      data_pipe_watcher_.ArmOrNotify();
     }
 
     // Give the resulting pipe consumer handle to the client.
     DCHECK(pipe_consumer.is_valid());
     client_->DidFetchDataStartedDataPipe(std::move(pipe_consumer));
 
-    // Its possible that the consumer is immediately closed after draining
-    // the DataPipe.
-    if (consumer->GetPublicState() == BytesConsumer::PublicState::kClosed) {
-      StopInternal();
-      client_->DidFetchDataLoadedDataPipe();
-    }
+    data_pipe_watcher_.ArmOrNotify();
+  }
+
+  void OnClosed(MojoResult) {
+    StopInternal();
+    client_->DidFetchDataLoadedDataPipe();
   }
 
   void OnWritable(MojoResult) { OnStateChange(); }

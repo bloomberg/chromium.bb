@@ -138,25 +138,9 @@ class FetchLoaderClient final
   }
   void DidFetchDataLoadedDataPipe() override {
     DCHECK(handle_);
-    // If this method is called synchronously from StartLoading() then we need
-    // to delay notifying the handle until after
-    // RespondToFetchEventWithResponseStream() is called.
-    if (!started_) {
-      pending_complete_ = true;
-      return;
-    }
-    pending_complete_ = false;
     handle_->Completed();
   }
   void DidFetchDataLoadFailed() override {
-    // If this method is called synchronously from StartLoading() then we need
-    // to delay notifying the handle until after
-    // RespondToFetchEventWithResponseStream() is called.
-    if (!started_) {
-      pending_failure_ = true;
-      return;
-    }
-    pending_failure_ = false;
     if (handle_)
       handle_->Aborted();
   }
@@ -168,17 +152,6 @@ class FetchLoaderClient final
       handle_->Aborted();
   }
 
-  void SetStarted() {
-    DCHECK(!started_);
-    // Note that RespondToFetchEventWithResponseStream() has been called and
-    // flush any pending operation.
-    started_ = true;
-    if (pending_complete_)
-      DidFetchDataLoadedDataPipe();
-    else if (pending_failure_)
-      DidFetchDataLoadFailed();
-  }
-
   WebServiceWorkerStreamHandle* Handle() const { return handle_.get(); }
 
   void Trace(blink::Visitor* visitor) override {
@@ -187,9 +160,6 @@ class FetchLoaderClient final
 
  private:
   std::unique_ptr<WebServiceWorkerStreamHandle> handle_;
-  bool started_ = false;
-  bool pending_complete_ = false;
-  bool pending_failure_ = false;
 };
 
 }  // namespace
@@ -354,8 +324,6 @@ void FetchRespondWithObserver::OnResponseFulfilled(
         ->RespondToFetchEventWithResponseStream(
             event_id_, web_response, fetch_loader_client->Handle(),
             event_dispatch_time_, base::TimeTicks::Now());
-
-    fetch_loader_client->SetStarted();
     return;
   }
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
