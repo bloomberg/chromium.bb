@@ -5331,3 +5331,8 @@ crbug.com/893015 virtual/outofblink-cors-ns/http/tests/fetch/chromium/release-ha
 crbug.com/893508 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass ]
 crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
 crbug.com/893869 [ Linux Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
+
+# Sheriff 2018-10-12
+crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
+crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
+crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
