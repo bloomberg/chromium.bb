@@ -188,4 +188,9 @@ public abstract class FullscreenManager {
      * Called when scrolling state of the ContentView changed.
      */
     public void onContentViewScrollingStateChanged(boolean scrolling) {}
+
+    /**
+     * Destroys the FullscreenManager
+     */
+    public void destroy() {}
 }

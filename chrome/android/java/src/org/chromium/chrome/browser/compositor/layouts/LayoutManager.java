@@ -103,7 +103,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     // Internal State
     private final SparseArray<LayoutTab> mTabCache = new SparseArray<>();
-    private int mFullscreenToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsShowingToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
     private boolean mUpdateRequested;
     private final ContextualSearchPanel mContextualSearchPanel;
     private final OverlayPanelManager mOverlayPanelManager;
@@ -468,16 +469,23 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     public SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager) {
-        // Update the android browser controls state.
-        if (fullscreenManager != null) {
-            fullscreenManager.setHideBrowserControlsAndroidView(
-                    mActiveLayout.forceHideBrowserControlsAndroidView());
-        }
-
+        updateControlsHidingState(fullscreenManager);
         getViewportPixel(mCachedVisibleViewport);
         mHost.getWindowViewport(mCachedWindowViewport);
         return mActiveLayout.getUpdatedSceneLayer(mCachedWindowViewport, mCachedVisibleViewport,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
+    }
+
+    private void updateControlsHidingState(ChromeFullscreenManager fullscreenManager) {
+        if (fullscreenManager == null) {
+            return;
+        }
+        if (mActiveLayout.forceHideBrowserControlsAndroidView()) {
+            mControlsHidingToken =
+                    fullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
+        } else {
+            fullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
+        }
     }
 
     @Override
@@ -775,13 +783,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             mPreviousLayoutShowingToolbar = !fullscreenManager.areBrowserControlsOffScreen();
 
             // Release any old fullscreen token we were holding.
-            fullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
-                    mFullscreenToken);
-            mFullscreenToken = FullscreenManager.INVALID_TOKEN;
+            fullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
+                    mControlsShowingToken);
 
             // Grab a new fullscreen token if this layout can't be in fullscreen.
             if (getActiveLayout().forceShowBrowserControlsAndroidView()) {
-                mFullscreenToken =
+                mControlsShowingToken =
                         fullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
             }
         }

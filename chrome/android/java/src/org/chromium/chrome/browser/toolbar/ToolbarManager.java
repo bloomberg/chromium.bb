@@ -619,8 +619,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             public void onFindToolbarHidden() {
                 mToolbar.handleFindToolbarStateChange(false);
                 if (mControlsVisibilityDelegate != null) {
-                    mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenFindInPageToken);
-                    mFullscreenFindInPageToken = FullscreenManager.INVALID_TOKEN;
+                    mControlsVisibilityDelegate.releasePersistentShowingToken(
+                            mFullscreenFindInPageToken);
                 }
             }
         };
@@ -1230,8 +1230,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                             mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
                                     mFullscreenMenuToken);
                 } else {
-                    mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenMenuToken);
-                    mFullscreenMenuToken = FullscreenManager.INVALID_TOKEN;
+                    mControlsVisibilityDelegate.releasePersistentShowingToken(mFullscreenMenuToken);
                 }
             }
 
@@ -1245,8 +1244,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                             mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
                                     mFullscreenHighlightToken);
                 } else {
-                    mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenHighlightToken);
-                    mFullscreenHighlightToken = FullscreenManager.INVALID_TOKEN;
+                    mControlsVisibilityDelegate.releasePersistentShowingToken(
+                            mFullscreenHighlightToken);
                 }
             }
         });
@@ -1365,8 +1364,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mFullscreenFocusToken = mControlsVisibilityDelegate
                     .showControlsPersistentAndClearOldToken(mFullscreenFocusToken);
         } else {
-            mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenFocusToken);
-            mFullscreenFocusToken = FullscreenManager.INVALID_TOKEN;
+            mControlsVisibilityDelegate.releasePersistentShowingToken(mFullscreenFocusToken);
         }
 
         mUrlFocusChangedCallback.onResult(hasFocus);

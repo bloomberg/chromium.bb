@@ -1329,6 +1329,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mActivityTabStartupMetricsTracker = null;
         }
 
+        if (mFullscreenManager != null) {
+            mFullscreenManager.destroy();
+            mFullscreenManager = null;
+        }
+
         AccessibilityManager manager = (AccessibilityManager)
                 getBaseContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         manager.removeAccessibilityStateChangeListener(this);
@@ -1337,6 +1342,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         mActivityTabProvider.destroy();
+
+        mComponent = null;
 
         super.onDestroy();
     }

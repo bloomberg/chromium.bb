@@ -842,7 +842,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @return Whether or not the layout should permenantly show the browser controls.
+     * @return Whether or not the layout should permanently show the browser controls.
      */
     public boolean forceShowBrowserControlsAndroidView() {
         return false;
