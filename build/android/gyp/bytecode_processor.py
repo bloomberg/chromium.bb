@@ -7,6 +7,7 @@
 
 import argparse
 import os
+import subprocess
 import sys
 
 from util import build_utils
@@ -38,7 +39,7 @@ def main(argv):
   cmd = [args.script, args.input_jar, args.output_jar, args.enable_assert,
          args.enable_custom_resources,
          args.enable_thread_annotations] + extra_classpath_jars
-  build_utils.CheckOutput(cmd)
+  subprocess.check_call(cmd)
 
 
 if __name__ == '__main__':
