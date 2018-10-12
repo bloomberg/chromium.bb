@@ -1601,15 +1601,18 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   if (!layer_tree_->Initialize(window_))
     return false;
 
-  std::vector<EGLint> pbuffer_attribs;
-  pbuffer_attribs.push_back(EGL_WIDTH);
-  pbuffer_attribs.push_back(1);
-  pbuffer_attribs.push_back(EGL_HEIGHT);
-  pbuffer_attribs.push_back(1);
+  EGLint pbuffer_attribs[] = {
+      EGL_WIDTH,
+      1,
+      EGL_HEIGHT,
+      1,
+      EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE,
+      EGL_TRUE,
+      EGL_NONE,
+  };
 
-  pbuffer_attribs.push_back(EGL_NONE);
   default_surface_ =
-      eglCreatePbufferSurface(display, GetConfig(), &pbuffer_attribs[0]);
+      eglCreatePbufferSurface(display, GetConfig(), pbuffer_attribs);
   if (!default_surface_) {
     DLOG(ERROR) << "eglCreatePbufferSurface failed with error "
                 << ui::GetLastEGLErrorString();
