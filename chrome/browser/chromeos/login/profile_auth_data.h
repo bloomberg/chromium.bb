@@ -22,20 +22,19 @@ class ProfileAuthData {
   // |to_partition| and invokes |completion_callback| on the UI thread when the
   // operation has completed. The following data is transferred:
   // * The proxy authentication state.
-  // * All authentication cookies and channel IDs, if
-  //   |transfer_auth_cookies_and_channel_ids_on_first_login| is true and
+  // * All authentication cookies, if
+  //   |transfer_auth_cookies_on_first_login| is true and
   //   |to_partition|'s cookie jar is empty. If the cookie jar is not empty, the
   //   authentication states in |from_partition| and |to_partition| should be
   //   merged using /MergeSession instead.
   // * The authentication cookies set by a SAML IdP, if
   //   |transfer_saml_auth_cookies_on_subsequent_login| is true and
   //   |to_partition|'s cookie jar is not empty.
-  static void Transfer(
-      content::StoragePartition* from_partition,
-      content::StoragePartition* to_partition,
-      bool transfer_auth_cookies_and_channel_ids_on_first_login,
-      bool transfer_saml_auth_cookies_on_subsequent_login,
-      const base::Closure& completion_callback);
+  static void Transfer(content::StoragePartition* from_partition,
+                       content::StoragePartition* to_partition,
+                       bool transfer_auth_cookies_on_first_login,
+                       bool transfer_saml_auth_cookies_on_subsequent_login,
+                       const base::Closure& completion_callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProfileAuthData);

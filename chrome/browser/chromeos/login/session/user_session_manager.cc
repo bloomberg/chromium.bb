@@ -1320,14 +1320,13 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     // Transfers authentication-related data from the profile that was used for
     // authentication to the user's profile. The proxy authentication state is
     // transferred unconditionally. If the user authenticated via an auth
-    // extension, authentication cookies and channel IDs will be transferred as
-    // well when the user's cookie jar is empty. If the cookie jar is not empty,
-    // the authentication states in the browser context and the user's profile
-    // must be merged using /MergeSession instead. Authentication cookies set by
-    // a SAML IdP will also be transferred when the user's cookie jar is not
-    // empty if |transfer_saml_auth_cookies_on_subsequent_login| is true.
-    const bool transfer_auth_cookies_and_channel_ids_on_first_login =
-        has_auth_cookies_;
+    // extension, authentication cookies will be transferred as well when the
+    // user's cookie jar is empty. If the cookie jar is not empty, the
+    // authentication states in the browser context and the user's profile must
+    // be merged using /MergeSession instead. Authentication cookies set by a
+    // SAML IdP will also be transferred when the user's cookie jar is not empty
+    // if |transfer_saml_auth_cookies_on_subsequent_login| is true.
+    const bool transfer_auth_cookies_on_first_login = has_auth_cookies_;
 
     content::StoragePartition* signin_partition = login::GetSigninPartition();
 
@@ -1337,7 +1336,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
       ProfileAuthData::Transfer(
           signin_partition,
           content::BrowserContext::GetDefaultStoragePartition(profile),
-          transfer_auth_cookies_and_channel_ids_on_first_login,
+          transfer_auth_cookies_on_first_login,
           transfer_saml_auth_cookies_on_subsequent_login,
           base::Bind(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
