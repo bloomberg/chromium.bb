@@ -2,245 +2,6 @@ Tests structured cloning of PBKDF2 keys
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveBits"
-Serialized key bytes: 5c4b0611800200
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveBits"
-Serialized key bytes: 5c4b061180020130
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveBits"
-Serialized key bytes: 5c4b06118002080011223344554677
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveBits"
-Serialized key bytes: 5c4b061180020b00112233445546778899aa
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveBits"
-Serialized key bytes: 5c4b061180021030112233445566778899aabbccddeeff
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey"
-Serialized key bytes: 5c4b06112000
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey"
-Serialized key bytes: 5c4b0611200130
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey"
-Serialized key bytes: 5c4b061120080011223344554677
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey"
-Serialized key bytes: 5c4b0611200b00112233445546778899aa
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey"
-Serialized key bytes: 5c4b0611201030112233445566778899aabbccddeeff
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
-Serialized key bytes: 5c4b0611a00200
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
-Serialized key bytes: 5c4b0611a0020130
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
-Serialized key bytes: 5c4b0611a002080011223344554677
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
-Serialized key bytes: 5c4b0611a0020b00112233445546778899aa
-
-
-PASS importedKey.extraProperty is "hi"
-PASS importedKey.type is "secret"
-PASS typeof importedKey.extractable is 'boolean'
-PASS importedKey.extractable is false
-PASS importedKey.algorithm.name is "PBKDF2"
-PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
-PASS importedKey is not clonedKey
-PASS clonedKey.extraProperty is undefined.
-PASS clonedKey.type is "secret"
-PASS typeof clonedKey.extractable is 'boolean'
-PASS clonedKey.extractable is false
-PASS clonedKey.algorithm.name is "PBKDF2"
-PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
-Serialized key bytes: 5c4b0611a0021030112233445566778899aabbccddeeff
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -257,7 +18,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b0611800200
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -272,7 +32,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b061180020130
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -289,7 +48,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b06118002080011223344554677
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -304,7 +62,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b061180020b00112233445546778899aa
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -321,7 +78,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b061180021030112233445566778899aabbccddeeff
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -336,7 +92,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b06112000
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -353,7 +108,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b0611200130
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -368,7 +122,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b061120080011223344554677
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -385,7 +138,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b0611200b00112233445546778899aa
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -400,7 +152,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b0611201030112233445566778899aabbccddeeff
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -417,7 +168,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a00200
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -432,7 +182,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a0020130
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -449,7 +198,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a002080011223344554677
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -465,7 +213,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a0020b00112233445546778899aa
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -480,7 +227,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a0021030112233445566778899aabbccddeeff
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -497,7 +243,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b0611800200
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -512,7 +257,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b061180020130
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -529,7 +273,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b06118002080011223344554677
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -544,7 +287,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b061180020b00112233445546778899aa
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -561,7 +303,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveBits"
 Serialized key bytes: 5c4b061180021030112233445566778899aabbccddeeff
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -576,7 +317,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b06112000
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -593,7 +333,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b0611200130
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -608,7 +347,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b061120080011223344554677
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -625,7 +363,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b0611200b00112233445546778899aa
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -640,7 +377,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey"
 Serialized key bytes: 5c4b0611201030112233445566778899aabbccddeeff
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -657,7 +393,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a00200
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -672,7 +407,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a0020130
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -689,7 +423,6 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a002080011223344554677
 
-
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
 PASS typeof importedKey.extractable is 'boolean'
@@ -704,7 +437,6 @@ PASS clonedKey.extractable is false
 PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a0020b00112233445546778899aa
-
 
 PASS importedKey.extraProperty is "hi"
 PASS importedKey.type is "secret"
@@ -721,6 +453,230 @@ PASS clonedKey.algorithm.name is "PBKDF2"
 PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
 Serialized key bytes: 5c4b0611a0021030112233445566778899aabbccddeeff
 
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveBits"
+Serialized key bytes: 5c4b0611800200
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveBits"
+Serialized key bytes: 5c4b061180020130
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveBits"
+Serialized key bytes: 5c4b06118002080011223344554677
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveBits"
+Serialized key bytes: 5c4b061180020b00112233445546778899aa
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveBits"
+Serialized key bytes: 5c4b061180021030112233445566778899aabbccddeeff
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey"
+Serialized key bytes: 5c4b06112000
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey"
+Serialized key bytes: 5c4b0611200130
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey"
+Serialized key bytes: 5c4b061120080011223344554677
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey"
+Serialized key bytes: 5c4b0611200b00112233445546778899aa
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey"
+Serialized key bytes: 5c4b0611201030112233445566778899aabbccddeeff
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
+Serialized key bytes: 5c4b0611a00200
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
+Serialized key bytes: 5c4b0611a0020130
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
+Serialized key bytes: 5c4b0611a002080011223344554677
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
+Serialized key bytes: 5c4b0611a0020b00112233445546778899aa
+
+PASS importedKey.extraProperty is "hi"
+PASS importedKey.type is "secret"
+PASS typeof importedKey.extractable is 'boolean'
+PASS importedKey.extractable is false
+PASS importedKey.algorithm.name is "PBKDF2"
+PASS importedKey.usages.join(',') is "deriveKey,deriveBits"
+PASS importedKey is not clonedKey
+PASS clonedKey.extraProperty is undefined.
+PASS clonedKey.type is "secret"
+PASS typeof clonedKey.extractable is 'boolean'
+PASS clonedKey.extractable is false
+PASS clonedKey.algorithm.name is "PBKDF2"
+PASS clonedKey.usages.join(',') is "deriveKey,deriveBits"
+Serialized key bytes: 5c4b0611a0021030112233445566778899aabbccddeeff
 
 PASS successfullyParsed is true
 

@@ -1,5 +1,4 @@
-Should be composited
-Should not be composited
+Should be compositedShould not be composited
 Should be composited
 {
   "layers": [

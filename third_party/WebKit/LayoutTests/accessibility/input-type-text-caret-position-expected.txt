@@ -2,6 +2,7 @@ This tests that caret position is reported correctly for text input elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+
 PASS inputAccessible.selectionStart is 0
 PASS inputAccessible.selectionEnd is 0
 PASS inputAccessible.selectionStart is 1
@@ -19,5 +20,4 @@ PASS inputAccessible.selectionEnd is 6
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
 

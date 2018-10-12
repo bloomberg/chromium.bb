@@ -48,7 +48,6 @@ CASE 1, original layer tree
     }
   ]
 }
-
 CASE 2, hovering over the outer div
 {
   "layers": [
@@ -106,7 +105,6 @@ CASE 2, hovering over the outer div
     }
   ]
 }
-
 CASE 3, hovering over the inner div
 {
   "layers": [

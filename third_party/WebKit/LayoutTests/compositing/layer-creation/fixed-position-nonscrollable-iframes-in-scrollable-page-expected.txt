@@ -57,5 +57,4 @@ In all iframes, the green fixed-position element should not be composited.
     }
   ]
 }
-
-Composited box underneath iframe.
+Composited box underneath iframe. 

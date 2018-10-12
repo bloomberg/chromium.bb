@@ -58,7 +58,6 @@ CASE 1, original layer tree:
     }
   ]
 }
-
 CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
 {
   "layers": [
@@ -156,7 +155,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
     }
   ]
 }
-
 CASE 3, scrolling y to 120, no repaints expected:
 {
   "layers": [
@@ -228,7 +226,6 @@ CASE 3, scrolling y to 120, no repaints expected:
     }
   ]
 }
-
 CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
 {
   "layers": [
