@@ -4525,7 +4525,6 @@
                         "mainThreadTaskLoadLowThreshold": "25"
                     },
                     "enable_features": [
-                        "PageAlmostIdle",
                         "PageLifecycle",
                         "ProactiveTabFreezeAndDiscard",
                         "SiteCharacteristicsDatabase",
