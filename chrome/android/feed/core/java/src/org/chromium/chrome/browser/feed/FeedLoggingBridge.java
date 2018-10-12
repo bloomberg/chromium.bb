@@ -111,8 +111,12 @@ public class FeedLoggingBridge implements BasicLoggingApi {
      * @param visitTimeMs Time spent reading the page.
      */
     public void onContentTargetVisited(long visitTimeMs) {
-        assert mNativeFeedLoggingBridge != 0;
-        nativeOnContentTargetVisited(mNativeFeedLoggingBridge, visitTimeMs);
+        // We cannot assume that the |mNativeFeedLoggingBridge| is always available like other
+        // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
+        // may have already been called if Feed is disabled by policy.
+        if (mNativeFeedLoggingBridge != 0) {
+            nativeOnContentTargetVisited(mNativeFeedLoggingBridge, visitTimeMs);
+        }
     }
 
     /**
@@ -121,8 +125,12 @@ public class FeedLoggingBridge implements BasicLoggingApi {
      * @param visitTimeMs Time spent reading the page.
      */
     public void onOfflinePageVisited(long visitTimeMs) {
-        assert mNativeFeedLoggingBridge != 0;
-        nativeOnOfflinePageVisited(mNativeFeedLoggingBridge, visitTimeMs);
+        // We cannot assume that the |mNativeFeedLoggingBridge| is always available like other
+        // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
+        // may have already been called if Feed is disabled by policy.
+        if (mNativeFeedLoggingBridge != 0) {
+            nativeOnOfflinePageVisited(mNativeFeedLoggingBridge, visitTimeMs);
+        }
     }
 
     private int feedActionToWindowOpenDisposition(@ActionType int actionType) {
