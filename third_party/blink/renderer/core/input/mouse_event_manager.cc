@@ -614,7 +614,6 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
   if (RuntimeEnabledFeatures::NoHoverAfterLayoutChangeEnabled() &&
       update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged) {
-    frame_->LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
     return;
   }
 
