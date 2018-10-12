@@ -36,6 +36,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
+#import "components/password_manager/ios/password_suggestion_helper.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -77,9 +78,6 @@ using password_manager::PasswordManagerDriver;
 using password_manager::SerializeFillData;
 using password_manager::SerializePasswordFormFillData;
 
-typedef void (^PasswordSuggestionsAvailableCompletion)(
-    const AccountSelectFillData*);
-
 namespace {
 // Types of password infobars to display.
 enum class PasswordInfoBarType { SAVE, UPDATE };
@@ -111,7 +109,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 }  // namespace
 
-@interface PasswordController ()
+@interface PasswordController ()<PasswordSuggestionHelperDelegate>
 
 // View controller for auto sign-in notification, owned by this
 // PasswordController.
@@ -120,6 +118,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 // Helper contains common password controller logic.
 @property(nonatomic, readonly) PasswordControllerHelper* helper;
+
+// Helper contains common password suggestion logic.
+@property(nonatomic, readonly) PasswordSuggestionHelper* suggestionHelper;
 
 @end
 
@@ -147,68 +148,11 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @end
 
-namespace {
-
-// Constructs an array of FormSuggestions, each corresponding to a username/
-// password pair in |AccountSelectFillData|. "Show all" item is appended.
-NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
-                          NSString* formName,
-                          NSString* fieldIdentifier,
-                          NSString* fieldType) {
-  base::string16 form_name = base::SysNSStringToUTF16(formName);
-  base::string16 field_identifier = base::SysNSStringToUTF16(fieldIdentifier);
-  bool is_password_field = [fieldType isEqualToString:@"password"];
-
-  NSMutableArray* suggestions = [NSMutableArray array];
-  PasswordSuggestionType suggestion_type = PasswordSuggestionType::SHOW_ALL;
-  if (fillData.IsSuggestionsAvailable(form_name, field_identifier,
-                                      is_password_field)) {
-    std::vector<password_manager::UsernameAndRealm> username_and_realms_ =
-        fillData.RetrieveSuggestions(form_name, field_identifier,
-                                     is_password_field);
-
-    // Add credentials.
-    for (const auto& username_and_realm : username_and_realms_) {
-      NSString* value = [base::SysUTF16ToNSString(username_and_realm.username)
-          stringByAppendingString:kSuggestionSuffix];
-      NSString* origin =
-          username_and_realm.realm.empty()
-              ? nil
-              : base::SysUTF8ToNSString(username_and_realm.realm);
-
-      [suggestions addObject:[FormSuggestion suggestionWithValue:value
-                                              displayDescription:origin
-                                                            icon:nil
-                                                      identifier:0]];
-      suggestion_type = PasswordSuggestionType::CREDENTIALS;
-    }
-  }
-
-  // Once Manual Fallback is enabled the access to settings will exist as an
-  // option in the new passwords UI.
-  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
-    // Add "Show all".
-    NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
-    [suggestions addObject:[FormSuggestion suggestionWithValue:showAll
-                                            displayDescription:nil
-                                                          icon:nil
-                                                    identifier:1]];
-  }
-  if (suggestions.count) {
-    LogSuggestionShown(suggestion_type);
-  }
-  return [suggestions copy];
-}
-
-}  // namespace
-
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> _passwordManager;
   std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
   std::unique_ptr<PasswordManagerDriver> _passwordManagerDriver;
   std::unique_ptr<CredentialManager> _credentialManager;
-
-  AccountSelectFillData _fillData;
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
@@ -219,14 +163,6 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
   // Timer for hiding "Signing in as ..." notification.
   base::OneShotTimer _notifyAutoSigninTimer;
-
-  // True indicates that a request for credentials has been sent to the password
-  // store.
-  BOOL _sentRequestToStore;
-
-  // The completion to inform FormSuggestionController that suggestions are
-  // available for a given form and field.
-  PasswordSuggestionsAvailableCompletion _suggestionsAvailableCompletion;
 
   // User credential waiting to be displayed in autosign-in snackbar, once tab
   // becomes active.
@@ -242,6 +178,8 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 @synthesize notifyAutoSigninViewController = _notifyAutoSigninViewController;
 
 @synthesize helper = _helper;
+
+@synthesize suggestionHelper = _suggestionHelper;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   self = [self initWithWebState:webState
@@ -261,14 +199,14 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
     _webState->AddObserver(_webStateObserverBridge.get());
     _helper = [[PasswordControllerHelper alloc] initWithWebState:webState
                                                         delegate:self];
+    _suggestionHelper =
+        [[PasswordSuggestionHelper alloc] initWithDelegate:self];
     if (passwordManagerClient)
       _passwordManagerClient = std::move(passwordManagerClient);
     else
       _passwordManagerClient.reset(new IOSChromePasswordManagerClient(self));
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
     _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(self));
-
-    _sentRequestToStore = NO;
 
     if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
       _credentialManager = std::make_unique<CredentialManager>(
@@ -334,9 +272,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
   // Clear per-page state.
-  _fillData.Reset();
-  _sentRequestToStore = NO;
-  _suggestionsAvailableCompletion = nil;
+  [self.suggestionHelper resetForNewPage];
 
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
@@ -391,45 +327,18 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
-  if (!isMainFrame) {
-    web::WebFrame* frame =
-        web::GetWebFrameWithId(webState, base::SysNSStringToUTF8(frameID));
-    if (!frame || webState->GetLastCommittedURL().GetOrigin() !=
-                      frame->GetSecurityOrigin()) {
-      // Passwords is only supported on main frame and iframes with the same
-      // origin.
-      completion(NO);
-      return;
-    }
-  }
-
-  bool should_send_request_to_store =
-      !_sentRequestToStore && [type isEqual:@"focus"];
-  bool is_password_field = [fieldType isEqual:@"password"];
-
-  if (should_send_request_to_store) {
-    // Save the completion and go look for suggestions.
-    _suggestionsAvailableCompletion =
-        [^(const AccountSelectFillData* fill_data) {
-          if (is_password_field) {
-            // Always display "Show all" on the password field.
-            completion(YES);
-          } else if (!fill_data) {
-            completion(NO);
-          } else {
-            completion(fill_data->IsSuggestionsAvailable(
-                base::SysNSStringToUTF16(formName),
-                base::SysNSStringToUTF16(fieldIdentifier), false));
-          }
-        } copy];
-    [self findPasswordFormsAndSendThemToPasswordStore];
-    return;
-  }
-
-  completion(is_password_field ||
-             _fillData.IsSuggestionsAvailable(
-                 base::SysNSStringToUTF16(formName),
-                 base::SysNSStringToUTF16(fieldIdentifier), false));
+  [self.suggestionHelper
+      checkIfSuggestionsAvailableForForm:formName
+                         fieldIdentifier:fieldIdentifier
+                                    type:type
+                                 frameID:frameID
+                             isMainFrame:isMainFrame
+                                webState:webState
+                       completionHandler:^(BOOL suggestionsAvailable) {
+                         // Always display "Show All..." for password fields.
+                         completion([fieldType isEqualToString:@"password"] ||
+                                    suggestionsAvailable);
+                       }];
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
@@ -442,8 +351,41 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
-  completion(BuildSuggestions(_fillData, formName, fieldIdentifier, fieldType),
-             self);
+  NSArray<FormSuggestion*>* rawSuggestions =
+      [self.suggestionHelper retrieveSuggestionsWithFormName:formName
+                                             fieldIdentifier:fieldIdentifier
+                                                   fieldType:fieldType];
+  PasswordSuggestionType suggestion_type =
+      rawSuggestions.count > 0 ? PasswordSuggestionType::CREDENTIALS
+                               : PasswordSuggestionType::SHOW_ALL;
+
+  NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
+  for (FormSuggestion* rawSuggestion in rawSuggestions) {
+    [suggestions
+        addObject:[FormSuggestion
+                      suggestionWithValue:
+                          [rawSuggestion.value
+                              stringByAppendingString:kSuggestionSuffix]
+                       displayDescription:rawSuggestion.displayDescription
+                                     icon:nil
+                               identifier:0]];
+  }
+
+  // Once Manual Fallback is enabled the access to settings will exist as an
+  // option in the new passwords UI.
+  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+    // Add "Show all".
+    NSString* showAll = l10n_util::GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
+    [suggestions addObject:[FormSuggestion suggestionWithValue:showAll
+                                            displayDescription:nil
+                                                          icon:nil
+                                                    identifier:1]];
+  }
+  if (suggestions.count) {
+    LogSuggestionShown(suggestion_type);
+  }
+
+  completion([suggestions copy], self);
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
@@ -460,10 +402,11 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
     return;
   }
   LogSuggestionClicked(PasswordSuggestionType::CREDENTIALS);
-  base::string16 value = base::SysNSStringToUTF16(suggestion.value);
   DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
-  value.erase(value.length() - kSuggestionSuffix.length);
-  std::unique_ptr<FillData> fillData = _fillData.GetFillData(value);
+  NSString* username = [suggestion.value
+      substringToIndex:suggestion.value.length - kSuggestionSuffix.length];
+  std::unique_ptr<password_manager::FillData> fillData =
+      [self.suggestionHelper getFillDataForUsername:username];
 
   if (!fillData)
     completion();
@@ -546,20 +489,12 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler {
-  _fillData.Add(formData);
-
-  if (_suggestionsAvailableCompletion) {
-    _suggestionsAvailableCompletion(&_fillData);
-    _suggestionsAvailableCompletion = nil;
-  }
-
+  [self.suggestionHelper processWithPasswordFormFillData:formData];
   [self.helper fillPasswordForm:formData completionHandler:completionHandler];
 }
 
 - (void)onNoSavedCredentials {
-  if (_suggestionsAvailableCompletion)
-    _suggestionsAvailableCompletion(nullptr);
-  _suggestionsAvailableCompletion = nil;
+  [self.suggestionHelper processWithNoSavedCredentials];
 }
 
 #pragma mark - PasswordControllerHelperDelegate
@@ -578,6 +513,13 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   }
 }
 
+#pragma mark - PasswordSuggestionHelperDelegate
+
+- (void)suggestionHelperShouldTriggerFormExtraction:
+    (PasswordSuggestionHelper*)suggestionHelper {
+  [self findPasswordFormsAndSendThemToPasswordStore];
+}
+
 #pragma mark - Private methods
 
 - (void)didFinishPasswordFormExtraction:
@@ -594,7 +536,8 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
           ->DidShowPasswordFieldInInsecureContext();
     }
 
-    _sentRequestToStore = YES;
+    [self.suggestionHelper updateStateOnPasswordFormExtracted];
+
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
