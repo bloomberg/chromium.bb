@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<body>
+Test for crash crbug.com/804047 <button>Show custom dialog element</button>
+
+<template id="dialog">
+ <custom-dialog></custom-dialog>
+</template>
+<div></div>
+<iframe></iframe>
+
+<script>
+var customDialogProto = Object.create(HTMLElement.prototype);
+
+customDialogProto.createdCallback = function() {
+  const shadowRoot = this.createShadowRoot();
+  shadowRoot.innerHTML = '<dialog></dialog>';
+};
+
+customDialogProto.show = function() {
+  this.shadowRoot.querySelector('dialog').showModal();
+};
+
+document.registerElement('custom-dialog', { prototype: customDialogProto });
+
+document.body.querySelector('button').addEventListener('click', function() {
+  const template = document.querySelector('#dialog');
+  const custom = document.importNode(template.content, true);
+  const dialog = custom.querySelector('custom-dialog');
+  document.querySelector('div').appendChild(dialog);
+  dialog.show();
+});
+
+if (window.testRunner) {
+  testRunner.dumpAsText();
+
+  let absoluteTop = 0;
+  let absoluteLeft = 0;
+  const element = document.body.querySelector('button');
+  for (let parent = element; parent; parent = parent.offsetParent) {
+    absoluteLeft += parent.offsetLeft;
+    absoluteTop += parent.offsetTop;
+  }
+
+  const x = absoluteLeft + element.offsetWidth / 2;
+  const y = absoluteTop + element.offsetHeight / 2;
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+</script>
+</body>
+</html>

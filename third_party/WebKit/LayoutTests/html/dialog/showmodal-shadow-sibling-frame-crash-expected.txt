@@ -1,0 +1,4 @@
+CONSOLE WARNING: line 24: document.registerElement is deprecated and will be removed in M73, around March 2019. Please use window.customElements.define instead. See https://www.chromestatus.com/features/4642138092470272 for more details.
+CONSOLE WARNING: line 16: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
+Test for crash crbug.com/804047 Show custom dialog element
+

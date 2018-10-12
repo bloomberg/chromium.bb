@@ -402,6 +402,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("openQuickView"),
                       TestCase("openQuickView").InGuestMode(),
                       TestCase("openQuickView").TabletMode(),
+                      TestCase("openQuickViewAudio"),
                       TestCase("openQuickViewImage"),
                       TestCase("openQuickViewVideo"),
 // QuickView PDF test fails on MSAN, crbug.com/768070
