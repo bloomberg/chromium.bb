@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -428,6 +429,13 @@ void AXNodeData::AddIntAttribute(ax::mojom::IntAttribute attribute, int value) {
   int_attributes.push_back(std::make_pair(attribute, value));
 }
 
+void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
+  DCHECK_GE(static_cast<int>(attribute), 0);
+  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
+    return int_attribute.first == attribute;
+  });
+}
+
 void AXNodeData::AddFloatAttribute(ax::mojom::FloatAttribute attribute,
                                    float value) {
   float_attributes.push_back(std::make_pair(attribute, value));
@@ -569,6 +577,119 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
 void AXNodeData::RemoveState(ax::mojom::State state_enum) {
   DCHECK_NE(state_enum, ax::mojom::State::kNone);
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
+}
+
+ax::mojom::CheckedState AXNodeData::GetCheckedState() const {
+  return static_cast<ax::mojom::CheckedState>(
+      GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
+}
+
+void AXNodeData::SetCheckedState(ax::mojom::CheckedState checked_state) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kCheckedState);
+  if (checked_state != ax::mojom::CheckedState::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                    static_cast<int32_t>(checked_state));
+  }
+}
+
+ax::mojom::DefaultActionVerb AXNodeData::GetDefaultActionVerb() const {
+  return static_cast<ax::mojom::DefaultActionVerb>(
+      GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb));
+}
+
+void AXNodeData::SetDefaultActionVerb(
+    ax::mojom::DefaultActionVerb default_action_verb) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb);
+  if (default_action_verb != ax::mojom::DefaultActionVerb::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb,
+                    static_cast<int32_t>(default_action_verb));
+  }
+}
+
+ax::mojom::HasPopup AXNodeData::GetHasPopup() const {
+  return static_cast<ax::mojom::HasPopup>(
+      GetIntAttribute(ax::mojom::IntAttribute::kHasPopup));
+}
+
+void AXNodeData::SetHasPopup(ax::mojom::HasPopup has_popup) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kHasPopup))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kHasPopup);
+  if (has_popup != ax::mojom::HasPopup::kFalse) {
+    AddIntAttribute(ax::mojom::IntAttribute::kHasPopup,
+                    static_cast<int32_t>(has_popup));
+  }
+}
+
+ax::mojom::InvalidState AXNodeData::GetInvalidState() const {
+  return static_cast<ax::mojom::InvalidState>(
+      GetIntAttribute(ax::mojom::IntAttribute::kInvalidState));
+}
+
+void AXNodeData::SetInvalidState(ax::mojom::InvalidState invalid_state) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kInvalidState))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kInvalidState);
+  if (invalid_state != ax::mojom::InvalidState::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kInvalidState,
+                    static_cast<int32_t>(invalid_state));
+  }
+}
+
+ax::mojom::NameFrom AXNodeData::GetNameFrom() const {
+  return static_cast<ax::mojom::NameFrom>(
+      GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
+}
+
+void AXNodeData::SetNameFrom(ax::mojom::NameFrom name_from) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kNameFrom))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kNameFrom);
+  if (name_from != ax::mojom::NameFrom::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
+                    static_cast<int32_t>(name_from));
+  }
+}
+
+ax::mojom::TextPosition AXNodeData::GetTextPosition() const {
+  return static_cast<ax::mojom::TextPosition>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
+}
+
+void AXNodeData::SetTextPosition(ax::mojom::TextPosition text_position) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kTextPosition))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kTextPosition);
+  if (text_position != ax::mojom::TextPosition::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kTextPosition,
+                    static_cast<int32_t>(text_position));
+  }
+}
+
+ax::mojom::Restriction AXNodeData::GetRestriction() const {
+  return static_cast<ax::mojom::Restriction>(
+      GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
+}
+
+void AXNodeData::SetRestriction(ax::mojom::Restriction restriction) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kRestriction))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kRestriction);
+  if (restriction != ax::mojom::Restriction::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
+                    static_cast<int32_t>(restriction));
+  }
+}
+
+ax::mojom::TextDirection AXNodeData::GetTextDirection() const {
+  return static_cast<ax::mojom::TextDirection>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
+}
+
+void AXNodeData::SetTextDirection(ax::mojom::TextDirection text_direction) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kTextDirection))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kTextDirection);
+  if (text_direction != ax::mojom::TextDirection::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
+                    static_cast<int32_t>(text_direction));
+  }
 }
 
 std::string AXNodeData::ToString() const {
