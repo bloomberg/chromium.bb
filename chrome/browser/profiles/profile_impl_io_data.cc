@@ -428,8 +428,7 @@ ProfileImplIOData::ConfigureNetworkDelegate(
 
   return data_reduction_proxy_io_data()->CreateNetworkDelegate(
       io_thread->globals()->data_use_ascriber->CreateNetworkDelegate(
-          std::move(chrome_network_delegate),
-          io_thread->GetMetricsDataUseForwarder()),
+          std::move(chrome_network_delegate)),
       true);
 }
 

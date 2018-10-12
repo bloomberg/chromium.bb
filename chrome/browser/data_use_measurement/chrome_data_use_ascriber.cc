@@ -10,8 +10,10 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
 #include "components/data_use_measurement/content/content_url_request_classifier.h"
+#include "components/data_use_measurement/core/data_use_network_delegate.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
@@ -112,8 +114,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   if (service) {
     auto entry =
         CreateNewDataUseRecorder(request, DataUse::TrafficType::SERVICES);
-    entry->data_use().set_description(
-        DataUseUserData::GetServiceNameAsString(service->service_name()));
+    entry->data_use().set_description("");
     return entry;
   }
 
@@ -575,6 +576,15 @@ void ChromeDataUseAscriber::NotifyPageLoadConcluded(
     DataUseRecorderEntry entry) {
   for (auto& observer : observers_)
     observer.OnPageLoadConcluded(&entry->data_use());
+}
+
+std::unique_ptr<net::NetworkDelegate>
+ChromeDataUseAscriber::CreateNetworkDelegate(
+    std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate) {
+  return std::make_unique<data_use_measurement::DataUseNetworkDelegate>(
+      std::move(wrapped_network_delegate), this,
+      std::make_unique<ChromeDataUseMeasurement>(CreateURLRequestClassifier(),
+                                                 this));
 }
 
 std::unique_ptr<URLRequestClassifier>

@@ -16,8 +16,6 @@
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
-#include "components/domain_reliability/uploader.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
@@ -75,10 +73,8 @@ void RecordFavIconDataUse(const net::URLRequest& request) {
 
 DataUseMeasurement::DataUseMeasurement(
     std::unique_ptr<URLRequestClassifier> url_request_classifier,
-    const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder,
     DataUseAscriber* ascriber)
     : url_request_classifier_(std::move(url_request_classifier)),
-      metrics_data_use_forwarder_(metrics_data_use_forwarder),
       ascriber_(ascriber)
 #if defined(OS_ANDROID)
       ,
@@ -112,20 +108,7 @@ void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
   DataUseUserData* data_use_user_data = reinterpret_cast<DataUseUserData*>(
       request->GetUserData(DataUseUserData::kUserDataKey));
   if (!data_use_user_data) {
-    DataUseUserData::ServiceName service_name =
-        DataUseUserData::ServiceName::NOT_TAGGED;
-    if (!IsUserRequest(*request) &&
-        domain_reliability::DomainReliabilityUploader::
-            OriginatedFromDomainReliability(*request)) {
-      // Detect if the request originated from DomainReliability.
-      // DataUseUserData::AttachToFetcher() cannot be called from domain
-      // reliability, since it sets userdata on URLFetcher for its purposes.
-      service_name = DataUseUserData::ServiceName::DOMAIN_RELIABILITY;
-    } else if (gaia::RequestOriginatedFromGaia(*request)) {
-      service_name = DataUseUserData::ServiceName::GAIA;
-    }
-
-    data_use_user_data = new DataUseUserData(service_name, CurrentAppState());
+    data_use_user_data = new DataUseUserData(CurrentAppState());
     request->SetUserData(DataUseUserData::kUserDataKey,
                          base::WrapUnique(data_use_user_data));
   } else {
@@ -137,7 +120,12 @@ void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
                                           const GURL& new_location) {
   // Recording data use of request on redirects.
   // TODO(rajendrant): May not be needed when http://crbug/651957 is fixed.
-  UpdateDataUsePrefs(request);
+  UpdateDataUseToMetricsService(
+      request.GetTotalSentBytes() + request.GetTotalReceivedBytes(),
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      IsMetricsServiceRequest(
+          request.traffic_annotation().unique_id_hash_code));
   ReportServicesMessageSizeUMA(request);
   if (url_request_classifier_->IsFavIconRequest(request))
     RecordFavIconDataUse(request);
@@ -176,7 +164,12 @@ void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
                                      bool started) {
   // TODO(amohammadkhan): Verify that there is no double recording in data use
   // of redirected requests.
-  UpdateDataUsePrefs(request);
+  UpdateDataUseToMetricsService(
+      request.GetTotalSentBytes() + request.GetTotalReceivedBytes(),
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      IsMetricsServiceRequest(
+          request.traffic_annotation().unique_id_hash_code));
   ReportServicesMessageSizeUMA(request);
   RecordPageTransitionUMA(request);
 #if defined(OS_ANDROID)
@@ -258,30 +251,6 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
     RecordContentTypeHistogram(attached_service_data->content_type(),
                                is_user_traffic, new_app_state, is_tab_visible,
                                bytes);
-  }
-}
-
-void DataUseMeasurement::UpdateDataUsePrefs(
-    const net::URLRequest& request) const {
-  bool is_connection_cellular =
-      net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType());
-
-  DataUseUserData* attached_service_data = static_cast<DataUseUserData*>(
-      request.GetUserData(DataUseUserData::kUserDataKey));
-  DataUseUserData::ServiceName service_name =
-      attached_service_data ? attached_service_data->service_name()
-                            : DataUseUserData::NOT_TAGGED;
-
-  // Update data use prefs for cellular connections.
-  // TODO(rajendrant): Change this to only report data use of user-initiated
-  // traffic and metrics services (UMA, UKM). This will help to remove the
-  // DataUseUserData::ServiceName enum.
-  if (!metrics_data_use_forwarder_.is_null()) {
-    metrics_data_use_forwarder_.Run(
-        DataUseUserData::GetServiceNameAsString(service_name),
-        request.GetTotalSentBytes() + request.GetTotalReceivedBytes(),
-        is_connection_cellular);
   }
 }
 
@@ -488,6 +457,18 @@ bool DataUseMeasurement::IsUserRequest(const net::URLRequest& request) {
   return kUserInitiatedTrafficAnnotations.find(
              request.traffic_annotation().unique_id_hash_code) !=
          kUserInitiatedTrafficAnnotations.end();
+}
+
+// static
+bool DataUseMeasurement::IsMetricsServiceRequest(
+    int32_t network_traffic_annotation_hash_id) {
+  static const std::set<int32_t> kMetricsServiceTrafficAnnotations = {
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("metrics_report_uma"),
+      COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("metrics_report_ukm"),
+  };
+  return kMetricsServiceTrafficAnnotations.find(
+             network_traffic_annotation_hash_id) !=
+         kMetricsServiceTrafficAnnotations.end();
 }
 
 }  // namespace data_use_measurement
