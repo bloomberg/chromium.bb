@@ -474,7 +474,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/array-assign.html',
         ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/fborender/resize_03.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=774827)
+        ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/shaderindexing/mat_00.html',
         ['highsierra', 'mojave', ('nvidia', 0xfe9)], bug=774827)
     self.Fail('deqp/functional/gles3/shaderindexing/mat_02.html',
