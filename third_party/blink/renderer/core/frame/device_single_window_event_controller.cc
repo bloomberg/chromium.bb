@@ -96,7 +96,8 @@ bool DeviceSingleWindowEventController::CheckPolicyFeatures(
   const Document& document = GetDocument();
   return std::all_of(features.begin(), features.end(),
                      [&document](mojom::FeaturePolicyFeature feature) {
-                       return document.IsFeatureEnabled(feature);
+                       return document.IsFeatureEnabled(
+                           feature, ReportOptions::kReportOnFailure);
                      });
 }
 
