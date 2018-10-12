@@ -2502,9 +2502,7 @@ void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
     return;
   }
 
-  if (input_router_) {
-    input_router_->OnHasTouchEventHandlers(has_handlers);
-  }
+  input_router_->OnHasTouchEventHandlers(has_handlers);
   has_touch_handler_ = has_handlers;
 }
 
@@ -2963,8 +2961,8 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   associated_widget_input_handler_ = nullptr;
   widget_input_handler_ = nullptr;
 
-  input_router_.reset(new InputRouterImpl(this, this, fling_scheduler_.get(),
-                                          GetInputRouterConfigForPlatform()));
+  input_router_ = std::make_unique<InputRouterImpl>(
+      this, this, fling_scheduler_.get(), GetInputRouterConfigForPlatform());
 
   // input_router_ recreated, need to update the force_enable_zoom_ state.
   input_router_->SetForceEnableZoom(force_enable_zoom_);
@@ -3021,15 +3019,11 @@ void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
 }
 
 void RenderWidgetHostImpl::StopFling() {
-  if (input_router_)
-    input_router_->StopFling();
+  input_router_->StopFling();
 }
 
 bool RenderWidgetHostImpl::FlingCancellationIsDeferred() const {
-  if (input_router_)
-    return input_router_->FlingCancellationIsDeferred();
-
-  return false;
+  return input_router_->FlingCancellationIsDeferred();
 }
 
 void RenderWidgetHostImpl::SetScreenOrientationForTesting(
