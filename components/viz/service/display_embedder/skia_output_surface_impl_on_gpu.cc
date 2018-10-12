@@ -39,20 +39,6 @@ base::AtomicSequenceNumber g_next_command_buffer_id;
 
 }  // namespace
 
-YUVResourceMetadata::YUVResourceMetadata(
-    std::vector<ResourceMetadata> metadatas,
-    SkYUVColorSpace yuv_color_space)
-    : metadatas_(std::move(metadatas)), yuv_color_space_(yuv_color_space) {
-  DCHECK(metadatas_.size() == 2 || metadatas_.size() == 3);
-}
-
-YUVResourceMetadata::YUVResourceMetadata(YUVResourceMetadata&& other) = default;
-
-YUVResourceMetadata::~YUVResourceMetadata() = default;
-
-YUVResourceMetadata& YUVResourceMetadata::operator=(
-    YUVResourceMetadata&& other) = default;
-
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
@@ -183,7 +169,6 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
@@ -195,7 +180,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     // TODO(penghuang): Handle the failure.
   }
 
-  PreprocessYUVResources(std::move(yuv_resource_metadatas));
   sk_surface_->draw(ddl.get());
   gr_context_->flush();
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
@@ -240,7 +224,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     RenderPassId id,
     std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
@@ -250,8 +233,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     LOG(FATAL) << "Failed to make current.";
     // TODO(penghuang): Handle the failure.
   }
-
-  PreprocessYUVResources(std::move(yuv_resource_metadatas));
 
   auto& surface = offscreen_surfaces_[id];
   SkSurfaceCharacterization characterization;
@@ -304,7 +285,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
-void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
+void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const ResourceMetadata& metadata,
     GrBackendTexture* backend_texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -329,18 +310,7 @@ void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
                        metadata.mip_mapped, texture_info);
 }
 
-void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
-    const YUVResourceMetadata& yuv_metadata,
-    GrBackendTexture* backend_texture) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (yuv_metadata.image())
-    *backend_texture = yuv_metadata.image()->getBackendTexture(true);
-  DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to full fill the promise texture from yuv resources.";
-}
-
-void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
+void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const RenderPassId id,
     GrBackendTexture* backend_texture) {
   auto it = offscreen_surfaces_.find(id);
@@ -478,55 +448,6 @@ void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
       if (!image->CopyTexImage(texture_base->target()))
         LOG(ERROR) << "Failed to copy a gl image to texture.";
     }
-  }
-}
-
-void SkiaOutputSurfaceImplOnGpu::PreprocessYUVResources(
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas) {
-  if (gpu_service_->is_using_vulkan()) {
-    // TODO(https://crbug.com/838899): Use VkImage for video.
-    // NOTIMPLEMENTED();
-    return;
-  }
-  // Create SkImage for fullfilling YUV promise image, before drawing the ddl.
-  // TODO(penghuang): Remove the extra step when Skia supports drawing YUV
-  // textures directly.
-  auto* mailbox_manager = gpu_service_->mailbox_manager();
-  for (auto* yuv_metadata : yuv_resource_metadatas) {
-    const auto& metadatas = yuv_metadata->metadatas();
-    DCHECK(metadatas.size() == 2 || metadatas.size() == 3);
-    GrBackendTexture backend_textures[3];
-    size_t i = 0;
-    for (const auto& metadata : metadatas) {
-      auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
-      if (!texture_base)
-        break;
-      BindOrCopyTextureIfNecessary(texture_base);
-      GrGLTextureInfo texture_info;
-      texture_info.fTarget = texture_base->target();
-      texture_info.fID = texture_base->service_id();
-      texture_info.fFormat = *metadata.backend_format.getGLFormat();
-      backend_textures[i++] =
-          GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                           GrMipMapped::kNo, texture_info);
-    }
-
-    if (i != metadatas.size())
-      continue;
-
-    sk_sp<SkImage> image;
-    if (metadatas.size() == 2) {
-      image = SkImage::MakeFromNV12TexturesCopy(
-          gr_context_, yuv_metadata->yuv_color_space(), backend_textures,
-          kTopLeft_GrSurfaceOrigin, nullptr /* image_color_space */);
-      DCHECK(image);
-    } else {
-      image = SkImage::MakeFromYUVTexturesCopy(
-          gr_context_, yuv_metadata->yuv_color_space(), backend_textures,
-          kTopLeft_GrSurfaceOrigin, nullptr /* image_color_space */);
-      DCHECK(image);
-    }
-    yuv_metadata->set_image(std::move(image));
   }
 }
 

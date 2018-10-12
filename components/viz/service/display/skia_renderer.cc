@@ -107,7 +107,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
       DCHECK(!metadata.mailbox.IsZero());
       image = skia_renderer->skia_output_surface_->MakePromiseSkImage(
           std::move(metadata));
-      DCHECK(image);
+      LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";
     }
     sk_image_ = image.get();
   }
@@ -136,30 +136,35 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
       auto yuv_color_space = kRec601_SkYUVColorSpace;
       quad->video_color_space.ToSkYUVColorSpace(&yuv_color_space);
 
+      const bool is_i420 =
+          quad->u_plane_resource_id() != quad->v_plane_resource_id();
+      const bool has_alpha = quad->a_plane_resource_id() != kInvalidResourceId;
+      const size_t number_of_textures = (is_i420 ? 3 : 2) + (has_alpha ? 1 : 0);
       std::vector<ResourceMetadata> metadatas;
-      bool is_yuv = quad->u_plane_resource_id() != quad->v_plane_resource_id();
-      metadatas.reserve(is_yuv ? 3 : 2);
+      metadatas.reserve(number_of_textures);
       auto y_metadata = skia_renderer->lock_set_for_external_use_.LockResource(
           quad->y_plane_resource_id());
       metadatas.push_back(std::move(y_metadata));
       auto u_metadata = skia_renderer->lock_set_for_external_use_.LockResource(
           quad->u_plane_resource_id());
       metadatas.push_back(std::move(u_metadata));
-      if (is_yuv) {
+      if (is_i420) {
         auto v_metadata =
             skia_renderer->lock_set_for_external_use_.LockResource(
                 quad->v_plane_resource_id());
         metadatas.push_back(std::move(v_metadata));
       }
 
-      if (quad->a_plane_resource_id() != kInvalidResourceId) {
-        // TODO(penghuang): Handle alpha channel when Skia supports YUVA format.
-        NOTIMPLEMENTED();
+      if (has_alpha) {
+        auto a_metadata =
+            skia_renderer->lock_set_for_external_use_.LockResource(
+                quad->a_plane_resource_id());
+        metadatas.push_back(std::move(a_metadata));
       }
 
       image = skia_renderer->skia_output_surface_->MakePromiseSkImageFromYUV(
-          std::move(metadatas), yuv_color_space);
-      DCHECK(image);
+          std::move(metadatas), yuv_color_space, has_alpha);
+      LOG_IF(ERROR, !image) << "Failed to create the promise sk yuva image.";
     }
     sk_image_ = image.get();
   }

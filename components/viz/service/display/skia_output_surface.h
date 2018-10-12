@@ -43,15 +43,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   virtual sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) = 0;
 
   // Make a promise SkImage from the given |metadata| and the |yuv_color_space|.
-  // For YUV format, three resource metadatas should be provided. metadatas[0]
-  // contains pixels from y panel, metadatas[1] contains pixels from u panel,
-  // metadatas[2] contains pixels from v panel.
-  // For NV12 format, two resource metadatas should be provided. metadatas[0]
-  // contains pixels from y panel, metadatas[1] contains pixels from u and v
-  // panels.
+  // For YUV format, at least three resource metadatas should be provided.
+  // metadatas[0] contains pixels from y panel, metadatas[1] contains pixels
+  // from u panel, metadatas[2] contains pixels from v panel. For NV12 format,
+  // at least two resource metadatas should be provided. metadatas[0] contains
+  // pixels from y panel, metadatas[1] contains pixels from u and v panels. If
+  // has_alpha is true, the last item in metadatas contains alpha panel.
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
       std::vector<ResourceMetadata> metadatas,
-      SkYUVColorSpace yuv_color_space) = 0;
+      SkYUVColorSpace yuv_color_space,
+      bool has_alpha) = 0;
 
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
