@@ -60,11 +60,11 @@ class CastAudioManager;
 //      |                                           |
 //      |                                           |
 //      v                                           v
-//   [   Opened    ]    --post open-->           [   Opened   ]
-//      |     |  ^                                  |     |
-//      |     |  |                                  |     |
-//      |     | Stop()                              |     |
-//      |     v  |                                  |     v
+//   [   Opened    ]    --post open-->           [   Opened    ]
+//      |     |  ^                                  |     |  ^
+//      |     |  |                                  |     |  |
+//      |     | Stop()  --post stop-->              |     | Stop()
+//      |     v  |                                  |     v  |
 //      |  [ Started ]  --post start-->             |  [ Started ]
 //      |     |                                     |     |
 //      |     |                                     |     |
