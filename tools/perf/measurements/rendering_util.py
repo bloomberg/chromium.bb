@@ -31,5 +31,10 @@ def ExtractStat(results):
     # page_test_results.py for a temporary usecase.
     if 'name' in histogram_dict:
       histogram = histogram_module.Histogram.FromDict(histogram_dict)
-      stat[histogram.name] = histogram.running
+      if histogram.running is None:
+        continue
+      if histogram.name in stat:
+        stat[histogram.name] = stat[histogram.name].Merge(histogram.running)
+      else:
+        stat[histogram.name] = histogram.running
   return stat
