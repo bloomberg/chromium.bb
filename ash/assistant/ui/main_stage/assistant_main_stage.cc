@@ -36,7 +36,7 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kGreetingLabelMarginTopDip = 32;
+constexpr int kGreetingLabelMarginTopDip = 28;
 constexpr int kProgressIndicatorMarginLeftDip = 32;
 constexpr int kProgressIndicatorMarginTopDip = 40;
 
