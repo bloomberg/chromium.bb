@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -44,6 +45,8 @@ namespace {
 constexpr char kLockDisplay[] = "lock";
 constexpr char kExternalBinaryAuth[] = "external_binary_auth";
 constexpr char kWebCameraDeviceContext[] = "WebCamera: WebCamera";
+constexpr base::TimeDelta kExternalBinaryAuthTimeout =
+    base::TimeDelta::FromSeconds(2);
 
 ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
     ScreenLocker::FingerprintState state) {
@@ -233,6 +236,10 @@ void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
     const AccountId& account_id,
     AuthenticateUserWithExternalBinaryCallback callback) {
   authenticate_with_external_binary_callback_ = std::move(callback);
+  external_binary_auth_timer_.Start(
+      FROM_HERE, kExternalBinaryAuthTimeout,
+      base::BindOnce(&ViewsScreenLocker::OnExternalBinaryAuthTimeout,
+                     weak_factory_.GetWeakPtr()));
   media_analytics_client_->GetState(base::BindOnce(
       &StartGraphIfNeeded, media_analytics_client_, kExternalBinaryAuth));
 }
@@ -335,17 +342,14 @@ void ViewsScreenLocker::OnDetectionSignal(
     return;
 
   const mri::FramePerception& frame = media_perception.frame_perception(0);
-  if (frame.frame_id() != 1) {
-    // TODO: implement some sort of auto-retry logic.
-    std::move(authenticate_with_external_binary_callback_)
-        .Run(false /*auth_success*/);
+  if (frame.frame_id() != 1)
     return;
-  }
 
   mri::State new_state;
   new_state.set_status(mri::State::SUSPENDED);
   media_analytics_client_->SetState(new_state, base::DoNothing());
 
+  external_binary_auth_timer_.Stop();
   std::move(authenticate_with_external_binary_callback_)
       .Run(true /*auth_success*/);
   ScreenLocker::Hide();
@@ -374,6 +378,14 @@ void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
                                              bool can_authenticate) {
   LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
       account_id, can_authenticate);
+}
+
+void ViewsScreenLocker::OnExternalBinaryAuthTimeout() {
+  std::move(authenticate_with_external_binary_callback_)
+      .Run(false /*auth_success*/);
+  mri::State new_state;
+  new_state.set_status(mri::State::SUSPENDED);
+  media_analytics_client_->SetState(new_state, base::DoNothing());
 }
 
 }  // namespace chromeos

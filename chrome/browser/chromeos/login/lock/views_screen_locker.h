@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -89,6 +90,7 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void UpdatePinKeyboardState(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
+  void OnExternalBinaryAuthTimeout();
 
   std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
@@ -120,6 +122,10 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   std::unique_ptr<MojoSystemInfoDispatcher> system_info_updater_;
 
   chromeos::MediaAnalyticsClient* media_analytics_client_;
+
+  // Timer for external binary auth attempt. Allows repeated auth attempts up to
+  // a specific timeout.
+  base::OneShotTimer external_binary_auth_timer_;
 
   ScopedObserver<chromeos::MediaAnalyticsClient, ViewsScreenLocker>
       scoped_observer_{this};
