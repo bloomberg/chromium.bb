@@ -30,6 +30,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/default_screen_position_client.h"
@@ -886,7 +887,7 @@ TEST(WindowTreeTest, SetHitTestInsets) {
                                      window_delegate.PopEvent().get()));
 }
 
-TEST(WindowTreeTest, PointerWatcher) {
+TEST(WindowTreeTest, EventObserver) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   aura::Window* top_level =
@@ -896,44 +897,43 @@ TEST(WindowTreeTest, PointerWatcher) {
       top_level, mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
             top_level->event_targeting_policy());
-  // Start the pointer watcher only for pointer down/up.
-  setup.window_tree_test_helper()->window_tree()->StartPointerWatcher(false);
+  // Start observing mouse press and release.
+  setup.window_tree_test_helper()->window_tree()->ObserveEventTypes(
+      {ui::mojom::EventType::MOUSE_PRESSED_EVENT,
+       ui::mojom::EventType::MOUSE_RELEASED_EVENT});
 
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
 
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  ASSERT_TRUE(window_tree_client->observed_pointer_events().empty());
+  ASSERT_TRUE(window_tree_client->observed_events().empty());
 
   event_generator.MoveMouseTo(5, 6);
-  ASSERT_TRUE(window_tree_client->observed_pointer_events().empty());
+  ASSERT_TRUE(window_tree_client->observed_events().empty());
 
   event_generator.PressLeftButton();
-  EXPECT_EQ("POINTER_DOWN 5,6",
+  EXPECT_EQ("MOUSE_PRESSED 5,6",
             LocatedEventToEventTypeAndLocation(
-                window_tree_client->PopObservedPointerEvent().event.get()));
+                window_tree_client->PopObservedEvent().get()));
 
   event_generator.ReleaseLeftButton();
-  EXPECT_EQ("POINTER_UP 5,6",
+  EXPECT_EQ("MOUSE_RELEASED 5,6",
             LocatedEventToEventTypeAndLocation(
-                window_tree_client->PopObservedPointerEvent().event.get()));
+                window_tree_client->PopObservedEvent().get()));
 
-  // Enable observing move events.
-  setup.window_tree_test_helper()->window_tree()->StartPointerWatcher(true);
+  // Start also observing mouse move events.
+  setup.window_tree_test_helper()->window_tree()->ObserveEventTypes(
+      {ui::mojom::EventType::MOUSE_PRESSED_EVENT,
+       ui::mojom::EventType::MOUSE_RELEASED_EVENT,
+       ui::mojom::EventType::MOUSE_MOVED_EVENT});
   event_generator.MoveMouseTo(8, 9);
-  EXPECT_EQ("POINTER_MOVED 8,9",
+  EXPECT_EQ("MOUSE_MOVED 8,9",
             LocatedEventToEventTypeAndLocation(
-                window_tree_client->PopObservedPointerEvent().event.get()));
-
-  const int kTouchId = 11;
-  event_generator.MoveTouchId(gfx::Point(2, 3), kTouchId);
-  EXPECT_EQ("POINTER_MOVED 2,3",
-            LocatedEventToEventTypeAndLocation(
-                window_tree_client->PopObservedPointerEvent().event.get()));
+                window_tree_client->PopObservedEvent().get()));
 }
 
-TEST(WindowTreeTest, MatchesPointerWatcherSet) {
+TEST(WindowTreeTest, MatchesEventObserverSet) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   aura::Window* top_level =
@@ -941,26 +941,25 @@ TEST(WindowTreeTest, MatchesPointerWatcherSet) {
   ASSERT_TRUE(top_level);
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
-  // Start the pointer watcher only for pointer down/up.
-  setup.window_tree_test_helper()->window_tree()->StartPointerWatcher(false);
+  // Start observing touch press and release.
+  setup.window_tree_test_helper()->window_tree()->ObserveEventTypes(
+      {ui::mojom::EventType::TOUCH_PRESSED,
+       ui::mojom::EventType::TOUCH_RELEASED});
 
   ui::test::EventGenerator event_generator(setup.root());
-  event_generator.MoveMouseTo(50, 50);
-  EXPECT_TRUE(window_tree_client->observed_pointer_events().empty());
-  window_tree_client->ClearInputEvents();
+  event_generator.set_current_location(gfx::Point(50, 50));
+  event_generator.PressTouch();
 
-  event_generator.PressLeftButton();
-  // The client should get the event, and |matches_pointer_watcher| should be
-  // true (because it matched the pointer watcher).
+  // The client should get the input event, and |matches_event_observer| should
+  // be true (because it also matched the event observer).
   TestWindowTreeClient::InputEvent press_input =
       window_tree_client->PopInputEvent();
   ASSERT_TRUE(press_input.event);
-  EXPECT_EQ("MOUSE_PRESSED 40,40",
+  EXPECT_EQ("ET_TOUCH_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(press_input.event.get()));
-  EXPECT_TRUE(press_input.matches_pointer_watcher);
-  // Because the event matches a pointer event there should be no observed
-  // pointer events.
-  EXPECT_TRUE(window_tree_client->observed_pointer_events().empty());
+  EXPECT_TRUE(press_input.matches_event_observer);
+  // The event targeted the client, so there are no separately observed events.
+  EXPECT_TRUE(window_tree_client->observed_events().empty());
 }
 
 TEST(WindowTreeTest, Capture) {

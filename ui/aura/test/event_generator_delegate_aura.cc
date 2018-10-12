@@ -160,11 +160,6 @@ class EventGeneratorDelegateMus : public EventGeneratorDelegateAura {
     if (hosted_target != &event_targeter_)
       EventGeneratorDelegateAura::ConvertPointFromHost(hosted_target, point);
   }
-  void DispatchEventToPointerWatchers(ui::EventTarget* target,
-                                      const ui::PointerEvent& event) override {
-    // Does nothing as events are injected into mus, which should trigger
-    // pointer events to be handled.
-  }
 
  private:
   EventTargeterMus event_targeter_;
@@ -250,24 +245,6 @@ ui::EventDispatchDetails EventGeneratorDelegateAura::DispatchKeyEventToIME(
     ui::KeyEvent* event) {
   Window* window = static_cast<Window*>(target);
   return window->GetHost()->GetInputMethod()->DispatchKeyEvent(event);
-}
-
-void EventGeneratorDelegateAura::DispatchEventToPointerWatchers(
-    ui::EventTarget* target,
-    const ui::PointerEvent& event) {
-  // In non-mus aura PointerWatchers are handled by system-wide EventHandlers,
-  // for example ash::Shell and ash::PointerWatcherAdapter.
-  if (!Env::GetInstance()->HasWindowTreeClient())
-    return;
-
-  Window* window = static_cast<Window*>(target);
-  if (!WindowPortMus::Get(window))
-    return;
-  // Route the event through WindowTreeClient as in production mus. Does nothing
-  // if there are no PointerWatchers installed.
-  WindowTreeClient* window_tree_client = EnvTestHelper().GetWindowTreeClient();
-  WindowTreeClientPrivate(window_tree_client)
-      .CallOnPointerEventObserved(window, ui::Event::Clone(event));
 }
 
 }  // namespace test

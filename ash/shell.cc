@@ -68,7 +68,6 @@
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
-#include "ash/pointer_watcher_adapter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
@@ -568,15 +567,6 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                                                          source_type);
 }
 
-void Shell::AddPointerWatcher(views::PointerWatcher* watcher,
-                              views::PointerWatcherEventTypes events) {
-  pointer_watcher_adapter_->AddPointerWatcher(watcher, events);
-}
-
-void Shell::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  pointer_watcher_adapter_->RemovePointerWatcher(watcher);
-}
-
 void Shell::AddShellObserver(ShellObserver* observer) {
   shell_observers_.AddObserver(observer);
 }
@@ -903,8 +893,6 @@ Shell::~Shell() {
   // Must be released before |focus_controller_|.
   ime_focus_handler_.reset();
 
-  pointer_watcher_adapter_.reset();
-
   // Stop observing window activation changes before closing all windows.
   focus_controller_->RemoveObserver(this);
 
@@ -1201,10 +1189,6 @@ void Shell::Init(
   AddPreTargetHandler(modality_filter_.get());
 
   event_client_.reset(new EventClientImpl);
-
-  // Must occur after Shell has installed its early pre-target handlers (for
-  // example, WindowModalityController).
-  pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapter>();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_ = std::make_unique<::wm::ShadowController>(

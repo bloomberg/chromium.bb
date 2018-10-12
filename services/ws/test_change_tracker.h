@@ -37,7 +37,7 @@ enum ChangeType {
   CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED,
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_INPUT_EVENT,
-  CHANGE_TYPE_POINTER_WATCHER_EVENT,
+  CHANGE_TYPE_OBSERVED_EVENT,
   CHANGE_TYPE_PROPERTY_CHANGED,
   CHANGE_TYPE_FOCUSED,
   CHANGE_TYPE_CURSOR_CHANGED,
@@ -69,9 +69,9 @@ struct TestWindow {
   // Returns a string description that includes visible and drawn.
   std::string ToString2() const;
 
-  Id parent_id;
-  Id window_id;
-  bool visible;
+  Id parent_id = 0;
+  Id window_id = 0;
+  bool visible = false;
   gfx::Rect bounds;
   std::map<std::string, std::vector<uint8_t>> properties;
 };
@@ -83,32 +83,32 @@ struct Change {
   Change(const Change& other);
   ~Change();
 
-  ChangeType type;
+  ChangeType type = CHANGE_TYPE_EMBED;
   std::vector<TestWindow> windows;
-  Id window_id;
-  Id window_id2;
-  Id window_id3;
+  Id window_id = 0;
+  Id window_id2 = 0;
+  Id window_id3 = 0;
   gfx::Rect bounds;
   gfx::Rect bounds2;
   viz::FrameSinkId frame_sink_id;
   base::Optional<viz::LocalSurfaceId> local_surface_id;
-  int32_t event_action;
-  bool matches_pointer_watcher;
+  int32_t event_action = 0;
+  bool matches_event_observer = false;
   std::string embed_url;
   mojom::OrderDirection direction;
-  bool bool_value;
-  float float_value;
+  bool bool_value = false;
+  float float_value = 0.f;
   std::string property_key;
   std::string property_value;
-  ui::CursorType cursor_type;
-  uint32_t change_id;
+  ui::CursorType cursor_type = ui::CursorType::kNull;
+  uint32_t change_id = 0u;
   gfx::Transform transform;
   // Set in OnWindowInputEvent() if the event is a KeyEvent.
   base::flat_map<std::string, std::vector<uint8_t>> key_event_properties;
-  int64_t display_id;
+  int64_t display_id = 0;
   gfx::Point location1;
   base::flat_map<std::string, std::vector<uint8_t>> drag_data;
-  uint32_t drag_drop_action;
+  uint32_t drag_drop_action = 0u;
 };
 
 // The ChangeToDescription related functions convert a Change into a string.
@@ -202,7 +202,8 @@ class TestChangeTracker {
   void OnWindowInputEvent(Id window_id,
                           const ui::Event& event,
                           int64_t display_id,
-                          bool matches_pointer_watcher);
+                          bool matches_event_observer);
+  void OnObservedInputEvent(const ui::Event& event);
   void OnPointerEventObserved(const ui::Event& event, Id window_id);
   void OnWindowSharedPropertyChanged(
       Id window_id,

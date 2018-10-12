@@ -737,38 +737,12 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
                                     base::Unretained(this)));
     }
     pending_events_.push_back(std::move(pending_event));
-  } else {
-    MaybeDispatchToPointerWatchers(*event);
-    if (!event->handled()) {
-      ui::EventSource* event_source =
-          delegate()->GetEventSource(current_target_);
-      ui::EventSourceTestApi event_source_test(event_source);
-      ui::EventDispatchDetails details =
-          event_source_test.SendEventToSink(event);
-      if (details.dispatcher_destroyed)
-        current_target_ = nullptr;
-    }
-  }
-}
-
-void EventGenerator::MaybeDispatchToPointerWatchers(const Event& event) {
-  // Regular pointer events can be dispatched directly.
-  if (event.IsPointerEvent()) {
-    delegate()->DispatchEventToPointerWatchers(current_target_,
-                                               *event.AsPointerEvent());
-    return;
-  }
-
-  // PointerWatchers always use pointer events, so mouse and touch events
-  // need to be converted.
-  if (!PointerEvent::CanConvertFrom(event))
-    return;
-  if (event.IsMouseEvent()) {
-    delegate()->DispatchEventToPointerWatchers(
-        current_target_, PointerEvent(*event.AsMouseEvent()));
-  } else if (event.IsTouchEvent()) {
-    delegate()->DispatchEventToPointerWatchers(
-        current_target_, PointerEvent(*event.AsTouchEvent()));
+  } else if (!event->handled()) {
+    ui::EventSource* event_source = delegate()->GetEventSource(current_target_);
+    ui::EventSourceTestApi event_source_test(event_source);
+    ui::EventDispatchDetails details = event_source_test.SendEventToSink(event);
+    if (details.dispatcher_destroyed)
+      current_target_ = nullptr;
   }
 }
 

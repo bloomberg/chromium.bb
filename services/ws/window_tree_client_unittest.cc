@@ -372,7 +372,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
                           Id window_id,
                           int64_t display_id,
                           std::unique_ptr<ui::Event> event,
-                          bool matches_pointer_watcher) override {
+                          bool matches_event_observer) override {
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
     // event to notify of entry.
@@ -380,9 +380,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
-  void OnPointerEventObserved(std::unique_ptr<ui::Event>,
-                              Id window_id,
-                              int64_t display_id) override {}
+  void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override {}
   void OnWindowSharedPropertyChanged(
       Id window,
       const std::string& name,

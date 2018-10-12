@@ -543,7 +543,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // Close the overflow bubble if an item on either shelf is clicked. Press
   // events elsewhere will close the overflow shelf via OverflowBubble's
-  // PointerWatcher functionality.
+  // EventHandler functionality.
   ShelfView* shelf_view = main_shelf_ ? main_shelf_ : this;
   if (shelf_view->IsShowingOverflowBubble())
     shelf_view->ToggleOverflowBubble();

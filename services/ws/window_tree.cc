@@ -20,7 +20,7 @@
 #include "services/ws/common/util.h"
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
-#include "services/ws/pointer_watcher.h"
+#include "services/ws/event_observer_helper.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/server_window.h"
 #include "services/ws/topmost_window_observer.h"
@@ -48,6 +48,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/events/mojo/event_struct_traits.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -184,22 +185,22 @@ void WindowTree::SendEventToClient(aura::Window* window,
   // Events should only come to windows connected to displays.
   DCHECK(window->GetHost());
   const int64_t display_id = window->GetHost()->GetDisplayId();
-  const bool matches_pointer_watcher =
-      pointer_watcher_ && pointer_watcher_->DoesEventMatch(event);
-  if (pointer_watcher_)
-    pointer_watcher_->ClearPendingEvent();
+  const bool matches_event_observer =
+      event_observer_helper_ && event_observer_helper_->DoesEventMatch(event);
+  if (event_observer_helper_)
+    event_observer_helper_->ClearPendingEvent();
 
   for (WindowServiceObserver& observer : window_service_->observers())
     observer.OnWillSendEventToClient(client_id_, event_id);
 
   std::unique_ptr<ui::Event> event_to_send = ui::Event::Clone(event);
-  // Translate the root location for located events. Event's root location
-  // should be in the coordinate of the root window, however the root for the
-  // target window in the client can be different from the one in the server,
-  // thus the root location needs to be converted from the original coordinate
-  // to the one used in the client. See also 'WindowTreeTest.EventLocation' test
-  // case.
   if (event.IsLocatedEvent()) {
+    // Translate the root location for located events. Event's root location
+    // should be in the coordinate of the root window, however the root for the
+    // target window in the client can be different from the one in the server,
+    // thus the root location needs to be converted from the original coordinate
+    // to the one used in the client. See also 'WindowTreeTest.EventLocation'
+    // test case.
     ClientRoot* client_root = FindClientRootContaining(window);
     // The |client_root| may have been removed on shutdown.
     if (client_root) {
@@ -215,14 +216,29 @@ void WindowTree::SendEventToClient(aura::Window* window,
            << " event_type=" << ui::EventTypeName(event.type());
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
-      std::move(event_to_send), matches_pointer_watcher);
+      std::move(event_to_send), matches_event_observer);
 }
 
-void WindowTree::SendPointerWatcherEventToClient(
-    int64_t display_id,
-    std::unique_ptr<ui::Event> event) {
-  window_tree_client_->OnPointerEventObserved(std::move(event),
-                                              kInvalidTransportId, display_id);
+void WindowTree::SendObservedEventToClient(int64_t display_id,
+                                           std::unique_ptr<ui::Event> event) {
+  if (event->IsLocatedEvent()) {
+    // Send event locations in screen coordinates, since the client will have no
+    // knowledge of the event's target window.
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
+    gfx::PointF location = located_event->root_location_f();
+    display::Display display;
+    if (located_event->target()) {
+      location = located_event->target()->GetScreenLocationF(*located_event);
+    } else if (display::Screen::GetScreen()->GetDisplayWithDisplayId(
+                   display_id, &display)) {
+      location += display.bounds().OffsetFromOrigin();
+    }
+    located_event->set_location_f(location);
+    located_event->set_root_location_f(location);
+  }
+  DVLOG(4) << "SendObservedEventToClient event_type="
+           << ui::EventTypeName(event->type());
+  window_tree_client_->OnObservedInputEvent(std::move(event));
 }
 
 bool WindowTree::IsTopLevel(aura::Window* window) {
@@ -1458,16 +1474,18 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id transport_window_id) {
       change_id, ReleaseCaptureImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowTree::StartPointerWatcher(bool want_moves) {
-  if (!pointer_watcher_)
-    pointer_watcher_ = std::make_unique<PointerWatcher>(this);
-  pointer_watcher_->set_types_to_watch(
-      want_moves ? PointerWatcher::TypesToWatch::kUpDownMoveWheel
-                 : PointerWatcher::TypesToWatch::kUpDown);
-}
-
-void WindowTree::StopPointerWatcher() {
-  pointer_watcher_.reset();
+void WindowTree::ObserveEventTypes(
+    const std::vector<ui::mojom::EventType>& types) {
+  if (types.empty()) {
+    event_observer_helper_.reset();
+  } else {
+    if (!event_observer_helper_)
+      event_observer_helper_ = std::make_unique<EventObserverHelper>(this);
+    std::set<ui::EventType> event_types;
+    for (auto type : types)
+      event_types.insert(mojo::ConvertTo<ui::EventType>(type));
+    event_observer_helper_->set_types(event_types);
+  }
 }
 
 void WindowTree::SetWindowBounds(

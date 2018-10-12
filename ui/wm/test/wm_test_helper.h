@@ -79,9 +79,6 @@ class WMTestHelper : public aura::client::WindowParentingClient,
   void OnUnembed(aura::Window* root) override;
   void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnLostConnection(aura::WindowTreeClient* client) override;
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              const gfx::Point& location_in_screen,
-                              aura::Window* target) override;
   aura::PropertyConverter* GetPropertyConverter() override;
   void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,
                          int64_t primary_display_id,

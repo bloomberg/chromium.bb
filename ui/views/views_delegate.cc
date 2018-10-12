@@ -14,11 +14,12 @@
 #endif
 
 namespace views {
+
 namespace {
 
 ViewsDelegate* views_delegate = nullptr;
 
-}
+}  // namespace
 
 ViewsDelegate::ViewsDelegate()
     : editing_controller_factory_(new ViewsTouchEditingControllerFactory) {
@@ -130,18 +131,6 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 
 bool ViewsDelegate::ShouldMirrorArrowsInRTL() const {
   return true;
-}
-
-void ViewsDelegate::AddPointerWatcher(PointerWatcher*, bool) {
-  NOTREACHED();
-}
-
-void ViewsDelegate::RemovePointerWatcher(PointerWatcher*) {
-  NOTREACHED();
-}
-
-bool ViewsDelegate::IsPointerWatcherSupported() const {
-  return false;
 }
 
 }  // namespace views
