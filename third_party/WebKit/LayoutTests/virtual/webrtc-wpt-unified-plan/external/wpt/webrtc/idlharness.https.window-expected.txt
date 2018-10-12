@@ -321,7 +321,9 @@ FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit prope
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "getRemoteCertificates()" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onstatechange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCDtlsTransport interface: idlTestObjects.dtlsTransport must inherit property "onerror" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL RTCIceTransport interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function () { [native code] }" did not throw
+FAIL RTCIceTransport interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function() {
+                new interface_object();
+            }" did not throw
 PASS RTCIceTransport interface object length
 PASS RTCIceTransport interface object name
 PASS RTCIceTransport interface: existence and properties of interface prototype object
