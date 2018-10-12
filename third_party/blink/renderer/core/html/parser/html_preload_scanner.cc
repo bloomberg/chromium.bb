@@ -220,7 +220,7 @@ class TokenPreloadScanner::StartTagScanner {
       const SegmentedString& source,
       const ClientHintsPreferences& client_hints_preferences,
       const PictureData& picture_data,
-      const ReferrerPolicy document_referrer_policy) {
+      const CachedDocumentParameters& document_parameters) {
     PreloadRequest::RequestType request_type =
         PreloadRequest::kRequestTypePreload;
     base::Optional<ResourceType> type;
@@ -266,8 +266,9 @@ class TokenPreloadScanner::StartTagScanner {
     // The element's 'referrerpolicy' attribute (if present) takes precedence
     // over the document's referrer policy.
     ReferrerPolicy referrer_policy =
-        (referrer_policy_ != kReferrerPolicyDefault) ? referrer_policy_
-                                                     : document_referrer_policy;
+        (referrer_policy_ != kReferrerPolicyDefault)
+            ? referrer_policy_
+            : document_parameters.referrer_policy;
     auto request = PreloadRequest::CreateIfNeeded(
         InitiatorFor(tag_impl_), position, url_to_load_, predicted_base_url,
         type.value(), referrer_policy, PreloadRequest::kDocumentIsReferrer,
@@ -286,7 +287,10 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
-    if (lazyload_attr_set_to_off_ ||
+    // If the 'lazyload' feature policy is enforced, the attribute value "off"
+    // for the 'lazyload' attribute is considered as 'auto'.
+    if ((lazyload_attr_set_to_off_ &&
+         !document_parameters.lazyload_policy_enforced) ||
         (width_attr_small_absolute_ && height_attr_small_absolute_)) {
       request->SetIsLazyloadImageDisabled(true);
     }
@@ -901,7 +905,7 @@ void TokenPreloadScanner::ScanCommon(const Token& token,
         scanner.HandlePictureSourceURL(picture_data_);
       std::unique_ptr<PreloadRequest> request = scanner.CreatePreloadRequest(
           predicted_base_element_url_, source, client_hints_preferences_,
-          picture_data_, document_parameters_->referrer_policy);
+          picture_data_, *document_parameters_);
       if (request)
         requests.push_back(std::move(request));
       return;
@@ -988,6 +992,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
                           document->GetSettings()->GetViewportMetaEnabled();
   referrer_policy = document->GetReferrerPolicy();
   integrity_features = SubresourceIntegrityHelper::GetFeatures(document);
+  lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
 }
 
 }  // namespace blink

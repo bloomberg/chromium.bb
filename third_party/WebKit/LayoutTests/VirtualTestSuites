@@ -768,7 +768,7 @@
   {
     "prefix" : "lazyload-policy",
     "base": "external/wpt/feature-policy/experimental-features/lazyload",
-    "args": ["--enable-blink-features=LazyFrameLoading"]
+    "args": ["--enable-blink-features=LazyFrameLoading,LazyImageLoading"]
   },
   {
     "prefix": "display-lock",

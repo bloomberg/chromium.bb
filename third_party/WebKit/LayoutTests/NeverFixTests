@@ -1919,6 +1919,18 @@ http/tests/cachestorage/large-put.html [ WontFix ]
 crbug.com/846170 http/tests/lazyload/lazy.html [ WontFix ]
 crbug.com/846170 http/tests/lazyload/attribute.html [ WontFix ]
 crbug.com/846170 http/tests/lazyload/fixed-dimension.html [ WontFix ]
+crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
+crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
+crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
+crbug.com/869492 virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
+crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
+crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-image-tentative.html [ WontFix ]
+crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-image-tentative.sub.html [ WontFix ]
+crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ WontFix ]
 
 # Tests that are not supported if outofblink-cors feature is enabled.
 # These functionarities should be verified on browser_tests for outofblink-cors.
