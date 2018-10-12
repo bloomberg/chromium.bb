@@ -4465,20 +4465,28 @@ def BranchScheduleConfig():
   # or the change will fail chromite unittests.
 
   branch_builds = (
+      ('release-R71-11151.B', 'master-release',
+       release_label, '0 7 * * *', None),
+      ('release-R71-11151.B', 'reef-android-nyc-pre-flight-branch',
+       release_label, '0 3,7,11,15,19,23 * * *', None),
+      ('release-R71-11151.B', 'grunt-android-pi-pre-flight-branch',
+       release_label, '0 3,7,11,15,19,23 * * *', None),
+      ('release-R71-11151.B', 'samus-chrome-pre-flight-branch',
+       release_label, '0 3,7,11,15,19,23 * * *', None),
       ('release-R70-11021.B', 'master-release',
-       release_label, '0 6 * * *', None),
-      ('release-R70-11021.B', 'reef-android-nyc-pre-flight-branch',
-       release_label, '0 2,6,10,14,18,22 * * *', None),
-      ('release-R70-11021.B', 'grunt-android-pi-pre-flight-branch',
-       release_label, '0 2,6,10,14,18,22 * * *', None),
-      ('release-R70-11021.B', 'samus-chrome-pre-flight-branch',
-       release_label, '0 2,6,10,14,18,22 * * *', None),
-      ('release-R69-10895.B', 'master-release',
        release_label, '0 5 * * *', None),
+      ('release-R70-11021.B', 'reef-android-nyc-pre-flight-branch',
+       release_label, '0 1,5,9,13,17,21 * * *', None),
+      ('release-R70-11021.B', 'grunt-android-pi-pre-flight-branch',
+       release_label, '0 1,5,9,13,17,21 * * *', None),
+      ('release-R70-11021.B', 'samus-chrome-pre-flight-branch',
+       release_label, '0 1,5,9,13,17,21 * * *', None),
+      ('release-R69-10895.B', 'master-release',
+       release_label, 'triggered', None),
       ('release-R69-10895.B', 'reef-android-nyc-pre-flight-branch',
-       release_label, '0 1,5,9,13,17,21 * * *', None),
+       release_label, '0 2,6,10,14,18,22 * * *', None),
       ('release-R69-10895.B', 'samus-chrome-pre-flight-branch',
-       release_label, '0 1,5,9,13,17,21 * * *', None),
+       release_label, '0 2,6,10,14,18,22 * * *', None),
   )
 
   default_config = config_lib.GetConfig().GetDefault()
