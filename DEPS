@@ -282,7 +282,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/immersive-web/webxr-samples.git' + '@' + 'cf02f19c4ff6894705a9407722ab52551e010c60',
 
   'src/ios/third_party/earl_grey/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '451b6497352d0731e9827a338f32024e564078c6',
+      'url': Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '3102ef3b137f05a179628b1b9768856e5feea90e',
       'condition': 'checkout_ios',
   },
 
