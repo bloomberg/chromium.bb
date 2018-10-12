@@ -128,14 +128,14 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
 
   void SetURLRequestContext(net::URLRequestContext* context) {
     DCHECK(!context_ && !context_owner_);
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(!base::FeatureList::IsEnabled(::network::features::kNetworkService));
 
     context_ = context;
   }
 
   void SetURLRequestContext(std::unique_ptr<net::URLRequestContext> context) {
     DCHECK(!context_ && !context_owner_);
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(base::FeatureList::IsEnabled(::network::features::kNetworkService));
 
     context_owner_ = std::move(context);
     context_ = context_owner_.get();
@@ -160,7 +160,7 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
 // ProxyConfigClient.
 class HeadlessProxyConfigMonitor
     : public net::ProxyConfigService::Observer,
-      public network::mojom::ProxyConfigPollerClient {
+      public ::network::mojom::ProxyConfigPollerClient {
  public:
   static void DeleteSoon(std::unique_ptr<HeadlessProxyConfigMonitor> instance) {
     instance->task_runner_->DeleteSoon(FROM_HERE, instance.release());
@@ -191,7 +191,7 @@ class HeadlessProxyConfigMonitor
   // whenever the configuration changes. Can be called more than once to inform
   // multiple NetworkContexts of proxy changes.
   void AddToNetworkContextParams(
-      network::mojom::NetworkContextParams* network_context_params) {
+      ::network::mojom::NetworkContextParams* network_context_params) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!proxy_config_client_);
     network_context_params->proxy_config_client_request =
@@ -231,8 +231,8 @@ class HeadlessProxyConfigMonitor
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  mojo::Binding<network::mojom::ProxyConfigPollerClient> poller_binding_;
-  network::mojom::ProxyConfigClientPtr proxy_config_client_;
+  mojo::Binding<::network::mojom::ProxyConfigPollerClient> poller_binding_;
+  ::network::mojom::ProxyConfigClientPtr proxy_config_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessProxyConfigMonitor);
 };
@@ -254,7 +254,8 @@ HeadlessRequestContextManager::CreateSystemContext(
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (manager->user_data_path_.empty()) {
-    network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
+    ::network::mojom::CryptConfigPtr config =
+        ::network::mojom::CryptConfig::New();
     config->store = command_line->GetSwitchValueASCII(switches::kPasswordStore);
     config->product_name = kProductName;
     config->should_use_preference = false;
@@ -277,7 +278,7 @@ HeadlessRequestContextManager::HeadlessRequestContextManager(
     const HeadlessBrowserContextOptions* options,
     base::FilePath user_data_path)
     : network_service_enabled_(
-          base::FeatureList::IsEnabled(network::features::kNetworkService)),
+          base::FeatureList::IsEnabled(::network::features::kNetworkService)),
       io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO})),
       user_data_path_(std::move(user_data_path)),
@@ -359,7 +360,7 @@ void HeadlessRequestContextManager::InitializeOnIO() {
   if (!network_service_enabled_) {
     DCHECK(network_context_request_);
 
-    auto builder = std::make_unique<network::URLRequestContextBuilderMojo>();
+    auto builder = std::make_unique<::network::URLRequestContextBuilderMojo>();
     builder->set_network_delegate(std::make_unique<DelegateImpl>());
     builder->SetCreateHttpTransactionFactoryCallback(
         base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
@@ -381,9 +382,9 @@ void HeadlessRequestContextManager::InitializeOnIO() {
   url_request_context_getter_->SetURLRequestContext(builder.Build());
 }
 
-network::mojom::NetworkContextParamsPtr
+::network::mojom::NetworkContextParamsPtr
 HeadlessRequestContextManager::CreateNetworkContextParams() {
-  auto context_params = network::mojom::NetworkContextParams::New();
+  auto context_params = ::network::mojom::NetworkContextParams::New();
 
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
