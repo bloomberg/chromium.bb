@@ -48,6 +48,7 @@ CASE 1, original layer tree
     }
   ]
 }
+
 CASE 2, change color of "inner" to red
 {
   "layers": [
