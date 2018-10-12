@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
@@ -61,6 +62,8 @@ class ExploreSitesImageHelperTest : public testing::Test {
     });
   }
 
+  const base::HistogramTester& histograms() const { return histogram_tester_; }
+
   std::vector<std::unique_ptr<SkBitmap>> last_bitmap_list;
 
  protected:
@@ -71,6 +74,7 @@ class ExploreSitesImageHelperTest : public testing::Test {
   }
 
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  base::HistogramTester histogram_tester_;
 };
 
 // 1x1 webp image with color value of 0.
@@ -269,6 +273,37 @@ TEST_F(ExploreSitesImageHelperTest, TestImageHelper_CategoryImage_InvalidWebP) {
       EXPECT_FALSE(last_bitmap_list[i]->isNull());
     }
   }
+}
+
+// Test that the ExploreSites.ImageDecoded UMA works.
+TEST_F(ExploreSitesImageHelperTest, TestImageHelper_ImageDecodedUMA) {
+  ImageHelper image_helper;
+
+  // Record one success UMA from CompseSiteImage.
+  image_helper.ComposeSiteImage(StoreBitmap(), GetEncodedImageList(1),
+                                GetConnector());
+  scoped_task_environment_.RunUntilIdle();
+
+  histograms().ExpectTotalCount("ExploreSites.ImageDecoded", 1);
+  histograms().ExpectBucketCount("ExploreSites.ImageDecoded", true, 1);
+
+  // Record one failure UMA from ComposeSiteImage.
+  EncodedImageList image_list;
+  image_list.push_back(std::make_unique<EncodedImageBytes>(kInvalidWebpBytes));
+  image_helper.ComposeSiteImage(StoreBitmap(), std::move(image_list),
+                                GetConnector());
+  scoped_task_environment_.RunUntilIdle();
+
+  histograms().ExpectTotalCount("ExploreSites.ImageDecoded", 2);
+  histograms().ExpectBucketCount("ExploreSites.ImageDecoded", false, 1);
+
+  // Record 2 samples from ComposeCategoryImage.
+  image_helper.ComposeCategoryImage(StoreBitmap(), kIconSize,
+                                    GetEncodedImageList(2), GetConnector());
+  scoped_task_environment_.RunUntilIdle();
+
+  histograms().ExpectTotalCount("ExploreSites.ImageDecoded", 4);
+  histograms().ExpectBucketCount("ExploreSites.ImageDecoded", true, 3);
 }
 
 }  // namespace explore_sites
