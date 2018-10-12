@@ -12,6 +12,7 @@
 
 // AppRatingPromptDelegate declares methods that are called when significant
 // actions are performed on an AppRatingPrompt.
+// TODO(crbug.com/863559): DEPRECATED: DO NOT USE
 @protocol AppRatingPromptDelegate<NSObject>
 @optional
 
@@ -28,6 +29,7 @@
 
 // An AppRatingPrompt displays a modal dialog prompting the user to rate the
 // current app, with additional options to send feedback or dismiss the dialog.
+// TODO(crbug.com/863559): DEPRECATED: DO NOT USE
 @protocol AppRatingPrompt<NSObject>
 @required
 

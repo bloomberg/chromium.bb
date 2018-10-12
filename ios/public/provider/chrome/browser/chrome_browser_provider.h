@@ -114,6 +114,7 @@ class ChromeBrowserProvider {
       CGRect frame) const NS_RETURNS_RETAINED;
   // Creates and returns an app ratings prompt object.  Can return nil if app
   // ratings prompts are not supported by the provider.
+  // TODO(crbug.com/863559): DEPRECATED: DO NOT USE
   virtual id<AppRatingPrompt> CreateAppRatingPrompt() const NS_RETURNS_RETAINED;
 
   // Initializes the cast service.  Should be called soon after the given

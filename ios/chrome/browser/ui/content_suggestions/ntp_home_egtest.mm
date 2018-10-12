@@ -279,7 +279,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testPromoTap {
   // Setup the promo.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults setInteger:experimental_flags::WHATS_NEW_APP_RATING
+  [defaults setInteger:experimental_flags::WHATS_NEW_MOVE_TO_DOCK_TIP
                 forKey:@"WhatsNewPromoStatus"];
   PrefService* local_state = GetApplicationContext()->GetLocalState();
   ios::NotificationPromo::MigrateUserPrefs(local_state);

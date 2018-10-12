@@ -69,9 +69,6 @@ class GURL;
 - (void)viewSource;
 #endif
 
-// Shows the "rate this app" dialog.
-- (void)showRateThisAppDialog;
-
 // Shows the Find In Page bar.
 - (void)showFindInPage;
 
