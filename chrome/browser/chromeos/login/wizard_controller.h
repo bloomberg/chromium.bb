@@ -215,6 +215,7 @@ class WizardController : public BaseScreenDelegate,
   void OnOfflineDemoModeSetup();
   void OnConnectionFailed();
   void OnUpdateCompleted();
+  void OnUpdateOverCellularRejected();
   void OnEulaAccepted();
   void OnEulaBack();
   void OnUpdateErrorCheckingForUpdate();

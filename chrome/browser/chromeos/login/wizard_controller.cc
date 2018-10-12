@@ -985,6 +985,10 @@ void WizardController::OnUpdateCompleted() {
   }
 }
 
+void WizardController::OnUpdateOverCellularRejected() {
+  ShowNetworkScreen();
+}
+
 void WizardController::OnEulaAccepted() {
   time_eula_accepted_ = base::Time::Now();
   StartupUtils::MarkEulaAccepted();
@@ -1631,6 +1635,9 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
     case ScreenExitCode::UPDATE_NOUPDATE:
       OnUpdateCompleted();
       break;
+    case ScreenExitCode::UPDATE_REJECT_OVER_CELLULAR:
+      OnUpdateOverCellularRejected();
+      return;
     case ScreenExitCode::UPDATE_ERROR_CHECKING_FOR_UPDATE:
       OnUpdateErrorCheckingForUpdate();
       break;
