@@ -419,9 +419,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
-  void ApplyWebPreferencesInternal(const WebPreferences& prefs,
-                                   blink::WebView* web_view);
-
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in
