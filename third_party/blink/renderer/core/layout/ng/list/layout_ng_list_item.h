@@ -19,6 +19,7 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   ListItemOrdinal& Ordinal() { return ordinal_; }
 
   int Value() const;
+  String MarkerTextWithSuffix() const;
   String MarkerTextWithoutSuffix() const;
 
   LayoutObject* Marker() const { return marker_; }
