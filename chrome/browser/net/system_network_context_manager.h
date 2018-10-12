@@ -19,6 +19,7 @@
 #include "services/network/public/mojom/ssl_config.mojom.h"
 
 class PrefRegistrySimple;
+class PrefService;
 class SSLConfigServiceManager;
 
 namespace network {

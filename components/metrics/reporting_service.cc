@@ -81,13 +81,13 @@ bool ReportingService::reporting_active() const {
   return reporting_active_;
 }
 
-void ReportingService::UpdateMetricsUsagePrefs(const std::string& service_name,
-                                               int message_size,
-                                               bool is_cellular) {
+void ReportingService::UpdateMetricsUsagePrefs(int message_size,
+                                               bool is_cellular,
+                                               bool is_metrics_service_usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (data_use_tracker_) {
-    data_use_tracker_->UpdateMetricsUsagePrefs(service_name, message_size,
-                                               is_cellular);
+    data_use_tracker_->UpdateMetricsUsagePrefs(message_size, is_cellular,
+                                               is_metrics_service_usage);
   }
 }
 

@@ -44,6 +44,10 @@ class DataUseMeasurement {
   // Returns true if the |request| is initiated by user traffic.
   static bool IsUserRequest(const net::URLRequest& request);
 
+  // Returns true if the NTA hash is one used by metrics (UMA, UKM) component.
+  static bool IsMetricsServiceRequest(
+      int32_t network_traffic_annotation_hash_id);
+
   // Returns the content-type saved in the request userdata when the response
   // headers were received.
   static DataUseUserData::DataUseContentType GetContentTypeForRequest(
@@ -51,9 +55,8 @@ class DataUseMeasurement {
 
   DataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,
-      const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder,
       DataUseAscriber* ascriber);
-  ~DataUseMeasurement();
+  virtual ~DataUseMeasurement();
 
   // Called before a request is sent.
   void OnBeforeURLRequest(net::URLRequest* request);
@@ -80,6 +83,12 @@ class DataUseMeasurement {
   void OnApplicationStateChangeForTesting(
       base::android::ApplicationState application_state);
 #endif
+
+  // Updates the data use to metrics service. |is_metrics_service_usage|
+  // indicates if the data use is from metrics component.
+  virtual void UpdateDataUseToMetricsService(int64_t total_bytes,
+                                             bool is_cellular,
+                                             bool is_metrics_service_usage) = 0;
 
  private:
   friend class DataUseMeasurementTest;
@@ -134,9 +143,6 @@ class DataUseMeasurement {
                         TrafficDirection dir,
                         int64_t bytes);
 
-  // Updates the data use of the |request|, thus |request| must be non-null.
-  void UpdateDataUsePrefs(const net::URLRequest& request) const;
-
   // Reports the message size of the service requests.
   void ReportServicesMessageSizeUMA(const net::URLRequest& request);
 
@@ -170,12 +176,6 @@ class DataUseMeasurement {
 
   // Classifier for identifying if an URL request is user initiated.
   std::unique_ptr<URLRequestClassifier> url_request_classifier_;
-
-  // Callback for updating metrics about data use of user traffic and services.
-  // TODO(rajendrant): Change this to not report data use service name. Instead
-  // pass a bool to distinguish if the data use is for metrics services
-  // (UMA, UKM).
-  metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
 
   // DataUseAscriber used to get the attributes of data use.
   DataUseAscriber* ascriber_;
