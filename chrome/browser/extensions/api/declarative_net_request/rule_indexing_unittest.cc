@@ -342,9 +342,9 @@ TEST_P(RuleIndexingTest, RuleCountLimitExceeded) {
 
 TEST_P(RuleIndexingTest, InvalidJSONFile) {
   set_persist_invalid_json_file();
-  // The error is returned by the JSON parser we use. Hence just test that an
-  // error is thrown without verifying what it is.
-  LoadAndExpectError("");
+  // The error is returned by the JSON parser we use. Hence just test that it's
+  // prepended with |kJSONRulesFilename|.
+  LoadAndExpectError(base::StringPrintf("%s: ", kJSONRulesFilename));
 }
 
 TEST_P(RuleIndexingTest, EmptyRuleset) {
