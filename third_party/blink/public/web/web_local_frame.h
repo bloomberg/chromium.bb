@@ -744,9 +744,6 @@ class WebLocalFrame : public WebFrame {
   virtual WebSize GetScrollOffset() const = 0;
   virtual void SetScrollOffset(const WebSize&) = 0;
 
-  // If set to false, do not draw scrollbars on this frame's view.
-  virtual void SetCanHaveScrollbars(bool) = 0;
-
   // The size of the document in this frame.
   virtual WebSize DocumentSize() const = 0;
 

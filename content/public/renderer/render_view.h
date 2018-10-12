@@ -86,10 +86,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the associated WebFrameWidget.
   virtual blink::WebFrameWidget* GetWebFrameWidget() = 0;
 
-  // Returns true if we should display scrollbars for the given view size and
-  // false if the scrollbars should be hidden.
-  virtual bool ShouldDisplayScrollbars(int width, int height) const = 0;
-
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.

@@ -2501,7 +2501,7 @@ TEST_F(WebFrameTest, OverflowHiddenDisablesScrollingWithSetCanHaveScrollbars) {
   EXPECT_FALSE(
       view->LayoutViewport()->UserInputScrollable(kHorizontalScrollbar));
 
-  web_view_helper.LocalMainFrame()->SetCanHaveScrollbars(true);
+  web_view_helper.LocalMainFrame()->GetFrameView()->SetCanHaveScrollbars(true);
   EXPECT_FALSE(view->LayoutViewport()->UserInputScrollable(kVerticalScrollbar));
   EXPECT_FALSE(
       view->LayoutViewport()->UserInputScrollable(kHorizontalScrollbar));

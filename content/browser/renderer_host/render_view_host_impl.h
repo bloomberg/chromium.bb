@@ -94,7 +94,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) override;
-  void DisableScrollbarsForThreshold(const gfx::Size& size) override;
   void EnablePreferredSizeMode() override;
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,

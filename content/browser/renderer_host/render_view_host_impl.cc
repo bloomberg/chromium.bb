@@ -951,10 +951,6 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   updating_web_preferences_ = false;
 }
 
-void RenderViewHostImpl::DisableScrollbarsForThreshold(const gfx::Size& size) {
-  Send(new ViewMsg_DisableScrollbarsForSmallWindows(GetRoutingID(), size));
-}
-
 void RenderViewHostImpl::EnablePreferredSizeMode() {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(GetRoutingID()));
 }

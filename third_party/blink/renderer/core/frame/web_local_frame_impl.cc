@@ -1954,11 +1954,6 @@ void WebLocalFrameImpl::DidFinish() {
   Client()->DidFinishLoad();
 }
 
-void WebLocalFrameImpl::SetCanHaveScrollbars(bool can_have_scrollbars) {
-  if (LocalFrameView* view = GetFrameView())
-    view->SetCanHaveScrollbars(can_have_scrollbars);
-}
-
 void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
     float content_scale_factor) {
   input_events_scale_factor_for_emulation_ = content_scale_factor;
