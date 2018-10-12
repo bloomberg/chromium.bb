@@ -53,9 +53,6 @@ void RecordContentSuggestionsUsage() {
   base::UmaHistogramExactLinear(histogram_name, bucket, kNumBuckets);
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramArticlesUsageTimeLocal, bucket,
                              kNumBuckets);
-
-  base::RecordAction(
-      base::UserMetricsAction("NewTabPage_ContentSuggestions_ArticlesUsage"));
 }
 
 int ToUMAScore(float score) {
@@ -114,8 +111,7 @@ void FeedLoggingMetrics::OnSuggestionShown(int position,
 
 void FeedLoggingMetrics::OnSuggestionOpened(int position,
                                             base::Time publish_date,
-                                            float score,
-                                            WindowOpenDisposition disposition) {
+                                            float score) {
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Opened", position,
                              kMaxSuggestionsTotal);
 
@@ -128,16 +124,17 @@ void FeedLoggingMetrics::OnSuggestionOpened(int position,
       "NewTabPage.ContentSuggestions.OpenedScoreNormalized.Articles",
       ToUMAScore(score), 11);
 
+  RecordContentSuggestionsUsage();
+}
+
+void FeedLoggingMetrics::OnSuggestionWindowOpened(
+    WindowOpenDisposition disposition) {
   // We use WindowOpenDisposition::MAX_VALUE + 1 for |value_max| since MAX_VALUE
   // itself is a valid (and used) enum value.
   UMA_HISTOGRAM_EXACT_LINEAR(
       "NewTabPage.ContentSuggestions.OpenDisposition.Articles",
       static_cast<int>(disposition),
       static_cast<int>(WindowOpenDisposition::MAX_VALUE) + 1);
-
-  RecordContentSuggestionsUsage();
-
-  base::RecordAction(base::UserMetricsAction("Suggestions.Content.Opened"));
 }
 
 void FeedLoggingMetrics::OnSuggestionMenuOpened(int position,
@@ -166,6 +163,12 @@ void FeedLoggingMetrics::OnSuggestionArticleVisited(
     base::TimeDelta visit_time) {
   base::UmaHistogramLongTimes(
       "NewTabPage.ContentSuggestions.VisitDuration.Articles", visit_time);
+}
+
+void FeedLoggingMetrics::OnSuggestionOfflinePageVisited(
+    base::TimeDelta visit_time) {
+  base::UmaHistogramLongTimes(
+      "NewTabPage.ContentSuggestions.VisitDuration.Downloads", visit_time);
 }
 
 void FeedLoggingMetrics::OnMoreButtonShown(int position) {

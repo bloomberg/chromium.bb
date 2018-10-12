@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.feed;
 
+import com.google.android.libraries.feed.host.logging.ActionType;
 import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.mojom.WindowOpenDisposition;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of {@link BasicLoggingApi} that log actions performed on the Feed,
@@ -39,34 +43,36 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     public void onContentViewed(ContentLoggingData data) {
         assert mNativeFeedLoggingBridge != 0;
         nativeOnContentViewed(mNativeFeedLoggingBridge, data.getPositionInStream(),
-                data.getPublishedTimeSeconds(), data.getTimeContentBecameAvailable(),
-                data.getScore());
+                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()),
+                TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()), data.getScore());
     }
 
     @Override
     public void onContentDismissed(ContentLoggingData data) {
         assert mNativeFeedLoggingBridge != 0;
-        nativeOnContentDismissed(mNativeFeedLoggingBridge, data.getRepresentationUri());
+        nativeOnContentDismissed(
+                mNativeFeedLoggingBridge, data.getPositionInStream(), data.getRepresentationUri());
     }
 
     @Override
     public void onContentClicked(ContentLoggingData data) {
         assert mNativeFeedLoggingBridge != 0;
         nativeOnContentClicked(mNativeFeedLoggingBridge, data.getPositionInStream(),
-                data.getPublishedTimeSeconds(), data.getScore());
+                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore());
     }
 
     @Override
-    public void onClientAction(ContentLoggingData data, int actionType) {
+    public void onClientAction(ContentLoggingData data, @ActionType int actionType) {
         assert mNativeFeedLoggingBridge != 0;
-        nativeOnClientAction(mNativeFeedLoggingBridge, actionType);
+        nativeOnClientAction(
+                mNativeFeedLoggingBridge, feedActionToWindowOpenDisposition(actionType));
     }
 
     @Override
     public void onContentContextMenuOpened(ContentLoggingData data) {
         assert mNativeFeedLoggingBridge != 0;
         nativeOnContentContextMenuOpened(mNativeFeedLoggingBridge, data.getPositionInStream(),
-                data.getPublishedTimeSeconds(), data.getScore());
+                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore());
     }
 
     @Override
@@ -119,16 +125,37 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         nativeOnOfflinePageVisited(mNativeFeedLoggingBridge, visitTimeMs);
     }
 
+    private int feedActionToWindowOpenDisposition(@ActionType int actionType) {
+        switch (actionType) {
+            case ActionType.OPEN_URL:
+                return WindowOpenDisposition.CURRENT_TAB;
+            case ActionType.OPEN_URL_INCOGNITO:
+                return WindowOpenDisposition.IGNORE_ACTION;
+            case ActionType.OPEN_URL_NEW_TAB:
+                return WindowOpenDisposition.NEW_BACKGROUND_TAB;
+            case ActionType.OPEN_URL_NEW_WINDOW:
+                return WindowOpenDisposition.NEW_WINDOW;
+            case ActionType.DOWNLOAD:
+                return WindowOpenDisposition.SAVE_TO_DISK;
+            case ActionType.LEARN_MORE:
+            case ActionType.UNKNOWN:
+            default:
+                return WindowOpenDisposition.UNKNOWN;
+        }
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedLoggingBridge);
     private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
-            long publishedTimeSeconds, long timeContentBecameAvailable, float score);
-    private native void nativeOnContentDismissed(long nativeFeedLoggingBridge, String uri);
+            long publishedTimeMs, long timeContentBecameAvailableMs, float score);
+    private native void nativeOnContentDismissed(
+            long nativeFeedLoggingBridge, int position, String uri);
     private native void nativeOnContentClicked(
-            long nativeFeedLoggingBridge, int position, long publishedTimeSeconds, float score);
-    private native void nativeOnClientAction(long nativeFeedLoggingBridge, int actionType);
+            long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
+    private native void nativeOnClientAction(
+            long nativeFeedLoggingBridge, int windowOpenDisposition);
     private native void nativeOnContentContextMenuOpened(
-            long nativeFeedLoggingBridge, int position, long publishedTimeSeconds, float score);
+            long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
     private native void nativeOnMoreButtonViewed(long nativeFeedLoggingBridge, int position);
     private native void nativeOnMoreButtonClicked(long nativeFeedLoggingBridge, int position);
     private native void nativeOnOpenedWithContent(
