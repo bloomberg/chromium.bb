@@ -769,11 +769,12 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   auto proxied_request = std::move(*factory_request);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
   *factory_request = mojo::MakeRequest(&target_factory_info);
+  int process_id = is_navigation ? 0 : frame->GetProcess()->GetID();
 
   // Android WebView has one non off-the-record browser context.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy, process_id,
                      std::move(proxied_request), std::move(target_factory_info),
                      nullptr /* AwInterceptedRequestHandler */));
   return true;
