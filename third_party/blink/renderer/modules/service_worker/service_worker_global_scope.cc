@@ -126,6 +126,10 @@ void ServiceWorkerGlobalScope::ReadyToEvaluateScript() {
     std::move(evaluate_script_).Run();
 }
 
+bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
+  return Platform::Current()->AllowScriptExtensionForServiceWorker(Url());
+}
+
 void ServiceWorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     AccessControlStatus access_control_status,

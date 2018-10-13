@@ -852,6 +852,10 @@ Location* Document::location() const {
   return domWindow()->location();
 }
 
+bool Document::ShouldInstallV8Extensions() const {
+  return frame_->Client()->AllowScriptExtensions();
+}
+
 void Document::ChildrenChanged(const ChildrenChange& change) {
   ContainerNode::ChildrenChanged(change);
   document_element_ = ElementTraversal::FirstWithin(*this);

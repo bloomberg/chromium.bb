@@ -291,6 +291,10 @@ class CORE_EXPORT Document : public ContainerNode,
   using SecurityContext::GetContentSecurityPolicy;
   using TreeScope::getElementById;
 
+  // ExecutionContext overrides:
+  bool IsDocument() const final { return true; }
+  bool ShouldInstallV8Extensions() const final;
+
   bool CanContainRangeEndPoint() const override { return true; }
 
   SelectorQueryCache& GetSelectorQueryCache();
@@ -1576,8 +1580,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void DetachParser();
 
   void BeginLifecycleUpdatesIfRenderingReady();
-
-  bool IsDocument() const final { return true; }
 
   void ChildrenChanged(const ChildrenChange&) override;
 
