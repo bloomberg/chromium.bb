@@ -643,9 +643,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=716496)
-    self.Flaky('conformance/textures/misc/' +
-        'tex-video-using-tex-unit-non-zero.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=830901)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=610951)
@@ -694,12 +691,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'copy-tex-image-and-sub-image-2d.html',
         ['android', ('qualcomm', 'Adreno (TM) 420'), 'no_passthrough'],
         bug=499555)
-    self.Flaky('conformance/textures/misc/' +
-        'tex-video-using-tex-unit-non-zero.html',
-        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=830901)
-    self.Flaky('conformance/textures/misc/' +
-        'tex-video-using-tex-unit-non-zero.html',
-        ['android', ('qualcomm', 'Adreno (TM) 430')], bug=830901)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'],
         bug=663071)
@@ -718,9 +709,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'nvidia'], bug=478572)
     self.Fail('conformance/glsl/bugs/multiplication-assignment.html',
         ['android', 'nvidia'], bug=606096)
-    self.Flaky('conformance/textures/misc/' +
-        'tex-video-using-tex-unit-non-zero.html',
-        ['android', 'nvidia'], bug=830901)
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['android', 'nvidia'], bug=891456)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
