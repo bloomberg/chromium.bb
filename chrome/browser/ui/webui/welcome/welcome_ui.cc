@@ -9,14 +9,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
-#include "chrome/browser/ui/webui/welcome/nux/show_promo_delegate.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome/welcome_handler.h"
 #include "chrome/common/pref_names.h"
@@ -110,13 +108,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     nux::EmailHandler::AddSources(html_source, profile->GetPrefs());
 
     // Add google apps bookmarking onboarding module.
-    content::BrowserContext* browser_context =
-        web_ui->GetWebContents()->GetBrowserContext();
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>(
-        profile->GetPrefs(),
-        FaviconServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS),
-        BookmarkModelFactory::GetForBrowserContext(browser_context)));
+        profile->GetPrefs(), FaviconServiceFactory::GetForProfile(
+                                 profile, ServiceAccessType::EXPLICIT_ACCESS)));
     nux::GoogleAppsHandler::AddSources(html_source);
 
     // Add set-as-default onboarding module.

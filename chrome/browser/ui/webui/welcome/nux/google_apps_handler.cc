@@ -8,10 +8,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
@@ -68,11 +66,8 @@ static_assert(base::size(kGoogleAppNames) == base::size(kGoogleAppIcons),
               "names and icons must match");
 
 GoogleAppsHandler::GoogleAppsHandler(PrefService* prefs,
-                                     favicon::FaviconService* favicon_service,
-                                     bookmarks::BookmarkModel* bookmark_model)
-    : prefs_(prefs),
-      favicon_service_(favicon_service),
-      bookmark_model_(bookmark_model) {}
+                                     favicon::FaviconService* favicon_service)
+    : prefs_(prefs), favicon_service_(favicon_service) {}
 
 GoogleAppsHandler::~GoogleAppsHandler() {}
 
@@ -96,7 +91,6 @@ void GoogleAppsHandler::HandleRejectGoogleApps(const base::ListValue* args) {
 
 void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
   // Add bookmarks for all selected apps.
-  int bookmarkIndex = 0;
   for (size_t i = 0; i < (size_t)GoogleApps::kCount; ++i) {
     bool selected = false;
     CHECK(args->GetBoolean(i, &selected));
@@ -105,9 +99,7 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
           "FirstRun.NewUserExperience.GoogleAppsSelection", (GoogleApps)i,
           GoogleApps::kCount);
       GURL app_url = GURL(kGoogleAppUrls[i]);
-      bookmark_model_->AddURL(bookmark_model_->bookmark_bar_node(),
-                              bookmarkIndex++,
-                              base::ASCIIToUTF16(kGoogleAppNames[i]), app_url);
+      // TODO(hcarmona): Add bookmark from JS.
 
       // Preload the favicon cache with Chrome-bundled images. Otherwise, the
       // pre-populated bookmarks don't have favicons and look bad. Favicons are

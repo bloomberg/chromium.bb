@@ -113,10 +113,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // Returns the MenuButton for node.
   views::MenuButton* GetMenuButtonForNode(const bookmarks::BookmarkNode* node);
 
-  // Returns the LabelButton for node.
-  views::LabelButton* GetBookmarkButtonForNode(
-      const bookmarks::BookmarkNode* node);
-
   // Returns the position to anchor the menu for |button| at.
   void GetAnchorPositionForButton(views::MenuButton* button,
                                   views::MenuAnchorPosition* anchor);
