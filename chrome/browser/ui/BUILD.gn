@@ -2931,11 +2931,7 @@ jumbo_split_static_library("ui") {
     }
 
     if (is_win) {
-      sources += [
-        "views/chrome_views_delegate_win.cc",
-        "views/feature_promos/bookmark_bar_promo_bubble_view.cc",
-        "views/feature_promos/bookmark_bar_promo_bubble_view.h",
-      ]
+      sources += [ "views/chrome_views_delegate_win.cc" ]
     }
 
     if (is_win || is_desktop_linux) {

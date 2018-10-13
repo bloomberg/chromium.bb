@@ -712,14 +712,6 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
   return static_cast<views::MenuButton*>(GetBookmarkButton(index));
 }
 
-views::LabelButton* BookmarkBarView::GetBookmarkButtonForNode(
-    const bookmarks::BookmarkNode* node) {
-  int index = model_->bookmark_bar_node()->GetIndexOf(node);
-  if (index == -1 || index >= GetBookmarkButtonCount())
-    return nullptr;
-  return GetBookmarkButton(index);
-}
-
 void BookmarkBarView::GetAnchorPositionForButton(
     views::MenuButton* button,
     views::MenuAnchorPosition* anchor) {
@@ -1225,8 +1217,6 @@ void BookmarkBarView::AnimationEnded(const gfx::Animation* animation) {
     browser_view_->ToolbarSizeChanged(false);
     SchedulePaint();
   }
-  for (BookmarkBarViewObserver& observer : observers_)
-    observer.OnBookmarkBarAnimationEnded();
 }
 
 void BookmarkBarView::BookmarkMenuControllerDeleted(

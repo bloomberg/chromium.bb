@@ -11,10 +11,6 @@
 
 class PrefService;
 
-namespace bookmarks {
-class BookmarkModel;
-}  // namespace bookmarks
-
 namespace content {
 class WebUIDataSource;
 }  // namespace content
@@ -39,8 +35,7 @@ enum class GoogleAppsInteraction {
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
   GoogleAppsHandler(PrefService* prefs,
-                    favicon::FaviconService* favicon_service,
-                    bookmarks::BookmarkModel* bookmark_model);
+                    favicon::FaviconService* favicon_service);
   ~GoogleAppsHandler() override;
 
   // WebUIMessageHandler:
@@ -59,9 +54,6 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
 
   // Weak reference.
   favicon::FaviconService* favicon_service_;
-
-  // Weak reference.
-  bookmarks::BookmarkModel* bookmark_model_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };
