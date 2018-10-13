@@ -70,10 +70,10 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
 }
 
 ui::AXNode* GetContainingTable(ui::AXNode* node) {
-  while (node && !ui::IsTableLikeRole(node->data().role))
+  while (node && !ui::IsTableLike(node->data().role))
     node = node->parent();
 
-  if (node && ui::IsTableLikeRole(node->data().role))
+  if (ui::IsTableLike(node->data().role))
     return node;
 
   return nullptr;

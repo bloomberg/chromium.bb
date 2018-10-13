@@ -343,7 +343,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetSelectionContainer() const {
     return nullptr;
   AXPlatformNodeBase* container = const_cast<AXPlatformNodeBase*>(this);
   while (container &&
-         !IsContainerWithSelectableChildrenRole(container->GetData().role)) {
+         !IsContainerWithSelectableChildren(container->GetData().role)) {
     gfx::NativeViewAccessible parent_accessible = container->GetParent();
     AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
 
@@ -356,7 +356,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
   if (!delegate_)
     return nullptr;
   AXPlatformNodeBase* table = const_cast<AXPlatformNodeBase*>(this);
-  while (table && !IsTableLikeRole(table->GetData().role)) {
+  while (table && !IsTableLike(table->GetData().role)) {
     gfx::NativeViewAccessible parent_accessible = table->GetParent();
     AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
 
@@ -368,8 +368,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
 AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
   if (!delegate_)
     return nullptr;
-  if (!IsTableLikeRole(GetData().role) &&
-      !IsCellOrTableHeaderRole(GetData().role))
+  if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
     return nullptr;
 
   AXPlatformNodeBase* table = GetTable();
@@ -382,8 +381,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
                                                      int column) const {
-  if (!IsTableLikeRole(GetData().role) &&
-      !IsCellOrTableHeaderRole(GetData().role))
+  if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
     return nullptr;
 
   if (row < 0 || row >= GetTableRowCount() || column < 0 ||
@@ -401,7 +399,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
 }
 
 int AXPlatformNodeBase::GetTableCellIndex() const {
-  if (!IsCellOrTableHeaderRole(GetData().role))
+  if (!IsCellOrTableHeader(GetData().role))
     return -1;
 
   AXPlatformNodeBase* table = GetTable();
@@ -424,7 +422,7 @@ int AXPlatformNodeBase::GetTableColumnCount() const {
 }
 
 int AXPlatformNodeBase::GetTableColumnSpan() const {
-  if (!IsCellOrTableHeaderRole(GetData().role))
+  if (!IsCellOrTableHeader(GetData().role))
     return 0;
 
   int column_span;
@@ -447,7 +445,7 @@ int AXPlatformNodeBase::GetTableRowCount() const {
 }
 
 int AXPlatformNodeBase::GetTableRowSpan() const {
-  if (!IsCellOrTableHeaderRole(GetData().role))
+  if (!IsCellOrTableHeader(GetData().role))
     return 0;
 
   int row_span;
@@ -717,7 +715,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose table cell index.
-  if (IsCellOrTableHeaderRole(GetData().role)) {
+  if (IsCellOrTableHeader(GetData().role)) {
     AXPlatformNodeBase* table = GetTable();
     if (table) {
       int32_t index = table->delegate_->CellIdToIndex(GetData().id);
@@ -731,7 +729,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     AddAttributeToList("layout-guess", "true", attributes);
 
   // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
-  if (IsTableLikeRole(GetData().role)) {
+  if (IsTableLike(GetData().role)) {
     AddAttributeToList(ax::mojom::IntAttribute::kAriaColumnCount, "colcount",
                        attributes);
     AddAttributeToList(ax::mojom::IntAttribute::kAriaRowCount, "rowcount",
@@ -739,7 +737,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose aria-colindex and aria-rowindex in a cell or row.
-  if (IsCellOrTableHeaderRole(GetData().role) ||
+  if (IsCellOrTableHeader(GetData().role) ||
       GetData().role == ax::mojom::Role::kRow) {
     if (GetData().role != ax::mojom::Role::kRow)
       AddAttributeToList(ax::mojom::IntAttribute::kAriaCellColumnIndex,
@@ -786,7 +784,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
     }
   }
 
-  if (IsCellOrTableHeaderRole(GetData().role)) {
+  if (IsCellOrTableHeader(GetData().role)) {
     // Expose colspan attribute.
     std::string colspan;
     if (GetData().GetHtmlAttribute("aria-colspan", &colspan)) {

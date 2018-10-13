@@ -270,7 +270,7 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
     AddEvent(node, Event::SELECTED_CHANGED);
     ui::AXNode* container = node;
     while (container &&
-           !ui::IsContainerWithSelectableChildrenRole(container->data().role))
+           !ui::IsContainerWithSelectableChildren(container->data().role))
       container = container->parent();
     if (container)
       AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);

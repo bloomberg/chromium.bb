@@ -18,7 +18,7 @@ void FindCells(AXNode* node, std::vector<AXNode*>* cells) {
     if (child->data().HasState(ax::mojom::State::kIgnored) ||
         child->data().role == ax::mojom::Role::kGenericContainer)
       FindCells(child, cells);
-    else if (IsCellOrTableHeaderRole(child->data().role))
+    else if (IsCellOrTableHeader(child->data().role))
       cells->push_back(child);
   }
 }
@@ -48,7 +48,7 @@ AXTableInfo* AXTableInfo::Create(AXTree* tree, AXNode* table_node) {
   DCHECK(node == tree->root());
 #endif
 
-  if (!IsTableLikeRole(table_node->data().role))
+  if (!IsTableLike(table_node->data().role))
     return nullptr;
 
   AXTableInfo* info = new AXTableInfo(tree, table_node);
@@ -59,7 +59,7 @@ AXTableInfo* AXTableInfo::Create(AXTree* tree, AXNode* table_node) {
 }
 
 bool AXTableInfo::Update() {
-  if (!IsTableLikeRole(table_node_->data().role))
+  if (!IsTableLike(table_node_->data().role))
     return false;
 
   col_headers.clear();

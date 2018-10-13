@@ -669,8 +669,7 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
 
     case NAVDIR_DOWN: {
       // This direction is not implemented except in tables.
-      if (!IsTableLikeRole(GetData().role) &&
-          !IsCellOrTableHeaderRole(GetData().role))
+      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next = target->GetTableCell(
@@ -684,8 +683,7 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
 
     case NAVDIR_UP: {
       // This direction is not implemented except in tables.
-      if (!IsTableLikeRole(GetData().role) &&
-          !IsCellOrTableHeaderRole(GetData().role))
+      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next =
@@ -699,8 +697,7 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
 
     case NAVDIR_LEFT: {
       // This direction is not implemented except in tables.
-      if (!IsTableLikeRole(GetData().role) &&
-          !IsCellOrTableHeaderRole(GetData().role))
+      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next =
@@ -715,8 +712,7 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
     case NAVDIR_RIGHT: {
       // This direction is not implemented except in tables.
 
-      if (!IsTableLikeRole(GetData().role) &&
-          !IsCellOrTableHeaderRole(GetData().role))
+      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next = target->GetTableCell(
@@ -1796,7 +1792,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_IsSelectionRequired(BOOL* result) {
 IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
   COM_OBJECT_VALIDATE_1_ARG(result);
 
-  if (!IsCellOrTableHeaderRole(GetData().role) || !GetTable())
+  if (!IsCellOrTableHeader(GetData().role) || !GetTable())
     return E_FAIL;
 
   std::vector<int32_t> column_header_ids =
@@ -1810,7 +1806,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
 IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
   COM_OBJECT_VALIDATE_1_ARG(result);
 
-  if (!IsCellOrTableHeaderRole(GetData().role) || !GetTable())
+  if (!IsCellOrTableHeader(GetData().role) || !GetTable())
     return E_FAIL;
 
   std::vector<int32_t> row_header_ids =
@@ -3147,14 +3143,14 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_GridPatternId:
-      if (IsTableLikeRole(data.role)) {
+      if (IsTableLike(data.role)) {
         AddRef();
         *result = static_cast<IGridProvider*>(this);
       }
       break;
 
     case UIA_GridItemPatternId:
-      if (IsCellOrTableHeaderRole(data.role)) {
+      if (IsCellOrTableHeader(data.role)) {
         AddRef();
         *result = static_cast<IGridItemProvider*>(this);
       }
@@ -3180,14 +3176,14 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_TablePatternId:
-      if (IsTableLikeRole(data.role)) {
+      if (IsTableLike(data.role)) {
         AddRef();
         *result = static_cast<ITableProvider*>(this);
       }
       break;
 
     case UIA_TableItemPatternId:
-      if (IsCellOrTableHeaderRole(data.role)) {
+      if (IsCellOrTableHeader(data.role)) {
         AddRef();
         *result = static_cast<ITableItemProvider*>(this);
       }
@@ -3208,7 +3204,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_SelectionPatternId:
-      if (IsContainerWithSelectableChildrenRole(data.role)) {
+      if (IsContainerWithSelectableChildren(data.role)) {
         AddRef();
         *result = static_cast<ISelectionProvider*>(this);
       }

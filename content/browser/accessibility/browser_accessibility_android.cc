@@ -194,8 +194,7 @@ bool BrowserAccessibilityAndroid::IsCollapsed() const {
 
 // TODO(dougt) Move to ax_role_properties?
 bool BrowserAccessibilityAndroid::IsCollection() const {
-  return (ui::IsTableLikeRole(GetRole()) ||
-          GetRole() == ax::mojom::Role::kList ||
+  return (ui::IsTableLike(GetRole()) || GetRole() == ax::mojom::Role::kList ||
           GetRole() == ax::mojom::Role::kListBox ||
           GetRole() == ax::mojom::Role::kDescriptionList ||
           GetRole() == ax::mojom::Role::kTree);
@@ -1326,7 +1325,7 @@ int BrowserAccessibilityAndroid::AndroidRangeType() const {
 }
 
 int BrowserAccessibilityAndroid::RowCount() const {
-  if (ui::IsTableLikeRole(GetRole())) {
+  if (ui::IsTableLike(GetRole())) {
     ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
     if (table_info)
       return table_info->row_count;
@@ -1343,7 +1342,7 @@ int BrowserAccessibilityAndroid::RowCount() const {
 }
 
 int BrowserAccessibilityAndroid::ColumnCount() const {
-  if (ui::IsTableLikeRole(GetRole())) {
+  if (ui::IsTableLike(GetRole())) {
     ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
     if (table_info)
       return table_info->col_count;
