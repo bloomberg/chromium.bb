@@ -1518,15 +1518,18 @@ bool TrackFragmentRun::Parse(BoxReader* reader) {
     sample_composition_time_offsets.resize(sample_count);
   }
 
-  for (uint32_t i = 0; i < sample_count; ++i) {
-    if (sample_duration_present)
-      RCHECK(reader->Read4(&sample_durations[i]));
-    if (sample_size_present)
-      RCHECK(reader->Read4(&sample_sizes[i]));
-    if (sample_flags_present)
-      RCHECK(reader->Read4(&sample_flags[i]));
-    if (sample_composition_time_offsets_present)
-      RCHECK(reader->Read4s(&sample_composition_time_offsets[i]));
+  if (sample_duration_present || sample_size_present || sample_flags_present ||
+      sample_composition_time_offsets_present) {
+    for (uint32_t i = 0; i < sample_count; ++i) {
+      if (sample_duration_present)
+        RCHECK(reader->Read4(&sample_durations[i]));
+      if (sample_size_present)
+        RCHECK(reader->Read4(&sample_sizes[i]));
+      if (sample_flags_present)
+        RCHECK(reader->Read4(&sample_flags[i]));
+      if (sample_composition_time_offsets_present)
+        RCHECK(reader->Read4s(&sample_composition_time_offsets[i]));
+    }
   }
 
   if (first_sample_flags_present) {
