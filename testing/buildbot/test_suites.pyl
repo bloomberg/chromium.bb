@@ -1625,6 +1625,12 @@
     'headless_linux_gtests': {
       'headless_browsertests': {},
       'headless_unittests': {},
+      'network_service_headless_browsertests': {
+        'args': [
+          '--enable-features=NetworkService',
+        ],
+        'test': 'headless_browsertests',
+      },
     },
 
     'headless_linux_scripts': {
