@@ -260,7 +260,7 @@ class CONTENT_EXPORT PeerConnectionTracker
 
   // This keeps track of the next available local ID.
   int next_local_id_;
-  base::ThreadChecker main_thread_;
+  THREAD_CHECKER(main_thread_);
   RenderThread* send_target_for_test_;
   mojom::PeerConnectionTrackerHostAssociatedPtr
       peer_connection_tracker_host_ptr_;
