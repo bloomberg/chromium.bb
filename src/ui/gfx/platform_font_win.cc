@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
@@ -142,7 +143,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   // Get a matching font from the system font collection exposed by
   // DirectWrite.
   Microsoft::WRL::ComPtr<IDWriteFontCollection> font_collection;
-  hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
+  hr = SkFontMgr_GetFontCollectionToUse(font_collection.GetAddressOf(), factory);
   if (FAILED(hr)) {
     CHECK(false);
     return hr;
