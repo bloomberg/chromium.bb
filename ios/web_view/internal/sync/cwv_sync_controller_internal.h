@@ -12,6 +12,8 @@
 #include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
 #import "ios/web_view/public/cwv_sync_controller.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
@@ -43,5 +45,7 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
 - (void)didUpdateAuthError:(const GoogleServiceAuthError&)authError;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_SYNC_CWV_SYNC_CONTROLLER_INTERNAL_H_

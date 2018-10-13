@@ -48,11 +48,11 @@ namespace ios_web_view {
 
 namespace {
 syncer::ModelTypeSet GetDisabledTypes() {
-  syncer::ModelTypeSet disabled_types = syncer::UserSelectableTypes();
-  // Don't need to sync preferences.
-  disabled_types.Put(syncer::PRIORITY_PREFERENCES);
   // Only want autofill and passwords.
-  disabled_types.Remove(syncer::AUTOFILL);
+  syncer::ModelTypeSet disabled_types = syncer::UserTypes();
+  disabled_types.Remove(syncer::AUTOFILL_PROFILE);
+  disabled_types.Remove(syncer::AUTOFILL_WALLET_DATA);
+  disabled_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
   disabled_types.Remove(syncer::PASSWORDS);
   return disabled_types;
 }
@@ -168,22 +168,23 @@ WebViewSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::SyncableService>
 WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
-  if (!profile_web_data_service_) {
+  auto service = account_web_data_service_ ?: profile_web_data_service_;
+  if (!service) {
     NOTREACHED();
     return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
     case syncer::AUTOFILL_PROFILE:
       return autofill::AutofillProfileSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
+                 service.get())
           ->AsWeakPtr();
     case syncer::AUTOFILL_WALLET_DATA:
       return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
+                 service.get())
           ->AsWeakPtr();
     case syncer::AUTOFILL_WALLET_METADATA:
       return autofill::AutofillWalletMetadataSyncableService::
-          FromWebDataService(profile_web_data_service_.get())
+          FromWebDataService(service.get())
               ->AsWeakPtr();
     case syncer::PASSWORDS:
       return password_store_ ? password_store_->GetPasswordSyncableService()
