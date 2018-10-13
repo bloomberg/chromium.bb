@@ -43,6 +43,7 @@ namespace ios_web_view {
 
 using testing::_;
 using testing::Invoke;
+using testing::Return;
 
 class CWVSyncControllerTest : public PlatformTest {
  protected:
@@ -185,6 +186,38 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
 
     [delegate verify];
   }
+}
+
+// Verifies CWVSyncController properly maintains the current syncing user.
+TEST_F(CWVSyncControllerTest, CurrentIdentity) {
+  EXPECT_CALL(*profile_sync_service_, RequestStart());
+  EXPECT_CALL(*profile_sync_service_, SetFirstSetupComplete());
+  CWVIdentity* identity =
+      [[CWVIdentity alloc] initWithEmail:@"johndoe@chromium.org"
+                                fullName:@"John Doe"
+                                  gaiaID:@"1337"];
+  id unused_mock = OCMProtocolMock(@protocol(CWVSyncControllerDataSource));
+  [sync_controller_ startSyncWithIdentity:identity dataSource:unused_mock];
+  CWVIdentity* currentIdentity = sync_controller_.currentIdentity;
+  EXPECT_TRUE(currentIdentity);
+  EXPECT_NSEQ(identity.email, currentIdentity.email);
+  EXPECT_NSEQ(identity.fullName, currentIdentity.fullName);
+  EXPECT_NSEQ(identity.gaiaID, currentIdentity.gaiaID);
+
+  EXPECT_CALL(*profile_sync_service_, RequestStop(_));
+  [sync_controller_ stopSyncAndClearIdentity];
+  EXPECT_FALSE(sync_controller_.currentIdentity);
+}
+
+// Verifies CWVSyncController's passphrase API.
+TEST_F(CWVSyncControllerTest, Passphrase) {
+  EXPECT_CALL(*profile_sync_service_, IsPassphraseRequiredForDecryption())
+      .WillOnce(Return(true));
+  EXPECT_TRUE(sync_controller_.passphraseNeeded);
+  EXPECT_CALL(*profile_sync_service_,
+              SetDecryptionPassphrase("dummy-passphrase"))
+      .WillOnce(Return(true));
+  EXPECT_TRUE([sync_controller_ unlockWithPassphrase:@"dummy-passphrase"]);
 }
 
 }  // namespace ios_web_view
