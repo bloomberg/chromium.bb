@@ -233,13 +233,13 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
 
   EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_FALSE(surface->swap_chain());
+  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
 
   // First SetDrawRectangle must be full size of surface for DXGI
   // swapchain.
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_TRUE(surface->swap_chain());
+  EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
 
   // SetDrawRectangle can't be called again until swap.
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
@@ -256,7 +256,7 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
   EXPECT_TRUE(context->IsCurrent(surface.get()));
-  EXPECT_FALSE(surface->swap_chain());
+  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
 
   surface->SetEnableDCLayers(false);
 
@@ -266,7 +266,7 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   // surface.
   EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_TRUE(surface->swap_chain());
+  EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
 
   context = nullptr;
   DestroySurface(std::move(surface));
@@ -290,10 +290,11 @@ TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
 
   EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_FALSE(surface->swap_chain());
+  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain = surface->swap_chain();
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+      surface->GetBackbufferSwapChainForTesting();
   ASSERT_TRUE(swap_chain);
   DXGI_SWAP_CHAIN_DESC1 desc;
   swap_chain->GetDesc1(&desc);
@@ -302,15 +303,15 @@ TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
   // Resize to the same parameters should have no effect.
   EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_TRUE(surface->swap_chain());
+  EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
                               gl::GLSurface::ColorSpace::UNSPECIFIED, false));
-  EXPECT_FALSE(surface->swap_chain());
+  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
 
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
 
-  swap_chain = surface->swap_chain();
+  swap_chain = surface->GetBackbufferSwapChainForTesting();
   ASSERT_TRUE(swap_chain);
   swap_chain->GetDesc1(&desc);
   EXPECT_EQ(DXGI_ALPHA_MODE_IGNORE, desc.AlphaMode);
@@ -357,12 +358,12 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   surface->ScheduleDCLayer(params);
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   ASSERT_FALSE(swap_chain);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
-  swap_chain = surface->GetLayerSwapChainForTesting(1);
+  swap_chain = surface->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
   UINT last_present_count = 0;
@@ -376,7 +377,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   EXPECT_EQ(swap_chain2.Get(), swap_chain.Get());
 
   // It's the same image, so it should have the same swapchain.
@@ -399,7 +400,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain3 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   EXPECT_TRUE(SUCCEEDED(swap_chain3->GetLastPresentCount(&last_present_count)));
   // the present count should increase with the new present
   EXPECT_EQ(3u, last_present_count);
@@ -450,7 +451,7 @@ TEST(DirectCompositionSurfaceTest, NoFrequentSwapchainRecreation) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
   // A new frame with the same swapchian size
@@ -458,7 +459,7 @@ TEST(DirectCompositionSurfaceTest, NoFrequentSwapchainRecreation) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   EXPECT_EQ(swap_chain2.Get(), swap_chain.Get());
 
   // Start to change the swapchain size. It should not be recreated for the
@@ -476,7 +477,7 @@ TEST(DirectCompositionSurfaceTest, NoFrequentSwapchainRecreation) {
   }
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain3 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   EXPECT_EQ(swap_chain3.Get(), swap_chain.Get());
 
   // 31 frames with the same swapchain size
@@ -489,7 +490,7 @@ TEST(DirectCompositionSurfaceTest, NoFrequentSwapchainRecreation) {
 
   // The swapchain should be recreated now
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain4 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   EXPECT_NE(swap_chain4.Get(), swap_chain.Get());
 
   context = nullptr;
@@ -540,7 +541,7 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   surface->ScheduleDCLayer(params);
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
   DXGI_SWAP_CHAIN_DESC Desc;
@@ -565,7 +566,7 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain2);
 
   EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&Desc)));
@@ -619,13 +620,13 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   surface->ScheduleDCLayer(params);
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
-  DXGI_SWAP_CHAIN_DESC Desc;
-  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
-  EXPECT_EQ((int)Desc.BufferDesc.Width, window_size.width());
-  EXPECT_EQ((int)Desc.BufferDesc.Height, window_size.height());
+  DXGI_SWAP_CHAIN_DESC desc;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&desc)));
+  EXPECT_EQ((int)desc.BufferDesc.Width, window_size.width());
+  EXPECT_EQ((int)desc.BufferDesc.Height, window_size.height());
 
   // The input texture size is smaller than the window size.
   window_size = gfx::Size(124, 136);
@@ -639,12 +640,12 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(1);
+      surface->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain2);
 
-  EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&Desc)));
-  EXPECT_EQ((int)Desc.BufferDesc.Width, window_size.width());
-  EXPECT_EQ((int)Desc.BufferDesc.Height, window_size.height());
+  EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&desc)));
+  EXPECT_EQ((int)desc.BufferDesc.Width, window_size.width());
+  EXPECT_EQ((int)desc.BufferDesc.Height, window_size.height());
 
   context = nullptr;
   DestroySurface(std::move(surface));
