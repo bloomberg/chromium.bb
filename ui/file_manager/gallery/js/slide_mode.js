@@ -356,11 +356,17 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
 
   /**
    * @type {!HTMLElement}
-   * @private
    * @const
    */
   var slideShowToolbar = util.createChild(
       this.container_, 'tool slideshow-toolbar');
+
+  // Play & Pause Button.
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
   this.slideshowPlay_ = util.createChild(slideShowToolbar, 'slideshow-play');
   this.slideshowPlay_.addEventListener('click',
       this.toggleSlideshowPause_.bind(this));
