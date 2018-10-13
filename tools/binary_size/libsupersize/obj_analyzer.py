@@ -353,7 +353,9 @@ class _BulkObjectFileAnalyzerSlave(object):
     if message[0] == _MSG_ANALYZE_PATHS:
       assert self._allow_analyze_paths, (
           'Cannot call AnalyzePaths() after AnalyzeStringLiterals()s.')
-      paths = message[1].split('\x01')
+      # Invert '\x01'.join(paths), favoring paths = [] over paths = [''] since
+      # the latter is less likely to happen.
+      paths = message[1].split('\x01') if message[1] else []
       self._job_queue.put(lambda: self._worker_analyzer.AnalyzePaths(paths))
     elif message[0] == _MSG_SORT_PATHS:
       assert self._allow_analyze_paths, (
