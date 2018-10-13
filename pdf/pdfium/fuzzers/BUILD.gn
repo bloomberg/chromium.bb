@@ -65,10 +65,6 @@ fuzzer_test("pdfium_fuzzer") {
   ]
   dict = "dicts/pdf.dict"
   seed_corpus = "//third_party/pdfium/testing/resources"
-  deps += [
-    "//third_party/pdfium",
-    "//third_party/pdfium:test_support",
-  ]
 }
 
 fuzzer_test("pdf_cmap_fuzzer") {
