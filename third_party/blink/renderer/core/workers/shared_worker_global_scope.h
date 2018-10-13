@@ -76,6 +76,14 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   const String name_;
 };
+
+template <>
+struct DowncastTraits<SharedWorkerGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsSharedWorkerGlobalScope();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_GLOBAL_SCOPE_H_

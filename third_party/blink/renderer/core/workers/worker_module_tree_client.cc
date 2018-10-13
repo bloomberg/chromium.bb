@@ -24,7 +24,7 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
   blink::WorkerReportingProxy& worker_reporting_proxy =
-      ToWorkerGlobalScope(execution_context)->ReportingProxy();
+      To<WorkerGlobalScope>(execution_context)->ReportingProxy();
 
   if (!module_script) {
     // Step 12: "If the algorithm asynchronously completes with null, queue

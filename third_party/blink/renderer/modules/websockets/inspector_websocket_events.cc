@@ -27,11 +27,10 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
   if (auto* document = DynamicTo<Document>(execution_context)) {
     value->SetString("frame",
                      IdentifiersFactory::FrameId(document->GetFrame()));
-  } else if (execution_context->IsWorkerGlobalScope()) {
-    value->SetString("workerId", IdentifiersFactory::IdFromToken(
-                                     ToWorkerGlobalScope(execution_context)
-                                         ->GetThread()
-                                         ->GetDevToolsWorkerToken()));
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(execution_context)) {
+    value->SetString("workerId",
+                     IdentifiersFactory::IdFromToken(
+                         scope->GetThread()->GetDevToolsWorkerToken()));
   } else {
     NOTREACHED()
         << "WebSocket is available only in Document and WorkerGlobalScope";
@@ -51,11 +50,10 @@ std::unique_ptr<TracedValue> InspectorWebSocketEvent::Data(
   if (auto* document = DynamicTo<Document>(execution_context)) {
     value->SetString("frame",
                      IdentifiersFactory::FrameId(document->GetFrame()));
-  } else if (execution_context->IsWorkerGlobalScope()) {
-    value->SetString("workerId", IdentifiersFactory::IdFromToken(
-                                     ToWorkerGlobalScope(execution_context)
-                                         ->GetThread()
-                                         ->GetDevToolsWorkerToken()));
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(execution_context)) {
+    value->SetString("workerId",
+                     IdentifiersFactory::IdFromToken(
+                         scope->GetThread()->GetDevToolsWorkerToken()));
   } else {
     NOTREACHED()
         << "WebSocket is available only in Document and WorkerGlobalScope";

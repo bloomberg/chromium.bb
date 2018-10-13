@@ -387,7 +387,8 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // worklets.
   if (global_scope_->IsWorkletGlobalScope())
     return;
-  WorkerGlobalScopePerformance::performance(*ToWorkerGlobalScope(global_scope_))
+  WorkerGlobalScopePerformance::performance(
+      To<WorkerGlobalScope>(*global_scope_))
       ->GenerateAndAddResourceTiming(info);
 }
 
@@ -420,9 +421,8 @@ SecurityContext& WorkerFetchContext::GetSecurityContext() const {
 }
 
 WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {
-  if (!global_scope_->IsWorkerGlobalScope())
-    return nullptr;
-  return ToWorkerGlobalScope(global_scope_)->GetWorkerSettings();
+  auto* scope = DynamicTo<WorkerGlobalScope>(*global_scope_);
+  return scope ? scope->GetWorkerSettings() : nullptr;
 }
 
 WorkerContentSettingsClient*

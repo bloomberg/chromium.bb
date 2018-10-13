@@ -123,7 +123,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     Execute(frame);
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this << ": worker scope";
-    Execute(ToWorkerGlobalScope(context));
+    Execute(To<WorkerGlobalScope>(context));
   }
 }
 

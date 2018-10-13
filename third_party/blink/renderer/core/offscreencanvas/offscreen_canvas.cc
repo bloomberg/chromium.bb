@@ -66,7 +66,7 @@ void OffscreenCanvas::Dispose() {
   if (HasPlaceholderCanvas() && GetTopExecutionContext() &&
       GetTopExecutionContext()->IsWorkerGlobalScope()) {
     WorkerAnimationFrameProvider* animation_frame_provider =
-        ToWorkerGlobalScope(GetTopExecutionContext())
+        To<WorkerGlobalScope>(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
     if (animation_frame_provider)
       animation_frame_provider->DeregisterOffscreenCanvas(this);
@@ -78,7 +78,7 @@ void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
   if (GetTopExecutionContext() &&
       GetTopExecutionContext()->IsWorkerGlobalScope()) {
     WorkerAnimationFrameProvider* animation_frame_provider =
-        ToWorkerGlobalScope(GetTopExecutionContext())
+        To<WorkerGlobalScope>(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
     if (animation_frame_provider)
       animation_frame_provider->RegisterOffscreenCanvas(this);
@@ -397,7 +397,7 @@ FontSelector* OffscreenCanvas::GetFontSelector() {
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
     return document->GetStyleEngine().GetFontSelector();
   }
-  return ToWorkerGlobalScope(execution_context_)->GetFontSelector();
+  return To<WorkerGlobalScope>(GetExecutionContext())->GetFontSelector();
 }
 
 void OffscreenCanvas::Trace(blink::Visitor* visitor) {

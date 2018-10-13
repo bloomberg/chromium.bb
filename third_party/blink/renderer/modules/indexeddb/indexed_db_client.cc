@@ -36,7 +36,7 @@ IndexedDBClient* IndexedDBClient::From(ExecutionContext* context) {
     return Supplement<LocalFrame>::From<IndexedDBClient>(document->GetFrame());
   }
 
-  WorkerClients* clients = ToWorkerGlobalScope(*context).Clients();
+  WorkerClients* clients = To<WorkerGlobalScope>(*context).Clients();
   DCHECK(clients);
   return Supplement<WorkerClients>::From<IndexedDBClient>(clients);
 }
@@ -55,7 +55,7 @@ bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context,
         name, context->GetSecurityOrigin());
   }
 
-  WorkerGlobalScope& worker_global_scope = *ToWorkerGlobalScope(context);
+  WorkerGlobalScope& worker_global_scope = *To<WorkerGlobalScope>(context);
   return WorkerContentSettingsClient::From(worker_global_scope)
       ->AllowIndexedDB(name);
 }

@@ -902,8 +902,8 @@ std::unique_ptr<TracedValue> InspectorAnimationFrameEvent::Data(
   if (auto* document = DynamicTo<Document>(context)) {
     value->SetString("frame",
                      IdentifiersFactory::FrameId(document->GetFrame()));
-  } else if (context->IsWorkerGlobalScope()) {
-    value->SetString("worker", ToHexString(ToWorkerGlobalScope(context)));
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
+    value->SetString("worker", ToHexString(scope));
   }
   SetCallStack(value.get());
   return value;

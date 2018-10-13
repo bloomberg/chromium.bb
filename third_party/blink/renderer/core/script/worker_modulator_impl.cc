@@ -22,7 +22,7 @@ WorkerModulatorImpl::WorkerModulatorImpl(ScriptState* script_state)
 
 ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher(
     ModuleScriptCustomFetchType custom_fetch_type) {
-  auto* global_scope = ToWorkerGlobalScope(GetExecutionContext());
+  auto* global_scope = To<WorkerGlobalScope>(GetExecutionContext());
   switch (custom_fetch_type) {
     case ModuleScriptCustomFetchType::kNone:
       return new DocumentModuleScriptFetcher(global_scope->EnsureFetcher());

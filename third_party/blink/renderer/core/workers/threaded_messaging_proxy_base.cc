@@ -73,10 +73,9 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
           GetExecutionContext()->Fetcher()->Context().ApplicationCacheHostID());
       web_worker_fetch_context->SetIsOnSubframe(!frame->IsMainFrame());
     }
-  } else if (execution_context_->IsWorkerGlobalScope()) {
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
     web_worker_fetch_context =
-        static_cast<WorkerFetchContext&>(
-            ToWorkerGlobalScope(execution_context_)->Fetcher()->Context())
+        static_cast<WorkerFetchContext&>(scope->Fetcher()->Context())
             .GetWebWorkerFetchContext()
             ->CloneForNestedWorker();
   }
@@ -97,10 +96,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   GetWorkerInspectorProxy()->WorkerThreadCreated(execution_context_,
                                                  GetWorkerThread(), script_url);
 
-  if (execution_context_->IsWorkerGlobalScope()) {
-    ToWorkerGlobalScope(execution_context_)
-        ->GetThread()
-        ->ChildThreadStartedOnWorkerThread(worker_thread_.get());
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
+    scope->GetThread()->ChildThreadStartedOnWorkerThread(worker_thread_.get());
   }
 }
 
@@ -145,10 +142,9 @@ void ThreadedMessagingProxyBase::WorkerThreadTerminated() {
   // Worker/Worklet object may still exist, and it assumes that the proxy
   // exists, too.
   asked_to_terminate_ = true;
-  WorkerThread* parent_thread =
-      execution_context_->IsWorkerGlobalScope()
-          ? ToWorkerGlobalScope(execution_context_)->GetThread()
-          : nullptr;
+  WorkerThread* parent_thread = nullptr;
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
+    parent_thread = scope->GetThread();
   std::unique_ptr<WorkerThread> child_thread = std::move(worker_thread_);
   worker_inspector_proxy_->WorkerThreadTerminated();
 

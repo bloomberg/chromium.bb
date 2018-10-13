@@ -725,8 +725,8 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
         FontSelector* font_selector = nullptr;
         if (auto* document = DynamicTo<Document>(context)) {
           font_selector = document->GetStyleEngine().GetFontSelector();
-        } else if (context->IsWorkerGlobalScope()) {
-          font_selector = ToWorkerGlobalScope(context)->GetFontSelector();
+        } else if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
+          font_selector = scope->GetFontSelector();
         } else {
           NOTREACHED();
         }

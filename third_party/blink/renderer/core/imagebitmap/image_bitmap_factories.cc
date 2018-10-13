@@ -213,9 +213,8 @@ ImageBitmapFactories& ImageBitmapFactories::From(EventTarget& event_target) {
   if (LocalDOMWindow* window = event_target.ToLocalDOMWindow())
     return FromInternal(*window);
 
-  DCHECK(event_target.GetExecutionContext()->IsWorkerGlobalScope());
   return ImageBitmapFactories::FromInternal(
-      *ToWorkerGlobalScope(event_target.GetExecutionContext()));
+      *To<WorkerGlobalScope>(event_target.GetExecutionContext()));
 }
 
 template <class GlobalObject>

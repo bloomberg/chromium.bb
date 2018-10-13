@@ -336,7 +336,7 @@ ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::From(
     ExecutionContext* context) {
   // TODO(horo): Replace CHECK() to DCHECK() when crbug.com/749930 is fixed.
   CHECK(context);
-  WorkerClients* worker_clients = ToWorkerGlobalScope(context)->Clients();
+  WorkerClients* worker_clients = To<WorkerGlobalScope>(context)->Clients();
   CHECK(worker_clients);
   ServiceWorkerGlobalScopeClient* client =
       Supplement<WorkerClients>::From<ServiceWorkerGlobalScopeClient>(

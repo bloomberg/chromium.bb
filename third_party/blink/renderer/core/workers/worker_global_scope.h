@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -264,11 +265,12 @@ class CORE_EXPORT WorkerGlobalScope
   Vector<base::OnceClosure> paused_calls_;
 };
 
-DEFINE_TYPE_CASTS(WorkerGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsWorkerGlobalScope(),
-                  context.IsWorkerGlobalScope());
+template <>
+struct DowncastTraits<WorkerGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsWorkerGlobalScope();
+  }
+};
 
 }  // namespace blink
 

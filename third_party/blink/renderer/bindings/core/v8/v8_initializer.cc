@@ -429,9 +429,8 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
   if (!execution_context)
     return;
 
-  DCHECK(execution_context->IsWorkerGlobalScope());
-  WorkerOrWorkletScriptController* script_controller =
-      ToWorkerGlobalScope(execution_context)->ScriptController();
+  auto* script_controller =
+      To<WorkerGlobalScope>(execution_context)->ScriptController();
   DCHECK(script_controller);
 
   PromiseRejectHandler(data, *script_controller->GetRejectedPromises(),

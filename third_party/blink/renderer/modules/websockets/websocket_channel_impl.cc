@@ -193,8 +193,8 @@ WebSocketChannelImpl::WebSocketChannelImpl(
       sent_size_of_top_message_(0),
       location_at_construction_(std::move(location)),
       throttle_passed_(false) {
-  if (execution_context_->IsWorkerGlobalScope())
-    ToWorkerGlobalScope(execution_context_)->EnsureFetcher();
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
+    scope->EnsureFetcher();
 }
 
 WebSocketChannelImpl::~WebSocketChannelImpl() {

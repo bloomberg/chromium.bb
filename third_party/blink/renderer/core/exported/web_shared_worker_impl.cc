@@ -195,11 +195,8 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
   // Wrap the passed-in channel in a MessagePort, and send it off via a connect
   // event.
   DCHECK(worker_thread_->IsCurrentThread());
-  WorkerGlobalScope* worker_global_scope =
-      ToWorkerGlobalScope(worker_thread_->GlobalScope());
-  SECURITY_DCHECK(worker_global_scope->IsSharedWorkerGlobalScope());
-  static_cast<SharedWorkerGlobalScope*>(worker_global_scope)
-      ->ConnectPausable(std::move(channel));
+  auto* scope = To<SharedWorkerGlobalScope>(worker_thread_->GlobalScope());
+  scope->ConnectPausable(std::move(channel));
 }
 
 void WebSharedWorkerImpl::StartWorkerContext(

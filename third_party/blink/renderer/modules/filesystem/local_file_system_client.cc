@@ -60,8 +60,7 @@ bool LocalFileSystemClient::RequestFileSystemAccessSync(
     return false;
   }
 
-  DCHECK(context->IsWorkerGlobalScope());
-  return WorkerContentSettingsClient::From(*ToWorkerGlobalScope(context))
+  return WorkerContentSettingsClient::From(*To<WorkerGlobalScope>(context))
       ->RequestFileSystemAccessSync();
 }
 

@@ -1443,14 +1443,13 @@ void ContentSecurityPolicy::DispatchViolationEvents(
       EventTypeNames::securitypolicyviolation, violation_data);
   DCHECK(event.bubbles());
 
-  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
+  if (auto* document = DynamicTo<Document>(*execution_context_)) {
     if (element && element->isConnected() && element->GetDocument() == document)
       element->EnqueueEvent(event, TaskType::kInternalDefault);
     else
       document->EnqueueEvent(event, TaskType::kInternalDefault);
-  } else if (execution_context_->IsWorkerGlobalScope()) {
-    ToWorkerGlobalScope(execution_context_)
-        ->EnqueueEvent(event, TaskType::kInternalDefault);
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
+    scope->EnqueueEvent(event, TaskType::kInternalDefault);
   }
 }
 
