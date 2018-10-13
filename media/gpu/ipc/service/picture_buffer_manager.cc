@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_util.h"
 
@@ -316,7 +317,8 @@ class PictureBufferManagerImpl : public PictureBufferManager {
     gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   };
   // Pictures buffers that are assigned to the VDA.
-  std::map<int32_t, PictureBufferData> picture_buffers_;
+  std::map<int32_t, PictureBufferData> picture_buffers_
+      GUARDED_BY(picture_buffers_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(PictureBufferManagerImpl);
 };
