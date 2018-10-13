@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -98,7 +99,7 @@ void StartNextPendingRequestTask::DidStoreActiveRequest(
 
   next_request_ = base::MakeRefCounted<BackgroundFetchRequestInfo>(
       active_request_.request_index(),
-      ServiceWorkerFetchRequest::ParseFromString(
+      ServiceWorkerUtils::DeserializeFetchRequestFromString(
           active_request_.serialized_request()));
   next_request_->SetDownloadGuid(active_request_.download_guid());
 

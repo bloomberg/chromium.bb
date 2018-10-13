@@ -15,6 +15,7 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
@@ -317,7 +318,8 @@ void CreateMetadataTask::StoreMetadata() {
     proto::BackgroundFetchPendingRequest pending_request_proto;
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
-    pending_request_proto.set_serialized_request(requests_[i].Serialize());
+    pending_request_proto.set_serialized_request(
+        ServiceWorkerUtils::SerializeFetchRequestToString(requests_[i]));
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }
