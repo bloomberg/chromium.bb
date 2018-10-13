@@ -21,6 +21,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
@@ -75,7 +76,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   bool started_;
   bool playing_;
-  double volume_;
+  double volume_ GUARDED_BY(volume_lock_);
 
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;

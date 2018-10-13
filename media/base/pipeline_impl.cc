@@ -161,6 +161,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   CdmContext* cdm_context_;
 
   // Lock used to serialize |shared_state_|.
+  // TODO(crbug.com/893739): Add GUARDED_BY annotations.
   mutable base::Lock shared_state_lock_;
 
   // State shared between main and media thread.
@@ -232,12 +233,12 @@ void PipelineImpl::RendererWrapper::Start(
   SetState(kStarting);
 
   DCHECK(!demuxer_);
-  DCHECK(!shared_state_.renderer);
   DCHECK(!renderer_ended_);
   DCHECK(!text_renderer_ended_);
   demuxer_ = demuxer;
   {
     base::AutoLock auto_lock(shared_state_lock_);
+    DCHECK(!shared_state_.renderer);
     shared_state_.renderer = std::move(renderer);
   }
   weak_pipeline_ = weak_pipeline;
@@ -353,7 +354,6 @@ void PipelineImpl::RendererWrapper::Suspend() {
     OnPipelineError(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
-  DCHECK(shared_state_.renderer);
   DCHECK(!pending_callbacks_.get());
 
   SetState(kSuspending);
@@ -362,6 +362,7 @@ void PipelineImpl::RendererWrapper::Suspend() {
   shared_state_.renderer->SetPlaybackRate(0.0);
   {
     base::AutoLock auto_lock(shared_state_lock_);
+    DCHECK(shared_state_.renderer);
     shared_state_.suspend_timestamp = shared_state_.renderer->GetMediaTime();
     DCHECK(shared_state_.suspend_timestamp != kNoTimestamp);
   }
@@ -388,13 +389,13 @@ void PipelineImpl::RendererWrapper::Resume(std::unique_ptr<Renderer> renderer,
     OnPipelineError(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
-  DCHECK(!shared_state_.renderer);
   DCHECK(!pending_callbacks_.get());
 
   SetState(kResuming);
 
   {
     base::AutoLock auto_lock(shared_state_lock_);
+    DCHECK(!shared_state_.renderer);
     shared_state_.renderer = std::move(renderer);
   }
 
@@ -904,9 +905,10 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
       break;
   }
 
-  if (cdm_context_)
+  if (cdm_context_) {
     shared_state_.renderer->SetCdm(cdm_context_,
                                    base::Bind(&IgnoreCdmAttached));
+  }
 
   shared_state_.renderer->Initialize(demuxer_, this, done_cb);
 }

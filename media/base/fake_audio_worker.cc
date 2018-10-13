@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/base/audio_parameters.h"
@@ -47,7 +48,7 @@ class FakeAudioWorker::Worker
   const base::TimeDelta buffer_duration_;
 
   base::Lock worker_cb_lock_;  // Held while mutating or running |worker_cb_|.
-  base::Closure worker_cb_;
+  base::Closure worker_cb_ GUARDED_BY(worker_cb_lock_);
   base::TimeTicks next_read_time_;
 
   // Used to cancel any delayed tasks still inside the worker loop's queue.

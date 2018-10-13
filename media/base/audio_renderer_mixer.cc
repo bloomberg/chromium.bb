@@ -150,6 +150,11 @@ void AudioRendererMixer::RemoveErrorCallback(const base::Closure& error_cb) {
   NOTREACHED();
 }
 
+void AudioRendererMixer::SetPauseDelayForTesting(base::TimeDelta delay) {
+  base::AutoLock auto_lock(lock_);
+  pause_delay_ = delay;
+}
+
 OutputDeviceInfo AudioRendererMixer::GetOutputDeviceInfo() {
   DVLOG(1) << __func__;
   return audio_sink_->GetOutputDeviceInfo();

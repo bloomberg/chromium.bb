@@ -114,13 +114,21 @@ void SilentSinkSuspender::OnRenderError() {
   callback_->OnRenderError();
 }
 
+bool SilentSinkSuspender::IsUsingFakeSinkForTesting() {
+  base::AutoLock al(transition_lock_);
+  return is_using_fake_sink_;
+}
+
 void SilentSinkSuspender::TransitionSinks(bool use_fake_sink) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Ignore duplicate requests which can occur if the transition takes too long
   // and multiple Render() events occur.
-  if (use_fake_sink == is_using_fake_sink_)
-    return;
+  {
+    base::AutoLock al(transition_lock_);
+    if (use_fake_sink == is_using_fake_sink_)
+      return;
+  }
 
   if (use_fake_sink) {
     sink_->Pause();

@@ -23,6 +23,7 @@
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame_layout.h"
@@ -642,7 +643,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::TimeDelta timestamp_;
 
   base::Lock release_sync_token_lock_;
-  gpu::SyncToken release_sync_token_;
+  gpu::SyncToken release_sync_token_ GUARDED_BY(release_sync_token_lock_);
 
   VideoFrameMetadata metadata_;
 
