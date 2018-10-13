@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_paths.h"
 #include "ui/gfx/image/image.h"
@@ -79,8 +78,6 @@ base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
     const gfx::Image& image,
     const std::string& profile_id,
     const GURL& origin) {
-  base::AssertBlockingAllowed();
-
   scoped_refptr<base::RefCountedMemory> image_data = image.As1xPNGBytes();
   if (image_data->size() == 0)
     return base::FilePath();
