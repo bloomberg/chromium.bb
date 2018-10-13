@@ -11,8 +11,7 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_popup.h"
 #include "ui/events/event_handler.h"
 
-class ExclusiveAccessContext;
-class ExclusiveAccessBubbleViewsContext;
+class BrowserView;
 
 namespace ui {
 class GestureEvent;
@@ -28,9 +27,7 @@ class TouchEvent;
 // requires user to press-and-hold ESC key to exit fullscreen.
 class FullscreenControlHost : public ui::EventHandler {
  public:
-  FullscreenControlHost(
-      ExclusiveAccessContext* exclusive_access_context,
-      ExclusiveAccessBubbleViewsContext* bubble_views_context);
+  explicit FullscreenControlHost(BrowserView* browser_view);
   ~FullscreenControlHost() override;
 
   static bool IsFullscreenExitUIEnabled();
@@ -72,8 +69,7 @@ class FullscreenControlHost : public ui::EventHandler {
 
   bool in_mouse_cooldown_mode_ = false;
 
-  ExclusiveAccessContext* const exclusive_access_context_;
-  ExclusiveAccessBubbleViewsContext* const bubble_views_context_;
+  BrowserView* const browser_view_;
 
   std::unique_ptr<FullscreenControlPopup> fullscreen_control_popup_;
 
