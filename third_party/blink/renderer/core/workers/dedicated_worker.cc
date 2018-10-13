@@ -321,7 +321,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(const KURL& script_url) {
     settings = std::make_unique<WorkerSettings>(document->GetSettings());
   } else {
     WorkerGlobalScope* worker_global_scope =
-        ToWorkerGlobalScope(GetExecutionContext());
+        To<WorkerGlobalScope>(GetExecutionContext());
     devtools_worker_token = worker_global_scope->GetParentDevToolsToken();
     settings = WorkerSettings::Copy(worker_global_scope->GetWorkerSettings());
   }

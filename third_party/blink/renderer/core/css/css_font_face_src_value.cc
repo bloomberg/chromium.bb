@@ -101,8 +101,8 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     }
     // For Workers, Fetcher is lazily loaded, so we must ensure it's available
     // here.
-    if (context->IsWorkerGlobalScope()) {
-      ToWorkerGlobalScope(context)->EnsureFetcher();
+    if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
+      scope->EnsureFetcher();
     }
     fetched_ = FontResourceHelper::Create(
         FontResource::Fetch(params, context->Fetcher(), client),

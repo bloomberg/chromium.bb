@@ -496,7 +496,7 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  ToWorkerGlobalScope(GlobalScope())
+  To<WorkerGlobalScope>(GlobalScope())
       ->EvaluateClassicScriptPausable(script_url, access_control_status,
                                       std::move(source_code),
                                       std::move(cached_meta_data), stack_id);
@@ -510,7 +510,7 @@ void WorkerThread::ImportModuleScriptOnWorkerThread(
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
-  ToWorkerGlobalScope(GlobalScope())
+  To<WorkerGlobalScope>(GlobalScope())
       ->ImportModuleScriptPausable(script_url,
                                    new FetchClientSettingsObjectSnapshot(
                                        std::move(outside_settings_object)),

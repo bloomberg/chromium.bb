@@ -159,7 +159,8 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  KURL parsed_url = KURL(ToWorkerGlobalScope(context)->location()->Url(), url);
+  KURL parsed_url =
+      KURL(To<WorkerGlobalScope>(context)->location()->Url(), url);
   if (!parsed_url.IsValid()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), "'" + url + "' is not a valid URL."));

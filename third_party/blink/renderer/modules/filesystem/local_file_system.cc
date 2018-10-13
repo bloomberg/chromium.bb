@@ -206,7 +206,7 @@ LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
     return file_system;
   }
 
-  WorkerClients* clients = ToWorkerGlobalScope(context).Clients();
+  WorkerClients* clients = To<WorkerGlobalScope>(context).Clients();
   DCHECK(clients);
   LocalFileSystem* file_system =
       Supplement<WorkerClients>::From<LocalFileSystem>(clients);

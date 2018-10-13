@@ -62,8 +62,7 @@ WorkerInspectorController::WorkerInspectorController(
     WorkerThreadDebugger* debugger)
     : debugger_(debugger), thread_(thread), probe_sink_(new CoreProbeSink()) {
   probe_sink_->addInspectorTraceEvents(new InspectorTraceEvents());
-  if (thread->GlobalScope()->IsWorkerGlobalScope()) {
-    WorkerGlobalScope* scope = ToWorkerGlobalScope(thread->GlobalScope());
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
     worker_devtools_token_ = thread->GetDevToolsWorkerToken();
     parent_devtools_token_ = scope->GetParentDevToolsToken();
     url_ = scope->Url();
@@ -89,15 +88,12 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
       debugger_->GetV8Inspector(), debugger_->ContextGroupId(thread_), nullptr);
   session->Append(new InspectorLogAgent(thread_->GetConsoleMessageStorage(),
                                         nullptr, session->V8Session()));
-  if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
-    WorkerGlobalScope* worker_global_scope =
-        ToWorkerGlobalScope(thread_->GlobalScope());
-    DCHECK(worker_global_scope->EnsureFetcher());
-    session->Append(new InspectorNetworkAgent(
-        inspected_frames, worker_global_scope, session->V8Session()));
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(thread_->GlobalScope())) {
+    DCHECK(scope->EnsureFetcher());
+    session->Append(new InspectorNetworkAgent(inspected_frames, scope,
+                                              session->V8Session()));
     session->Append(new InspectorEmulationAgent(nullptr));
-    session->Append(
-        new InspectorWorkerAgent(inspected_frames, worker_global_scope));
+    session->Append(new InspectorWorkerAgent(inspected_frames, scope));
   }
   if (sessions_.IsEmpty())
     thread_->GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
