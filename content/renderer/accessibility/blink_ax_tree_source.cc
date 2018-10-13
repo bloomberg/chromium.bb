@@ -805,7 +805,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kHtmlTag,
                                     "#document");
 
-    const bool is_table_like_role = ui::IsTableLikeRole(dst->role);
+    const bool is_table_like_role = ui::IsTableLike(dst->role);
     if (is_table_like_role) {
       int column_count = src.ColumnCount();
       int row_count = src.RowCount();
@@ -827,7 +827,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              aria_rowcount);
     }
 
-    if (ui::IsTableRowRole(dst->role)) {
+    if (ui::IsTableRow(dst->role)) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
                            src.RowIndex());
       WebAXObject header = src.RowHeader();
@@ -836,7 +836,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              header.AxID());
     }
 
-    if (ui::IsCellOrTableHeaderRole(dst->role)) {
+    if (ui::IsCellOrTableHeader(dst->role)) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                            src.CellColumnIndex());
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
@@ -853,8 +853,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       }
     }
 
-    if (ui::IsCellOrTableHeaderRole(dst->role) ||
-        ui::IsTableRowRole(dst->role)) {
+    if (ui::IsCellOrTableHeader(dst->role) || ui::IsTableRow(dst->role)) {
       // aria-rowindex is supported on cells, headers and rows.
       int aria_rowindex = src.AriaRowIndex();
       if (aria_rowindex)
@@ -862,7 +861,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              aria_rowindex);
     }
 
-    if (ui::IsTableHeaderRole(dst->role) &&
+    if (ui::IsTableHeader(dst->role) &&
         src.SortDirection() != ax::mojom::SortDirection::kNone) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                            static_cast<int32_t>(src.SortDirection()));

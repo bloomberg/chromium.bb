@@ -711,7 +711,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (NSNumber*)ariaColumnCount {
-  if (!ui::IsTableLikeRole(owner_->GetRole()))
+  if (!ui::IsTableLike(owner_->GetRole()))
     return nil;
   int count = -1;
   if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
@@ -722,7 +722,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (NSNumber*)ariaColumnIndex {
-  if (!ui::IsCellOrTableHeaderRole(owner_->GetRole()))
+  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
   int index = -1;
   if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
@@ -754,7 +754,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (NSNumber*)ariaRowCount {
-  if (!ui::IsTableLikeRole(owner_->GetRole()))
+  if (!ui::IsTableLike(owner_->GetRole()))
     return nil;
   int count = -1;
   if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
@@ -765,7 +765,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 - (NSNumber*)ariaRowIndex {
-  if (!ui::IsCellOrTableHeaderRole(owner_->GetRole()))
+  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
   int index = -1;
   if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
@@ -884,8 +884,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  bool is_cell_or_table_header = ui::IsCellOrTableHeaderRole(owner_->GetRole());
-  bool is_table_like = ui::IsTableLikeRole(owner_->GetRole());
+  bool is_cell_or_table_header = ui::IsCellOrTableHeader(owner_->GetRole());
+  bool is_table_like = ui::IsTableLike(owner_->GetRole());
   if (!is_table_like && !is_cell_or_table_header)
     return nil;
   BrowserAccessibility* table = [self containingTable];
@@ -927,7 +927,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSValue*)columnIndexRange {
   if (![self instanceActive])
     return nil;
-  if (!ui::IsCellOrTableHeaderRole(owner_->GetRole()))
+  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
 
   int column = -1;
@@ -954,7 +954,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
 - (BrowserAccessibility*)containingTable {
   BrowserAccessibility* table = owner_;
-  while (table && !ui::IsTableLikeRole(table->GetRole())) {
+  while (table && !ui::IsTableLike(table->GetRole())) {
     table = table->PlatformGetParent();
   }
   return table;
@@ -1201,7 +1201,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
   int headerElementId = -1;
-  if (ui::IsTableLikeRole(owner_->GetRole())) {
+  if (ui::IsTableLike(owner_->GetRole())) {
     // The table header container is always the last child of the table,
     // if it exists. The table header container is a special node in the
     // accessibility tree only used on macOS. It has all of the table
@@ -1479,7 +1479,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   BrowserAccessibility* container = activeDescendant->PlatformGetParent();
   while (container &&
-         !ui::IsContainerWithSelectableChildrenRole(container->GetRole()))
+         !ui::IsContainerWithSelectableChildren(container->GetRole()))
     container = container->PlatformGetParent();
   if (!container)
     return nil;
@@ -1862,8 +1862,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  bool is_cell_or_table_header = ui::IsCellOrTableHeaderRole(owner_->GetRole());
-  bool is_table_like = ui::IsTableLikeRole(owner_->GetRole());
+  bool is_cell_or_table_header = ui::IsCellOrTableHeader(owner_->GetRole());
+  bool is_table_like = ui::IsTableLike(owner_->GetRole());
   if (!is_table_like && !is_cell_or_table_header)
     return nil;
   BrowserAccessibility* table = [self containingTable];
@@ -1904,7 +1904,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSValue*)rowIndexRange {
   if (![self instanceActive])
     return nil;
-  if (!ui::IsCellOrTableHeaderRole(owner_->GetRole()))
+  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
 
   int row = -1;
@@ -2524,7 +2524,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
            j < child->PlatformChildCount();
            ++j) {
         BrowserAccessibility* cell = child->PlatformGetChild(j);
-        if (!ui::IsCellOrTableHeaderRole(cell->GetRole()))
+        if (!ui::IsCellOrTableHeader(cell->GetRole()))
           continue;
         int colIndex;
         if (!cell->GetIntAttribute(
