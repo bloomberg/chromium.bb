@@ -1898,6 +1898,12 @@
         },
         {
           "board_name": "grunt",
+          "name": "barla",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "grunt",
           "name": "careena",
           "test_suites": [
             "sanity",
