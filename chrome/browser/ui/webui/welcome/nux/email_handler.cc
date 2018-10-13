@@ -127,7 +127,7 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source,
                                   IDS_NUX_EMAIL_BOOKMARK_REPLACED);
 
   // Add required resources.
-  html_source->AddResourcePath("email", IDR_NUX_EMAIL_HTML);
+  html_source->AddResourcePath("email/nux_email.html", IDR_NUX_EMAIL_HTML);
   html_source->AddResourcePath("email/nux_email.js", IDR_NUX_EMAIL_JS);
 
   html_source->AddResourcePath("email/nux_email_proxy.html",

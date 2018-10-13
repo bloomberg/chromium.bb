@@ -27,13 +27,13 @@ void SetAsDefaultHandler::AddSources(content::WebUIDataSource* html_source) {
   // Localized strings.
 
   // Add required resources.
-  html_source->AddResourcePath("nux_set_as_default.html",
+  html_source->AddResourcePath("set_as_default/nux_set_as_default.html",
                                IDR_NUX_SET_AS_DEFAULT_HTML);
-  html_source->AddResourcePath("nux_set_as_default.js",
+  html_source->AddResourcePath("set_as_default/nux_set_as_default.js",
                                IDR_NUX_SET_AS_DEFAULT_JS);
-  html_source->AddResourcePath("nux_set_as_default_proxy.html",
+  html_source->AddResourcePath("set_as_default/nux_set_as_default_proxy.html",
                                IDR_NUX_SET_AS_DEFAULT_PROXY_HTML);
-  html_source->AddResourcePath("nux_set_as_default_proxy.js",
+  html_source->AddResourcePath("set_as_default/nux_set_as_default_proxy.js",
                                IDR_NUX_SET_AS_DEFAULT_PROXY_JS);
 
   // Add icons
