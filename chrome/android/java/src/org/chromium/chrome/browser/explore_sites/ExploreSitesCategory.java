@@ -22,6 +22,7 @@ import java.util.List;
  * An object representing a category in Explore Sites.
  */
 public class ExploreSitesCategory {
+    private static final String TAG = "ExploreSitesCategory";
     // The ID to use when creating the More button, that should not scroll the ESP when clicked.
     public static final int MORE_BUTTON_ID = -1;
 
@@ -112,6 +113,18 @@ public class ExploreSitesCategory {
 
     public void addSite(ExploreSitesSite site) {
         mSites.add(site);
+    }
+
+    public boolean removeSite(int siteIndex) {
+        if (siteIndex > mSites.size() || siteIndex < 0) return false;
+        mSites.remove(siteIndex);
+
+        // Reset the tile indices to account for removed tiles.
+        for (int i = siteIndex; i < mSites.size(); ++i) {
+            ExploreSitesSite site = mSites.get(i);
+            site.getModel().set(ExploreSitesSite.TILE_INDEX_KEY, i);
+        }
+        return true;
     }
 
     public List<ExploreSitesSite> getSites() {
