@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/cors/cors.h"
 
 namespace content {
@@ -120,8 +121,8 @@ void GetSettledFetchesTask::GetResponses() {
     for (const auto& completed_request : completed_requests_) {
       settled_fetches_.emplace_back();
       settled_fetches_.back().request =
-          std::move(ServiceWorkerFetchRequest::ParseFromString(
-              completed_request.serialized_request()));
+          ServiceWorkerUtils::DeserializeFetchRequestFromString(
+              completed_request.serialized_request());
       FillResponse(&settled_fetches_.back(), barrier_closure);
     }
     return;

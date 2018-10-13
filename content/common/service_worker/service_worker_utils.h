@@ -80,6 +80,12 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(
       int load_flags);
 
+  CONTENT_EXPORT static std::string SerializeFetchRequestToString(
+      const ServiceWorkerFetchRequest& request);
+
+  CONTENT_EXPORT static ServiceWorkerFetchRequest
+  DeserializeFetchRequestFromString(const std::string& serialized);
+
  private:
   static bool IsPathRestrictionSatisfiedInternal(
       const GURL& scope,

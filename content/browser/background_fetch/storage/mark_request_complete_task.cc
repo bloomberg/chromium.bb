@@ -14,6 +14,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -216,7 +217,8 @@ void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(
   completed_request_.set_unique_id(registration_id_.unique_id());
   completed_request_.set_request_index(request_info_->request_index());
   completed_request_.set_serialized_request(
-      request_info_->fetch_request().Serialize());
+      ServiceWorkerUtils::SerializeFetchRequestToString(
+          request_info_->fetch_request()));
   completed_request_.set_download_guid(request_info_->download_guid());
   completed_request_.set_succeeded(is_response_successful_);
 

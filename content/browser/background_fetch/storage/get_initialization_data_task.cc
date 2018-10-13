@@ -15,6 +15,7 @@
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/image/image.h"
 #include "url/origin.h"
@@ -237,7 +238,7 @@ class GetRequestsTask : public InitializationSubTask {
 
       auto request_info = base::MakeRefCounted<BackgroundFetchRequestInfo>(
           active_request.request_index(),
-          ServiceWorkerFetchRequest::ParseFromString(
+          ServiceWorkerUtils::DeserializeFetchRequestFromString(
               active_request.serialized_request()));
       request_info->SetDownloadGuid(active_request.download_guid());
 

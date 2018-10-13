@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/service_worker/service_worker_types.h"
+
 #include "base/guid.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -31,9 +33,11 @@ TEST(ServiceWorkerRequestTest, SerialiazeDeserializeRoundTrip) {
   request.keepalive = true;
   request.client_id = "42";
 
-  EXPECT_EQ(request.Serialize(),
-            ServiceWorkerFetchRequest::ParseFromString(request.Serialize())
-                .Serialize());
+  EXPECT_EQ(
+      ServiceWorkerUtils::SerializeFetchRequestToString(request),
+      ServiceWorkerUtils::SerializeFetchRequestToString(
+          ServiceWorkerUtils::DeserializeFetchRequestFromString(
+              ServiceWorkerUtils::SerializeFetchRequestToString(request))));
 }
 
 }  // namespace

@@ -88,10 +88,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest& operator=(const ServiceWorkerFetchRequest& other);
   ~ServiceWorkerFetchRequest();
   size_t EstimatedStructSize();
-  std::string Serialize() const;
-
-  static ServiceWorkerFetchRequest ParseFromString(
-      const std::string& serialized);
 
   // Be sure to update EstimatedStructSize(), Serialize(), and ParseFromString()
   // when adding members.
