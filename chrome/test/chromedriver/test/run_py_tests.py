@@ -98,6 +98,11 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
+_VERSION_SPECIFIC_FILTER['71'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+]
+
 _VERSION_SPECIFIC_FILTER['70'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
@@ -111,12 +116,6 @@ _VERSION_SPECIFIC_FILTER['69'] = [
     # Feature not yet supported in this version
     'ChromeDriverTest.testGenerateTestReport',
 ]
-
-_VERSION_SPECIFIC_FILTER['68'] = [
-    # Feature not yet supported in this version
-    'ChromeDriverTest.testGenerateTestReport',
-]
-
 
 
 _OS_SPECIFIC_FILTER = {}
@@ -138,8 +137,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
 ]
 
 _OS_VERSION_SPECIFIC_FILTER = {}
-_OS_VERSION_SPECIFIC_FILTER['mac', '68'] = [
-]
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
