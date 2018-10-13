@@ -129,9 +129,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   // Attempts to start the animation on the compositor side, returning true if
   // it succeeds or false otherwise. If false is returned and the animation
-  // cannot be started on main and failure_message was non-null, failure_message
-  // may be filled with an error description.
-  bool StartOnCompositor(String* failure_message);
+  // cannot be started on main.
+  bool StartOnCompositor();
   void StartOnMain();
   bool CheckCanStart(String* failure_message);
   void SetStartTimeToNow();
