@@ -2042,7 +2042,7 @@ enum WebFeature {
   kCursorImageLE32x32 = 2589,
   kCursorImageGT32x32 = 2590,
   kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics = 2591,
-
+  kResizeObserver_Constructor = 2592,
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in
