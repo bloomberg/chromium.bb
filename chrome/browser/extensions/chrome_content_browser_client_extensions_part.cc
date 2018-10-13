@@ -858,8 +858,12 @@ ChromeContentBrowserClientExtensionsPart::
         content::RenderProcessHost* process,
         network::mojom::NetworkContext* network_context,
         const url::Origin& request_initiator) {
-  return URLLoaderFactoryManager::CreateFactory(process, network_context,
-                                                request_initiator);
+  // TODO(lukasza): https://crbug.com/894766: Re-enable after a real fix for
+  // this bug.  For now, let's just avoid using separate URLLoaderFactories
+  // for extensions.
+  // return URLLoaderFactoryManager::CreateFactory(process, network_context,
+  //                                              request_initiator);
+  return network::mojom::URLLoaderFactoryPtrInfo();
 }
 
 // static

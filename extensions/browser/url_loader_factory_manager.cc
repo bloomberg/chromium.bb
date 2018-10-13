@@ -92,8 +92,11 @@ void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
     bool push_to_renderer_now) {
   DCHECK(!request_initiators.empty());
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-        std::move(request_initiators), push_to_renderer_now);
+    // TODO(lukasza): https://crbug.com/894766: Re-enable after a real fix for
+    // this bug.  For now, let's just avoid using separate URLLoaderFactories
+    // for extensions.
+    // frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+    //    std::move(request_initiators), push_to_renderer_now);
   } else {
     // TODO(lukasza): In non-NetworkService implementation of CORB, make an
     // exception only for specific extensions (e.g. based on process id,
@@ -273,6 +276,10 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
     const url::Origin& initiator_origin) {
+  // TODO(lukasza): https://crbug.com/894766: Re-enable after a real fix for
+  // this bug.  For now, we should never reach CreateFactory method.
+  NOTREACHED();
+
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
   DCHECK(registry);  // CreateFactory shouldn't happen during shutdown.
