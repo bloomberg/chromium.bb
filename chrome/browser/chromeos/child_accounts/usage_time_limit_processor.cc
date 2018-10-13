@@ -259,13 +259,23 @@ State UsageTimeLimitProcessor::GetState() {
   }
 
   const base::TimeDelta delta_zero = base::TimeDelta::FromMinutes(0);
-  // Time usage limit started when the usage quota ends.
-  if ((previous_state_ && previous_state_->remaining_usage > delta_zero &&
-       state.remaining_usage <= delta_zero) ||
-      (!previous_state_ && state.remaining_usage <= delta_zero)) {
+  bool current_state_above_usage_limit =
+      state.is_time_usage_limit_enabled && state.remaining_usage <= delta_zero;
+  bool previous_state_below_usage_limit =
+      previous_state_ && previous_state_->is_time_usage_limit_enabled &&
+      previous_state_->remaining_usage > delta_zero;
+  bool previous_state_no_usage_limit =
+      previous_state_ && !previous_state_->is_time_usage_limit_enabled;
+  bool previous_state_above_usage_limit =
+      previous_state_ && previous_state_->is_time_usage_limit_enabled &&
+      previous_state_->remaining_usage <= delta_zero;
+  if ((previous_state_below_usage_limit || previous_state_no_usage_limit ||
+       !previous_state_) &&
+      current_state_above_usage_limit) {
+    // Time usage limit just started being enforced.
     state.time_usage_limit_started = usage_timestamp_;
-  } else if (previous_state_ &&
-             previous_state_->remaining_usage <= delta_zero) {
+  } else if (previous_state_above_usage_limit) {
+    // Time usage limit was already enforced.
     state.time_usage_limit_started = previous_state_->time_usage_limit_started;
   }
 
