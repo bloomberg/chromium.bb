@@ -98,7 +98,8 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
 
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
-        mListView = new DateOrderedListView(context, decoratedModel, dateOrderedListObserver);
+        mListView =
+                new DateOrderedListView(context, config, decoratedModel, dateOrderedListObserver);
         mMediator = new DateOrderedListMediator(provider, context::startActivity, deleteController,
                 selectionDelegate, config, dateOrderedListObserver, model);
 

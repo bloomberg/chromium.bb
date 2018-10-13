@@ -16,18 +16,19 @@ import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.Delegate;
 
 /**
  * The View component of a DateOrderedList.  This takes the DateOrderedListModel and creates the
  * glue to display it on the screen.
  */
 class DateOrderedListView {
+    private final DownloadManagerUiConfig mConfig;
     private final DecoratedListItemModel mModel;
 
     private final int mIdealImageWidthPx;
@@ -37,40 +38,10 @@ class DateOrderedListView {
 
     private final RecyclerView mView;
 
-    private static class ModelChangeProcessor extends ForwardingListObservable<Void>
-            implements RecyclerViewAdapter.Delegate<ListItemViewHolder, Void> {
-        private final DecoratedListItemModel mModel;
-
-        public ModelChangeProcessor(DecoratedListItemModel model) {
-            mModel = model;
-            model.addObserver(this);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mModel.size();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return ListUtils.getViewTypeForItem(mModel.get(position));
-        }
-
-        @Override
-        public void onBindViewHolder(
-                ListItemViewHolder viewHolder, int position, @Nullable Void payload) {
-            viewHolder.bind(mModel.getProperties(), mModel.get(position));
-        }
-
-        @Override
-        public void onViewRecycled(ListItemViewHolder viewHolder) {
-            viewHolder.recycle();
-        }
-    }
-
     /** Creates an instance of a {@link DateOrderedListView} representing {@code model}. */
-    public DateOrderedListView(Context context, DecoratedListItemModel model,
-            DateOrderedListObserver dateOrderedListObserver) {
+    public DateOrderedListView(Context context, DownloadManagerUiConfig config,
+            DecoratedListItemModel model, DateOrderedListObserver dateOrderedListObserver) {
+        mConfig = config;
         mModel = model;
 
         mIdealImageWidthPx = context.getResources().getDimensionPixelSize(
@@ -143,7 +114,7 @@ class DateOrderedListView {
             // SpanSizeLookup implementation.
             @Override
             public int getSpanSize(int position) {
-                return ListUtils.getSpanSize(mModel.get(position), getSpanCount());
+                return ListUtils.getSpanSize(mModel.get(position), mConfig, getSpanCount());
             }
         }
     }
@@ -155,7 +126,7 @@ class DateOrderedListView {
             int position = parent.getChildAdapterPosition(view);
             if (position < 0 || position >= mModel.size()) return;
 
-            switch (ListUtils.getViewTypeForItem(mModel.get(position))) {
+            switch (ListUtils.getViewTypeForItem(mModel.get(position), mConfig)) {
                 case ListUtils.ViewType.IMAGE:
                 case ListUtils.ViewType.IN_PROGRESS_IMAGE:
                     outRect.left = mImagePaddingPx;
@@ -177,6 +148,37 @@ class DateOrderedListView {
                     outRect.bottom = mPrefetchVerticalPaddingPx / 2;
                     break;
             }
+        }
+    }
+
+    private class ModelChangeProcessor extends ForwardingListObservable<Void>
+            implements RecyclerViewAdapter.Delegate<ListItemViewHolder, Void> {
+        private final DecoratedListItemModel mModel;
+
+        public ModelChangeProcessor(DecoratedListItemModel model) {
+            mModel = model;
+            model.addObserver(this);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mModel.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return ListUtils.getViewTypeForItem(mModel.get(position), mConfig);
+        }
+
+        @Override
+        public void onBindViewHolder(
+                ListItemViewHolder viewHolder, int position, @Nullable Void payload) {
+            viewHolder.bind(mModel.getProperties(), mModel.get(position));
+        }
+
+        @Override
+        public void onViewRecycled(ListItemViewHolder viewHolder) {
+            viewHolder.recycle();
         }
     }
 }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home;
 
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 
 /** Provides the configuration params required by the download home UI. */
@@ -13,6 +14,9 @@ public class DownloadManagerUiConfig {
 
     /** Whether or not the UI should be shown as part of a separate activity. */
     public final boolean isSeparateActivity;
+
+    /** Whether generic view types should be used wherever possible. Used for low end devices. */
+    public final boolean useGenericViewTypes;
 
     /**
      * The time interval during which a download update is considered recent enough to show
@@ -24,6 +28,7 @@ public class DownloadManagerUiConfig {
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
         isSeparateActivity = builder.mIsSeparateActivity;
+        useGenericViewTypes = builder.mUseGenericViewTypes;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
     }
 
@@ -36,10 +41,12 @@ public class DownloadManagerUiConfig {
 
         private boolean mIsOffTheRecord;
         private boolean mIsSeparateActivity;
+        private boolean mUseGenericViewTypes;
         private long mJustNowThresholdSeconds;
 
         public Builder() {
             readParamsFromFinch();
+            mUseGenericViewTypes = SysUtils.isLowEndDevice();
         }
 
         public Builder setIsOffTheRecord(boolean isOffTheRecord) {
