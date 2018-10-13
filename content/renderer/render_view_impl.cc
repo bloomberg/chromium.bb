@@ -418,7 +418,6 @@ content::mojom::WindowContainerType WindowFeaturesToContainerType(
   }
 }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 // Check content::BrowserControlsState, and cc::BrowserControlsState
 // are kept in sync.
 static_assert(int(BROWSER_CONTROLS_STATE_SHOWN) ==
@@ -434,7 +433,6 @@ static_assert(int(BROWSER_CONTROLS_STATE_BOTH) ==
 cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
   return static_cast<cc::BrowserControlsState>(state);
 }
-#endif
 
 }  // namespace
 
@@ -1739,19 +1737,19 @@ const std::string& RenderViewImpl::GetAcceptLanguages() const {
   return renderer_preferences_.accept_languages;
 }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-
 void RenderViewImpl::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
     bool animate) {
-  if (GetWebWidget()) {
-    GetWebWidget()->UpdateBrowserControlsState(ContentToCc(constraints),
-                                               ContentToCc(current), animate);
+  if (GetWidget() && GetWidget()->layer_tree_view()) {
+    GetWidget()->layer_tree_view()->UpdateBrowserControlsState(
+        ContentToCc(constraints), ContentToCc(current), animate);
   }
 
   top_controls_constraints_ = constraints;
 }
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 
 void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
   if (delta.height == 0)

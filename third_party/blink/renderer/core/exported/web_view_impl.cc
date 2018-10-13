@@ -1378,14 +1378,13 @@ void WebViewImpl::UpdateICBAndResizeViewport() {
   }
 }
 
-void WebViewImpl::UpdateBrowserControlsState(
-    cc::BrowserControlsState constraint,
-    cc::BrowserControlsState current,
-    bool animate) {
+void WebViewImpl::UpdateBrowserControlsConstraint(
+    cc::BrowserControlsState constraint) {
   cc::BrowserControlsState old_permitted_state =
       GetBrowserControls().PermittedState();
 
-  GetBrowserControls().UpdateConstraintsAndState(constraint, current, animate);
+  GetBrowserControls().UpdateConstraintsAndState(
+      constraint, cc::BrowserControlsState::kBoth, false);
 
   // If the controls are going from a locked hidden to unlocked state, or vice
   // versa, the ICB size needs to change but we can't rely on getting a
@@ -1397,9 +1396,6 @@ void WebViewImpl::UpdateBrowserControlsState(
        constraint == cc::BrowserControlsState::kHidden)) {
     UpdateICBAndResizeViewport();
   }
-
-  if (layer_tree_view_)
-    layer_tree_view_->UpdateBrowserControlsState(constraint, current, animate);
 }
 
 void WebViewImpl::DidUpdateBrowserControls() {
@@ -3309,6 +3305,7 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
 
   elastic_overscroll_ += FloatSize(args.elastic_overscroll_delta.x(),
                                    args.elastic_overscroll_delta.y());
+  UpdateBrowserControlsConstraint(args.browser_controls_constraint);
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(
