@@ -449,7 +449,7 @@ void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
   }
 
   HasMainFrameProviderHost(
-      sw_registration->pattern().GetOrigin(),
+      sw_registration->scope().GetOrigin(),
       base::BindOnce(&BackgroundSyncManager::RegisterDidCheckIfMainFrame,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                      options, std::move(callback)));
@@ -500,7 +500,7 @@ void BackgroundSyncManager::RegisterImpl(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetBackgroundSyncPermissionOnUIThread,
                      service_worker_context_,
-                     sw_registration->pattern().GetOrigin()),
+                     sw_registration->scope().GetOrigin()),
       base::BindOnce(&BackgroundSyncManager::RegisterDidAskForPermission,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                      options, std::move(callback)));
@@ -533,7 +533,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NotifyBackgroundSyncRegisteredOnUIThread,
                      service_worker_context_,
-                     sw_registration->pattern().GetOrigin()));
+                     sw_registration->scope().GetOrigin()));
 
   BackgroundSyncRegistration* existing_registration =
       LookupActiveRegistration(sw_registration_id, options.tag);
@@ -570,8 +570,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   new_registration.set_id(registrations->next_id++);
 
   AddActiveRegistration(sw_registration_id,
-                        sw_registration->pattern().GetOrigin(),
-                        new_registration);
+                        sw_registration->scope().GetOrigin(), new_registration);
 
   StoreRegistrations(
       sw_registration_id,
@@ -1029,7 +1028,7 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
       registration->num_attempts() == parameters_->max_sync_attempts - 1;
 
   HasMainFrameProviderHost(
-      service_worker_registration->pattern().GetOrigin(),
+      service_worker_registration->scope().GetOrigin(),
       base::BindOnce(&BackgroundSyncMetrics::RecordEventStarted));
 
   DispatchSyncEvent(registration->options()->tag,
@@ -1108,7 +1107,7 @@ void BackgroundSyncManager::EventCompleteImpl(
       service_worker_context_->GetLiveRegistration(service_worker_id);
   if (sw_registration) {
     HasMainFrameProviderHost(
-        sw_registration->pattern().GetOrigin(),
+        sw_registration->scope().GetOrigin(),
         base::BindOnce(&BackgroundSyncMetrics::RecordEventResult,
                        status_code == blink::ServiceWorkerStatusCode::kOk));
   }

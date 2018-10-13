@@ -987,7 +987,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, EventsToStoppedWorker) {
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile());
-    content::StopServiceWorkerForPattern(
+    content::StopServiceWorkerForScope(
         storage_partition->GetServiceWorkerContext(),
         // The service worker is registered at the top level scope.
         extension->url(), run_loop.QuitClosure());
@@ -1034,7 +1034,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile());
-    content::StopServiceWorkerForPattern(
+    content::StopServiceWorkerForScope(
         storage_partition->GetServiceWorkerContext(),
         // The service worker is registered at the top level scope.
         extension->url(), run_loop.QuitClosure());
@@ -1093,7 +1093,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile());
-    content::StopServiceWorkerForPattern(
+    content::StopServiceWorkerForScope(
         storage_partition->GetServiceWorkerContext(),
         // The service worker is registered at the top level scope.
         extension->url(), run_loop.QuitClosure());
@@ -1387,7 +1387,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile());
-    content::StopServiceWorkerForPattern(
+    content::StopServiceWorkerForScope(
         storage_partition->GetServiceWorkerContext(),
         // The service worker is registered at the top level scope.
         extension->url(), run_loop.QuitClosure());

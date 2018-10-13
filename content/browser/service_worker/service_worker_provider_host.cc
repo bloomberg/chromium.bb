@@ -562,10 +562,10 @@ void ServiceWorkerProviderHost::SetControllerRegistration(
 void ServiceWorkerProviderHost::AddMatchingRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(
-      ServiceWorkerUtils::ScopeMatches(registration->pattern(), document_url_));
+      ServiceWorkerUtils::ScopeMatches(registration->scope(), document_url_));
   if (!IsContextSecureForServiceWorker())
     return;
-  size_t key = registration->pattern().spec().size();
+  size_t key = registration->scope().spec().size();
   if (base::ContainsKey(matching_registrations_, key))
     return;
   registration->AddListener(this);
@@ -581,7 +581,7 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
 #endif  // DCHECK_IS_ON()
 
   registration->RemoveListener(this);
-  size_t key = registration->pattern().spec().size();
+  size_t key = registration->scope().spec().size();
   matching_registrations_.erase(key);
 }
 
@@ -840,8 +840,7 @@ void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
   for (const auto& key_registration : registrations) {
     ServiceWorkerRegistration* registration = key_registration.second;
     if (!registration->is_uninstalled() &&
-        ServiceWorkerUtils::ScopeMatches(registration->pattern(),
-                                         document_url_))
+        ServiceWorkerUtils::ScopeMatches(registration->scope(), document_url_))
       AddMatchingRegistration(registration);
   }
 }
@@ -849,7 +848,7 @@ void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
 #if DCHECK_IS_ON()
 bool ServiceWorkerProviderHost::IsMatchingRegistration(
     ServiceWorkerRegistration* registration) const {
-  std::string spec = registration->pattern().spec();
+  std::string spec = registration->scope().spec();
   size_t key = spec.size();
 
   auto iter = matching_registrations_.find(key);

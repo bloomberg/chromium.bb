@@ -201,7 +201,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
                          std::move(callback), callback_id)));
 }
 
-void ServiceWorkerStorage::FindRegistrationForPattern(
+void ServiceWorkerStorage::FindRegistrationForScope(
     const GURL& scope,
     FindRegistrationCallback callback) {
   switch (state_) {
@@ -213,7 +213,7 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
       LazyInitialize(base::BindOnce(
-          &ServiceWorkerStorage::FindRegistrationForPattern,
+          &ServiceWorkerStorage::FindRegistrationForScope,
           weak_factory_.GetWeakPtr(), scope, std::move(callback)));
       return;
     case INITIALIZED:
@@ -224,7 +224,7 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   if (!base::ContainsKey(registered_origins_, scope.GetOrigin())) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
-        FindInstallingRegistrationForPattern(scope);
+        FindInstallingRegistrationForScope(scope);
     blink::ServiceWorkerStatusCode installing_status =
         installing_registration
             ? blink::ServiceWorkerStatusCode::kOk
@@ -237,9 +237,9 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   database_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FindForPatternInDB, database_.get(),
+          &FindForScopeInDB, database_.get(),
           base::ThreadTaskRunnerHandle::Get(), scope,
-          base::BindOnce(&ServiceWorkerStorage::DidFindRegistrationForPattern,
+          base::BindOnce(&ServiceWorkerStorage::DidFindRegistrationForScope,
                          weak_factory_.GetWeakPtr(), scope,
                          std::move(callback))));
 }
@@ -249,7 +249,7 @@ ServiceWorkerRegistration* ServiceWorkerStorage::GetUninstallingRegistration(
   if (state_ != INITIALIZED)
     return nullptr;
   for (const auto& registration : uninstalling_registrations_) {
-    if (registration.second->pattern() == scope) {
+    if (registration.second->scope() == scope) {
       DCHECK(registration.second->is_uninstalling());
       return registration.second.get();
     }
@@ -333,7 +333,7 @@ void ServiceWorkerStorage::FindRegistrationForIdOnly(
     // registrations is returned.
     // TODO(mek): CompleteFindNow should really do all the required checks, so
     // calling that directly here should be enough.
-    FindRegistrationForId(registration_id, registration->pattern().GetOrigin(),
+    FindRegistrationForId(registration_id, registration->scope().GetOrigin(),
                           std::move(callback));
     return;
   }
@@ -430,7 +430,7 @@ void ServiceWorkerStorage::StoreRegistration(
 
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
-  data.scope = registration->pattern();
+  data.scope = registration->scope();
   data.script = version->script_url();
   data.script_type = version->script_type();
   data.update_via_cache = registration->update_via_cache();
@@ -492,7 +492,7 @@ void ServiceWorkerStorage::UpdateToActiveState(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::UpdateVersionToActive,
                      base::Unretained(database_.get()), registration->id(),
-                     registration->pattern().GetOrigin()),
+                     registration->scope().GetOrigin()),
       base::BindOnce(&ServiceWorkerStorage::DidUpdateToActiveState,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -509,7 +509,7 @@ void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
       base::BindOnce(
           base::IgnoreResult(&ServiceWorkerDatabase::UpdateLastCheckTime),
           base::Unretained(database_.get()), registration->id(),
-          registration->pattern().GetOrigin(),
+          registration->scope().GetOrigin(),
           registration->last_update_check()));
 }
 
@@ -1209,7 +1209,7 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
       "Status", ServiceWorkerDatabase::StatusToString(status));
 }
 
-void ServiceWorkerStorage::DidFindRegistrationForPattern(
+void ServiceWorkerStorage::DidFindRegistrationForScope(
     const GURL& scope,
     FindRegistrationCallback callback,
     const ServiceWorkerDatabase::RegistrationData& data,
@@ -1222,7 +1222,7 @@ void ServiceWorkerStorage::DidFindRegistrationForPattern(
 
   if (status == ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
-        FindInstallingRegistrationForPattern(scope);
+        FindInstallingRegistrationForScope(scope);
     blink::ServiceWorkerStatusCode installing_status =
         installing_registration
             ? blink::ServiceWorkerStatusCode::kOk
@@ -1301,7 +1301,7 @@ void ServiceWorkerStorage::DidGetRegistrationsForOrigin(
 
   // Add unstored registrations that are being installed.
   for (const auto& registration : installing_registrations_) {
-    if (registration.second->pattern().GetOrigin() != origin_filter)
+    if (registration.second->scope().GetOrigin() != origin_filter)
       continue;
     if (registration_ids.insert(registration.first).second)
       registrations.push_back(registration.second);
@@ -1340,7 +1340,7 @@ void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
     }
 
     ServiceWorkerRegistrationInfo info;
-    info.pattern = registration_data.scope;
+    info.scope = registration_data.scope;
     info.update_via_cache = registration_data.update_via_cache;
     info.registration_id = registration_data.registration_id;
     info.stored_version_size_bytes =
@@ -1604,15 +1604,15 @@ ServiceWorkerStorage::FindInstallingRegistrationForDocument(
   // TODO(nhiroki): This searches over installing registrations linearly and it
   // couldn't be scalable. Maybe the regs should be partitioned by origin.
   for (const auto& registration : installing_registrations_)
-    if (matcher.MatchLongest(registration.second->pattern()))
+    if (matcher.MatchLongest(registration.second->scope()))
       match = registration.second.get();
   return match;
 }
 
 ServiceWorkerRegistration*
-ServiceWorkerStorage::FindInstallingRegistrationForPattern(const GURL& scope) {
+ServiceWorkerStorage::FindInstallingRegistrationForScope(const GURL& scope) {
   for (const auto& registration : installing_registrations_)
-    if (registration.second->pattern() == scope)
+    if (registration.second->scope() == scope)
       return registration.second.get();
   return nullptr;
 }
@@ -1920,7 +1920,7 @@ void ServiceWorkerStorage::FindForDocumentInDB(
   ResourceList resources;
   status = ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND;
 
-  // Find one with a pattern match.
+  // Find one with a scope match.
   LongestScopeMatcher matcher(document_url);
   int64_t match = blink::mojom::kInvalidServiceWorkerRegistrationId;
   for (const auto& registration_data : registration_data_list)
@@ -1934,7 +1934,7 @@ void ServiceWorkerStorage::FindForDocumentInDB(
 }
 
 // static
-void ServiceWorkerStorage::FindForPatternInDB(
+void ServiceWorkerStorage::FindForScopeInDB(
     ServiceWorkerDatabase* database,
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     const GURL& scope,

@@ -67,7 +67,7 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
 
   void SendRegistrationInfo(
       int64_t registration_id,
-      const GURL& pattern,
+      const GURL& scope,
       ServiceWorkerRegistrationInfo::DeleteFlag delete_flag);
   void SendVersionInfo(const ServiceWorkerVersionInfo& version);
 
@@ -82,7 +82,7 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
 
   // ServiceWorkerContextCoreObserver implements
   void OnNewLiveRegistration(int64_t registration_id,
-                             const GURL& pattern) override;
+                             const GURL& scope) override;
   void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) override;
   void OnRunningStateChanged(
       int64_t version_id,
@@ -110,9 +110,9 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
                            const GURL& scope,
                            const std::string& uuid) override;
   void OnRegistrationCompleted(int64_t registration_id,
-                               const GURL& pattern) override;
+                               const GURL& scope) override;
   void OnRegistrationDeleted(int64_t registration_id,
-                             const GURL& pattern) override;
+                             const GURL& scope) override;
 
   std::unordered_map<int64_t, std::unique_ptr<ServiceWorkerVersionInfo>>
       version_info_map_;

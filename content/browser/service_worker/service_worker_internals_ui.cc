@@ -160,7 +160,7 @@ std::unique_ptr<ListValue> GetRegistrationListValue(
   for (auto it = registrations.begin(); it != registrations.end(); ++it) {
     const ServiceWorkerRegistrationInfo& registration = *it;
     auto registration_info = std::make_unique<DictionaryValue>();
-    registration_info->SetString("scope", registration.pattern.spec());
+    registration_info->SetString("scope", registration.scope.spec());
     registration_info->SetString(
         "registration_id", base::Int64ToString(registration.registration_id));
     registration_info->SetBoolean("navigation_preload_enabled",
@@ -296,15 +296,15 @@ class ServiceWorkerInternalsUI::PartitionObserver
         "serviceworker.onConsoleMessageReported", ConvertToRawPtrVector(args));
   }
   void OnRegistrationCompleted(int64_t registration_id,
-                               const GURL& pattern) override {
+                               const GURL& scope) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
-        "serviceworker.onRegistrationCompleted", Value(pattern.spec()));
+        "serviceworker.onRegistrationCompleted", Value(scope.spec()));
   }
   void OnRegistrationDeleted(int64_t registration_id,
-                             const GURL& pattern) override {
+                             const GURL& scope) override {
     web_ui_->CallJavascriptFunctionUnsafe("serviceworker.onRegistrationDeleted",
-                                          Value(pattern.spec()));
+                                          Value(scope.spec()));
   }
   int partition_id() const { return partition_id_; }
 

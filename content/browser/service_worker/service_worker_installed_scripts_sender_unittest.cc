@@ -176,9 +176,9 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
     context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
-    pattern_ = GURL("http://www.example.com/test/");
+    scope_ = GURL("http://www.example.com/test/");
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = pattern_;
+    options.scope = scope_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, 1L, context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
@@ -204,7 +204,7 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
-  GURL pattern_;
+  GURL scope_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
 };

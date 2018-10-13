@@ -106,7 +106,7 @@ class ServiceWorkerNavigationLoaderTest;
 }  // namespace service_worker_navigation_loader_unittest
 
 // This class corresponds to a specific version of a ServiceWorker
-// script for a given pattern. When a script is upgraded, there may be
+// script for a given scope. When a script is upgraded, there may be
 // more than one ServiceWorkerVersion "running" at a time, but only
 // one of them is activated. This class connects the actual script with a
 // running worker.

@@ -615,7 +615,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =
       std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
-  // Contains all living registrations whose pattern this document's URL
+  // Contains all living registrations whose scope this document's URL
   // starts with, used for .ready and claim(). It is empty if
   // IsContextSecureForServiceWorker() is false. See also
   // AddMatchingRegistration().

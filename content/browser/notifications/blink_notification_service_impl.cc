@@ -259,13 +259,13 @@ void BlinkNotificationServiceImpl::
   // Display the notification if the Service Worker's origin matches the origin
   // of the notification's sender.
   if (service_worker_status == blink::ServiceWorkerStatusCode::kOk &&
-      registration->pattern().GetOrigin() == origin_.GetURL()) {
+      registration->scope().GetOrigin() == origin_.GetURL()) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &PlatformNotificationService::DisplayPersistentNotification,
             base::Unretained(GetNotificationService()), browser_context_,
-            notification_id, registration->pattern(), origin_.GetURL(),
+            notification_id, registration->scope(), origin_.GetURL(),
             platform_notification_data, notification_resources));
 
     error = PersistentNotificationError::NONE;
