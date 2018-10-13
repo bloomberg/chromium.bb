@@ -93,17 +93,13 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // tree at z-order 0.
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
 
-  const Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface() const;
-  const Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain() const;
-
-  uint64_t GetDCompSurfaceSerial() const;
-
   scoped_refptr<base::TaskRunner> GetWindowTaskRunnerForTesting();
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
       size_t index) const;
 
-  const GpuDriverBugWorkarounds& workarounds() const { return workarounds_; }
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> GetBackbufferSwapChainForTesting()
+      const;
 
  protected:
   ~DirectCompositionSurfaceWin() override;
@@ -112,8 +108,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool RecreateRootSurface();
 
   ChildWindowWin child_window_;
-
-  GpuDriverBugWorkarounds workarounds_;
 
   HWND window_ = nullptr;
   // This is a placeholder surface used when not rendering to the
