@@ -9472,7 +9472,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (is_comp_pred && comp_idx == 0) {
         *rd_stats = backup_rd_stats;
         mbmi->interinter_comp.type = COMPOUND_AVERAGE;
-        if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
         mbmi->num_proj_ref = 0;
         mbmi->motion_mode = SIMPLE_TRANSLATION;
         mbmi->comp_group_idx = 0;
