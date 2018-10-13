@@ -176,17 +176,31 @@ if (!is_ios) {
         ]
       }
     } else {
-      # Make sure that we have a copy of courgette64.exe in the root out
+      # Make sure that we have a copy of courgette64.exe(.pdb) in the root out
       # directory.
-      copy("copy_courgette_binaries") {
-        if (is_clang) {
-          courgette64_toolchain = "//build/toolchain/win:win_clang_x64"
-        } else {
-          courgette64_toolchain = "//build/toolchain/win:x64"
-        }
-        courgette64_label = ":courgette($courgette64_toolchain)"
+      if (is_clang) {
+        courgette64_toolchain = "//build/toolchain/win:win_clang_x64"
+      } else {
+        courgette64_toolchain = "//build/toolchain/win:x64"
+      }
+      courgette64_label = ":courgette($courgette64_toolchain)"
 
-        courgette64_out_dir = get_label_info(courgette64_label, "root_out_dir")
+      courgette64_out_dir = get_label_info(courgette64_label, "root_out_dir")
+
+      copy("copy_courgette_pdb") {
+        visibility = [ ":copy_courgette_binaries" ]
+        sources = [
+          "$courgette64_out_dir/courgette64.exe.pdb",
+        ]
+        outputs = [
+          "$root_out_dir/{{source_file_part}}",
+        ]
+        deps = [
+          courgette64_label,
+        ]
+      }
+
+      copy("copy_courgette_binaries") {
         sources = [
           "$courgette64_out_dir/courgette64.exe",
         ]
@@ -194,6 +208,7 @@ if (!is_ios) {
           "$root_out_dir/{{source_file_part}}",
         ]
         deps = [
+          ":copy_courgette_pdb",
           courgette64_label,
         ]
       }
