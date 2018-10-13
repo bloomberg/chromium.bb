@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -124,7 +125,7 @@ void FirstUserActionRecorder::RecordStartOnNTP() {
 
 void FirstUserActionRecorder::OnUserAction(const std::string& action_name) {
   if (ShouldProcessAction(action_name)) {
-    if (ArrayContainsString(kNewTaskActions, arraysize(kNewTaskActions),
+    if (ArrayContainsString(kNewTaskActions, base::size(kNewTaskActions),
                             action_name.c_str())) {
       std::string log_message = base::StringPrintf(
           "Recording 'New task' for first user action type"
@@ -185,7 +186,7 @@ bool FirstUserActionRecorder::ShouldProcessAction(
     return false;
 
   if (!action_pending_ &&
-      ArrayContainsString(kRethrownActions, arraysize(kRethrownActions),
+      ArrayContainsString(kRethrownActions, base::size(kRethrownActions),
                           action_name.c_str())) {
     rethrow_callback_.Reset(
         base::BindOnce(&FirstUserActionRecorder::OnUserAction,
@@ -200,11 +201,11 @@ bool FirstUserActionRecorder::ShouldProcessAction(
   // |new_task_actions_| whitelist.
   bool known_mobile_action =
       base::StartsWith(action_name, "Mobile", base::CompareCase::SENSITIVE) ||
-      ArrayContainsString(kNewTaskActions, arraysize(kNewTaskActions),
+      ArrayContainsString(kNewTaskActions, base::size(kNewTaskActions),
                           action_name.c_str());
 
   return known_mobile_action &&
-         !ArrayContainsString(kIgnoredActions, arraysize(kIgnoredActions),
+         !ArrayContainsString(kIgnoredActions, base::size(kIgnoredActions),
                               action_name.c_str());
 }
 
