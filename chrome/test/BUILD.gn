@@ -4530,6 +4530,13 @@ if (!is_android) {
     if (enable_extensions) {
       deps += [ "//extensions/browser" ]
     }
+
+    if (is_chromeos) {
+      deps += [
+        "//chromeos/services/device_sync",
+        "//chromeos/services/device_sync:test_support",
+      ]
+    }
   }
 
   import("//third_party/protobuf/proto_library.gni")

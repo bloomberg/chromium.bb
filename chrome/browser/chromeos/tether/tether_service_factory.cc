@@ -110,3 +110,7 @@ void TetherServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   TetherService::RegisterProfilePrefs(registry);
 }
+
+bool TetherServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}

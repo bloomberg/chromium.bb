@@ -38,6 +38,10 @@
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
+#endif
+
 namespace {
 
 // Creating a "spare" file for persistent metrics involves a lot of I/O and
@@ -243,6 +247,9 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
   if (!has_seed) {
     CreateFallbackSamplingTrialIfNeeded(feature_list);
     CreateFallbackUkmSamplingTrialIfNeeded(feature_list);
+#if defined(OS_CHROMEOS)
+    chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
+#endif
   }
 }
 
