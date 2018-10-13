@@ -853,7 +853,7 @@ def validate_tests(waterfall, waterfall_file, benchmark_file, labs_docs_file):
 
   return up_to_date
 
-def add_common_test_properties(test_entry, tester_config):
+def add_common_test_properties(test_entry):
   test_entry['trigger_script'] = {
       'script': '//testing/trigger_scripts/perf_device_trigger.py',
       'args': [
@@ -862,19 +862,8 @@ def add_common_test_properties(test_entry, tester_config):
       ],
   }
 
-  if tester_config['platform'] == 'win':
-    service_account_path = (
-        'C:\\creds\\service_accounts\\'
-        'service-account-chromium-perf-histograms.json')
-  else:
-    service_account_path = (
-        '/creds/service_accounts/service-account-chromium-perf-histograms.json')
   test_entry['merge'] = {
       'script': '//tools/perf/process_perf_results.py',
-      'args': [
-        '--service-account-file',
-        service_account_path
-      ],
   }
 
 def generate_telemetry_args(tester_config):
@@ -945,7 +934,7 @@ def generate_performance_test(tester_config, test):
   # For now we either get shards from the number of devices specified
   # or a test entry needs to specify the num shards if it supports
   # soft device affinity.
-  add_common_test_properties(result, tester_config)
+  add_common_test_properties(result)
   shards = test.get('num_shards')
   result['swarming'] = {
     # Always say this is true regardless of whether the tester
