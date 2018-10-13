@@ -98,10 +98,13 @@ void ReportingService::UpdateMetricsUsagePrefs(int message_size,
 void ReportingService::SendNextLog() {
   DVLOG(1) << "SendNextLog";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!last_upload_finish_time_.is_null()) {
-    LogActualUploadInterval(base::TimeTicks::Now() - last_upload_finish_time_);
-    last_upload_finish_time_ = base::TimeTicks();
-  }
+
+  LogActualUploadInterval(last_upload_finish_time_.is_null()
+                              ? base::TimeDelta()
+                              : base::TimeTicks::Now() -
+                                    last_upload_finish_time_);
+  last_upload_finish_time_ = base::TimeTicks();
+
   if (!reporting_active()) {
     upload_scheduler_->StopAndUploadCancelled();
     return;
