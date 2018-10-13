@@ -683,8 +683,10 @@ void ToolbarView::RemovePaneFocus() {
 
 // ui::MaterialDesignControllerObserver:
 void ToolbarView::OnMdModeChanged() {
-  LoadImages();
-  PreferredSizeChanged();
+  if (is_display_mode_normal()) {
+    LoadImages();
+    PreferredSizeChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -790,6 +792,8 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
 }
 
 void ToolbarView::LoadImages() {
+  DCHECK(is_display_mode_normal());
+
   const ui::ThemeProvider* tp = GetThemeProvider();
 
   const SkColor normal_color =
