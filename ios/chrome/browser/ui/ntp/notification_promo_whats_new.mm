@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -45,7 +46,7 @@ const PromoStringToIdsMapEntry kPromoStringToIdsMap[] = {
 // Returns a localized version of |promo_text| if it has an entry in the
 // |kPromoStringToIdsMap|. If there is no entry, an empty string is returned.
 std::string GetLocalizedPromoText(const std::string& promo_text) {
-  for (size_t i = 0; i < arraysize(kPromoStringToIdsMap); ++i) {
+  for (size_t i = 0; i < base::size(kPromoStringToIdsMap); ++i) {
     if (kPromoStringToIdsMap[i].promo_text_str == promo_text)
       return l10n_util::GetStringUTF8(kPromoStringToIdsMap[i].message_id);
   }

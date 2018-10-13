@@ -12,6 +12,7 @@
 #include "base/hash.h"
 #include "base/i18n/string_compare.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -87,7 +88,7 @@ NSString* TitleForBookmarkNode(const BookmarkNode* node) {
 
 UIColor* DefaultColor(const GURL& url) {
   uint32_t hash = base::Hash(url.possibly_invalid_spec());
-  SkColor color = colors[hash % arraysize(colors)];
+  SkColor color = colors[hash % base::size(colors)];
   return ColorFromSkColor(color);
 }
 

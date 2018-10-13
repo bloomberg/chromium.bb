@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_prefs.h"
@@ -33,7 +34,7 @@ SyncSetupService::SyncSetupService(syncer::SyncService* sync_service,
     : sync_service_(sync_service), prefs_(prefs) {
   DCHECK(sync_service_);
   DCHECK(prefs_);
-  for (unsigned int i = 0; i < arraysize(kDataTypes); ++i) {
+  for (unsigned int i = 0; i < base::size(kDataTypes); ++i) {
     if (kDataTypes[i] == syncer::USER_EVENTS &&
         !unified_consent::IsUnifiedConsentFeatureEnabled())
       continue;
@@ -45,7 +46,7 @@ SyncSetupService::~SyncSetupService() {
 }
 
 syncer::ModelType SyncSetupService::GetModelType(SyncableDatatype datatype) {
-  DCHECK(datatype < arraysize(kDataTypes));
+  DCHECK(datatype < base::size(kDataTypes));
   return kDataTypes[datatype];
 }
 

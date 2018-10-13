@@ -15,8 +15,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
@@ -94,16 +94,16 @@ const FeatureEntry::FeatureParam
 
 const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
     {"(mark as actively dangerous)", kMarkHttpAsDangerous,
-     arraysize(kMarkHttpAsDangerous), nullptr},
+     base::size(kMarkHttpAsDangerous), nullptr},
     {"(mark with a Not Secure warning)", kMarkHttpAsWarning,
-     arraysize(kMarkHttpAsWarning), nullptr},
+     base::size(kMarkHttpAsWarning), nullptr},
     {"(mark with a Not Secure warning and dangerous on form edits)",
      kMarkHttpAsWarningAndDangerousOnFormEdits,
-     arraysize(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
+     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
     {"(mark with a Not Secure warning and dangerous on passwords and credit "
      "card fields)",
      kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards,
-     arraysize(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
+     base::size(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
      nullptr}};
 
 const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
@@ -448,7 +448,7 @@ bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
 class FlagsStateSingleton {
  public:
   FlagsStateSingleton()
-      : flags_state_(kFeatureEntries, arraysize(kFeatureEntries)) {}
+      : flags_state_(kFeatureEntries, base::size(kFeatureEntries)) {}
   ~FlagsStateSingleton() {}
 
   static FlagsStateSingleton* GetInstance() {
@@ -504,7 +504,7 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 namespace testing {
 
 const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count) {
-  *count = arraysize(kFeatureEntries);
+  *count = base::size(kFeatureEntries);
   return kFeatureEntries;
 }
 
