@@ -128,18 +128,18 @@ struct AX_EXPORT AXNodeData {
   void SetValue(const base::string16& value);
 
   // Returns true if the given enum bit is 1.
-  bool HasState(ax::mojom::State state_enum) const;
-  bool HasAction(ax::mojom::Action state_enum) const;
+  bool HasState(ax::mojom::State state) const;
+  bool HasAction(ax::mojom::Action action) const;
 
-  // Set bits in the given enum's corresponding bitfield.
-  void AddState(ax::mojom::State state_enum);
-  void AddAction(ax::mojom::Action action_enum);
-
-  // Remove bits in the given enum's corresponding bitfield.
-  void RemoveState(ax::mojom::State state_enum);
+  // Set or remove bits in the given enum's corresponding bitfield.
+  ax::mojom::State AddState(ax::mojom::State state);
+  ax::mojom::State RemoveState(ax::mojom::State state);
+  ax::mojom::Action AddAction(ax::mojom::Action action);
 
   // Helper functions to get or set some common int attributes with some
   // specific enum types. To remove an attribute, set it to None.
+  //
+  // Please keep in alphabetic order.
   ax::mojom::CheckedState GetCheckedState() const;
   void SetCheckedState(ax::mojom::CheckedState checked_state);
   ax::mojom::DefaultActionVerb GetDefaultActionVerb() const;
