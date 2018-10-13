@@ -73,8 +73,7 @@ class RendererMediaPlayerManager;
 class MediaFactory {
  public:
   // Helper function returning whether VideoSurfaceLayer should be enabled.
-  static media::WebMediaPlayerParams::SurfaceLayerMode
-  GetVideoSurfaceLayerMode();
+  static blink::WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode();
 
   // Helper function returning whether VideoSurfaceLayer should be enabled for
   // MediaStreams.

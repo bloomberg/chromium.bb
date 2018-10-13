@@ -125,6 +125,18 @@ class WebMediaPlayer {
     bool skipped = false;
   };
 
+  // Describes when we use SurfaceLayer for video instead of VideoLayer.
+  enum class SurfaceLayerMode {
+    // Always use VideoLayer
+    kNever,
+
+    // Use SurfaceLayer only when we switch to Picture-in-Picture.
+    kOnDemand,
+
+    // Always use SurfaceLayer for video.
+    kAlways,
+  };
+
   // Callback to get notified when the Picture-in-Picture window is opened.
   using PipWindowOpenedCallback = base::OnceCallback<void(const WebSize&)>;
   // Callback to get notified when Picture-in-Picture window is closed.
@@ -198,6 +210,8 @@ class WebMediaPlayer {
   // Internal states of loading and network.
   virtual NetworkState GetNetworkState() const = 0;
   virtual ReadyState GetReadyState() const = 0;
+
+  virtual SurfaceLayerMode GetVideoSurfaceLayerMode() const = 0;
 
   // Returns an implementation-specific human readable error message, or an
   // empty string if no message is available. The message should begin with a
