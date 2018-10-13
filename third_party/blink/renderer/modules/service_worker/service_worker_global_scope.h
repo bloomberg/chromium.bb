@@ -67,7 +67,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       base::TimeTicks time_origin);
 
   ~ServiceWorkerGlobalScope() override;
+
+  // ExecutionContext overrides:
   bool IsServiceWorkerGlobalScope() const override { return true; }
+  bool ShouldInstallV8Extensions() const final;
 
   // Implements WorkerGlobalScope.
   void EvaluateClassicScript(

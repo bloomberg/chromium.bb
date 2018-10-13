@@ -194,16 +194,8 @@ void LocalWindowProxy::CreateContext() {
   // TODO(yukishiino): Remove this CHECK once crbug.com/713699 gets fixed.
   CHECK(IsMainThread());
 
-  Vector<const char*> extension_names;
-  // Dynamically tell v8 about our extensions now.
-  if (GetFrame()->Client()->AllowScriptExtensions()) {
-    const V8Extensions& extensions = ScriptController::RegisteredExtensions();
-    extension_names.ReserveInitialCapacity(extensions.size());
-    for (const auto* extension : extensions)
-      extension_names.push_back(extension->name());
-  }
-  v8::ExtensionConfiguration extension_configuration(extension_names.size(),
-                                                     extension_names.data());
+  v8::ExtensionConfiguration extension_configuration =
+      ScriptController::ExtensionsFor(GetFrame()->GetDocument());
 
   v8::Local<v8::Context> context;
   {

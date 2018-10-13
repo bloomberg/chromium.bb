@@ -81,7 +81,6 @@
 #include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
-#include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/script_injection.h"
@@ -214,8 +213,6 @@ Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
   // created so early that sending an IPC from browser/ process to synchronize
   // this enabled-ness is too late.
   WorkerThreadDispatcher::Get()->Init(RenderThread::Get());
-
-  RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
   // Register WebSecurityPolicy whitelists for the chrome-extension:// scheme.
   WebString extension_scheme(WebString::FromASCII(kExtensionScheme));

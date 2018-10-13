@@ -161,17 +161,8 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
   v8::Local<v8::Context> context;
   {
     // Initialize V8 extensions before creating the context.
-    Vector<const char*> extension_names;
-    if (global_scope_->IsServiceWorkerGlobalScope() &&
-        Platform::Current()->AllowScriptExtensionForServiceWorker(
-            ToWorkerGlobalScope(global_scope_.Get())->Url())) {
-      const V8Extensions& extensions = ScriptController::RegisteredExtensions();
-      extension_names.ReserveInitialCapacity(extensions.size());
-      for (const auto* extension : extensions)
-        extension_names.push_back(extension->name());
-    }
-    v8::ExtensionConfiguration extension_configuration(extension_names.size(),
-                                                       extension_names.data());
+    v8::ExtensionConfiguration extension_configuration =
+        ScriptController::ExtensionsFor(global_scope_);
 
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate_));
