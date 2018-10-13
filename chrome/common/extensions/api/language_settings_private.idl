@@ -33,8 +33,8 @@ namespace languageSettingsPrivate {
     boolean? supportsTranslate;
 
     // Whether this language is prohibited as a UI locale (not in the list of
-    // the 'AllowedLanguages' policy). Defaults to false.
-    boolean? isProhibitedLanguage;
+    // the 'AllowedUILocales' policy). Defaults to false.
+    boolean? isProhibitedUILocale;
   };
 
   dictionary SpellcheckDictionaryStatus {

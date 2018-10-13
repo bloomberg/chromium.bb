@@ -70,7 +70,7 @@ extern const char kRlzPingDelaySeconds[];
 extern const char kApplicationLocaleBackup[];
 extern const char kApplicationLocaleAccepted[];
 extern const char kOwnerLocale[];
-extern const char kAllowedLanguages[];
+extern const char kAllowedUILocales[];
 #endif
 
 extern const char kDefaultCharset[];

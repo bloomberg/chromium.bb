@@ -87,14 +87,13 @@ std::unordered_set<std::string> GetIMEsFromPref(PrefService* prefs,
 }
 
 // Returns the set of allowed UI locales.
-std::unordered_set<std::string> GetAllowedLanguages(PrefService* prefs) {
-  std::unordered_set<std::string> allowed_languages;
+std::unordered_set<std::string> GetAllowedUILocales(PrefService* prefs) {
+  std::unordered_set<std::string> allowed_ui_locales;
   const base::Value::ListStorage& pref_value =
-      prefs->GetList(prefs::kAllowedLanguages)->GetList();
+      prefs->GetList(prefs::kAllowedUILocales)->GetList();
   for (const base::Value& locale_value : pref_value)
-    allowed_languages.insert(locale_value.GetString());
-
-  return allowed_languages;
+    allowed_ui_locales.insert(locale_value.GetString());
+  return allowed_ui_locales;
 }
 
 // Sorts the input methods by the order of their associated languages. For
@@ -216,7 +215,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
   std::unique_ptr<base::ListValue> language_list(new base::ListValue);
 #if defined(OS_CHROMEOS)
   const std::unordered_set<std::string> allowed_ui_locales(
-      GetAllowedLanguages(chrome_details_.GetProfile()->GetPrefs()));
+      GetAllowedUILocales(chrome_details_.GetProfile()->GetPrefs()));
 #endif  // defined(OS_CHROMEOS)
   for (const auto& entry : languages) {
     language_settings_private::Language language;
@@ -243,7 +242,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 #if defined(OS_CHROMEOS)
     if (!allowed_ui_locales.empty() &&
         allowed_ui_locales.count(language.code) == 0) {
-      language.is_prohibited_language.reset(new bool(true));
+      language.is_prohibited_ui_locale.reset(new bool(true));
     }
 #endif  // defined(OS_CHROMEOS)
 
