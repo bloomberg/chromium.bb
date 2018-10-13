@@ -180,7 +180,7 @@ class HWTestList(object):
     default_dict.update(kwargs)
     suite_list = self.DefaultListNonCanary(**default_dict)
     suite_list.append(config_lib.HWTestConfig(
-        constants.HWTEST_CHROME_INFORMATIONAL, **default_dict))
+        constants.HWTEST_CHROME_INFORMATIONAL, warn_only=True, **default_dict))
     suite_list.append(self.TastConfig(constants.HWTEST_TAST_CHROME_PFQ_SUITE,
                                       **default_dict))
     return suite_list
