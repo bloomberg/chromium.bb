@@ -90,7 +90,7 @@ class VideoRendererImplTest : public testing::Test {
         true, &media_log_, nullptr));
     renderer_->SetTickClockForTesting(&tick_clock_);
     null_video_sink_->set_tick_clock_for_testing(&tick_clock_);
-    time_source_.set_tick_clock_for_testing(&tick_clock_);
+    time_source_.SetTickClockForTesting(&tick_clock_);
 
     // Start wallclock time at a non-zero value.
     AdvanceWallclockTimeInMs(12345);
