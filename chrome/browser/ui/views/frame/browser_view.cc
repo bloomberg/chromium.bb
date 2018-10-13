@@ -1864,8 +1864,7 @@ void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
 
 FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
   if (!fullscreen_control_host_) {
-    fullscreen_control_host_ =
-        std::make_unique<FullscreenControlHost>(this, this);
+    fullscreen_control_host_ = std::make_unique<FullscreenControlHost>(this);
   }
 
   return fullscreen_control_host_.get();
@@ -3016,10 +3015,6 @@ void BrowserView::HideDownloadShelf() {
   StatusBubble* status_bubble = GetStatusBubble();
   if (status_bubble)
     status_bubble->Hide();
-}
-
-ExclusiveAccessBubbleViews* BrowserView::GetExclusiveAccessBubble() {
-  return exclusive_access_bubble();
 }
 
 bool BrowserView::CanUserExitFullscreen() const {

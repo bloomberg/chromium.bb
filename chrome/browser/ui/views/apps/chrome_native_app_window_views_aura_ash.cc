@@ -387,15 +387,6 @@ void ChromeNativeAppWindowViewsAuraAsh::UnhideDownloadShelf() {}
 
 void ChromeNativeAppWindowViewsAuraAsh::HideDownloadShelf() {}
 
-bool ChromeNativeAppWindowViewsAuraAsh::ShouldHideUIForFullscreen() const {
-  return false;
-}
-
-ExclusiveAccessBubbleViews*
-ChromeNativeAppWindowViewsAuraAsh::GetExclusiveAccessBubble() {
-  return exclusive_access_bubble_.get();
-}
-
 bool ChromeNativeAppWindowViewsAuraAsh::CanUserExitFullscreen() const {
   return true;
 }

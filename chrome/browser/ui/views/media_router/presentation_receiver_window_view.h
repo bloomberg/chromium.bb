@@ -98,8 +98,6 @@ class PresentationReceiverWindowView final
   content::WebContents* GetActiveWebContents() final;
   void UnhideDownloadShelf() final;
   void HideDownloadShelf() final;
-  bool ShouldHideUIForFullscreen() const final;
-  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() final;
   bool CanUserExitFullscreen() const final;
 
   // ExclusiveAccessBubbleViewsContext overrides.
