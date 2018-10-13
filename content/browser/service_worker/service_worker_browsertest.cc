@@ -642,9 +642,9 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const GURL pattern = embedded_test_server()->GetURL("/service_worker/");
+    const GURL scope = embedded_test_server()->GetURL("/service_worker/");
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = pattern;
+    options.scope = scope;
     registration_ = new ServiceWorkerRegistration(
         options, wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
@@ -1120,8 +1120,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   // the stored one.
   RunOnIOThread(base::BindOnce(&self::RemoveLiveRegistrationOnIOThread,
                                base::Unretained(this), registration_->id()));
-  FindRegistrationForId(registration_->id(),
-                        registration_->pattern().GetOrigin(),
+  FindRegistrationForId(registration_->id(), registration_->scope().GetOrigin(),
                         blink::ServiceWorkerStatusCode::kErrorNotFound);
 }
 
@@ -1163,8 +1162,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   // the stored one.
   RunOnIOThread(base::BindOnce(&self::RemoveLiveRegistrationOnIOThread,
                                base::Unretained(this), registration_->id()));
-  FindRegistrationForId(registration_->id(),
-                        registration_->pattern().GetOrigin(),
+  FindRegistrationForId(registration_->id(), registration_->scope().GetOrigin(),
                         blink::ServiceWorkerStatusCode::kOk);
 }
 

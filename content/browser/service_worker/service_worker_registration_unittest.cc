@@ -259,7 +259,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(version_1.get(), registration->active_version());
   EXPECT_EQ(registration, listener.observed_registration_);
   EXPECT_TRUE(listener.observed_changed_mask_->active);
-  EXPECT_EQ(kScope, listener.observed_info_.pattern);
+  EXPECT_EQ(kScope, listener.observed_info_.scope);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
   EXPECT_EQ(kScript, listener.observed_info_.active_version.script_url);
   EXPECT_EQ(listener.observed_info_.installing_version.version_id,

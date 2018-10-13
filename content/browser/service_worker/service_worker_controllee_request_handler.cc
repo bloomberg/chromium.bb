@@ -446,7 +446,7 @@ void ServiceWorkerControlleeRequestHandler::
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->pattern(), provider_host_->topmost_frame_url(),
+          registration->scope(), provider_host_->topmost_frame_url(),
           resource_context_, provider_host_->web_contents_getter())) {
     tracker_->RecordDestination(
         ServiceWorkerMetrics::MainResourceRequestDestination::

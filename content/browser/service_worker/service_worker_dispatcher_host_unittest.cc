@@ -274,7 +274,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DuplicateProvider) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
-  GURL pattern = GURL("https://www.example.com/");
+  GURL scope = GURL("https://www.example.com/");
   GURL script_url = GURL("https://www.example.com/service_worker.js");
   int process_id = helper_->mock_render_process_id();
 
@@ -285,7 +285,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
       SendProviderCreated(std::move(host_info_1));
   ServiceWorkerProviderHost* provider_host = context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderId);
-  SetUpRegistration(pattern, script_url);
+  SetUpRegistration(scope, script_url);
   EXPECT_EQ(kProviderId, provider_host->provider_id());
 
   // Start up the worker.

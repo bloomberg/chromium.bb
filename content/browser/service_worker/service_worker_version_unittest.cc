@@ -147,9 +147,9 @@ class ServiceWorkerVersionTest : public testing::Test {
     helper_->context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
-    pattern_ = GURL("https://www.example.com/test/");
+    scope_ = GURL("https://www.example.com/test/");
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = pattern_;
+    options.scope = scope_;
     registration_ = new ServiceWorkerRegistration(
         options, helper_->context()->storage()->NewRegistrationId(),
         helper_->context()->AsWeakPtr());
@@ -159,7 +159,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         blink::mojom::ScriptType::kClassic,
         helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
-    EXPECT_EQ(url::Origin::Create(pattern_), version_->script_origin());
+    EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_->script_url(), 10,
@@ -228,7 +228,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   std::unique_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  GURL pattern_;
+  GURL scope_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
@@ -498,7 +498,7 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
   // Delete the registration.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   helper_->context()->storage()->DeleteRegistration(
-      registration_->id(), registration_->pattern().GetOrigin(),
+      registration_->id(), registration_->scope().GetOrigin(),
       CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
@@ -588,7 +588,7 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
       33 /* dummy render process id */, 1 /* dummy provider_id */,
       true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
       &remote_endpoint);
-  host->SetDocumentUrl(registration_->pattern());
+  host->SetDocumentUrl(registration_->scope());
   host->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
   EXPECT_TRUE(host->controller());

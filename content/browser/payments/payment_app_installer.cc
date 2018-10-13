@@ -84,9 +84,8 @@ class SelfDeleteInstaller
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     for (const auto& worker : info) {
-      if (worker.pattern.EqualsIgnoringRef(scope_)) {
+      if (worker.scope.EqualsIgnoringRef(scope_))
         registration_id_ = worker.registration_id;
-      }
     }
   }
 

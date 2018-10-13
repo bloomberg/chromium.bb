@@ -148,7 +148,7 @@ void ServiceWorkerContextWatcher::StoreVersionInfo(
 
 void ServiceWorkerContextWatcher::SendRegistrationInfo(
     int64_t registration_id,
-    const GURL& pattern,
+    const GURL& scope,
     ServiceWorkerRegistrationInfo::DeleteFlag delete_flag) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<std::vector<ServiceWorkerRegistrationInfo>> registrations =
@@ -159,7 +159,7 @@ void ServiceWorkerContextWatcher::SendRegistrationInfo(
     registrations->push_back(registration->GetInfo());
   } else {
     registrations->push_back(
-        ServiceWorkerRegistrationInfo(pattern, registration_id, delete_flag));
+        ServiceWorkerRegistrationInfo(scope, registration_id, delete_flag));
   }
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
@@ -208,9 +208,9 @@ void ServiceWorkerContextWatcher::RunWorkerErrorReportedCallback(
 }
 
 void ServiceWorkerContextWatcher::OnNewLiveRegistration(int64_t registration_id,
-                                                        const GURL& pattern) {
+                                                        const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SendRegistrationInfo(registration_id, pattern,
+  SendRegistrationInfo(registration_id, scope,
                        ServiceWorkerRegistrationInfo::IS_NOT_DELETED);
 }
 
@@ -361,16 +361,16 @@ void ServiceWorkerContextWatcher::OnControlleeRemoved(int64_t version_id,
 
 void ServiceWorkerContextWatcher::OnRegistrationCompleted(
     int64_t registration_id,
-    const GURL& pattern) {
+    const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SendRegistrationInfo(registration_id, pattern,
+  SendRegistrationInfo(registration_id, scope,
                        ServiceWorkerRegistrationInfo::IS_NOT_DELETED);
 }
 
 void ServiceWorkerContextWatcher::OnRegistrationDeleted(int64_t registration_id,
-                                                        const GURL& pattern) {
+                                                        const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SendRegistrationInfo(registration_id, pattern,
+  SendRegistrationInfo(registration_id, scope,
                        ServiceWorkerRegistrationInfo::IS_DELETED);
 }
 

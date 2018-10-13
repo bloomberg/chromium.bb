@@ -92,7 +92,7 @@ ServiceWorkerTaskQueue* ServiceWorkerTaskQueue::Get(BrowserContext* context) {
 }
 
 // static
-void ServiceWorkerTaskQueue::DidStartWorkerForPatternOnIO(
+void ServiceWorkerTaskQueue::DidStartWorkerForScopeOnIO(
     LazyContextTaskQueue::PendingTask task,
     const ExtensionId& extension_id,
     base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
@@ -102,7 +102,7 @@ void ServiceWorkerTaskQueue::DidStartWorkerForPatternOnIO(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForPattern,
+      base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
                      task_queue, std::move(task), extension_id, version_id,
                      process_id, thread_id));
 }
@@ -110,19 +110,19 @@ void ServiceWorkerTaskQueue::DidStartWorkerForPatternOnIO(
 // static
 void ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTask(
     base::WeakPtr<ServiceWorkerTaskQueue> task_queue_weak,
-    const GURL& pattern,
+    const GURL& scope,
     const ExtensionId& extension_id,
     content::ServiceWorkerContext* service_worker_context,
     LazyContextTaskQueue::PendingTask task) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  service_worker_context->StartWorkerForPattern(
-      pattern,
-      base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForPatternOnIO,
+  service_worker_context->StartWorkerForScope(
+      scope,
+      base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScopeOnIO,
                      std::move(task), extension_id, std::move(task_queue_weak)),
       base::BindOnce(&DidStartWorkerFail));
 }
 
-void ServiceWorkerTaskQueue::DidStartWorkerForPattern(
+void ServiceWorkerTaskQueue::DidStartWorkerForScope(
     LazyContextTaskQueue::PendingTask task,
     const ExtensionId& extension_id,
     int64_t version_id,

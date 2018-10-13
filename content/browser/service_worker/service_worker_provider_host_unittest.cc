@@ -184,12 +184,12 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
 
   blink::mojom::ServiceWorkerErrorType Register(
       mojom::ServiceWorkerContainerHost* container_host,
-      GURL pattern,
+      GURL scope,
       GURL worker_url) {
     blink::mojom::ServiceWorkerErrorType error =
         blink::mojom::ServiceWorkerErrorType::kUnknown;
     auto options = blink::mojom::ServiceWorkerRegistrationOptions::New();
-    options->scope = pattern;
+    options->scope = scope;
     container_host->Register(
         worker_url, std::move(options),
         base::BindOnce([](blink::mojom::ServiceWorkerErrorType* out_error,

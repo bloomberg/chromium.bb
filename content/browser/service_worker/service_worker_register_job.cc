@@ -40,7 +40,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     const blink::mojom::ServiceWorkerRegistrationOptions& options)
     : context_(context),
       job_type_(REGISTRATION_JOB),
-      pattern_(options.scope),
+      scope_(options.scope),
       script_url_(script_url),
       worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
@@ -60,7 +60,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     bool skip_script_comparison)
     : context_(context),
       job_type_(UPDATE_JOB),
-      pattern_(registration->pattern()),
+      scope_(registration->scope()),
       update_via_cache_(registration->update_via_cache()),
       phase_(INITIAL),
       doom_installing_worker_(false),
@@ -117,15 +117,14 @@ void ServiceWorkerRegisterJob::StartImpl() {
   }
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      context_->storage()->GetUninstallingRegistration(pattern_);
+      context_->storage()->GetUninstallingRegistration(scope_);
   if (registration.get())
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(next_step),
                        blink::ServiceWorkerStatusCode::kOk, registration));
   else
-    context_->storage()->FindRegistrationForPattern(pattern_,
-                                                    std::move(next_step));
+    context_->storage()->FindRegistrationForScope(scope_, std::move(next_step));
 }
 
 void ServiceWorkerRegisterJob::Abort() {
@@ -141,9 +140,9 @@ bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
   ServiceWorkerRegisterJob* register_job =
       static_cast<ServiceWorkerRegisterJob*>(job);
   if (job_type_ == UPDATE_JOB)
-    return register_job->pattern_ == pattern_;
+    return register_job->scope_ == scope_;
   DCHECK_EQ(REGISTRATION_JOB, job_type_);
-  return register_job->pattern_ == pattern_ &&
+  return register_job->scope_ == scope_ &&
          register_job->script_url_ == script_url_;
 }
 
@@ -345,7 +344,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
   }
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      pattern_, worker_script_type_, update_via_cache_);
+      scope_, worker_script_type_, update_via_cache_);
   set_registration(
       new ServiceWorkerRegistration(options, registration_id, context_));
   AddRegistrationToMatchingProviderHosts(registration());
@@ -582,7 +581,7 @@ void ServiceWorkerRegisterJob::Complete(blink::ServiceWorkerStatusCode status) {
 void ServiceWorkerRegisterJob::Complete(blink::ServiceWorkerStatusCode status,
                                         const std::string& status_message) {
   CompleteInternal(status, status_message);
-  context_->job_coordinator()->FinishJob(pattern_, this);
+  context_->job_coordinator()->FinishJob(scope_, this);
 }
 
 void ServiceWorkerRegisterJob::CompleteInternal(
@@ -610,7 +609,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
           !registration()->active_version()) {
         registration()->NotifyRegistrationFailed();
         context_->storage()->DeleteRegistration(
-            registration()->id(), registration()->pattern().GetOrigin(),
+            registration()->id(), registration()->scope().GetOrigin(),
             base::DoNothing());
       }
     }
@@ -646,11 +645,11 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
   DCHECK(registration);
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetClientProviderHostIterator(
-               registration->pattern().GetOrigin(),
+               registration->scope().GetOrigin(),
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
+    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(),
                                           host->document_url())) {
       continue;
     }
