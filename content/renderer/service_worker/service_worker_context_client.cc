@@ -971,10 +971,11 @@ void ServiceWorkerContextClient::RespondToFetchEventWithNoResponse(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
+  // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
+  CHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
       context_->fetch_response_callbacks[fetch_event_id];
-  DCHECK(response_callback.is_bound());
+  CHECK(response_callback.is_bound());
 
   auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;
@@ -994,7 +995,8 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
+  // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
+  CHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
@@ -1020,7 +1022,8 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  DCHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
+  // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
+  CHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
@@ -1057,10 +1060,17 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
                                              TRACE_ID_LOCAL(event_id)),
                          TRACE_EVENT_FLAG_FLOW_IN, "status",
                          ServiceWorkerUtils::MojoEnumToString(status));
-  if (RunEventCallback(&context_->fetch_event_callbacks,
-                       context_->timeout_timer.get(), event_id, status,
-                       event_dispatch_time)) {
+  if (!RunEventCallback(&context_->fetch_event_callbacks,
+                        context_->timeout_timer.get(), event_id, status,
+                        event_dispatch_time)) {
+    // The event may have been aborted. Its response callback also needs to be
+    // deleted.
     context_->fetch_response_callbacks.erase(event_id);
+  } else {
+    // |fetch_response_callback| should be used before settling a promise for
+    // waitUntil().
+    // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
+    CHECK(!base::ContainsKey(context_->fetch_response_callbacks, event_id));
   }
 }
 
