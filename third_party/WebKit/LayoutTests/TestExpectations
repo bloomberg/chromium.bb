@@ -5333,3 +5333,4 @@ crbug.com/893869 [ Linux Mac ] css3/masking/mask-repeat-space-padding.html [ Fai
 crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
 crbug.com/891155 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
 crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
+crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
