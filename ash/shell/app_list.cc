@@ -314,7 +314,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
-  bool ProcessHomeLauncherGesture(ui::EventType type,
+  bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override {
     NOTIMPLEMENTED();
     return false;

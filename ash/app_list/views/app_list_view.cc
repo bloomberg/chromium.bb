@@ -1094,8 +1094,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
         search_box_view_->NotifyGestureEvent();
 
       if (event->location().y() < kAppListHomeLaucherGesturesThreshold) {
-        if (delegate_->ProcessHomeLauncherGesture(event->type(),
-                                                  gfx::Point())) {
+        if (delegate_->ProcessHomeLauncherGesture(event, gfx::Point())) {
           SetIsInDrag(false);
           event->SetHandled();
           HandleClickOrTap(event);
@@ -1119,8 +1118,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       gfx::Point location_in_screen = event->location();
       views::View::ConvertPointToScreen(this, &location_in_screen);
-      if (delegate_->ProcessHomeLauncherGesture(event->type(),
-                                                location_in_screen)) {
+      if (delegate_->ProcessHomeLauncherGesture(event, location_in_screen)) {
         SetIsInDrag(true);
         event->SetHandled();
         return;
@@ -1138,8 +1136,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END: {
       gfx::Point location_in_screen = event->location();
       views::View::ConvertPointToScreen(this, &location_in_screen);
-      if (delegate_->ProcessHomeLauncherGesture(event->type(),
-                                                location_in_screen)) {
+      if (delegate_->ProcessHomeLauncherGesture(event, location_in_screen)) {
         SetIsInDrag(false);
         event->SetHandled();
         return;

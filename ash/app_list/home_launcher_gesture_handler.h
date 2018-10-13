@@ -52,7 +52,7 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // should be in screen coordinates. Returns false if the the gesture event
   // was not processed.
   bool OnPressEvent(Mode mode, const gfx::Point& location);
-  bool OnScrollEvent(const gfx::Point& location);
+  bool OnScrollEvent(const gfx::Point& location, float scroll_y);
   bool OnReleaseEvent(const gfx::Point& location);
 
   // Cancel a current drag and animates the items to their final state based on
@@ -158,6 +158,11 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Tracks the location of the last received event in screen coordinates. Empty
   // if there is currently no window being processed.
   base::Optional<gfx::Point> last_event_location_;
+
+  // Tracks the last y scroll amount. On gesture end, animates to end state if
+  // |last_scroll_y_| is greater than a certain threshold, even if
+  // |last_event_location_| is in a different half.
+  float last_scroll_y_ = 0.f;
 
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
