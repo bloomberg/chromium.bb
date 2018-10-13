@@ -151,7 +151,6 @@ const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(
   if (it != cached_linked_fonts_.end())
     return &it->second;
 
-  cached_linked_fonts_[font_name] = std::vector<Font>();
   std::vector<Font>* linked_fonts = &cached_linked_fonts_[font_name];
 
   QueryLinkedFontsFromRegistry(font, &cached_system_fonts_, linked_fonts);
@@ -265,73 +264,13 @@ void ParseFontFamilyString(const std::string& family,
   }
 }
 
-LinkedFontsIterator::LinkedFontsIterator(Font font)
-    : original_font_(font),
-      next_font_set_(false),
-      linked_fonts_(NULL),
-      linked_font_index_(0) {
-  SetNextFont(original_font_);
-}
-
-LinkedFontsIterator::~LinkedFontsIterator() {
-}
-
-void LinkedFontsIterator::SetNextFont(Font font) {
-  next_font_ = font;
-  next_font_set_ = true;
-}
-
-bool LinkedFontsIterator::NextFont(Font* font) {
-  if (next_font_set_) {
-    next_font_set_ = false;
-    current_font_ = next_font_;
-    *font = current_font_;
-    return true;
-  }
-
-  // First time through, get the linked fonts list.
-  if (linked_fonts_ == NULL)
-    linked_fonts_ = GetLinkedFonts();
-
-  if (linked_font_index_ == linked_fonts_->size())
-    return false;
-
-  current_font_ = linked_fonts_->at(linked_font_index_++);
-  *font = current_font_;
-  return true;
-}
-
-const std::vector<Font>* LinkedFontsIterator::GetLinkedFonts() const {
-  CachedFontLinkSettings* font_link = CachedFontLinkSettings::GetInstance();
-
-  // First, try to get the list for the original font.
-  const std::vector<Font>* fonts = font_link->GetLinkedFonts(original_font_);
-
-  // If there are no linked fonts for the original font, try querying the
-  // ones for the current font. This may happen if the first font is a custom
-  // font that has no linked fonts in the registry.
-  //
-  // Note: One possibility would be to always merge both lists of fonts,
-  //       but it is not clear whether there are any real world scenarios
-  //       where this would actually help.
-  if (fonts->empty())
-    fonts = font_link->GetLinkedFonts(current_font_);
-
-  return fonts;
-}
-
 }  // namespace internal
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   std::string font_family = font.GetFontName();
-
-  // LinkedFontsIterator doesn't care about the font size, so we always pass 10.
-  internal::LinkedFontsIterator linked_fonts(Font(font_family, 10));
-  std::vector<Font> fallback_fonts;
-  Font current;
-  while (linked_fonts.NextFont(&current))
-    fallback_fonts.push_back(current);
-  return fallback_fonts;
+  CachedFontLinkSettings* font_link = CachedFontLinkSettings::GetInstance();
+  // GetLinkedFonts doesn't care about the font size, so we always pass 10.
+  return *font_link->GetLinkedFonts(Font(font_family, 10));
 }
 
 bool GetFallbackFont(const Font& font,
