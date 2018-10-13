@@ -137,7 +137,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bookmarks/*",
-      "chrome://welcome/email"
+      "chrome://welcome/*"
     ]
   }],
   "bookmarks.export": [{

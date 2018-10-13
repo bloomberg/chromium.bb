@@ -129,7 +129,8 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
                                   IDS_NUX_GOOGLE_APPS_DESCRIPTION);
 
   // Add required resources.
-  html_source->AddResourcePath("apps", IDR_NUX_GOOGLE_APPS_HTML);
+  html_source->AddResourcePath("apps/nux_google_apps.html",
+                               IDR_NUX_GOOGLE_APPS_HTML);
   html_source->AddResourcePath("apps/nux_google_apps.js",
                                IDR_NUX_GOOGLE_APPS_JS);
 
