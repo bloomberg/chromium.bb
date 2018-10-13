@@ -96,8 +96,8 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
   EXPECT_FALSE(window3->IsVisible());
 }
 
-TEST_F(HomeLauncherGestureHandlerTest, CancellingSwipeUp) {
-  UpdateDisplay("400x448");
+TEST_F(HomeLauncherGestureHandlerTest, CancellingSlideUp) {
+  UpdateDisplay("400x456");
 
   auto window = CreateWindowForTesting();
   ASSERT_TRUE(window->IsVisible());
@@ -105,21 +105,50 @@ TEST_F(HomeLauncherGestureHandlerTest, CancellingSwipeUp) {
   // Tests that when cancelling a scroll that was on the bottom half, the window
   // is still visible.
   GetGestureHandler()->OnPressEvent(Mode::kSlideUpToShow, gfx::Point());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
   GetGestureHandler()->Cancel();
   EXPECT_TRUE(window->IsVisible());
 
   // Tests that when cancelling a scroll that was on the top half, the window is
   // now invisible.
   GetGestureHandler()->OnPressEvent(Mode::kSlideUpToShow, gfx::Point());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 1.f);
   GetGestureHandler()->Cancel();
   EXPECT_FALSE(window->IsVisible());
 }
 
+// Tests that if we fling with enough velocity while sliding up, the launcher
+// becomes visible even if the event is released below the halfway mark.
+TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideUp) {
+  UpdateDisplay("400x456");
+
+  auto window = CreateWindowForTesting();
+  ASSERT_TRUE(window->IsVisible());
+
+  GetGestureHandler()->OnPressEvent(Mode::kSlideUpToShow, gfx::Point());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_FALSE(window->IsVisible());
+}
+
+// Tests that if we fling with enough velocity while sliding up, the launcher
+// becomes visible even if the event is released below the halfway mark.
+TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideDown) {
+  UpdateDisplay("400x456");
+
+  auto window = CreateWindowForTesting();
+  wm::GetWindowState(window.get())->Minimize();
+  ASSERT_FALSE(window->IsVisible());
+
+  GetGestureHandler()->OnPressEvent(Mode::kSlideDownToHide, gfx::Point());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  EXPECT_TRUE(window->IsVisible());
+}
+
 // Tests that the home launcher gestures work with overview mode as expected.
 TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
-  UpdateDisplay("400x448");
+  UpdateDisplay("400x456");
 
   auto window1 = CreateWindowForTesting();
   auto window2 = CreateWindowForTesting();
@@ -137,7 +166,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   EXPECT_FALSE(GetGestureHandler()->window());
 
   // Tests that while scrolling the window transform changes.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
   EXPECT_NE(window1_initial_translation,
             window1->transform().To2dTranslation().y());
   EXPECT_NE(window2_initial_translation,
@@ -164,7 +193,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
 // Tests that HomeLauncherGestureHandler works as expected when one window is
 // snapped, and overview mode is active on the other side.
 TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
-  UpdateDisplay("400x448");
+  UpdateDisplay("400x456");
 
   auto window1 = CreateWindowForTesting();
   auto window2 = CreateWindowForTesting();
@@ -185,7 +214,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   EXPECT_EQ(window1.get(), GetGestureHandler()->window());
 
   // Tests that while scrolling the window transforms change.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
   EXPECT_NE(window1->transform(), gfx::Transform());
   EXPECT_NE(window2_initial_translation,
             window2->transform().To2dTranslation().y());
@@ -212,7 +241,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
 // Tests that swipe to close works as expected when there are two snapped
 // windows.
 TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
-  UpdateDisplay("400x448");
+  UpdateDisplay("400x456");
 
   auto window1 = CreateWindowForTesting();
   auto window2 = CreateWindowForTesting();
@@ -232,7 +261,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   EXPECT_EQ(window2.get(), GetGestureHandler()->window2());
 
   // Tests that while scrolling the window transforms change.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
   EXPECT_NE(window1->transform(), gfx::Transform());
   EXPECT_NE(window2->transform(), gfx::Transform());
 
@@ -289,7 +318,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 
   // Test that on scrolling to a point on the top half of the work area, the
   // window's opacity is between 0 and 0.5 and its transform has changed.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 1.f);
   const gfx::Transform top_half_transform = window->transform();
   EXPECT_NE(gfx::Transform(), top_half_transform);
   EXPECT_GT(window->layer()->opacity(), 0.f);
@@ -297,7 +326,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 
   // Test that on scrolling to a point on the bottom half of the work area, the
   // window's opacity is between 0.5 and 1 and its transform has changed.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
   EXPECT_NE(gfx::Transform(), window->transform());
   EXPECT_NE(gfx::Transform(), top_half_transform);
   EXPECT_GT(window->layer()->opacity(), 0.5f);
@@ -318,7 +347,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, BelowHalfShowsWindow) {
   ASSERT_FALSE(window3->IsVisible());
 
   // After a scroll the transform and opacity are no longer the identity and 1.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
   EXPECT_NE(gfx::Transform(), window1->transform());
   EXPECT_NE(1.f, window1->layer()->opacity());
 
@@ -361,7 +390,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
 // Tests on swipe up, the transient child of a window which is getting hidden
 // will have its opacity and transform altered as well.
 TEST_P(HomeLauncherModeGestureHandlerTest, WindowWithTransientChild) {
-  UpdateDisplay("400x448");
+  UpdateDisplay("400x456");
 
   // Create a window with a transient child.
   auto parent = CreateWindowForTesting();
@@ -377,7 +406,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, WindowWithTransientChild) {
 
   // Tests that after scrolling to the halfway point, the transient child's
   // opacity and transform are halfway to their final values.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 1.f);
   EXPECT_LE(0.45f, child->layer()->opacity());
   EXPECT_GE(0.55f, child->layer()->opacity());
   EXPECT_NE(gfx::Transform(), child->transform());
@@ -398,7 +427,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
   ASSERT_TRUE(GetGestureHandler()->window());
 
   // Scroll to a point above the halfway mark of the work area.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50));
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50), 1.f);
   EXPECT_TRUE(GetGestureHandler()->window());
   EXPECT_FALSE(wm::GetWindowState(window.get())->IsMinimized());
 

@@ -1238,7 +1238,9 @@ void ShelfLayoutManager::UpdateGestureDrag(
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
   if (home_launcher_handler && visibility_state() == SHELF_VISIBLE &&
-      home_launcher_handler->OnScrollEvent(gesture_in_screen.location())) {
+      home_launcher_handler->OnScrollEvent(
+          gesture_in_screen.location(),
+          gesture_in_screen.details().scroll_y())) {
     return;
   }
 

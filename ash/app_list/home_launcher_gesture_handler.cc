@@ -39,6 +39,15 @@ namespace {
 constexpr base::TimeDelta kAnimationDurationMs =
     base::TimeDelta::FromMilliseconds(250);
 
+// The animation speed at which the window moves when a window is acitvated from
+// the shelf, or deacitvated via home launcher button minimize.
+constexpr base::TimeDelta kActivationChangedAnimationDurationMs =
+    base::TimeDelta::FromMilliseconds(600);
+
+// The velocity the app list or shelf must be dragged in order to transition to
+// the next state regardless of where the gesture ends, measured in DIPs/event.
+constexpr int kScrollVelocityThreshold = 6;
+
 // The width of the target of screen bounds will be the work area width times
 // this ratio.
 constexpr float kWidthRatio = 0.8f;
@@ -195,7 +204,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
   if (!display_.is_valid())
     return false;
 
-  if (!SetUpWindows(mode, nullptr /* window */))
+  if (!SetUpWindows(mode, /*window=*/nullptr))
     return false;
 
   mode_ = mode;
@@ -205,11 +214,13 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
   return true;
 }
 
-bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location) {
+bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
+                                               float scroll_y) {
   if (!IsDragInProgress())
     return false;
 
   last_event_location_ = base::make_optional(location);
+  last_scroll_y_ = scroll_y;
   DCHECK(display_.is_valid());
   UpdateWindows(GetHeightInWorkAreaAsRatio(location, display_.work_area()),
                 /*animate=*/false);
@@ -241,7 +252,7 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   if (!display.is_valid())
     return false;
 
-  if (!SetUpWindows(Mode::kSlideUpToShow, nullptr /* window */))
+  if (!SetUpWindows(Mode::kSlideUpToShow, /*window=*/nullptr))
     return false;
 
   display_ = display;
@@ -421,9 +432,9 @@ void HomeLauncherGestureHandler::AnimateToFinalState() {
 void HomeLauncherGestureHandler::UpdateSettings(
     ui::ScopedLayerAnimationSettings* settings,
     bool observe) {
-  // TODO(sammiequon): The animation should change based on the distance to the
-  // end.
-  settings->SetTransitionDuration(kAnimationDurationMs);
+  settings->SetTransitionDuration(IsDragInProgress()
+                                      ? kAnimationDurationMs
+                                      : kActivationChangedAnimationDurationMs);
   settings->SetTweenType(gfx::Tween::LINEAR);
   settings->SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -520,6 +531,7 @@ void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
   backdrop_values_ = base::nullopt;
   divider_values_ = base::nullopt;
   last_event_location_ = base::nullopt;
+  last_scroll_y_ = 0.f;
   mode_ = Mode::kNone;
 
   for (auto* window : hidden_windows_)
@@ -569,6 +581,13 @@ bool HomeLauncherGestureHandler::IsIdle() {
 bool HomeLauncherGestureHandler::IsFinalStateShow() {
   DCHECK_NE(Mode::kNone, mode_);
   DCHECK(display_.is_valid());
+
+  // If fling velocity is greater than the threshold, show the launcher if
+  // sliding up, or hide the launcher if sliding down, irregardless of
+  // |last_event_location_|.
+  if (std::fabs(last_scroll_y_) > kScrollVelocityThreshold)
+    return mode_ == Mode::kSlideUpToShow;
+
   return last_event_location_
              ? IsLastEventInTopHalf(*last_event_location_, display_.work_area())
              : mode_ == Mode::kSlideUpToShow;

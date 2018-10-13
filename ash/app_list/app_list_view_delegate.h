@@ -17,6 +17,10 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 
+namespace ui {
+class GestureEvent;
+}  // namespace ui
+
 namespace ws {
 class WindowService;
 }  // namespace ws
@@ -113,7 +117,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Forwards events to the home launcher gesture handler and returns true if
   // they have been processed.
   virtual bool ProcessHomeLauncherGesture(
-      ui::EventType type,
+      ui::GestureEvent* event,
       const gfx::Point& screen_location) = 0;
 
   // Checks if we are allowed to process events on the app list main view and

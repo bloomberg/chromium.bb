@@ -715,18 +715,19 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
 }
 
 bool AppListControllerImpl::ProcessHomeLauncherGesture(
-    ui::EventType type,
+    ui::GestureEvent* event,
     const gfx::Point& screen_location) {
   if (!home_launcher_gesture_handler_)
     return false;
 
-  switch (type) {
+  switch (event->type()) {
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
       return home_launcher_gesture_handler_->OnPressEvent(
           HomeLauncherGestureHandler::Mode::kSlideDownToHide, screen_location);
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      return home_launcher_gesture_handler_->OnScrollEvent(screen_location);
+      return home_launcher_gesture_handler_->OnScrollEvent(
+          screen_location, event->details().scroll_y());
     case ui::ET_GESTURE_END:
       return home_launcher_gesture_handler_->OnReleaseEvent(screen_location);
     default:
