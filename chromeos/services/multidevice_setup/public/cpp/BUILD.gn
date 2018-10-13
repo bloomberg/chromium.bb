@@ -64,6 +64,20 @@ source_set("prefs") {
   ]
 }
 
+source_set("first_run_field_trial") {
+  sources = [
+    "first_run_field_trial.cc",
+    "first_run_field_trial.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos",
+    "//components/variations/proto",
+    "//components/variations/service",
+  ]
+}
+
 source_set("url_provider") {
   sources = [
     "url_provider.cc",

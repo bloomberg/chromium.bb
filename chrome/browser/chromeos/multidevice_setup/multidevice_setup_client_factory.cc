@@ -84,6 +84,10 @@ KeyedService* MultiDeviceSetupClientFactory::BuildServiceInstanceFor(
   return nullptr;
 }
 
+bool MultiDeviceSetupClientFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 }  // namespace multidevice_setup
 
 }  // namespace chromeos

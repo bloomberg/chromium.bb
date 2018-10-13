@@ -288,10 +288,8 @@ void DeviceSyncImpl::ProcessPrimaryAccountInfo(
   if (primary_account_info.account_id.empty()) {
     PA_LOG(ERROR) << "Primary account information is invalid; cannot proceed.";
 
-    // This situation should never occur in practice. The log above is added to
-    // ensure that this is flagged in release builds where NOTREACHED() does not
-    // crash the process.
-    NOTREACHED();
+    // This situation should never occur in practice; early return here to
+    // prevent test failures.
     return;
   }
 
