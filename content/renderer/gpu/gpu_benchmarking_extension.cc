@@ -924,9 +924,9 @@ void GpuBenchmarking::SetPageScaleFactor(float scale) {
 
 void GpuBenchmarking::SetBrowserControlsShown(bool show) {
   GpuBenchmarkingContext context;
-  if (!context.Init(false))
+  if (!context.Init(true))
     return;
-  context.web_view()->UpdateBrowserControlsState(
+  context.layer_tree_view()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth,
       show ? cc::BrowserControlsState::kShown
            : cc::BrowserControlsState::kHidden,

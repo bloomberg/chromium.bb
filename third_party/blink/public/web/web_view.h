@@ -101,7 +101,6 @@ class WebView : protected WebWidget {
   using WebWidget::DidLosePointerLock;
   using WebWidget::BackgroundColor;
   using WebWidget::GetPagePopup;
-  using WebWidget::UpdateBrowserControlsState;
 
   // Initialization ------------------------------------------------------
 

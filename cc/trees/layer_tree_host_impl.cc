@@ -2705,6 +2705,10 @@ bool LayerTreeHostImpl::HaveRootScrollNode() const {
   return InnerViewportScrollNode();
 }
 
+void LayerTreeHostImpl::SetNeedsCommit() {
+  client_->SetNeedsCommitOnImplThread();
+}
+
 LayerImpl* LayerTreeHostImpl::InnerViewportContainerLayer() const {
   return active_tree_->InnerViewportContainerLayer();
 }
@@ -4767,6 +4771,12 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->has_scrolled_by_wheel = has_scrolled_by_wheel_;
   scroll_info->has_scrolled_by_touch = has_scrolled_by_touch_;
   has_scrolled_by_wheel_ = has_scrolled_by_touch_ = false;
+
+  if (browser_controls_manager()) {
+    scroll_info->browser_controls_constraint =
+        browser_controls_manager()->PullConstraintForMainThread(
+            &scroll_info->browser_controls_constraint_changed);
+  }
 
   return scroll_info;
 }

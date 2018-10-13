@@ -71,9 +71,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void WillCloseLayerTreeView() override;
   SkColor BackgroundColor() const override;
   WebPagePopup* GetPagePopup() const override;
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate) override;
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
