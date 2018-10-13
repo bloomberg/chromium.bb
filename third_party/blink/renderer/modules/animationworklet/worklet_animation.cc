@@ -419,16 +419,13 @@ void WorkletAnimation::UpdateCompositingState() {
   DCHECK(play_state_ != Animation::kIdle && play_state_ != Animation::kUnset);
 
   if (play_state_ == Animation::kPending) {
+#if DCHECK_IS_ON()
     String warning_message;
     DCHECK(CheckCanStart(&warning_message));
     DCHECK(warning_message.IsEmpty());
-    if (StartOnCompositor(&warning_message)) {
+#endif  // DCHECK_IS_ON()
+    if (StartOnCompositor())
       return;
-    }
-    String message = "The animation cannot be accelerated. Reason: ";
-    message = message + warning_message;
-    document_->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kWarningMessageLevel, message));
     StartOnMain();
   } else if (play_state_ == Animation::kRunning) {
     // TODO(majidvp): If keyframes have changed then it may be possible to now
@@ -452,13 +449,10 @@ void WorkletAnimation::StartOnMain() {
   SetPlayState(Animation::kRunning);
 }
 
-bool WorkletAnimation::StartOnCompositor(String* failure_message) {
+bool WorkletAnimation::StartOnCompositor() {
   DCHECK(IsMainThread());
   if (effects_.size() > 1) {
     // Compositor doesn't support multiple effects but they can be run via main.
-    *failure_message =
-        "Multiple effects with composited properties are not currently "
-        "supported on compositor";
     return false;
   }
 
@@ -466,10 +460,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 
   // TODO(crbug.com/836393): This should not be possible but it is currently
   // happening and needs to be investigated/fixed.
-  if (!target.GetComputedStyle()) {
-    *failure_message = "The target element does not have style";
+  if (!target.GetComputedStyle())
     return false;
-  }
   // CheckCanStartAnimationOnCompositor requires that the property-specific
   // keyframe groups have been created. To ensure this we manually snapshot the
   // frames in the target effect.
@@ -484,14 +476,11 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 
   if (!failure_code.Ok()) {
     SetPlayState(Animation::kIdle);
-    *failure_message = failure_code.reason;
     return false;
   }
 
-  if (!CheckElementComposited(target)) {
-    *failure_message = "The target element is not composited";
+  if (!CheckElementComposited(target))
     return false;
-  }
 
   if (!compositor_animation_) {
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
