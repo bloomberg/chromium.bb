@@ -12,3 +12,7 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Seems to have become flaky on Windows recently.
     self.Flaky('GpuProcess_only_one_workaround', ['win'], bug=700522)
+
+    # Test needs fixing for Nexus 9
+    self.Fail('GpuProcess_disabling_workarounds_works', ['android', 'nvidia'],
+              bug=895020)
