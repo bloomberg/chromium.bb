@@ -81,6 +81,10 @@ class SiteInstance;
 class StoragePartition;
 class SSLHostStateDelegate;
 
+#if defined(OS_WIN)
+class FontCollection;
+#endif
+
 // A mapping from the scheme name to the protocol handler that services its
 // content.
 using ProtocolHandlerMap =
@@ -311,6 +315,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
           const base::FilePath& partition_path,
           bool in_memory) = 0;
 
+  virtual FontCollection* GetFontCollection();
+  
   using StaticServiceMap =
       std::map<std::string, service_manager::EmbeddedServiceInfo>;
 
