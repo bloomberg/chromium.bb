@@ -239,14 +239,17 @@ Ranges<TimeDelta> ChunkDemuxerStream::GetBufferedRanges(
 }
 
 TimeDelta ChunkDemuxerStream::GetHighestPresentationTimestamp() const {
+  base::AutoLock auto_lock(lock_);
   return SBSTREAM_OP(GetHighestPresentationTimestamp());
 }
 
 TimeDelta ChunkDemuxerStream::GetBufferedDuration() const {
+  base::AutoLock auto_lock(lock_);
   return SBSTREAM_OP(GetBufferedDuration());
 }
 
 size_t ChunkDemuxerStream::GetBufferedSize() const {
+  base::AutoLock auto_lock(lock_);
   return SBSTREAM_OP(GetBufferedSize());
 }
 
@@ -379,6 +382,7 @@ TextTrackConfig ChunkDemuxerStream::text_track_config() {
 }
 
 void ChunkDemuxerStream::SetStreamMemoryLimit(size_t memory_limit) {
+  base::AutoLock auto_lock(lock_);
   SBSTREAM_OP(set_memory_limit(memory_limit));
 }
 
