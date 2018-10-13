@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -60,14 +60,7 @@ def main():
       break
     index += 1
   if args.isolated_script_test_filter:
-    # This test harness doesn't yet support reading the test list from
-    # a file.
-    filter_list = common.extract_filter_list(args.isolated_script_test_filter)
-    # This harness takes the test names to run as the first arguments.
-    # The first argument of rest_args is the script to run, so insert
-    # the test names after that.
-    rest_args = ([rest_args[0]] + filter_list + ['--exact-test-filter'] +
-                 rest_args[1:])
+    rest_args += ['--test-filter', args.isolated_script_test_filter]
 
   # Compatibility with gtest-based sharding.
   total_shards = None
