@@ -156,7 +156,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       SourcePlayingStates;
 
   // Used to DCHECK that we are called on the correct thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Flag to keep track the state of the renderer.
   State state_;
