@@ -20,6 +20,7 @@
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"
+#include "media/blink/webmediaplayer_params.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
 namespace base {
@@ -68,7 +69,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       const blink::WebMediaStream& web_stream,
       base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
           create_submitter_callback,
-      bool surface_layer_for_video_enabled,
+      blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
       const base::WeakPtr<WebMediaPlayerMS>& player);
 
   // Can be called from any thread.
