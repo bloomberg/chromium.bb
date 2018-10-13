@@ -183,7 +183,8 @@ class VMTest(object):
     if self.remote_cmd:
       result = self._RunVMCmd()
     elif self.host_cmd:
-      result = cros_build_lib.RunCommand(self.args)
+      # Don't raise an exception if the command fails.
+      result = cros_build_lib.RunCommand(self.args, error_code_ok=True)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:
