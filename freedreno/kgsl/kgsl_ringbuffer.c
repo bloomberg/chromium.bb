@@ -28,6 +28,7 @@
 
 #include <assert.h>
 
+#include "xf86atomic.h"
 #include "freedreno_ringbuffer.h"
 #include "kgsl_priv.h"
 
