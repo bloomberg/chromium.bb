@@ -443,6 +443,7 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['cblume@chromium.org'],
+                component='Internals>Images>Codecs',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
   tag = 'image_decoder'
