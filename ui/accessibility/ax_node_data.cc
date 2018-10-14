@@ -524,13 +524,19 @@ bool AXNodeData::HasAction(ax::mojom::Action action) const {
 }
 
 ax::mojom::State AXNodeData::AddState(ax::mojom::State state_enum) {
-  DCHECK_NE(state_enum, ax::mojom::State::kNone);
+  DCHECK_GT(static_cast<int>(state_enum),
+            static_cast<int>(ax::mojom::State::kNone));
+  DCHECK_LE(static_cast<int>(state_enum),
+            static_cast<int>(ax::mojom::State::kMaxValue));
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), true);
   return static_cast<ax::mojom::State>(state);
 }
 
 ax::mojom::State AXNodeData::RemoveState(ax::mojom::State state_enum) {
-  DCHECK_NE(state_enum, ax::mojom::State::kNone);
+  DCHECK_GT(static_cast<int>(state_enum),
+            static_cast<int>(ax::mojom::State::kNone));
+  DCHECK_LE(static_cast<int>(state_enum),
+            static_cast<int>(ax::mojom::State::kMaxValue));
   state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
   return static_cast<ax::mojom::State>(state);
 }
