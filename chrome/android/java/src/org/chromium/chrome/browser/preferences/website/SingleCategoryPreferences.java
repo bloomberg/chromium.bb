@@ -159,13 +159,13 @@ public class SingleCategoryPreferences extends PreferenceFragment
             if (!mCategory.showSites(i)) continue;
             for (@ContentSettingException.Type int j = 0;
                     j < ContentSettingException.Type.NUM_ENTRIES; j++) {
-                if (ContentSettingException.CONTENT_TYPES[j]
+                if (ContentSettingException.getContentSettingsType(j)
                         == SiteSettingsCategory.contentSettingsType(i)) {
                     return ContentSetting.BLOCK == website.site().getContentSettingPermission(j);
                 }
             }
             for (@PermissionInfo.Type int j = 0; j < PermissionInfo.Type.NUM_ENTRIES; j++) {
-                if (PermissionInfo.CONTENT_TYPES[j]
+                if (PermissionInfo.getContentSettingsType(j)
                         == SiteSettingsCategory.contentSettingsType(i)) {
                     return (j == PermissionInfo.Type.MIDI)
                             ? false
