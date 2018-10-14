@@ -1234,6 +1234,21 @@ static void store_bitmask_vartx(AV1_COMMON *cm, int mi_row, int mi_col,
                                 MB_MODE_INFO *mbmi);
 #endif
 
+static void set_inter_tx_size(MB_MODE_INFO *mbmi, int stride_log2,
+                              int tx_w_log2, int tx_h_log2, int min_txs,
+                              int split_size, int txs, int blk_row,
+                              int blk_col) {
+  for (int idy = 0; idy < tx_size_high_unit[split_size];
+       idy += tx_size_high_unit[min_txs]) {
+    for (int idx = 0; idx < tx_size_wide_unit[split_size];
+         idx += tx_size_wide_unit[min_txs]) {
+      const int index = (((blk_row + idy) >> tx_h_log2) << stride_log2) +
+                        ((blk_col + idx) >> tx_w_log2);
+      mbmi->inter_tx_size[index] = txs;
+    }
+  }
+}
+
 static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                                TX_SIZE tx_size, int depth,
 #if LOOP_FILTER_BITMASK
@@ -1248,15 +1263,17 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
   assert(tx_size > TX_4X4);
+  TX_SIZE txs = max_txsize_rect_lookup[bsize];
+  for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
+    txs = sub_tx_size_map[txs];
+  const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
+  const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
+  const int bw_log2 = mi_size_wide_log2[bsize];
+  const int stride_log2 = bw_log2 - tx_w_log2;
 
   if (depth == MAX_VARTX_DEPTH) {
-    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-        const int index =
-            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size;
-      }
-    }
+    set_inter_tx_size(mbmi, stride_log2, tx_w_log2, tx_h_log2, txs, tx_size,
+                      tx_size, blk_row, blk_col);
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
@@ -1274,13 +1291,8 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     const int bsh = tx_size_high_unit[sub_txs];
 
     if (sub_txs == TX_4X4) {
-      for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-        for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-          const int index =
-              av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-          mbmi->inter_tx_size[index] = sub_txs;
-        }
-      }
+      set_inter_tx_size(mbmi, stride_log2, tx_w_log2, tx_h_log2, txs, tx_size,
+                        sub_txs, blk_row, blk_col);
       mbmi->tx_size = sub_txs;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
@@ -1313,13 +1325,8 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
       }
     }
   } else {
-    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-        const int index =
-            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size;
-      }
-    }
+    set_inter_tx_size(mbmi, stride_log2, tx_w_log2, tx_h_log2, txs, tx_size,
+                      tx_size, blk_row, blk_col);
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
