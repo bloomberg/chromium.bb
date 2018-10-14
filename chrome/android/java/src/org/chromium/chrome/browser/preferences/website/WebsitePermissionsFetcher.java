@@ -238,10 +238,12 @@ public class WebsitePermissionsFetcher {
         int exceptionType;
         for (exceptionType = 0; exceptionType < ContentSettingException.Type.NUM_ENTRIES;
                 exceptionType++) {
-            if (contentSettingsType == ContentSettingException.CONTENT_TYPES[exceptionType]) break;
+            if (contentSettingsType
+                    == ContentSettingException.getContentSettingsType(exceptionType))
+                break;
         }
         assert contentSettingsType
-                == ContentSettingException.CONTENT_TYPES[exceptionType]
+                == ContentSettingException.getContentSettingsType(exceptionType)
             : "Unexpected content setting type received: "
                         + contentSettingsType;
 

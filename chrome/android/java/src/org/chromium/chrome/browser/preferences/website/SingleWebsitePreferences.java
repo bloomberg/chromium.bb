@@ -505,8 +505,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean showWarningFor(@SiteSettingsCategory.Type int type) {
-        for (int i = 0; i < PermissionInfo.CONTENT_TYPES.length; i++) {
-            if (PermissionInfo.CONTENT_TYPES[i] == SiteSettingsCategory.contentSettingsType(type)) {
+        for (int i = 0; i < PermissionInfo.Type.NUM_ENTRIES; i++) {
+            if (PermissionInfo.getContentSettingsType(i)
+                    == SiteSettingsCategory.contentSettingsType(type)) {
                 return mSite.getPermission(i) == null
                         ? false
                         : SiteSettingsCategory.createFromType(type).showPermissionBlockedMessage(
@@ -685,9 +686,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         for (int i = 0; i < PERMISSION_PREFERENCE_KEYS.length; i++) {
             if (PERMISSION_PREFERENCE_KEYS[i].equals(preferenceKey)) {
                 return i < ContentSettingException.Type.NUM_ENTRIES
-                        ? ContentSettingException.CONTENT_TYPES[i]
-                        : PermissionInfo
-                                  .CONTENT_TYPES[i - ContentSettingException.Type.NUM_ENTRIES];
+                        ? ContentSettingException.getContentSettingsType(i)
+                        : PermissionInfo.getContentSettingsType(
+                                  i - ContentSettingException.Type.NUM_ENTRIES);
             }
         }
         return 0;
