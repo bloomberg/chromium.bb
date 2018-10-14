@@ -486,6 +486,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 		struct msm_cmd *msm_cmd = msm_ring->cmds[i];
 		struct drm_msm_gem_submit_reloc *relocs = msm_cmd->relocs;
+		struct drm_msm_gem_submit_cmd *cmd;
 		unsigned nr_relocs = msm_cmd->nr_relocs;
 
 		/* for reusable stateobjs, the reloc table has reloc_idx that
@@ -499,7 +500,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 					relocs, nr_relocs);
 		}
 
-		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
+		cmd = &msm_ring->submit.cmds[i];
 		cmd->relocs = VOID2U64(relocs);
 		cmd->nr_relocs = nr_relocs;
 	}
