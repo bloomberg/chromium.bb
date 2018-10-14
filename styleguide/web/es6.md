@@ -14,7 +14,7 @@
 hyphen-hyphen-hyphen (change to actual hyphen)
 -->
 
-<style type="text/css">
+<style>
   .doc {
     font-size: 16px;
   }
@@ -58,12 +58,12 @@ hyphen-hyphen-hyphen (change to actual hyphen)
 document.addEventListener('DOMContentLoaded', function(event) {
   // Move all headers and corresponding contents to an accordion container.
   document.querySelectorAll('h2[id]').forEach(function(header) {
-    var container = document.createElement('div');
+    const container = document.createElement('div');
     container.classList.add('feature-container');
     header.parentNode.insertBefore(container, header);
 
     // Add all the following siblings until it hits an <hr>.
-    var el = header;
+    let el = header;
     while (el && el.tagName !== 'HR') {
       var nextEl = el.nextElementSibling;
       container.append(el);
@@ -85,12 +85,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
 [TOC]
 
-# ES6 Support In Chromium
+# ES2015 Support In Chromium
 
-This is a list of [ECMAScript6](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla)
+This is a list of [ECMAScript 6 a.k.a.
+ES2015](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla)
 features allowed in Chromium code.
 
-This is **not** a status list of [v8](https://developers.google.com/v8/)'s
+This is **not** a status list of [V8](https://developers.google.com/v8/)'s
 support for language features.
 
 > **TBD:** Do we need to differentiate per-project?
@@ -103,8 +104,9 @@ you think it should or should not be allowed, along with links to any relevant
 previous discussion. If the list arrives at some consensus, send a codereview
 to change this file accordingly, linking to your discussion thread.
 
-> Some descriptions and Usage examples are from [kangax](https://kangax.github.io/compat-table/es6/)
-and [http://es6-features.org/](http://es6-features.org/)
+> Some descriptions and usage examples were taken from
+> [kangax](https://kangax.github.io/compat-table/es6/)
+> and [http://es6-features.org/](http://es6-features.org/)
 
 # Allowed Features
 
@@ -139,12 +141,12 @@ window.addEventListener('scroll', (event) => {
 () => {return 1;}  // returns 1.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-arrow-function-definitions)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-arrow-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
 **Note**: => does not work in iOS9.  Don't use it in code that runs on Chrome for
-iOS.  There's a presubmit that should warn you about this.
+iOS.  There's a presubmit check that should warn you about this.
 
 [Discussion thread](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/iJrC4PVSfoU)
 
@@ -159,7 +161,7 @@ value which may be available now, or in the future, or never.
 
 ```js
 /** @type {!Promise} */
-var fullyLoaded = new Promise(function(resolve) {
+const fullyLoaded = new Promise(function(resolve) {
   function isLoaded() { return document.readyState == 'complete'; }
 
   if (isLoaded()) {
@@ -175,7 +177,7 @@ var fullyLoaded = new Promise(function(resolve) {
 fullyLoaded.then(startTheApp).then(maybeShowFirstRun);
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-promise-objects)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 **Discussion Notes:** Feature already extensively used prior to creation of
@@ -197,7 +199,7 @@ class Shape {
     this.y = y;
   }
 }
-// Note: let Shape = class {...}; is also valid.
+// Note: const Shape = class {...}; is also valid.
 
 class Rectangle extends Shape {
   constructor(x, y, width, height) {
@@ -207,13 +209,13 @@ class Rectangle extends Shape {
   }
 
   static goldenRectangle() {
-    var PHI = (1 + Math.sqrt(5)) / 2;
+    const PHI = (1 + Math.sqrt(5)) / 2;
     return new Rectangle(0, 0, PHI, 1);
   }
 }
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-class-definitions)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-class-definitions)
 
 **Discussion Notes / Link to Thread:**
 https://groups.google.com/a/chromium.org/d/msg/chromium-dev/S1h-0m2ohOw/jyaiMGDlCwAJ
@@ -232,11 +234,11 @@ may be used as either a key or a value.
 **Usage Example:**
 
 ```js
-var map = new Map();
+const map = new Map();
 map.size === 0;  // true
 map.get('foo');  // undefined
 
-var key = 54;
+const key = 54;
 map.set(key, 123);
 map.size === 1;  // true
 map.has(key);  // true
@@ -247,7 +249,7 @@ map.has(key);  // false
 map.size === 0;  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-map-objects)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-map-objects)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
 
 **Discussion Notes:** Feature already extensively used prior to creation of
@@ -263,7 +265,7 @@ values or object references.
 **Usage Example:**
 
 ```js
-var set = new Set();
+const set = new Set();
 
 set.add(123);
 set.size();  // 1
@@ -273,7 +275,7 @@ set.add(123);
 set.size();  // 1
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-set-objects)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-set-objects)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
 
 **Discussion Notes:** Feature already extensively used prior to creation of
@@ -281,15 +283,46 @@ this document.
 
 ---
 
-## let (Block-Scoped Variables)
+## const (Block-Scoped Constants)
 
-`let` declares a variable within the scope of a block.  This differs from `var`,
-which uses function level scope.
+Constants (also known as "immutable variables") are variables which cannot be
+re-assigned new content. Note that if the value is an object, the object itself
+is still mutable.
+
+`const` is block-scoped, just like `let`.
 
 **Usage Example:**
 
 ```js
-// Scope.
+const gravity = 9.81;
+gravity = 0;  // TypeError: Assignment to constant variable.
+gravity === 9.81;  // true
+
+const frobber = {isFrobbing: true};
+frobber = {isFrobbing: false};  // TypeError: Assignment to constant variable.
+frobber.isFrobbing = false;  // Works.
+```
+
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-let-and-const-declarations)
+
+**See also:** [Object.freeze()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
+
+**Note**: `const` [not fully supported](https://caniuse.com/#feat=let) in iOS9.
+Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
+dropped.
+
+---
+
+## let (Block-Scoped Variables)
+
+`let` declares a variable within the scope of a block, like `const`.
+This differs from `var`, which uses function-level scope.
+
+**Usage Example:**
+
+```js
 function varTest() {
   var x = 1;
   if (true) {
@@ -318,43 +351,11 @@ function f() {
 }
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-let-and-const-declarations)
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
 
 **Note**: `let` is [not fully supported](https://caniuse.com/#feat=let) in iOS9.
-Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
-dropped.
-
----
-
-## const (Block-Scoped Constants)
-
-Constants (also known as "immutable variables") are variables which cannot be
-re-assigned new content. Note that if the value is an object, the object itself
-is still mutable.
-
-Also note that in Chrome, `const` is block scoped like `let`.
-
-**Usage Example:**
-
-```js
-const gravity = 9.81;
-gravity = 0;  // TypeError: Assignment to constant variable.
-gravity === 9.81;  // true
-
-const frobber = {isFrobbing: true};
-frobber = {isFrobbing: false};  // TypeError: Assignment to constant variable.
-frobber.isFrobbing = false;  // Works.
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
-
-**See also:** [Object.freeze()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
-
-**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
-
-**Note**: `const` [not fully supported](https://caniuse.com/#feat=let) in iOS9.
 Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
 dropped.
 
@@ -366,8 +367,8 @@ dropped.
 
 ```js
 // Static methods
-let a1 = Array.from(document.querySelectorAll('div'));
-let a2 = Array.of(7);
+const a1 = Array.from(document.querySelectorAll('div'));
+const a2 = Array.of(7);
 
 // Prototype methods
 ['a', 'b', 'c', 'd'].copyWithin(2, 0);  // Returns ['a', 'b', 'a', 'b']
@@ -379,11 +380,9 @@ let a2 = Array.of(7);
 [2, 4, 6, 8].entries();  // Returns an Array iterator
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-constructor)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-properties-of-the-array-constructor)
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
-
-**Note**: `Array.prototype.values` is [not implemented in Chrome](https://kangax.github.io/compat-table/es6/#test-Array.prototype_methods) and should not be used. If the code in question is Closure compiled, a compile-time error will be thrown.
 
 ---
 
@@ -401,7 +400,7 @@ let a2 = Array.of(7);
 // Number.MAX_SAFE_INTEGER
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-isfinite-number)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-isfinite-number)
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
 
@@ -426,7 +425,7 @@ Object.is(-0, +0)  // false, btw: -0 === +0 is true
 
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-object-constructor)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-properties-of-the-object-constructor)
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
 
@@ -435,19 +434,19 @@ Object.is(-0, +0)  // false, btw: -0 === +0 is true
 ## for...of Loops
 
 Convenient operator to iterate over all values in an iterable collection. This
-differs from `for ...in`, which iterates over all enumerable properties of an
+differs from `for...in`, which iterates over all enumerable properties of an
 object.
 
 **Usage Example:**
 
 ```js
 // Given an iterable collection of Fibonacci numbers...
-for (let n of fibonacci) {
+for (const n of fibonacci) {
   console.log(n);  // 1, 1, 2, 3, ...
 }
 ```
 
-**Documentation:** [link1](http://www.ecma-international.org/ecma-262/6.0/#sec-for-in-and-for-of-statements)
+**Documentation:** [link1](https://tc39.github.io/ecma262/#sec-for-in-and-for-of-statements)
 [link2](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of)
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
@@ -463,17 +462,17 @@ pieces.
 
 ```js
 // Simple example
-let greeting = 'hello';
-let myName = {first: 'Foo', last: 'Bar'};
-let from = 1900;
-let to = 2000;
+const greeting = 'hello';
+const myName = {first: 'Foo', last: 'Bar'};
+const from = 1900;
+const to = 2000;
 
 var message = `${greeting}, I am ${myName.first}${myName.last},
 and I am ${to - from} years old`;
 // message == 'hello,\nI am FooBar,\nand I am 100 years old'
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-template-literals)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-template-literals)
 
 **Discussion Notes / Link to Thread:**
 
@@ -509,7 +508,7 @@ sections.
 }
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-functiondeclarationinstantiation)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-functiondeclarationinstantiation)
 
 **Discussion Notes / Link to Thread:**
 
@@ -539,7 +538,7 @@ hide(document.body);  // Animated, animate=true by default.
 hide(document.body, false);  // Not animated.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-functiondeclarationinstantiation)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-functiondeclarationinstantiation)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters)
 
 **Discussion Notes / Link to Thread:**
@@ -562,7 +561,7 @@ function usesRestParams(a, b, ...theRest) {
 usesRestParams('a', 'b', 1, 2, 3);
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-function-definitions)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
@@ -577,15 +576,15 @@ function parameters.
 
 ```js
 // Spreading an Array
-var params = ['hello', true, 7];
-var other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
+const params = ['hello', true, 7];
+const other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
 
 // Spreading a String
-var str = 'foo';
-var chars = [...str];  // ['f', 'o', 'o']
+const str = 'foo';
+const chars = [...str];  // ['f', 'o', 'o']
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
 
 **Discussion Notes / Link to Thread:**
 
@@ -599,21 +598,21 @@ Convenient new ways for object property definition.
 
 ```js
 // Computed property name
-var prop = 'foo';
-var o = {
+const prop = 'foo';
+const o = {
   [prop]: 'hey',
   ['b' + 'ar']: 'there',
 };
 console.log(o);  // {foo: 'hey', bar: 'there'}
 
 // Shorthand property
-var foo = 1;
-var bar = 2;
-var o = {foo, bar};
+const foo = 1;
+const bar = 2;
+const o = {foo, bar};
 console.log(o);  // {foo: 1, bar: 2}
 
 // Method property
-var clearSky = {
+const clearSky = {
   // Basically the same as clouds: function() { return 0; }.
   clouds() { return 0; },
   color() { return 'blue'; },
@@ -622,7 +621,7 @@ console.log(clearSky.color());  // 'blue'
 console.log(clearSky.clouds());  // 0
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-object-initialiser)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-object-initialiser)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer)
 
 **Discussion Notes / Link to Thread:**
@@ -638,7 +637,7 @@ console.log(clearSky.clouds());  // 0
 0o767 === 503;
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-literals-numeric-literals)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-literals-numeric-literals)
 
 **Discussion Notes / Link to Thread:**
 
@@ -652,7 +651,7 @@ console.log(clearSky.clouds());  // 0
 '𠮷'.match(/./u)[0].length === 2;
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-get-regexp.prototype.sticky)
+**Documentation:** [link](https://mathiasbynens.be/notes/es6-unicode-regex)
 
 **Discussion Notes / Link to Thread:**
 
@@ -666,7 +665,7 @@ console.log(clearSky.clouds());  // 0
 '\u{1d306}' == '\ud834\udf06';  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-literals-string-literals)
+**Documentation:** [link](https://mathiasbynens.be/notes/javascript-unicode#escape-sequences)
 
 **Discussion Notes / Link to Thread:**
 
@@ -701,10 +700,10 @@ Flexible destructuring of collections or parameters.
 
 ```js
 // Array
-var [a, , b] = [1, 2, 3];  // a = 1, b = 3
+const [a, , b] = [1, 2, 3];  // a = 1, b = 3
 
 // Object
-var {width, height} = document.body.getBoundingClientRect();
+const {width, height} = document.body.getBoundingClientRect();
 // width = rect.width, height = rect.height
 
 // Parameters
@@ -725,7 +724,7 @@ h({name: 'bar', val: 42});
 
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-destructuring-assignment)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-destructuring-assignment)
 
 **Discussion Notes / Link to Thread:**
 
@@ -744,11 +743,10 @@ export function getArea() {...};
 export {width, height, unimportant};
 
 // app.js
-import {getArea, width, height} from 'lib/rect';
-
+import {getArea, width, height} from './lib/rect.js';
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-modules)
+**Documentation:** [link](https://developers.google.com/web/fundamentals/primers/modules)
 
 **Discussion Notes / Link to Thread:**
 
@@ -766,7 +764,7 @@ const foo = Symbol();
 const bar = Symbol();
 typeof foo === 'symbol';  // true
 typeof bar === 'symbol';  // true
-let obj = {};
+const obj = {};
 obj[foo] = 'foo';
 obj[bar] = 'bar';
 JSON.stringify(obj);  // {}
@@ -775,7 +773,7 @@ Object.getOwnPropertyNames(obj);  // []
 Object.getOwnPropertySymbols(obj);  // [foo, bar]
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-symbol-constructor)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-symbol-constructor)
 
 **Discussion Notes / Link to Thread:**
 
@@ -797,7 +795,7 @@ Object.getOwnPropertySymbols(obj);  // [foo, bar]
 // String.prototype.includes
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-string-constructor)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-properties-of-the-string-constructor)
 
 **Discussion Notes / Link to Thread:**
 
@@ -808,7 +806,7 @@ Object.getOwnPropertySymbols(obj);  // [foo, bar]
 **Usage Example:**
 
 ```js
-let fibonacci = {
+const fibonacci = {
   [Symbol.iterator]() {
     let pre = 0, cur = 1;
     return {
@@ -841,13 +839,13 @@ function* range(start, end, step) {
   }
 }
 
-for (let i of range(0, 10, 2)) {
+for (const i of range(0, 10, 2)) {
   console.log(i);  // 0, 2, 4, 6, 8
 }
 
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-generator-function-definitions)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-generator-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
@@ -861,15 +859,15 @@ within the collection.
 **Usage Example:**
 
 ```js
-var key = {};
-var weakmap = new WeakMap();
+const key = {};
+const weakmap = new WeakMap();
 
 weakmap.set(key, 123);
 
 weakmap.has(key) && weakmap.get(key) === 123;  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-weakmap-objects)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-weakmap-objects)
 
 **Discussion Notes / Link to Thread:**
 
@@ -883,8 +881,8 @@ within the collection.
 **Usage Example:**
 
 ```js
-var obj1 = {};
-var weakset = new WeakSet();
+const obj1 = {};
+const weakset = new WeakSet();
 
 weakset.add(obj1);
 weakset.add(obj1);
@@ -892,7 +890,7 @@ weakset.add(obj1);
 weakset.has(obj1);  // true
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-weakset-objects)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-weakset-objects)
 
 **Discussion Notes / Link to Thread:**
 
@@ -911,7 +909,7 @@ new UInt8ClampedArray();
 // ... You get the idea. Click on the Documentation link below to see all.
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-typedarray-objects)
 
 **Discussion Notes / Link to Thread:**
 
@@ -924,7 +922,7 @@ Hooking into runtime-level object meta-operations.
 **Usage Example:**
 
 ```js
-var keyTracker = new Proxy({}, {
+const keyTracker = new Proxy({}, {
   keysCreated: 0,
 
   get (receiver, key) {
@@ -943,7 +941,7 @@ keyTracker.key1;  // 'key already exists'
 keyTracker.key2;  // '2 keys created!'
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-proxy-object-internal-methods-and-internal-slots)
 
 **Discussion Notes / Link to Thread:**
 
@@ -956,13 +954,13 @@ Make calls corresponding to the object meta-operations.
 **Usage Example:**
 
 ```js
-let obj = {a: 1};
+const obj = {a: 1};
 Object.defineProperty(obj, 'b', {value: 2});
 obj[Symbol('c')] = 3;
 Reflect.ownKeys(obj);  // ['a', 'b', Symbol(c)]
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-reflection)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-reflection)
 
 **Discussion Notes / Link to Thread:**
 
@@ -978,7 +976,7 @@ A lot of new Math methods.
 // See Doc
 ```
 
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-math)
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-math)
 
 **Discussion Notes / Link to Thread:**
 
