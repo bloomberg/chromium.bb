@@ -29,6 +29,7 @@ ServiceWorkerProcessManager::ServiceWorkerProcessManager(
       new_process_id_for_test_(ChildProcessHost::kInvalidUniqueID),
       weak_this_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(browser_context);
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 

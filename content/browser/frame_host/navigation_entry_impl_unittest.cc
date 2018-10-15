@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/navigation_entry_impl.h"
 
+#include <utility>
+
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -13,6 +15,8 @@
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -54,7 +58,7 @@ class NavigationEntryTest : public testing::Test {
   void SetUp() override {
     entry1_.reset(new NavigationEntryImpl);
 
-    instance_ = SiteInstanceImpl::Create(nullptr);
+    instance_ = SiteInstanceImpl::Create(&browser_context_);
     entry2_.reset(new NavigationEntryImpl(
         instance_, GURL("test:url"),
         Referrer(GURL("from"), blink::kWebReferrerPolicyDefault),
@@ -69,6 +73,10 @@ class NavigationEntryTest : public testing::Test {
   std::unique_ptr<NavigationEntryImpl> entry2_;
   // SiteInstances are deleted when their NavigationEntries are gone.
   scoped_refptr<SiteInstanceImpl> instance_;
+
+ private:
+  TestBrowserThreadBundle thread_bundle_;
+  TestBrowserContext browser_context_;
 };
 
 // Test unique ID accessors
