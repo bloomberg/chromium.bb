@@ -721,6 +721,20 @@ TEST_F(AudioManagerTest, DefaultCommunicationsLabelsContainRealLabels) {
   CheckDescriptionLabels(outputs, default_output_id, communications_output_id);
 }
 
+// GetPreferredOutputStreamParameters() can make changes to its input_params,
+// ensure that creating a stream with the default parameters always works.
+TEST_F(AudioManagerTest, CheckMakeOutputStreamWithPreferredParameters) {
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
+
+  AudioParameters params;
+  GetDefaultOutputStreamParameters(&params);
+  ASSERT_TRUE(params.IsValid());
+
+  AudioOutputStream* stream =
+      audio_manager_->MakeAudioOutputStreamProxy(params, "");
+  ASSERT_TRUE(stream);
+}
+
 #if defined(OS_MACOSX) || defined(USE_CRAS)
 class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
