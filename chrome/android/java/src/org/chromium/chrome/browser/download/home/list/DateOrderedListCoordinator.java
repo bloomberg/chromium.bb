@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.PrefetchStatusProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
@@ -70,6 +72,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         void onEmptyStateChanged(boolean isEmpty);
     }
 
+    private final Context mContext;
     private final StorageCoordinator mStorageCoordinator;
     private final FilterCoordinator mFilterCoordinator;
     private final EmptyCoordinator mEmptyCoordinator;
@@ -94,13 +97,14 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
             DateOrderedListObserver dateOrderedListObserver) {
+        mContext = context;
         PrefetchStatusProvider prefetchProvider = new PrefetchStatusProvider();
 
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mListView =
                 new DateOrderedListView(context, config, decoratedModel, dateOrderedListObserver);
-        mMediator = new DateOrderedListMediator(provider, context::startActivity, deleteController,
+        mMediator = new DateOrderedListMediator(provider, this ::startShareIntent, deleteController,
                 selectionDelegate, config, dateOrderedListObserver, model);
 
         mEmptyCoordinator =
@@ -174,5 +178,10 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
     /** Sets the UI and list to filter based on the {@code filter} {@link FilterType}. */
     public void setSelectedFilter(@FilterType int filter) {
         mFilterCoordinator.setSelectedFilter(filter);
+    }
+
+    private void startShareIntent(Intent intent) {
+        mContext.startActivity(Intent.createChooser(
+                intent, mContext.getString(R.string.share_link_chooser_title)));
     }
 }

@@ -144,7 +144,8 @@ class DateOrderedListMediator {
         mDeleteUndoFilter = new DeleteUndoOfflineItemFilter(mInvalidStateFilter);
         mSearchFilter = new SearchOfflineItemFilter(mDeleteUndoFilter);
         mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
-        mListMutator = new DateOrderedListMutator(mTypeFilter, mModel, new JustNowProvider(config));
+        mListMutator = new DateOrderedListMutator(
+                mTypeFilter, mModel, config, new JustNowProvider(config));
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(
