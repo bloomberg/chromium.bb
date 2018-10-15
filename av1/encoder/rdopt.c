@@ -3203,41 +3203,37 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #endif  // CONFIG_COLLECT_RD_STATS == 1
 
 #if COLLECT_TX_SIZE_DATA
-    const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-    const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
-    const int within_border =
-        mi_row >= xd->tile.mi_row_start &&
-        (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
-        mi_col >= xd->tile.mi_col_start &&
-        (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
+    // Generate small sample to restrict output size.
+    static unsigned int seed = 21743;
+    if (lcg_rand16(&seed) % 200 == 0) {
+      FILE *fp = NULL;
 
-    FILE *fp = NULL;
-
-    if (within_border) {
-      fp = fopen(av1_tx_size_data_output_file, "a");
-    }
-
-    if (fp) {
-      // Transform info and RD
-      const int txb_w = tx_size_wide[tx_size];
-      const int txb_h = tx_size_high[tx_size];
-
-      // Residue signal.
-      const int diff_stride = block_size_wide[plane_bsize];
-      struct macroblock_plane *const p = &x->plane[plane];
-      const int16_t *src_diff =
-          &p->src_diff[(blk_row * diff_stride + blk_col) * 4];
-
-      for (int r = 0; r < txb_h; ++r) {
-        for (int c = 0; c < txb_w; ++c) {
-          fprintf(fp, "%d,", src_diff[c]);
-        }
-        src_diff += diff_stride;
+      if (within_border) {
+        fp = fopen(av1_tx_size_data_output_file, "a");
       }
 
-      fprintf(fp, "%d,%d,%d,%" PRId64, txb_w, txb_h, tx_type, rd);
-      fprintf(fp, "\n");
-      fclose(fp);
+      if (fp) {
+        // Transform info and RD
+        const int txb_w = tx_size_wide[tx_size];
+        const int txb_h = tx_size_high[tx_size];
+
+        // Residue signal.
+        const int diff_stride = block_size_wide[plane_bsize];
+        struct macroblock_plane *const p = &x->plane[plane];
+        const int16_t *src_diff =
+            &p->src_diff[(blk_row * diff_stride + blk_col) * 4];
+
+        for (int r = 0; r < txb_h; ++r) {
+          for (int c = 0; c < txb_w; ++c) {
+            fprintf(fp, "%d,", src_diff[c]);
+          }
+          src_diff += diff_stride;
+        }
+
+        fprintf(fp, "%d,%d,%d,%" PRId64, txb_w, txb_h, tx_type, rd);
+        fprintf(fp, "\n");
+        fclose(fp);
+      }
     }
 #endif  // COLLECT_TX_SIZE_DATA
 
