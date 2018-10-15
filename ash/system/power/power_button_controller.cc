@@ -267,22 +267,20 @@ void PowerButtonController::OnPowerButtonEvent(
     power_button_menu_timer_.Stop();
     pre_shutdown_timer_.Stop();
 
-    const bool menu_was_opened = IsMenuOpened();
-    if (!UseTabletBehavior()) {
-      // Cancel the menu animation if it's still ongoing when the button is
-      // released on a laptop-mode device.
-      if (menu_was_opened && !show_menu_animation_done_) {
-        static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
-            ->ScheduleShowHideAnimation(false);
-        up_state |= UP_SHOWING_ANIMATION_CANCELLED;
-      }
-
-      // If the button is tapped (i.e. not held long enough to start the
-      // cancellable shutdown animation) while the menu is open, dismiss the
-      // menu.
-      if (menu_shown_when_power_button_down_ && pre_shutdown_timer_was_running)
-        DismissMenu();
+    const bool menu_was_partially_opened =
+        IsMenuOpened() && !show_menu_animation_done_;
+    // Cancel the menu animation if it's still ongoing when the button is
+    // released.
+    if (menu_was_partially_opened) {
+      static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
+          ->ScheduleShowHideAnimation(false);
+      up_state |= UP_SHOWING_ANIMATION_CANCELLED;
     }
+
+    // If the button is tapped (i.e. not held long enough to start the
+    // cancellable shutdown animation) while the menu is open, dismiss the menu.
+    if (menu_shown_when_power_button_down_ && pre_shutdown_timer_was_running)
+      DismissMenu();
 
     // Ignore the event if it comes too soon after the last one.
     if (timestamp - previous_up_time <= kIgnoreRepeatedButtonUpDelay)
@@ -293,7 +291,7 @@ void PowerButtonController::OnPowerButtonEvent(
         up_state |= UP_MENU_TIMER_WAS_RUNNING;
       if (pre_shutdown_timer_was_running)
         up_state |= UP_PRE_SHUTDOWN_TIMER_WAS_RUNNING;
-      if (menu_was_opened)
+      if (show_menu_animation_done_)
         up_state |= UP_MENU_WAS_OPENED;
       UpdatePowerButtonEventUMAHistogram(up_state);
     }
@@ -301,8 +299,9 @@ void PowerButtonController::OnPowerButtonEvent(
     if (screen_off_when_power_button_down_ || !force_off_on_button_up_)
       return;
 
-    if (menu_timer_was_running || (menu_shown_when_power_button_down_ &&
-                                   pre_shutdown_timer_was_running)) {
+    if (menu_timer_was_running || menu_was_partially_opened ||
+        (menu_shown_when_power_button_down_ &&
+         pre_shutdown_timer_was_running)) {
       display_controller_->SetBacklightsForcedOff(true);
       LockScreenIfRequired();
     }
