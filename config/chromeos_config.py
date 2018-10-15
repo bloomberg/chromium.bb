@@ -3649,8 +3649,6 @@ def BranchScheduleConfig():
   Returns:
     List of config_lib.BuildConfig instances.
   """
-  release_label = config_lib.DISPLAY_LABEL_RELEASE
-
   #
   # Define each branched schedule with:
   #   branch_name: Name of the branch to build as a string.
@@ -3667,32 +3665,48 @@ def BranchScheduleConfig():
   # When updating this be sure to run
   # `config/chromeos_config_unittest --update`
   # or the change will fail chromite unittests.
+  branch_builds = [
+      # Add non release branch schedules here, if needed.
+      # <branch>, <build_config>, <display_label>, <schedule>, <triggers>
+  ]
 
-  branch_builds = (
-      ('release-R71-11151.B', 'master-release',
-       release_label, '0 7 * * *', None),
-      ('release-R71-11151.B', 'reef-android-nyc-pre-flight-branch',
-       release_label, '0 3,7,11,15,19,23 * * *', None),
-      ('release-R71-11151.B', 'grunt-android-pi-pre-flight-branch',
-       release_label, '0 3,7,11,15,19,23 * * *', None),
-      ('release-R71-11151.B', 'samus-chrome-pre-flight-branch',
-       release_label, '0 3,7,11,15,19,23 * * *', None),
-      ('release-R70-11021.B', 'master-release',
-       release_label, '0 5 * * *', None),
-      ('release-R70-11021.B', 'reef-android-nyc-pre-flight-branch',
-       release_label, '0 1,5,9,13,17,21 * * *', None),
-      ('release-R70-11021.B', 'grunt-android-pi-pre-flight-branch',
-       release_label, '0 1,5,9,13,17,21 * * *', None),
-      ('release-R70-11021.B', 'samus-chrome-pre-flight-branch',
-       release_label, '0 1,5,9,13,17,21 * * *', None),
-      ('release-R69-10895.B', 'master-release',
-       release_label, 'triggered', None),
-      ('release-R69-10895.B', 'reef-android-nyc-pre-flight-branch',
-       release_label, '0 2,6,10,14,18,22 * * *', None),
-      ('release-R69-10895.B', 'samus-chrome-pre-flight-branch',
-       release_label, '0 2,6,10,14,18,22 * * *', None),
-  )
+  # The three active release branches.
+  RELEASES = [
+      ('release-R71-11151.B',
+       ['reef-android-nyc-pre-flight-branch',
+        'grunt-android-pi-pre-flight-branch',
+        'samus-chrome-pre-flight-branch']),
+      ('release-R70-11021.B',
+       ['reef-android-nyc-pre-flight-branch',
+        'grunt-android-pi-pre-flight-branch',
+        'samus-chrome-pre-flight-branch']),
+      ('release-R69-10895.B',
+       ['reef-android-nyc-pre-flight-branch',
+        'samus-chrome-pre-flight-branch'])]
 
+  RELEASE_SCHEDULES = [
+      '0 6 * * *',
+      '0 5 * * *',
+      'triggered',
+  ]
+
+  PFQ_SCHEDULE = [
+      '0 3,7,11,15,19,23 * * *',
+      '0 2,6,10,14,18,22 * * *',
+      '0 2,6,10,14,18,22 * * *',
+  ]
+
+  for (branch, preflights), schedule, preflight_schedule in zip(
+      RELEASES, RELEASE_SCHEDULES, PFQ_SCHEDULE):
+    branch_builds.append([branch, 'master-release',
+                          config_lib.DISPLAY_LABEL_RELEASE,
+                          schedule, None])
+    branch_builds.extend([[branch, preflight,
+                           config_lib.DISPLAY_LABEL_RELEASE,
+                           preflight_schedule, None]
+                          for preflight in preflights])
+
+  # Convert all branch builds into scheduler config entries.
   default_config = config_lib.GetConfig().GetDefault()
 
   result = []
