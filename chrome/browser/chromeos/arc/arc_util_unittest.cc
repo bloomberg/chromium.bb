@@ -445,7 +445,7 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   // New FS (User notified) + Old ARC
   user_manager::known_user::SetIntegerPref(
       id, prefs::kArcCompatibleFilesystemChosen,
-      kFileSystemCompatibleAndNotified);
+      kFileSystemCompatibleAndNotifiedDeprecated);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
