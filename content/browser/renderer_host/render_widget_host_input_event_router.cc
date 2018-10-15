@@ -47,19 +47,6 @@ blink::WebGestureEvent DummyGestureScrollUpdate(base::TimeTicks time_stamp) {
                                 blink::WebInputEvent::kNoModifiers, time_stamp);
 }
 
-viz::HitTestQuery* GetHitTestQuery(
-    viz::HostFrameSinkManager* host_frame_sink_manager,
-    const viz::FrameSinkId& frame_sink_id) {
-  if (!frame_sink_id.is_valid())
-    return nullptr;
-  const auto& display_hit_test_query_map =
-      host_frame_sink_manager->display_hit_test_query();
-  const auto iter = display_hit_test_query_map.find(frame_sink_id);
-  if (iter == display_hit_test_query_map.end())
-    return nullptr;
-  return iter->second.get();
-}
-
 gfx::PointF ComputePointInRootInPixels(
     const gfx::PointF& point,
     content::RenderWidgetHostViewBase* root_view,
@@ -83,6 +70,20 @@ bool IsMouseButtonDown(const blink::WebMouseEvent& event) {
 }  // anonymous namespace
 
 namespace content {
+
+// Helper method also used from hit_test_debug_key_event_observer.cc
+viz::HitTestQuery* GetHitTestQuery(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    const viz::FrameSinkId& frame_sink_id) {
+  if (!frame_sink_id.is_valid())
+    return nullptr;
+  const auto& display_hit_test_query_map =
+      host_frame_sink_manager->display_hit_test_query();
+  const auto iter = display_hit_test_query_map.find(frame_sink_id);
+  if (iter == display_hit_test_query_map.end())
+    return nullptr;
+  return iter->second.get();
+}
 
 // A class to implement a queue for tracking outbound TouchEvents, and making
 // sure that their acks are returned to the appropriate root view in order.
