@@ -112,17 +112,18 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
   std::string cmdline_arg =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kIsolateOrigins);
+  std::vector<url::Origin> origins;
   if (!cmdline_arg.empty()) {
-    std::vector<url::Origin> cmdline_origins =
-        ParseIsolatedOrigins(cmdline_arg);
+    origins = ParseIsolatedOrigins(cmdline_arg);
     UMA_HISTOGRAM_COUNTS_1000("SiteIsolation.IsolateOrigins.Size",
-                              cmdline_origins.size());
-    return cmdline_origins;
+                              origins.size());
   }
 
+  // --isolate-origins (both command-line flag and enterprise policy) trumps
+  // the opt-out flag.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSiteIsolationTrials)) {
-    return std::vector<url::Origin>();
+    return origins;
   }
 
   // The feature needs to be checked last, because checking the feature
@@ -132,9 +133,13 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
     std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
         features::kIsolateOrigins,
         features::kIsolateOriginsFieldTrialParamName);
-    return ParseIsolatedOrigins(field_trial_arg);
+    std::vector<url::Origin> field_trial_origins =
+        ParseIsolatedOrigins(field_trial_arg);
+    origins.reserve(origins.size() + field_trial_origins.size());
+    std::move(field_trial_origins.begin(), field_trial_origins.end(),
+              std::back_inserter(origins));
   }
-  return std::vector<url::Origin>();
+  return origins;
 }
 
 // static
