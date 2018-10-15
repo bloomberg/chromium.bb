@@ -58,10 +58,6 @@ bool CanProcessWindow(aura::Window* window,
   if (!window)
     return false;
 
-  // Window should not be fullscreen as we do not allow swiping up when auto
-  // hide for shelf.
-  DCHECK(!wm::GetWindowState(window)->IsFullscreen());
-
   if (!window->IsVisible() &&
       mode == HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
     return false;
@@ -208,6 +204,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
     return false;
 
   mode_ = mode;
+  initial_event_location_ = location;
   last_event_location_ = base::make_optional(location);
 
   UpdateWindows(0.0, /*animate=*/false);
@@ -221,17 +218,29 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
   last_event_location_ = base::make_optional(location);
   last_scroll_y_ = scroll_y;
+  if (mode_ == Mode::kSlideUpToShow &&
+      (*last_event_location_ - initial_event_location_).y() > 0) {
+    UpdateWindows(0.0, /*animate=*/false);
+    return true;
+  }
+
   DCHECK(display_.is_valid());
   UpdateWindows(GetHeightInWorkAreaAsRatio(location, display_.work_area()),
                 /*animate=*/false);
   return true;
 }
 
-bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
+bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
+                                                bool* out_dragged_down) {
   if (!IsDragInProgress())
     return false;
 
   last_event_location_ = base::make_optional(location);
+  if (out_dragged_down) {
+    DCHECK_EQ(mode_, Mode::kSlideUpToShow);
+    *out_dragged_down =
+        (*last_event_location_ - initial_event_location_).y() > 0;
+  }
   AnimateToFinalState();
   return true;
 }
