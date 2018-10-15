@@ -223,11 +223,14 @@ void Controller::OnClickOverlay() {
 
 void Controller::OnScriptSelected(const std::string& script_path) {
   DCHECK(!script_path.empty());
+  DCHECK(!script_tracker_->running());
 
-  script_tracker_->ClearRunnableScripts();
   GetUiController()->ShowOverlay();
-  allow_autostart_ = false;  // Only ever autostart the very first script.
   StopPeriodicScriptChecks();
+  // Runnable scripts will be checked and reported if necessary after executing
+  // the script.
+  script_tracker_->ClearRunnableScripts();
+  allow_autostart_ = false;  // Only ever autostart the very first script.
   script_tracker_->ExecuteScript(
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
                                   // script_tracker_ is owned by Controller.

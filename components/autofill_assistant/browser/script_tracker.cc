@@ -32,9 +32,9 @@ void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
 }
 
 void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
-  if (pending_checks_) {
-    // It should be possible to just call pending_checks_.reset() to give up on
-    // all checks. This doesn't work, however, because it ends up running
+  if (batch_element_checker_) {
+    // It should be possible to just call batch_element_checker_.reset() to give
+    // up on all checks. This doesn't work, however, because it ends up running
     // multiple checks in parallel, which fails.
     //
     // StopTrying() tells BatchElementChecker to give up early and call
@@ -43,36 +43,42 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
     //
     // TODO(crbug.com/806868): Figure out why checks run in parallel don't work
     // and simplify this logic.
-    pending_checks_->StopTrying();
+    batch_element_checker_->StopTrying();
+
+    // TODO(crbug.com/806868): May stop recheck if there is a script pending to
+    // run.
     must_recheck_ = base::BindOnce(&ScriptTracker::CheckScripts,
                                    base::Unretained(this), max_duration);
     return;
   }
   DCHECK(pending_runnable_scripts_.empty());
 
-  pending_checks_ =
+  batch_element_checker_ =
       std::make_unique<BatchElementChecker>(delegate_->GetWebController());
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
     script->precondition->Check(
-        delegate_->GetWebController()->GetUrl(), pending_checks_.get(),
+        delegate_->GetWebController()->GetUrl(), batch_element_checker_.get(),
         delegate_->GetParameters(), executed_scripts_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
-  pending_checks_->Run(
+  batch_element_checker_->Run(
       max_duration,
       /* try_done= */
       base::BindRepeating(&ScriptTracker::UpdateRunnableScriptsIfNecessary,
                           base::Unretained(this)),
       /* all_done= */
       base::BindOnce(&ScriptTracker::OnCheckDone, base::Unretained(this)));
-  // base::Unretained(this) is safe since this instance owns pending_checks_.
+  // base::Unretained(this) is safe since this instance owns
+  // batch_element_checker_.
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
                                   ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
+    DLOG(ERROR) << "Do not expect executing the script (" << script_path
+                << " when there is a script running.";
     ScriptExecutor::Result result;
     result.success = false;
     std::move(callback).Run(result);
@@ -81,9 +87,15 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
 
   executed_scripts_[script_path] = SCRIPT_STATUS_RUNNING;
   executor_ = std::make_unique<ScriptExecutor>(script_path, delegate_);
-  executor_->Run(base::BindOnce(&ScriptTracker::OnScriptRun,
-                                weak_ptr_factory_.GetWeakPtr(), script_path,
-                                std::move(callback)));
+  ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
+      &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
+      std::move(callback));
+  // Postpone running script until finishing preconditions check.
+  if (!batch_element_checker_ && !must_recheck_) {
+    executor_->Run(std::move(run_script_callback));
+  } else {
+    pending_run_script_callback_ = std::move(run_script_callback);
+  }
 }
 
 void ScriptTracker::ClearRunnableScripts() {
@@ -95,7 +107,10 @@ void ScriptTracker::OnScriptRun(
     const std::string& script_path,
     ScriptExecutor::RunScriptCallback original_callback,
     ScriptExecutor::Result result) {
+  DCHECK(!pending_run_script_callback_);
   executor_.reset();
+  executed_scripts_[script_path] =
+      result.success ? SCRIPT_STATUS_SUCCESS : SCRIPT_STATUS_FAILURE;
   std::move(original_callback).Run(result);
 }
 
@@ -116,6 +131,7 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   for (Script* script : pending_runnable_scripts_) {
     runnable_scripts_.push_back(script->handle);
   }
+
   listener_->OnRunnableScriptsChanged(runnable_scripts_);
 }
 
@@ -123,11 +139,16 @@ void ScriptTracker::OnCheckDone() {
   TerminatePendingChecks();
   if (must_recheck_) {
     std::move(must_recheck_).Run();
+    return;
   }
+
+  // TODO(crbug.com/806868): Check whether the script is still runnable.
+  if (pending_run_script_callback_)
+    executor_->Run(std::move(pending_run_script_callback_));
 }
 
 void ScriptTracker::TerminatePendingChecks() {
-  pending_checks_.reset();
+  batch_element_checker_.reset();
   pending_runnable_scripts_.clear();
 }
 
