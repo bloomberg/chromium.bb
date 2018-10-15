@@ -32,7 +32,9 @@ namespace blpwtk2 {
                         // class DevToolsManagerDelegateImpl
                         // =================================
 
-class DevToolsManagerDelegateImpl final : public content::DevToolsManagerDelegate
+class DevToolsManagerDelegateImpl final :
+    public content::DevToolsManagerDelegate,
+    public content::DevToolsAgentHostObserver
 {
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegateImpl);
 
@@ -42,11 +44,15 @@ class DevToolsManagerDelegateImpl final : public content::DevToolsManagerDelegat
   static int GetHttpHandlerPort();
 
   // CREATORS
-  DevToolsManagerDelegateImpl() = default;
+  DevToolsManagerDelegateImpl();
   ~DevToolsManagerDelegateImpl() override;
 
   // DevToolsManagerDelegate overrides
   bool HasBundledFrontendResources() override;
+
+  // DevToolsAgentHostObserver overrides
+  void DevToolsAgentHostAttached(content::DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostDetached(content::DevToolsAgentHost* agent_host) override;
 };
 
 }  // close namespace blpwtk2
