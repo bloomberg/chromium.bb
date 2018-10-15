@@ -17,8 +17,8 @@ namespace offline_pages {
 // from any and all previous database versions to the latest.
 class PrefetchStoreSchema {
  public:
-  static const int kCurrentVersion;
-  static const int kCompatibleVersion;
+  static constexpr int kCurrentVersion = 2;
+  static constexpr int kCompatibleVersion = 1;
 
   // Creates or upgrade the database schema as needed from information stored in
   // a metadata table. Returns |true| if the database is ready to be used,
