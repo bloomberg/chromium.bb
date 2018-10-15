@@ -4146,7 +4146,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_unittest.mm",
-        "../browser/ui/cocoa/url_drop_target_unittest.mm",
         "../browser/ui/cocoa/window_size_autosaver_unittest.mm",
       ]
     }
