@@ -76,7 +76,7 @@ class InterceptingScriptWrappableMarkingVisitor
   void end() {
     // Gracefully terminate tracing.
     AdvanceTracing(std::numeric_limits<double>::infinity());
-    AbortTracing();
+    AbortTracingForTermination();
   }
 
  private:

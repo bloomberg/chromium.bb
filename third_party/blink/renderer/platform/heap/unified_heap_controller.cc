@@ -37,6 +37,8 @@ void UnifiedHeapController::TracePrologue() {
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
   // Start incremental marking with unified tracing.
   thread_state_->IncrementalMarkingStart(BlinkGC::GCReason::kUnifiedHeapGC);
+
+  is_tracing_done_ = false;
 }
 
 void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
@@ -87,6 +89,7 @@ void UnifiedHeapController::RegisterV8References(
     if (wrapper_type_info->gin_embedder != gin::GinEmbedder::kEmbedderBlink) {
       continue;
     }
+    is_tracing_done_ = false;
     wrapper_type_info->Trace(thread_state_->CurrentVisitor(),
                              internal_fields.second);
   }
@@ -103,18 +106,16 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
     TimeTicks deadline =
         TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);
-    return thread_state_->MarkPhaseAdvanceMarking(deadline);
+    is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarking(deadline);
+    return is_tracing_done_;
   }
   thread_state_->AtomicPauseMarkTransitiveClosure();
+  is_tracing_done_ = true;
   return true;
 }
 
-void UnifiedHeapController::AbortTracing() {
-  VLOG(2) << "UnifiedHeapController::AbortTracing";
-
-  // TODO(mlippautz): Only needed when V8 aborts incremental marking which
-  // should be rare in non-production code.
-  LOG(FATAL) << "Not yet implemented";
+bool UnifiedHeapController::IsTracingDone() {
+  return is_tracing_done_;
 }
 
 }  // namespace blink

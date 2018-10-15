@@ -171,7 +171,7 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   }
   isolate->SetEmbedderHeapTracer(nullptr);
   if (data->script_wrappable_visitor_->WrapperTracingInProgress())
-    data->script_wrappable_visitor_->AbortTracing();
+    data->script_wrappable_visitor_->AbortTracingForTermination();
   data->script_wrappable_visitor_.reset();
 }
 
