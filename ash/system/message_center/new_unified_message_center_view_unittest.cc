@@ -5,6 +5,7 @@
 #include "ash/system/message_center/new_unified_message_center_view.h"
 
 #include "ash/system/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -76,7 +77,8 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
 
   gfx::Rect GetMessageViewVisibleBounds(int index) {
     gfx::Rect bounds = GetMessageListView()->child_at(index)->bounds();
-    bounds -= gfx::Vector2d(GetScroller()->GetVisibleRect().OffsetFromOrigin());
+    bounds -= GetScroller()->GetVisibleRect().OffsetFromOrigin();
+    bounds += GetScroller()->bounds().OffsetFromOrigin();
     return bounds;
   }
 
@@ -92,6 +94,10 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
 
   views::View* GetScrollerContents() {
     return message_center_view()->scroller_->contents();
+  }
+
+  views::View* GetStackingCounter() {
+    return message_center_view()->stacking_counter_;
   }
 
   NewUnifiedMessageCenterView* message_center_view() {
@@ -250,6 +256,80 @@ TEST_F(NewUnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
 
   EXPECT_EQ(previous_visible_rect.bottom(),
             GetScroller()->GetVisibleRect().bottom());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, StackingCounterLayout) {
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  EXPECT_EQ(0, GetStackingCounter()->bounds().y());
+  EXPECT_EQ(GetStackingCounter()->bounds().bottom(),
+            GetScroller()->bounds().y());
+
+  // Scroll to the top, making the counter invisbile.
+  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_FALSE(GetStackingCounter()->visible());
+  EXPECT_EQ(0, GetScroller()->bounds().y());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest,
+       StackingCounterNotAffectingMessageViewBounds) {
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  // Scroll to the top, making the counter invisbile.
+  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_FALSE(GetStackingCounter()->visible());
+
+  gfx::Rect previous_bounds = GetMessageViewVisibleBounds(2);
+
+  const int scroll_amount = GetMessageViewVisibleBounds(0).height() -
+                            kStackingNotificationCounterHeight + 1;
+  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  // The offset change matches with the scroll amount.
+  EXPECT_EQ(previous_bounds - gfx::Vector2d(0, scroll_amount),
+            GetMessageViewVisibleBounds(2));
+
+  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount - 1);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_FALSE(GetStackingCounter()->visible());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest,
+       StackingCounterRemovedWithNotifications) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < 6; ++i)
+    ids.push_back(AddNotification());
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+
+  EXPECT_TRUE(GetStackingCounter()->visible());
+  for (size_t i = 0; i < 5; ++i)
+    MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
+  EXPECT_FALSE(GetStackingCounter()->visible());
 }
 
 }  // namespace ash

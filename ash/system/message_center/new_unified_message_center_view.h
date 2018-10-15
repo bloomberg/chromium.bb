@@ -19,6 +19,7 @@ class ScrollView;
 namespace ash {
 
 class MessageCenterScrollBar;
+class StackingNotificationCounterView;
 
 // Manages scrolling of notification list.
 // TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
@@ -58,6 +59,10 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   // Scroll the notification list to |position_from_bottom_|.
   void ScrollToPositionFromBottom();
 
+  // Count number of notifications that are above visible area.
+  int GetStackedNotificationCount() const;
+
+  StackingNotificationCounterView* const stacking_counter_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;

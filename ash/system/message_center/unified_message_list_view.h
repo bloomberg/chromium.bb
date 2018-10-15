@@ -39,6 +39,10 @@ class ASH_EXPORT UnifiedMessageListView
   // added, it returns 0.
   int GetLastNotificationHeight() const;
 
+  // Count the number of notifications whose bottom position is above
+  // |y_offset|. O(n) where n is number of notifications.
+  int CountNotificationsAboveY(int y_offset) const;
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;

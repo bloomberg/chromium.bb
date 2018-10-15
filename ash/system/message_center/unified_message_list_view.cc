@@ -118,6 +118,14 @@ int UnifiedMessageListView::GetLastNotificationHeight() const {
   return child_at(child_count() - 1)->bounds().height();
 }
 
+int UnifiedMessageListView::CountNotificationsAboveY(int y_offset) const {
+  for (int i = 0; i < child_count(); ++i) {
+    if (child_at(i)->bounds().bottom() >= y_offset)
+      return i;
+  }
+  return child_count();
+}
+
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
   if (ignore_size_change_)
     return;
