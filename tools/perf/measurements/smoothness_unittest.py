@@ -58,8 +58,8 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
-  # crbug.com/483212, crbug.com/713260, and crbug.com/894622
-  @decorators.Disabled('chromeos', 'linux', 'win')
+  # crbug.com/483212, crbug.com/713260, crbug.com/894622, crbug.com/895238
+  @decorators.Disabled('chromeos', 'linux', 'mac', 'win')
   def testSmoothness(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = smoothness.Smoothness()
