@@ -30,6 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
@@ -69,6 +70,8 @@ constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
 constexpr char kResourceLoadingHintsFlagHtmlId[] =
     "resource-loading-hints-flag";
 constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
+constexpr char kDataSaverAltConfigHtmlId[] =
+    "data-reduction-proxy-server-experiment";
 
 // Links to flags in chrome://flags.
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
@@ -80,6 +83,8 @@ constexpr char kIgnorePreviewsBlacklistLink[] =
     "chrome://flags/#ignore-previews-blacklist";
 constexpr char kOfflinePageFlagLink[] =
     "chrome://flags/#enable-offline-previews";
+constexpr char kDataSaverAltConfigLink[] =
+    "chrome://flags/#enable-data-reduction-proxy-server-experiment";
 
 // Flag features names.
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
@@ -447,7 +452,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 6;
+  constexpr size_t expected = 7;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -640,6 +645,39 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   EXPECT_EQ(kDisabledFlagValue, resource_loading_hints_flag->second->value);
   EXPECT_EQ(kResourceLoadingHintsFlagLink,
             resource_loading_hints_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsAltConfigCustomValue) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  std::string flag_value = "alt-porg";
+  command_line->AppendSwitchASCII(
+      data_reduction_proxy::switches::kDataReductionProxyExperiment,
+      flag_value);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto alt_config_flag = passed_in_flags.find(kDataSaverAltConfigHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), alt_config_flag);
+  EXPECT_EQ(
+      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
+      alt_config_flag->second->description);
+  EXPECT_EQ(flag_value, alt_config_flag->second->value);
+  EXPECT_EQ(kDataSaverAltConfigLink, alt_config_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsAltConfigCustomDefault) {
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto alt_config_flag = passed_in_flags.find(kDataSaverAltConfigHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), alt_config_flag);
+  EXPECT_EQ(
+      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
+      alt_config_flag->second->description);
+  EXPECT_EQ(kDefaultFlagValue, alt_config_flag->second->value);
+  EXPECT_EQ(kDataSaverAltConfigLink, alt_config_flag->second->link);
 }
 
 #if defined(OS_ANDROID)
