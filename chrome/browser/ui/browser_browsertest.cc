@@ -184,14 +184,21 @@ int CountRenderProcessHosts() {
   return result;
 }
 
-class MockTabStripModelObserver : public TabStripModelObserver {
+class TabClosingObserver : public TabStripModelObserver {
  public:
-  MockTabStripModelObserver() : closing_count_(0) {}
+  TabClosingObserver() : closing_count_(0) {}
 
-  void TabClosingAt(TabStripModel* tab_strip_model,
-                    WebContents* contents,
-                    int index) override {
-    ++closing_count_;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kRemoved)
+      return;
+
+    for (const auto& delta : change.deltas()) {
+      if (delta.remove.will_be_deleted)
+        ++closing_count_;
+    }
   }
 
   int closing_count() const { return closing_count_; }
@@ -199,7 +206,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
  private:
   int closing_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
+  DISALLOW_COPY_AND_ASSIGN(TabClosingObserver);
 };
 
 // Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
@@ -1157,7 +1164,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
   model->SetTabPinned(0, true);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  MockTabStripModelObserver observer;
+  TabClosingObserver observer;
   model->AddObserver(&observer);
 
   // Uninstall the extension and make sure TabClosing is sent.

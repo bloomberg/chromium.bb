@@ -153,10 +153,13 @@ void BrowserAppMenuButton::OnThemeChanged() {
   UpdateIcon(false);
 }
 
-void BrowserAppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
-                                         content::WebContents* contents,
-                                         int index,
-                                         bool foreground) {
+void BrowserAppMenuButton::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted)
+    return;
+
   AnimateIconIfPossible(true);
 }
 

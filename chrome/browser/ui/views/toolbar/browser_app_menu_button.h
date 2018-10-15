@@ -55,10 +55,10 @@ class BrowserAppMenuButton : public AppMenuButton,
   void OnThemeChanged() override;
 
   // TabStripObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // Updates the presentation according to |severity_| and the theme provider.
   // If |should_animate| is true, the icon should animate.

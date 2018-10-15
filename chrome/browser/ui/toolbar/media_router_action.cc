@@ -221,10 +221,13 @@ void MediaRouterAction::OnRoutesUpdated(
   MaybeUpdateIcon();
 }
 
-void MediaRouterAction::ActiveTabChanged(content::WebContents* old_contents,
-                                         content::WebContents* new_contents,
-                                         int index,
-                                         int reason) {
+void MediaRouterAction::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (!selection.active_tab_changed() || tab_strip_model->empty())
+    return;
+
   RegisterWithDialogController();
   UpdateDialogState();
 }
