@@ -99,6 +99,7 @@
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_model_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
+#include "chrome/browser/sync/glue/extension_setting_model_type_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -343,15 +344,40 @@ ChromeSyncClient::CreateDataTypeControllers(
   // Extension setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
-    controllers.push_back(std::make_unique<ExtensionSettingDataTypeController>(
-        syncer::EXTENSION_SETTINGS, dump_stack, this, profile_));
+    if (base::FeatureList::IsEnabled(
+            switches::kSyncPseudoUSSExtensionSettings)) {
+      controllers.push_back(
+          std::make_unique<ExtensionSettingModelTypeController>(
+              syncer::EXTENSION_SETTINGS,
+              GetModelTypeStoreService()->GetStoreFactory(),
+              base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                             base::Unretained(this),
+                             syncer::EXTENSION_SETTINGS),
+              dump_stack, profile_));
+    } else {
+      controllers.push_back(
+          std::make_unique<ExtensionSettingDataTypeController>(
+              syncer::EXTENSION_SETTINGS, dump_stack, this, profile_));
+    }
   }
 
   // App setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APP_SETTINGS)) {
-    controllers.push_back(std::make_unique<ExtensionSettingDataTypeController>(
-        syncer::APP_SETTINGS, dump_stack, this, profile_));
+    if (base::FeatureList::IsEnabled(
+            switches::kSyncPseudoUSSExtensionSettings)) {
+      controllers.push_back(
+          std::make_unique<ExtensionSettingModelTypeController>(
+              syncer::APP_SETTINGS,
+              GetModelTypeStoreService()->GetStoreFactory(),
+              base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                             base::Unretained(this), syncer::APP_SETTINGS),
+              dump_stack, profile_));
+    } else {
+      controllers.push_back(
+          std::make_unique<ExtensionSettingDataTypeController>(
+              syncer::APP_SETTINGS, dump_stack, this, profile_));
+    }
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

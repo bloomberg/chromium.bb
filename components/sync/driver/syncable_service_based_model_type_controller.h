@@ -19,7 +19,7 @@ namespace syncer {
 class SyncableService;
 
 // Controller responsible for integrating SyncableService implementations within
-// a non-blocking datatype (USS).
+// a non-blocking datatype (USS), for datatypes living in the UI thread.
 class SyncableServiceBasedModelTypeController : public ModelTypeController {
  public:
   using SyncableServiceProvider =
