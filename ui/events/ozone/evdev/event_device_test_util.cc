@@ -627,19 +627,66 @@ const DeviceCapabilities kEveStylus = {
     arraysize(kEveStylusAbsAxes),
 };
 
-ui::InputDeviceType InputDeviceTypeFromBusType(int bustype) {
-  switch (bustype) {
-    case BUS_I8042:
-    case BUS_I2C:
-      return ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
-    case BUS_USB:
-    case 0x1D:  // Used in kLogitechTouchKeyboardK400 but not listed in input.h.
-      return ui::InputDeviceType::INPUT_DEVICE_USB;
-    default:
-      NOTREACHED() << "Unexpected bus type";
-      return ui::InputDeviceType::INPUT_DEVICE_UNKNOWN;
-  }
-}
+const DeviceCapabilities kHammerKeyboard = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-7/1-7:1.0/0003:18D1:5030.0002/"
+    "input/input10/event9",
+    /* name */ "Google Inc. Hammer",
+    /* phys */ "usb-0000:00:14.0-7/input0",
+    /* uniq */ "410020000d57345436313920",
+    /* bustype */ "0003",
+    /* vendor */ "18d1",
+    /* product */ "5030",
+    /* version */ "0100",
+    /* prop */ "0",
+    /* ev */ "100013",
+    /* key */
+    "88 0 0 0 0 0 1000000000007 ff000000000007ff febeffdfffefffff "
+    "fffffffffffffffe",
+    /* rel */ "0",
+    /* abs */ "0",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+};
+
+const DeviceAbsoluteAxis kHammerTouchpadAbsAxes[] = {
+    {ABS_X, {0, 0, 2160, 0, 0, 21}},
+    {ABS_Y, {0, 0, 1080, 0, 0, 14}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 3}},
+    {ABS_MT_TOUCH_MINOR, {0, 0, 255, 0, 0, 3}},
+    {ABS_MT_ORIENTATION, {0, 0, 1, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 2160, 0, 0, 21}},
+    {ABS_MT_POSITION_Y, {0, 0, 1080, 0, 0, 14}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
+const DeviceCapabilities kHammerTouchpad = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:14.0/usb1/1-7/1-7:1.2/0003:18D1:5030.0003/"
+    "input/input11/event10",
+    /* name */ "Google Inc. Hammer Touchpad",
+    /* phys */ "usb-0000:00:14.0-7/input2",
+    /* uniq */ "410020000d57345436313920",
+    /* bustype */ "0003",
+    /* vendor */ "18d1",
+    /* product */ "5030",
+    /* version */ "0100",
+    /* prop */ "5",
+    /* ev */ "1b",
+    /* key */ "e520 10000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "673800001000003",
+    /* msc */ "20",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kHammerTouchpadAbsAxes,
+    arraysize(kHammerTouchpadAbsAxes),
+};
 
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
                               EventDeviceInfo* devinfo) {
@@ -695,17 +742,14 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
       devinfo->SetAbsMtSlots(code, zero_slots);
   }
 
-  int bustype = 0;
-  sscanf(capabilities.bustype, "%x", &bustype);
-  devinfo->SetDeviceType(InputDeviceTypeFromBusType(bustype));
+  input_id id = {};
+  sscanf(capabilities.vendor, "%" SCNx16, &id.vendor);
+  sscanf(capabilities.product, "%" SCNx16, &id.product);
+  sscanf(capabilities.bustype, "%" SCNx16, &id.bustype);
+  sscanf(capabilities.version, "%" SCNx16, &id.version);
+  devinfo->SetId(id);
+  devinfo->SetDeviceType(EventDeviceInfo::GetInputDeviceTypeFromId(id));
 
-  int vendor_id = 0;
-  int product_id = 0;
-
-  sscanf(capabilities.vendor, "%x", &vendor_id);
-  sscanf(capabilities.product, "%x", &product_id);
-  devinfo->SetId(static_cast<uint16_t>(vendor_id),
-                 static_cast<uint16_t>(product_id));
   return true;
 }
 
