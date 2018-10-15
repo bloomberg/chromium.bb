@@ -147,6 +147,7 @@ class PLATFORM_EXPORT ThreadState final
   enum GCState {
     kNoGCScheduled,
     kIdleGCScheduled,
+    kIncrementalMarkingStepPaused,
     kIncrementalMarkingStepScheduled,
     kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,

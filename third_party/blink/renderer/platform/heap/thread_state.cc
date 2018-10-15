@@ -834,6 +834,7 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
     UNEXPECTED_GCSTATE(kIdleGCScheduled);
     UNEXPECTED_GCSTATE(kPreciseGCScheduled);
     UNEXPECTED_GCSTATE(kFullGCScheduled);
+    UNEXPECTED_GCSTATE(kIncrementalMarkingStepPaused);
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepScheduled);
     UNEXPECTED_GCSTATE(kIncrementalMarkingFinalizeScheduled);
     UNEXPECTED_GCSTATE(kPageNavigationGCScheduled);
@@ -857,6 +858,7 @@ void ThreadState::SetGCState(GCState gc_state) {
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled ||
+          gc_state_ == kIncrementalMarkingStepPaused ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
           gc_state_ == kIncrementalGCScheduled);
@@ -879,6 +881,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       DCHECK(!IsSweepingInProgress());
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
+          gc_state_ == kIncrementalMarkingStepPaused ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
@@ -897,6 +900,12 @@ void ThreadState::SetGCState(GCState gc_state) {
       DCHECK(!IsSweepingInProgress());
       VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled ||
                               gc_state_ == kIdleGCScheduled);
+      break;
+    case kIncrementalMarkingStepPaused:
+      DCHECK(CheckThread());
+      DCHECK(IsMarkingInProgress());
+      DCHECK(!IsSweepingInProgress());
+      VERIFY_STATE_TRANSITION(gc_state_ == kIncrementalMarkingStepScheduled);
       break;
     default:
       NOTREACHED();
@@ -1484,7 +1493,7 @@ void ThreadState::IncrementalMarkingStep() {
       // further marking if new objects are discovered. Otherwise, just process
       // the rest in the atomic pause.
       DCHECK(IsUnifiedGCMarkingInProgress());
-      SetGCState(kNoGCScheduled);
+      SetGCState(kIncrementalMarkingStepPaused);
     } else {
       ScheduleIncrementalMarkingFinalize();
     }
