@@ -19,10 +19,6 @@
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 
 # ChromeOS only test failures.
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_DistinguishedName
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
 -DemoSetupTest.BackOnArcTermsScreen
 -DemoSetupTest.ClickConnectedNetworkOnNetworkScreen
 -DemoSetupTest.ClickNetworkOnNetworkScreen
@@ -43,6 +39,7 @@
 # enabled by default and run the full set of tests, and collect any missing
 # failing tests.
 
+ActiveDirectoryJoinTest.*
 AudioPlayerBrowserTest.*
 BluetoothInternalsTest.*
 CertificateViewerModalUITest.*

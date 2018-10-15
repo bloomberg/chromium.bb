@@ -686,18 +686,19 @@ class EnterpriseEnrollmentConfigurationTest
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTest);
 };
 
+#if defined(MEMORY_SANITIZER)
+#define TEST_DISABLED_ON_MSAN(test_fixture, test_name) \
+  IN_PROC_BROWSER_TEST_F(test_fixture, DISABLED_##test_name)
+#else
+#define TEST_DISABLED_ON_MSAN(test_fixture, test_name) \
+  IN_PROC_BROWSER_TEST_F(test_fixture, test_name)
+#endif
+
 // Shows the enrollment screen and simulates an enrollment complete event. We
 // verify that the enrollmenth helper receives the correct auth code.
 // Flaky on MSAN. https://crbug.com/876362
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia \
-  DISABLED_TestAuthCodeGetsProperlyReceivedFromGaia
-#else
-#define MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia \
-  TestAuthCodeGetsProperlyReceivedFromGaia
-#endif
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia) {
+TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
+                      TestAuthCodeGetsProperlyReceivedFromGaia) {
   ShowEnrollmentScreen();
   ExpectEnrollmentCredentials();
   SubmitEnrollmentCredentials();
@@ -726,15 +727,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Shows the enrollment screen and simulates a successful enrollment. Verifies
 // that the success screen is then displayed.
 // Flaky on MSAN. https://crbug.com/876362
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess \
-  DISABLED_TestProperPageGetsLoadedOnEnrollmentSuccess
-#else
-#define MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess \
-  TestProperPageGetsLoadedOnEnrollmentSuccess
-#endif
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess) {
+TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
+                      TestProperPageGetsLoadedOnEnrollmentSuccess) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SubmitEnrollmentCredentials();
@@ -753,15 +747,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Verifies that the data the user enters into the attribute prompt screen is
 // received by the enrollment helper.
 // Flaky on MSAN. https://crbug.com/876362
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestAttributePromptPageGetsLoaded \
-  DISABLED_TestAttributePromptPageGetsLoaded
-#else
-#define MAYBE_TestAttributePromptPageGetsLoaded \
-  TestAttributePromptPageGetsLoaded
-#endif
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       MAYBE_TestAttributePromptPageGetsLoaded) {
+TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
+                      TestAttributePromptPageGetsLoaded) {
   ShowEnrollmentScreen();
   ExpectAttributePromptUpdate();
   SubmitEnrollmentCredentials();
@@ -782,8 +769,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory credentials. Verifies that the AuthpolicyClient
 // calls us back with the correct realm.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Success) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SetupActiveDirectoryJoin(kAdUserDomain, std::string());
@@ -816,8 +804,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Verifies that the distinguished name specified on the Active Directory join
 // domain screen correctly parsed and passed into AuthPolicyClient.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_DistinguishedName) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_DistinguishedName) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SetupActiveDirectoryJoin(kAdMachineDomain, std::string());
@@ -855,8 +844,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
@@ -904,8 +894,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Check that correct error card is shown (Active Directory one). Also checks
 // that hitting retry shows Active Directory screen again.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_ErrorCard) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_ErrorCard) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
@@ -930,8 +921,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Streamline) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_Streamline) {
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));
