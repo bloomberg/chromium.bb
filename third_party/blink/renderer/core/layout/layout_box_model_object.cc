@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -1467,8 +1468,8 @@ bool LayoutBoxModelObject::BackgroundStolenForBeingBody(
     return false;
 
   if (!root_element_style)
-    root_element_style = root_element->EnsureComputedStyle();
-  if (root_element_style->HasBackground())
+    root_element_style = root_element->GetComputedStyle();
+  if (!root_element_style || root_element_style->HasBackground())
     return false;
 
   if (GetNode() != GetDocument().FirstBodyElement())
