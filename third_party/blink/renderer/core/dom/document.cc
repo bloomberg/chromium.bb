@@ -4877,6 +4877,7 @@ Element* Document::SequentialFocusNavigationStartingPoint(
     return focused_element_.Get();
   if (!sequential_focus_navigation_starting_point_)
     return nullptr;
+  DCHECK(sequential_focus_navigation_starting_point_->IsConnected());
   if (!sequential_focus_navigation_starting_point_->collapsed()) {
     Node* node = sequential_focus_navigation_starting_point_->startContainer();
     DCHECK_EQ(node,
@@ -4904,11 +4905,25 @@ Element* Document::SequentialFocusNavigationStartingPoint(
   // document tree.
   if (Node* next_node =
           sequential_focus_navigation_starting_point_->FirstNode()) {
-    if (type == kWebFocusTypeForward)
-      return ElementTraversal::Previous(*next_node);
+    if (next_node->IsShadowRoot())
+      return next_node->OwnerShadowHost();
+    // TODO(tkent): Using FlatTreeTraversal is inconsistent with
+    // FocusController. Ideally we should find backward/forward focusable
+    // elements before the starting point is disconnected. crbug.com/606582
+    if (type == kWebFocusTypeForward) {
+      Node* previous = next_node;
+      do {
+        previous = FlatTreeTraversal::Previous(*previous);
+      } while (previous && !previous->IsElementNode());
+      return ToElement(previous);
+    }
     if (next_node->IsElementNode())
       return ToElement(next_node);
-    return ElementTraversal::Next(*next_node);
+    Node* next = next_node;
+    do {
+      next = FlatTreeTraversal::Next(*next);
+    } while (next && !next->IsElementNode());
+    return ToElement(next);
   }
   return nullptr;
 }
@@ -5009,8 +5024,11 @@ void Document::NodeWillBeRemoved(Node& n) {
   for (NodeIterator* ni : node_iterators_)
     ni->NodeWillBeRemoved(n);
 
-  for (Range* range : ranges_)
+  for (Range* range : ranges_) {
     range->NodeWillBeRemoved(n);
+    if (range == sequential_focus_navigation_starting_point_)
+      range->FixupRemovedNodeAcrossShadowBoundary(n);
+  }
 
   NotifyNodeWillBeRemoved(n);
 

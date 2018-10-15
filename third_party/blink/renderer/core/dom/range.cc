@@ -1456,6 +1456,19 @@ static inline void BoundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary,
   }
 }
 
+static inline void BoundaryShadowNodeWillBeRemoved(RangeBoundaryPoint& boundary,
+                                                   Node& node_to_be_removed) {
+  DCHECK_NE(boundary.ChildBefore(), node_to_be_removed);
+
+  for (Node* node = &boundary.Container(); node;
+       node = node->ParentOrShadowHostElement()) {
+    if (node == node_to_be_removed) {
+      boundary.SetToBeforeChild(node_to_be_removed);
+      return;
+    }
+  }
+}
+
 void Range::NodeWillBeRemoved(Node& node) {
   DCHECK_EQ(node.GetDocument(), owner_document_);
   DCHECK_NE(node, owner_document_.Get());
@@ -1466,6 +1479,11 @@ void Range::NodeWillBeRemoved(Node& node) {
     return;
   BoundaryNodeWillBeRemoved(start_, node);
   BoundaryNodeWillBeRemoved(end_, node);
+}
+
+void Range::FixupRemovedNodeAcrossShadowBoundary(Node& node) {
+  BoundaryShadowNodeWillBeRemoved(start_, node);
+  BoundaryShadowNodeWillBeRemoved(end_, node);
 }
 
 static inline void BoundaryTextInserted(RangeBoundaryPoint& boundary,
