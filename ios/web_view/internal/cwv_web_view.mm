@@ -550,18 +550,19 @@ static NSString* gUserAgentProduct = nil;
 // The WebState is restored from |sessionStorage| if provided.
 - (void)resetWebStateWithSessionStorage:
     (nullable CRWSessionStorage*)sessionStorage {
-  if (_webState && _webState->GetView().superview == self) {
+  if (_webState) {
     if (_webStateObserver) {
       _webState->RemoveObserver(_webStateObserver.get());
     }
     for (const auto& pair : _scriptCommandCallbacks) {
       _webState->RemoveScriptCommandCallback(pair.first);
     }
-
-    // The web view provided by the old |_webState| has been added as a subview.
-    // It must be removed and replaced with a new |_webState|'s web view, which
-    // is added later.
-    [_webState->GetView() removeFromSuperview];
+    if (_webState->GetView().superview == self) {
+      // The web view provided by the old |_webState| has been added as a
+      // subview. It must be removed and replaced with a new |_webState|'s web
+      // view, which is added later.
+      [_webState->GetView() removeFromSuperview];
+    }
   }
 
   BOOL allowsBackForwardNavigationGestures =
