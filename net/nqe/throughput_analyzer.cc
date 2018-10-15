@@ -13,9 +13,9 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/network_activity_monitor.h"
 #include "net/base/url_util.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/network_quality_estimator_util.h"
-#include "net/nqe/network_quality_provider.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -42,13 +42,13 @@ namespace nqe {
 namespace internal {
 
 ThroughputAnalyzer::ThroughputAnalyzer(
-    const NetworkQualityProvider* network_quality_provider,
+    const NetworkQualityEstimator* network_quality_estimator,
     const NetworkQualityEstimatorParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ThroughputObservationCallback throughput_observation_callback,
     const base::TickClock* tick_clock,
     const NetLogWithSource& net_log)
-    : network_quality_provider_(network_quality_provider),
+    : network_quality_estimator_(network_quality_estimator),
       params_(params),
       task_runner_(task_runner),
       throughput_observation_callback_(throughput_observation_callback),
@@ -60,7 +60,7 @@ ThroughputAnalyzer::ThroughputAnalyzer(
       use_localhost_requests_for_tests_(false),
       net_log_(net_log) {
   DCHECK(tick_clock_);
-  DCHECK(network_quality_provider_);
+  DCHECK(network_quality_estimator_);
   DCHECK(params_);
   DCHECK(task_runner_);
   DCHECK(!IsCurrentlyTrackingThroughput());
@@ -234,7 +234,7 @@ bool ThroughputAnalyzer::IsHangingWindow(int64_t bits_received,
   // Scale the |duration| to one HTTP RTT, and compute the number of bits that
   // would be received over a duration of one HTTP RTT.
   size_t bits_received_over_one_http_rtt =
-      bits_received * (network_quality_provider_->GetHttpRTT()
+      bits_received * (network_quality_estimator_->GetHttpRTT()
                            .value_or(base::TimeDelta::FromSeconds(10))
                            .InMillisecondsF() /
                        duration.InMillisecondsF());
@@ -394,7 +394,7 @@ void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
   const base::TimeTicks now = tick_clock_->NowTicks();
 
   const base::TimeDelta http_rtt =
-      network_quality_provider_->GetHttpRTT().value_or(
+      network_quality_estimator_->GetHttpRTT().value_or(
           base::TimeDelta::FromSeconds(60));
 
   size_t count_request_erased = 0;
