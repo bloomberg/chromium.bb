@@ -21,9 +21,11 @@
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "rlz/buildflags/buildflags.h"
@@ -235,12 +237,68 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerRlzTest, DeviceIsLocked) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeSessionManagerRlzTest, DeviceIsUnlocked) {
-  // When the device is unlocked, the brand should be cleared after session
-  // start.
+  // When the device is unlocked, the brand should still stick after a
+  // regular session start.
   stub_install_attributes()->set_device_locked(false);
   StartUserSession();
-  EXPECT_EQ("", google_brand::chromeos::GetBrand());
+  EXPECT_EQ("TEST", google_brand::chromeos::GetBrand());
 }
+
+class GuestSessionRlzTest : public InProcessBrowserTest,
+                            public ::testing::WithParamInterface<bool> {
+ public:
+  GuestSessionRlzTest() : is_locked_(GetParam()) {}
+
+ protected:
+  StubInstallAttributes* stub_install_attributes() {
+    return scoped_stub_install_attributes_->Get();
+  }
+
+ private:
+  void SetUpInProcessBrowserTestFixture() override {
+    // Set the default brand code to a known value.
+    scoped_fake_statistics_provider_.reset(
+        new system::ScopedFakeStatisticsProvider());
+    scoped_fake_statistics_provider_->SetMachineStatistic(
+        system::kRlzBrandCodeKey, "TEST");
+
+    // Lock the device as needed for this test.
+    scoped_stub_install_attributes_ =
+        std::make_unique<ScopedStubInstallAttributes>(
+            StubInstallAttributes::CreateUnset());
+    scoped_stub_install_attributes_->Get()->set_device_locked(is_locked_);
+
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitch(::switches::kIncognito);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        user_manager::GuestAccountId().GetUserEmail());
+  }
+
+  // Test instance parameters.
+  const bool is_locked_;
+
+  std::unique_ptr<system::ScopedFakeStatisticsProvider>
+      scoped_fake_statistics_provider_;
+  std::unique_ptr<ScopedStubInstallAttributes> scoped_stub_install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(GuestSessionRlzTest);
+};
+
+IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DeviceIsLocked) {
+  const char* const expected_brand =
+      stub_install_attributes()->IsDeviceLocked() ? "TEST" : "";
+  EXPECT_EQ(expected_brand, google_brand::chromeos::GetBrand());
+}
+
+INSTANTIATE_TEST_CASE_P(GuestSessionRlzTest,
+                        GuestSessionRlzTest,
+                        ::testing::Values(false, true));
 
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
