@@ -294,9 +294,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
   bool GetHtmlAttribute(const char* attr, base::string16* value) const;
 
-  base::string16 GetFontFamily() const;
-  base::string16 GetLanguage() const;
-
   virtual base::string16 GetText() const;
 
   // Returns true if the bit corresponding to the given enum is 1.
