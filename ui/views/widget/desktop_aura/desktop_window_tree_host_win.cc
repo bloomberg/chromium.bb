@@ -885,11 +885,6 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
   return event->handled();
 }
 
-bool DesktopWindowTreeHostWin::HandlePointerEvent(ui::PointerEvent* event) {
-  SendEventToSink(event);
-  return event->handled();
-}
-
 void DesktopWindowTreeHostWin::HandleKeyEvent(ui::KeyEvent* event) {
   SendEventToSink(event);
 }
