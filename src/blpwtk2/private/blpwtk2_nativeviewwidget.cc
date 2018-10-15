@@ -49,6 +49,7 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
     params.activatable = views::Widget::InitParams::ACTIVATABLE_DEFAULT;
     params.layer_type = ui::LAYER_SOLID_COLOR;
+    params.reroute_mouse_wheel_to_any_related_window = rerouteMouseWheelToAnyRelatedWindow;
     d_impl->set_focus_on_creation(false);
     d_impl->Init(params);
     d_nativeViewHost->Attach(contents);
