@@ -75,6 +75,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     kContextXRPresent = 6,
     kContextWebgl2Compute = 7,
     kContextTypeCount,
+    kMaxValue = kContextWebgl2Compute,
   };
 
   static ContextType ContextTypeFromId(const String& id);

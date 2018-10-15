@@ -45,6 +45,9 @@ class CORE_EXPORT OffscreenCanvas final
   USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvas);
   USING_PRE_FINALIZER(OffscreenCanvas, Dispose);
 
+ private:
+  void static RecordCanvasSizeToUMA(unsigned width, unsigned height);
+
  public:
   static OffscreenCanvas* Create(unsigned width, unsigned height);
   ~OffscreenCanvas() override;
@@ -65,6 +68,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
+  void RecordTransfer();
 
   void SetPlaceholderCanvasId(DOMNodeId canvas_id);
   DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -36,7 +37,14 @@ namespace blink {
 
 OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {}
 
+void OffscreenCanvas::RecordCanvasSizeToUMA(unsigned width, unsigned height) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
+                              std::sqrt(width * height), 0, 5000, 100);
+}
+
 OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
+  UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.NewOffscreenCanvas", true);
+  RecordCanvasSizeToUMA(width, height);
   return new OffscreenCanvas(
       IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
@@ -107,6 +115,9 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
       origin_clean_ = true;
     }
   }
+  if (size != size_) {
+    RecordCanvasSizeToUMA(size.Width(), size.Height());
+  }
   size_ = size;
   if (frame_dispatcher_)
     frame_dispatcher_->Reshape(size_);
@@ -114,6 +125,10 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
   current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
   if (context_)
     context_->DidDraw();
+}
+
+void OffscreenCanvas::RecordTransfer() {
+  UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.Transferred", true);
 }
 
 void OffscreenCanvas::SetNeutered() {
@@ -201,6 +216,12 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       (context_type == CanvasRenderingContext::kContextXRPresent &&
        !OriginTrials::WebXREnabled(execution_context))) {
     return nullptr;
+  }
+
+  // Log the aliased context type used.
+  if (!context_) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.OffscreenCanvas.ContextType",
+                              context_type);
   }
 
   CanvasRenderingContextFactory* factory =
