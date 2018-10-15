@@ -4990,7 +4990,7 @@ crbug.com/818324 [ Linux Mac Win7 ] external/wpt/content-security-policy/embedde
 crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]
 
 # Sheriff 2018-7-13
-crbug.com/863599 [ Linux Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
+crbug.com/863599 [ Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
 crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
 crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
