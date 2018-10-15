@@ -174,7 +174,7 @@ class ASH_EXPORT AppListControllerImpl
                                int event_flags) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
-  bool ProcessHomeLauncherGesture(ui::EventType type,
+  bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
   ws::WindowService* GetWindowService() override;
