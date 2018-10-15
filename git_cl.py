@@ -3122,6 +3122,19 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       change_desc.update_reviewers(options.reviewers, options.tbrs,
                                    options.add_owners_to, change)
 
+    # TODO(tandrii): process reviewers and ccs into refspec.
+    reviewers = sorted(change_desc.get_reviewers())
+    # Add cc's from the CC_LIST and --cc flag (if any).
+    if not options.private and not options.no_autocc:
+      cc = self.GetCCList().split(',')
+    else:
+      cc = []
+    if options.cc:
+      cc.extend(options.cc)
+    cc = filter(None, [email.strip() for email in cc])
+    if change_desc.get_cced():
+      cc.extend(change_desc.get_cced())
+
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
@@ -3246,19 +3259,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
            'Change-Id: %s') % (len(change_numbers), change_id), change_desc)
       self.SetIssue(change_numbers[0])
       self._GitSetBranchConfigValue('gerritsquashhash', ref_to_push)
-
-    reviewers = sorted(change_desc.get_reviewers())
-
-    # Add cc's from the CC_LIST and --cc flag (if any).
-    if not options.private and not options.no_autocc:
-      cc = self.GetCCList().split(',')
-    else:
-      cc = []
-    if options.cc:
-      cc.extend(options.cc)
-    cc = filter(None, [email.strip() for email in cc])
-    if change_desc.get_cced():
-      cc.extend(change_desc.get_cced())
 
     if self.GetIssue():
       # GetIssue() is not set in case of non-squash uploads according to tests.
