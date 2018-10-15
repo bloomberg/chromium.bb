@@ -459,6 +459,11 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
       min_socket_watcher_notification_interval_(
           GetMinSocketWatcherNotificationInterval(params_)),
       lower_bound_http_rtt_transport_rtt_multiplier_(1.0),
+      upper_bound_http_rtt_endtoend_rtt_multiplier_(
+          GetDoubleValueForVariationParamWithDefaultValue(
+              params_,
+              "upper_bound_http_rtt_endtoend_rtt_multiplier",
+              3.0)),
       hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_(
           GetValueForVariationParam(
               params_,

@@ -1447,6 +1447,21 @@ TEST_F(NetworkQualityEstimatorTest, TestEndToEndRttUsedForHttpRttComputation) {
           base::TimeDelta::FromMilliseconds(4000),
           EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
       },
+      {
+          // Verify end to end RTT places an upper bound on HTTP RTT when enough
+          // samples are present.
+          base::TimeDelta::FromMilliseconds(3000),
+          base::TimeDelta::FromMilliseconds(100), true,
+          base::TimeDelta::FromMilliseconds(300), EFFECTIVE_CONNECTION_TYPE_3G,
+      },
+      {
+          // Verify end to end RTT does not place an upper bound on HTTP RTT
+          // when enough samples are not present.
+          base::TimeDelta::FromMilliseconds(3000),
+          base::TimeDelta::FromMilliseconds(100), false,
+          base::TimeDelta::FromMilliseconds(3000),
+          EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+      },
   };
 
   for (const auto& test : tests) {
