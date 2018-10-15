@@ -369,13 +369,3 @@ execute_process(COMMAND ${CMAKE_COMMAND} -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
                         -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
                         -DPERL_EXECUTABLE=${PERL_EXECUTABLE} -P
                         "${AOM_ROOT}/build/cmake/version.cmake")
-
-if(NOT MSVC) # Generate aom.pc (pkg-config file).
-  execute_process(COMMAND ${CMAKE_COMMAND} -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
-                          -DAOM_ROOT=${AOM_ROOT}
-                          -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-                          -DCMAKE_PROJECT_NAME=${CMAKE_PROJECT_NAME}
-                          -DCONFIG_MULTITHREAD=${CONFIG_MULTITHREAD}
-                          -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H} -P
-                          "${AOM_ROOT}/build/cmake/pkg_config.cmake")
-endif()
