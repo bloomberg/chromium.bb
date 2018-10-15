@@ -51,7 +51,6 @@ class ArcBridgeService;
 
 class ArcBluetoothBridge
     : public KeyedService,
-      public ConnectionObserver<mojom::BluetoothInstance>,
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
       public device::BluetoothLocalGattService::Delegate,
@@ -70,10 +69,6 @@ class ArcBluetoothBridge
   ArcBluetoothBridge(content::BrowserContext* context,
                      ArcBridgeService* bridge_service);
   ~ArcBluetoothBridge() override;
-
-  // Overridden from ConnectionObserver<mojom::BluetoothInstance>:
-  void OnConnectionReady() override;
-  void OnConnectionClosed() override;
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -392,8 +387,6 @@ class ArcBluetoothBridge
       const std::string char_string_id,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
 
-  bool IsInstanceUp() const { return is_bluetooth_instance_up_; }
-
   // Indicates if a power change is initiated by Chrome / Android.
   bool IsPowerChangeInitiatedByRemote(
       ArcBluetoothBridge::AdapterPowerState powered) const;
@@ -580,10 +573,6 @@ class ArcBluetoothBridge
   base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
-
-  // This indicates whether the remote Bluetooth ARC instance is ready to
-  // receive events.
-  bool is_bluetooth_instance_up_;
 
   // Observers to listen the start-up of App and Intent Helper.
   std::unique_ptr<ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>

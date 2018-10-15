@@ -478,8 +478,6 @@ ArcBluetoothBridge::ConnectionObserverImpl<
 ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service), weak_factory_(this) {
-  arc_bridge_service_->bluetooth()->AddObserver(this);
-
   app_observer_ = std::make_unique<
       ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>(
       this, arc_bridge_service_);
@@ -503,7 +501,6 @@ ArcBluetoothBridge::~ArcBluetoothBridge() {
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
 
-  arc_bridge_service_->bluetooth()->RemoveObserver(this);
   arc_bridge_service_->bluetooth()->SetHost(nullptr);
 }
 
@@ -525,15 +522,6 @@ void ArcBluetoothBridge::OnAdapterInitialized(
   // methods, since it's undesirable to implement a retry mechanism for the
   // cases when an inbound method is called and the adapter is not ready yet.
   arc_bridge_service_->bluetooth()->SetHost(this);
-}
-
-void ArcBluetoothBridge::OnConnectionReady() {
-  // TODO(hidehiko): Replace this by ConnectionHolder::IsConnected().
-  is_bluetooth_instance_up_ = true;
-}
-
-void ArcBluetoothBridge::OnConnectionClosed() {
-  is_bluetooth_instance_up_ = false;
 }
 
 void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device,
@@ -590,7 +578,7 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
 
 void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
   SendDevice(device, /* include_cached_device = */ false);
@@ -621,7 +609,7 @@ void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
 void ArcBluetoothBridge::DeviceAddressChanged(BluetoothAdapter* adapter,
                                               BluetoothDevice* device,
                                               const std::string& old_address) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
   std::string new_address = device->GetAddress();
@@ -651,7 +639,7 @@ void ArcBluetoothBridge::DeviceAddressChanged(BluetoothAdapter* adapter,
 void ArcBluetoothBridge::DevicePairedChanged(BluetoothAdapter* adapter,
                                              BluetoothDevice* device,
                                              bool new_paired_status) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
   DCHECK(adapter);
@@ -685,7 +673,7 @@ void ArcBluetoothBridge::DeviceMTUChanged(BluetoothAdapter* adapter,
 
 void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
   DCHECK(adapter);
@@ -699,7 +687,7 @@ void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,
 void ArcBluetoothBridge::GattServiceAdded(BluetoothAdapter* adapter,
                                           BluetoothDevice* device,
                                           BluetoothRemoteGattService* service) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -708,14 +696,14 @@ void ArcBluetoothBridge::GattServiceRemoved(
     BluetoothAdapter* adapter,
     BluetoothDevice* device,
     BluetoothRemoteGattService* service) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
 
 void ArcBluetoothBridge::GattServicesDiscovered(BluetoothAdapter* adapter,
                                                 BluetoothDevice* device) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
   auto* btle_instance = ARC_GET_INSTANCE_FOR_METHOD(
@@ -733,7 +721,7 @@ void ArcBluetoothBridge::GattServicesDiscovered(BluetoothAdapter* adapter,
 void ArcBluetoothBridge::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattService* service) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -741,7 +729,7 @@ void ArcBluetoothBridge::GattDiscoveryCompleteForService(
 void ArcBluetoothBridge::GattServiceChanged(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattService* service) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -749,7 +737,7 @@ void ArcBluetoothBridge::GattServiceChanged(
 void ArcBluetoothBridge::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -757,7 +745,7 @@ void ArcBluetoothBridge::GattCharacteristicAdded(
 void ArcBluetoothBridge::GattCharacteristicRemoved(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -765,7 +753,7 @@ void ArcBluetoothBridge::GattCharacteristicRemoved(
 void ArcBluetoothBridge::GattDescriptorAdded(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattDescriptor* descriptor) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -773,7 +761,7 @@ void ArcBluetoothBridge::GattDescriptorAdded(
 void ArcBluetoothBridge::GattDescriptorRemoved(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattDescriptor* descriptor) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
@@ -782,7 +770,7 @@ void ArcBluetoothBridge::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
 
   auto* btle_instance = ARC_GET_INSTANCE_FOR_METHOD(
@@ -813,7 +801,7 @@ void ArcBluetoothBridge::GattDescriptorValueChanged(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattDescriptor* descriptor,
     const std::vector<uint8_t>& value) {
-  if (!IsInstanceUp())
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
     return;
   // Placeholder for GATT client functionality
 }
