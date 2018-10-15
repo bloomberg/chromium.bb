@@ -896,7 +896,7 @@ void StyleEngine::PartChangedForElement(Element& element) {
       StyleChangeReasonForTracing::FromAttribute(HTMLNames::partAttr));
 }
 
-void StyleEngine::PartmapChangedForElement(Element& element) {
+void StyleEngine::ExportpartsChangedForElement(Element& element) {
   if (ShouldSkipInvalidationFor(element))
     return;
   if (!element.GetShadowRoot())

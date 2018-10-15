@@ -1775,10 +1775,10 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       EnsureElementRareData().SetPart(params.new_value);
       GetDocument().GetStyleEngine().PartChangedForElement(*this);
     }
-  } else if (name == HTMLNames::partmapAttr) {
+  } else if (name == HTMLNames::exportpartsAttr) {
     if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
       EnsureElementRareData().SetPartNamesMap(params.new_value);
-      GetDocument().GetStyleEngine().PartmapChangedForElement(*this);
+      GetDocument().GetStyleEngine().ExportpartsChangedForElement(*this);
     }
   } else if (IsStyledElement()) {
     if (name == styleAttr) {
