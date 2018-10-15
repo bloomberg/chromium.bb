@@ -134,13 +134,12 @@ void CrostiniAppWindowShelfController::OnWindowInitialized(
     aura::Window* window) {
   // An Crostini window has type WINDOW_TYPE_NORMAL, a WindowDelegate and
   // is a top level views widget. Tooltips, menus, and other kinds of transient
-  // windows that can't activate are filtered out.
+  // windows that can't activate are filtered out. The transient child is set
+  // up after window Init so add it here but remove it later.
   if (window->type() != aura::client::WINDOW_TYPE_NORMAL || !window->delegate())
     return;
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (!widget || !widget->is_top_level())
-    return;
-  if (wm::GetTransientParent(window) != nullptr)
     return;
   if (!widget->CanActivate())
     return;
@@ -154,6 +153,17 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
     bool visible) {
   if (!visible)
     return;
+
+  // Transient windows are set up after window Init, so remove them here.
+  if (wm::GetTransientParent(window)) {
+    DCHECK(aura_window_to_app_window_.find(window) ==
+           aura_window_to_app_window_.end());
+    auto it = observed_windows_.find(window);
+    DCHECK(it != observed_windows_.end());
+    observed_windows_.erase(it);
+    window->RemoveObserver(this);
+    return;
+  }
 
   // Skip when this window has been handled. This can happen when the window
   // becomes visible again.
