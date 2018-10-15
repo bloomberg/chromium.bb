@@ -522,7 +522,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-#include "chrome/services/cups_ipp_validator/public/mojom/constants.mojom.h"
+#include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
@@ -3788,9 +3788,9 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-  (*services)[chrome::mojom::kCupsIppValidatorServiceName] =
+  (*services)[chrome::mojom::kCupsIppParserServiceName] =
       base::BindRepeating(&l10n_util::GetStringUTF16,
-                          IDS_UTILITY_PROCESS_CUPS_IPP_VALIDATOR_SERVICE_NAME);
+                          IDS_UTILITY_PROCESS_CUPS_IPP_PARSER_SERVICE_NAME);
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)

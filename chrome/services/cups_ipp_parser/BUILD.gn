@@ -8,10 +8,10 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "cups_ipp_validator_service.cc",
-    "cups_ipp_validator_service.h",
-    "ipp_validator.cc",
-    "ipp_validator.h",
+    "cups_ipp_parser_service.cc",
+    "cups_ipp_parser_service.h",
+    "ipp_parser.cc",
+    "ipp_parser.h",
   ]
 
   deps = [
@@ -20,13 +20,13 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//chrome/services/cups_ipp_validator/public/mojom",
+    "//chrome/services/cups_ipp_parser/public/mojom",
     "//mojo/public/mojom/base",
     "//services/service_manager/public/cpp",
   ]
 }
 
 service_manifest("manifest") {
-  name = "cups_ipp_validator"
+  name = "cups_ipp_parser"
   source = "manifest.json"
 }

@@ -1,6 +1,6 @@
 {
-  "name": "cups_ipp_validator",
-  "display_name": "CUPS IPP Validator",
+  "name": "cups_ipp_parser",
+  "display_name": "CUPS IPP Parser",
   "options" : {
     "instance_sharing" : "shared_instance_across_users"
   },
@@ -8,7 +8,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "ipp_validator": [ "chrome.mojom.IppValidator" ]
+        "ipp_parser": [ "chrome.mojom.IppParser" ]
        }
      }
   }

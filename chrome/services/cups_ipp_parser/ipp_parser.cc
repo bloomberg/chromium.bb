@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/cups_ipp_validator/ipp_validator.h"
+#include "chrome/services/cups_ipp_parser/ipp_parser.h"
 
 #include <memory>
 #include <utility>
@@ -11,10 +11,10 @@
 
 namespace chrome {
 
-IppValidator::IppValidator(
+IppParser::IppParser(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
 
-IppValidator::~IppValidator() = default;
+IppParser::~IppParser() = default;
 
 }  // namespace chrome
