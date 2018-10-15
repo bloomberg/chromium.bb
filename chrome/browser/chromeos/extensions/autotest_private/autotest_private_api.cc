@@ -765,8 +765,8 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
 }
 
 void AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted(
-    crostini::ConciergeClientResult result) {
-  if (result == crostini::ConciergeClientResult::SUCCESS) {
+    crostini::CrostiniResult result) {
+  if (result == crostini::CrostiniResult::SUCCESS) {
     Respond(NoArguments());
   } else {
     Respond(Error("Error installing crostini"));
@@ -800,8 +800,8 @@ AutotestPrivateRunCrostiniUninstallerFunction::Run() {
 }
 
 void AutotestPrivateRunCrostiniUninstallerFunction::CrostiniRemoved(
-    crostini::ConciergeClientResult result) {
-  if (result == crostini::ConciergeClientResult::SUCCESS)
+    crostini::CrostiniResult result) {
+  if (result == crostini::CrostiniResult::SUCCESS)
     Respond(NoArguments());
   else
     Respond(Error("Error uninstalling crostini"));

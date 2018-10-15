@@ -44,7 +44,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/window/dialog_client_view.h"
 
-using crostini::ConciergeClientResult;
+using crostini::CrostiniResult;
 
 namespace {
 CrostiniInstallerView* g_crostini_installer_view = nullptr;
@@ -200,10 +200,10 @@ void CrostiniInstallerView::LinkClicked(views::Link* source, int event_flags) {
   Navigate(&params);
 }
 
-void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
+void CrostiniInstallerView::OnComponentLoaded(CrostiniResult result) {
   DCHECK_EQ(state_, State::INSTALL_IMAGE_LOADER);
 
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to install the cros-termina component";
     HandleError(
         l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR),
@@ -215,9 +215,9 @@ void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
   StepProgress();
 }
 
-void CrostiniInstallerView::OnConciergeStarted(ConciergeClientResult result) {
+void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
   DCHECK_EQ(state_, State::START_CONCIERGE);
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to install start Concierge with error code: "
                << static_cast<int>(result);
     HandleError(
@@ -230,9 +230,9 @@ void CrostiniInstallerView::OnConciergeStarted(ConciergeClientResult result) {
   StepProgress();
 }
 
-void CrostiniInstallerView::OnDiskImageCreated(ConciergeClientResult result) {
+void CrostiniInstallerView::OnDiskImageCreated(CrostiniResult result) {
   DCHECK_EQ(state_, State::CREATE_DISK_IMAGE);
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to create disk imagewith error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
@@ -245,9 +245,9 @@ void CrostiniInstallerView::OnDiskImageCreated(ConciergeClientResult result) {
   StepProgress();
 }
 
-void CrostiniInstallerView::OnVmStarted(ConciergeClientResult result) {
+void CrostiniInstallerView::OnVmStarted(CrostiniResult result) {
   DCHECK_EQ(state_, State::START_TERMINA_VM);
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to start Termina VM with error code: "
                << static_cast<int>(result);
     HandleError(l10n_util::GetStringUTF16(
@@ -267,18 +267,18 @@ void CrostiniInstallerView::OnContainerDownloading(int32_t download_percent) {
   StepProgress();
 }
 
-void CrostiniInstallerView::OnContainerCreated(ConciergeClientResult result) {
+void CrostiniInstallerView::OnContainerCreated(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::CREATE_CONTAINER);
   UpdateState(State::START_CONTAINER);
   StepProgress();
 }
 
-void CrostiniInstallerView::OnContainerStarted(ConciergeClientResult result) {
+void CrostiniInstallerView::OnContainerStarted(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::START_CONTAINER);
 
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to start container with error code: "
                << static_cast<int>(result);
     HandleError(
@@ -291,11 +291,11 @@ void CrostiniInstallerView::OnContainerStarted(ConciergeClientResult result) {
   StepProgress();
 }
 
-void CrostiniInstallerView::OnSshKeysFetched(ConciergeClientResult result) {
+void CrostiniInstallerView::OnSshKeysFetched(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::FETCH_SSH_KEYS);
 
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to fetch ssh keys with error code: "
                << static_cast<int>(result);
     HandleError(
@@ -430,10 +430,9 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message,
   GetWidget()->GetRootView()->Layout();
 }
 
-void CrostiniInstallerView::MountContainerFinished(
-    ConciergeClientResult result) {
+void CrostiniInstallerView::MountContainerFinished(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to mount container with error code: "
                << static_cast<int>(result);
     HandleError(

@@ -126,10 +126,10 @@ void CrostiniPackageInstallerService::OnInstallLinuxPackage(
     const std::string& vm_name,
     const std::string& container_name,
     CrostiniManager::InstallLinuxPackageCallback callback,
-    ConciergeClientResult result,
+    CrostiniResult result,
     const std::string& failure_reason) {
   std::move(callback).Run(result, failure_reason);
-  if (result != ConciergeClientResult::SUCCESS)
+  if (result != CrostiniResult::SUCCESS)
     return;
 
   std::unique_ptr<CrostiniPackageInstallerNotification>& notification =

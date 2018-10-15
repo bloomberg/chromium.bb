@@ -75,13 +75,12 @@ void OnCrostiniRestarted(Profile* profile,
                          const std::string& app_id,
                          Browser* browser,
                          base::OnceClosure callback,
-                         crostini::ConciergeClientResult result) {
-  if (result != crostini::ConciergeClientResult::SUCCESS) {
+                         crostini::CrostiniResult result) {
+  if (result != crostini::CrostiniResult::SUCCESS) {
     OnLaunchFailed(app_id);
     if (browser && browser->window())
       browser->window()->Close();
-    if (result ==
-        crostini::ConciergeClientResult::OFFLINE_WHEN_UPGRADE_REQUIRED) {
+    if (result == crostini::CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED) {
       ShowCrostiniUpgradeView(profile, crostini::CrostiniUISurface::kAppList);
     }
     return;
@@ -90,8 +89,8 @@ void OnCrostiniRestarted(Profile* profile,
 }
 
 void OnContainerApplicationLaunched(const std::string& app_id,
-                                    crostini::ConciergeClientResult result) {
-  if (result != crostini::ConciergeClientResult::SUCCESS)
+                                    crostini::CrostiniResult result) {
+  if (result != crostini::CrostiniResult::SUCCESS)
     OnLaunchFailed(app_id);
 }
 

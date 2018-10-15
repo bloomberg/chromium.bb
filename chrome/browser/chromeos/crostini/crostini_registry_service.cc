@@ -831,9 +831,9 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
 void CrostiniRegistryService::OnContainerAppIcon(
     const std::string& app_id,
     ui::ScaleFactor scale_factor,
-    ConciergeClientResult result,
+    CrostiniResult result,
     const std::vector<Icon>& icons) {
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     // Add this to the list of retryable icon requests so we redo this when
     // we get feedback from the container that it's available.
     retry_icon_requests_[app_id] |= (1 << scale_factor);
