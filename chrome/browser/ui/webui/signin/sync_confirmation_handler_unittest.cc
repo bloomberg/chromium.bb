@@ -172,7 +172,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
         {AccountFetcherServiceFactory::GetInstance(),
          base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests)},
         {SigninManagerFactory::GetInstance(),
-         base::BindRepeating(&BuildFakeSigninManagerBase)},
+         base::BindRepeating(&BuildFakeSigninManagerForTesting)},
         {ConsentAuditorFactory::GetInstance(),
          base::BindRepeating(&BuildFakeConsentAuditor)}};
   }

@@ -153,7 +153,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
         base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     profile_builder.AddTestingFactory(
         SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerBase));
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     profile_ = profile_builder.Build();
 
     // Seed account info properly.

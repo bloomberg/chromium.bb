@@ -40,7 +40,7 @@ class ForceSigninVerifierTest
   void SetUp() override {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
+                              BuildFakeSigninManagerForTesting);
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
     profile_ = builder.Build();

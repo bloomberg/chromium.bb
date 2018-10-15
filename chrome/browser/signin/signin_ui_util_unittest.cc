@@ -133,7 +133,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {{SigninManagerFactory::GetInstance(),
-             base::BindRepeating(&BuildFakeSigninManagerBase)},
+             base::BindRepeating(&BuildFakeSigninManagerForTesting)},
             {ProfileOAuth2TokenServiceFactory::GetInstance(),
              base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
             {GaiaCookieManagerServiceFactory::GetInstance(),

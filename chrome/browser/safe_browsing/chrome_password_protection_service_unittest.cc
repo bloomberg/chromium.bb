@@ -201,7 +201,7 @@ class ChromePasswordProtectionServiceTest
     builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
                               signin::BuildTestSigninClient);
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
+                              BuildFakeSigninManagerForTesting);
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
                               FakeAccountFetcherServiceBuilder::BuildForTests);
     return builder.Build().release();

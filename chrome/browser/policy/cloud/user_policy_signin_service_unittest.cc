@@ -177,8 +177,9 @@ class UserPolicySigninServiceTest : public testing::Test {
     builder.SetPrefService(
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(
             std::move(prefs)));
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         base::BindRepeating(&BuildFakeProfileOAuth2TokenService));

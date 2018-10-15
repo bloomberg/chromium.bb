@@ -35,7 +35,7 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
   AdvancedProtectionStatusManagerTest() {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
+                              BuildFakeSigninManagerForTesting);
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
     testing_profile_.reset(builder.Build().release());
