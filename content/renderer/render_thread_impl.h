@@ -396,7 +396,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Returns a worker context provider that will be bound on the compositor
   // thread.
   scoped_refptr<viz::RasterContextProvider>
-  SharedCompositorWorkerContextProvider();
+  SharedCompositorWorkerContextProvider(bool try_gpu_rasterization);
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
