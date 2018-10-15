@@ -15,7 +15,6 @@ class CC_EXPORT BrowserControlsOffsetManagerClient {
   virtual float CurrentBrowserControlsShownRatio() const = 0;
   virtual void DidChangeBrowserControlsPosition() = 0;
   virtual bool HaveRootScrollNode() const = 0;
-  virtual void SetNeedsCommit() = 0;
 
  protected:
   virtual ~BrowserControlsOffsetManagerClient() {}

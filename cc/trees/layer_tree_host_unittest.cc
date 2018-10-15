@@ -7019,8 +7019,6 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     EXPECT_EQ(info_.page_scale_delta, args.page_scale_delta);
     EXPECT_EQ(info_.top_controls_delta, args.browser_controls_delta);
-    EXPECT_EQ(info_.browser_controls_constraint,
-              args.browser_controls_constraint);
     deltas_sent_to_client_ = true;
   }
 

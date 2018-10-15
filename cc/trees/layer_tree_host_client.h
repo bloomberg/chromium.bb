@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "cc/input/browser_controls_state.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace gfx {
@@ -38,10 +37,6 @@ struct ApplyViewportChangesArgs {
   // How much the browser controls have been shown or hidden. The ratio runs
   // between 0 (hidden) and 1 (full-shown). This is additive.
   float browser_controls_delta;
-
-  // Whether the browser controls have been locked to fully hidden or shown or
-  // whether they can be freely moved.
-  BrowserControlsState browser_controls_constraint;
 };
 
 // A LayerTreeHost is bound to a LayerTreeHostClient. The main rendering

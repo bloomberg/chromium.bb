@@ -1271,8 +1271,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   EXPECT_EQ(IntSize(1000, 900), frame_view.FrameRect().Size());
 
   // Simulate bringing down the browser controls by 20px.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, 1,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, 1});
   EXPECT_EQ(FloatSize(500, 430), visual_viewport.VisibleRect().Size());
 
   // Test that the scroll bounds are adjusted appropriately: the visual viewport
@@ -1289,9 +1288,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
             frame_view.LayoutViewport()->GetScrollOffset());
 
   // Simulate bringing up the browser controls by 10.5px.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1,
-                                   -10.5f / 20,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges(
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1, -10.5f / 20});
   EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 440.5f),
                        visual_viewport.VisibleRect().Size());
 
@@ -1325,8 +1323,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   // Simulate bringing down the browser controls by 20px. Since we're zoomed in,
   // the browser controls take up half as much space (in document-space) than
   // they do at an unzoomed level.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, 1,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, 1});
   EXPECT_EQ(FloatSize(250, 215), visual_viewport.VisibleRect().Size());
 
   // Test that the scroll bounds are adjusted appropriately.
@@ -1342,8 +1339,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
 
   // Scale back out, LocalFrameView max scroll shouldn't have changed. Visual
   // viewport should be moved up to accomodate larger view.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 0.5f, 0,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges(
+      {gfx::Vector2dF(), gfx::Vector2dF(), 0.5f, 0});
   EXPECT_EQ(1, visual_viewport.Scale());
   EXPECT_EQ(expected, frame_view.LayoutViewport()->GetScrollOffset());
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
@@ -1355,13 +1352,13 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   EXPECT_EQ(FloatSize(500, 860 - 430), visual_viewport.GetScrollOffset());
 
   // Scale out, use a scale that causes fractional rects.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 0.8f, -1,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges(
+      {gfx::Vector2dF(), gfx::Vector2dF(), 0.8f, -1});
   EXPECT_EQ(FloatSize(625, 562.5), visual_viewport.VisibleRect().Size());
 
   // Bring out the browser controls by 11
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1,
-                                   11 / 20.f, cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges(
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1, 11 / 20.f});
   EXPECT_EQ(FloatSize(625, 548.75), visual_viewport.VisibleRect().Size());
 
   // Ensure max scroll offsets are updated properly.
@@ -1527,8 +1524,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   InitializeWithAndroidSettings();
   WebView()->ResizeWithBrowserControls(WebView()->Size(), 500, 0, false);
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, 1,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, 1});
   WebView()->ResizeWithBrowserControls(WebSize(1000, 1000), 500, 0, true);
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
@@ -1538,8 +1534,7 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   // Scroll the LocalFrameView to the bottom of the page but "hide" the browser
   // controls on the compositor side so the max scroll position should account
   // for the full viewport height.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, -1,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, -1});
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(ScrollOffset(0, 10000),
                                                kProgrammaticScroll);
@@ -1813,9 +1808,8 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
 
   // Apply some scroll and scale from the impl-side.
-  WebView()->ApplyViewportChanges({gfx::Vector2dF(300, 200),
-                                   gfx::Vector2dF(0, 0), 2, 0,
-                                   cc::BrowserControlsState::kBoth});
+  WebView()->ApplyViewportChanges(
+      {gfx::Vector2dF(300, 200), gfx::Vector2dF(0, 0), 2, 0});
 
   EXPECT_EQ(FloatSize(300, 200), visual_viewport.GetScrollOffset());
 
@@ -2445,8 +2439,8 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
               visual_viewport.GetScrollNode()->ContentsSize());
   }
 
-  WebView().ApplyViewportChanges({gfx::Vector2dF(1, 1), gfx::Vector2dF(), 2, 1,
-                                  cc::BrowserControlsState::kBoth});
+  WebView().ApplyViewportChanges(
+      {gfx::Vector2dF(1, 1), gfx::Vector2dF(), 2, 1});
   EXPECT_EQ(gfx::Size(400, 600), visual_viewport.ContainerLayer()->Size());
   EXPECT_EQ(gfx::Size(400, 600),
             visual_viewport.ContainerLayer()->CcLayer()->bounds());

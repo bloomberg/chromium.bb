@@ -295,7 +295,6 @@ class CC_EXPORT LayerTreeHostImpl
   float CurrentBrowserControlsShownRatio() const override;
   void DidChangeBrowserControlsPosition() override;
   bool HaveRootScrollNode() const override;
-  void SetNeedsCommit() override;
 
   void UpdateViewportContainerSizes();
 
@@ -543,6 +542,7 @@ class CC_EXPORT LayerTreeHostImpl
     return is_animating_for_snap_;
   }
 
+  void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
   void SetNeedsOneBeginImplFrame();
   void SetNeedsRedraw();
 

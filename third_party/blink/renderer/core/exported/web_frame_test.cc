@@ -3433,9 +3433,8 @@ void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
   float scale_delta =
       web_view_impl->FakePageScaleAnimationPageScaleForTesting() /
       web_view_impl->PageScaleFactor();
-  web_view_impl->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(),
-                                       scale_delta, 0,
-                                       cc::BrowserControlsState::kBoth});
+  web_view_impl->ApplyViewportChanges(
+      {gfx::Vector2dF(), gfx::Vector2dF(), scale_delta, 0});
   scale = web_view_impl->PageScaleFactor();
 }
 
@@ -3625,8 +3624,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   SimulateDoubleTap(web_view_helper.GetWebView(), top_point, scale);
   EXPECT_FLOAT_EQ(1, scale);
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 0.6f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 0.6f, 0});
   SimulateDoubleTap(web_view_helper.GetWebView(), bottom_point, scale);
   EXPECT_FLOAT_EQ(1, scale);
   SimulateDoubleTap(web_view_helper.GetWebView(), bottom_point, scale);
@@ -3636,8 +3634,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   // If we didn't yet get an auto-zoom update and a second double-tap arrives,
   // should go back to minimum scale.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   web_view_helper.GetWebView()->AnimateDoubleTapZoom(top_point);
   EXPECT_TRUE(
       web_view_helper.GetWebView()->FakeDoubleTapAnimationPendingForTesting());
@@ -3688,8 +3685,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // 1 < minimumPageScale < doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1.1f, 4);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
@@ -3710,8 +3706,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.95f, 4);
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
@@ -3780,8 +3775,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // 1 < maximumLegibleScaleFactor < minimumPageScale <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1.0f, 4);
@@ -3803,8 +3797,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // minimumPageScale < 1 < maximumLegibleScaleFactor <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.95f, 4);
@@ -3826,8 +3819,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale <
   //     maximumLegibleScaleFactor
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.9f, 4);
@@ -3900,8 +3892,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // 1 < accessibilityFontScaleFactor < minimumPageScale <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1.0f, 4);
@@ -3923,8 +3914,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // minimumPageScale < 1 < accessibilityFontScaleFactor <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.95f, 4);
@@ -3946,8 +3936,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
 
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.1f, 0});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale <
   //     accessibilityFontScaleFactor
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.9f, 4);
@@ -7258,8 +7247,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   // Do a compositor scroll, verify that this is counted as a user scroll.
   scrollable_area->DidScroll(FloatPoint(0, 1));
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.7f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.7f, 0});
   EXPECT_TRUE(client.WasFrameScrolled());
   EXPECT_TRUE(initial_scroll_state.was_scrolled_by_user);
 
@@ -7269,8 +7257,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   // The page scale 1.0f and scroll.
   scrollable_area->DidScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, 0});
   EXPECT_TRUE(client.WasFrameScrolled());
   EXPECT_TRUE(initial_scroll_state.was_scrolled_by_user);
   client.Reset();
@@ -7279,8 +7266,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   // No scroll event if there is no scroll delta.
   scrollable_area->DidScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, 0});
   EXPECT_FALSE(client.WasFrameScrolled());
   EXPECT_FALSE(initial_scroll_state.was_scrolled_by_user);
   client.Reset();
@@ -7288,8 +7274,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   // Non zero page scale and scroll.
   scrollable_area->DidScroll(FloatPoint(9, 15));
   web_view_helper.GetWebView()->ApplyViewportChanges(
-      {gfx::Vector2dF(), gfx::Vector2dF(), 0.6f, 0,
-       cc::BrowserControlsState::kBoth});
+      {gfx::Vector2dF(), gfx::Vector2dF(), 0.6f, 0});
   EXPECT_TRUE(client.WasFrameScrolled());
   EXPECT_TRUE(initial_scroll_state.was_scrolled_by_user);
   client.Reset();
@@ -8107,23 +8092,20 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // Simulate the browser controls showing by 20px, thus shrinking the viewport
   // and allowing it to scroll an additional 20px.
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  20.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  20.0f / browser_controls_height});
   EXPECT_EQ(ScrollOffset(0, 1920),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Show more, make sure the scroll actually gets clamped.
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  20.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  20.0f / browser_controls_height});
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
   EXPECT_EQ(ScrollOffset(0, 1940),
             frame_view->LayoutViewport()->GetScrollOffset());
 
   // Hide until there's 10px showing.
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  -30.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  -30.0f / browser_controls_height});
   EXPECT_EQ(ScrollOffset(0, 1910),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
@@ -8131,8 +8113,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // accomodate the browser controls and Blink's view of the browser controls
   // matches that of the CC
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  30.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  30.0f / browser_controls_height});
   web_view->ResizeWithBrowserControls(WebSize(100, 60), 40.0f, 0, true);
   web_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1940),
@@ -8140,16 +8121,14 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
 
   // Now simulate hiding.
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  -10.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  -10.0f / browser_controls_height});
   EXPECT_EQ(ScrollOffset(0, 1930),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Reset to original state: 100px widget height, browser controls fully
   // hidden.
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  -30.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  -30.0f / browser_controls_height});
   web_view->ResizeWithBrowserControls(WebSize(100, 100),
                                       browser_controls_height, 0, false);
   web_view->UpdateAllLifecyclePhases();
@@ -8161,14 +8140,12 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // sure we're not losing any pixels when applying the adjustment on the
   // main frame.
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  1.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  1.0f / browser_controls_height});
   EXPECT_EQ(ScrollOffset(0, 1901),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
   web_view->ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1.0f,
-                                  2.0f / browser_controls_height,
-                                  cc::BrowserControlsState::kBoth});
+                                  2.0f / browser_controls_height});
   EXPECT_EQ(ScrollOffset(0, 1903),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 }
