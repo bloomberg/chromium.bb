@@ -36,6 +36,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager;
@@ -491,7 +492,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
             resource = R.string.website_settings_add_site_description_background_sync;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
-            resource = R.string.website_settings_add_site_description_javascript;
+            resource = PrefServiceBridge.getInstance().isCategoryEnabled(
+                               ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT)
+                    ? R.string.website_settings_add_site_description_javascript_block
+                    : R.string.website_settings_add_site_description_javascript_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
             resource = PrefServiceBridge.getInstance().isCategoryEnabled(
                                ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND)
@@ -529,16 +533,13 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // AddExceptionPreference.SiteAddedCallback:
     @Override
     public void onAddSite(String hostname) {
-        // The Sound content setting has exception lists for both BLOCK and ALLOW (others just
-        // have exceptions to ALLOW).
-        int setting = (mCategory.showSites(SiteSettingsCategory.Type.SOUND)
-                              && PrefServiceBridge.getInstance().isCategoryEnabled(
-                                         ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND))
+        int setting = (PrefServiceBridge.getInstance().isCategoryEnabled(
+                              mCategory.getContentSettingsType()))
                 ? ContentSetting.BLOCK.toInt()
                 : ContentSetting.ALLOW.toInt();
+
         PrefServiceBridge.getInstance().nativeSetContentSettingForPattern(
                 mCategory.getContentSettingsType(), hostname, setting);
-
         Toast.makeText(getActivity(),
                 String.format(getActivity().getString(
                         R.string.website_settings_add_site_toast),
@@ -575,8 +576,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
                            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
-                && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                           ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI)
+                           || !PrefServiceBridge.getInstance().isCategoryEnabled(
+                                      ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT))) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
