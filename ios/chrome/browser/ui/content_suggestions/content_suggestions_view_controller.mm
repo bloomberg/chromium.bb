@@ -252,10 +252,16 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
+  self.headerSynchronizer.showing = YES;
   // Resize the collection as it might have been rotated while not being
   // presented (e.g. rotation on stack view).
   [self correctMissingSafeArea];
   [self updateConstraints];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
+  self.headerSynchronizer.showing = NO;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size

@@ -277,13 +277,9 @@
 }
 
 - (void)wasShown {
-  self.headerController.isShowing = YES;
-  [self.suggestionsViewController.collectionView
-          .collectionViewLayout invalidateLayout];
 }
 
 - (void)wasHidden {
-  self.headerController.isShowing = NO;
 }
 
 - (void)dismissModals {

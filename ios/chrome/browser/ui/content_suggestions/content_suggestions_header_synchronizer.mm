@@ -220,6 +220,14 @@ initWithCollectionController:
   return [self.headerController headerHeight];
 }
 
+- (void)setShowing:(BOOL)showing {
+  self.headerController.showing = showing;
+}
+
+- (BOOL)isShowing {
+  return self.headerController.isShowing;
+}
+
 #pragma mark - Private
 
 // Convenience method to get the collection view of the suggestions.

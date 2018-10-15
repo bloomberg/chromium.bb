@@ -87,7 +87,7 @@ using base::UserMetricsAction;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
-@synthesize isShowing = _isShowing;
+@synthesize showing = _showing;
 @synthesize omniboxFocused = _omniboxFocused;
 @synthesize tabCount = _tabCount;
 
