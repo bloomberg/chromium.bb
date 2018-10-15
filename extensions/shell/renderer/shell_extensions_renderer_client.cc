@@ -7,15 +7,13 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/dispatcher_delegate.h"
-#include "extensions/renderer/safe_builtins.h"
 
 namespace extensions {
 
 ShellExtensionsRendererClient::ShellExtensionsRendererClient()
     : dispatcher_(std::make_unique<Dispatcher>(
           std::make_unique<DispatcherDelegate>())) {
-  content::RenderThread::Get()->RegisterExtension(
-      extensions::SafeBuiltins::CreateV8Extension());
+  dispatcher_->OnRenderThreadStarted(content::RenderThread::Get());
 }
 
 ShellExtensionsRendererClient::~ShellExtensionsRendererClient() {
