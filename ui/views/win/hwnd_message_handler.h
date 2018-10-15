@@ -517,13 +517,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                     WPARAM w_param,
                                     LPARAM l_param);
 
-  LRESULT GenerateMouseEventFromPointerEvent(
-      UINT message,
-      UINT32 pointer_id,
-      const POINTER_INFO& pointer_info,
-      const gfx::Point& point,
-      const ui::PointerDetails& pointer_details);
-
   // Returns true if the mouse message passed in is an OS synthesized mouse
   // message.
   // |message| identifies the mouse message.
