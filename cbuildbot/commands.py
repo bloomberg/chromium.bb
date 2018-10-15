@@ -29,6 +29,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gob_util
 from chromite.lib import gs
+from chromite.lib import image_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -737,9 +738,8 @@ def RunTestImage(buildroot, board, image_dir, results_dir):
                  sudo=True)
 
 
-def RunSignerTests(buildroot, board):
-  cmd = ['./security_test_image', '--board=%s' % board]
-  RunBuildScript(buildroot, cmd, enter_chroot=True)
+def RunSignerTests(_buildroot, board):
+  image_lib.SecurityTest(board=board)
 
 
 def RunUnitTests(buildroot, board, blacklist=None, extra_env=None):
