@@ -1704,6 +1704,7 @@ jumbo_split_static_library("ui") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
       "//chrome/browser/chromeos",
+      "//chrome/browser/chromeos/android_sms:android_sms_urls",
       "//chromeos:cryptohome_proto",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",

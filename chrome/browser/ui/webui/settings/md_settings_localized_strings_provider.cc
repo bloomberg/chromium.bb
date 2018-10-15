@@ -2272,6 +2272,9 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"addSiteExceptionPlaceholder",
      IDS_SETTINGS_ADD_SITE_EXCEPTION_PLACEHOLDER},
     {"addSiteTitle", IDS_SETTINGS_ADD_SITE_TITLE},
+#if defined(OS_CHROMEOS)
+    {"androidSmsNote", IDS_SETTINGS_ANDROID_SMS_NOTE},
+#endif
     {"cookieAppCache", IDS_SETTINGS_COOKIES_APPLICATION_CACHE},
     {"cookieCacheStorage", IDS_SETTINGS_COOKIES_CACHE_STORAGE},
     {"cookieChannelId", IDS_SETTINGS_COOKIES_CHANNEL_ID},

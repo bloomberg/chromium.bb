@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_web_ui.h"
@@ -156,6 +158,27 @@ class MultideviceHandlerTest : public testing::Test {
               fake_multidevice_setup_client()->num_remove_host_device_called());
   }
 
+  void CallGetAndroidSmsInfo(bool enabled) {
+    size_t call_data_count_before_call = test_web_ui()->call_data().size();
+
+    base::ListValue args;
+    args.AppendString("handlerFunctionName");
+    test_web_ui()->HandleReceivedMessage("getAndroidSmsInfo", &args);
+
+    ASSERT_EQ(call_data_count_before_call + 1u,
+              test_web_ui()->call_data().size());
+    const content::TestWebUI::CallData& call_data =
+        CallDataAtIndex(call_data_count_before_call);
+    EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+    EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
+    ASSERT_TRUE(call_data.arg2()->GetBool());
+    EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(
+                  chromeos::android_sms::GetAndroidMessagesURL())
+                  .ToString(),
+              call_data.arg3()->FindKey("origin")->GetString());
+    EXPECT_EQ(enabled, call_data.arg3()->FindKey("enabled")->GetBool());
+  }
+
   void SimulateHostStatusUpdate(
       multidevice_setup::mojom::HostStatus host_status,
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
@@ -163,7 +186,7 @@ class MultideviceHandlerTest : public testing::Test {
 
     fake_multidevice_setup_client_->SetHostStatusWithDevice(
         std::make_pair(host_status, host_device));
-    EXPECT_EQ(call_data_count_before_call + 1u,
+    EXPECT_EQ(call_data_count_before_call + 2u,
               test_web_ui()->call_data().size());
 
     const content::TestWebUI::CallData& call_data =
@@ -180,7 +203,7 @@ class MultideviceHandlerTest : public testing::Test {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     fake_multidevice_setup_client_->SetFeatureStates(feature_states_map);
-    EXPECT_EQ(call_data_count_before_call + 1u,
+    EXPECT_EQ(call_data_count_before_call + 2u,
               test_web_ui()->call_data().size());
 
     const content::TestWebUI::CallData& call_data =
@@ -331,6 +354,28 @@ TEST_F(MultideviceHandlerTest, RemoveHostDevice) {
   CallRemoveHostDevice();
   CallRemoveHostDevice();
   CallRemoveHostDevice();
+}
+
+TEST_F(MultideviceHandlerTest, GetAndroidSmsInfo) {
+  // Check that getAndroidSmsInfo returns correct value.
+  CallGetAndroidSmsInfo(false /* enabled */);
+
+  // Change messages feature state and assert that the change
+  // callback is fired.
+  multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap
+      feature_states_map = GenerateDefaultFeatureStatesMap();
+  feature_states_map[multidevice_setup::mojom::Feature::kMessages] =
+      multidevice_setup::mojom::FeatureState::kEnabledByUser;
+
+  size_t call_data_count_before_call = test_web_ui()->call_data().size();
+  SimulateFeatureStatesUpdate(feature_states_map);
+  const content::TestWebUI::CallData& call_data =
+      CallDataAtIndex(call_data_count_before_call + 1);
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("settings.onAndroidSmsInfoChange", call_data.arg1()->GetString());
+
+  // Check that getAndroidSmsInfo returns update value.
+  CallGetAndroidSmsInfo(true /* enabled */);
 }
 
 }  // namespace settings
