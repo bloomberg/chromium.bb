@@ -406,13 +406,6 @@ static jboolean JNI_PrefServiceBridge_GetSearchSuggestManaged(
   return GetPrefService()->IsManagedPreference(prefs::kSearchSuggestEnabled);
 }
 
-static jboolean JNI_PrefServiceBridge_IsScoutExtendedReportingActive(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  // TODO(lpz/scout): Remove this method and refactor calling code.
-  return true;
-}
-
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
