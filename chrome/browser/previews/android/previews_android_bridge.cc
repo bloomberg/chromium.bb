@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PreviewsAndroidBridge_jni.h"
@@ -51,11 +52,17 @@ PreviewsAndroidBridge::GetOriginalHost(
   if (!web_contents)
     return base::android::ScopedJavaLocalRef<jstring>();
 
-  // TODO(crbug.com/894881): Add the Lite Pages URL rewriting during a pending
-  // navigation.
+  GURL visible_url = web_contents->GetVisibleURL();
+
+  std::string original_url;
+  if (PreviewsLitePageNavigationThrottle::GetOriginalURL(visible_url,
+                                                         &original_url)) {
+    return base::android::ScopedJavaLocalRef<jstring>(
+        base::android::ConvertUTF8ToJavaString(env, GURL(original_url).host()));
+  }
+
   return base::android::ScopedJavaLocalRef<jstring>(
-      base::android::ConvertUTF8ToJavaString(
-          env, web_contents->GetVisibleURL().host()));
+      base::android::ConvertUTF8ToJavaString(env, visible_url.host()));
 }
 
 base::android::ScopedJavaLocalRef<jstring>
