@@ -13,12 +13,14 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -41,6 +43,13 @@ class ProcessDiceHeaderDelegateImplTest
                         &token_service_,
                         &account_tracker_service_,
                         nullptr),
+        gaia_cookie_manager_service_(&token_service_,
+                                     "process_dice_header_delegate",
+                                     &signin_client_),
+        identity_manager_(&signin_manager_,
+                          &token_service_,
+                          &account_tracker_service_,
+                          &gaia_cookie_manager_service_),
         enable_sync_called_(false),
         show_error_called_(false),
         account_id_("12345"),
@@ -57,6 +66,7 @@ class ProcessDiceHeaderDelegateImplTest
     account_tracker_service_.Shutdown();
     token_service_.Shutdown();
     signin_client_.Shutdown();
+    gaia_cookie_manager_service_.Shutdown();
   }
 
   // Creates a ProcessDiceHeaderDelegateImpl instance.
@@ -64,7 +74,7 @@ class ProcessDiceHeaderDelegateImplTest
       bool is_sync_signin_tab,
       signin::AccountConsistencyMethod account_consistency) {
     return std::make_unique<ProcessDiceHeaderDelegateImpl>(
-        web_contents(), account_consistency, &signin_manager_,
+        web_contents(), account_consistency, &identity_manager_,
         is_sync_signin_tab,
         base::BindOnce(&ProcessDiceHeaderDelegateImplTest::StartSyncCallback,
                        base::Unretained(this)),
@@ -96,6 +106,8 @@ class ProcessDiceHeaderDelegateImplTest
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
   FakeSigninManager signin_manager_;
+  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
+  identity::IdentityManager identity_manager_;
 
   bool enable_sync_called_;
   bool show_error_called_;
