@@ -85,7 +85,12 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
     }
     case DLL_PROCESS_DETACH:
       LOGFN(INFO) << "DllMain(DLL_PROCESS_DETACH)";
-      base::CommandLine::Reset();
+
+      // When this DLL is loaded for testing, don't reset the command line
+      // since it causes tests to crash.
+      if (!is_testing_)
+        base::CommandLine::Reset();
+
       _set_invalid_parameter_handler(nullptr);
       exit_manager_.reset();
       break;
