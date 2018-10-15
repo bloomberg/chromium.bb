@@ -711,9 +711,14 @@ void WizardController::ShowFingerprintSetupScreen() {
 }
 
 void WizardController::ShowMarketingOptInScreen() {
-  // Skip the screen for public sessions and non-regular ephemeral users.
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  // Skip the screen if:
+  //   1) the feature is disabled, or
+  //   2) the screen has been shown for this user, or
+  //   3) it is public session or non-regular ephemeral user login.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableMarketingOptInScreen) ||
+      prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished) ||
       IsPublicSessionOrEphemeralLogin()) {
     OnMarketingOptInFinished();
     return;
@@ -721,6 +726,7 @@ void WizardController::ShowMarketingOptInScreen() {
   VLOG(1) << "Showing Marketing Opt-In screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MARKETING_OPT_IN);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MARKETING_OPT_IN));
+  prefs->SetBoolean(prefs::kOobeMarketingOptInScreenFinished, true);
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
