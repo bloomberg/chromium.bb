@@ -49,7 +49,7 @@ class CompressorArchiveMinizip : public CompressorArchive {
   // Adds an entry to the archive.
   bool AddToArchive(const std::string& filename,
                     int64_t file_size,
-                    int64_t modification_time,
+                    base::Time modification_time,
                     bool is_directory) override;
 
   // A getter function for zip_file_.
