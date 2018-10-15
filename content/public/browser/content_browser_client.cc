@@ -78,6 +78,7 @@ bool ContentBrowserClient::AllowGpuLaunchRetryOnIOThread() {
 
 GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
                                            const GURL& url) {
+  DCHECK(browser_context);
   return url;
 }
 
@@ -87,6 +88,7 @@ bool ContentBrowserClient::ShouldCompareEffectiveURLsForSiteInstanceSelection(
     bool is_main_frame,
     const GURL& candidate_url,
     const GURL& destination_url) {
+  DCHECK(browser_context);
   return true;
 }
 
@@ -96,6 +98,7 @@ bool ContentBrowserClient::ShouldUseMobileFlingCurve() const {
 
 bool ContentBrowserClient::ShouldUseProcessPerSite(
     BrowserContext* browser_context, const GURL& effective_url) {
+  DCHECK(browser_context);
   return false;
 }
 
@@ -108,11 +111,13 @@ bool ContentBrowserClient::ShouldUseSpareRenderProcessHost(
 bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
     BrowserContext* browser_context,
     const GURL& effective_site_url) {
+  DCHECK(browser_context);
   return false;
 }
 
 bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
                                               const GURL& effective_url) {
+  DCHECK(browser_context);
   return true;
 }
 
@@ -165,6 +170,7 @@ bool ContentBrowserClient::ShouldAllowOpenURL(SiteInstance* site_instance,
 bool ContentBrowserClient::IsURLAcceptableForWebUI(
     BrowserContext* browser_context,
     const GURL& url) {
+  DCHECK(browser_context);
   return false;
 }
 
@@ -185,6 +191,7 @@ bool ContentBrowserClient::MayReuseHost(RenderProcessHost* process_host) {
 
 bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
       BrowserContext* browser_context, const GURL& url) {
+  DCHECK(browser_context);
   return false;
 }
 
@@ -247,6 +254,7 @@ std::string ContentBrowserClient::GetApplicationLocale() {
 }
 
 std::string ContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
+  DCHECK(context);
   return std::string();
 }
 
@@ -282,16 +290,20 @@ bool ContentBrowserClient::AllowSharedWorker(
     BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
+  DCHECK(context);
   return true;
 }
 
 bool ContentBrowserClient::IsDataSaverEnabled(BrowserContext* context) {
+  DCHECK(context);
   return false;
 }
 
 void ContentBrowserClient::UpdateRendererPreferencesForWorker(
     BrowserContext* browser_context,
-    RendererPreferences* out_prefs) {}
+    RendererPreferences* out_prefs) {
+  // |browser_context| may be null (e.g. during shutdown of a service worker).
+}
 
 bool ContentBrowserClient::AllowGetCookie(const GURL& url,
                                           const GURL& first_party,
@@ -346,6 +358,7 @@ ContentBrowserClient::AllowWebBluetooth(
     content::BrowserContext* browser_context,
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin) {
+  DCHECK(browser_context);
   return AllowWebBluetoothResult::ALLOW;
 }
 
@@ -361,6 +374,8 @@ void ContentBrowserClient::GetQuotaSettings(
     BrowserContext* context,
     StoragePartition* partition,
     storage::OptionalQuotaSettingsCallback callback) {
+  DCHECK(context);
+
   // By default, no quota is provided, embedders should override.
   std::move(callback).Run(storage::GetNoQuotaSettings());
 }
@@ -412,12 +427,15 @@ bool ContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
 std::string ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {
+  DCHECK(browser_context);
   return std::string();
 }
 
 bool ContentBrowserClient::IsValidStoragePartitionId(
     BrowserContext* browser_context,
     const std::string& partition_id) {
+  DCHECK(browser_context);
+
   // Since the GetStoragePartitionIdForChildProcess() only generates empty
   // strings, we should only ever see empty strings coming back.
   return partition_id.empty();
@@ -430,6 +448,8 @@ void ContentBrowserClient::GetStoragePartitionConfigForSite(
     std::string* partition_domain,
     std::string* partition_name,
     bool* in_memory) {
+  DCHECK(browser_context);
+
   partition_domain->clear();
   partition_name->clear();
   *in_memory = false;
@@ -497,17 +517,20 @@ bool ContentBrowserClient::AllowPepperSocketAPI(
     const GURL& url,
     bool private_api,
     const SocketPermissionRequest* params) {
+  DCHECK(browser_context);
   return false;
 }
 
 bool ContentBrowserClient::IsPepperVpnProviderAPIAllowed(
     BrowserContext* browser_context,
     const GURL& url) {
+  DCHECK(browser_context);
   return false;
 }
 
 std::unique_ptr<VpnServiceProxy> ContentBrowserClient::GetVpnServiceProxy(
     BrowserContext* browser_context) {
+  DCHECK(browser_context);
   return nullptr;
 }
 
@@ -527,17 +550,22 @@ TracingDelegate* ContentBrowserClient::GetTracingDelegate() {
 bool ContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     BrowserContext* browser_context,
     const GURL& url) {
+  DCHECK(browser_context);
   return false;
 }
 
 bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
     BrowserContext* browser_context,
     const GURL& url) {
+  // |browser_context| may be null (e.g. when called from
+  // PpapiPluginProcessHost::PpapiPluginProcessHost).
+
   return false;
 }
 
 std::string ContentBrowserClient::GetServiceUserIdForBrowserContext(
     BrowserContext* browser_context) {
+  DCHECK(browser_context);
   return base::GenerateGUID();
 }
 
@@ -564,6 +592,7 @@ void ContentBrowserClient::OpenURL(
     content::BrowserContext* browser_context,
     const content::OpenURLParams& params,
     const base::Callback<void(content::WebContents*)>& callback) {
+  DCHECK(browser_context);
   callback.Run(nullptr);
 }
 
@@ -676,6 +705,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     const url::Origin& request_initiator,
     network::mojom::URLLoaderFactoryRequest* factory_request,
     bool* bypass_redirect_checks) {
+  DCHECK(browser_context);
   return false;
 }
 
@@ -698,6 +728,7 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
+  DCHECK(context);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return nullptr;
 
@@ -746,6 +777,7 @@ bool ContentBrowserClient::ShowPaymentHandlerWindow(
     content::BrowserContext* browser_context,
     const GURL& url,
     base::OnceCallback<void(bool, int, int)> callback) {
+  DCHECK(browser_context);
   return false;
 }
 
@@ -806,7 +838,9 @@ bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
 
 void ContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
     BrowserContext* browser_context,
-    mojom::RendererPreferenceWatcherPtr watcher) {}
+    mojom::RendererPreferenceWatcherPtr watcher) {
+  // |browser_context| may be null (e.g. during shutdown of a service worker).
+}
 
 base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
     OriginPolicyErrorReason error_reason,

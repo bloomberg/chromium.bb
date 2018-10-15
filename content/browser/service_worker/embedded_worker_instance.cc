@@ -261,6 +261,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
 
   // TODO(crbug.com/862854): Support changes to RendererPreferences while the
   // worker is running.
+  DCHECK(process_manager->browser_context() || process_manager->IsShutdown());
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       process_manager->browser_context(), &params->renderer_preferences);
 
