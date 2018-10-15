@@ -81,6 +81,7 @@
 #include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
+#include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/script_injection.h"
@@ -243,6 +244,10 @@ Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
 }
 
 Dispatcher::~Dispatcher() {
+}
+
+void Dispatcher::OnRenderThreadStarted(content::RenderThread* thread) {
+  thread->RegisterExtension(extensions::SafeBuiltins::CreateV8Extension());
 }
 
 void Dispatcher::OnRenderFrameCreated(content::RenderFrame* render_frame) {

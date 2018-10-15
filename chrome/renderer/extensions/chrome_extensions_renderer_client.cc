@@ -158,7 +158,7 @@ void ChromeExtensionsRendererClient::RenderThreadStarted() {
     extension_dispatcher_ = std::make_unique<extensions::Dispatcher>(
         std::make_unique<ChromeExtensionsDispatcherDelegate>());
   }
-  thread->RegisterExtension(extensions::SafeBuiltins::CreateV8Extension());
+  extension_dispatcher_->OnRenderThreadStarted(thread);
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
