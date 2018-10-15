@@ -373,9 +373,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assert(firstNode);
       const firstPassword = passwordList[0];
 
-      passwordManager.onRemoveSavedPassword = function(index) {
+      passwordManager.onRemoveSavedPassword = function(id) {
         // Verify that the event matches the expected value.
-        assertEquals(firstPassword.index, index);
+        assertEquals(firstPassword.id, id);
 
         // Clean up after self.
         passwordManager.onRemoveSavedPassword = null;
@@ -569,10 +569,10 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         exceptions[item].querySelector('#removeExceptionButton').click();
       };
 
-      passwordManager.onRemoveException = function(index) {
+      passwordManager.onRemoveException = function(id) {
         // Verify that the event matches the expected value.
         assertTrue(item < exceptionList.length);
-        assertEquals(index, exceptionList[item].index);
+        assertEquals(id, exceptionList[item].id);
 
         if (++item < exceptionList.length) {
           clickRemoveButton();  // Click 'remove' on all passwords, one by one.

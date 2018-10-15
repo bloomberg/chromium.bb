@@ -48,11 +48,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void SendPasswordExceptionsList() override;
   void GetPasswordExceptionsList(
       const ExceptionEntriesCallback& callback) override;
-  void RemoveSavedPassword(size_t index) override;
-  void RemovePasswordException(size_t index) override;
+  void RemoveSavedPassword(int id) override;
+  void RemovePasswordException(int id) override;
   void UndoRemoveSavedPasswordOrException() override;
-  void RequestShowPassword(size_t index,
-                           content::WebContents* web_contents) override;
+  void RequestShowPassword(int id, content::WebContents* web_contents) override;
   void ImportPasswords(content::WebContents* web_contents) override;
   void ExportPasswords(base::OnceCallback<void(const std::string&)> accepted,
                        content::WebContents* web_contents) override;
@@ -96,11 +95,10 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // has been initialized or by deferring it until initialization has completed.
   void ExecuteFunction(const base::Closure& callback);
 
-  void RemoveSavedPasswordInternal(size_t index);
-  void RemovePasswordExceptionInternal(size_t index);
+  void RemoveSavedPasswordInternal(int id);
+  void RemovePasswordExceptionInternal(int id);
   void UndoRemoveSavedPasswordOrExceptionInternal();
-  void RequestShowPasswordInternal(size_t index,
-                                   content::WebContents* web_contents);
+  void RequestShowPasswordInternal(int id, content::WebContents* web_contents);
 
   // Triggers an OS-dependent UI to present OS account login challenge and
   // returns true if the user passed that challenge.
