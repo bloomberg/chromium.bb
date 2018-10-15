@@ -369,11 +369,8 @@ video::-webkit-media-controls-overlay-play-button {
   position: absolute;
   left: 50%;
   top: 50%;
-  margin-left: calc((var(--overlay-play-button-width) / -2) - 20px /* Padding */);
-  margin-top: calc((
-      (var(--overlay-play-button-width, 48px)
-          + 24px /* timeline height + padding-bottom */)
-      / -2) - 20px /* overlay play button padding */);
+  margin-left: -56px /* (72px play button width / -2) - 20px padding */;
+  margin-top: -68px /* ((72px play button width + 24px timeline height + padding-bottom) / -2) - 20px padding */;
   min-height: 0;
   width: fit-content;
   overflow: hidden;
@@ -399,8 +396,8 @@ video::-webkit-media-controls-overlay-play-button.hidden {
 }
 
 input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
-  width: var(--overlay-play-button-width, 48px);
-  height: var(--overlay-play-button-width, 48px);
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
 
   background-size: 50%;
@@ -504,13 +501,10 @@ video::-webkit-media-controls div[pseudo="-internal-media-controls-loading-panel
   left: 50%;
   overflow: hidden;
 
-  height: var(--overlay-play-button-width, 48px);
-  width: var(--overlay-play-button-width, 48px);
-  margin-left: calc(var(--overlay-play-button-width) / -2);
-  margin-top: calc(
-      (var(--overlay-play-button-width, 48px)
-          + 24px /* timeline height + padding-bottom */)
-      / -2);
+  height: 72px /* overlay play button height */;
+  width: 72px /* overlay play button width */;
+  margin-left: -36px /* (72px overlay play button width / -2) */;
+  margin-top: -48px /* (72px overlay play button height + 24px timeline height + padding-bottom) / -2) */;
 }
 
 div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-mask-1-background {
