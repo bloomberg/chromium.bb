@@ -985,6 +985,27 @@
             ]
         }
     ],
+    "BlinkSchedulerRemoveInputUseCaseHeuristics": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "NoAllHeuristics",
+                    "enable_features": [
+                        "BlinkSchedulerDisableNonTouchstartInputHeuristics",
+                        "BlinkSchedulerDisableTouchstartInputHeuristics"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlobDataPipeTuning": [
         {
             "platforms": [
