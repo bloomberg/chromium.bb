@@ -42,6 +42,13 @@ Tests name sources in input[type=button].
         "type": "token",
         "value": "false"
       }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
     }
   ],
   "domNode": "input#button1"
@@ -98,6 +105,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -164,6 +178,13 @@ Tests name sources in input[type=button].
         "type": "token",
         "value": "false"
       }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
     }
   ],
   "domNode": "input#button3"
@@ -214,6 +235,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -277,6 +305,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
@@ -352,6 +387,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
@@ -439,6 +481,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
@@ -535,6 +584,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -638,6 +694,13 @@ Tests name sources in input[type=button].
       }
     },
     {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
       "name": "labelledby",
       "value": {
         "type": "nodeList",
@@ -701,6 +764,13 @@ Tests name sources in input[type=button].
         "type": "token",
         "value": "false"
       }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
     }
   ],
   "domNode": "input#submit1"
@@ -757,6 +827,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -818,6 +895,13 @@ Tests name sources in input[type=button].
         "type": "token",
         "value": "false"
       }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
     }
   ],
   "domNode": "input#submit3"
@@ -869,6 +953,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -942,6 +1033,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -1021,6 +1119,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -1105,6 +1210,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
@@ -1194,6 +1306,13 @@ Tests name sources in input[type=button].
         "type": "token",
         "value": "false"
       }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
     }
   ],
   "domNode": "input#image-input4"
@@ -1279,6 +1398,13 @@ Tests name sources in input[type=button].
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     }
   ],
