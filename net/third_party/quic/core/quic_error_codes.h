@@ -329,42 +329,6 @@ QUIC_EXPORT_PRIVATE const char* QuicRstStreamErrorCodeToString(
 // Returns the name of the QuicErrorCode as a char*
 QUIC_EXPORT const char* QuicErrorCodeToString(QuicErrorCode error);
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// TODO(rch): Remove this once the cause of the INTERNAL_ERROR increase is
-// determined.
-enum QuicInternalErrorLocation {
-  QUIC_CHROMIUM_CLIENT_SESSION_DESTRUCTOR = 0,
-  QUIC_CONNECTION_PROTOCOL_VERSION_MISMATCH = 1,
-  QUIC_CONNECTION_VERSION_NEGOTIATION_PACKET = 2,
-  QUIC_CONNECTION_UNAUTHENTICATED_HEADER = 3,
-  QUIC_CONNECTION_WRITE_PACKET = 4,
-  QUIC_CONTROL_FRAME_MANAGER_CONTROL_FRAME_SENT = 5,
-  QUIC_CONTROL_FRAME_MANAGER_CONTROL_FRAME_ACKED = 6,
-  QUIC_CONTROL_FRAME_MANAGER_CONTROL_FRAME_LOST = 7,
-  QUIC_CONTROL_FRAME_MANAGER_RETRANSMIT_CONTROL_FRAME = 8,
-  QUIC_CRYPTO_CLIENT_HANDSHAKER_MAX_PACKET = 9,
-  QUIC_CRYPTO_CLIENT_HANDSHAKER_CHLO = 10,
-  QUIC_ERROR_CODES = 11,
-  QUIC_FRAMER = 12,
-  QUIC_HEADERS_STREAM = 13,
-  QUIC_SESSION_ON_CAN_WRITE = 14,
-  QUIC_SESSION_WRITEV_DATA = 15,
-  QUIC_SESSION_STREAM_FRAME_RETRANSMITTED = 16,
-  QUIC_SPDY_SESSION = 17,
-  QUIC_STREAM_ACKED_UNSENT_DATA = 18,
-  QUIC_STREAM_ACKED_UNSENT_FIN = 19,
-  QUIC_STREAM_SEQUENCER_BUFFER = 20,
-  QUIC_CHROMIUM_CLIENT_SESSION_CLOSE_SESSION_ON_ERROR = 21,
-  INTERNAL_ERROR_LOCATION_MAX
-};
-
-// Records the location of a QUIC internal error into a histogram.
-// TODO(rch): Remove this once the cause of the INTERNAL_ERROR increase is
-// determined.
-QUIC_EXPORT_PRIVATE
-void RecordInternalErrorLocation(QuicInternalErrorLocation location);
-
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_ERROR_CODES_H_

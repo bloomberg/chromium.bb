@@ -801,7 +801,6 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (connection()->connected()) {
     // Ensure that the connection is closed by the time the session is
     // destroyed.
-    RecordInternalErrorLocation(quic::QUIC_CHROMIUM_CLIENT_SESSION_DESTRUCTOR);
     connection()->CloseConnection(quic::QUIC_INTERNAL_ERROR,
                                   "session torn down",
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
@@ -2147,10 +2146,6 @@ void QuicChromiumClientSession::CloseSessionOnError(
     quic::QuicErrorCode quic_error,
     quic::ConnectionCloseBehavior behavior) {
   base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
-  if (quic_error == quic::QUIC_INTERNAL_ERROR) {
-    RecordInternalErrorLocation(
-        quic::QUIC_CHROMIUM_CLIENT_SESSION_CLOSE_SESSION_ON_ERROR);
-  }
 
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(net_error);

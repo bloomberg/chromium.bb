@@ -547,7 +547,6 @@ bool QuicConnection::OnProtocolVersionMismatch(
     QUIC_BUG << ENDPOINT << error_details;
     TearDownLocalConnectionState(QUIC_INTERNAL_ERROR, error_details,
                                  ConnectionCloseSource::FROM_SELF);
-    RecordInternalErrorLocation(QUIC_CONNECTION_PROTOCOL_VERSION_MISMATCH);
     return false;
   }
   DCHECK_NE(version(), received_version);
@@ -615,7 +614,6 @@ void QuicConnection::OnVersionNegotiationPacket(
     QUIC_BUG << error_details;
     TearDownLocalConnectionState(QUIC_INTERNAL_ERROR, error_details,
                                  ConnectionCloseSource::FROM_SELF);
-    RecordInternalErrorLocation(QUIC_CONNECTION_VERSION_NEGOTIATION_PACKET);
     return;
   }
   if (debug_visitor_ != nullptr) {
@@ -698,7 +696,6 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     QUIC_BUG << error_details << ", received header: " << header;
     CloseConnection(QUIC_INTERNAL_ERROR, error_details,
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    RecordInternalErrorLocation(QUIC_CONNECTION_UNAUTHENTICATED_HEADER);
     return false;
   }
 
@@ -2046,7 +2043,6 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
                               queued_packets_.size());
     CloseConnection(QUIC_INTERNAL_ERROR, "Packet written out of order.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    RecordInternalErrorLocation(QUIC_CONNECTION_WRITE_PACKET);
     return true;
   }
   // Termination packets are encrypted and saved, so don't exit early.
