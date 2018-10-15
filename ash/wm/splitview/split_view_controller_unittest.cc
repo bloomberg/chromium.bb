@@ -44,6 +44,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -87,6 +88,17 @@ class OverviewStatesObserver : public ShellObserver {
   aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewStatesObserver);
+};
+
+// The test BubbleDialogDelegateView for bubbles.
+class TestBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
+ public:
+  explicit TestBubbleDialogDelegateView(views::View* anchor_view)
+      : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::NONE) {}
+  ~TestBubbleDialogDelegateView() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
 }  // namespace
@@ -1612,6 +1624,35 @@ TEST_F(SplitViewControllerTest, ActivateNonSnappableWindow) {
   wm::ActivateWindow(window3.get());
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+}
+
+// Tests that if a snapped window has a bubble transient child, the bubble's
+// bounds should always align with the snapped window's bounds.
+TEST_F(SplitViewControllerTest, AdjustTransientChildBounds) {
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
+  aura::Window* window = widget->GetNativeWindow();
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      ws::mojom::kResizeBehaviorCanResize |
+                          ws::mojom::kResizeBehaviorCanMaximize);
+  split_view_controller()->SnapWindow(window, SplitViewController::LEFT);
+  const gfx::Rect window_bounds = window->GetBoundsInScreen();
+
+  // Create a bubble widget that's anchored to |widget|.
+  views::Widget* bubble_widget = views::BubbleDialogDelegateView::CreateBubble(
+      new TestBubbleDialogDelegateView(widget->GetContentsView()));
+  aura::Window* bubble_window = bubble_widget->GetNativeWindow();
+  EXPECT_TRUE(::wm::HasTransientAncestor(bubble_window, window));
+  // Test that the bubble is created inside its anchor widget.
+  EXPECT_TRUE(window_bounds.Contains(bubble_window->GetBoundsInScreen()));
+
+  // Now try to manually move the bubble out of the snapped window.
+  bubble_window->SetBoundsInScreen(
+      split_view_controller()->GetSnappedWindowBoundsInScreen(
+          window, SplitViewController::RIGHT),
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window));
+  // Test that the bubble can't be moved outside of its anchor widget.
+  EXPECT_TRUE(window_bounds.Contains(bubble_window->GetBoundsInScreen()));
+  EndSplitView();
 }
 
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
