@@ -9,13 +9,14 @@ import android.text.TextUtils;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * Collection of configurable parameters and default values given to the Feed. Every getter passes
  * checks to see if it has been overridden by a field trail param.
- * */
-final class FeedConfiguration {
+ */
+public final class FeedConfiguration {
     /** Do not allow construction */
     private FeedConfiguration() {}
 
@@ -51,21 +52,24 @@ final class FeedConfiguration {
     public static final double VIEW_LOG_THRESHOLD_DEFAULT = 0.66d;
 
     /** @return Feed server endpoint to use to fetch content suggestions. */
-    public static String getFeedServerEndpoint() {
+    @VisibleForTesting
+    static String getFeedServerEndpoint() {
         String paramValue = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_SERVER_ENDPOINT);
         return TextUtils.isEmpty(paramValue) ? FEED_SERVER_ENDPOINT_DEFAULT : paramValue;
     }
 
     /** @return Feed server method to use when fetching content suggestions. */
-    public static String getFeedServerMethod() {
+    @VisibleForTesting
+    static String getFeedServerMethod() {
         String paramValue = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_SERVER_METHOD);
         return TextUtils.isEmpty(paramValue) ? FEED_SERVER_METHOD_DEFAULT : paramValue;
     }
 
     /** @return Whether server response should be length prefixed. */
-    public static boolean getFeedServerReponseLengthPrefixed() {
+    @VisibleForTesting
+    static boolean getFeedServerReponseLengthPrefixed() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 FEED_SERVER_RESPONSE_LENGTH_PREFIXED, FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT);
@@ -75,7 +79,8 @@ final class FeedConfiguration {
      * @return How long before showing content after opening NTP is no longer considered immediate
      *         in UMA.
      */
-    public static long getLoggingImmediateContentThresholdMs() {
+    @VisibleForTesting
+    static long getLoggingImmediateContentThresholdMs() {
         return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
@@ -83,7 +88,8 @@ final class FeedConfiguration {
     }
 
     /** @return Time until feed stops restoring the UI. */
-    public static long getSessionLifetimeMs() {
+    @VisibleForTesting
+    static long getSessionLifetimeMs() {
         return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SESSION_LIFETIME_MS,
                 SESSION_LIFETIME_MS_DEFAULT);
@@ -93,14 +99,16 @@ final class FeedConfiguration {
      * @return Whether UI initially shows "More" button upon reaching the end of known content,
      *         when server could potentially have more content.
      */
-    public static boolean getTriggerImmedatePagination() {
+    @VisibleForTesting
+    static boolean getTriggerImmedatePagination() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, TRIGGER_IMMEDIATE_PAGINATION,
                 TRIGGER_IMMEDIATE_PAGINATION_DEFAULT);
     }
 
     /** @return How much of a card must be on screen to generate a UMA log view. */
-    public static double getViewLogThreshold() {
+    @VisibleForTesting
+    static double getViewLogThreshold() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, VIEW_LOG_THRESHOLD,
                 VIEW_LOG_THRESHOLD_DEFAULT);
