@@ -4,8 +4,6 @@
 
 #include "net/third_party/quic/core/quic_error_codes.h"
 
-#include "base/metrics/histogram_macros.h"
-
 namespace quic {
 
 #define RETURN_STRING_LITERAL(x) \
@@ -161,11 +159,6 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
   // any of the QuicErrorCodes. This can happen when the ConnectionClose
   // frame sent by the peer (attacker) has invalid error code.
   return "INVALID_ERROR_CODE";
-}
-
-void RecordInternalErrorLocation(QuicInternalErrorLocation location) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.InternalErrorLocation", location,
-                            INTERNAL_ERROR_LOCATION_MAX);
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds
