@@ -190,7 +190,7 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
 
 TEST_F(ChromeSigninClientSignoutTest, SignOut) {
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::ABORT_SIGNIN;
+      signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -210,7 +210,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOut) {
 
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::ABORT_SIGNIN;
+      signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -251,7 +251,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
                                                  fake_controller_.get());
 
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::ABORT_SIGNIN;
+      signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -278,7 +278,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutGuestSession) {
                                                  fake_controller_.get());
 
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::ABORT_SIGNIN;
+      signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -299,14 +299,15 @@ class ChromeSigninClientSignoutSourceTest
     : public ::testing::WithParamInterface<signin_metrics::ProfileSignout>,
       public ChromeSigninClientSignoutTest {};
 
-bool IsUserDrivenSignout(signin_metrics::ProfileSignout signout_source) {
+// Returns true if signout can be disallowed by policy for the given source.
+bool IsSignoutDisallowedByPolicy(
+    signin_metrics::ProfileSignout signout_source) {
   switch (signout_source) {
     // NOTE: SIGNOUT_TEST == SIGNOUT_PREF_CHANGED.
     case signin_metrics::ProfileSignout::SIGNOUT_PREF_CHANGED:
     case signin_metrics::ProfileSignout::GOOGLE_SERVICE_NAME_PATTERN_CHANGED:
     case signin_metrics::ProfileSignout::SIGNIN_PREF_CHANGED_DURING_SIGNIN:
     case signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS:
-    case signin_metrics::ProfileSignout::ABORT_SIGNIN:
     case signin_metrics::ProfileSignout::SERVER_FORCED_DISABLE:
     case signin_metrics::ProfileSignout::TRANSFER_CREDENTIALS:
     case signin_metrics::ProfileSignout::
@@ -318,6 +319,9 @@ bool IsUserDrivenSignout(signin_metrics::ProfileSignout signout_source) {
       // For now only ACCOUNT_REMOVED_FROM_DEVICE is here to preserve the status
       // quo. Additional internal sources of sign-out will be moved here in a
       // follow up CL.
+      return false;
+    case signin_metrics::ProfileSignout::ABORT_SIGNIN:
+      // Allow signout because data has not been synced yet.
       return false;
     case signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS:
       NOTREACHED();
@@ -371,7 +375,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutDisallowed) {
   // Verify SigninManager gets callback indicating sign-out is disallowed iff
   // the source of the sign-out is a user-action.
   SigninClient::SignoutDecision signout_decision =
-      IsUserDrivenSignout(signout_source)
+      IsSignoutDisallowedByPolicy(signout_source)
           ? SigninClient::SignoutDecision::DISALLOW_SIGNOUT
           : SigninClient::SignoutDecision::ALLOW_SIGNOUT;
   signin_metrics::SignoutDelete delete_metric =
