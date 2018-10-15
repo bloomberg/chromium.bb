@@ -31,7 +31,6 @@ namespace syncer {
 class BaseTransaction;
 class JsController;
 class ProtocolEventObserver;
-class SyncClient;
 class SyncCycleSnapshot;
 struct SyncTokenStatus;
 class TypeDebugInfoObserver;
@@ -375,9 +374,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS
   //////////////////////////////////////////////////////////////////////////////
-
-  // TODO(crbug.com/865936): Move this down into ProfileSyncService.
-  virtual SyncClient* GetSyncClient() const = 0;
 
   // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
   // not currently syncing, returns nullptr.

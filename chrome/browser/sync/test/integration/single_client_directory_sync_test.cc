@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
-  FilePath directory_path = sync_service->GetSyncClient()
+  FilePath directory_path = sync_service->GetSyncClientForTest()
                                 ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   ASSERT_TRUE(FolderContainsFiles(directory_path));
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   WaitForExistingTasksOnLoop(sync_loop);
 
   // Now corrupt the database.
-  FilePath directory_path = sync_service->GetSyncClient()
+  FilePath directory_path = sync_service->GetSyncClientForTest()
                                 ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   const FilePath sync_db(directory_path.Append(
