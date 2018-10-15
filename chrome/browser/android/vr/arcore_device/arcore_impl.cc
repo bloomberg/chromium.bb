@@ -27,7 +27,8 @@ ArCoreImpl::ArCoreImpl()
 
 ArCoreImpl::~ArCoreImpl() = default;
 
-bool ArCoreImpl::Initialize() {
+bool ArCoreImpl::Initialize(
+    base::android::ScopedJavaLocalRef<jobject> context) {
   DCHECK(IsOnGlThread());
   DCHECK(!arcore_session_.is_valid());
 
@@ -36,19 +37,6 @@ bool ArCoreImpl::Initialize() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!env) {
     DLOG(ERROR) << "Unable to get JNIEnv for ArCore";
-    return false;
-  }
-
-  // Get the activity context.
-  base::android::ScopedJavaLocalRef<jobject> context =
-      vr::ArCoreJavaUtils::GetApplicationContext();
-  if (!context.obj()) {
-    DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
-    return false;
-  }
-
-  if (!vr::ArCoreJavaUtils::EnsureLoaded()) {
-    DLOG(ERROR) << "ArCore could not be loaded.";
     return false;
   }
 
@@ -372,6 +360,10 @@ bool ArCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
 
 bool ArCoreImpl::IsOnGlThread() {
   return gl_thread_task_runner_->BelongsToCurrentThread();
+}
+
+std::unique_ptr<ArCore> ArCoreImplFactory::Create() {
+  return std::make_unique<ArCoreImpl>();
 }
 
 }  // namespace device
