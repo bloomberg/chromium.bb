@@ -11,6 +11,9 @@ const base::Feature kFirstResponderKeyWindow{"FirstResponderKeyWindow",
 const base::Feature kClosingLastIncognitoTab{"ClosingLastIncognitoTab",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kBrowserContainerContainsNTP{
+    "BrowserContainerContainsNTP", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCopyImage{"CopyImage", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{

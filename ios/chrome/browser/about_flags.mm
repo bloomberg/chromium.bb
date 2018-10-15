@@ -385,6 +385,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
+    {"browser-container-contains-ntp",
+     flag_descriptions::kBrowserContainerContainsNTPName,
+     flag_descriptions::kBrowserContainerContainsNTPDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerContainsNTP)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -130,6 +130,11 @@ const char kBrowserContainerFullscreenDescription[] =
     "When enabled, the BrowserContainer is fullscreen. No UI change should be "
     "visible.";
 
+const char kBrowserContainerContainsNTPName[] = "Browser Container NTP";
+const char kBrowserContainerContainsNTPDescription[] =
+    "When enabled, the BrowserContainer contains the NTP directly, rather than"
+    "via native content.";
+
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
