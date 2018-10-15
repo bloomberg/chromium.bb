@@ -163,7 +163,7 @@ NavigationModelMenuItem.prototype = /** @struct */ {
  *
  * @param {string} label Label on the menu button.
  * @param {NavigationModelItemType} type
- * @param {!FakeEntry} entry Fake entry for the root folder.
+ * @param {!FilesAppEntry} entry Fake entry for the root folder.
  * @constructor
  * @extends {NavigationModelItem}
  * @struct

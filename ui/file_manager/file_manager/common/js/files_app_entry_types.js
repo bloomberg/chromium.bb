@@ -71,6 +71,9 @@ class FilesAppEntry {
      * page can't be checked with "instanceof".
      */
     this.type_name = 'FilesAppEntry';
+
+    /** @public {VolumeManagerCommon.RootType|null} */
+    this.rootType = null;
   }
 
   /**
@@ -477,5 +480,94 @@ class VolumeEntry {
    */
   setPrefix(entry) {
     this.volumeInfo_.prefixEntry = entry;
+  }
+}
+
+/**
+ * FakeEntry is used for entries that used only for UI, that weren't generated
+ * by FileSystem API, like Drive, Downloads or Provided.
+ *
+ * @implements FilesAppDirEntry
+ */
+class FakeEntry {
+  /**
+   * @param {string} label Translated text to be displayed to user.
+   * @param {!VolumeManagerCommon.RootType} rootType Root type of this entry.
+   * @param {chrome.fileManagerPrivate.SourceRestriction=} opt_sourceRestriction
+   *    used on Recents to filter the source of recent files/directories.
+   */
+  constructor(label, rootType, opt_sourceRestriction) {
+    /**
+     * @public {string} label: Label to be used when displaying to user, it
+     *      should be already translated. */
+    this.label = label;
+
+    /** @public {string} Name for this volume. */
+    this.name = label;
+
+    /** @public {!VolumeManagerCommon.RootType} */
+    this.rootType = rootType;
+
+    /** @public {boolean} true FakeEntry are always directory-like. */
+    this.isDirectory = true;
+
+    /** @public {boolean} false FakeEntry are always directory-like. */
+    this.isFile = false;
+
+    /**
+     * @public {chrome.fileManagerPrivate.SourceRestriction|undefined} It's used
+     * to communicate restrictions about sources to
+     * chrome.fileManagerPrivate.getRecentFiles API.
+     */
+    this.sourceRestriction = opt_sourceRestriction;
+
+    /**
+     * @public {string} the class name for this class. It's workaround for the
+     * fact that an instance created on foreground page and sent to background
+     * page can't be checked with "instanceof".
+     */
+    this.type_name = 'FakeEntry';
+  }
+
+  /**
+   * FakeEntry is used as root, so doesn't have a parent and should return
+   * itself.
+   *
+   *  @override
+   */
+  getParent(success, error) {
+    setTimeout(success, 0, this);
+  }
+
+  /** @override */
+  toURL() {
+    return 'fake-entry://' + this.rootType;
+  }
+
+  /**
+   * String used to determine the icon.
+   * @return {string}
+   */
+  get iconName() {
+    return /** @type{string} */ (this.rootType);
+  }
+
+  /** @override */
+  getMetadata(success, error) {
+    setTimeout(() => success({}));
+  }
+
+  /** @override */
+  get isNativeType() {
+    return false;
+  }
+
+  /**
+   * @return {!StaticReader} Returns a reader compatible with
+   * DirectoryEntry.createReader (from Web Standards) that reads 0 entries.
+   * @override
+   */
+  createReader() {
+    return new StaticReader([]);
   }
 }

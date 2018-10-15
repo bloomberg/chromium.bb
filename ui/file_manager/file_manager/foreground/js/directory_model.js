@@ -861,7 +861,7 @@ DirectoryModel.prototype.onRenameEntry = function(
     // new one.
     if (util.isSameEntry(oldEntry, this.getCurrentDirEntry())) {
       this.changeDirectoryEntry(
-          /** @type {!DirectoryEntry|!FakeEntry} */ (newEntry));
+          /** @type {!DirectoryEntry|!FilesAppDirEntry} */ (newEntry));
     }
 
     // Replace the old item with the new item. oldEntry instance itself may
@@ -946,13 +946,18 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
  * activateDirectoryEntry instead of this, which is higher-level function and
  * cares about the selection.
  *
- * @param {!DirectoryEntry|!FakeEntry} dirEntry The entry of the new directory
- *     to be opened.
+ * @param {!DirectoryEntry|!FilesAppDirEntry} dirEntry The entry of the new
+ *     directory to be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
+  // If it's a VolumeEntry which wraps an actual entry, we should use the
+  // unwrapped entry.
+  if (dirEntry instanceof VolumeEntry)
+    dirEntry = assert(dirEntry.rootEntry);
+
   // Increment the sequence value.
   this.changeDirectorySequence_++;
   this.clearSearch_();
@@ -1068,8 +1073,8 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
  *    directory.
  *  - Clears the selection, if the given directory is the current directory.
  *
- * @param {!DirectoryEntry|!FakeEntry} dirEntry The entry of the new directory
- *     to be opened.
+ * @param {!DirectoryEntry|!FilesAppDirEntry} dirEntry The entry of the new
+ *     directory to be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */

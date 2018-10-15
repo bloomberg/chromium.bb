@@ -719,7 +719,7 @@ util.getTeamDriveName = function(entry) {
 
 /**
  * Returns true if the given entry is the root folder of recent files.
- * @param {(!Entry|!FakeEntry|!FilesAppEntry)} entry Entry or a fake entry.
+ * @param {(!Entry|!FilesAppEntry)} entry Entry or a fake entry.
  * @returns {boolean}
  */
 util.isRecentRoot = function(entry) {

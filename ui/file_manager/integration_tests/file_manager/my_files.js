@@ -324,3 +324,106 @@ testcase.myFilesUpdatesChildren = function() {
     },
   ]);
 };
+
+/**
+ * Check naming a folder after navigating inside MyFiles using file list (RHS).
+ * crbug.com/889636.
+ */
+testcase.myFilesFolderRename = function() {
+  let appId;
+  const textInput = '#file-list .table-row[renaming] input.rename';
+  StepsRunner.run([
+    // Open Files app on local Downloads.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.photos], []);
+    },
+    // Select "My files" folder via directory tree.
+    function(result) {
+      appId = result.windowId;
+      const myFilesQuery = '#directory-tree [entry-label="My files"]';
+      const isDriveQuery = false;
+      remoteCall.callRemoteTestUtil(
+          'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
+          this.next);
+    },
+    // Wait for Downloads to load.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectInDirectoryTree failed');
+      const expectedRows = [
+        ['Downloads', '--', 'Folder'],
+        ['Linux files', '--', 'Folder'],
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedRows,
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Select Downloads via file list.
+    function() {
+      const downloads = ['Downloads'];
+      remoteCall.callRemoteTestUtil('selectFile', appId, downloads)
+          .then(result => {
+            chrome.test.assertTrue(!!result, 'selectFile failed');
+            this.next();
+          });
+    },
+    // Open Downloads via file list.
+    function() {
+      const fileListItem = '#file-list .table-row';
+      const key = [fileListItem, 'Enter', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
+    },
+    // Wait for Downloads to load.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeKeyDown failed');
+      remoteCall.waitForFiles(appId, [ENTRIES.photos.getExpectedRow()])
+          .then(this.next);
+    },
+    // Select photos via file list.
+    function() {
+      const folder = ['photos'];
+      remoteCall.callRemoteTestUtil('selectFile', appId, folder)
+          .then(result => {
+            chrome.test.assertTrue(!!result, 'selectFile failed');
+            this.next();
+          });
+    },
+    // Press Ctrl+Enter for start renaming.
+    function() {
+      const fileListItem = '#file-list .table-row';
+      const key = [fileListItem, 'Enter', 'Enter', true, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
+    },
+    // Wait for input for renaming to appear.
+    function(result) {
+      chrome.test.assertTrue(result, 'fakeKeyDown ctrl+Enter failed');
+      // Check: the renaming text input should be shown in the file list.
+      remoteCall.waitForElement(appId, textInput).then(this.next);
+    },
+    // Type new name.
+    function() {
+      remoteCall.callRemoteTestUtil('inputText', appId, [textInput, 'new name'])
+          .then(this.next);
+    },
+    // Send Enter key to the text input.
+    function() {
+      const key = [textInput, 'Enter', 'Enter', false, false, false];
+      remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key).then(this.next);
+    },
+    // Wait for new name to appear on the file list.
+    function(result) {
+      chrome.test.assertTrue(result, 'fakeKeyDown failed');
+      const expectedRows = [['new name', '--', 'Folder', '']];
+      remoteCall
+          .waitForFiles(
+              appId, expectedRows,
+              {ignoreFileSize: true, ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};

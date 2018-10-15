@@ -373,19 +373,6 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
 };
 
 /**
- * Fake entries for virtual folders which hold Google Drive offline files,
- * Google Drive "Shared with me" files, and mixed Recent files.
- * |sourceRestriction| is valid only for the Recent folder.
- * @typedef {{
- *   isDirectory: boolean,
- *   rootType: VolumeManagerCommon.RootType,
- *   toURL: function(): string,
- *   sourceRestriction: (string|undefined)
- * }}
- */
-var FakeEntry;
-
-/**
   * An event name trigerred when a user tries to mount the volume which is
   * already mounted. The event object must have a volumeId property.
   * @const {string}

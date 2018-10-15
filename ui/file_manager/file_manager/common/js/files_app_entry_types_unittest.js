@@ -337,3 +337,49 @@ function testEntryListAddEntrySetsPrefix() {
   // entryList is parent of volumeEntry so it should be its prefix.
   assertEquals(entryList, volumeEntry.volumeInfo.prefixEntry);
 }
+
+/**
+ * Test FakeEntry, which is only static data.
+ */
+function testFakeEntry(testReportCallback) {
+  let fakeEntry = new FakeEntry('label', VolumeManagerCommon.RootType.CROSTINI);
+
+  assertEquals(undefined, fakeEntry.sourceRestriction);
+  assertEquals('FakeEntry', fakeEntry.type_name);
+  assertEquals('label', fakeEntry.label);
+  assertEquals('label', fakeEntry.name);
+  assertEquals('fake-entry://crostini', fakeEntry.toURL());
+  assertEquals('crostini', fakeEntry.iconName);
+  assertEquals(VolumeManagerCommon.RootType.CROSTINI, fakeEntry.rootType);
+  assertFalse(fakeEntry.isNativeType);
+  assertTrue(fakeEntry.isDirectory);
+  assertFalse(fakeEntry.isFile);
+
+  // Check sourceRestriction constructor args.
+  const kSourceRestriction =
+      /** @type{chrome.fileManagerPrivate.SourceRestriction} */ ('fake');
+  fakeEntry = new FakeEntry(
+      'label', VolumeManagerCommon.RootType.CROSTINI, kSourceRestriction);
+  assertEquals(kSourceRestriction, fakeEntry.sourceRestriction);
+
+  let callCounter = 0;
+
+  fakeEntry.getMetadata((metadata) => {
+    // Returns empty (but non-null) metadata {}.
+    assert(metadata);
+    assertEquals(0, Object.keys(metadata).length);
+    callCounter++;
+  }, notreached /* error */);
+  fakeEntry.getParent((parentEntry) => {
+    // Should return itself.
+    assertEquals(fakeEntry, parentEntry);
+    callCounter++;
+  }, notreached /* error */);
+
+  reportPromise(
+      waitUntil(() => {
+        // It should be called for getMetadata and for getParent.
+        return callCounter == 2;
+      }),
+      testReportCallback);
+}

@@ -69,17 +69,15 @@ function VolumeInfoImpl(
   this.displayRootPromise_ = null;
 
   if (volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
-    // TODO(mtomasz): Convert fake entries to DirectoryProvider.
-    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] = {
-      isDirectory: true,
-      rootType: VolumeManagerCommon.RootType.DRIVE_OFFLINE,
-      toURL: function() { return 'fake-entry://drive_offline'; }
-    };
-    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME] = {
-      isDirectory: true,
-      rootType: VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
-      toURL: function() { return 'fake-entry://drive_shared_with_me'; }
-    };
+    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] =
+        new FakeEntry(
+            str('DRIVE_OFFLINE_COLLECTION_LABEL'),
+            VolumeManagerCommon.RootType.DRIVE_OFFLINE);
+
+    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME] =
+        new FakeEntry(
+            str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
+            VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME);
   }
 
   // Note: This represents if the mounting of the volume is successfully done

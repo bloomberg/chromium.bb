@@ -584,6 +584,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("hideSearchButton"),
                       TestCase("myFilesDisplaysAndOpensEntries"),
                       TestCase("directoryTreeRefresh"),
+                      TestCase("myFilesFolderRename"),
                       TestCase("myFilesUpdatesChildren")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(

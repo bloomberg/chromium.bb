@@ -1204,14 +1204,11 @@ FileManager.prototype = /** @struct */ {
         fakeEntriesVisible &&
                 !DialogType.isFolderDialog(this.launchParams_.type) ?
             new NavigationModelFakeItem(
-                str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT, {
-                  isDirectory: true,
-                  rootType: VolumeManagerCommon.RootType.RECENT,
-                  toURL: function() {
-                    return 'fake-entry://recent';
-                  },
-                  sourceRestriction: this.getSourceRestriction_()
-                }) :
+                str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT,
+                new FakeEntry(
+                    str('RECENT_ROOT_LABEL'),
+                    VolumeManagerCommon.RootType.RECENT,
+                    this.getSourceRestriction_())) :
             null,
         null,  // TODO(crbug.com/869252) remove this null.
         this.commandLineFlags_['disable-my-files-navigation']);
@@ -1227,15 +1224,10 @@ FileManager.prototype = /** @struct */ {
     chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
       this.directoryTree.dataModel.linuxFilesItem = enabled ?
           new NavigationModelFakeItem(
-              str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI, {
-                isDirectory: true,
-                rootType: VolumeManagerCommon.RootType.CROSTINI,
-                name: str('LINUX_FILES_ROOT_LABEL'),
-                toURL: function() {
-                  return 'fake-entry://linux-files';
-                },
-                iconName: VolumeManagerCommon.VolumeType.CROSTINI,
-              }) :
+              str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
+              new FakeEntry(
+                  str('LINUX_FILES_ROOT_LABEL'),
+                  VolumeManagerCommon.RootType.CROSTINI)) :
           null;
       this.directoryTree.redraw(false);
     });
