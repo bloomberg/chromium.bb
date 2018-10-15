@@ -31,9 +31,9 @@ const char kLsbRelease[] =
 
 class CrostiniSharePathTest : public testing::Test {
  public:
-  void SharePathSuccessStartTerminaVmCallback(ConciergeClientResult result) {
+  void SharePathSuccessStartTerminaVmCallback(CrostiniResult result) {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
-    EXPECT_EQ(result, ConciergeClientResult::SUCCESS);
+    EXPECT_EQ(result, CrostiniResult::SUCCESS);
 
     SharePath(profile(), "success", share_path_,
               base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -41,10 +41,9 @@ class CrostiniSharePathTest : public testing::Test {
                              run_loop()->QuitClosure()));
   }
 
-  void SharePathErrorSeneschalStartTerminaVmCallback(
-      ConciergeClientResult result) {
+  void SharePathErrorSeneschalStartTerminaVmCallback(CrostiniResult result) {
     EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
-    EXPECT_EQ(result, ConciergeClientResult::SUCCESS);
+    EXPECT_EQ(result, CrostiniResult::SUCCESS);
 
     SharePath(profile(), "error-seneschal", share_path_,
               base::BindOnce(&CrostiniSharePathTest::SharePathCallback,

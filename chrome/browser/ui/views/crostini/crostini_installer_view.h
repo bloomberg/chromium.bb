@@ -22,7 +22,7 @@ class ProgressBar;
 }  // namespace views
 
 namespace crostini {
-enum class ConciergeClientResult;
+enum class CrostiniResult;
 }  // namespace crostini
 
 class Profile;
@@ -66,14 +66,14 @@ class CrostiniInstallerView
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // crostini::CrostiniManager::RestartObserver
-  void OnComponentLoaded(crostini::ConciergeClientResult result) override;
-  void OnConciergeStarted(crostini::ConciergeClientResult result) override;
-  void OnDiskImageCreated(crostini::ConciergeClientResult result) override;
-  void OnVmStarted(crostini::ConciergeClientResult result) override;
+  void OnComponentLoaded(crostini::CrostiniResult result) override;
+  void OnConciergeStarted(crostini::CrostiniResult result) override;
+  void OnDiskImageCreated(crostini::CrostiniResult result) override;
+  void OnVmStarted(crostini::CrostiniResult result) override;
   void OnContainerDownloading(int32_t download_percent) override;
-  void OnContainerCreated(crostini::ConciergeClientResult result) override;
-  void OnContainerStarted(crostini::ConciergeClientResult result) override;
-  void OnSshKeysFetched(crostini::ConciergeClientResult result) override;
+  void OnContainerCreated(crostini::CrostiniResult result) override;
+  void OnContainerStarted(crostini::CrostiniResult result) override;
+  void OnSshKeysFetched(crostini::CrostiniResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
 
@@ -99,7 +99,7 @@ class CrostiniInstallerView
   ~CrostiniInstallerView() override;
 
   void HandleError(const base::string16& error_message, SetupResult result);
-  void MountContainerFinished(crostini::ConciergeClientResult result);
+  void MountContainerFinished(crostini::CrostiniResult result);
   void ShowLoginShell();
   void StepProgress();
   void UpdateState(State new_state);

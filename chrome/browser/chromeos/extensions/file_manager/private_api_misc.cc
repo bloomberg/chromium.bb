@@ -670,8 +670,8 @@ bool FileManagerPrivateMountCrostiniFunction::RunAsync() {
 }
 
 void FileManagerPrivateMountCrostiniFunction::RestartCallback(
-    crostini::ConciergeClientResult result) {
-  if (result != crostini::ConciergeClientResult::SUCCESS) {
+    crostini::CrostiniResult result) {
+  if (result != crostini::CrostiniResult::SUCCESS) {
     Respond(Error(
         base::StringPrintf("Error mounting crostini container: %d", result)));
     return;
@@ -773,19 +773,19 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
 }
 
 void FileManagerPrivateInternalInstallLinuxPackageFunction::
-    OnInstallLinuxPackage(crostini::ConciergeClientResult result,
+    OnInstallLinuxPackage(crostini::CrostiniResult result,
                           const std::string& failure_reason) {
   extensions::api::file_manager_private::InstallLinuxPackageResponse response;
   switch (result) {
-    case crostini::ConciergeClientResult::SUCCESS:
+    case crostini::CrostiniResult::SUCCESS:
       response = extensions::api::file_manager_private::
           INSTALL_LINUX_PACKAGE_RESPONSE_STARTED;
       break;
-    case crostini::ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED:
+    case crostini::CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED:
       response = extensions::api::file_manager_private::
           INSTALL_LINUX_PACKAGE_RESPONSE_FAILED;
       break;
-    case crostini::ConciergeClientResult::INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE:
+    case crostini::CrostiniResult::INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE:
       response = extensions::api::file_manager_private::
           INSTALL_LINUX_PACKAGE_RESPONSE_INSTALL_ALREADY_ACTIVE;
       break;

@@ -27,7 +27,7 @@ class RecentFile;
 }  // namespace chromeos
 
 namespace crostini {
-enum class ConciergeClientResult;
+enum class CrostiniResult;
 }
 
 namespace file_manager {
@@ -294,7 +294,7 @@ class FileManagerPrivateMountCrostiniFunction
   ~FileManagerPrivateMountCrostiniFunction() override;
 
   bool RunAsync() override;
-  void RestartCallback(crostini::ConciergeClientResult);
+  void RestartCallback(crostini::CrostiniResult);
 
  private:
   std::string source_path_;
@@ -358,7 +358,7 @@ class FileManagerPrivateInternalInstallLinuxPackageFunction
 
  private:
   ResponseAction Run() override;
-  void OnInstallLinuxPackage(crostini::ConciergeClientResult result,
+  void OnInstallLinuxPackage(crostini::CrostiniResult result,
                              const std::string& failure_reason);
   DISALLOW_COPY_AND_ASSIGN(
       FileManagerPrivateInternalInstallLinuxPackageFunction);

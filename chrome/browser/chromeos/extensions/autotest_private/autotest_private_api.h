@@ -21,7 +21,7 @@ class Notification;
 }
 
 namespace crostini {
-enum class ConciergeClientResult;
+enum class CrostiniResult;
 }
 
 namespace extensions {
@@ -282,7 +282,7 @@ class AutotestPrivateRunCrostiniInstallerFunction
   ~AutotestPrivateRunCrostiniInstallerFunction() override;
   ResponseAction Run() override;
 
-  void CrostiniRestarted(crostini::ConciergeClientResult);
+  void CrostiniRestarted(crostini::CrostiniResult);
 };
 
 class AutotestPrivateRunCrostiniUninstallerFunction
@@ -295,7 +295,7 @@ class AutotestPrivateRunCrostiniUninstallerFunction
   ~AutotestPrivateRunCrostiniUninstallerFunction() override;
   ResponseAction Run() override;
 
-  void CrostiniRemoved(crostini::ConciergeClientResult);
+  void CrostiniRemoved(crostini::CrostiniResult);
 };
 
 class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {

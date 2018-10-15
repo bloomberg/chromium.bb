@@ -52,7 +52,7 @@ class CrostiniPackageInstallerService
       const std::string& vm_name,
       const std::string& container_name,
       CrostiniManager::InstallLinuxPackageCallback callback,
-      ConciergeClientResult result,
+      CrostiniResult result,
       const std::string& failure_reason);
 
   std::string GetUniqueNotificationId();

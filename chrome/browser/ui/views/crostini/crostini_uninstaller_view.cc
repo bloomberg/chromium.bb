@@ -155,8 +155,8 @@ void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
 }
 
 void CrostiniUninstallerView::UninstallCrostiniFinished(
-    crostini::ConciergeClientResult result) {
-  if (result != crostini::ConciergeClientResult::SUCCESS) {
+    crostini::CrostiniResult result) {
+  if (result != crostini::CrostiniResult::SUCCESS) {
     HandleError(l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_ERROR));
     return;
   } else {
