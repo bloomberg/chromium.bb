@@ -186,9 +186,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   blink::WebMediaPlayer::NetworkState GetNetworkState() const override;
   blink::WebMediaPlayer::ReadyState GetReadyState() const override;
 
-  blink::WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode()
-      const override;
-
   blink::WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override;
   bool WouldTaintOrigin() const override;
@@ -888,8 +885,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool embedded_media_experience_enabled_ = false;
 
   // When should we use SurfaceLayer for video?
-  blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode_ =
-      blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+  WebMediaPlayerParams::SurfaceLayerMode surface_layer_mode_ =
+      WebMediaPlayerParams::SurfaceLayerMode::kNever;
 
   // Whether surface layer is currently in use to display frames.
   bool surface_layer_for_video_enabled_ = false;

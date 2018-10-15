@@ -271,7 +271,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     CreateSurfaceLayerBridgeCB create_bridge_callback,
     base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
         create_submitter_callback,
-    blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode)
+    bool surface_layer_for_video_enabled)
     : frame_(frame),
       network_state_(WebMediaPlayer::kNetworkStateEmpty),
       ready_state_(WebMediaPlayer::kReadyStateHaveNothing),
@@ -294,12 +294,9 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
       create_submitter_callback_(create_submitter_callback),
-      surface_layer_mode_(surface_layer_mode) {
+      surface_layer_for_video_enabled_(surface_layer_for_video_enabled) {
   DVLOG(1) << __func__;
   DCHECK(client);
-  // We currently do not support on demand switching to use surface layer.
-  DCHECK(surface_layer_mode_ !=
-         blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand);
   DCHECK(delegate_);
   delegate_id_ = delegate_->AddObserver(this);
 
@@ -317,8 +314,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   // Destruct compositor resources in the proper order.
   get_client()->SetCcLayer(nullptr);
   if (video_layer_) {
-    DCHECK(surface_layer_mode_ !=
-           blink::WebMediaPlayer::SurfaceLayerMode::kAlways);
+    DCHECK(!surface_layer_for_video_enabled_);
     video_layer_->StopUsingProvider();
   }
 
@@ -357,7 +353,8 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   compositor_ = new WebMediaPlayerMSCompositor(
       compositor_task_runner_, io_task_runner_, web_stream_,
-      create_submitter_callback_, surface_layer_mode_, AsWeakPtr());
+      create_submitter_callback_, surface_layer_for_video_enabled_,
+      AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -801,11 +798,6 @@ blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::GetReadyState() const {
   return ready_state_;
 }
 
-blink::WebMediaPlayer::SurfaceLayerMode
-WebMediaPlayerMS::GetVideoSurfaceLayerMode() const {
-  return surface_layer_mode_;
-}
-
 blink::WebString WebMediaPlayerMS::GetErrorMessage() const {
   return blink::WebString::FromUTF8(media_log_->GetErrorMessage());
 }
@@ -1106,7 +1098,7 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (surface_layer_mode_ == blink::WebMediaPlayer::SurfaceLayerMode::kAlways) {
+  if (surface_layer_for_video_enabled_) {
     DCHECK(!bridge_);
 
     bridge_ = std::move(create_bridge_callback_)

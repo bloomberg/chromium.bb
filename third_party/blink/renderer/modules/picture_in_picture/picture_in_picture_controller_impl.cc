@@ -79,9 +79,6 @@ PictureInPictureControllerImpl::IsElementAllowed(
   if (element.FastHasAttribute(HTMLNames::disablepictureinpictureAttr))
     return Status::kDisabledByAttribute;
 
-  if (!element.UsesSurfaceLayer())
-    return Status::kVideoLayerNotSupported;
-
   return Status::kEnabled;
 }
 

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "media/blink/webmediaplayer_delegate.h"
-#include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -95,7 +94,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
       CreateSurfaceLayerBridgeCB create_bridge_callback,
       base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
           create_submitter_callback,
-      blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode);
+      bool surface_layer_for_video_enabled_);
 
   ~WebMediaPlayerMS() override;
 
@@ -160,9 +159,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Internal states of loading and network.
   blink::WebMediaPlayer::NetworkState GetNetworkState() const override;
   blink::WebMediaPlayer::ReadyState GetReadyState() const override;
-
-  blink::WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode()
-      const override;
 
   blink::WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override;
@@ -353,8 +349,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
       create_submitter_callback_;
 
   // Whether the use of a surface layer instead of a video layer is enabled.
-  blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode_ =
-      blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+  bool surface_layer_for_video_enabled_ = false;
 
   // Owns the weblayer and obtains/maintains SurfaceIds for
   // kUseSurfaceLayerForVideo feature.
