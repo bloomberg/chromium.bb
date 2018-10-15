@@ -103,16 +103,12 @@ public class FeedProcessScopeFactory {
 
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
         Configuration configHostApi = FeedConfiguration.createConfiguration();
+        ApplicationInfo applicationInfo = FeedApplicationInfo.createApplicationInfo();
 
         FeedSchedulerBridge schedulerBridge = new FeedSchedulerBridge(profile);
         sFeedScheduler = schedulerBridge;
         FeedAppLifecycleListener lifecycleListener =
                 new FeedAppLifecycleListener(new ThreadUtils());
-        // TODO(gangwu): Getting real build info if possible.
-        ApplicationInfo applicationInfo =
-                new ApplicationInfo.Builder(ContextUtils.getApplicationContext())
-                        .setAppType(ApplicationInfo.AppType.CHROME)
-                        .build();
         FeedContentStorage contentStorage = new FeedContentStorage(profile);
         FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
         NetworkClient networkClient = sTestNetworkClient == null ?

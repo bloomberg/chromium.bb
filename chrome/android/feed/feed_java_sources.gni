@@ -10,6 +10,7 @@ if (enable_feed_in_chrome) {
 
   feed_java_sources = [
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedApplicationInfo.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedConfiguration.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentStorage.java",
@@ -38,6 +39,7 @@ if (enable_feed_in_chrome) {
   feed_srcjar_deps = [ "//components/feed/core:feed_core_java_enums_srcjar" ]
 
   feed_junit_test_java_sources = [
+    "junit/src/org/chromium/chrome/browser/feed/FeedApplicationInfoTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedContentStorageTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedImageLoaderTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedJournalStorageTest.java",
