@@ -176,7 +176,7 @@ void NativeViewHost::ViewHierarchyChanged(
     if (!native_wrapper_.get())
       native_wrapper_.reset(NativeViewHostWrapper::CreateWrapper(this));
     native_wrapper_->AddedToWidget();
-  } else if (!details.is_add) {
+  } else if (!details.is_add && native_wrapper_) {
     native_wrapper_->RemovedFromWidget();
   }
 }
