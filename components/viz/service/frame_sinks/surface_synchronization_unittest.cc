@@ -22,7 +22,6 @@ using testing::IsEmpty;
 using testing::UnorderedElementsAre;
 
 namespace viz {
-namespace test {
 namespace {
 
 constexpr bool kIsRoot = true;
@@ -3001,5 +3000,4 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_TRUE(IsMarkedForDestruction(child_id2));
 }
 
-}  // namespace test
 }  // namespace viz

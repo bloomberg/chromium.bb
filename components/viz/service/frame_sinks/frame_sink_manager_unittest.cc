@@ -23,8 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
-namespace test {
-
 namespace {
 
 constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
@@ -650,5 +648,4 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kUnregisterOrderList),
                        ::testing::ValuesIn(kBFSOrderList)));
 
-}  // namespace test
 }  // namespace viz

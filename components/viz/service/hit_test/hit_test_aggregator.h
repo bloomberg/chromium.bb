@@ -13,9 +13,6 @@
 
 namespace viz {
 
-namespace test {
-class TestHitTestAggregator;
-}  // namespace test
 class HitTestAggregatorDelegate;
 struct HitTestRegion;
 
@@ -42,7 +39,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   void Aggregate(const SurfaceId& display_surface_id);
 
  private:
-  friend class test::TestHitTestAggregator;
+  friend class TestHitTestAggregator;
 
   void SendHitTestData();
 

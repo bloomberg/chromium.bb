@@ -33,7 +33,6 @@ using testing::_;
 using testing::Eq;
 
 namespace viz {
-namespace test {
 namespace {
 
 constexpr bool kIsRoot = false;
@@ -1122,5 +1121,4 @@ TEST_F(CompositorFrameSinkSupportTest,
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
-}  // namespace test
 }  // namespace viz
