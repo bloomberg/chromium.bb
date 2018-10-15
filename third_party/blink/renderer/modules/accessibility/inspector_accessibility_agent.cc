@@ -153,6 +153,28 @@ void FillGlobalStates(AXObject& ax_object,
           CreateValue(ax_object.AriaInvalidValue(), AXValueTypeEnum::String)));
       break;
   }
+
+  if (ax_object.CanSetFocusAttribute()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Focusable,
+        CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+  }
+  if (ax_object.IsFocused()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Focused,
+        CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+  }
+  if (ax_object.IsEditable()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Editable,
+        CreateValue(ax_object.IsRichlyEditable() ? "richtext" : "plaintext",
+                    AXValueTypeEnum::Token)));
+  }
+  if (ax_object.CanSetValueAttribute()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Settable,
+        CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+  }
 }
 
 bool RoleAllowsModal(ax::mojom::Role role) {

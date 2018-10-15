@@ -32,7 +32,15 @@ Tests name sources in invisible nodes.
       }
     ]
   },
-  "properties": [],
+  "properties": [
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    }
+  ],
   "domNode": "div#link1"
 }
 {
@@ -98,6 +106,27 @@ Tests name sources in invisible nodes.
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
+      "name": "editable",
+      "value": {
+        "type": "token",
+        "value": "plaintext"
+      }
+    },
+    {
+      "name": "settable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
@@ -233,6 +262,27 @@ Tests name sources in invisible nodes.
       }
     },
     {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
+      "name": "editable",
+      "value": {
+        "type": "token",
+        "value": "plaintext"
+      }
+    },
+    {
+      "name": "settable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
       "name": "multiline",
       "value": {
         "type": "boolean",
@@ -365,6 +415,27 @@ Tests name sources in invisible nodes.
       }
     },
     {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
+      "name": "editable",
+      "value": {
+        "type": "token",
+        "value": "plaintext"
+      }
+    },
+    {
+      "name": "settable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
       "name": "multiline",
       "value": {
         "type": "boolean",
@@ -461,6 +532,13 @@ Tests name sources in invisible nodes.
       }
     },
     {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
       "name": "labelledby",
       "value": {
         "type": "nodeList",
@@ -533,6 +611,13 @@ Tests name sources in invisible nodes.
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
@@ -611,6 +696,13 @@ Tests name sources in invisible nodes.
       }
     },
     {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
       "name": "labelledby",
       "value": {
         "type": "nodeList",
@@ -683,6 +775,13 @@ Tests name sources in invisible nodes.
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
@@ -760,6 +859,27 @@ Tests name sources in invisible nodes.
       "value": {
         "type": "token",
         "value": "false"
+      }
+    },
+    {
+      "name": "focusable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
+      }
+    },
+    {
+      "name": "editable",
+      "value": {
+        "type": "token",
+        "value": "plaintext"
+      }
+    },
+    {
+      "name": "settable",
+      "value": {
+        "type": "booleanOrUndefined",
+        "value": true
       }
     },
     {
