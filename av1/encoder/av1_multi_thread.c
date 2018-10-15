@@ -31,7 +31,9 @@ void av1_row_mt_mem_alloc(AV1_COMP *cpi, int max_sb_rows) {
        tile_row++) {
     for (tile_col = 0; tile_col < multi_thread_ctxt->allocated_tile_cols;
          tile_col++) {
-      TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
+      TileDataEnc *this_tile =
+          &cpi->tile_data[tile_row * multi_thread_ctxt->allocated_tile_cols +
+                          tile_col];
       av1_row_mt_sync_mem_alloc(&this_tile->row_mt_sync, cm, max_sb_rows);
     }
   }
@@ -39,8 +41,6 @@ void av1_row_mt_mem_alloc(AV1_COMP *cpi, int max_sb_rows) {
 
 void av1_row_mt_mem_dealloc(AV1_COMP *cpi) {
   MultiThreadHandle *multi_thread_ctxt = &cpi->multi_thread_ctxt;
-  AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
   int tile_col;
   int tile_row;
 
@@ -49,7 +49,9 @@ void av1_row_mt_mem_dealloc(AV1_COMP *cpi) {
        tile_row++) {
     for (tile_col = 0; tile_col < multi_thread_ctxt->allocated_tile_cols;
          tile_col++) {
-      TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
+      TileDataEnc *this_tile =
+          &cpi->tile_data[tile_row * multi_thread_ctxt->allocated_tile_cols +
+                          tile_col];
       av1_row_mt_sync_mem_dealloc(&this_tile->row_mt_sync);
     }
   }
