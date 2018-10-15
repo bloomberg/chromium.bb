@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="101438888985615157">Ruota lo schermo di 180°</translation>
+<translation id="1016912092715201525">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarli.
+
+      Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> verifica sempre all'avvio di essere il browser predefinito e, se possibile, si registra automaticamente.
+
+      Se l'impostazione è disattivata, <ph name="PRODUCT_NAME" /> non potrà mai verificare di essere il browser predefinito e disattiva i controlli utente per rendere attiva l'opzione.
+
+      Se l'impostazione non è configurata, <ph name="PRODUCT_NAME" /> consente all'utente di controllare se è impostato come browser predefinito e, in caso contrario, se devono essere mostrate le notifiche per gli utenti.
+
+      Nota per gli amministratori di <ph name="MS_WIN_NAME" />: l'attivazione di questa impostazione vale solo per i computer con Windows 7. Per le versioni di Windows a partire dalla 8, devi distribuire un file di "associazioni applicazioni predefinite" che imposti <ph name="PRODUCT_NAME" /> come gestore dei protocolli <ph name="HHTPS_PROTOCOL" /> e <ph name="HTTP_PROTOCOL" /> (ed eventualmente anche del protocollo <ph name="FTP_PROTOCOL" /> e dei formati file <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> e così via). Per ulteriori informazioni, consulta <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
@@ -561,6 +570,9 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo per garantire la compatibilità con le versioni precedenti, in quanto riduce la sicurezza dell'autenticazione.
 
           Se questa norma non viene impostata, l'impostazione predefinita è true e l'autenticazione NTLMv2 è attivata.</translation>
+<translation id="2598508021807251719">Questa norma consente di configurare le impostazioni internazionali che possono essere visualizzate in <ph name="PRODUCT_OS_NAME" />.
+
+      Se questa norma viene impostata, l'utente potrà configurare soltanto una delle impostazioni internazionali di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le impostazioni internazionali dell'interfaccia utente supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato un'impostazione internazionale di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo l'impostazione internazionale visualizzata verrà sostituita con una impostazione internazionale dell'interfaccia utente consentita. Se l'utente aveva configurato delle impostazioni internazionali preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale impostazione internazionale. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato da questa norma oppure, se la norma contiene soltanto voci non valide, verrà usata un'impostazione internazionale di riserva (attualmente en-US).</translation>
 <translation id="2604182581880595781">Configura le norme relative alla funzione Condivisioni file di rete</translation>
 <translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -663,6 +675,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2873651257716068683">Consente di eseguire l'override delle dimensioni predefinite delle pagine di stampa. Se le dimensioni della pagina non sono disponibili, questa norma viene ignorata.</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2877225735001246144">Disabilita ricerca CNAME durante la negoziazione con Kerberos</translation>
+<translation id="2890645751406497668">Concede automaticamente a questi siti l'autorizzazione a connettersi a dispositivi USB usando gli ID fornitore e prodotto forniti.</translation>
 <translation id="2892414556511568464">Consente di limitare la modalità di stampa fronte/retro. Se la norma non viene impostata o viene lasciata vuota non vengono applicate limitazioni.</translation>
 <translation id="2893546967669465276">Consente di inviare log di sistema al server di gestione</translation>
 <translation id="2899002520262095963">Le app Android possono utilizzare le configurazioni di rete e i certificati CA impostati tramite questa norma ma non hanno accesso ad alcune opzioni di configurazione.</translation>
@@ -852,6 +865,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se questa impostazione viene disattivata o non viene impostato alcun valore, la Modalità con restrizioni di YouTube non viene imposta da <ph name="PRODUCT_NAME" />. La Modalità con restrizioni potrebbe essere comunque imposta da norme esterne, ad esempio dalle norme di YouTube.</translation>
 <translation id="3428247105888806363">Attiva previsione di rete</translation>
+<translation id="3437924696598384725">Consente all'utente di gestire le connessioni VPN</translation>
 <translation id="3449886121729668969">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" />. Le impostazioni proxy saranno disponibili anche per le app ARC.
 
       Questa norma non è ancora pronta per essere utilizzata, pertanto invitiamo a non utilizzarla.</translation>
@@ -1489,6 +1503,11 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.
 
           Se questa norma viene impostata su False, gli utenti non potranno trasmettere contenuti al proprio dispositivo. Se questa norma viene impostata su True, gli utenti potranno trasmettere contenuti. Se questa norma non viene impostata, gli utenti non potranno trasmettere contenuti a dispositivi Chrome OS registrati, ma potranno trasmetterli a dispositivi non registrati.</translation>
+<translation id="5329007337159326804">Attenzione: la norma Versione TLS massima verrà interamente rimossa da <ph name="PRODUCT_NAME" /> con la versione 75 (orientativamente giugno 2019).
+
+      Se questa norma non viene configurata, <ph name="PRODUCT_NAME" /> utilizza la versione massima predefinita.
+
+      . In caso contrario, potrebbe essere impostato uno dei seguenti valori: "tls1.2" o "tls1.3". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS successive a quella specificata. I valori non riconosciuti verranno ignorati.</translation>
 <translation id="5330684698007383292">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuti</translation>
 <translation id="5365946944967967336">Mostra il pulsante Pagina iniziale nella barra degli strumenti</translation>
 <translation id="5366745336748853475">Ti consente di specificare un elenco di pattern URL relativi ai siti che richiedono certificati per cui viene selezionato automaticamente un certificato client nella schermata di accesso all'interno del frame che ospita il flusso SAML. Un esempio di utilizzo è la configurazione di un certificato a livello di dispositivo da presentare all'IdP SAML.
@@ -1515,6 +1534,15 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 Se questa impostazione viene attivata, i dispositivi di input e output fisici degli host verranno disattivati durante una connessione remota.
 
 Se questa impostazione viene disattivata o non viene impostata, sia gli utenti locali che remoti potranno interagire con l'host quando viene condiviso.</translation>
+<translation id="5396049152026347991">Consente all'utente di gestire le connessioni VPN.
+
+      Se questa norma viene impostata su false, le interfacce di <ph name="PRODUCT_NAME" /> che consentono all'utente di disconnettere o modificare le connessioni VPN vengono tutte disattivate.
+
+      Se questa norma viene impostata su true o non viene impostata, l'utente può disconnettere o modificare le connessioni VPN come di consueto.
+
+      Se la connessione VPN viene creata tramite un'app VPN, l'interfaccia all'interno dell'app non è interessata da questa norma. L'utente potrebbe quindi essere ancora in grado di utilizzare l'app per modificare la connessione VPN.
+
+      Questa norma deve essere utilizzata assieme alla funzionalità "VPN sempre attiva", che permette all'amministratore di decidere se creare una connessione VPN all'avvio.</translation>
 <translation id="5405289061476885481">Consente di configurare i layout da tastiera consentiti nella schermata di accesso di <ph name="PRODUCT_OS_NAME" />.
 
       Se per questa norma viene impostato un elenco di identificatori di metodi di immissione, i metodi specificati saranno disponibili nella schermata di accesso. Verrà preselezionato il primo metodo di immissione specificato. Anche se il pod dell'utente è basato sulla schermata di accesso, oltre ai metodi di immissione specificati in questa norma sarà disponibile anche l'ultimo metodo usato dall'utente. Se questa norma non viene impostata, i metodi di immissione per la schermata di accesso saranno recuperati in base alla lingua in cui è visualizzata la schermata di accesso. I valori che non corrispondono a identificatori di metodi di immissione validi verranno ignorati.</translation>
@@ -1595,6 +1623,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa impostazione è disattivata o non è configurata, gli utenti possono utilizzare tutti i tipi supportati di memorie esterne sul proprio dispositivo.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
 <translation id="570062449808736508">Se per questa norma viene impostata una stringa, WebView legge le limitazioni relative agli URL del fornitore di contenuti con il nome dell'autorità indicato.</translation>
+<translation id="5701714006401683963">Se questa norma viene impostata su false, la sessione ospite gestita avrà il comportamento descritto all'indirizzo https://support.google.com/chrome/a/answer/3017014 ("Sessione pubblica" standard).
+
+      Se questa norma viene impostata su true o non viene impostata, la sessione ospite gestita avrà il comportamento "Sessione gestita", a cui non vengono applicate molte delle limitazioni valide invece per le normali "Sessioni pubbliche".
+
+      Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.</translation>
 <translation id="5722934961007828462">Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> eseguirà sempre il controllo delle revoche per i certificati server che vengono convalidati e vengono firmati tramite certificati CA installati localmente.
 
       Se <ph name="PRODUCT_NAME" /> non riesce ad acquisire informazioni sullo stato delle revoche, tali certificati vengono considerati revocati ("hard-fail").
@@ -1637,6 +1670,7 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="5835124959204887277">Consente di specificare URL e domini per i quali non verranno mostrati messaggi quando verranno richiesti certificati di attestazione dei token di sicurezza. Verrà inoltre inviato un segnale al token di sicurezza per indicare che potrebbe essere usata la singola attestazione. Senza questo segnale, gli utenti di Chrome 65 e versioni successive riceveranno un messaggio quando i siti richiederanno l'attestazione dei token di sicurezza.
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
+<translation id="5835412847081687053">Configura le impostazioni internazionali UI consentite in una sessione utente</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità di lettura vocale nella schermata di accesso.
 
@@ -1960,6 +1994,13 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
+<translation id="6816212867679667972">Determina il nome host del dispositivo usato nelle richieste DHCP.
+
+      Se per questa norma viene impostata una stringa non vuota, tale stringa verrà usata come nome host del dispositivo durante la richiesta DHCP.
+
+      La stringa può contenere variabili ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} che verrebbero sostituite con valori sul dispositivo prima di usare la stringa come nome host. La sostituzione finale dovrebbe essere un nome host valido (come da RFC 1035, sezione 3.1).
+
+      Se questa norma non viene impostata o se il valore ottenuto in seguito alla sostituzione non è un nome host valido, non verrà impostato alcun nome host nella richiesta DHCP. </translation>
 <translation id="6835883744948188639">Mostra un messaggio ricorrente all'utente in cui indica che è consigliato eseguire un riavvio</translation>
 <translation id="6838056959556423778">Consente di sostituire le regole di selezione della stampante predefinita di <ph name="PRODUCT_NAME" />.
 
@@ -2238,6 +2279,22 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
+<translation id="7337967786223261174">Configura un elenco di stampanti.
+
+      
+Questa norma consente agli amministratori di fornire configurazioni delle stampanti per gli utenti.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> sono stringhe in formato libero che è possibile personalizzare per selezionare facilmente le stampanti. I valori <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" />, che rappresentano il produttore e il modello della stampante, consentono agli utenti finali di identificare più facilmente le stampanti. Il valore <ph name="PRINTER_URI" /> deve essere un indirizzo raggiungibile da un computer client che includa <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. Il valore <ph name="PRINTER_UUID" /> è facoltativo, ma se è specificato viene utilizzato per consentire la deduplicazione delle stampanti <ph name="ZEROCONF_DISCOVERY" />.
+
+      Il valore <ph name="PRINTER_EFFECTIVE_MODEL" /> deve corrispondere a una delle stringhe che rappresentano una stampante supportata da <ph name="PRODUCT_NAME" />. La stringa verrà usata per identificare e installare il file PPD appropriato per la stampante. È possibile trovare ulteriori informazioni all'indirizzo https://support.google.com/chrome?p=noncloudprint.
+
+      La configurazione viene completata al primo utilizzo della stampante. I file PPD vengono scaricati soltanto quando viene utilizzata la stampante. Dopodiché, i PPD utilizzati più spesso vengono memorizzati nella cache.
+
+      Questa norma non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
+
+      Per i dispositivi Active Directory gestiti, questa norma supporta l'espansione di <ph name="MACHINE_NAME_VARIABLE" /> al nome della macchina Active Directory oppure a una sua sottostringa. Ad esempio, se il nome della macchina è <ph name="MACHINE_NAME_EXAMPLE" />, allora la variabile <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> verrà sostituita dai quattro caratteri che iniziano dopo la sesta posizione, ad esempio <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tieni presente che la posizione è in base zero.
+      La variabile <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (minuscolo) è stata dichiarata obsoleta in M71 e sarà rimossa in M72.
+      </translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
 <translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>
 <translation id="7349338075015720646">Consente di specificare un elenco di app web installate automaticamente, senza interazione dell'utente e che non possono essere disinstallate o disattivate dall'utente
@@ -2649,6 +2706,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8367209241899435947">Attiva Chrome Software Cleaner su Windows</translation>
 <translation id="8369602308428138533">Ritardo disattivazione schermo in caso di utilizzo di CA</translation>
+<translation id="8371178326720637170">Consente alle estensioni gestite di utilizzare l'API Enterprise Hardware Platform</translation>
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.
@@ -2890,6 +2948,11 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8970205333161758602">Eliminazione del messaggio di richiesta di turndown di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
+<translation id="898520305112996948">Consente di impostare un elenco di pattern URL che specificano i siti a cui sarà consentito automaticamente di accedere a un dispositivo USB usando gli ID fornitore e prodotto forniti. Ogni voce nell'elenco deve contenere sia i dispositivi sia i pattern URL affinché la norma sia valida. Ogni elemento nei dispositivi può contenere un campo ID fornitore e un campo ID prodotto. Gli ID omessi vengono considerati come jolly con eccezione, ovvero non sarà possibile specificare un ID prodotto senza che venga specificato anche un ID fornitore. In caso contrario, la norma non sarà valida. I valori non validi della norma vengono ignorati.
+
+        Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultWebUsbGuardSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
+
+        I pattern URL di questa norma non devono essere in conflitto con quelli configurati tramite la norma WebUsbBlockedForUrls. In caso di conflitto, questa norma avrà precedenza su WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="9012851181124311976">Configura l'elenco di URL di accesso aziendali (solo schemi HTTP e HTTPS). L'impronta digitale della password sarà acquisita su questi URL e utilizzata successivamente per il rilevamento del riutilizzo della password.
       Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente le impronte digitali delle password, assicurati che le pagine di accesso rispettino le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

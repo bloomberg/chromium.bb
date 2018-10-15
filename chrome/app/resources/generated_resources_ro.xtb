@@ -673,7 +673,6 @@
 <translation id="197560921582345123">Poate edita</translation>
 <translation id="1975841812214822307">Elimină...</translation>
 <translation id="1976150099241323601">Conectează-te la dispozitivul de securitate</translation>
-<translation id="1976315108329706992">Acum poți să folosești aplicații Android.</translation>
 <translation id="1976323404609382849">Sunt blocate cookie-urile de la mai multe site-uri.</translation>
 <translation id="1977965994116744507">Pentru a debloca dispozitivul <ph name="DEVICE_TYPE" />, apropie mai mult telefonul.</translation>
 <translation id="1979280758666859181">Treceți la un canal cu o versiune <ph name="PRODUCT_NAME" /> mai veche. Schimbarea canalului se va aplica atunci când versiunea canalului va corespunde cu versiunea instalată în prezent pe dispozitiv.</translation>
@@ -3325,12 +3324,10 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6025215716629925253">Urmărire stivă</translation>
 <translation id="6026047032548434446">Instalezi aplicația?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – dispozitivul USB a fost conectat</translation>
-<translation id="6028117231645531007">Adaugă amprenta</translation>
 <translation id="6029027682598229313">Instalarea Linux s-a finalizat.</translation>
 <translation id="6029292188939175871">șterge [<ph name="FINGERPRINT_NAME" />], buton</translation>
 <translation id="6029587122245504742">Cea mai lentă</translation>
 <translation id="6032912588568283682">Sistem de fișiere</translation>
-<translation id="6034662038931255275">Sistemul de operare a fost actualizat</translation>
 <translation id="6039651071822577588">Dicționarul proprietăților de rețea este deteriorat</translation>
 <translation id="604001903249547235">Backup în cloud</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -4610,6 +4607,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7966241909927244760">C&amp;opiază adresa imaginii</translation>
 <translation id="7968742106503422125">Citește și modifică datele pe care le copiezi și le inserezi</translation>
 <translation id="7968833647796919681">Activați culegerea datelor privind performanța</translation>
+<translation id="7969046989155602842">Tasta Command</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 cu criptare RSA</translation>
 <translation id="7973962044839454485">Autentificarea PPP nu a reușit, din cauza unui nume de utilizator sau a unei parole greșite</translation>
 <translation id="7974566588408714340">Reîncearcă folosind <ph name="EXTENSIONNAME" /></translation>

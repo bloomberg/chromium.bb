@@ -670,7 +670,6 @@
 <translation id="197560921582345123">可以修改</translation>
 <translation id="1975841812214822307">移除…</translation>
 <translation id="1976150099241323601">登录安全设备</translation>
-<translation id="1976315108329706992">您现在可以使用 Android 应用了。</translation>
 <translation id="1976323404609382849">已拦截来自多个网站的 Cookie。</translation>
 <translation id="1977965994116744507">需将您的手机靠近您的 <ph name="DEVICE_TYPE" />，才能为其解锁。</translation>
 <translation id="1979280758666859181">您正将版本更改为较旧版的 <ph name="PRODUCT_NAME" />。该版本的版本号必须与您设备上目前所安装版本的版本号相符，版本变更才会生效。</translation>
@@ -3313,12 +3312,10 @@
 <translation id="6025215716629925253">堆叠追踪</translation>
 <translation id="6026047032548434446">安装应用？</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - 已连接 USB 设备</translation>
-<translation id="6028117231645531007">添加指纹</translation>
 <translation id="6029027682598229313">Linux 已安装完毕。</translation>
 <translation id="6029292188939175871">删除[<ph name="FINGERPRINT_NAME" />]，按钮</translation>
 <translation id="6029587122245504742">最慢</translation>
 <translation id="6032912588568283682">文件系统</translation>
-<translation id="6034662038931255275">操作系统更新成功</translation>
 <translation id="6039651071822577588">网络属性字典格式不正确</translation>
 <translation id="604001903249547235">云端备份</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -4596,6 +4593,7 @@
 <translation id="7966241909927244760">复制图片地址(&amp;O)</translation>
 <translation id="7968742106503422125">读取和修改您复制和粘贴的数据</translation>
 <translation id="7968833647796919681">启用性能数据收集</translation>
+<translation id="7969046989155602842">Cmd 键</translation>
 <translation id="7972714317346275248">PKCS #1，带有 RSA 加密的 SHA-384</translation>
 <translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
 <translation id="7974566588408714340">使用“<ph name="EXTENSIONNAME" />”重试</translation>

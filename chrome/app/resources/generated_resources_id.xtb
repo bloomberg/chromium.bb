@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Dapat mengedit</translation>
 <translation id="1975841812214822307">Buang...</translation>
 <translation id="1976150099241323601">Masuk ke Peranti Keamanan</translation>
-<translation id="1976315108329706992">Kini, Anda dapat menggunakan aplikasi Android.</translation>
 <translation id="1976323404609382849">Cookie dari berbagai situs dicekal.</translation>
 <translation id="1977965994116744507">Dekatkan ponsel untuk membuka kunci <ph name="DEVICE_TYPE" /> Anda.</translation>
 <translation id="1979280758666859181">Anda mengubah ke saluran dengan versi <ph name="PRODUCT_NAME" /> yang lebih lama. Perubahan saluran ini akan berlaku jika versi saluran cocok dengan versi yang saat ini terpasang pada perangkat Anda.</translation>
@@ -3353,12 +3352,10 @@
 <translation id="6025215716629925253">Pelacakan Tumpukan</translation>
 <translation id="6026047032548434446">Instal aplikasi?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - Perangkat USB tersambung</translation>
-<translation id="6028117231645531007">Tambahkan sidik jari</translation>
 <translation id="6029027682598229313">Penginstalan Linux selesai.</translation>
 <translation id="6029292188939175871">tombol hapus [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="6029587122245504742">Paling lambat</translation>
 <translation id="6032912588568283682">Sistem file</translation>
-<translation id="6034662038931255275">Update OS berhasil</translation>
 <translation id="6038929619733116134">Blokir jika situs menampilkan iklan yang mengganggu atau menyesatkan</translation>
 <translation id="6039651071822577588">Kamus properti jaringan rusak</translation>
 <translation id="604001903249547235">Cadangan Awan</translation>
@@ -4647,6 +4644,7 @@
 <translation id="7966241909927244760">S&amp;alin Alamat Gambar</translation>
 <translation id="7968742106503422125">Mengakses dan mengubah data yang Anda copy-paste</translation>
 <translation id="7968833647796919681">Mengaktifkan koleksi data kinerja</translation>
+<translation id="7969046989155602842">Tombol Perintah</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 Dengan Enkripsi RSA</translation>
 <translation id="7973962044839454485">Autentifikasi PDB gagal karena nama pengguna dan sandi salah</translation>
 <translation id="7974566588408714340">Coba lagi menggunakan <ph name="EXTENSIONNAME" /></translation>

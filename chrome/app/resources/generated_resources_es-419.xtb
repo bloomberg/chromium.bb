@@ -670,7 +670,6 @@
 <translation id="197560921582345123">Se puede editar</translation>
 <translation id="1975841812214822307">Eliminar…</translation>
 <translation id="1976150099241323601">Acceder al dispositivo de seguridad</translation>
-<translation id="1976315108329706992">Ahora puedes usar las apps de Android.</translation>
 <translation id="1976323404609382849">Las cookies de múltiples sitios se han bloqueado.</translation>
 <translation id="1977965994116744507">Acerca el teléfono para desbloquear tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Estás por cambiar a un canal que tiene una versión anterior de <ph name="PRODUCT_NAME" />. El cambio de canal se aplicará cuando la versión del canal coincida con la versión que esté instalada en ese momento en tu dispositivo.</translation>
@@ -3322,12 +3321,10 @@
 <translation id="6025215716629925253">Seguimiento de la pila</translation>
 <translation id="6026047032548434446">¿Deseas instalar la app?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: Se conectó el dispositivo USB</translation>
-<translation id="6028117231645531007">Agregar huella digital</translation>
 <translation id="6029027682598229313">Se completó la instalación de Linux.</translation>
 <translation id="6029292188939175871">borrar [<ph name="FINGERPRINT_NAME" />], botón</translation>
 <translation id="6029587122245504742">Más lento</translation>
 <translation id="6032912588568283682">Sistema de archivos</translation>
-<translation id="6034662038931255275">El SO se actualizó correctamente</translation>
 <translation id="6039651071822577588">Diccionario de propiedades de la red con formato no válido</translation>
 <translation id="604001903249547235">Copia de seguridad en la nube</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -4607,6 +4604,7 @@
 <translation id="7966241909927244760">Copiar dirección de la imagen</translation>
 <translation id="7968742106503422125">Leer y modificar los datos copiados y pegados</translation>
 <translation id="7968833647796919681">Habilitar recopilación de datos de rendimiento</translation>
+<translation id="7969046989155602842">Comando</translation>
 <translation id="7972714317346275248">PKCS N. º 1, SHA-384 con encriptación RSA</translation>
 <translation id="7973962044839454485">Falló la autenticación de PPP debido a un nombre de usuario o una contraseña incorrectos.</translation>
 <translation id="7974566588408714340">Volver a intentarlo con <ph name="EXTENSIONNAME" /></translation>

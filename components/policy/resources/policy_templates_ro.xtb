@@ -581,6 +581,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Toate versiunile recente de servere Samba și Windows acceptă autentificarea NTLMv2. Aceasta trebuie dezactivată doar pentru compatibilitate inversă, iar prin dezactivare se reduce siguranța autentificării.
 
           Dacă această politică nu este setată, valoarea standard este „true”, iar autentificarea NTLMv2 este activată.</translation>
+<translation id="2598508021807251719">Configurează codurile locale în care poate fi afișat <ph name="PRODUCT_OS_NAME" />.
+
+      Dacă această politică este configurată, utilizatorul poate să configureze afișarea <ph name="PRODUCT_OS_NAME" /> numai într-unul dintre codurile locale specificate de această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, <ph name="PRODUCT_OS_NAME" /> poate fi afișat în toate codurile locale IU acceptate. Dacă această politică este configurată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a configurat anterior afișarea <ph name="PRODUCT_OS_NAME" /> într-un cod local care nu este permis de această politică, codul local de afișare va fi înlocuit cu un cod local IU permis la următoarea conectare a utilizatorului. Dacă utilizatorul a configurat codurile locale preferate și unul dintre ele este permis de această politică, <ph name="PRODUCT_OS_NAME" /> va comuta la codul local respectiv. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la un cod local alternativ (în prezent, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
 <translation id="2604182581880595781">Configurează politicile pentru Dispozitive de stocare în rețea.</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1678,6 +1681,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5835124959204887277">Specifică adresele URL și domeniile pentru care nu va fi afișată nicio solicitare atunci când sunt solicitate certificate de atestare de la Cheile de securitate. În plus, va fi transmis un semnal către Cheia de securitate, indicând faptul că poate fi folosită atestarea individuală. Fără aceasta, utilizatorii vor fi atenționați în Chrome 65+ atunci când site-urile necesită atestarea Cheilor de securitate.
 
       Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
+<translation id="5835412847081687053">Configurează codurile locale IU permise într-o sesiune a utilizatorului</translation>
 <translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
 <translation id="5862253018042179045">Setați funcția de accesibilitate pentru feedback vocal ca stare prestabilită pe ecranul de conectare.
 

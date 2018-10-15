@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="101438888985615157">Girar a tela em 180 graus</translation>
+<translation id="1016912092715201525">Configura as verificações do navegador padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários as modifiquem.
+
+      Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> sempre verificará na inicialização se ele é o navegador padrão e fará o próprio registro automaticamente, se possível.
+
+      Se essa configuração for desativada, o <ph name="PRODUCT_NAME" /> nunca verificará se ele é o navegador padrão e desativará os controles do usuário para configurar essa opção.
+
+      Se essa configuração não for definida, o <ph name="PRODUCT_NAME" /> permitirá que o usuário controle se ele é o navegador padrão e se as notificações do usuário serão exibidas quando ele não for.
+
+      Observação para os administradores do <ph name="MS_WIN_NAME" />: a ativação dessa configuração só funciona em máquinas que executam o Windows 7. Para versões a partir do Windows 8, é necessário implementar um arquivo de "associações do aplicativo padrão", que transforma o <ph name="PRODUCT_NAME" /> no gerenciador dos protocolos <ph name="HHTPS_PROTOCOL" /> e <ph name="HTTP_PROTOCOL" /> (e, opcionalmente, do protocolo <ph name="FTP_PROTOCOL" /> e formatos de arquivo como <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> etc.). Consulte <ph name="SUPPORT_URL" /> para ver mais informações.</translation>
 <translation id="1017967144265860778">Gerenciamento de energia na tela de login</translation>
 <translation id="1019101089073227242">Definir diretório de dados do usuário</translation>
 <translation id="1022361784792428773">IDs de extensão que devem ser impedidos de serem instalados pelo usuário (ou * para todos)</translation>
@@ -586,6 +595,9 @@
           Todas as versões recentes dos servidores Samba e Windows são compatíveis com NTLMv2. Esta política só deve ser desativada para compatibilidade com versões anteriores e reduz a segurança da autenticação.
 
           Se esta política não for definida, o padrão será verdadeira, e NTLMv2 será ativada.</translation>
+<translation id="2598508021807251719">Configura as localidades em que o <ph name="PRODUCT_OS_NAME" /> pode ser exibido.
+
+      Se esta política for definida, o usuário só poderá configurar o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma das localidades especificadas por esta política. Se esta política não for definida ou for definida como uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> poderá ser exibido em todas as localidades de IU disponíveis. Se esta política for definida como uma lista com valores inválidos, todos os valores inválidos serão ignorados. Se um usuário tiver configurado anteriormente o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma localidade que não seja permitida por esta política, a localidade de exibição será alternada para uma localidade de IU permitida na próxima vez que o usuário fizer login. Se o usuário tiver configurado localidades preferenciais, e uma delas for permitida por esta política, o <ph name="PRODUCT_OS_NAME" /> será alternado para essa localidade. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> passará para o primeiro valor válido especificado por esta política ou para a localidade substituta (atualmente, en-US) se a política incluir apenas entradas inválidas.</translation>
 <translation id="2604182581880595781">Configurar políticas relacionadas ao Compartilhamento de arquivos de rede.</translation>
 <translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -686,6 +698,7 @@
 <translation id="2873651257716068683">Modifica o tamanho da página de impressão padrão. Se o tamanho da página não estiver disponível, esta política será ignorada.</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
+<translation id="2890645751406497668">Conceder automaticamente permissão a esses sites para se conectarem a dispositivos USB com determinados IDs de fornecedores e produtos.</translation>
 <translation id="2892414556511568464">Restringe o modo duplex de impressão. Se a política não for definida ou estiver em branco, não haverá restrição.</translation>
 <translation id="2893546967669465276">Enviar registros do sistema ao servidor de gerenciamento</translation>
 <translation id="2899002520262095963">Os apps Android podem usar as configurações de rede e os certificados de CA definidos por esta política, mas não têm acesso a algumas opções de configuração.</translation>
@@ -878,6 +891,7 @@
 
       Se esta configuração for definida como "Desativado" ou se nenhum valor for definido, o Modo restrito no YouTube não será aplicado pelo <ph name="PRODUCT_NAME" />. No entanto, políticas externas, como políticas do YouTube, ainda poderão aplicar o modo restrito.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
+<translation id="3437924696598384725">Permitir que o usuário gerencie conexões VPN</translation>
 <translation id="3449886121729668969">Define as configurações de proxy para <ph name="PRODUCT_NAME" />. Essas configurações de proxy também ficarão disponíveis para apps ARC.
 
       Esta política não está pronta para uso, portanto, não a use.</translation>
@@ -1524,6 +1538,11 @@
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
+<translation id="5329007337159326804">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 75 (aproximadamente em junho de 2019).
+
+      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará a versão máxima padrão.
+
+      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS posteriores à especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
 <translation id="5366745336748853475">Permite que você defina uma lista de padrões de URL que especifique sites para os quais um certificado de cliente é selecionado automaticamente na tela de login do quadro que hospeda o fluxo SAML, se o site solicitar um certificado. Um exemplo de uso é a configuração de um certificado de dispositivos que será apresentado ao IdP SAML.
@@ -1548,6 +1567,15 @@
 
       Esta política se aplicará somente se os apps Android estiverem ativados.</translation>
 <translation id="5395271912574071439">Ativa as cortinas de hosts de acesso remoto enquanto uma conexão está em andamento. Se essa configuração for ativada, os dispositivos de entrada e saída físicas dos hosts serão desativados enquanto houver uma conexão remota em andamento. Se essa configuração for desativada ou não estiver definida, os usuários locais e remotos poderão interagir com o host quando ele estiver sendo compartilhado.</translation>
+<translation id="5396049152026347991">Permitir que o usuário gerencie conexões VPN.
+
+      Se esta política for definida como false, todas as interfaces de usuário do <ph name="PRODUCT_NAME" /> que permitem ao usuário desconectar ou modificar conexões VPN serão desativadas.
+
+      Se esta política não for definida ou for definida como true, os usuários poderão desconectar ou modificar as conexões VPN como de costume.
+
+      Se a conexão VPN for criada por meio de um app de VPN, a IU dentro do app não será afetada pela política. Portanto, o usuário ainda poderá usar o app para modificar a conexão VPN.
+
+      Esta política precisa ser usada em conjunto com o recurso "VPN sempre ativa", que permite ao administrador optar por estabelecer uma conexão VPN na inicialização.</translation>
 <translation id="5405289061476885481">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
@@ -1628,6 +1656,11 @@
       Se esta configuração for desativada ou não for definida, os usuários poderão usar todos os tipos de armazenamento externo compatíveis com o dispositivo.</translation>
 <translation id="5697306356229823047">Reporta os usuários do dispositivo</translation>
 <translation id="570062449808736508">Quando essa política estiver definida para uma string não vazia, o WebView lerá as restrições de URL do provedor de conteúdo com o nome de autoridade fornecido.</translation>
+<translation id="5701714006401683963">Se esta política for definida como false, a sessão de visitante gerenciada terá o comportamento documentado em https://support.google.com/chrome/a/answer/3017014, a "Sessão pública" padrão.
+
+      Se esta política for definida como true ou não for definida, a sessão de visitante gerenciada terá o comportamento de "Sessão gerenciada", o que elimina muitas das restrições estabelecidas para "Sessões públicas" normais.
+
+      Se esta política for definida, o usuário não poderá alterá-la ou modificá-la.</translation>
 <translation id="5722934961007828462">Quando esta configuração está ativada, o <ph name="PRODUCT_NAME" /> sempre executa a verificação de revogação de certificados do servidor que são validados e assinados por certificados de CA instalados localmente.
 
       Se o <ph name="PRODUCT_NAME" /> não consegue obter informações sobre o status da revogação, esses certificados são considerados revogados ("falha forçada").
@@ -1670,6 +1703,7 @@
 <translation id="5835124959204887277">Especifica os URLs e domínios para os quais nenhuma solicitação será exibida quando os certificados de declaração das chaves de segurança forem solicitados. Além disso, um sinal será enviado para a chave de segurança indicando que a declaração individual pode ser usada. Sem isso, os usuários receberão uma solicitação no Chrome 65 ou versão posterior quando os sites solicitarem a declaração das chaves de segurança.
 
       Os URLs (como https://example.com/algum/caminho) só terão correspondência como U2F appIDs. Os domínios (como example.com) só terão correspondência como webauthn RP IDs. Sendo assim, para abranger as APIs U2F e webauthn de um determinado site, tanto o domínio quanto o URL do appID precisarão ser listados.</translation>
+<translation id="5835412847081687053">Configura as localidades de IU permitidas em uma sessão de usuário</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="5862253018042179045">Definir o estado padrão do recurso de acessibilidade do feedback falado na tela de login.
 
@@ -1998,6 +2032,13 @@
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação compatíveis</translation>
+<translation id="6816212867679667972">Determinar o nome do host do dispositivo usado nas solicitações de DHCP.
+
+      Se esta política for definida como uma string não vazia, essa string será usada como o nome do host do dispositivo durante a solicitação de DHCP.
+
+      A string pode conter as variáveis ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} que seriam substituídas por valores no dispositivo antes do uso como um nome de host. A substituição resultante precisa ser um nome de host válido (em conformidade com a RFC 1035, seção 3.1).
+
+      Se esta política não for definida ou se o valor após a substituição não for um nome de host válido, nenhum nome de host será definido na solicitação de DHCP. </translation>
 <translation id="6835883744948188639">Mostrar um prompt recorrente ao usuário indicando que a reinicialização é necessária</translation>
 <translation id="6838056959556423778">Modifica as regras de seleção de impressora padrão do <ph name="PRODUCT_NAME" />.
 
@@ -2276,6 +2317,22 @@
 
       Se esta política não for configurada, a limpeza automática usa a estratégia integrada padrão, que atualmente é a estratégia "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
+<translation id="7337967786223261174">Configurar uma lista de impressoras.
+
+      Esta política permite aos administradores fornecer configurações de impressora para
+      os usuários.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de formato livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora pelos usuários finais. Esses dados representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> precisa ser um endereço que possa ser acessado a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, será usado para ajudar a eliminar a duplicação de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> precisa corresponder a uma das strings que representam uma impressora compatível com <ph name="PRODUCT_NAME" />. A string será usada para identificar e instalar o PPD apropriado para a impressora. Mais informações estão disponíveis em https://support.google.com/chrome?p=noncloudprint.
+
+      A configuração da impressora é concluída depois que ela é utilizada pela primeira vez. O download de PPDs não será realizado enquanto a impressora não for usada. Depois disso, os PPDs usados com frequência são armazenados em cache.
+
+      Esta política não afeta a possibilidade de os usuários configurarem impressoras em dispositivos individuais. Ela tem o objetivo de complementar a configuração de impressoras por usuários individuais.
+
+      Para dispositivos gerenciados pelo Active Directory, esta política permite a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador com Active Directory ou uma substring correspondente. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos quatro caracteres que começam depois da 6ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. A posição é baseada em zero.
+      O uso de <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (letras minúsculas) foi suspenso no M71 e será removido no M72.
+      </translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
 <translation id="7349338075015720646">Especifica uma lista de sites instalados silenciosamente sem a interação do usuário e que não podem ser desinstalados nem desativados pelo usuário.
@@ -2686,6 +2743,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature até 02/09/2008</translation>
 <translation id="8367209241899435947">Ativa o recurso "Varredura do Chrome" no Windows</translation>
 <translation id="8369602308428138533">Intervalo de desligamento da tela no funcionamento com alimentação CA</translation>
+<translation id="8371178326720637170">Permitir que extensões gerenciadas usem a API Enterprise Hardware Platform</translation>
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
 <translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, ela o trata como um download e permite que o usuário abra os arquivos em PDF com o aplicativo padrão.
@@ -2711,21 +2769,21 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Retira partes confidenciais de privacidade e segurança de URLs https:// antes de repassá-los para scripts de configuração automática de proxy (PAC, na sigla em inglês) usados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
 
-      Quando a política é definida como Verdadeira, o recurso de segurança é ativado, e os URLs https:// são
+      Quando a política é definida como "True", o recurso de segurança é ativado, e os URLs https:// são
       retirados antes de enviá-los para um script de PAC. Dessa forma, o script 
       de PAC não pode ver os dados que geralmente são protegidos por um
       canal criptografado (como o caminho e a consulta do URL).
 
-      Quando a política é definida como Falsa, o recurso de segurança é desativado,
+      Quando a política é definida como "False", o recurso de segurança é desativado,
       e os scripts de PAC podem ver todos os componentes de um URL https://.
       Essa configuração se aplica a todos os scripts de PAC, independentemente de origem
       (incluindo aqueles adquiridos por um transporte não seguro ou descobertos de forma 
       não segura por meio de WPAD).
 
-      O padrão é Verdadeira (recurso de segurança ativado).
+      O padrão é "True" (recurso de segurança ativado).
 
-      Recomendamos que a política seja definida como Verdadeira. A única razão para defini-la como
-      Falsa é por ela causar um problema de compatibilidade com os scripts de PAC já existentes.
+      Recomendamos que a política seja definida como "True". A única razão para defini-la como
+      "False" é por ela causar um problema de compatibilidade com os scripts de PAC já existentes.
 
       A política será removida em M75.</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que deve sempre ser processada pelo navegador do host.
@@ -2952,6 +3010,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8970205333161758602">Remover a solicitação de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Permitir autenticação gnubby para hosts de acesso remoto</translation>
 <translation id="8976531594979650914">Usar a impressora padrão do sistema como padrão</translation>
+<translation id="898520305112996948">Permite que você defina uma lista de padrões de URL que especificam os sites que receberão automaticamente permissão para acessar um dispositivo USB com os IDs de produto e fornecedor determinados. Cada item na lista precisa conter dispositivos e padrões de URL para que a política seja válida. Cada item nos dispositivos pode conter um campo de ID do fornecedor e ID do produto. Todo ID omitido é tratado como um caractere curinga com uma exceção, e essa exceção é que um ID do produto não pode ser especificado sem que um ID do fornecedor também seja especificado. Caso contrário, a política não será válida. Valores de política inválidos são ignorados.
+
+        Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultWebUsbGuardSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
+
+        Os padrões de URL desta política não podem ser contrários àqueles configurados por meio de WebUsbBlockedForUrls. Se houver conflito, esta política terá precedência sobre WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Não permitir que nenhum site exiba imagens</translation>
 <translation id="9012851181124311976">Configure a lista de URLs de login corporativo (somente esquemas HTTP e HTTPS). A impressão digital da senha será capturada nesses URLs e usada para detecção de reutilização de senhas.
       Para que o <ph name="PRODUCT_NAME" /> capture corretamente as impressões digitais de senha, suas páginas de login precisam seguir as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

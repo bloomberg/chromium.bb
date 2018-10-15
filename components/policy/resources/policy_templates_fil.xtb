@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="101438888985615157">I-rotate ang screen nang 180 degrees</translation>
+<translation id="1016912092715201525">Kino-configure ang mga default na pagsusuri ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga ito.
+
+      Kung ie-enable mo ang setting na ito, palaging susuriin ng <ph name="PRODUCT_NAME" /> sa startup kung ito ang default na browser, at awtomatiko nitong ipaparehistro ang sarili nito, kung posible.
+
+      Kung naka-disable ang setting na ito, hindi kailanman susuriin ng <ph name="PRODUCT_NAME" /> kung ito ang default na browser at idi-disable nito ang mga kontrol ng user para sa pagtatakda ng opsyong ito.
+
+      Kung hindi maitatakda ang setting na ito, hahayaan ng <ph name="PRODUCT_NAME" /> ang user na kontrolin kung ito ang default na browser at kung dapat bang ipakita ang mga notification sa user, kapag hindi ito lumabas.
+
+      Dapat tandaan ng mga administrator ng <ph name="MS_WIN_NAME" />: Ang pag-enable sa setting na ito ay gagana lang para sa mga machine na nagpapatakbo ng Windows 7. Para sa mga bersyon ng Windows simula sa Windows 8, dapat kang mag-deploy ng file na "mga default na pag-uugnay ng application" na nagbibigay-daan sa <ph name="PRODUCT_NAME" /> na maging tagapangasiwa para sa mga protocol na <ph name="HHTPS_PROTOCOL" /> at <ph name="HTTP_PROTOCOL" /> (at, bilang opsyon, para sa protocol na <ph name="FTP_PROTOCOL" /> at mga format ng file gaya ng <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, at iba pa...). Tingnan ang <ph name="SUPPORT_URL" /> para sa higit pang impormasyon.</translation>
 <translation id="1017967144265860778">Pamamahala ng power sa screen sa pag-log in</translation>
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
@@ -604,6 +613,9 @@
           Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatibility at binabawasan nito ang seguridad ng pag-authenticate.
 
           Kung hindi nakatakda ang patakarang ito, ang default ay true at naka-enable ang NTLMv2.</translation>
+<translation id="2598508021807251719">Kino-configure ang mga lokal kung saan maaaring ipinapakita ang <ph name="PRODUCT_OS_NAME" />.
+
+      Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isa sa mga lokal na tinukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o itatakda ito sa isang blangkong listahan, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal ng UI. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng user ang <ph name="PRODUCT_OS_NAME" /> para ipakita sa isang lokal na hindi pinapayagan ng patakarang ito, ililipat ang lokal ng display sa isang pinapayagang lokal ng UI sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at ang isa sa mga piniling lokal ay pinapayagan ng patakarang ito, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinukoy sa patakarang ito, o sa isang fallback na lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="2604182581880595781">I-configure ang mga patakarang nauugnay sa File Share sa Network.</translation>
 <translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -712,6 +724,7 @@
 <translation id="2873651257716068683">Ino-override ang default na laki ng page ng pag-print. Kung hindi available ang laki ng page, binabalewala ang patakarang ito.</translation>
 <translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
+<translation id="2890645751406497668">Awtomatikong magbigay ng pahintulot sa mga site na ito para kumonekta sa mga USB device na may nakatalagang vendor at product ID.</translation>
 <translation id="2892414556511568464">Pinaghihigpitan ang printing duplex mode. Itinuturing na walang paghihigpit ang hindi nakatakdang patakaran at empty set.</translation>
 <translation id="2893546967669465276">Magpadala ng mga log ng system sa server sa pamamahala</translation>
 <translation id="2899002520262095963">Maaaring gamitin ng mga Android app ang mga configuration ng network at mga CA certificate na itinakda sa pamamagitan ng patakarang ito, ngunit walang access ang mga ito sa ilang opsyon sa configuration.</translation>
@@ -911,6 +924,7 @@
 
       Kung itatakda ang setting na ito sa Naka-off o wala kang itatakdang value, hindi ipapatupad ng <ph name="PRODUCT_NAME" /> ang Restricted Mode sa YouTube. Gayunpaman, ang Restricted Mode ay maaari pa ring ipatupad ng mga panlabas na patakaran gaya ng mga patakaran ng YouTube.</translation>
 <translation id="3428247105888806363">Paganahin ang paghula sa network</translation>
+<translation id="3437924696598384725">Payagan ang user na pamahalaan ang mga koneksyon sa VPN</translation>
 <translation id="3449886121729668969">Nagko-configure sa mga setting ng proxy para sa <ph name="PRODUCT_NAME" />. Magiging available din ang mga setting ng proxy na ito para sa mga ARC app.
 
       Ang patakarang ito ay hindi pa handa para sa paggamit, mangyaring huwag muna itong gamitin.</translation>
@@ -1585,6 +1599,11 @@
 <translation id="5323128137188992869">Binibigyang-daan ang content na ma-cast sa device gamit ang <ph name="PRODUCT_NAME" />.
 
           Kung nakatakda ang patakarang ito sa False, hindi makakapag-cast ng content ang mga user sa kanilang device. Kung nakatakda ang patakarang ito sa True, pinapayagan ang mga user na mag-cast ng content. Kung hindi nakatakda ang patakarang ito, hindi pinapayagan ang mga user na mag-cast ng content sa mga naka-enroll na Chrome OS device, ngunit makakapag-cast ang mga user sa mga device na hindi naka-enroll.</translation>
+<translation id="5329007337159326804">Babala: Tuluyan nang aalisin ang patakaran sa max na bersyon ng TLS sa <ph name="PRODUCT_NAME" /> sa bandang bersyon 75 (bandang Hunyo 2019).
+
+      Kung hindi pa nako-configure ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang default na maximum na bersyon.
+
+      Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1.2" o "tls1.3." Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas bago kaysa sa tinukoy na bersyon. Babalewalain ang hindi kilalang value.</translation>
 <translation id="5330684698007383292">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga sumusunod na uri ng nilalaman</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="5366745336748853475">Nagbibigay-daan sa iyong tumukoy ng listahan ng mga pattern ng url na tumutukoy sa mga site kung saan awtomatikong pinipili ang isang certificate ng client sa screen ng pag-sign in sa frame na nagho-host sa flow ng SAML, kung humihiling ng certificate ang site. Ang isang halimbawa ng paggamit ay ang pag-configure ng certificate para sa buong device na ipapakita sa SAML IdP.
@@ -1613,6 +1632,15 @@
           Kung pinagana ang setting na ito, hindi papaganahin ang pisikal na input at output na device ng mga host habang kasalukuyang gumagana ang remote na koneksyon.
 
           Kung hindi pinagana ang setting na ito o hindi itinakda, maaaring makipag-ugnay ang parehong lokal at remote na mga user sa mga host kapag ibinabahagi ito.</translation>
+<translation id="5396049152026347991">Payagan ang user na pamahalaan ang mga koneksyon sa VPN.
+
+      Kung itatakda ang patakarang ito sa false, idi-disable ang lahat ng user interface ng <ph name="PRODUCT_NAME" /> na magbibigay-daan sa user na magdiskonekta o magbago ng mga koneksyon sa VPN.
+
+      Kung ia-unset o itatakda ang patakaran sa true, maaaring magdiskonekta o magbago ng koneksyon ang mga user sa VPN, gaya ng karaniwang nangyayari.
+
+      Kung nagkakaroon ng koneksyon sa VPN sa pamamagitan ng VPN app, mananatiling hindi naaapektuhan ng patakarang ito ang UI sa loob ng app. Samakatuwid, magagawa pa rin ng user na gamitin ang app para baguhin ang koneksyon sa VPN.
+
+      Ang patakarang ito ay nilalayong gamitin kasabay ng feature na "VPN na palaging naka-on," na nagbibigay-daan sa admin na magpasyang magtatag ng koneksyon sa VPN sa pag-boot.</translation>
 <translation id="5405289061476885481">Kino-configure kung aling mga layout ng keyboard ang papayagan sa screen sa pag-sign in ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung itinakda ang patakarang ito sa isang listahan ng mga identifier ng paraan ng pag-input, magiging available ang nasabing paraan ng pag-input sa screen sa pag-sign in. Pauna nang pipiliin ang unang paraan ng pag-input. Habang naka-focus ang isang user pod sa screen sa pag-sign in, magiging available ang huling paraan ng pag-input na ginamit ng user kasama ang mga paraan ng pag-input na ibinigay ng patakarang ito. Kung hindi naitakda ang patakarang ito, ang mga paraan ng pag-input sa screen sa pag-sign in na ito ay kukunin mula sa locale kung saan ipinapakita ang screen sa pag-sign in. Babalewalain ang mga value na hindi wastong identifier ng paraan ng pag-input.</translation>
@@ -1699,6 +1727,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi pinapagana ang setting na ito o hindi naka-configure, magagamit ng mga user ang lahat ng sinusuportahang uri ng external storage sa kanilang device.</translation>
 <translation id="5697306356229823047">I-ulat ang mga user ng device</translation>
 <translation id="570062449808736508">Kapag nakatakda ang patakarang ito sa isang string na may laman, babasahin ng WebView ang mga paghihigpit sa URL mula sa provider ng content gamit ang ibinigay na pangalan ng kinauukulan.</translation>
+<translation id="5701714006401683963">Kung itatakda ang patakarang ito sa false, gagana ang pinapamahalaang session ng bisita ayon sa nakadokumento sa https://support.google.com/chrome/a/answer/3017014 - ang pamantayang "Pampublikong Session."
+
+      Kung itatakda ang patakarang ito sa true o hahayaang hindi nakatakda, gagana ang pinapamahalaang session ng bisita sa "Pinapamahalaang Session" na nag-aalis ng maraming paghihigpit na ipinapatupad para sa regular na "Mga Pampublikong Session."
+
+      Kung itatakda ang patakarang ito, hindi ito mababago o mao-override ng user.</translation>
 <translation id="5722934961007828462">Kapag naka-enable ang setting na ito, palaging magsasagawa ang <ph name="PRODUCT_NAME" /> ng pagsusuri sa pagbawi para sa mga server certificate na matagumpay na nagpapatotoo at nilagdaan ng mga lokal na naka-install na CA certificate.
 
       Kung hindi makakuha ang <ph name="PRODUCT_NAME" /> ng impormasyon sa status ng pagbawi, ituturing ang mga naturang certificate bilang nabawi ('hard-fail').
@@ -1747,6 +1780,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5835124959204887277">Tumutukoy ng mga URL at domain kung saan walang ipapakitang prompt kapag humiling ng mga certificate ng pagpapatunay mula sa Mga Security Key. Bukod pa rito, may ipapadalang signal sa Security Key na nagsasaad na maaaring gumamit ng indibidwal na pagpapatunay. Kung wala ito, ipo-prompt ang mga user sa Chrome 65+ kapag humiling ang mga site ng pagpapatunay ng Mga Security Key.
 
       Tutugma lang ang mga URL (tulad ng https://example.com/some/path) bilang mga U2F appID. Tutugma lang ang mga domain (tulad ng example.com) bilang mga webauthn RP ID. Samakatuwid, upang masaklaw ang mga U2F at webauthn API para sa isang partikular na site, kailangang parehong ilista ang appID URL at domain.</translation>
+<translation id="5835412847081687053">I-configure ang mga pinapayagang lokal ng UI sa isang session ng user</translation>
 <translation id="5836064773277134605">Paghigpitan ang saklaw ng UDP port na ginamit ng host ng malayuang pag-access</translation>
 <translation id="5862253018042179045">Itakda ang default na katayuan ng tampok na pagiging naa-access ng sinasalitang feedback sa screen sa pag-login.
 
@@ -2081,6 +2115,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
+<translation id="6816212867679667972">Tukuyin ang hostname ng device na ginamit sa mga kahilingan ng DHCP.
+
+      Kung nakatakda ang patakarang ito sa may lamang string, gagamitin ang string na iyon bilang hostname ng device sa panahon ng paghiling ng DHCP.
+
+      Ang string ay maaaring magkaroon ng mga variable na ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} na papalitan ng mga value sa device bago gamitin bilang hostname. Ang resultang kapalit ay dapat valid na hostname (alinsunod sa RFC 1035, seksyon 3.1).
+
+      Kung hindi itatakda ang patakarang ito, o hindi valid na hostname ang value pagkatapos ng pagpapalit, walang itatakdang hostname sa kahilingan ng DHCP. </translation>
 <translation id="6835883744948188639">Magpakita sa user ng umuulit na prompt na nagsasaad na inirerekomenda ang muling paglulunsad</translation>
 <translation id="6838056959556423778">Ino-override ang mga default na panuntunan sa pagpili ng printer ng <ph name="PRODUCT_NAME" />.
 
@@ -2377,6 +2418,22 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi itinakda ang patakarang ito, gagamiting ng awtomatikong pag-clean-up ang default na built-in na diskarte. Sa kasalukuyan, ito ay ang 'RemoveLRUIfDormant' na diskarte.</translation>
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
+<translation id="7337967786223261174">Nagko-configure ng listahan ng mga printer.
+
+      Nagbibigay-daan ang patakarang ito sa mga administrator na magbigay ng mga configuration ng printer para sa
+      mga user ng mga ito.
+
+      Ang <ph name="PRINTER_DISPLAY_NAME" /> at <ph name="PRINTER_DESCRIPTION" /> ay mga free-form na string na maaaring ma-customize para sa madaling pagpili ng printer. Pinapadali ng <ph name="PRINTER_MANUFACTURER" /> at <ph name="PRINTER_MODEL" /> ang pagkilala ng printer para sa mga end user. Kinakatawan ng mga ito ang manufacturer at modelo ng printer. Ang <ph name="PRINTER_URI" /> ay dapat isang address na maaabot mula sa computer ng kliyente kabilang ang <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, at <ph name="URI_QUEUE" />. Opsyonal ang <ph name="PRINTER_UUID" />. Kung ibibigay, gagamitin ito sa pag-deduplicate ng mga printer na <ph name="ZEROCONF_DISCOVERY" />.
+
+      Dapat tumugma ang <ph name="PRINTER_EFFECTIVE_MODEL" /> sa isa sa mga string na kumakatawan sa isang sinusuportahang printer ng <ph name="PRODUCT_NAME" />. Gagamitin ang string para kilalanin at i-install ang naaangkop na PPD para sa printer. Makakakita ng higit pang impormasyon sa https://support.google.com/chrome?p=noncloudprint.
+
+      Matatapos ang pag-set up ng printer sa unang paggamit ng printer. Hindi mada-download ang mga PPD hanggang sa gamitin ang printer. Pagkatapos niyon, maka-cache ang mga madalas gamiting PPD.
+
+      Walang epekto ang patakarang ito sa kakayahan ng mga user na mag-configure ng mga printer sa mga indibidwal na device. Nilalayon ito bilang tulong sa pag-configure ng mga printer ng mga indibidwal na user.
+
+      Para sa mga device na pinapamahalaan ng Aktibong Directory, sinusuportahan ng patakarang ito ang pagpapalawak ng <ph name="MACHINE_NAME_VARIABLE" /> sa pangalan ng machine o substring ng Aktibong Directory nito. Halimbawa, kung <ph name="MACHINE_NAME_EXAMPLE" /> ang pangalan ng machine, papalitan ang <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ng 4 na character na nagsisimula sa ika-6 na posisyon, ibig sabihin, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tandaang ang posisyon ay nakabatay sa zero.
+      Ang <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (maliit na titik) ay hindi na ginagamit sa M71 at aalisin na sa M72.
+      </translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7343497214039883642">File ng configuration para sa mga device ng printer ng enterprise</translation>
 <translation id="7349338075015720646">Tumutukoy ng listahan ng mga website na na-install nang hindi napapansin, nang walang pakikipag-ugnayan ng user, at hindi maa-uninstall o madi-disable ng user.
@@ -2803,6 +2860,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8359734107661430198">I-enable ang ExampleDeprecatedFeature API sa 2008/09/02</translation>
 <translation id="8367209241899435947">Ine-enable ang Chrome Cleanup sa Windows</translation>
 <translation id="8369602308428138533">Delay ng pag-off ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
+<translation id="8371178326720637170">Nagbibigay-daan sa mga pinapamahalaang extension na gamitin ang Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
 <translation id="8390049129576938611">Dini-disable ang internal PDF viewer sa <ph name="PRODUCT_NAME" />. Sa halip, itinuturing nito ito bilang download at pinapayagan ang user na magbukas ng mga PDF na file gamit ang default na application.
@@ -3077,6 +3135,11 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8970205333161758602">Pigilan ang turndown prompt sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Payagan ang pagpapatotoo ng gnubby para sa mga host ng malayuang pag-access</translation>
 <translation id="8976531594979650914">Gamitin ang Default na Printer ng System bilang Default</translation>
+<translation id="898520305112996948">Nagbibigay-daan sa iyong magtakda ng listahan ng mga pattern ng url na tumutukoy sa kung aling mga site ang awtomatikong mabibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat maglaman ang bawat item sa listahan ng parehong device at pattern ng url para maging valid ang patakaran. Ang bawat item sa mga device ay maaaring magkaroon ng field ng vendor ID at product ID. Ang anumang aalising ID ay ituturing na wildcard na may isang exception, kung saan hindi maaaring tukuyin ang product ID nang wala ring tinutukoy na vendor ID. Kung hindi, hindi magiging valid ang patakaran. Binabalewala ang mga invalid na value ng patakaran.
+
+        Kung hindi itatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.
+
+        Ang mga pattern ng URL sa patakarang ito ay dapat tumugma sa mga naka-configure sa pamamagitan ng WebUsbBlockedForUrls. Kung may hindi pagkakatugma, mangingibabaw ang patakarang ito sa WebUsbBlockedForUrls at WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="9012851181124311976">I-configure ang listahan ng mga login URL ng enterprise (mga HTTP at HTTPS scheme lang). Maka-capture ang fingerprint ng password sa mga URL na ito at gagamitin ang mga ito para sa pag-detect ng muling paggamit ng password.
       Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang mga fingerprint ng password, pakitiyak na sumusunod ang iyong mga page ng pag-log in sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

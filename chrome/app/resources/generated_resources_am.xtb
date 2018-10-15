@@ -673,7 +673,6 @@
 <translation id="197560921582345123">ማርትዕ ይችላሉ</translation>
 <translation id="1975841812214822307">አስወግድ...</translation>
 <translation id="1976150099241323601">የደህንነት መሣሪያ ውስጥ ይግቡ</translation>
-<translation id="1976315108329706992">አሁን የAndroid መተግበሪያዎችን መጠቀም ይችላሉ</translation>
 <translation id="1976323404609382849">ከበርካታ ጣቢያዎች የሚመጡ ኩኪዎች ታግደዋል።</translation>
 <translation id="1977965994116744507">የእርስዎን <ph name="DEVICE_TYPE" /> ለመክፈት የእርስዎን ስልክ ያስጠጉት።</translation>
 <translation id="1979280758666859181">የቆየ የ<ph name="PRODUCT_NAME" /> ስሪት ወዳለው ሰርጥ እየቀየሩ ነው። የስርጡ ስሪት አሁን በመሣሪያዎ ላይ ከተጫነው ስሪት ጋር ሲዛመድ ነው የሰርጡ ለውጥ የሚተገበረው።</translation>
@@ -3322,12 +3321,10 @@
 <translation id="6025215716629925253">የቁልል መከታተያ</translation>
 <translation id="6026047032548434446">መተግበሪያ ይጫን?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - ዩኤስቢ መሣሪያ ተገናኝቷል</translation>
-<translation id="6028117231645531007">የጣት አሻራን አክል</translation>
 <translation id="6029027682598229313">የLinux ጭነት ተጠናቋል።</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />]ን ሰርዝ፣ አዝራር</translation>
 <translation id="6029587122245504742">በጣም ቀርፋፋው</translation>
 <translation id="6032912588568283682">የፋይል ስርዓት</translation>
-<translation id="6034662038931255275">የስርዓተ ክዋኔ ዝማኔ ተሳክቷል</translation>
 <translation id="6039651071822577588">የአውታረ መረብ ንብረት መዝገበ ቃላት የተበላሸ ነው</translation>
 <translation id="604001903249547235">የክላውድ ምትኬ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
@@ -4607,6 +4604,7 @@
 <translation id="7966241909927244760">የምስል አድራሻ &amp;ቅዳ</translation>
 <translation id="7968742106503422125">እርስዎ የሚቀዱትን እና የሚለጥፉትን ማንበብ እና መቀየር</translation>
 <translation id="7968833647796919681">የአፈጻጸም የውሂብ መሰብሰብ አንቃ</translation>
+<translation id="7969046989155602842">ትእዛዝ</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 ከRSA ምስጠራ ጋር</translation>
 <translation id="7973962044839454485">PPP ማረጋገጫ በተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል ምክንያት አልተሳካም</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" />ን መጠቀም እንደገና ይሞክሩ</translation>

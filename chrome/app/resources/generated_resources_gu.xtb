@@ -669,7 +669,6 @@
 <translation id="197560921582345123">સંપાદિત કરી શકે છે</translation>
 <translation id="1975841812214822307">દૂર કરો ...</translation>
 <translation id="1976150099241323601">સુરક્ષા ઉપકરણ પર સાઇન ઇન કરો </translation>
-<translation id="1976315108329706992">હવે તમે Android ઍપનો ઉપયોગ કરી શકો છો.</translation>
 <translation id="1976323404609382849">બહુવિધ સાઇટ્સની કૂકીઝ અવરોધિત કરી છે.</translation>
 <translation id="1977965994116744507">તમારા <ph name="DEVICE_TYPE" />ને અનલૉક કરવા તમારા ફોનને વધુ નજીક લાવો.</translation>
 <translation id="1979280758666859181">તમે ચેનલને <ph name="PRODUCT_NAME" /> ના જૂના સંસ્કરણ સાથે બદલી રહ્યાં છો. જ્યારે ચેનલ સંસ્કરણ હાલમાં તમારા ઉપકરણ પર ઇન્સ્ટોલ કરેલા સંસ્કરણથી મેળ ખાતું હોય ત્યારે ચેનલ ફેરફાર લાગુ થશે.</translation>
@@ -3323,12 +3322,10 @@
 <translation id="6025215716629925253">સ્ટેક ટ્રેસ</translation>
 <translation id="6026047032548434446">ઍપ ઇન્સ્ટૉલ કરીએ?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB ઉપકરણ કનેક્ટ કર્યું</translation>
-<translation id="6028117231645531007">ફિંગરપ્રિન્ટ ઉમેરો</translation>
 <translation id="6029027682598229313">Linux ઇન્સ્ટૉલેશન પૂર્ણ થયું.</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] ડિલીટ કરવાનું બટન</translation>
 <translation id="6029587122245504742">સૌથી ધીમી</translation>
 <translation id="6032912588568283682">ફાઇલ સિસ્ટમ</translation>
-<translation id="6034662038931255275">OS અપડેટ સફળ</translation>
 <translation id="6039651071822577588">નેટવર્ક ગુણધર્મ નિર્દેશિકા અયોગ્ય</translation>
 <translation id="604001903249547235">મેઘ બેકઅપ</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
@@ -4607,6 +4604,7 @@
 <translation id="7966241909927244760">છબી સરનામું કૉ&amp;પિ કરો</translation>
 <translation id="7968742106503422125">તમે કૉપિ અને પેસ્ટ કરો છો તે ડેટા વાંચો અને તેને સંશોધિત કરો</translation>
 <translation id="7968833647796919681">પ્રદર્શન ડેટા સંગ્રહ સક્ષમ કરો</translation>
+<translation id="7969046989155602842">આદેશ</translation>
 <translation id="7972714317346275248">RSA એન્ક્રિપ્શનવાળું PKCS #1 SHA-384</translation>
 <translation id="7973962044839454485">ખોટા વપરાશકર્તાનામ અથવા પાસવર્ડને કારણે PPP પ્રમાણીકરણ નિષ્ફળ થયું</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> નો ઉપયોગ કરીને ફરીથી પ્રયાસ કરો</translation>
