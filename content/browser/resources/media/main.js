@@ -71,8 +71,7 @@ var media = (function() {
     });
 
     if (propertyCount === 0) {
-      manager.updatePlayerInfo(
-          source, event.ticksMillis, 'event', event.type);
+      manager.updatePlayerInfo(source, event.ticksMillis, 'event', event.type);
     }
   };
 
