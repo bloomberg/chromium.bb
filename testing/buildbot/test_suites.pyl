@@ -368,6 +368,9 @@
       'capture_unittests': {
         'args': [
           '--test-launcher-jobs=1',
+          # TODO(crbug.com/881300): After capture_unittests passes with vivid on VM,
+          # we can run UsingRealWebcam tests except CaptureMjpeg.
+          '--gtest_filter=-*UsingRealWebcam*',
         ],
       },
       'cc_unittests': {},
@@ -564,7 +567,11 @@
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
       'cacheinvalidation_unittests': {},
-      'capture_unittests': {},
+      'capture_unittests': {
+        'args': [
+          '--gtest_filter=-*UsingRealWebcam*',
+        ],
+      },
       'cast_unittests': {},
       'components_browsertests': {},
       'components_unittests': {

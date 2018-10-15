@@ -50,7 +50,8 @@
       },
       {
         "args": [
-          "--test-launcher-jobs=1"
+          "--test-launcher-jobs=1",
+          "--gtest_filter=-*UsingRealWebcam*"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -552,6 +553,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1254,6 +1258,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
