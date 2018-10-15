@@ -25,7 +25,6 @@ using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
 namespace viz {
-namespace test {
 namespace {
 
 constexpr FrameSinkId kFrameSink1(1, 0);
@@ -545,5 +544,4 @@ TEST_F(SurfaceReferencesTest, MarkOldTemporaryReferences) {
   EXPECT_FALSE(IsTemporaryReferenceTimerRunning());
 }
 
-}  // namespace test
 }  // namespace viz

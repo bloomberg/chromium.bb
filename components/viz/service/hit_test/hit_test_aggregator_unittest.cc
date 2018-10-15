@@ -21,8 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
-namespace test {
-
 namespace {
 
 constexpr uint32_t kDisplayClientId = 2;
@@ -33,8 +31,6 @@ SurfaceId MakeSurfaceId(uint32_t frame_sink_id_client_id) {
       FrameSinkId(frame_sink_id_client_id, 0),
       LocalSurfaceId(1, base::UnguessableToken::Deserialize(0, 1u)));
 }
-
-}  // namespace
 
 // TODO(riajiang): TestHostFrameSinkManager should be based on
 // mojom::FrameSinkManagerClient instead.
@@ -86,6 +82,8 @@ class TestFrameSinkManagerImpl : public FrameSinkManagerImpl {
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameSinkManagerImpl);
 };
+
+}  // namespace
 
 class TestHitTestAggregator final : public HitTestAggregator {
  public:
@@ -1014,5 +1012,4 @@ TEST_F(HitTestAggregatorTest, DiscardedSurfaces) {
       local_surface_id_lookup_delegate(), c_surface_id.frame_sink_id()));
 }
 
-}  // namespace test
 }  // namespace viz

@@ -39,10 +39,6 @@
 
 namespace viz {
 
-namespace test {
-class FrameSinkManagerTest;
-}  // namespace test
-
 class CapturableFrameSink;
 class CompositorFrameSinkSupport;
 class DisplayProvider;
@@ -192,7 +188,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const FrameSinkId& frame_sink_id) const;
 
  private:
-  friend class test::FrameSinkManagerTest;
+  friend class FrameSinkManagerTest;
 
   // Metadata for a CompositorFrameSink.
   struct FrameSinkData {

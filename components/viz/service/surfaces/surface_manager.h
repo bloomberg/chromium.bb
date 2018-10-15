@@ -38,14 +38,6 @@ class TickClock;
 
 namespace viz {
 
-namespace test {
-class CompositorFrameSinkSupportTest;
-class FrameSinkManagerTest;
-class HitTestAggregatorTest;
-class SurfaceReferencesTest;
-class SurfaceSynchronizationTest;
-}  // namespace test
-
 class Surface;
 struct BeginFrameAck;
 struct BeginFrameArgs;
@@ -206,12 +198,12 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void SurfaceWillBeDrawn(Surface* surface);
 
  private:
-  friend class test::CompositorFrameSinkSupportTest;
-  friend class test::FrameSinkManagerTest;
-  friend class test::HitTestAggregatorTest;
-  friend class test::SurfaceSynchronizationTest;
-  friend class test::SurfaceReferencesTest;
-  friend class test::SurfaceSynchronizationTest;
+  friend class CompositorFrameSinkSupportTest;
+  friend class FrameSinkManagerTest;
+  friend class HitTestAggregatorTest;
+  friend class SurfaceSynchronizationTest;
+  friend class SurfaceReferencesTest;
+  friend class SurfaceSynchronizationTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
 
