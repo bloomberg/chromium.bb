@@ -173,7 +173,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
   auto engine = std::make_unique<SyncEngineForProfileSyncTest>(
-      temp_dir_.GetPath(), sync_service_->GetSyncClient(),
+      temp_dir_.GetPath(), sync_service_->GetSyncClientForTest(),
       profile_sync_service_bundle_.fake_invalidation_service(),
       sync_service_->sync_prefs()->AsWeakPtr(),
       std::move(initialization_success_callback));

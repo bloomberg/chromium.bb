@@ -46,7 +46,6 @@ class FakeSyncService : public SyncService {
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;
-  SyncClient* GetSyncClient() const override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;

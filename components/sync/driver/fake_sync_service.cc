@@ -76,10 +76,6 @@ ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
   return ModelTypeSet();
 }
 
-SyncClient* FakeSyncService::GetSyncClient() const {
-  return nullptr;
-}
-
 void FakeSyncService::AddObserver(SyncServiceObserver* observer) {}
 
 void FakeSyncService::RemoveObserver(SyncServiceObserver* observer) {}

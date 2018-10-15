@@ -1114,7 +1114,8 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
 
   testing::Mock::VerifyAndClearExpectations(component_factory());
 
-  syncer::SyncPrefs sync_prefs(service()->GetSyncClient()->GetPrefService());
+  syncer::SyncPrefs sync_prefs(
+      service()->GetSyncClientForTest()->GetPrefService());
 
   ASSERT_EQ(prefs()->GetInteger(syncer::prefs::kSyncMemoryPressureWarningCount),
             0);
@@ -1336,7 +1337,8 @@ TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
 
-  syncer::SyncPrefs sync_prefs(service()->GetSyncClient()->GetPrefService());
+  syncer::SyncPrefs sync_prefs(
+      service()->GetSyncClientForTest()->GetPrefService());
   ASSERT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
 
   sync_prefs.SetPassphrasePrompted(true);

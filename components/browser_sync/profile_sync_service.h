@@ -236,7 +236,6 @@ class ProfileSyncService : public syncer::SyncService,
   void RequestStop(SyncStopDataFate data_fate) override;
   void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  syncer::SyncClient* GetSyncClient() const override;
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
@@ -467,6 +466,8 @@ class ProfileSyncService : public syncer::SyncService,
   // Calls sync engine to send ClearServerDataMessage to server. This is used
   // to start accounts with a clean slate when performing end to end testing.
   void ClearServerDataForTest(const base::Closure& callback);
+
+  syncer::SyncClient* GetSyncClientForTest();
 
  private:
   // Virtual for testing.

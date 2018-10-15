@@ -252,7 +252,7 @@ void SetFaviconImpl(Profile* profile,
       browser_sync::ProfileSyncService* pss =
           ProfileSyncServiceFactory::GetForProfile(profile);
       sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-          node, pss->GetSyncClient(), icon_url, image.As1xPNGBytes());
+          node, pss->GetSyncClientForTest(), icon_url, image.As1xPNGBytes());
     }
 
     // Wait for the favicon for |node| to be invalidated.
@@ -298,7 +298,7 @@ void DeleteFaviconMappingsImpl(Profile* profile,
     browser_sync::ProfileSyncService* pss =
         ProfileSyncServiceFactory::GetForProfile(profile);
     sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-        node, pss->GetSyncClient(), /*icon_url=*/GURL(),
+        node, pss->GetSyncClientForTest(), /*icon_url=*/GURL(),
         scoped_refptr<base::RefCountedString>(new base::RefCountedString()));
   }
 

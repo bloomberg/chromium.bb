@@ -1439,7 +1439,7 @@ syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   return data_type_manager_->GetActiveDataTypes();
 }
 
-syncer::SyncClient* ProfileSyncService::GetSyncClient() const {
+syncer::SyncClient* ProfileSyncService::GetSyncClientForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_client_.get();
 }
