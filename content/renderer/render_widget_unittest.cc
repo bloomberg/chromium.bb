@@ -114,8 +114,8 @@ class MockHandledEventCallback {
                       base::Optional<cc::TouchAction>));
 
   HandledEventCallback GetCallback() {
-    return BindOnce(&MockHandledEventCallback::HandleCallback,
-                    base::Unretained(this));
+    return base::BindOnce(&MockHandledEventCallback::HandleCallback,
+                          base::Unretained(this));
   }
 
  private:
