@@ -288,6 +288,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutUnit BorderAndPaddingStart() const {
     return BorderStart() + PaddingStart();
   }
+  LayoutUnit BorderAndPaddingEnd() const { return BorderEnd() + PaddingEnd(); }
   DISABLE_CFI_PERF LayoutUnit BorderAndPaddingBefore() const {
     return BorderBefore() + PaddingBefore();
   }
