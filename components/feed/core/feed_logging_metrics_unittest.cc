@@ -96,20 +96,20 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnPageShown) {
               ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
 }
 
-TEST_F(FeedLoggingMetricsTest, ShouldLogPrefetchedSuggestionsWhenOpened) {
+TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionOpened) {
   base::HistogramTester histogram_tester;
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/11, base::Time::Now(),
-      /*score=*/1.0f, WindowOpenDisposition::CURRENT_TAB);
+      /*score=*/1.0f);
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/13, base::Time::Now(),
-      /*score=*/1.0f, WindowOpenDisposition::CURRENT_TAB);
+      /*score=*/1.0f);
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/15, base::Time::Now(),
-      /*score=*/1.0f, WindowOpenDisposition::CURRENT_TAB);
+      /*score=*/1.0f);
   feed_logging_metrics()->OnSuggestionOpened(
       /*position=*/23, base::Time::Now(),
-      /*score=*/1.0f, WindowOpenDisposition::CURRENT_TAB);
+      /*score=*/1.0f);
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions.Opened"),
@@ -117,6 +117,25 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogPrefetchedSuggestionsWhenOpened) {
                   base::Bucket(/*min=*/13, /*count=*/1),
                   base::Bucket(/*min=*/15, /*count=*/1),
                   base::Bucket(/*min=*/23, /*count=*/1)));
+}
+
+TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionWindowOpened) {
+  base::HistogramTester histogram_tester;
+  feed_logging_metrics()->OnSuggestionWindowOpened(
+      WindowOpenDisposition::CURRENT_TAB);
+  feed_logging_metrics()->OnSuggestionWindowOpened(
+      WindowOpenDisposition::CURRENT_TAB);
+  feed_logging_metrics()->OnSuggestionWindowOpened(
+      WindowOpenDisposition::CURRENT_TAB);
+  feed_logging_metrics()->OnSuggestionWindowOpened(
+      WindowOpenDisposition::CURRENT_TAB);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.OpenDisposition.Articles"),
+              ElementsAre(base::Bucket(
+                  /*WindowOpenDisposition::CURRENT_TAB=*/static_cast<int>(
+                      WindowOpenDisposition::CURRENT_TAB),
+                  /*count=*/4)));
 }
 
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedIfVisited) {
