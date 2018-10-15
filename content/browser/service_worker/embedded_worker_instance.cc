@@ -174,7 +174,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // Get a process.
   blink::ServiceWorkerStatusCode status =
       process_manager->AllocateWorkerProcess(
-          params->embedded_worker_id, params->scope, params->script_url,
+          params->embedded_worker_id, params->script_url,
           can_use_existing_process, process_info.get());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     base::PostTaskWithTraits(
