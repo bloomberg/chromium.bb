@@ -14,7 +14,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -172,13 +171,9 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
         local_partition_path, std::string(kSessionStorageDirectory));
   }
 
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
-  } else {
-    memory_pressure_listener_.reset(new base::MemoryPressureListener(
-        base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
-                            base::Unretained(this))));
-  }
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+      base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
+                          base::Unretained(this))));
 }
 
 DOMStorageContextWrapper::~DOMStorageContextWrapper() {
@@ -352,9 +347,6 @@ void DOMStorageContextWrapper::Shutdown() {
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::BindOnce(&DOMStorageContextImpl::Shutdown, context_));
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
-  }
 }
 
 void DOMStorageContextWrapper::Flush() {
@@ -459,10 +451,6 @@ void DOMStorageContextWrapper::OnMemoryPressure(
     purge_option = DOMStorageContextImpl::PURGE_AGGRESSIVE;
   }
   PurgeMemory(purge_option);
-}
-
-void DOMStorageContextWrapper::OnPurgeMemory() {
-  PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
 }
 
 void DOMStorageContextWrapper::PurgeMemory(DOMStorageContextImpl::PurgeOption
