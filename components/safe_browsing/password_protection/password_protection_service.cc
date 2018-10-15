@@ -229,7 +229,7 @@ void PasswordProtectionService::CacheVerdict(
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
-  if (!CanGetReputationOfURL(url)) {
+  if (!CanGetReputationOfURL(url) || IsIncognito()) {
     return;
   }
 
@@ -526,6 +526,7 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
   user_population->set_is_under_advanced_protection(
       IsUnderAdvancedProtection());
+  user_population->set_is_incognito(IsIncognito());
 }
 
 void PasswordProtectionService::OnURLsDeleted(
@@ -801,7 +802,8 @@ bool PasswordProtectionService::IsWarningEnabled() {
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
-  return GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
+  return !IsIncognito() &&
+         GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
 }
 
 // static

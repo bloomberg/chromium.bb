@@ -206,6 +206,36 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       SuccessfullyShowWarningIncognito) {
+  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/true);
+  Profile* profile = browser()->profile()->GetOffTheRecordProfile();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  security_state::SecurityInfo security_info;
+
+  // Initialize and verify initial state.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kLoginPageUrl));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_FALSE(
+      ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
+          web_contents, PasswordReuseEvent::SIGN_IN_PASSWORD));
+  GetSecurityInfo(web_contents, &security_info);
+  ASSERT_EQ(security_state::NONE, security_info.security_level);
+  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
+            security_info.malicious_content_status);
+
+  // Shows modal dialog on current web_contents.
+  service->ShowModalWarning(web_contents, "unused_token",
+                            PasswordReuseEvent::SIGN_IN_PASSWORD);
+  base::RunLoop().RunUntilIdle();
+  // Change password card on chrome settings page should NOT show.
+  ASSERT_FALSE(
+      ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
+          profile));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        MarkSiteAsLegitimate) {
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   content::WebContents* web_contents =

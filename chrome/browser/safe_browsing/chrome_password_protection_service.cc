@@ -420,14 +420,17 @@ void ChromePasswordProtectionService::OnModalWarningShownForSignInPassword(
     OnPolicySpecifiedPasswordReuseDetected(web_contents->GetLastCommittedURL(),
                                            /*is_phishing_url=*/true);
   }
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
-  // Since base::Value doesn't support int64_t type, we convert the navigation
-  // ID to string format and store it in the preference dictionary.
-  update->SetKey(
-      Origin::Create(web_contents->GetLastCommittedURL()).Serialize(),
-      base::Value(
-          base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
+
+  if (!IsIncognito()) {
+    DictionaryPrefUpdate update(
+        profile_->GetPrefs(), prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+    // Since base::Value doesn't support int64_t type, we convert the navigation
+    // ID to string format and store it in the preference dictionary.
+    update->SetKey(
+        Origin::Create(web_contents->GetLastCommittedURL()).Serialize(),
+        base::Value(
+            base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
+  }
 
   UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
                       PasswordReuseEvent::SIGN_IN_PASSWORD, web_contents);
@@ -973,7 +976,8 @@ bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
 
 AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
   SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile_);
+      SigninManagerFactory::GetForProfileIfExists(
+          profile_->GetOriginalProfile());
 
   return signin_manager ? signin_manager->GetAuthenticatedAccountInfo()
                         : AccountInfo();
