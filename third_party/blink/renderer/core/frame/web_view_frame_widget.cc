@@ -143,6 +143,13 @@ WebPagePopup* WebViewFrameWidget::GetPagePopup() const {
   return web_view_->GetPagePopup();
 }
 
+void WebViewFrameWidget::UpdateBrowserControlsState(
+    cc::BrowserControlsState constraints,
+    cc::BrowserControlsState current,
+    bool animate) {
+  web_view_->UpdateBrowserControlsState(constraints, current, animate);
+}
+
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }

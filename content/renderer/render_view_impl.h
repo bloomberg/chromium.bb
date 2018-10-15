@@ -273,10 +273,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                                      const std::string& value) override;
   void ClearEditCommands() override;
   const std::string& GetAcceptLanguages() const override;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
@@ -592,9 +592,11 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Cache the old browser controls state constraints. Used when updating
   // current value only without altering the constraints.
   BrowserControlsState top_controls_constraints_ = BROWSER_CONTROLS_STATE_BOTH;
+#endif
 
   // View ----------------------------------------------------------------------
 

@@ -228,6 +228,13 @@ class WebWidget {
   // but not the select popup.
   virtual WebPagePopup* GetPagePopup() const { return 0; }
 
+  // Updates browser controls constraints and current state. Allows embedder to
+  // control what are valid states for browser controls and if it should
+  // animate.
+  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
+                                          cc::BrowserControlsState current,
+                                          bool animate) {}
+
   // Called by client to request showing the context menu.
   virtual void ShowContextMenu(WebMenuSourceType) {}
 

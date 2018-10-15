@@ -102,9 +102,11 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() const = 0;
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
                                           BrowserControlsState current,
                                           bool animate) = 0;
+#endif
 
   // Converts the |rect| from Viewport coordinates to Window coordinates.
   // See blink::WebWidgetClient::convertViewportToWindow for more details.

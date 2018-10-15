@@ -48,8 +48,7 @@ BrowserControlsOffsetManager::BrowserControlsOffsetManager(
       baseline_bottom_content_offset_(0.f),
       controls_show_threshold_(controls_hide_threshold),
       controls_hide_threshold_(controls_show_threshold),
-      pinch_gesture_active_(false),
-      constraint_changed_since_commit_(false) {
+      pinch_gesture_active_(false) {
   CHECK(client_);
 }
 
@@ -94,13 +93,6 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
   DCHECK(!(constraints == BrowserControlsState::kHidden &&
            current == BrowserControlsState::kShown));
 
-  // If the constraints have changed we need to inform Blink about it since
-  // that'll affect main thread scrolling as well as layout.
-  if (permitted_state_ != constraints) {
-    constraint_changed_since_commit_ = true;
-    client_->SetNeedsCommit();
-  }
-
   permitted_state_ = constraints;
 
   // Don't do anything if it doesn't matter which state the controls are in.
@@ -122,16 +114,8 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
     SetupAnimation(final_shown_ratio ? SHOWING_CONTROLS : HIDING_CONTROLS);
   } else {
     ResetAnimations();
-    client_->SetCurrentBrowserControlsShownRatio(final_shown_ratio);
+    // We depend on the main thread to push the new ratio.  crbug.com/754346 .
   }
-}
-
-BrowserControlsState BrowserControlsOffsetManager::PullConstraintForMainThread(
-    bool* out_changed_since_commit) {
-  DCHECK(out_changed_since_commit);
-  *out_changed_since_commit = constraint_changed_since_commit_;
-  constraint_changed_since_commit_ = false;
-  return permitted_state_;
 }
 
 void BrowserControlsOffsetManager::ScrollBegin() {

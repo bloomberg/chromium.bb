@@ -67,9 +67,11 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
 
+  // Blink layout tests might call into this even though an unthreaded CC
+  // doesn't have BrowserControls itself.
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
-                                  bool animate) override;
+                                  bool animate) override {}
 
   // SchedulerClient implementation
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;
