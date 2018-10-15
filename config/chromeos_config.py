@@ -459,7 +459,8 @@ def remove_images(unsupported_images):
 
 TRADITIONAL_VM_TESTS_SUPPORTED = [
     config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                            test_suite='smoke'),
+                            test_suite='smoke',
+                            use_ctest=False),
     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
     config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)]
 
@@ -903,7 +904,8 @@ def GeneralTemplates(site_config, ge_build_config):
       # TODO(derat): Add TastVMTestConfig here.
       vm_tests=[config_lib.VMTestConfig(
           constants.VM_SUITE_TEST_TYPE,
-          test_suite='smoke')],
+          test_suite='smoke',
+          use_ctest=False)],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
