@@ -32,7 +32,7 @@ function reduce {
   # xargs on some platforms, so we remove those directories first.
   rm -fr html css
   # Remove all except white-listed.
-  find . -type f | grep -Fxvf ../WPTWhiteList | xargs -n 1 rm
+  comm -23 <(find . -type f | sort) <(cat ../WPTWhiteList | sort) | xargs -n 1 rm
   find . -empty -type d -delete
 }
 
