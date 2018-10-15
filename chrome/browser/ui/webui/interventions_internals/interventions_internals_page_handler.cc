@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_switches.h"
 #include "net/nqe/network_quality_estimator_params.h"
@@ -54,6 +55,8 @@ const char kNoScriptFlagHtmlId[] = "noscript-flag";
 const char kResourceLoadingHintsFlagHtmlId[] = "resource-loading-hints-flag";
 const char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 const char kIgnorePreviewsBlacklistFlagHtmlId[] = "ignore-previews-blacklist";
+const char kDataSaverAltConfigHtmlId[] =
+    "data-reduction-proxy-server-experiment";
 
 // Links to flags in chrome://flags.
 // TODO(thanhdle): Refactor into vector of structs. crbug.com/787010.
@@ -65,6 +68,8 @@ const char kResourceLoadingHintsFlagLink[] =
 const char kOfflinePageFlagLink[] = "chrome://flags/#enable-offline-previews";
 const char kIgnorePreviewsBlacklistLink[] =
     "chrome://flags/#ignore-previews-blacklist";
+const char kDataSaverAltConfigLink[] =
+    "chrome://flags/#enable-data-reduction-proxy-server-experiment";
 
 const char kDefaultFlagValue[] = "Default";
 
@@ -292,6 +297,18 @@ void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
   offline_page_status->link = kOfflinePageFlagLink;
   offline_page_status->htmlId = kOfflinePageFlagHtmlId;
   flags.push_back(std::move(offline_page_status));
+
+  auto alt_config_status = mojom::PreviewsFlag::New();
+  alt_config_status->description =
+      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription;
+  alt_config_status->link = kDataSaverAltConfigLink;
+  alt_config_status->value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyExperiment);
+  if (alt_config_status->value.empty())
+    alt_config_status->value = kDefaultFlagValue;
+  alt_config_status->htmlId = kDataSaverAltConfigHtmlId;
+  flags.push_back(std::move(alt_config_status));
 
   std::move(callback).Run(std::move(flags));
 }
