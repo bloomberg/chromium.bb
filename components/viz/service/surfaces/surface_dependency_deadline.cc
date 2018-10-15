@@ -41,13 +41,6 @@ base::Optional<base::TimeDelta> SurfaceDependencyDeadline::Cancel() {
   return CancelInternal(false);
 }
 
-void SurfaceDependencyDeadline::CancelWithoutReport() {
-  if (!deadline_)
-    return;
-  begin_frame_source_->RemoveObserver(this);
-  deadline_.reset();
-}
-
 void SurfaceDependencyDeadline::InheritFrom(
     const SurfaceDependencyDeadline& other) {
   if (*this == other)
@@ -103,7 +96,8 @@ base::Optional<base::TimeDelta> SurfaceDependencyDeadline::CancelInternal(
   if (!deadline_)
     return base::nullopt;
 
-  CancelWithoutReport();
+  begin_frame_source_->RemoveObserver(this);
+  deadline_.reset();
 
   base::TimeDelta duration = tick_clock_->NowTicks() - start_time_;
 
