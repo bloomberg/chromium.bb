@@ -97,11 +97,8 @@ void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
 void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
   EventTarget* target = this;
   while (target) {
-    for (auto it = target->post_target_list_.begin(),
-              end = target->post_target_list_.end();
-         it != end; ++it) {
-      list->push_back(*it);
-    }
+    list->insert(list->end(), target->post_target_list_.begin(),
+                 target->post_target_list_.end());
     target = target->GetParentTarget();
   }
 }
