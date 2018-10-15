@@ -21,17 +21,9 @@ camera.views.camera = camera.views.camera || {};
 
 /**
  * Creates a controller to handle layouts of Camera view.
- * @param {camera.views.camera.Layout} preview Video preview.
  * @constructor
  */
-camera.views.camera.Layout = function(preview) {
-  /**
-   * Video preview of the camera view.
-   * @type {camera.views.camera.Preview}
-   * @private
-   */
-  this.preview_ = preview;
-
+camera.views.camera.Layout = function() {
   /**
    * CSS sylte of the shifted right-stripe.
    * @type {CSSStyleDeclaration}
@@ -92,17 +84,36 @@ camera.views.camera.Layout.cssStyle_ = function(selector) {
 };
 
 /**
+ * Updates the video element size for previewing in the window.
+ * @return {Array.<number>} Letterbox size in [width, height].
+ * @private
+ */
+camera.views.camera.Layout.prototype.updatePreviewSize_ = function() {
+  // Make video content keeps its aspect ratio inside the window's inner-bounds;
+  // it may fill up the window or be letterboxed when fullscreen/maximized.
+  // Don't use app-window.innerBounds' width/height properties during resizing
+  // as they are not updated immediately.
+  var video = document.querySelector('#preview-video');
+  if (video.videoHeight) {
+    var f = camera.util.isWindowFullSize() ? Math.min : Math.max;
+    var scale = f(window.innerHeight / video.videoHeight,
+        window.innerWidth / video.videoWidth);
+    video.width = scale * video.videoWidth;
+    video.height = scale * video.videoHeight;
+  }
+  return [window.innerWidth - video.width, window.innerHeight - video.height];
+};
+
+/**
  * Updates the layout for video-size or window-size changes.
  */
 camera.views.camera.Layout.prototype.update = function() {
-  this.preview_.layoutElementSize();
-
   // TODO(yuli): Check if the app runs on a tablet display.
   var fullWindow = camera.util.isWindowFullSize();
   var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
   document.body.classList.toggle('tablet-landscape', tabletLandscape);
 
-  var [letterboxW, letterboxH] = this.preview_.letterboxSize;
+  var [letterboxW, letterboxH] = this.updatePreviewSize_();
   var [halfW, halfH] = [letterboxW / 2, letterboxH / 2];
   var [rightBox, bottomBox, leftBox, topBox] = [halfW, halfH, halfW, halfH];
 

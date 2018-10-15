@@ -37,14 +37,14 @@ camera.views.Camera = function(context, router, model) {
    * @type {camera.views.camera.Preview}
    * @private
    */
-  this.preview_ = new camera.views.camera.Preview();
+  this.preview_ = new camera.views.camera.Preview(context);
 
   /**
    * Layout handler for the camera view.
    * @type {camera.views.camera.Layout}
    * @private
    */
-  this.layout_ = new camera.views.camera.Layout(this.preview_);
+  this.layout_ = new camera.views.camera.Layout();
 
   /**
    * Current camera stream.
@@ -486,12 +486,8 @@ camera.views.Camera.prototype.prepareImageCapture_ = function() {
  */
 camera.views.Camera.prototype.startWithConstraints_ = function(
     constraints, onSuccess, onFailure) {
-  navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-    return this.preview_.setSource(stream, () => {
-      this.context_.onAspectRatio(this.preview_.aspectRatio);
-      this.layout_.update();
-    });
-  }).then(stream => {
+  navigator.mediaDevices.getUserMedia(constraints).then(
+      this.preview_.setSource.bind(this.preview_)).then(stream => {
     // Use a watchdog since the stream.onended event is unreliable in the
     // recent version of Chrome. As of 55, the event is still broken.
     this.watchdog_ = setInterval(() => {
