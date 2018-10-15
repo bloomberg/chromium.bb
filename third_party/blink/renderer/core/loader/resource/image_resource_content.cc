@@ -292,10 +292,14 @@ void ImageResourceContent::NotifyObservers(
 }
 
 scoped_refptr<Image> ImageResourceContent::CreateImage(bool is_multipart) {
+  String content_dpr_value =
+      info_->GetResponse().HttpHeaderField(HTTPNames::Content_DPR);
+  size_t comma = content_dpr_value.ReverseFind(',');
+  if (comma != kNotFound && comma < content_dpr_value.length() - 1) {
+    content_dpr_value = content_dpr_value.Substring(comma + 1);
+  }
   device_pixel_ratio_header_value_ =
-      info_->GetResponse()
-          .HttpHeaderField(HTTPNames::Content_DPR)
-          .ToFloat(&has_device_pixel_ratio_header_value_);
+      content_dpr_value.ToFloat(&has_device_pixel_ratio_header_value_);
   if (!has_device_pixel_ratio_header_value_ ||
       device_pixel_ratio_header_value_ <= 0.0) {
     device_pixel_ratio_header_value_ = 1.0;
