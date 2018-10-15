@@ -31,11 +31,6 @@ const base::Feature kDataReductionProxyLowMemoryDevicePromo{
     "DataReductionProxyLowMemoryDevicePromo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables logic to modify the bypass behavior when a missing via header is
-// detected.
-const base::Feature kMissingViaHeaderShortDuration{
-    "MissingViaHeaderShortDuration", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables experiment that makes connection to the data saver proxy more robust.
 const base::Feature kDataReductionProxyRobustConnection{
     "DataReductionProxyRobustConnection", base::FEATURE_ENABLED_BY_DEFAULT};
