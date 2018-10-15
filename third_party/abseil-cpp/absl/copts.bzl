@@ -53,6 +53,10 @@ LLVM_FLAGS = [
     "-Wno-packed",
     "-Wno-padded",
     ###
+    # Google style does not use unsigned integers, though STL containers
+    # have unsigned types.
+    "-Wno-sign-compare",
+    ###
     "-Wno-float-conversion",
     "-Wno-float-equal",
     "-Wno-format-nonliteral",
@@ -100,6 +104,7 @@ LLVM_TEST_FLAGS = [
     "-Wno-c99-extensions",
     "-Wno-missing-noreturn",
     "-Wno-missing-prototypes",
+    "-Wno-missing-variable-declarations",
     "-Wno-null-conversion",
     "-Wno-shadow",
     "-Wno-shift-sign-overflow",
@@ -111,12 +116,15 @@ LLVM_TEST_FLAGS = [
     "-Wno-unused-template",
     "-Wno-used-but-marked-unused",
     "-Wno-zero-as-null-pointer-constant",
+    # gtest depends on this GNU extension being offered.
+    "-Wno-gnu-zero-variadic-macro-arguments",
 ]
 
 MSVC_FLAGS = [
     "/W3",
     "/wd4005",  # macro-redefinition
     "/wd4068",  # unknown pragma
+    "/wd4180",  # qualifier applied to function type has no meaning; ignored
     "/wd4244",  # conversion from 'type1' to 'type2', possible loss of data
     "/wd4267",  # conversion from 'size_t' to 'type', possible loss of data
     "/wd4800",  # forcing value to bool 'true' or 'false' (performance warning)
