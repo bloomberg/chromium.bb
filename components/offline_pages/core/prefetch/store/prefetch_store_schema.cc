@@ -17,9 +17,9 @@ namespace offline_pages {
 //   of 0).
 
 // static
-const int PrefetchStoreSchema::kCurrentVersion = 2;
+constexpr int PrefetchStoreSchema::kCurrentVersion;
 // static
-const int PrefetchStoreSchema::kCompatibleVersion = 1;
+constexpr int PrefetchStoreSchema::kCompatibleVersion;
 
 namespace {
 
@@ -66,39 +66,43 @@ int GetCompatibleVersionNumber(sql::MetaTable* meta_table) {
 // simplify data retrieval. Columns with fixed length types must come first and
 // variable length types must come later.
 static const char kItemsTableCreationSql[] =
-    "CREATE TABLE IF NOT EXISTS prefetch_items "
     // Fixed length columns come first.
-    "(offline_id INTEGER PRIMARY KEY NOT NULL,"
-    " state INTEGER NOT NULL DEFAULT 0,"
-    " generate_bundle_attempts INTEGER NOT NULL DEFAULT 0,"
-    " get_operation_attempts INTEGER NOT NULL DEFAULT 0,"
-    " download_initiation_attempts INTEGER NOT NULL DEFAULT 0,"
-    " archive_body_length INTEGER_NOT_NULL DEFAULT -1,"
-    " creation_time INTEGER NOT NULL,"
-    " freshness_time INTEGER NOT NULL,"
-    " error_code INTEGER NOT NULL DEFAULT 0,"
-    " file_size INTEGER NOT NULL DEFAULT -1,"
-    // Variable length columns come later.
-    " guid VARCHAR NOT NULL DEFAULT '',"
-    " client_namespace VARCHAR NOT NULL DEFAULT '',"
-    " client_id VARCHAR NOT NULL DEFAULT '',"
-    " requested_url VARCHAR NOT NULL DEFAULT '',"
-    " final_archived_url VARCHAR NOT NULL DEFAULT '',"
-    " operation_name VARCHAR NOT NULL DEFAULT '',"
-    " archive_body_name VARCHAR NOT NULL DEFAULT '',"
-    " title VARCHAR NOT NULL DEFAULT '',"
-    " file_path VARCHAR NOT NULL DEFAULT ''"
-    ")";
+    R"sql(
+CREATE TABLE IF NOT EXISTS prefetch_items(
+offline_id INTEGER PRIMARY KEY NOT NULL,
+state INTEGER NOT NULL DEFAULT 0,
+generate_bundle_attempts INTEGER NOT NULL DEFAULT 0,
+get_operation_attempts INTEGER NOT NULL DEFAULT 0,
+download_initiation_attempts INTEGER NOT NULL DEFAULT 0,
+archive_body_length INTEGER_NOT_NULL DEFAULT -1,
+creation_time INTEGER NOT NULL,
+freshness_time INTEGER NOT NULL,
+error_code INTEGER NOT NULL DEFAULT 0,
+file_size INTEGER NOT NULL DEFAULT -1,
+guid VARCHAR NOT NULL DEFAULT '',
+client_namespace VARCHAR NOT NULL DEFAULT '',
+client_id VARCHAR NOT NULL DEFAULT '',
+requested_url VARCHAR NOT NULL DEFAULT '',
+final_archived_url VARCHAR NOT NULL DEFAULT '',
+operation_name VARCHAR NOT NULL DEFAULT '',
+archive_body_name VARCHAR NOT NULL DEFAULT '',
+title VARCHAR NOT NULL DEFAULT '',
+file_path VARCHAR NOT NULL DEFAULT ''
+)
+)sql";
 
 bool CreatePrefetchItemsTable(sql::Database* db) {
   return db->Execute(kItemsTableCreationSql);
 }
 
 static const char kQuotaTableCreationSql[] =
-    "CREATE TABLE IF NOT EXISTS prefetch_downloader_quota "
-    "(quota_id INTEGER PRIMARY KEY NOT NULL DEFAULT 1,"
-    " update_time INTEGER NOT NULL,"
-    " available_quota INTEGER NOT NULL DEFAULT 0)";
+    R"sql(
+CREATE TABLE IF NOT EXISTS prefetch_downloader_quota(
+quota_id INTEGER PRIMARY KEY NOT NULL DEFAULT 1,
+update_time INTEGER NOT NULL,
+available_quota INTEGER NOT NULL DEFAULT 0
+)
+)sql";
 
 bool CreatePrefetchQuotaTable(sql::Database* db) {
   return db->Execute(kQuotaTableCreationSql);
@@ -119,47 +123,52 @@ bool CreateLatestSchema(sql::Database* db) {
 int MigrateFromVersion1To2(sql::Database* db, sql::MetaTable* meta_table) {
   const int target_version = 2;
   const int target_compatible_version = 1;
+  // 1. Rename the existing items table.
+  // 2. Create the new items table.
+  // 3. Copy existing rows to the new items table.
+  // 4. Drop the old items table.
   static const char kVersion1ToVersion2MigrationSql[] =
-      // Rename the existing items table.
-      "ALTER TABLE prefetch_items RENAME TO prefetch_items_old; "
-      // Creates the new items table.
-      "CREATE TABLE prefetch_items "
-      "(offline_id INTEGER PRIMARY KEY NOT NULL,"
-      " state INTEGER NOT NULL DEFAULT 0,"
-      " generate_bundle_attempts INTEGER NOT NULL DEFAULT 0,"
-      " get_operation_attempts INTEGER NOT NULL DEFAULT 0,"
-      " download_initiation_attempts INTEGER NOT NULL DEFAULT 0,"
-      " archive_body_length INTEGER_NOT_NULL DEFAULT -1,"
-      " creation_time INTEGER NOT NULL,"
-      " freshness_time INTEGER NOT NULL,"
-      " error_code INTEGER NOT NULL DEFAULT 0,"
-      // Note: default value changed from 0 to -1.
-      " file_size INTEGER NOT NULL DEFAULT -1,"
-      " guid VARCHAR NOT NULL DEFAULT '',"
-      " client_namespace VARCHAR NOT NULL DEFAULT '',"
-      " client_id VARCHAR NOT NULL DEFAULT '',"
-      " requested_url VARCHAR NOT NULL DEFAULT '',"
-      " final_archived_url VARCHAR NOT NULL DEFAULT '',"
-      " operation_name VARCHAR NOT NULL DEFAULT '',"
-      " archive_body_name VARCHAR NOT NULL DEFAULT '',"
-      " title VARCHAR NOT NULL DEFAULT '',"
-      " file_path VARCHAR NOT NULL DEFAULT ''); "
-      // Copy existing rows to the new items table.
-      "INSERT INTO prefetch_items "
-      " (offline_id, state, generate_bundle_attempts, get_operation_attempts,"
-      "  download_initiation_attempts, archive_body_length, creation_time,"
-      "  freshness_time, error_code, file_size, guid, client_namespace,"
-      "  client_id, requested_url, final_archived_url, operation_name,"
-      "  archive_body_name, title, file_path)"
-      " SELECT "
-      "  offline_id, state, generate_bundle_attempts, get_operation_attempts,"
-      "  download_initiation_attempts, archive_body_length, creation_time,"
-      "  freshness_time, error_code, file_size, guid, client_namespace,"
-      "  client_id, requested_url, final_archived_url, operation_name,"
-      "  archive_body_name, title, file_path"
-      " FROM prefetch_items_old; "
-      // Drops the old items table.
-      "DROP TABLE prefetch_items_old; ";
+      R"sql(
+ALTER TABLE prefetch_items RENAME TO prefetch_items_old;
+
+CREATE TABLE prefetch_items(
+offline_id INTEGER PRIMARY KEY NOT NULL,
+state INTEGER NOT NULL DEFAULT 0,
+generate_bundle_attempts INTEGER NOT NULL DEFAULT 0,
+get_operation_attempts INTEGER NOT NULL DEFAULT 0,
+download_initiation_attempts INTEGER NOT NULL DEFAULT 0,
+archive_body_length INTEGER_NOT_NULL DEFAULT -1,
+creation_time INTEGER NOT NULL,
+freshness_time INTEGER NOT NULL,
+error_code INTEGER NOT NULL DEFAULT 0,
+file_size INTEGER NOT NULL DEFAULT -1,
+guid VARCHAR NOT NULL DEFAULT '',
+client_namespace VARCHAR NOT NULL DEFAULT '',
+client_id VARCHAR NOT NULL DEFAULT '',
+requested_url VARCHAR NOT NULL DEFAULT '',
+final_archived_url VARCHAR NOT NULL DEFAULT '',
+operation_name VARCHAR NOT NULL DEFAULT '',
+archive_body_name VARCHAR NOT NULL DEFAULT '',
+title VARCHAR NOT NULL DEFAULT '',
+file_path VARCHAR NOT NULL DEFAULT ''
+);
+
+INSERT INTO prefetch_items
+(offline_id, state, generate_bundle_attempts, get_operation_attempts,
+download_initiation_attempts, archive_body_length, creation_time,
+freshness_time, error_code, file_size, guid, client_namespace,
+client_id, requested_url, final_archived_url, operation_name,
+archive_body_name, title, file_path)
+SELECT
+offline_id, state, generate_bundle_attempts, get_operation_attempts,
+download_initiation_attempts, archive_body_length, creation_time,
+freshness_time, error_code, file_size, guid, client_namespace,
+client_id, requested_url, final_archived_url, operation_name,
+archive_body_name, title, file_path
+FROM prefetch_items_old;
+
+DROP TABLE prefetch_items_old;
+)sql";
 
   sql::Transaction transaction(db);
   if (transaction.Begin() && db->Execute(kVersion1ToVersion2MigrationSql) &&
