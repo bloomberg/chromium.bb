@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -55,6 +56,7 @@ class AccountReconcilorDelegate {
   // |first_execution| is true for the first reconciliation after startup.
   // |will_logout| is true if the reconcilor will perform a logout no matter
   // what is returned by this function.
+  // Only used with MergeSession.
   virtual std::string GetFirstGaiaAccountForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
@@ -62,19 +64,13 @@ class AccountReconcilorDelegate {
       bool first_execution,
       bool will_logout) const;
 
-  // Reorders chrome accounts in the order they should appear in cookies with
-  // respect to existing cookies. Returns true if the resulting vector is not
-  // the same as existing vector of gaia accounts (i.e. cookies should be
-  // rebuilt).
-  virtual bool ReorderChromeAccountsForReconcileIfNeeded(
+  // Returns a pair of mode and accounts to send to Mutilogin endpoint.
+  MultiloginParameters CalculateParametersForMultilogin(
       const std::vector<std::string>& chrome_accounts,
-      const std::string primary_account,
+      const std::string& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      std::vector<std::string>* accounts_to_send) const;
-
-  // Returns true if it is allowed to change the order of the gaia accounts
-  // (e.g. on mobile or on stratup). Default is true.
-  virtual bool ShouldUpdateAccountsOrderInCookies() const;
+      bool first_execution,
+      bool primary_has_error) const;
 
   // Returns whether secondary accounts should be revoked at the beginning of
   // the reconcile.
@@ -113,6 +109,22 @@ class AccountReconcilorDelegate {
   AccountReconcilor* reconcilor() { return reconcilor_; }
 
  private:
+  // Reorders chrome accounts in the order they should appear in cookies with
+  // respect to existing cookies.
+  virtual std::vector<std::string> ReorderChromeAccountsForReconcile(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string& primary_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const signin::MultiloginMode mode) const;
+
+  // Returns Mode which shows if it is allowed to change the order of the gaia
+  // accounts (e.g. on mobile or on stratup). Default is UPDATE.
+  virtual MultiloginMode CalculateModeForReconcile(
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const std::string primary_account,
+      bool first_execution,
+      bool primary_has_error) const;
+
   AccountReconcilor* reconcilor_;
 };
 

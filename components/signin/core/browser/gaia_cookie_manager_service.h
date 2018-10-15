@@ -39,6 +39,22 @@ class SimpleURLLoader;
 namespace signin {
 // The maximum number of retries for a fetcher used in this class.
 constexpr int kMaxFetcherRetries = 8;
+
+struct MultiloginParameters {
+  MultiloginParameters(const MultiloginMode mode,
+                       const std::vector<std::string>& accounts_to_send);
+  MultiloginParameters(const MultiloginParameters& other);
+  MultiloginParameters& operator=(const MultiloginParameters& other);
+  ~MultiloginParameters();
+
+  // Needed for testing.
+  bool operator==(const MultiloginParameters& other) const {
+    return mode == other.mode && accounts_to_send == other.accounts_to_send;
+  }
+
+  MultiloginMode mode;
+  std::vector<std::string> accounts_to_send;
+};
 }  // namespace signin
 
 // Merges a Google account known to Chrome into the cookie jar.  When merging

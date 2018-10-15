@@ -140,25 +140,36 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            ProfileAlreadyConnected);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDiceMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceTokenServiceRegistration);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceLastKnownFirstAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountMerge);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, HandleSigninDuringReconcile);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceMigrationAfterNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceTokenServiceRegistration);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceReconcileWithoutSignin);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceLastKnownFirstAccount);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           UnverifiedAccountNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           UnverifiedAccountMerge);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           HandleSigninDuringReconcile);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceMigrationAfterNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceNoMigrationWhenTokensNotReady);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceNoMigrationAfterReconcile);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceReconcileReuseGaiaFirstAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            MigrationClearSecondaryTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceDeleteCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            TokensNotLoaded);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
@@ -232,7 +243,7 @@ class AccountReconcilor : public KeyedService,
   virtual void PerformMergeAction(const std::string& account_id);
   virtual void PerformLogoutAllAccountsAction();
   virtual void PerformSetCookiesAction(
-      const std::vector<std::string>& account_ids);
+      const signin::MultiloginParameters& parameters);
 
   // Used during periodic reconciliation.
   void StartReconcile();
