@@ -15,11 +15,14 @@
 namespace device {
 
 class ArCoreGl;
+class ArImageTransportFactory;
 
 class ArCoreGlThread : public base::android::JavaHandlerThread {
  public:
-  ArCoreGlThread(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
-                 base::OnceCallback<void()> initialized_callback);
+  ArCoreGlThread(
+      std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory,
+      std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
+      base::OnceCallback<void()> initialized_callback);
   ~ArCoreGlThread() override;
   ArCoreGl* GetArCoreGl();
 
@@ -28,6 +31,7 @@ class ArCoreGlThread : public base::android::JavaHandlerThread {
   void CleanUp() override;
 
  private:
+  std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
   base::OnceCallback<void()> initialized_callback_;
 

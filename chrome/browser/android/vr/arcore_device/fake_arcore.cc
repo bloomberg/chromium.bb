@@ -18,7 +18,8 @@ FakeArCore::FakeArCore()
 
 FakeArCore::~FakeArCore() = default;
 
-bool FakeArCore::Initialize() {
+bool FakeArCore::Initialize(
+    base::android::ScopedJavaLocalRef<jobject> application_context) {
   DCHECK(IsOnGlThread());
   return true;
 }
@@ -27,6 +28,7 @@ void FakeArCore::SetDisplayGeometry(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation) {
   DCHECK(IsOnGlThread());
+
   display_rotation_ = display_rotation;
   frame_size_ = frame_size;
 }
@@ -278,8 +280,16 @@ bool FakeArCore::RequestHitTest(
     const mojom::XRRayPtr& ray,
     const gfx::Size& image_size,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
-  // TODO(https://crbug.com/837834): implement for testing.
-  return false;
+  mojom::XRHitResultPtr hit = mojom::XRHitResult::New();
+  hit->hit_matrix.resize(16);
+  // Identity matrix - no translation and default orientation.
+  hit->hit_matrix.data()[0] = 1;
+  hit->hit_matrix.data()[5] = 1;
+  hit->hit_matrix.data()[10] = 1;
+  hit->hit_matrix.data()[15] = 1;
+  hit_results->push_back(std::move(hit));
+
+  return true;
 }
 
 void FakeArCore::Pause() {
@@ -292,6 +302,10 @@ void FakeArCore::Resume() {
 
 bool FakeArCore::IsOnGlThread() const {
   return gl_thread_task_runner_->BelongsToCurrentThread();
+}
+
+std::unique_ptr<ArCore> FakeArCoreFactory::Create() {
+  return std::make_unique<FakeArCore>();
 }
 
 }  // namespace device
