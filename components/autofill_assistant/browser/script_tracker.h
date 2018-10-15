@@ -94,7 +94,6 @@ class ScriptTracker {
 
   ScriptExecutorDelegate* const delegate_;
   ScriptTracker::Listener* const listener_;
-  std::unique_ptr<std::map<std::string, std::string>> parameters_;
 
   // Paths and names of scripts known to be runnable (they pass the
   // preconditions).
@@ -112,10 +111,10 @@ class ScriptTracker {
 
   // List of scripts that have been executed and their corresponding statuses.
   std::map<std::string, ScriptStatusProto> executed_scripts_;
-  std::unique_ptr<BatchElementChecker> pending_checks_;
+  std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   // Scripts found to be runnable so far, in the current check, represented by
-  // |pending_checks_|.
+  // |batch_element_checker_|.
   std::vector<Script*> pending_runnable_scripts_;
 
   // If a Check() was called while a check was in progress, run another one just
@@ -125,6 +124,10 @@ class ScriptTracker {
   // If a script is currently running, this is the script's executor. Otherwise,
   // this is nullptr.
   std::unique_ptr<ScriptExecutor> executor_;
+
+  // The callback of the pending run script. |executor_| must not be nullptr if
+  // |pending_run_script_callback_| is not nullptr.
+  ScriptExecutor::RunScriptCallback pending_run_script_callback_;
 
   base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_;
 
