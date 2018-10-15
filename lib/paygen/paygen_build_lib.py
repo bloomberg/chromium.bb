@@ -877,10 +877,13 @@ class PaygenBuild(object):
         # objects and their skip/exist attributes. We're also recording whether
         # this run will be skipping any actual work.
         for p in payloads:
-          result = paygen_payload_lib.FindExistingPayloads(p)
-          if result:
-            p.exists = True
-            p.uri = result[0]
+          try:
+            result = paygen_payload_lib.FindExistingPayloads(p)
+            if result:
+              p.exists = True
+              p.uri = result[0]
+          except gs.GSNoSuchKey:
+            pass
 
         # Display the required payload generation list.
         log_items = []
