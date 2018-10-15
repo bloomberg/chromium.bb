@@ -102,6 +102,9 @@
         "load:games:alphabetty": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
+        "load:games:alphabetty:2018": {
+            "DEFAULT": "system_health_desktop_8360dd959c.wprgo"
+        },
         "load:games:bubbles": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },

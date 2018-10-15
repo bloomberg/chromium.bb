@@ -508,3 +508,10 @@ class LoadAlphabettyStory(_LoadingStory):
   URL = 'https://king.com/play/alphabetty'
   TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
+
+
+class LoadAlphabettyStory2018(_LoadingStory):
+  NAME = 'load:games:alphabetty:2018'
+  URL = 'https://king.com/play/alphabetty'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
