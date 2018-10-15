@@ -717,20 +717,21 @@ void AXObjectCacheImpl::ChildrenChanged(Node* node) {
   ChildrenChanged(Get(node), node);
 }
 
+// Return a node for the current layout object or ancestor layout object.
+Node* GetClosestNodeForLayoutObject(LayoutObject* layout_object) {
+  if (!layout_object)
+    return nullptr;
+  Node* node = layout_object->GetNode();
+  return node ? node : GetClosestNodeForLayoutObject(layout_object->Parent());
+}
+
 void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
   if (!layout_object)
     return;
-  Node* node = layout_object->GetNode();
-  LayoutObject* parent = layout_object->Parent();
-  while (!node && parent) {
-    node = layout_object->GetNode();
-    parent = parent->Parent();
-  }
 
-  if (!node)
-    return;
+  Node* node = GetClosestNodeForLayoutObject(layout_object);
 
-  if (node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
+  if (node && node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
     nodes_changed_during_layout_.push_back(node);
     return;
   }
@@ -979,12 +980,8 @@ void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
   if (!node)
     return;  // Virtual AOM node.
 
-  AXObject* obj = Get(node);
-  if (!obj && IsHTMLSelectElement(node))
-    obj = GetOrCreate(node);
-
   // Invalidate the current object and make the parent reconsider its children.
-  if (obj) {
+  if (AXObject* obj = Get(node)) {
     // Save parent for later use.
     AXObject* parent = obj->ParentObject();
 
