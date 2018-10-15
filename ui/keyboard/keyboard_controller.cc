@@ -429,6 +429,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   TRACE_EVENT0("vk", "HideKeyboard");
 
   switch (state_) {
+    case KeyboardControllerState::UNKNOWN:
     case KeyboardControllerState::INITIAL:
     case KeyboardControllerState::HIDDEN:
       return;
@@ -494,7 +495,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       break;
     }
-    default:
+    case KeyboardControllerState::COUNT:
       NOTREACHED();
   }
 }
