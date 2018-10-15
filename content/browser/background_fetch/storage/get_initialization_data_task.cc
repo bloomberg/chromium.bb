@@ -337,13 +337,7 @@ class FillFromMetadataTask : public InitializationSubTask {
 
     // Fill BackgroundFetchRegistration.
     auto& registration = sub_task_init().initialization_data->registration;
-    // TODO(crbug.com/853874): Unify conversion logic.
-    registration.developer_id = metadata.registration().developer_id();
-    registration.unique_id = metadata.registration().unique_id();
-    registration.upload_total = metadata.registration().upload_total();
-    registration.uploaded = metadata.registration().uploaded();
-    registration.download_total = metadata.registration().download_total();
-    registration.downloaded = metadata.registration().downloaded();
+    ToBackgroundFetchRegistration(metadata, &registration);
 
     // Total number of requests.
     sub_task_init().initialization_data->num_requests = metadata.num_fetches();
