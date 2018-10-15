@@ -2,7 +2,6 @@ Test window.CSS.escape()
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS CSS.escape('\0') is "�"
 PASS CSS.escape('a\0') is "a�"
 PASS CSS.escape('\0b') is "�b"
