@@ -12,7 +12,13 @@ source_set("infobars") {
     ":public",
     "//base",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/settings/sync_utils",
+    "//ios/chrome/browser/ui/signin_interaction/public",
+    "//ios/chrome/browser/upgrade",
   ]
 }
 
