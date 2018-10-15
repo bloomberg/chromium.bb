@@ -264,6 +264,9 @@ bool WindowSelectorController::CanSelect() {
 
 bool WindowSelectorController::ToggleOverview(
     WindowSelector::EnterExitOverviewType type) {
+  // Hide the virtual keyboard as it obstructs the overview mode.
+  keyboard::KeyboardController::Get()->HideKeyboardImplicitlyBySystem();
+
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
   // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
