@@ -291,21 +291,22 @@ class RemoveCodeCacheTester {
 
   enum Cache { kJs, kWebAssembly };
 
-  bool ContainsEntry(Cache cache, GURL url, url::Origin origin) {
+  bool ContainsEntry(Cache cache, GURL url, GURL origin_lock) {
     entry_exists_ = false;
     GeneratedCodeCache::ReadDataCallback callback = base::BindRepeating(
         &RemoveCodeCacheTester::FetchEntryCallback, base::Unretained(this));
-    GetCache(cache)->FetchEntry(url, origin, callback);
+    GetCache(cache)->FetchEntry(url, origin_lock, callback);
     await_completion_.BlockUntilNotified();
     return entry_exists_;
   }
 
   void AddEntry(Cache cache,
                 GURL url,
-                url::Origin origin,
+                GURL origin_lock,
                 const std::string& data) {
     std::vector<uint8_t> data_vector(data.begin(), data.end());
-    GetCache(cache)->WriteData(url, origin, base::Time::Now(), data_vector);
+    GetCache(cache)->WriteData(url, origin_lock, base::Time::Now(),
+                               data_vector);
     base::RunLoop().RunUntilIdle();
     // TODO(crbug.com/886892): Remove this once we update GeneratedCodeCache
     // to serialize operations corresponding to each entry.
@@ -1351,7 +1352,7 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
 
   RemoveCodeCacheTester tester(partition->GetGeneratedCodeCacheContext());
 
-  url::Origin origin = kOrigin1;
+  GURL origin = GURL(kTestOrigin1);
   std::string data("SomeData");
   std::string data2("SomeData.wasm");
   tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
