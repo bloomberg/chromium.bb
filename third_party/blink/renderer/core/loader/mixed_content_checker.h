@@ -93,6 +93,9 @@ class CORE_EXPORT MixedContentChecker final {
                                 SecurityViolationReportingPolicy =
                                     SecurityViolationReportingPolicy::kReport);
 
+  static bool ShouldAutoupgrade(KURL frame_url,
+                                WebMixedContentContextType type);
+
   static void CheckMixedPrivatePublic(LocalFrame*,
                                       const AtomicString& resource_ip_address);
 

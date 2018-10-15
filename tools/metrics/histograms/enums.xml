@@ -33208,6 +33208,12 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="MixedContentAutoupgradeStatus">
+  <int value="0" label="Started"/>
+  <int value="1" label="Failed"/>
+  <int value="2" label="ResponseReceived"/>
+</enum>
+
 <enum name="MobileDefaultBrowserState">
   <int value="0" label="No default"/>
   <int value="1" label="Chrome: System default"/>

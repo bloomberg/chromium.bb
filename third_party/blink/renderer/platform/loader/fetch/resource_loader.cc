@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -47,6 +49,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -74,6 +77,16 @@ bool IsThrottlableRequestContext(mojom::RequestContextType context) {
          context != mojom::RequestContextType::XML_HTTP_REQUEST &&
          context != mojom::RequestContextType::VIDEO &&
          context != mojom::RequestContextType::AUDIO;
+}
+
+void LogMixedAutoupgradeStatus(blink::MixedContentAutoupgradeStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.ResourceRequest.Status", status);
+}
+
+void LogMixedAutoupgradeResponseOrError(int response_or_error_code) {
+  base::UmaHistogramSparse(
+      "MixedAutoupgrade.ResourceRequest.ErrorOrResponseCode",
+      response_or_error_code);
 }
 
 }  // namespace
@@ -355,6 +368,9 @@ void ResourceLoader::Start() {
         GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
   }
 
+  if (request.IsAutomaticUpgrade()) {
+    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
+  }
   scheduler_->Request(this, throttle_option, request.Priority(),
                       request.IntraPriorityValue(), &scheduler_client_id_);
 }
@@ -718,6 +734,11 @@ void ResourceLoader::DidReceiveResponse(
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!web_url_response.IsNull());
 
+  if (resource_->GetResourceRequest().IsAutomaticUpgrade()) {
+    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kResponseReceived);
+    LogMixedAutoupgradeResponseOrError(web_url_response.HttpStatusCode());
+  }
+
   if (Context().IsDetached()) {
     // If the fetch context is already detached, we don't need further signals,
     // so let's cancel the request.
@@ -931,6 +952,10 @@ void ResourceLoader::DidFail(const WebURLError& error,
                              int64_t encoded_data_length,
                              int64_t encoded_body_length,
                              int64_t decoded_body_length) {
+  if (resource_->GetResourceRequest().IsAutomaticUpgrade()) {
+    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
+    LogMixedAutoupgradeResponseOrError(error.reason());
+  }
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);

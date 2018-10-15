@@ -28,7 +28,10 @@
 
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
@@ -639,6 +642,33 @@ bool MixedContentChecker::IsMixedFormAction(
         kSecurityMessageSource, kWarningMessageLevel, message));
   }
 
+  return true;
+}
+
+bool MixedContentChecker::ShouldAutoupgrade(KURL frame_url,
+                                            WebMixedContentContextType type) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kMixedContentAutoupgrade) ||
+      !frame_url.ProtocolIs("https") ||
+      type == WebMixedContentContextType::kNotMixedContent) {
+    return false;
+  }
+
+  std::string autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
+      blink::features::kMixedContentAutoupgrade,
+      blink::features::kMixedContentAutoupgradeModeParamName);
+
+  if (autoupgrade_mode ==
+      blink::features::kMixedContentAutoupgradeModeBlockable) {
+    return type == WebMixedContentContextType::kBlockable ||
+           type == WebMixedContentContextType::kShouldBeBlockable;
+  }
+  if (autoupgrade_mode ==
+      blink::features::kMixedContentAutoupgradeModeOptionallyBlockable) {
+    return type == WebMixedContentContextType::kOptionallyBlockable;
+  }
+
+  // Otherwise we default to autoupgrading all mixed content.
   return true;
 }
 

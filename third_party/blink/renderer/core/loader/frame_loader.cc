@@ -38,8 +38,6 @@
 
 #include <memory>
 #include "base/auto_reset.h"
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
@@ -81,6 +79,7 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
@@ -114,35 +113,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using blink::WebURLRequest;
-
-namespace {
-
-bool ShouldAutoupgrade(blink::WebMixedContentContextType type) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kMixedContentAutoupgrade) ||
-      type == blink::WebMixedContentContextType::kNotMixedContent) {
-    return false;
-  }
-
-  std::string autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
-      blink::features::kMixedContentAutoupgrade,
-      blink::features::kMixedContentAutoupgradeModeParamName);
-
-  if (autoupgrade_mode ==
-      blink::features::kMixedContentAutoupgradeModeBlockable) {
-    return type == blink::WebMixedContentContextType::kBlockable ||
-           type == blink::WebMixedContentContextType::kShouldBeBlockable;
-  }
-  if (autoupgrade_mode ==
-      blink::features::kMixedContentAutoupgradeModeOptionallyBlockable) {
-    return type == blink::WebMixedContentContextType::kOptionallyBlockable;
-  }
-
-  // Otherwise we default to autoupgrading all mixed content.
-  return true;
-}
-
-}  // namespace
 
 namespace blink {
 
@@ -1734,9 +1704,9 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     // TODO(carlosil): Handle strict_mixed_content_checking_for_plugin
     // correctly.
     if (context != mojom::RequestContextType::UNSPECIFIED &&
-        origin_context->Url().ProtocolIs("https") &&
         resource_request.Url().ProtocolIs("http") &&
-        ShouldAutoupgrade(
+        MixedContentChecker::ShouldAutoupgrade(
+            origin_context->Url(),
             WebMixedContent::ContextTypeFromRequestContext(context, false))) {
       resource_request.SetIsAutomaticUpgrade(true);
     } else {

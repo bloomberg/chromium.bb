@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -71,6 +72,14 @@
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
 static const int32_t kBucketCountForMessageSizeHistogram = 50;
 static const char kWebSocketSubprotocolSeparator[] = ", ";
+
+namespace {
+void LogMixedAutoupgradeStatus(blink::MixedContentAutoupgradeStatus status) {
+  // For websockets we use the response received element to log successful
+  // connections.
+  UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.Websocket.Status", status);
+}
+}  // namespace
 
 namespace blink {
 
@@ -235,7 +244,8 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       subprotocol_(""),
       extensions_(""),
       event_queue_(EventQueue::Create(this)),
-      buffered_amount_update_task_pending_(false) {}
+      buffered_amount_update_task_pending_(false),
+      was_autoupgraded_to_wss_(false) {}
 
 DOMWebSocket::~DOMWebSocket() {
   DCHECK(!channel_);
@@ -295,13 +305,20 @@ void DOMWebSocket::Connect(const String& url,
   NETWORK_DVLOG(1) << "WebSocket " << this << " connect() url=" << url;
   url_ = KURL(NullURL(), url);
 
-  if ((GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
-           kUpgradeInsecureRequests ||
-       (base::FeatureList::IsEnabled(
-            blink::features::kMixedContentAutoupgrade) &&
-        GetExecutionContext()->Url().ProtocolIs("https"))) &&
+  bool upgrade_insecure_requests_set =
+      GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
+      kUpgradeInsecureRequests;
+
+  if ((upgrade_insecure_requests_set ||
+       MixedContentChecker::ShouldAutoupgrade(
+           GetExecutionContext()->Url(),
+           WebMixedContentContextType::kBlockable)) &&
       url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
+    if (!upgrade_insecure_requests_set) {
+      was_autoupgraded_to_wss_ = true;
+      LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
+    }
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     url_.SetProtocol("wss");
@@ -685,6 +702,8 @@ void DOMWebSocket::Unpause() {
 void DOMWebSocket::DidConnect(const String& subprotocol,
                               const String& extensions) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidConnect()";
+  if (was_autoupgraded_to_wss_)
+    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kResponseReceived);
   if (state_ != kConnecting)
     return;
   state_ = kOpen;
@@ -746,6 +765,8 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
 void DOMWebSocket::DidError() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidError()";
+  if (state_ == kConnecting && was_autoupgraded_to_wss_)
+    LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
   ReflectBufferedAmountConsumption();
   state_ = kClosed;
   event_queue_->Dispatch(Event::Create(EventTypeNames::error));
