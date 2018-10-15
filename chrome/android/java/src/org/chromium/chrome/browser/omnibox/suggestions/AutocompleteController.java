@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -12,8 +12,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
@@ -37,7 +39,6 @@ public class AutocompleteController {
     private final OnSuggestionsReceivedListener mListener;
     private final VoiceSuggestionProvider mVoiceSuggestionProvider = new VoiceSuggestionProvider();
 
-
     private boolean mUseCachedZeroSuggestResults;
     private boolean mWaitingForSuggestionsToCache;
 
@@ -45,8 +46,8 @@ public class AutocompleteController {
      * Listener for receiving OmniboxSuggestions.
      */
     public static interface OnSuggestionsReceivedListener {
-        void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                String inlineAutocompleteText);
+        void onSuggestionsReceived(
+                List<OmniboxSuggestion> suggestions, String inlineAutocompleteText);
     }
 
     public AutocompleteController(OnSuggestionsReceivedListener listener) {
@@ -98,7 +99,7 @@ public class AutocompleteController {
      * @param url The URL of the current tab, used to suggest query refinements.
      * @param text The text to query autocomplete suggestions for.
      * @param cursorPosition The position of the cursor within the text.  Set to -1 if the cursor is
-     *                     not focussed on the text.
+     *                       not focused on the text.
      * @param preventInlineAutocomplete Whether autocomplete suggestions should be prevented.
      * @param focusedFromFakebox Whether the user entered the omnibox by tapping the fakebox on the
      *                           native NTP. This should be false on all other pages.
@@ -219,10 +220,8 @@ public class AutocompleteController {
     }
 
     @CalledByNative
-    protected void onSuggestionsReceived(
-            List<OmniboxSuggestion> suggestions,
-            String inlineAutocompleteText,
-            long currentNativeAutocompleteResult) {
+    protected void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
+            String inlineAutocompleteText, long currentNativeAutocompleteResult) {
         if (suggestions.size() > MAX_DEFAULT_SUGGESTION_COUNT) {
             // Trim to the default amount of normal suggestions we can have.
             suggestions.subList(MAX_DEFAULT_SUGGESTION_COUNT, suggestions.size()).clear();
@@ -289,18 +288,17 @@ public class AutocompleteController {
     }
 
     @CalledByNative
-    private static void addOmniboxSuggestionToList(List<OmniboxSuggestion> suggestionList,
-            OmniboxSuggestion suggestion) {
+    private static void addOmniboxSuggestionToList(
+            List<OmniboxSuggestion> suggestionList, OmniboxSuggestion suggestion) {
         suggestionList.add(suggestion);
     }
 
     @CalledByNative
-    private static OmniboxSuggestion buildOmniboxSuggestion(
-            int nativeType, boolean isSearchType, int relevance, int transition, String contents,
-            int[] contentClassificationOffsets, int[] contentClassificationStyles,
-            String description, int[] descriptionClassificationOffsets,
-            int[] descriptionClassificationStyles, String answerContents,
-            String answerType, String fillIntoEdit, String url,
+    private static OmniboxSuggestion buildOmniboxSuggestion(int nativeType, boolean isSearchType,
+            int relevance, int transition, String contents, int[] contentClassificationOffsets,
+            int[] contentClassificationStyles, String description,
+            int[] descriptionClassificationOffsets, int[] descriptionClassificationStyles,
+            String answerContents, String answerType, String fillIntoEdit, String url,
             boolean isStarred, boolean isDeletable) {
         assert contentClassificationOffsets.length == contentClassificationStyles.length;
         List<MatchClassification> contentClassifications = new ArrayList<>();
@@ -309,8 +307,7 @@ public class AutocompleteController {
                     contentClassificationOffsets[i], contentClassificationStyles[i]));
         }
 
-        assert descriptionClassificationOffsets.length
-                == descriptionClassificationStyles.length;
+        assert descriptionClassificationOffsets.length == descriptionClassificationStyles.length;
         List<MatchClassification> descriptionClassifications = new ArrayList<>();
         for (int i = 0; i < descriptionClassificationOffsets.length; i++) {
             descriptionClassifications.add(new MatchClassification(

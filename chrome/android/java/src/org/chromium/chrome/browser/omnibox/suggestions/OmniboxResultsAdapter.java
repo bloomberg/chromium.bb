@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,7 +26,6 @@ import java.util.Set;
  */
 @VisibleForTesting
 public class OmniboxResultsAdapter extends BaseAdapter {
-
     private final List<OmniboxResultItem> mSuggestionItems;
     private final Context mContext;
     private ToolbarDataProvider mDataProvider;
@@ -35,9 +34,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     private Set<String> mPendingAnswerRequestUrls = new HashSet<>();
     private int mLayoutDirection;
 
-    public OmniboxResultsAdapter(
-            Context context,
-            List<OmniboxResultItem> suggestionItems) {
+    public OmniboxResultsAdapter(Context context, List<OmniboxResultItem> suggestionItems) {
         mContext = context;
         mSuggestionItems = suggestionItems;
     }

@@ -160,7 +160,7 @@ public interface LocationBar extends UrlBarDelegate {
     void updateMicButtonState();
 
     /**
-     * Signal to the {@link SuggestionView} populated by us.
+     * Signal to hide the omnibox suggestions.
      */
     void hideSuggestions();
 

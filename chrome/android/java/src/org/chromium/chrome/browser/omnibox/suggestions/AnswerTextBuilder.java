@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.res.Resources;
 import android.graphics.Paint;
@@ -139,11 +139,11 @@ class AnswerTextBuilder {
      *                aligned text.
      * @param density Screen density which will be used to properly size and layout images and top-
      *                aligned text.
-    */
-    @SuppressWarnings("deprecation")  // Update usage of Html.fromHtml when API min is 24
-    private static void appendAndStyleText(
-            SpannableStringBuilder builder, SuggestionAnswer.TextField textField,
-            int maxTextHeightSp, Paint.FontMetrics metrics, float density) {
+     */
+    @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
+    private static void appendAndStyleText(SpannableStringBuilder builder,
+            SuggestionAnswer.TextField textField, int maxTextHeightSp, Paint.FontMetrics metrics,
+            float density) {
         String text = textField.getText();
         int type = textField.getType();
 
@@ -163,9 +163,8 @@ class AnswerTextBuilder {
         builder.setSpan(colorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         if (type == ANSWERS_TOP_ALIGNED_TEXT_TYPE) {
-            TopAlignedSpan topAlignedSpan =
-                    new TopAlignedSpan(
-                            ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP, maxTextHeightSp, metrics, density);
+            TopAlignedSpan topAlignedSpan = new TopAlignedSpan(
+                    ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP, maxTextHeightSp, metrics, density);
             builder.setSpan(topAlignedSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
@@ -262,7 +261,7 @@ class AnswerTextBuilder {
             int textAscentPx = (int) (textHeightSp * ascentProportion * density);
             int maxTextAscentPx = (int) (maxTextHeightSp * ascentProportion * density);
 
-            this.mBaselineShift = -(maxTextAscentPx - textAscentPx);  // Up is -y.
+            this.mBaselineShift = -(maxTextAscentPx - textAscentPx); // Up is -y.
         }
 
         @Override

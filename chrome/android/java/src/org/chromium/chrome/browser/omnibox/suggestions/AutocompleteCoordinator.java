@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,12 +24,14 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
+import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
@@ -96,7 +98,7 @@ public class AutocompleteCoordinator
     /**
      * Provides the additional functionality to trigger and interact with autocomplete suggestions.
      */
-    interface AutocompleteDelegate {
+    public interface AutocompleteDelegate {
         /**
          * Notified that the URL text has changed.
          */
@@ -269,7 +271,7 @@ public class AutocompleteCoordinator
      * @return The current native pointer to the autocomplete results.
      */
     // TODO(tedchoc): Figure out how to remove this.
-    long getCurrentNativeAutocompleteResult() {
+    public long getCurrentNativeAutocompleteResult() {
         return mAutocomplete.getCurrentNativeAutocompleteResult();
     }
 
@@ -461,7 +463,7 @@ public class AutocompleteCoordinator
     /**
      * Conditionally show the omnibox suggestions container.
      */
-    void maybeShowOmniboxResultsContainer() {
+    public void maybeShowOmniboxResultsContainer() {
         if (isSuggestionsListShown() || mDelegate.isUrlBarFocused()) {
             initOmniboxResultsContainer();
             updateOmniboxResultsContainerVisibility(true);
@@ -471,7 +473,7 @@ public class AutocompleteCoordinator
     /**
      * Update whether the omnibox suggestions container is visible.
      */
-    void updateOmniboxResultsContainerVisibility(boolean visible) {
+    public void updateOmniboxResultsContainerVisibility(boolean visible) {
         if (mOmniboxResultsContainer == null) return;
 
         boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == View.VISIBLE;
@@ -487,7 +489,7 @@ public class AutocompleteCoordinator
     /**
      * Update the layout direction of the suggestion list based on the parent layout direction.
      */
-    void updateSuggestionListLayoutDirection() {
+    public void updateSuggestionListLayoutDirection() {
         if (mSuggestionList == null) return;
         int layoutDirection = ViewCompat.getLayoutDirection(mParent);
         mSuggestionList.updateSuggestionsLayoutDirection(layoutDirection);
@@ -944,7 +946,7 @@ public class AutocompleteCoordinator
      * Cancels the queued task to start the autocomplete controller, if any.
      */
     @VisibleForTesting
-    void cancelPendingAutocompleteStart() {
+    public void cancelPendingAutocompleteStart() {
         if (mRequestSuggestions != null) {
             // There is a request for suggestions either waiting for the native side
             // to start, or on the message queue. Remove it from wherever it is.
@@ -958,7 +960,7 @@ public class AutocompleteCoordinator
     /**
      * Trigger autocomplete for the given query.
      */
-    void startAutocompleteForQuery(String query) {
+    public void startAutocompleteForQuery(String query) {
         stopAutocomplete(false);
         if (mToolbarDataProvider.hasTab()) {
             mAutocomplete.start(mToolbarDataProvider.getProfile(),
@@ -969,7 +971,7 @@ public class AutocompleteCoordinator
     /**
      * Notifies autocomplete that the URL focus state has changed.
      */
-    void onUrlFocusChanged(boolean hasFocus) {
+    public void onUrlFocusChanged(boolean hasFocus) {
         if (!hasFocus) {
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
