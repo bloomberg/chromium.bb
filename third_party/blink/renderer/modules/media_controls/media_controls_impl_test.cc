@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -1330,8 +1331,9 @@ class ModernMediaControlsImplTest : public MediaControlsImplTest {
 };
 
 TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
+  GetDocument().View()->UpdateAllLifecyclePhases();
   {
-    const ComputedStyle* style = MediaControls().EnsureComputedStyle();
+    const ComputedStyle* style = MediaControls().GetComputedStyle();
     EXPECT_EQ(0.0, style->MarginTop().Pixels());
     EXPECT_EQ(0.0, style->MarginLeft().Pixels());
     EXPECT_EQ(0.0, style->MarginBottom().Pixels());
@@ -1351,7 +1353,7 @@ TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   {
-    const ComputedStyle* style = MediaControls().EnsureComputedStyle();
+    const ComputedStyle* style = MediaControls().GetComputedStyle();
     EXPECT_EQ(1.0, style->MarginTop().Pixels());
     EXPECT_EQ(2.0, style->MarginLeft().Pixels());
     EXPECT_EQ(3.0, style->MarginBottom().Pixels());
