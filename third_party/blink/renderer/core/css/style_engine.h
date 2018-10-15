@@ -291,7 +291,7 @@ class CORE_EXPORT StyleEngine final
                            Element&);
   void PseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
   void PartChangedForElement(Element&);
-  void PartmapChangedForElement(Element&);
+  void ExportpartsChangedForElement(Element&);
 
   void ScheduleSiblingInvalidationsForElement(Element&,
                                               ContainerNode& scheduling_parent,
