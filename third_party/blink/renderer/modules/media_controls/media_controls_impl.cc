@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
-#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
@@ -132,15 +131,6 @@ const char kActAsAudioControlsCSSClass[] = "audio-only";
 const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
-
-// The ratio of video width/height to use for play button size.
-constexpr float kSizingSmallOverlayPlayButtonSizeRatio = 0.25;
-constexpr float kSizingMediumOverlayPlayButtonSizeRatio = 0.15;
-constexpr float kSizingLargeOverlayPlayButtonSizeRatio = 0.11;
-
-// Used for setting overlay play button width CSS variable.
-constexpr double kMinOverlayPlayButtonWidth = 48;
-const char kOverlayPlayButtonWidthCSSVar[] = "--overlay-play-button-width";
 
 // The delay between two taps to be recognized as a double tap gesture.
 constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
@@ -1399,42 +1389,6 @@ void MediaControlsImpl::UpdateSizingCSSClass() {
   SetClass(kMediaControlsSizingLargeCSSClass,
            ShouldShowVideoControls() &&
                sizing_class == MediaControlsSizingClass::kLarge);
-
-  UpdateOverlayPlayButtonWidthCSSVar();
-}
-
-void MediaControlsImpl::UpdateOverlayPlayButtonWidthCSSVar() {
-  // The logic for sizing the overlay play button and its use inside the
-  // controls is a bit too complex for CSS alone (the sizing is a min of two
-  // values maxed with another, and then that needs to be used in calculations
-  // for the spinner as well). To work around this, we're using a CSS variable
-  // set here and used inside the controls CSS.
-  int width = size_.Width();
-  int height = size_.Height();
-  double minDimension = std::min(width, height);
-
-  MediaControlsSizingClass sizing_class = MediaControls::GetSizingClass(width);
-  double sizingRatio;
-  if (sizing_class == MediaControlsSizingClass::kLarge) {
-    sizingRatio = kSizingLargeOverlayPlayButtonSizeRatio;
-  } else if (sizing_class == MediaControlsSizingClass::kMedium) {
-    sizingRatio = kSizingMediumOverlayPlayButtonSizeRatio;
-  } else {
-    sizingRatio = kSizingSmallOverlayPlayButtonSizeRatio;
-  }
-
-  double play_button_width =
-      std::max(kMinOverlayPlayButtonWidth, minDimension * sizingRatio);
-
-  WTF::String play_button_css_value = WTF::String::Number(play_button_width);
-  play_button_css_value.append("px");
-
-  if (!overlay_play_button_width_.has_value() ||
-      overlay_play_button_width_.value() != play_button_width) {
-    overlay_play_button_width_ = play_button_width;
-    style()->setProperty(&GetDocument(), kOverlayPlayButtonWidthCSSVar,
-                         play_button_css_value, "", ASSERT_NO_EXCEPTION);
-  }
 }
 
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
