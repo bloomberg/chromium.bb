@@ -270,9 +270,13 @@ void KeyboardController::DeactivateKeyboard() {
   // Ensure the keyboard is not visible before deactivating it.
   HideKeyboardExplicitlyBySystem();
 
-  if (GetKeyboardWindow() && GetKeyboardWindow()->parent()) {
-    DCHECK_EQ(parent_container_, GetKeyboardWindow()->parent());
-    parent_container_->RemoveChild(GetKeyboardWindow());
+  aura::Window* keyboard_window = GetKeyboardWindow();
+  if (keyboard_window) {
+    keyboard_window->RemovePreTargetHandler(&event_filter_);
+    if (keyboard_window->parent()) {
+      DCHECK_EQ(parent_container_, keyboard_window->parent());
+      parent_container_->RemoveChild(keyboard_window);
+    }
   }
   parent_container_->GetRootWindow()->RemoveObserver(this);
   parent_container_ = nullptr;
