@@ -244,11 +244,11 @@ CrOnc.getActiveValue = function(property) {
       return property[effective];
   }
 
-  // If no Effective value, return the UserSetting or DeviceSetting.
+  // If no Effective value, return the UserSetting or SharedSetting.
   if ('UserSetting' in property)
     return property['UserSetting'];
-  if ('DeviceSetting' in property)
-    return property['DeviceSetting'];
+  if ('SharedSetting' in property)
+    return property['SharedSetting'];
 
   console.error(
       'getActiveValue called on invalid ONC object: ' +
