@@ -21,9 +21,16 @@ camera.views.camera = camera.views.camera || {};
 
 /**
  * Creates a controller for the video preview of Camera view.
+ * @param {camera.View.Context} context Context object.
  * @constructor
  */
-camera.views.camera.Preview = function() {
+camera.views.camera.Preview = function(context) {
+  /**
+   * @type {camera.View.Context}
+   * @private
+   */
+  this.context_ = context;
+
   /**
    * Video element to capture the stream.
    * @type {Video}
@@ -44,17 +51,6 @@ camera.views.camera.Preview = function() {
   this.video_.cleanup = () => {};
 };
 
-camera.views.camera.Preview.prototype = {
-  get aspectRatio() {
-    return this.video_.videoHeight ?
-        (this.video_.videoWidth / this.video_.videoHeight) : 0;
-  },
-  get letterboxSize() {
-    return [window.innerWidth - this.video_.width,
-        window.innerHeight - this.video_.height];
-  }
-};
-
 /**
  * @override
  */
@@ -66,30 +62,31 @@ camera.views.camera.Preview.prototype.toString = function() {
 /**
  * Sets video source.
  * @param {MediaStream} stream Stream to be the source.
- * @param {function()} onIntrinsicSize Callback for the intrinsic size of
- *     preview video is first fetched or changed by orientation changes.
  * @return {!Promise<MediaStream>} Promise for the stream set.
  */
-camera.views.camera.Preview.prototype.setSource = function(
-    stream, onIntrinsicSize) {
+camera.views.camera.Preview.prototype.setSource = function(stream) {
   return new Promise(resolve => {
     var video = document.createElement('video');
     video.id = 'preview-video';
     video.setAttribute('aria-hidden', 'true');
 
     var onLoadedMetadata = () => {
-      var onResize = () => {
+      var onIntrinsicSize = () => {
+        // Handles the intrinsic size first fetched or its orientation changes.
+        if (this.video_.videoWidth && this.video_.videoHeight) {
+          this.context_.onAspectRatio(
+              this.video_.videoWidth / this.video_.videoHeight);
+        }
         this.cancelFocus_();
-        onIntrinsicSize();
       };
       var onClick = (event) => {
         this.applyFocus_(event.offsetX, event.offsetY);
       };
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
-      video.addEventListener('resize', onResize);
+      video.addEventListener('resize', onIntrinsicSize);
       video.addEventListener('click', onClick);
       video.cleanup = () => {
-        video.removeEventListener('resize', onResize);
+        video.removeEventListener('resize', onIntrinsicSize);
         video.removeEventListener('click', onClick);
         video.removeAttribute('srcObject');
         video.load();
@@ -98,7 +95,7 @@ camera.views.camera.Preview.prototype.setSource = function(
       this.video_.parentElement.replaceChild(video, this.video_);
       this.video_.cleanup();
       this.video_ = video;
-      onResize();
+      onIntrinsicSize();
       resolve(stream);
     };
     video.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -115,32 +112,15 @@ camera.views.camera.Preview.prototype.pause = function() {
 };
 
 /**
- * Layouts the video element's size for displaying in the window.
- */
-camera.views.camera.Preview.prototype.layoutElementSize = function() {
-  // Make video content keeps its aspect ratio inside the window's inner-bounds;
-  // it may fill up the window or be letterboxed when fullscreen/maximized.
-  // Don't use app-window.innerBounds' width/height properties during resizing
-  // as they are not updated immediately.
-  if (this.video_.videoHeight) {
-    var f = camera.util.isWindowFullSize() ? Math.min : Math.max;
-    var scale = f(window.innerHeight / this.video_.videoHeight,
-        window.innerWidth / this.video_.videoWidth);
-    this.video_.width = scale * this.video_.videoWidth;
-    this.video_.height = scale * this.video_.videoHeight;
-  }
-}
-
-/**
  * Creates an image blob of the current frame.
  * @return {!Promise<Blob>} Promise for the result.
  */
 camera.views.camera.Preview.prototype.toImage = function() {
   var canvas = document.createElement('canvas');
-  var context = canvas.getContext('2d');
+  var ctx = canvas.getContext('2d');
   canvas.width = this.video_.videoWidth;
   canvas.height = this.video_.videoHeight;
-  context.drawImage(this.video_, 0, 0);
+  ctx.drawImage(this.video_, 0, 0);
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
       if (blob) {

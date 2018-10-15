@@ -75,7 +75,7 @@ camera.Camera = function(aspectRatio) {
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
   // Handle window resize.
-  window.addEventListener('resize', this.onWindowResize_.bind(this));
+  window.addEventListener('resize', this.onWindowResize_.bind(this, null));
 
   // Set the localized window title.
   document.title = chrome.i18n.getMessage('name');
@@ -261,10 +261,10 @@ camera.Camera.prototype.navigateById_ = function(
 };
 
 /**
- * Sets the window size to match the last known aspect ratio.
+ * Resizes the window to match the last known aspect ratio if applicable.
  * @private
  */
-camera.Camera.prototype.updateWindowSize_ = function() {
+camera.Camera.prototype.resizeByAspectRatio_ = function() {
   // Don't update window size if it's maximized or fullscreen.
   if (camera.util.isWindowFullSize()) {
     return;
@@ -287,19 +287,26 @@ camera.Camera.prototype.updateWindowSize_ = function() {
 };
 
 /**
- * Handles resizing of the window.
+ * Handles resizing window/views for size or aspect ratio changes.
+ * @param {number=} aspectRatio Aspect ratio changed.
  * @private
  */
-camera.Camera.prototype.onWindowResize_ = function() {
-  // Delay updating window size during resizing for smooth UX.
+camera.Camera.prototype.onWindowResize_ = function(aspectRatio) {
   if (this.resizeWindowTimeout_) {
     clearTimeout(this.resizeWindowTimeout_);
     this.resizeWindowTimeout_ = null;
   }
-  this.resizeWindowTimeout_ = setTimeout(() => {
-    this.resizeWindowTimeout_ = null;
-    this.updateWindowSize_();
-  }, 500);
+  if (aspectRatio) {
+    // Update window size immediately for changed aspect ratio.
+    this.aspectRatio_ = aspectRatio;
+    this.resizeByAspectRatio_();
+  } else {
+    // Don't further resize window during resizing for smooth UX.
+    this.resizeWindowTimeout_ = setTimeout(() => {
+      this.resizeWindowTimeout_ = null;
+      this.resizeByAspectRatio_();
+    }, 500);
+  }
 
   // Resize all stacked views rather than just the current-view to avoid
   // camera-preview not being resized if a dialog or settings' menu is shown on
@@ -332,10 +339,7 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
  * @private
  */
 camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
-  if (aspectRatio) {
-    this.aspectRatio_ = aspectRatio;
-    this.updateWindowSize_();
-  }
+  this.onWindowResize_(aspectRatio);
 };
 
 /**
