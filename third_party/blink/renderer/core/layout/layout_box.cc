@@ -4031,11 +4031,8 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
       StyleRef().GetPosition()));
 
   const LayoutInline* flow = ToLayoutInline(containing_block);
-  InlineFlowBox* first = flow->FirstLineBox();
-  InlineFlowBox* last = flow->LastLineBox();
-
   // If the containing block is empty, return a height of 0.
-  if (!first || !last)
+  if (flow->IsEmpty())
     return LayoutUnit();
 
   LayoutUnit height_result;
