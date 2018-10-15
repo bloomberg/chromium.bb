@@ -602,51 +602,6 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, MissingViaHeaderFallback) {
-  const struct {
-    const char* headers;
-    bool should_retry;
-    DataReductionProxyBypassType expected_result;
-    base::TimeDelta expected_bypass_length;
-  } tests[] = {
-      {"HTTP/1.1 200 OK\n", true, BYPASS_EVENT_TYPE_MAX,
-       base::TimeDelta::FromSeconds(30)},
-      {"HTTP/1.1 200 OK\n", false, BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-       base::TimeDelta::FromSeconds(30)}};
-  for (auto test : tests) {
-    std::string headers(test.headers);
-    HeadersToRaw(&headers);
-    scoped_refptr<net::HttpResponseHeaders> parsed(
-        new net::HttpResponseHeaders(headers));
-    DataReductionProxyInfo proxy_info;
-
-    base::test::ScopedFeatureList scoped_feature_list_;
-
-    std::string bypass_duration =
-        base::IntToString(test.expected_bypass_length.InSeconds());
-    std::string should_bypass = test.should_retry ? "false" : "true";
-    std::map<std::string, std::string> feature_parameters = {
-        {"should_bypass_missing_via_cellular", should_bypass},
-        {"missing_via_min_bypass_cellular_in_seconds", bypass_duration},
-        {"missing_via_max_bypass_cellular_in_seconds", bypass_duration},
-        {"should_bypass_missing_via_wifi", should_bypass},
-        {"missing_via_min_bypass_wifi_in_seconds", bypass_duration},
-        {"missing_via_max_bypass_wifi_in_seconds", bypass_duration}};
-
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kMissingViaHeaderShortDuration, feature_parameters);
-
-    EXPECT_EQ(test.expected_result,
-              GetDataReductionProxyBypassType(std::vector<GURL>(), *parsed,
-                                              &proxy_info));
-    if (!test.should_retry) {
-      EXPECT_EQ(test.expected_bypass_length.InSeconds(),
-                proxy_info.bypass_duration.InSeconds());
-      EXPECT_TRUE(proxy_info.mark_proxies_as_bad);
-    }
-  }
-}
-
 TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
   const struct {
     const char* headers;

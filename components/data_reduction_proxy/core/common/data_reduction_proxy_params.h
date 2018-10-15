@@ -93,15 +93,6 @@ GURL GetConfigServiceURL();
 // command line.
 bool ShouldForceEnableDataReductionProxy();
 
-// Returns whether the proxy should be bypassed for requests that are proxied
-// but missing the via header based on if the connection is cellular.
-bool ShouldBypassMissingViaHeader(bool connection_is_cellular);
-
-// Returns the range of acceptable bypass lengths for requests that are proxied
-// but missing the via header based on if the connection is cellular.
-std::pair<base::TimeDelta, base::TimeDelta>
-GetMissingViaHeaderBypassDurationRange(bool connection_is_cellular);
-
 // The current LitePage experiment blacklist version.
 int LitePageVersion();
 
