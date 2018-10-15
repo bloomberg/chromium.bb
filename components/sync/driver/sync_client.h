@@ -80,7 +80,7 @@ class SyncClient {
   virtual bool HasPasswordStore() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
-  // TODO(crbug.com/681921): Remove |local_device_info_provider| once the
+  // TODO(crbug.com/895455): Remove |local_device_info_provider| once the
   // migration to USS is completed.
   virtual DataTypeController::TypeVector CreateDataTypeControllers(
       LocalDeviceInfoProvider* local_device_info_provider) = 0;
