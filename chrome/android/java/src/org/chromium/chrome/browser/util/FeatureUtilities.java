@@ -38,6 +38,29 @@ import java.util.List;
 /**
  * A utility {@code class} meant to help determine whether or not certain features are supported by
  * this device.
+ *
+ * This utility class also contains support for cached feature flags that must take effect on
+ * startup before native is initialized but are set via native code. The caching is done in
+ * {@link android.content.SharedPreferences}, which is available in Java immediately.
+ *
+ * When adding a new cached flag, it is common practice to use a static Boolean in this file to
+ * track whether the feature is enabled. A static method that returns the static Boolean can
+ * then be added to this file allowing client code to query whether the feature is enabled. The
+ * first time the method is called, the static Boolean should be set to the corresponding shared
+ * preference. After native is initialized, the shared preference will be updated to reflect the
+ * native flag value (e.g. the actual experimental feature flag value).
+ *
+ * When using a cached flag, the static Boolean should be the source of truth for whether the
+ * feature is turned on for the current session. As such, always rely on the static Boolean
+ * when determining whether the corresponding experimental behavior should be enabled. When
+ * querying whether a cached feature is enabled from native, an @CalledByNative method can be
+ * exposed in this file to allow feature_utilities.cc to retrieve the cached value.
+ *
+ * For cached flags that are queried before native is initialized, when a new experiment
+ * configuration is received the metrics reporting system will record metrics as if the
+ * experiment is enabled despite the experimental behavior not yet taking effect. This will be
+ * remedied on the next process restart, when the static Boolean is reset to the newly cached
+ * value in shared preferences.
  */
 public class FeatureUtilities {
     private static final String TAG = "FeatureUtilities";
