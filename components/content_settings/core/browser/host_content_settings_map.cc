@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
@@ -210,6 +211,7 @@ HostContentSettingsMap::HostContentSettingsMap(
       is_incognito_(is_incognito_profile || is_guest_profile),
       store_last_modified_(store_last_modified),
       weak_ptr_factory_(this) {
+  TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
   DCHECK(!(is_incognito_profile && is_guest_profile));
 
   content_settings::PolicyProvider* policy_provider =
