@@ -407,7 +407,7 @@ public class DownloadHistoryAdapter
     @Override
     protected void bindViewHolderForHeaderItem(ViewHolder viewHolder, HeaderItem headerItem) {
         super.bindViewHolderForHeaderItem(viewHolder, headerItem);
-        mSpaceDisplay.onChanged();
+        updateStorageSummary();
     }
 
     /**
@@ -500,7 +500,7 @@ public class DownloadHistoryAdapter
                     if (TextUtils.equals(item.getId(), wrapper.getId())) {
                         view.displayItem(mBackendProvider, existingWrapper);
                         if (item.getDownloadInfo().state() == DownloadState.COMPLETE) {
-                            mSpaceDisplay.onChanged();
+                            updateStorageSummary();
                         }
                     }
                 }
@@ -901,7 +901,7 @@ public class DownloadHistoryAdapter
                     if (TextUtils.equals(item.id.id, view.getItem().getId())) {
                         view.displayItem(mBackendProvider, existingWrapper);
                         if (item.state == OfflineItemState.COMPLETE) {
-                            mSpaceDisplay.onChanged();
+                            updateStorageSummary();
                         }
                     }
                 }
@@ -928,5 +928,12 @@ public class DownloadHistoryAdapter
         }
 
         return mTimeThresholdForRecentBadgeMs;
+    }
+
+    private void updateStorageSummary() {
+        if (mSpaceDisplay != null) mSpaceDisplay.onChanged();
+        if (mStorageSummaryProvider != null) {
+            mStorageSummaryProvider.setUsedStorage(getTotalDownloadSize());
+        }
     }
 }
