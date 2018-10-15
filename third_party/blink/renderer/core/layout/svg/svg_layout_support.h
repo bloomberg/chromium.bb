@@ -73,10 +73,10 @@ class CORE_EXPORT SVGLayoutSupport {
   // Determine if the LayoutObject references a filter resource object.
   static bool HasFilterResource(const LayoutObject&);
 
-  // Determines whether the passed point lies in a clipping area
-  static bool PointInClippingArea(const LayoutObject&, const FloatPoint&);
+  // Determine whether the passed point intersects the clip path of |object|.
+  static bool IntersectsClipPath(const LayoutObject&, const FloatPoint&);
 
-  // Transform |pointInParent| to |object|'s user-space and check if it is
+  // Transform |location_in_parent| to |object|'s user-space and check if it is
   // within the clipping area. Returns a pointer to a HitTestLocation object
   // to use as the local location. Returns nullptr if the transform is singular
   // or the point is outside the clipping area. The object backing
