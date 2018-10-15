@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -327,8 +328,10 @@ TEST_F(BrowserViewControllerTest, TestNativeContentController) {
   id<CRWNativeContent> controller =
       [bvc_ controllerForURL:GURL(kChromeUINewTabURL)
                     webState:webStateImpl_.get()];
-  EXPECT_TRUE(controller != nil);
-  EXPECT_TRUE([controller isMemberOfClass:[NewTabPageController class]]);
+  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+    EXPECT_TRUE(controller != nil);
+    EXPECT_TRUE([controller isMemberOfClass:[NewTabPageController class]]);
+  }
 
   controller = [bvc_ controllerForURL:GURL(kChromeUISettingsURL)
                              webState:webStateImpl_.get()];

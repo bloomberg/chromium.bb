@@ -75,6 +75,8 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #include "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
@@ -163,6 +165,7 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_owning.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -432,6 +435,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SideSwipeControllerDelegate,
                                     SnapshotGeneratorDelegate,
                                     TabDialogDelegate,
+                                    NewTabPageTabHelperDelegate,
                                     TabModelObserver,
                                     TabStripPresentation,
                                     ToolbarHeightProviderForFullscreen,
@@ -935,6 +939,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                conformsToProtocol:@protocol(BrowsingDataCommands)]);
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(BrowsingDataCommands)];
+    _toolbarCoordinatorAdaptor =
+        [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
+    self.toolbarInterface = _toolbarCoordinatorAdaptor;
 
     _snackbarCoordinator = [[SnackbarCoordinator alloc] init];
     _snackbarCoordinator.dispatcher = _dispatcher;
@@ -1494,6 +1501,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [currentTab dismissModals];
 
   if (currentTab) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(currentTab.webState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      NTPHelper->DismissModals();
+    }
     auto* findHelper = FindTabHelper::FromWebState(currentTab.webState);
     if (findHelper) {
       findHelper->StopFinding(^{
@@ -2102,9 +2114,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   bottomToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
   [bottomToolbarCoordinator start];
 
-  _toolbarCoordinatorAdaptor =
-      [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
-  self.toolbarInterface = _toolbarCoordinatorAdaptor;
   [_toolbarCoordinatorAdaptor addToolbarCoordinator:topToolbarCoordinator];
   [_toolbarCoordinatorAdaptor addToolbarCoordinator:bottomToolbarCoordinator];
 
@@ -2505,7 +2514,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
     tab.view.frame = self.contentArea.bounds;
-    _browserContainerCoordinator.viewController.contentView = tab.view;
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(tab.webState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      UIViewController* viewController = NTPHelper->GetViewController();
+      _browserContainerCoordinator.viewController.contentViewController =
+          viewController;
+    } else {
+      _browserContainerCoordinator.viewController.contentView = tab.view;
+    }
   }
   [self updateToolbar];
 
@@ -2878,6 +2895,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(_downloadManagerCoordinator);
   DownloadManagerTabHelper::CreateForWebState(tab.webState,
                                               _downloadManagerCoordinator);
+  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+    NewTabPageTabHelper::CreateForWebState(
+        tab.webState, self.tabModel.webStateList, self, self,
+        self.toolbarInterface, self.dispatcher);
+  }
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.
@@ -2958,6 +2980,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (id)nativeControllerForTab:(Tab*)tab {
   id nativeController = tab.webController.nativeController;
+  if (tab) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(tab.webState);
+    if (NTPHelper && NTPHelper->IsActive())
+      nativeController = NTPHelper->GetController();
+  }
   return nativeController ? nativeController : _temporaryNativeController;
 }
 
@@ -3034,7 +3062,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // If there is a native controller, use the native controller's scroll offset.
   id nativeController =
       [self nativeControllerForTab:[self.tabModel currentTab]];
-  if ([nativeController conformsToProtocol:@protocol(CRWNativeContent)] &&
+  if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)] &&
       [nativeController respondsToSelector:@selector(scrollOffset)]) {
     scrollOffset = [nativeController scrollOffset];
   }
@@ -3072,6 +3100,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return @[];
 
   NSMutableArray* overlays = [NSMutableArray array];
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(tab.webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    SnapshotOverlay* ntpOverlay =
+        [[SnapshotOverlay alloc] initWithView:[NTPHelper->GetController() view]
+                                      yOffset:0];
+    [overlays addObject:ntpOverlay];
+  }
   UIView* infoBarView = [self infoBarOverlayViewForTab:tab];
   if (infoBarView) {
     CGFloat infoBarYOffset = [self infoBarOverlayYOffsetForTab:tab];
@@ -3097,7 +3133,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(webState);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
-  id<CRWNativeContent> nativeController = [self nativeControllerForTab:tab];
+  id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController respondsToSelector:@selector(willUpdateSnapshot)]) {
     [nativeController willUpdateSnapshot];
   }
@@ -3684,7 +3720,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return reading_list::IsOfflineURLValid(
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
-  return host == kChromeUINewTabHost;
+  if (host == kChromeUINewTabHost)
+    return !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP);
+
+  return NO;
 }
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
@@ -3694,6 +3733,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   id<CRWNativeContent> nativeController = nil;
   base::StringPiece url_host = url.host_piece();
   if (url_host == kChromeUINewTabHost) {
+    if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP))
+      return nil;
+
     CGFloat fakeStatusBarHeight = _fakeStatusBarView.frame.size.height;
     UIEdgeInsets safeAreaInset = UIEdgeInsetsZero;
     if (@available(iOS 11.0, *)) {
@@ -3920,9 +3962,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Resize the NTP's contentInset.bottom to be above the secondary toolbar.
   id nativeController = [self nativeControllerForTab:[_model currentTab]];
-  if ([nativeController isKindOfClass:[NewTabPageController class]]) {
-    NewTabPageController* newTabPageController =
-        base::mac::ObjCCast<NewTabPageController>(nativeController);
+  if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]) {
+    id<NewTabPageOwning> newTabPageController = nativeController;
     UIEdgeInsets contentInset = newTabPageController.contentInset;
     contentInset.bottom = self.secondaryToolbarHeightConstraint.constant;
     newTabPageController.contentInset = contentInset;
@@ -4674,7 +4715,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)focusFakebox {
   id nativeController = [self nativeControllerForTab:[_model currentTab]];
-  DCHECK([nativeController isKindOfClass:[NewTabPageController class]]);
+  DCHECK([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]);
   [nativeController focusFakebox];
 }
 
@@ -5380,6 +5421,15 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
       dismissViewControllerAnimated:YES
                          completion:completion];
   self.consentBumpCoordinator = nil;
+}
+
+#pragma mark - NewTabPageTabHelperDelegate
+
+- (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper {
+  Tab* currentTab = [_model currentTab];
+  if (NewTabPageTabHelper::FromWebState(currentTab.webState) == NTPHelper) {
+    [self displayTab:currentTab];
+  }
 }
 
 @end

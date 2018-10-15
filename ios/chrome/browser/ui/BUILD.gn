@@ -137,6 +137,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
@@ -326,6 +327,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/language",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/net",
+    "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/prerender",
@@ -376,7 +378,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/main_content:main_content_ui_broadcasting_util",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
-    "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
@@ -438,7 +439,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/side_swipe",
   ]
   allow_circular_includes_from = [
-    "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tabs:coordinator",

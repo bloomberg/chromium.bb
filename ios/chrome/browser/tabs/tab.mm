@@ -49,6 +49,7 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -304,6 +305,12 @@ NSString* const kTabUrlKey = @"url";
   // Record reload of previously-evicted tab.
   if (self.webState->IsEvicted() && [_parentTabModel tabUsageRecorder])
     [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
+
+  // Any early returns (such as below) must happen after the above call to
+  // RecordPageLoadStart, which is used for metric logging.
+  NewTabPageTabHelper* NTP = NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTP && NTP->IsActive())
+    return [NTP->GetController() view];
 
   // Do not trigger the load if the tab has crashed. SadTabTabHelper is
   // responsible for handing reload logic for crashed tabs.
