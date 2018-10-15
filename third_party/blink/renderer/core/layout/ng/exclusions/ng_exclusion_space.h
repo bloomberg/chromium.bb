@@ -31,7 +31,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   NGExclusionSpaceInternal(const NGExclusionSpaceInternal&);
   NGExclusionSpaceInternal(NGExclusionSpaceInternal&&) noexcept;
   NGExclusionSpaceInternal& operator=(const NGExclusionSpaceInternal&);
-  NGExclusionSpaceInternal& operator=(NGExclusionSpaceInternal&&);
+  NGExclusionSpaceInternal& operator=(NGExclusionSpaceInternal&&) noexcept;
   ~NGExclusionSpaceInternal() {}
 
   void Add(scoped_refptr<const NGExclusion> exclusion);
