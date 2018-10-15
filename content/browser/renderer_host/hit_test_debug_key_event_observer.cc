@@ -8,28 +8,12 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 typedef blink::WebInputEvent::Type Type;
 typedef blink::WebInputEvent::Modifiers Modifiers;
-
-namespace {
-
-viz::HitTestQuery* GetHitTestQuery(
-    viz::HostFrameSinkManager* host_frame_sink_manager,
-    const viz::FrameSinkId& frame_sink_id) {
-  if (!frame_sink_id.is_valid())
-    return nullptr;
-  const auto& display_hit_test_query_map =
-      host_frame_sink_manager->display_hit_test_query();
-  const auto iter = display_hit_test_query_map.find(frame_sink_id);
-  if (iter == display_hit_test_query_map.end())
-    return nullptr;
-  return iter->second.get();
-}
-
-}  // namespace
 
 namespace content {
 

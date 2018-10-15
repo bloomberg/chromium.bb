@@ -46,6 +46,10 @@ namespace ui {
 class LatencyInfo;
 }
 
+namespace viz {
+class HostFrameSinkManager;
+}
+
 namespace content {
 
 class RenderWidgetHostImpl;
@@ -54,6 +58,11 @@ class RenderWidgetHostViewBase;
 class RenderWidgetTargeter;
 class TouchEmulator;
 class TouchEventAckQueue;
+
+// Helper method also used from hit_test_debug_key_event_observer.cc
+viz::HitTestQuery* GetHitTestQuery(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    const viz::FrameSinkId& frame_sink_id);
 
 // Class owned by WebContentsImpl for the purpose of directing input events
 // to the correct RenderWidgetHost on pages with multiple RenderWidgetHosts.
