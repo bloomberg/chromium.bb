@@ -24,24 +24,21 @@ export -n SHELLOPTS
 ME="$(basename "${0}")"
 readonly ME
 
-if [[ ${#} -eq 4 ]]; then
-  app_path="${1}"
-  codesign_keychain="${2}"
-  codesign_id="${3}"
-  if [[ "${4}" == "--development" ]]; then
-    is_development=1
-  fi
-elif [[ ${#} -ne 5 ]]; then
+if [[ ${#} -ne 5 && ${#} -ne 6 ]]; then
   echo "usage: ${ME} app_path codesign_keychain codesign_id \
-provisioning_profile entitlements_plist" >& 2
+provisioning_profile entitlements_plist [--development]" >& 2
   exit 1
-else
-  app_path="${1}"
-  codesign_keychain="${2}"
-  codesign_id="${3}"
-  provisioning_profile="${4}"
-  entitlements_plist="${5}"
-  is_development=0
+fi
+
+app_path="${1}"
+codesign_keychain="${2}"
+codesign_id="${3}"
+provisioning_profile="${4}"
+entitlements_plist="${5}"
+is_development=
+
+if [[ ${#} == 6 && "${6}" == "--development" ]]; then
+  is_development=1
 fi
 
 script_dir="$(dirname "${0}")"
@@ -62,9 +59,7 @@ app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
 
 # Embed the supplied provisioning profile.
-if [[ -z "${is_development}" ]]; then
-  cp "${provisioning_profile}" "${contents_dir}/embedded.provisionprofile"
-fi
+cp "${provisioning_profile}" "${contents_dir}/embedded.provisionprofile"
 
 requirement="\
 designated => \
@@ -80,9 +75,9 @@ codesign_cmd=(
   "${browser_app}"
   --options "${enforcement_flags_app}"
   --resource-rules "${browser_app_rules}"
+  --entitlements "${entitlements_plist}"
 )
 if [[ -z "${is_development}" ]]; then
-  codesign_cmd+=(--entitlements="${entitlements_plist}")
   codesign_cmd+=( -r="${requirement}" )
 fi
 "${codesign_cmd[@]}"
