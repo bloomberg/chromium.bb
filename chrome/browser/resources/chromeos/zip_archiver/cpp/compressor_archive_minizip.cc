@@ -23,13 +23,13 @@ const char kCloseArchiveError[] = "Failed to close archive.";
 // We need at least 256KB for MiniZip.
 const int64_t kMaximumDataChunkSize = 512 * 1024;
 
-uint32_t UnixToDosdate(const int64_t datetime) {
-  tm tm_datetime;
-  localtime_r(&datetime, &tm_datetime);
+uint32_t UnixToDosdate(const base::Time datetime) {
+  base::Time::Exploded exploded;
+  datetime.LocalExplode(&exploded);
 
-  return (tm_datetime.tm_year - 80) << 25 | (tm_datetime.tm_mon + 1) << 21 |
-         tm_datetime.tm_mday << 16 | tm_datetime.tm_hour << 11 |
-         tm_datetime.tm_min << 5 | (tm_datetime.tm_sec >> 1);
+  return (exploded.year - 1980) << 25 | exploded.month << 21 |
+         exploded.day_of_month << 16 | exploded.hour << 11 |
+         exploded.minute << 5 | exploded.second >> 1;
 }
 
 };  // namespace
@@ -160,7 +160,7 @@ bool CompressorArchiveMinizip::CreateArchive() {
 
 bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
                                             int64_t file_size,
-                                            int64_t modification_time,
+                                            base::Time modification_time,
                                             bool is_directory) {
   // Minizip takes filenames that end with '/' as directories.
   std::string normalized_filename = filename;
@@ -169,8 +169,7 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
 
   // Fill zipfileMetadata with modification_time.
   zip_fileinfo zipfileMetadata;
-  // modification_time is millisecond-based, while FromTimeT takes seconds.
-  zipfileMetadata.dos_date = UnixToDosdate((int64_t)modification_time / 1000);
+  zipfileMetadata.dos_date = UnixToDosdate(modification_time);
 
   // Section 4.4.4 http://www.pkware.com/documents/casestudies/APPNOTE.TXT
   // Setting the Language encoding flag so the file is told to be in utf-8.

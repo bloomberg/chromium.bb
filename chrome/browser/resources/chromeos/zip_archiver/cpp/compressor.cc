@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/time/time.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
@@ -93,8 +94,9 @@ void Compressor::AddToArchiveCallback(int32_t,
   bool is_directory = dictionary.Get(request::key::kIsDirectory).AsBool();
 
   PP_DCHECK(dictionary.Get(request::key::kModificationTime).is_string());
-  // Since modification_time is milliseconds, we hold the value in int64_t.
-  int64_t modification_time = static_cast<int64_t>(
+  // modification_time comes from a JS Date object, which expresses time in
+  // milliseconds since the UNIX epoch.
+  base::Time modification_time = base::Time::FromJsTime(
       request::GetInt64FromString(dictionary, request::key::kModificationTime));
 
   if (!compressor_archive_->AddToArchive(pathname, file_size, modification_time,
