@@ -28,6 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
+#include "components/nacl/common/buildflags.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -319,7 +320,7 @@ void ComponentLoader::AddGalleryExtension() {
 }
 
 void ComponentLoader::AddZipArchiverExtension() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
   base::FilePath resources_path;
   if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
     AddWithNameAndDescriptionFromDir(
@@ -328,7 +329,7 @@ void ComponentLoader::AddZipArchiverExtension() {
         l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
         l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
 }
 
 void ComponentLoader::AddWebstoreWidgetExtension() {
