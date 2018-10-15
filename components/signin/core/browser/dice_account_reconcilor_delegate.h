@@ -39,6 +39,18 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   bool ShouldRevokeTokensOnCookieDeleted() override;
 
  private:
+  std::vector<std::string> ReorderChromeAccountsForReconcile(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string& primary_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const signin::MultiloginMode mode) const override;
+
+  MultiloginMode CalculateModeForReconcile(
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const std::string primary_account,
+      bool first_execution,
+      bool primary_has_error) const override;
+
   SigninClient* signin_client_;
   AccountConsistencyMethod account_consistency_;
 
