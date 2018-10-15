@@ -672,7 +672,6 @@
 <translation id="197560921582345123">সম্পাদনা করতে পারবেন</translation>
 <translation id="1975841812214822307">সরান...</translation>
 <translation id="1976150099241323601">সুরক্ষা ডিভাইসে সাইন করুন</translation>
-<translation id="1976315108329706992">আপনি এখন Android অ্যাপ ব্যবহার করতে পারেন।</translation>
 <translation id="1976323404609382849">একাধিক সাইট থেকে কুকিজ অবরুদ্ধ৷</translation>
 <translation id="1977965994116744507">আপনার <ph name="DEVICE_TYPE" /> আনলক করতে আপনার ফোন কাছাকাছি আনুন।</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" /> এর পুরানো সংস্করণ দিয়ে একটি চ্যানেলে পরিবর্তন করছেন৷ যখন আপনার ডিভাইসে বর্তমানে ইনস্টল করা সংস্করণের সঙ্গে চ্যানেলের সংস্করণটি মিলে যাবে তখনই চ্যানেল পরিবর্তন প্রযুক্ত হবে৷</translation>
@@ -3322,12 +3321,10 @@
 <translation id="6025215716629925253">ট্রেস স্ট্যাক</translation>
 <translation id="6026047032548434446">অ্যাপ ইনস্টল করবেন?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB ডিভাইস সংযুক্ত হয়েছে</translation>
-<translation id="6028117231645531007">আঙ্গুলের ছাপ যোগ করুন</translation>
 <translation id="6029027682598229313">Linux ইনস্টল সম্পূর্ণ হয়েছে।</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] মুছে ফেলুন, বোতাম</translation>
 <translation id="6029587122245504742">সবচেয়ে ধীরে</translation>
 <translation id="6032912588568283682">ফাইল সিস্টেম</translation>
-<translation id="6034662038931255275">OS আপডেট সফল হয়েছে</translation>
 <translation id="6039651071822577588">নেটওয়ার্ক সম্পত্তি অভিধান বিকৃত</translation>
 <translation id="604001903249547235">ক্লাউড ব্যাকআপ</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -4607,6 +4604,7 @@
 <translation id="7966241909927244760">চি&amp;ত্র ঠিকানা কপি করুন</translation>
 <translation id="7968742106503422125">আপনি যে ডেটা কপি করে আটকান তা পড়ুন ও সংশোধন করুন</translation>
 <translation id="7968833647796919681">কার্য-সম্পাদনা ডেটা সংগ্রহ সক্ষম করুন</translation>
+<translation id="7969046989155602842">কমান্ড</translation>
 <translation id="7972714317346275248">RSA এনক্রিপশানের সাথে PKCS #1 SHA-384</translation>
 <translation id="7973962044839454485">একটি ভুল ইউজারনেম বা পাসওয়ার্ডের কারণে PPP প্রমাণীকরণ করা যায়নি</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> ব্যবহার করার জন্য আবার চেষ্টা করুন</translation>

@@ -670,7 +670,6 @@
 <translation id="197560921582345123">Darf bearbeiten</translation>
 <translation id="1975841812214822307">Entfernen...</translation>
 <translation id="1976150099241323601">In Sicherheitsgerät anmelden</translation>
-<translation id="1976315108329706992">Sie können nun Android-Apps nutzen.</translation>
 <translation id="1976323404609382849">Es wurden Cookies von mehreren Websites blockiert.</translation>
 <translation id="1977965994116744507">Verringern Sie den Abstand zwischen Smartphone und <ph name="DEVICE_TYPE" />, um das Gerät zu entsperren.</translation>
 <translation id="1979280758666859181">Sie möchten zu einem Kanal mit einer älteren Version von <ph name="PRODUCT_NAME" /> wechseln. Die Änderung erfolgt, sobald die Kanalversion der aktuell auf Ihrem Gerät installierten Version entspricht.</translation>
@@ -3321,12 +3320,10 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6025215716629925253">Stacktrace</translation>
 <translation id="6026047032548434446">App installieren?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB-Gerät verbunden</translation>
-<translation id="6028117231645531007">Fingerabdruck hinzufügen</translation>
 <translation id="6029027682598229313">Die Linux-Installation ist abgeschlossen.</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] löschen, Schaltfläche</translation>
 <translation id="6029587122245504742">Langsamste</translation>
 <translation id="6032912588568283682">Dateisystem</translation>
-<translation id="6034662038931255275">Betriebssystem-Update erfolgreich</translation>
 <translation id="6039651071822577588">Netzwerkeigenschaften-Wörterbuch ungültig</translation>
 <translation id="604001903249547235">Cloudsicherung</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -4606,6 +4603,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7966241909927244760">Bildadresse k&amp;opieren</translation>
 <translation id="7968742106503422125">Daten lesen und ändern, die Sie kopieren und einfügen</translation>
 <translation id="7968833647796919681">Erfassung von Leistungsdaten aktivieren</translation>
+<translation id="7969046989155602842">Befehl</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 mit RSA-Verschlüsselung</translation>
 <translation id="7973962044839454485">Fehler bei PPP-Authentifizierung aufgrund eines falschen Nutzernamens oder Passworts</translation>
 <translation id="7974566588408714340">Über <ph name="EXTENSIONNAME" /> erneut versuchen</translation>

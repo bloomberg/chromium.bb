@@ -584,6 +584,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Alle aktuellen Versionen der Samba- und Windows-Server unterstützen NTLMv2. Eine Deaktivierung sollte nur zum Zweck der Rückwärtskompatibilität erfolgen und verringert die Sicherheit der Authentifizierung.
 
           Wenn diese Richtlinie nicht konfiguriert ist, ist der Standardwert "true" und NTLMv2 ist aktiviert.</translation>
+<translation id="2598508021807251719">Mit dieser Richtlinie werden die Sprachen konfiguriert, in denen <ph name="PRODUCT_OS_NAME" /> angezeigt werden kann.
+
+      Wenn diese Richtlinie festgelegt ist, kann der Nutzer <ph name="PRODUCT_OS_NAME" /> nur in einer der durch diese Richtlinie angegebenen Sprachen anzeigen lassen. Falls diese Richtlinie nicht festgelegt ist oder auf eine leere Liste verweist, kann <ph name="PRODUCT_OS_NAME" /> in allen unterstützten UI-Sprachen angezeigt werden. Sollte diese Richtlinie auf eine Liste mit ungültigen Werten verweisen, werden alle ungültigen Werte ignoriert. Wenn ein Nutzer <ph name="PRODUCT_OS_NAME" /> zuvor so konfiguriert hat, dass das Betriebssystem in einer Sprache angezeigt wird, die nicht durch diese Richtlinie zugelassen ist, wird die UI-Sprache in eine zulässige Sprache geändert, wenn sich der Nutzer das nächste Mal anmeldet. Falls der Nutzer bevorzugte Sprachen konfiguriert hatte und eine der bevorzugten Sprachen durch diese Richtlinie zugelassen ist, wechselt <ph name="PRODUCT_OS_NAME" /> zu dieser Sprache. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
 <translation id="2604182581880595781">Richtlinien für Netzwerkfreigaben konfigurieren.</translation>
 <translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="262740370354162807">Senden von Dokumenten an <ph name="CLOUD_PRINT_NAME" /> aktivieren</translation>
@@ -1673,6 +1676,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="5835124959204887277">In der Richtlinie werden URLs und Domains spezifiziert, für die keine Eingabeaufforderung angezeigt werden, wenn Nachweiszertifikate von Sicherheitsschlüsseln angefordert werden. Zusätzlich wird an den Sicherheitsschlüssel ein Signal gesendet, das angibt, dass individuelle Nachweise verwendet werden können. Andernfalls erhalten Nutzer in Chrome 65 und höher eine Eingabeaufforderung, wenn von Websites ein Nachweis für Sicherheitsschlüssel angefordert wird.
 
       URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
+<translation id="5835412847081687053">In einer Nutzersitzung zulässige UI-Sprachen konfigurieren</translation>
 <translation id="5836064773277134605">Vom Host für den Remotezugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5862253018042179045">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf der Anmeldeseite festgelegt.
 

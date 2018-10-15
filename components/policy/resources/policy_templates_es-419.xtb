@@ -583,6 +583,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Esta política solo debe inhabilitarse para garantizar la compatibilidad con versiones anteriores. Además, reduce la seguridad de la autenticación.
 
           Si no se establece esta política, el valor predeterminado es verdadero y se habilita NTLMv2.</translation>
+<translation id="2598508021807251719">Permite configurar los idiomas en que se puede mostrar <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece esta política, el usuario solo puede configurar <ph name="PRODUCT_OS_NAME" /> para que se muestre en uno de los idiomas especificados por esta política. Si se establece con una lista vacía o no se establece, <ph name="PRODUCT_OS_NAME" /> se puede mostrar en todos los idiomas de IU compatibles. Si se establece con una lista de valores no válidos, se ignorarán todos estos. Si un usuario configuró anteriormente <ph name="PRODUCT_OS_NAME" /> para que se mostrara en un idioma de IU que no se permite según esta política, el idioma de visualización se cambiará a uno permitido la próxima vez que acceda el usuario. Si este configuró los idiomas preferidos y la política permite uno de ellos, <ph name="PRODUCT_OS_NAME" /> se cambiará a ese idioma. De lo contrario, <ph name="PRODUCT_OS_NAME" /> se cambiará al primer valor válido que especifica esta política o a un idioma alternativo (actualmente en-US) si esta política solo contiene entradas no válidas.</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con la función "Network File Shares".</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1671,6 +1674,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5835124959204887277">Especifica los dominios y URL para los cuales no se mostrarán mensajes cuando se solicitan certificados de atestación de las llaves de seguridad. Además, se enviará una señal a la llave de seguridad para indicar que se puede usar la atestación individual. Sin esto, se mostrará un mensaje a los usuarios con Chrome 65 y versiones posteriores cuando los sitios soliciten atestaciones de llaves de seguridad.
 
       Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
+<translation id="5835412847081687053">Configurar los idiomas de IU permitidos en una sesión de usuario</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de los comentarios por voz en la pantalla de acceso.
 

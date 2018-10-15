@@ -673,7 +673,6 @@
 <translation id="197560921582345123">共同編集者</translation>
 <translation id="1975841812214822307">削除...</translation>
 <translation id="1976150099241323601">セキュリティ デバイスへのログイン</translation>
-<translation id="1976315108329706992">Android アプリを使用できます。</translation>
 <translation id="1976323404609382849">複数サイトからの Cookie がブロックされました。</translation>
 <translation id="1977965994116744507"><ph name="DEVICE_TYPE" /> のロックを解除するにはスマートフォンを近づけます。</translation>
 <translation id="1979280758666859181">古いバージョンの <ph name="PRODUCT_NAME" /> のチャンネルに変更しようとしています。このチャンネル変更は、チャンネルのバージョンとお使いのデバイスにインストールされているバージョンとが一致したときに適用されます。</translation>
@@ -3325,12 +3324,10 @@
 <translation id="6025215716629925253">スタック トレース</translation>
 <translation id="6026047032548434446">アプリをインストールしますか？</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB デバイスに接続されています</translation>
-<translation id="6028117231645531007">指紋を追加</translation>
 <translation id="6029027682598229313">Linux のインストールが完了しました。</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] を削除するボタン</translation>
 <translation id="6029587122245504742">最も低速</translation>
 <translation id="6032912588568283682">ファイル システム</translation>
-<translation id="6034662038931255275">OS のアップデートが正常に完了しました</translation>
 <translation id="6039651071822577588">ネットワーク プロパティ辞書が不正です</translation>
 <translation id="604001903249547235">クラウド バックアップ</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -4611,6 +4608,7 @@
 <translation id="7966241909927244760">画像アドレスをコピー(&amp;C)</translation>
 <translation id="7968742106503422125">コピーして貼り付けるデータの読み取りと修正</translation>
 <translation id="7968833647796919681">パフォーマンス データの収集を有効にする</translation>
+<translation id="7969046989155602842">コマンド</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 with RSA 暗号化</translation>
 <translation id="7973962044839454485">ユーザー名またはパスワードが正しくないため、PPP 認証に失敗しました</translation>
 <translation id="7974566588408714340">「<ph name="EXTENSIONNAME" />」で再試行</translation>

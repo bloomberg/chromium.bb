@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="101438888985615157">Obróć ekran o 180 stopni</translation>
+<translation id="1016912092715201525">Konfiguruje ustawienie sprawdzania domyślnej przeglądarki w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę.
+
+      Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> zawsze podczas uruchamiania się sprawdza, czy jest domyślną przeglądarką, i automatycznie rejestruje się jako domyślna przeglądarka, o ile jest to możliwe.
+
+      Jeśli to ustawienie jest wyłączone, <ph name="PRODUCT_NAME" /> nigdy nie sprawdza, czy jest domyślną przeglądarką, i nie zezwala użytkownikowi zmianę tego ustawienia.
+
+      Jeśli to ustawienie jest nieskonfigurowane, użytkownik może samodzielnie wybrać ustawienia sprawdzania, czy <ph name="PRODUCT_NAME" /> jest domyślną przeglądarką, oraz określić, czy mają się wyświetlać powiadomienia, gdy nią nie jest.
+
+      Uwaga dla administratorów <ph name="MS_WIN_NAME" />: włączenie tego ustawienia daje efekty tylko na komputerach z Windows 7. W przypadku Windows 8 i nowszych trzeba wdrożyć plik „powiązań aplikacji domyślnej” konfigurujący <ph name="PRODUCT_NAME" /> jako aplikację obsługującą protokoły <ph name="HHTPS_PROTOCOL" /> i <ph name="HTTP_PROTOCOL" /> (oraz opcjonalnie protokół <ph name="FTP_PROTOCOL" /> i formaty plików <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> itd.). Więcej informacji znajdziesz na <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Zarządzanie energią na ekranie logowania</translation>
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
 <translation id="1022361784792428773">Identyfikatory rozszerzeń, których nie może instalować użytkownik (wartość * oznacza wszystkie)</translation>
@@ -590,6 +599,9 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           Wszystkie nowsze wersje serwerów Samba i Windows obsługują uwierzytelnianie NTLMv2. Należy je wyłączyć tylko w celu zapewnienia wstecznej zgodności. Wyłączenie zmniejsza bezpieczeństwo uwierzytelniania.
 
           Jeśli ta zasada jest nieskonfigurowana, wartością domyślną jest prawda i NTLMv2 jest włączone.</translation>
+<translation id="2598508021807251719">Określa języki, w których można wyświetlać <ph name="PRODUCT_OS_NAME" />.
+
+      Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
 <translation id="2604182581880595781">Umożliwia skonfigurowanie zasad związanych z sieciowymi udziałami plików.</translation>
 <translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -692,6 +704,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2873651257716068683">Zastępuje domyślny rozmiar drukowanej strony. Jeśli dany rozmiar strony jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
+<translation id="2890645751406497668">Automatycznie przyznaj tym stronom uprawnienie do łączenia się z urządzeniami USB o podanych identyfikatorach producenta i produktu.</translation>
 <translation id="2892414556511568464">Ogranicza tryb drukowania dwustronnego. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
 <translation id="2893546967669465276">Wysyłaj dzienniki systemowe na serwer zarządzania</translation>
 <translation id="2899002520262095963">Aplikacje na Androida mogą używać konfiguracji sieci i certyfikatów CA ustawianych przez tę zasadę, ale nie mają dostępu do niektórych opcji konfiguracji.</translation>
@@ -885,6 +898,7 @@ Jeśli wybierzesz ustawienie „Umiarkowany”, użytkownik może wybrać tylko 
 
 Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowanie trybu ograniczonego dostępu w YouTube nie będzie wymuszane przez przeglądarkę <ph name="PRODUCT_NAME" />. Zewnętrzne zasady, np. zasady YouTube, mogą jednak nadal wymuszać stosowanie trybu ograniczonego dostępu.</translation>
 <translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
+<translation id="3437924696598384725">Zezwól użytkownikowi na zarządzanie połączeniami VPN</translation>
 <translation id="3449886121729668969">Konfiguruje ustawienia serwera proxy dla <ph name="PRODUCT_NAME" />. Będą one też dostępne dla aplikacji ARC.
 
       Zasada nie jest jeszcze gotowa, więc nie należy jej używać.</translation>
@@ -1536,6 +1550,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5323128137188992869">Zezwala na przesyłanie treści na urządzenie przy użyciu: <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą przesyłać treści na urządzenie. Jeśli jest ustawiona na wartość prawda – mogą to robić. Jeśli ta zasada nie jest ustawiona, użytkownicy nie mogą przesyłać treści na zarejestrowane urządzenia z Chrome OS. Mogą przesyłać treści na urządzenia niezarejestrowane.</translation>
+<translation id="5329007337159326804">Ostrzeżenie: zasada najwyższej wersji TLS zostanie w całości usunięta z <ph name="PRODUCT_NAME" /> około wersji 75 (około czerwca 2019 r.).
+
+      Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> używa domyślnej najwyższej wersji.
+
+      W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę tych typów treści</translation>
 <translation id="5365946944967967336">Pokaż przycisk strony głównej na pasku narzędzi</translation>
 <translation id="5366745336748853475">Umożliwia określenie listy wzorców adresu URL definiujących witryny, dla których jest automatycznie wybierany certyfikat klienta na ekranie logowania w ramce obsługującej proces SAML, jeśli witryna zażąda certyfikatu. Przykładowe użycie to skonfigurowanie certyfikatu dla całego urządzenia, który będzie okazywany dostawcy tożsamości SAML.
@@ -1562,6 +1581,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           W przypadku włączenia tej opcji fizyczne urządzenia wejściowe i wyjściowe hosta będą wyłączane na czas trwania połączenia zdalnego.
 
           Jeśli to ustawienie będzie wyłączone lub nieustawione, zarówno zdalni, jak i lokalni użytkownicy będą mogli korzystać z udostępnianego hosta.</translation>
+<translation id="5396049152026347991">Zezwala użytkownikowi na zarządzanie połączeniami VPN.
+
+      Jeśli ta zasada ma wartość fałsz, wyłączone są wszystkie interfejsy <ph name="PRODUCT_NAME" /> pozwalające użytkownikowi na rozłączanie lub modyfikowanie połączeń VPN.
+
+      Jeśli zasada jest nieskonfigurowana lub ma wartość prawda, użytkownicy mogą rozłączać i modyfikować połączenia VPN.
+
+      Jeśli połączenie VPN jest tworzone przez aplikację VPN, ta zasada nie ma wpływu na interfejs tej aplikacji. Jest zatem możliwe, że użytkownik będzie nadal mógł modyfikować połączenie VPN za pomocą aplikacji.
+
+      Ta zasada jest pomyślana jako uzupełnienie funkcji „Stały VPN”, która pozwala administratorowi włączyć nawiązywanie połączenia VPN podczas uruchamiania urządzenia.</translation>
 <translation id="5405289061476885481">Umożliwia wybranie układów klawiatury dozwolonych na ekranie logowania systemu <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli ta zasada ma ustawioną jako wartość listę identyfikatorów metod wprowadzania, metody te są dostępne na ekranie logowania. Wstępnie wybrana jest pierwsza z nich. Gdy na ekranie logowania jest wybrany profil danego użytkownika, oprócz metod wprowadzania ustawionych w tej zasadzie dostępna jest metoda ostatnio używana przez tego użytkownika. Gdy zasada nie jest skonfigurowana, metody wprowadzania na ekranie logowania odpowiadają ustawieniom regionalnym stosowanym do wyświetlania tego ekranu. Wartości, które nie są prawidłowymi identyfikatorami metod wprowadzania, są ignorowane.</translation>
@@ -1642,6 +1670,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       W przypadku wyłączenia lub nieskonfigurowania tego ustawienia użytkownicy będą mogli korzystać na urządzeniu ze wszystkich obsługiwanych typów pamięci zewnętrznych.</translation>
 <translation id="5697306356229823047">Raportuj użytkowników urządzenia</translation>
 <translation id="570062449808736508">Gdy dla tej zasady zostanie ustawiony ciąg niepusty, komponent WebView będzie odczytywać ograniczenia URL przekazywane przez dostawcę treści o określonej nazwie urzędowej.</translation>
+<translation id="5701714006401683963">Jeśli ta zasada ma wartość fałsz, zarządzana sesja gościa będzie działać tak, jak opisano na https://support.google.com/chrome/a/answer/3017014, czyli jako standardowa „sesja publiczna”.
+
+      Jeśli ta zasada ma wartość prawda lub jest nieskonfigurowana, zarządzania sesja gościa będzie „sesją zarządzaną” i nie będzie objęta wieloma ograniczeniami dotyczącymi „sesji publicznych”.
+
+      Jeśli ta zasada jest ustawiona, użytkownik nie może jej zmienić ani zastąpić.</translation>
 <translation id="5722934961007828462">Gdy to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> zawsze sprawdza, czy zweryfikowane certyfikaty serwera podpisane lokalnie zainstalowanymi certyfikatami CA nie zostały unieważnione.
 
       Jeśli <ph name="PRODUCT_NAME" /> nie może uzyskać informacji o stanie unieważnienia, takie certyfikaty są traktowane jak unieważnione (brak możliwości zignorowania błędu).
@@ -1684,6 +1717,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
+<translation id="5835412847081687053">Skonfiguruj dozwolone języki sesji użytkownika</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
 <translation id="5862253018042179045">Ustawia domyślny stan funkcji ułatwień dostępu w postaci potwierdzeń głosowych na ekranie logowania.
 
@@ -2012,6 +2046,13 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
+<translation id="6816212867679667972">Określa nazwę hosta urządzenia używaną w żądaniach DHCP.
+
+      Jeśli wartością tej zasady jest niepusty ciąg znaków, będzie on używany jako nazwa hosta w żądaniach DHCP.
+
+      Ciąg może zawierać zmienne ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME}, za które zostaną podstawione wartości z urządzenia przed użyciem ciągu jako nazwy hosta. Utworzony w ten sposób ciąg musi być prawidłową nazwą hosta (zgodnie z sekcją 3.1 specyfikacji RFC 1035).
+
+      Jeśli zasada jest nieskonfigurowana lub ciąg powstały po podstawieniu wartości za zmienne nie jest prawidłową nazwą hosta, żądanie DHCP nie będzie zawierać nazwy hosta. </translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>
 <translation id="6838056959556423778">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
 
@@ -2285,6 +2326,22 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 
       Jeśli nie ustawisz tej zasady, funkcja automatycznego czyszczenia korzysta z domyślnej wbudowanej strategii. Obecnie to „RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
+<translation id="7337967786223261174">Konfiguruje listę drukarek.
+
+      Ta zasada umożliwia administratorom skonfigurowanie drukarek
+      dla użytkowników.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> to dowolne ciągi znaków, które mają ułatwić wybranie drukarki. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> mają ułatwić użytkownikom zidentyfikowanie drukarki. Wskazują producenta i model drukarki. <ph name="PRINTER_URI" /> to adres drukarki dostępny z komputera klienckiego zawierający <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> jest elementem opcjonalnym. Jego podanie pozwala usunąć duplikaty drukarek <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> musi odpowiadać jednemu z ciągów reprezentujących drukarkę obsługiwaną przez <ph name="PRODUCT_NAME" />. Umożliwia znalezienie i zainstalowanie pliku PPD dla danej drukarki. Więcej informacji znajdziesz na https://support.google.com/chrome?p=noncloudprint
+
+      Drukarka jest instalowana podczas jej pierwszego użycia. Dopiero wtedy są pobierane pliki PPD. Później często używane pliki PPD są przechowywane w pamięci podręcznej.
+
+      Ta zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na poszczególnych urządzeniach. Ma być uzupełnieniem konfigurowania drukarek przez poszczególnych użytkowników.
+
+      W przypadku urządzeń zarządzanych przez Active Directory ta zasada obsługuje rozwijanie ciągu <ph name="MACHINE_NAME_VARIABLE" /> do nazwy komputera w Active Directory lub części tej nazwy. Jeśli na przykład nazwą komputera jest <ph name="MACHINE_NAME_EXAMPLE" />, to ciąg <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zostanie zastąpiony przez cztery znaki po 6. miejscu, czyli <ph name="MACHINE_NAME_PART_EXAMPLE" />. Miejsca liczymy od zera.
+      Obsługa ciągu <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (małe litery) została wycofana M71 i zostanie usunięta w M72.
+      </translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7343497214039883642">Plik konfiguracji drukarek firmowych dla urządzeń</translation>
 <translation id="7349338075015720646">Określa listę witryn internetowych instalowanych dyskretnie, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
@@ -2700,6 +2757,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8359734107661430198">Włącz interfejs API ExampleDeprecatedFeature od 2 września 2008 r.</translation>
 <translation id="8367209241899435947">Włącz Czyszczenie Chrome w Windows</translation>
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
+<translation id="8371178326720637170">Umożliwia zarządzanym rozszerzeniom używanie Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
 <translation id="8390049129576938611">Wyłącza wewnętrzną przeglądarkę plików PDF w <ph name="PRODUCT_NAME" />. Pliki PDF będą traktowane jako pobrane i użytkownik będzie mógł je otwierać w aplikacji domyślnej.
@@ -2970,6 +3028,11 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="8970205333161758602">Pomiń monit o odinstalowanie <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Zezwalaj na uwierzytelnianie Gnubby w przypadku hostów dostępu zdalnego</translation>
 <translation id="8976531594979650914">Użyj domyślnej drukarki systemowej</translation>
+<translation id="898520305112996948">Umożliwia skonfigurowanie listy wzorców adresów URL określających witryny, które automatycznie uzyskają dostęp do urządzenia USB o podanych identyfikatorach producenta i produktu. Aby wartość zasady była prawidłowa, każda pozycja listy musi zawierać listę urządzeń i wzorce adresów URL. Każda pozycja określająca urządzenie może zawierać pole identyfikatora producenta i identyfikatora produktu. Każde pominięcie identyfikatora jest interpretowane jako identyfikator dowolny (symbol wieloznaczny) – jest jeden wyjątek: nie można podać identyfikatora produktu bez identyfikatora producenta (naruszenie tej reguły spowoduje, że zasada będzie nieprawidłowa). Nieprawidłowe wartości zasady są ignorowane.
+
+        Jeśli ta zasada jest nieskonfigurowana, dla wszystkich witryn będzie stosowana globalna wartość domyślna z zasady „DefaultWebUsbGuardSetting” (jeśli ta jest skonfigurowana) albo z konfiguracji użytkownika (w przeciwnym razie).
+
+        Wzorce adresów URL w tej zasadzie nie powinny być w konflikcie z wzorcami skonfigurowanymi w WebUsbBlockedForUrls. W przypadku konfliktu ta zasada ma wyższy priorytet niż WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
 <translation id="9012851181124311976">Konfigurowanie listy adresów URL stron logowania aplikacji firmowych (tylko schematy HTTP i HTTPS). Na tych stronach będzie rejestrowany odcisk cyfrowy hasła służący do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
       Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe haseł, strony logowania powinny być zgodne z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms

@@ -673,7 +673,6 @@
 <translation id="197560921582345123">Pot editar</translation>
 <translation id="1975841812214822307">Suprimeix...</translation>
 <translation id="1976150099241323601">Inici de sessió al dispositiu de seguretat</translation>
-<translation id="1976315108329706992">Ja pots fer servir les aplicacions d'Android.</translation>
 <translation id="1976323404609382849">S'han bloquejat les galetes de diversos llocs.</translation>
 <translation id="1977965994116744507">Acosta el telèfon per desbloquejar <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">Esteu a punt de canviar a un canal amb una versió més antiga de <ph name="PRODUCT_NAME" />. El canvi de canal s'aplicarà quan la versió del canal coincideixi amb la versió qui hi ha instal·lada actualment en el vostre dispositiu.</translation>
@@ -3325,12 +3324,10 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6025215716629925253">Traça de la pila</translation>
 <translation id="6026047032548434446">Vols instal·lar l'aplicació?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: hi ha un dispositiu USB connectat</translation>
-<translation id="6028117231645531007">Afegeix una empremta digital</translation>
 <translation id="6029027682598229313">La instal·lació de Linux ha finalitzat.</translation>
 <translation id="6029292188939175871">suprimeix [<ph name="FINGERPRINT_NAME" />], botó</translation>
 <translation id="6029587122245504742">Mínima</translation>
 <translation id="6032912588568283682">Sistema de fitxers</translation>
-<translation id="6034662038931255275">El sistema operatiu s'ha actualitzat correctament</translation>
 <translation id="6039651071822577588">El diccionari de propietat de xarxa no està ben format</translation>
 <translation id="604001903249547235">Còpia de seguretat a Cloud</translation>
 <translation id="6040143037577758943">Tanca</translation>
@@ -4608,6 +4605,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7966241909927244760">C&amp;opia l'adreça de la imatge</translation>
 <translation id="7968742106503422125">Llegeix i modifica les dades que copies i enganxes</translation>
 <translation id="7968833647796919681">Activa la recollida de dades de rendiment</translation>
+<translation id="7969046989155602842">Ordre</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 amb encriptació RSA</translation>
 <translation id="7973962044839454485">L'autenticació de PPA ha fallat perquè el nom d'usuari o la contrasenya no eren correctes</translation>
 <translation id="7974566588408714340">Torna-ho a provar amb <ph name="EXTENSIONNAME" /></translation>

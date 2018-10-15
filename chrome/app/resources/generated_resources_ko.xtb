@@ -673,7 +673,6 @@
 <translation id="197560921582345123">수정 가능</translation>
 <translation id="1975841812214822307">삭제...</translation>
 <translation id="1976150099241323601">보안 장치 로그인</translation>
-<translation id="1976315108329706992">이제 Android 앱을 사용할 수 있습니다.</translation>
 <translation id="1976323404609382849">여러 사이트의 쿠키를 차단했습니다.</translation>
 <translation id="1977965994116744507"><ph name="DEVICE_TYPE" />을(를) 잠금 해제하려면 휴대전화를 더 가까이 가져오세요.</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" />의 이전 버전으로 채널을 변경하려 합니다. 채널 버전이 현재 기기에 설치되어 있는 버전과 일치할 때 채널 변경이 적용됩니다.</translation>
@@ -3323,12 +3322,10 @@
 <translation id="6025215716629925253">스택 추적</translation>
 <translation id="6026047032548434446">앱을 설치하시겠습니까?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB 기기 연결됨</translation>
-<translation id="6028117231645531007">지문 추가</translation>
 <translation id="6029027682598229313">Linux 설치가 완료되었습니다.</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] 삭제, 버튼</translation>
 <translation id="6029587122245504742">가장 느리게</translation>
 <translation id="6032912588568283682">파일 시스템</translation>
-<translation id="6034662038931255275">OS 업데이트 완료</translation>
 <translation id="6039651071822577588">네트워크 속성 사전 형식이 잘못되었습니다.</translation>
 <translation id="604001903249547235">클라우드 백업</translation>
 <translation id="6040143037577758943">닫기</translation>
@@ -4608,6 +4605,7 @@
 <translation id="7966241909927244760">이미지 주소 복사(&amp;O)</translation>
 <translation id="7968742106503422125">복사하고 붙여넣는 데이터를 읽고 수정</translation>
 <translation id="7968833647796919681">성능 데이터 수집 사용</translation>
+<translation id="7969046989155602842">Command</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384(RSA 암호화 사용)</translation>
 <translation id="7973962044839454485">사용자 이름 또는 비밀번호가 잘못되어 PPP 인증에 실패했습니다.</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" />을(를) 사용하여 다시 시도</translation>

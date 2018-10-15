@@ -162,6 +162,7 @@
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="1974060860693918893">Avanceret</translation>
 <translation id="1978555033938440688">Firmwareversion</translation>
+<translation id="1981206234434200693">Ryd data fra Chromes browserhistorik</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{og 1 mere}one{og # mere}other{og # mere}}</translation>
 <translation id="2003709556000175978">Nulstil din adgangskode nu</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
@@ -229,6 +230,7 @@
 <translation id="2473195200299095979">Oversæt denne side</translation>
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="2482878487686419369">Underretninger</translation>
+<translation id="248348093745724435">Maskinpolitikker</translation>
 <translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
 <translation id="2495083838625180221">Værktøj til parsing af JSON-filer</translation>
 <translation id="2495093607237746763">Hvis dette felt er markeret, gemmer Chromium en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
@@ -298,6 +300,7 @@
 <translation id="2969319727213777354">Uret på din enhed skal være indstillet korrekt, før du kan oprette en sikker forbindelse. Dette er vigtigt, da de certifikater, websites bruger til at identificere sig selv, kun er gyldige i bestemte perioder. Da uret på din enhed er indstillet forkert, kan Chrome ikke bekræfte disse certifikater.</translation>
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> er i øjeblikket valgt. <ph name="ROW_CONTENT" /></translation>
+<translation id="2982481275546140226">Ryd data</translation>
 <translation id="2985306909656435243">Hvis denne indstilling er slået til, gemmer Chromium en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="2985398929374701810">Angiv en gyldig adresse</translation>
 <translation id="2986368408720340940">Denne afhentningsmetode er ikke tilgængelig. Prøv en anden metode.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">Du har ikke tilladelse til at se denne side.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Prøv at køre Diagnosticering af forbindelse<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{Ingen}=1{logindata for en konto}one{logindata for # konto}other{logindata for # konti}}</translation>
 <translation id="3145945101586104090">Svaret kunne ikke afkodes</translation>
 <translation id="3150653042067488994">Midlertidig serverfejl</translation>
 <translation id="3154506275960390542">Denne side indeholder en formular, der muligvis ikke kan indsendes sikkert. Dine indsendte data kan ses af andre eller kan blive ændret af en hacker, så serveren, du sender til, modtager forkerte oplysninger.</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">Valideringen er fuldført</translation>
 <translation id="3655670868607891010">Hvis du ser dette jævnligt, kan du prøve <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revision</translation>
+<translation id="3676592649209844519">Enheds-id:</translation>
 <translation id="3678029195006412963">Anmodningen kunne ikke signeres</translation>
 <translation id="3678529606614285348">Åbn siden i et nyt inkognitovindue (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Nedbrud registreret <ph name="CRASH_TIME" />, uploadet <ph name="UPLOAD_TIME" /></translation>
@@ -583,6 +588,7 @@
 <translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
+<translation id="5015510746216210676">Maskinnavn:</translation>
 <translation id="5018422839182700155">Denne side kan ikke åbnes</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5023310440958281426">Læs din administrators politikker</translation>
@@ -722,6 +728,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkroniseret)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 i brug}one{# i brug}other{# i brug}}</translation>
 <translation id="5922853866070715753">Næsten færdig</translation>
+<translation id="5932224571077948991">Websitet viser påtrængende eller vildledende annoncer</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5951495562196540101">Det er ikke muligt at tilmelde sig med en forbrugerkonto (mulighed for tilknyttet licens ).</translation>
 <translation id="5966151627327109289">Logger dig ud af de fleste websites. Du mister muligvis adgang til beskyttet indhold fra <ph name="SITE" /> og visse andre websites.</translation>
@@ -759,6 +766,7 @@
 <translation id="6203231073485539293">Kontrollér din internetforbindelse</translation>
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
 <translation id="6221345481584921695">Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede malware<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Websites, der normalt er sikre, inficeres undertiden med malware. Det skadelige indhold kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kendt malwaredistributør.</translation>
+<translation id="6240447795304464094">Google Pay-logo</translation>
 <translation id="6251924700383757765">Privatlivspolitik</translation>
 <translation id="6254436959401408446">Der er ikke nok hukommelse til at åbne denne side</translation>
 <translation id="625755898061068298">Du har valgt at deaktivere sikkerhedsadvarsler for dette website.</translation>
@@ -777,6 +785,7 @@
 <translation id="6337133576188860026">Frigiver mindre end <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere under dit næste besøg.</translation>
 <translation id="6337534724793800597">Filtrér politikker efter navn</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
+<translation id="6383221683286411806">Potentielle debiteringer forude</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">Gem dit kort og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
 <translation id="6397451950548600259">Der er software på computeren, som forhindrer, at Chrome kan oprette en sikker forbindelse til nettet</translation>
@@ -814,6 +823,7 @@
 <translation id="6685834062052613830">Log ud, og fuldfør konfigurationen</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6710594484020273272">&lt;Indtast søgeterm&gt;</translation>
+<translation id="671076103358959139">Tilmeldingstoken:</translation>
 <translation id="6711464428925977395">Der er noget galt med proxyserveren, eller adressen er forkert.</translation>
 <translation id="674375294223700098">Ukendt fejl i servercertifikatet.</translation>
 <translation id="6744009308914054259">Mens du venter på en forbindelse, kan du gå til Downloads for at læse artikler offline.</translation>
@@ -879,6 +889,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om dette problem.</translation>
 <translation id="7219179957768738017">Forbindelsen bruger <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Behandler</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Det site, du er på vej til, indeholder malware</translation>
 <translation id="724975217298816891">Opdater dine kortoplysninger ved at indtaste udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>
 <translation id="7251437084390964440">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.
@@ -1059,6 +1070,7 @@ Yderligere oplysninger:
 <translation id="8364627913115013041">Ikke angivet.</translation>
 <translation id="8368476060205742148">Google Play-tjenester</translation>
 <translation id="8380941800586852976">Farlig</translation>
+<translation id="8381674639488873545">Disse debiteringer kan være enkeltstående eller gentagne og fremgår muligvis ikke tydeligt. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">De bogmærker, du har besøgt for nylig, vises her</translation>
 <translation id="8398259832188219207">Nedbrudsrapporten blev uploadet <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Nedbrud (<ph name="CRASH_COUNT" />)</translation>

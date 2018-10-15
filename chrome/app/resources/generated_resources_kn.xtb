@@ -670,7 +670,6 @@
 <translation id="197560921582345123">ಸಂಪಾದಿಸಬಹುದು</translation>
 <translation id="1975841812214822307">ತೆಗೆದುಹಾಕಿ...</translation>
 <translation id="1976150099241323601">ಭದ್ರತಾ ಸಾಧನಕ್ಕೆ ಸೈನ್ ಇನ್ ಆಗಿರಿ</translation>
-<translation id="1976315108329706992">ಈಗ ನೀವು Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಬಳಸಬಹುದು.</translation>
 <translation id="1976323404609382849">ಬಹು ಸೈಟ್‌ಗಳಿಂದ ಕುಕ್ಕೀಸ್‌ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="1977965994116744507">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಫೋನ್ ಅನ್ನು ಸಮೀಪಕ್ಕೆ ತನ್ನಿ.</translation>
 <translation id="1979280758666859181">ನೀವು <ph name="PRODUCT_NAME" /> ದ ಹಳೆಯ ಆವೃತ್ತಿಯೊಂದಿಗೆ ಚಾನಲ್‌ಗೆ ಬದಲಾಯಿಸುತ್ತಿರುವಿರಿ. ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಪ್ರಸ್ತುತ ಸ್ಥಾಪನೆ ಮಾಡಲಾಗಿರುವ ಆವೃತ್ತಿಗೆ ಹೊಂದಾಣಿಕೆಯಾದಾಗ ಮಾತ್ರ ಚಾನಲ್ ಬದಲಾವಣೆಯನ್ನು ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ.</translation>
@@ -3324,12 +3323,10 @@
 <translation id="6025215716629925253">ಸ್ಟ್ಯಾಕ್ ಪತ್ತೆ</translation>
 <translation id="6026047032548434446">ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಬೇಕೆ?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB ಸಾಧನ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
-<translation id="6028117231645531007">ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಸೇರಿಸಿ</translation>
 <translation id="6029027682598229313">Linux ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡುವಿಕೆ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] ಅಳಿಸು, ಬಟನ್</translation>
 <translation id="6029587122245504742">ಅತಿ ನಿಧಾನ</translation>
 <translation id="6032912588568283682">ಫೈಲ್ ಸಿಸ್ಟಂ</translation>
-<translation id="6034662038931255275">OS ಅಪ್‌ಡೇಟ್ ಯಶಸ್ವಿಯಾಗಿದೆ</translation>
 <translation id="6039651071822577588">ನೆಟ್‌ವರ್ಕ್ ಗುಣಲಕ್ಷಣದ ನಿಘಂಟು ದೋಷಪೂರಿತವಾಗಿದೆ</translation>
 <translation id="604001903249547235">ಮೇಘ ಬ್ಯಾಕಪ್</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
@@ -4602,6 +4599,7 @@
 <translation id="7966241909927244760">ಚಿತ್ರ ವಿಳಾಸ ನ&amp;ಕಲಿಸಿ</translation>
 <translation id="7968742106503422125">ನೀವು ನಕಲಿಸಿದ ಮತ್ತು ಅಂಟಿಸಿದ ಡೇಟಾವನ್ನು ಓದಿರಿ ಮತ್ತು ಮಾರ್ಪಡಿಸಿ</translation>
 <translation id="7968833647796919681">ಕಾರ್ಯಕ್ಷಮತೆಯ ಡೇಟಾ ಸಂಗ್ರಹವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸು</translation>
+<translation id="7969046989155602842">ಕಮಾಂಡ್</translation>
 <translation id="7972714317346275248">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 SHA-384</translation>
 <translation id="7973962044839454485">ತಪ್ಪಾದ ಬಳಕೆದಾರ ಹೆಸರು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದಾಗಿ PPP ದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> ಬಳಸುವ ಮೂಲಕ ಮರುಪ್ರಯತ್ನಿಸು</translation>

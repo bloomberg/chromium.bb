@@ -162,6 +162,7 @@
 <translation id="1973335181906896915">Podczas przekształcania do postaci szeregowej wystąpił błąd</translation>
 <translation id="1974060860693918893">Zaawansowane</translation>
 <translation id="1978555033938440688">Wersja oprogramowania</translation>
+<translation id="1981206234434200693">Wyczyść dane historii przeglądania Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{i jeszcze 1}few{i jeszcze #}many{i jeszcze #}other{i jeszcze #}}</translation>
 <translation id="2003709556000175978">Zresetuj teraz swoje hasło</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
@@ -229,6 +230,7 @@
 <translation id="2473195200299095979">Przetłumacz tę stronę</translation>
 <translation id="2479410451996844060">Nieprawidłowy URL wyszukiwania</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="248348093745724435">Zasady dotyczące komputera</translation>
 <translation id="2491120439723279231">Certyfikat serwera zawiera błędy.</translation>
 <translation id="2495083838625180221">Parser JSON</translation>
 <translation id="2495093607237746763">Jeśli zaznaczysz tę opcję, Chromium zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
@@ -298,6 +300,7 @@
 <translation id="2969319727213777354">Aby urządzenie nawiązało bezpieczne połączenie, jego zegar musi wskazywać prawidłową godzinę. Jest to wymagane, bo certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Zegar urządzenia jest ustawiony nieprawidłowo, więc Google Chrome nie może zweryfikować tych certyfikatów.</translation>
 <translation id="2972581237482394796">&amp;Ponów</translation>
 <translation id="2977665033722899841">Obecnie wybrany wiersz to <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
+<translation id="2982481275546140226">Wyczyść dane</translation>
 <translation id="2985306909656435243">Jeśli włączysz tę opcję, Chromium zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
 <translation id="2985398929374701810">Wpisz prawidłowy adres</translation>
 <translation id="2986368408720340940">Ta metoda odbioru jest niedostępna. Wybierz inną.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">Nie masz uprawnień do wyświetlania tej strony.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Uruchom diagnostykę połączeń<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{Brak}=1{dane logowania dla 1 konta}few{dane logowania dla # kont}many{dane logowania dla # kont}other{dane logowania dla # konta}}</translation>
 <translation id="3145945101586104090">Dekodowanie odpowiedzi nie powiodło się</translation>
 <translation id="3150653042067488994">Tymczasowy błąd serwera</translation>
 <translation id="3154506275960390542">Strona zawiera formularz, którego nie można przesłać bezpiecznie. Podczas przesyłania dane mogą zobaczyć inni użytkownicy, a hakerzy mogą je zmodyfikować, by na serwer dotarły zmienione dane.</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">Weryfikacja powiodła się</translation>
 <translation id="3655670868607891010">Jeśli często widzisz ten komunikat, przeczytaj <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Wersja</translation>
+<translation id="3676592649209844519">Identyfikator urządzenia:</translation>
 <translation id="3678029195006412963">Nie udało się podpisać żądania</translation>
 <translation id="3678529606614285348">Otwórz stronę w nowym oknie incognito (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">Raport o awarii zarejestrowano: <ph name="CRASH_TIME" />, przesłano: <ph name="UPLOAD_TIME" /></translation>
@@ -583,6 +588,7 @@
 <translation id="4989163558385430922">Pokaż wszystko</translation>
 <translation id="4989809363548539747">Ta wtyczka nie jest obsługiwana</translation>
 <translation id="5002932099480077015">Jeśli włączysz tę opcję, Chrome zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
+<translation id="5015510746216210676">Nazwa komputera:</translation>
 <translation id="5018422839182700155">Nie można otworzyć tej strony</translation>
 <translation id="5019198164206649151">Nieprawidłowy stan magazynu wspomagającego</translation>
 <translation id="5023310440958281426">Sprawdź zasady administratora</translation>
@@ -722,6 +728,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (zsynchronizowane)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{W użyciu: 1}few{W użyciu: #}many{W użyciu: #}other{W użyciu: #}}</translation>
 <translation id="5922853866070715753">Prawie gotowe</translation>
+<translation id="5932224571077948991">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5951495562196540101">Nie można zarejestrować się przy użyciu konta klienta (w pakiecie dostępna jest licencja).</translation>
 <translation id="5966151627327109289">Wylogowuje z większości stron internetowych. Możesz stracić dostęp do treści chronionych na <ph name="SITE" /> i na niektórych innych stronach.</translation>
@@ -759,6 +766,7 @@
 <translation id="6203231073485539293">Sprawdź połączenie z internetem</translation>
 <translation id="6218753634732582820">Usunąć ten adres z Chromium?</translation>
 <translation id="6221345481584921695">Bezpieczne przeglądanie Google <ph name="BEGIN_LINK" />wykryło ostatnio złośliwe oprogramowanie<ph name="END_LINK" /> na <ph name="SITE" />. Strony, które zazwyczaj są bezpieczne, zostają czasem zainfekowane destrukcyjnym oprogramowaniem. Źródłem złośliwej zawartości jest <ph name="SUBRESOURCE_HOST" /> – znany dystrybutor złośliwego oprogramowania.</translation>
+<translation id="6240447795304464094">Logo Google Pay</translation>
 <translation id="6251924700383757765">Polityka prywatności</translation>
 <translation id="6254436959401408446">Za mało pamięci, by otworzyć tę stronę</translation>
 <translation id="625755898061068298">Wyłączyłeś ostrzeżenia dotyczące bezpieczeństwa tej witryny.</translation>
@@ -777,6 +785,7 @@
 <translation id="6337133576188860026">Zwolni się mniej niż <ph name="SIZE" />. Podczas następnej wizyty niektóre strony mogą ładować się wolniej.</translation>
 <translation id="6337534724793800597">Filtruj zasady według nazwy</translation>
 <translation id="6358450015545214790">Co to oznacza?</translation>
+<translation id="6383221683286411806">Uważaj na możliwe opłaty.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 inna podpowiedź}few{# inne podpowiedzi}many{# innych podpowiedzi}other{# innej podpowiedzi}}</translation>
 <translation id="6387754724289022810">Aby następnym razem zapłacić szybciej, zapisz kartę i adres rozliczeniowy na swoim koncie Google i na tym urządzeniu.</translation>
 <translation id="6397451950548600259">Oprogramowanie na Twoim komputerze uniemożliwia Chrome bezpieczne połączenie się z internetem</translation>
@@ -814,6 +823,7 @@
 <translation id="6685834062052613830">Wyloguj się i dokończ konfigurację</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6710594484020273272">&lt;Wpisz wyszukiwane słowa&gt;</translation>
+<translation id="671076103358959139">Token rejestracji:</translation>
 <translation id="6711464428925977395">Serwer proxy działa nieprawidłowo albo adres jest błędny.</translation>
 <translation id="674375294223700098">Nieznany błąd certyfikatu serwera.</translation>
 <translation id="6744009308914054259">Dopóki nie masz połączenia, możesz poczytać artykuły offline z Pobranych plików.</translation>
@@ -879,6 +889,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /> na temat tego problemu.</translation>
 <translation id="7219179957768738017">Połączenie z szyfrowaniem <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Przetwarzanie</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Strona, którą chcesz otworzyć, zawiera złośliwe oprogramowanie</translation>
 <translation id="724975217298816891">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane. Po potwierdzeniu zostaną one udostępnione tej stronie.</translation>
 <translation id="7251437084390964440">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej część mogła nie zostać zaimportowana.
@@ -1059,6 +1070,7 @@ Dodatkowe informacje:
 <translation id="8364627913115013041">Nie ustawiono.</translation>
 <translation id="8368476060205742148">Usługi Google Play</translation>
 <translation id="8380941800586852976">Niebezpieczna</translation>
+<translation id="8381674639488873545">Może to być opłata jednorazowa lub cykliczna, a informacje o niej mogą nie być wyraźnie podane. <ph name="BEGIN_LINK" />Pokaż mimo to<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Tutaj wyświetlają się ostatnio otwierane zakładki</translation>
 <translation id="8398259832188219207">Raport o awarii przesłano: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Awarie (<ph name="CRASH_COUNT" />)</translation>

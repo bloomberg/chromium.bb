@@ -162,6 +162,7 @@
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1978555033938440688">גרסת קושחה</translation>
+<translation id="1981206234434200693">‏ניקוי נתוני היסטוריית הגלישה של Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ואפליקציה אחת נוספת}two{ושתי אפליקציות נוספות}many{ו-# אפליקציות נוספות}other{ו-# אפליקציות נוספות}}</translation>
 <translation id="2003709556000175978">צריך לאפס את הסיסמה עכשיו</translation>
 <translation id="2025186561304664664">‏שרת Proxy נקבע למוגדר אוטומטית.</translation>
@@ -229,6 +230,7 @@
 <translation id="2473195200299095979">תרגם את הדף הזה</translation>
 <translation id="2479410451996844060">כתובת אתר לא חוקית של חיפוש</translation>
 <translation id="2482878487686419369">התראות</translation>
+<translation id="248348093745724435">מדיניות המחשב</translation>
 <translation id="2491120439723279231">אישור השרת מכיל שגיאות.</translation>
 <translation id="2495083838625180221">‏מנתח JSON</translation>
 <translation id="2495093607237746763">‏אם האפשרות תסומן, Chromium ישמור עותק של הכרטיס במכשיר הזה כדי למלא טפסים במהירות רבה יותר.</translation>
@@ -298,6 +300,7 @@
 <translation id="2969319727213777354">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבאמצעותם אתרים מזהים את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Google Chrome לא יכול לאמת את האישורים האלה.</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, בחירה נוכחית. <ph name="ROW_CONTENT" /></translation>
+<translation id="2982481275546140226">ניקוי נתונים</translation>
 <translation id="2985306909656435243">‏אם האפשרות תופעל, Chromium יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="2985398929374701810">עליך להזין כתובת חוקית</translation>
 <translation id="2986368408720340940">שיטת האיסוף הזו אינה זמינה. עליך לבחור שיטה אחרת.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">אין לך הרשאה לצפות בדף הזה.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />נסה להפעיל את אבחון הקישוריות<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{ללא}=1{נתוני כניסה של חשבון אחד}two{נתוני כניסה של 2 חשבונות}many{נתוני כניסה של # חשבונות}other{נתוני כניסה של # חשבונות}}</translation>
 <translation id="3145945101586104090">פענוח התגובה נכשל</translation>
 <translation id="3150653042067488994">שגיאת שרת זמנית</translation>
 <translation id="3154506275960390542">דף זה כולל טופס שעשוי להישלח באופן לא מאובטח. הנתונים שתשלח יהיו גלויים במהלך ההעברה, וקיימת סכנה שמישהו ישנה את הפרטים שהשרת יקבל.</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">האימות בוצע בהצלחה</translation>
 <translation id="3655670868607891010">אם אתה רואה זאת לעתים קרובות, נסה את ה<ph name="HELP_LINK" /> האלה.</translation>
 <translation id="3658742229777143148">גרסה קודמת</translation>
+<translation id="3676592649209844519">מזהה מכשיר:</translation>
 <translation id="3678029195006412963">לא ניתן היה לחתום על הבקשה</translation>
 <translation id="3678529606614285348">‏פתח את הדף בחלון חדש של גלישה בסתר (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">דוח קריסה תועד ב-<ph name="CRASH_TIME" />, הועלה ב-<ph name="UPLOAD_TIME" /></translation>
@@ -587,6 +592,7 @@ Del</translation>
 <translation id="4989163558385430922">אני רוצה לראות הכול</translation>
 <translation id="4989809363548539747">הפלאגין הזה אינו נתמך</translation>
 <translation id="5002932099480077015">‏אם האפשרות הזו תופעל, Chrome יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
+<translation id="5015510746216210676">שם המחשב:</translation>
 <translation id="5018422839182700155">לא ניתן לפתוח את הדף</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
 <translation id="5023310440958281426">בדוק את תקנון מנהל המערכת שלך</translation>
@@ -727,6 +733,7 @@ Del</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (מסונכרנים)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{אחד נמצא בשימוש}two{שניים נמצאים בשימוש}many{# נמצאים בשימוש}other{# נמצאים בשימוש}}</translation>
 <translation id="5922853866070715753">עוד רגע מסיימים</translation>
+<translation id="5932224571077948991">באתר מוצגות מודעות מפריעות או מטעות</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5951495562196540101">אי אפשר להירשם באמצעות חשבון פרטי (יש רישיון משויך זמין).</translation>
 <translation id="5966151627327109289">הפעולה מוציאה אותך מרוב האתרים. ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
@@ -764,6 +771,7 @@ Del</translation>
 <translation id="6203231073485539293">בדוק את חיבור האינטרנט</translation>
 <translation id="6218753634732582820">‏האם להסיר מ-Chromium את הכתובת?</translation>
 <translation id="6221345481584921695">‏לאחרונה, 'גלישה בטוחה של Google' ‏<ph name="BEGIN_LINK" />זיהתה תוכנה זדונית<ph name="END_LINK" /> ב-<ph name="SITE" />. אתרים שבדרך כלל נחשבים לבטוחים נדבקים לעתים בתוכנה זדונית. התוכן הזדוני מגיע מ-<ph name="SUBRESOURCE_HOST" />, מפיץ ידוע של תוכנות זדוניות.</translation>
+<translation id="6240447795304464094">‏הלוגו של Google Pay</translation>
 <translation id="6251924700383757765">מדיניות פרטיות</translation>
 <translation id="6254436959401408446">אין מספיק זיכרון כדי לפתוח את הדף</translation>
 <translation id="625755898061068298">בחרת להשבית את אזהרות האבטחה לאתר הזה.</translation>
@@ -782,6 +790,7 @@ Del</translation>
 <translation id="6337133576188860026">פינוי של פחות מ-<ph name="SIZE" /> מהשטח. ייתכן שחלק מהאתרים ייטענו לאט יותר בביקור הבא שלך.</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
+<translation id="6383221683286411806">ייתכנו חיובים באתר.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387754724289022810">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס ואת הכתובת לחיוב.</translation>
 <translation id="6397451950548600259">‏יש תוכנה במחשב שלך שמונעת מ-Chrome להתחבר באופן מאובטח אל האינטרנט</translation>
@@ -819,6 +828,7 @@ Del</translation>
 <translation id="6685834062052613830">צא והשלם את ההגדרה</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6710594484020273272">&lt;הקלד מונח חיפוש&gt;</translation>
+<translation id="671076103358959139">אסימון הרשמה:</translation>
 <translation id="6711464428925977395">‏משהו אינו תקין בשרת ה-proxy, או שהכתובת שגויה.</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6744009308914054259">בזמן ההמתנה לחיבור אפשר לעבור אל 'הורדות' כדי לקרוא מאמרים לא מקוונים.</translation>
@@ -884,6 +894,7 @@ Del</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> בנושא זה.</translation>
 <translation id="7219179957768738017">החיבור משתמש ב-<ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">מעבד</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">האתר שלפניך מכיל תוכנה זדונית</translation>
 <translation id="724975217298816891">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /> כדי לעדכן את פרטי הכרטיס. ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
 <translation id="7251437084390964440">‏תצורת הרשת אינה תואמת לתקן ONC. ייתכן שחלקים מהתצורה לא ייכללו בייבוא.
@@ -1064,6 +1075,7 @@ Del</translation>
 <translation id="8364627913115013041">לא מוגדר.</translation>
 <translation id="8368476060205742148">‏שירותי Google Play</translation>
 <translation id="8380941800586852976">מסוכן</translation>
+<translation id="8381674639488873545">החיובים האלה יכולים להיות חד פעמיים או חוזרים, והם לא תמיד מוצגים בצורה בולטת. <ph name="BEGIN_LINK" />אני רוצה להמשיך בכל זאת<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">הסימניות שאליהן נכנסת לאחרונה מופיעות כאן</translation>
 <translation id="8398259832188219207">דוח קריסה הועלה ב-<ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">קריסות (<ph name="CRASH_COUNT" />)</translation>

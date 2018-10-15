@@ -577,6 +577,9 @@
           近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
 
           如果未設定這項政策，則預設值為 true 且系統將啟用 NTLMv2。</translation>
+<translation id="2598508021807251719">控制 <ph name="PRODUCT_OS_NAME" />顯示語言的語言代碼。
+
+      如果設定這項政策，使用者就只能將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為這項政策指定的其中一個語言代碼。如果未設定這項政策，或是設定了空白清單，則可將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為任一支援的語言代碼。如果將這項政策設為無效值清單，所有無效的值都會遭到忽略。如果使用者先前設定的 <ph name="PRODUCT_OS_NAME" />顯示語言代碼不是這項政策所允許的值，當使用者下次登入時，顯示語言代碼將切換成允許的 UI 語言代碼。如果使用者已設定偏好的語言代碼，而其中一個偏好的語言代碼是這項政策所允許的值，<ph name="PRODUCT_OS_NAME" />將改用該語言代碼，否則 <ph name="PRODUCT_OS_NAME" />將改用這項政策指定的第一個有效值，或是在這項政策指定的值均無效時改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
@@ -1668,6 +1671,7 @@
 <translation id="5835124959204887277">指定在必須取得安全金鑰認證憑證的情況下不會顯示提示的網址和網域。此外，系統會傳送信號給安全金鑰，指出可能會使用個別認證。如未設定這項政策，當網站要求安全金鑰認證時，Chrome 65 以上版本的使用者會收到提示。
 
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
+<translation id="5835412847081687053">設定可在使用者工作階段中使用的 UI 語言代碼</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="5862253018042179045">設定互動朗讀協助功能在登入畫面的預設狀態。
 

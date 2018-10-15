@@ -556,6 +556,9 @@
           近期推出的所有 Samba 和 Windows 服务器版本都支持 NTLMv2。除非是为了实现向后兼容，否则请勿停用 NTLMv2（因为这样做会降低身份验证的安全性）。
 
           如果未设置此政策，则默认值为 true，且系统会启用 NTLMv2。</translation>
+<translation id="2598508021807251719">配置 <ph name="PRODUCT_OS_NAME" />可以使用哪些语言区域进行显示。
+
+      如果已设置此政策，则用户只能将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策中指定的语言区域之一进行显示。如果此政策设为空列表或未设置，则 <ph name="PRODUCT_OS_NAME" />可以使用所有受支持的界面语言区域进行显示。如果此政策设为一个包含无效值的列表，则系统会忽略所有无效值。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的某种语言区域进行显示，那么当用户下次登录时，相应的显示语言区域将会切换到所允许的某种界面语言区域。如果用户已配置了首选语言区域，并且此政策允许其中的某一种首选语言区域，<ph name="PRODUCT_OS_NAME" />将会切换到此语言区域。否则，<ph name="PRODUCT_OS_NAME" />将会切换到此政策中指定的第一个有效值；如果此政策所含的条目都无效，就会切换到后备语言区域（目前为 en-US）。</translation>
 <translation id="2604182581880595781">配置网络文件共享功能相关政策。</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1634,6 +1637,7 @@
 <translation id="5835124959204887277">指定网址和网域，当相应网站需要取得安全密钥认证证书时，系统将不会显示任何提示。此外，系统还将向安全密钥发送信号，以指明可能会使用个人认证。如果未设置此政策，当网站需要取得安全密钥认证时，Chrome 65+ 将会提示用户。
 
       网址（如 https://example.com/some/path）将仅匹配为 U2F appID。网域（如 example.com）将仅匹配为 webauthn RP ID。因此，要同时涵盖指定网址的 U2F 和 webauthn API，必须同时列出 appID 网址和网域。</translation>
+<translation id="5835412847081687053">配置可在用户会话中使用的界面语言区域</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="5862253018042179045">设置登录屏幕上语音反馈辅助功能的默认状态。
 

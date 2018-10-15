@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Can edit</translation>
 <translation id="1975841812214822307">Remove...</translation>
 <translation id="1976150099241323601">Sign in to Security Device</translation>
-<translation id="1976315108329706992">You can now use Android apps.</translation>
 <translation id="1976323404609382849">Cookies from multiple sites blocked.</translation>
 <translation id="1977965994116744507">Bring your phone closer to unlock your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">You are changing to a channel with an older version of <ph name="PRODUCT_NAME" />. The channel change will be applied when the channel version matches the version currently installed on your device.</translation>
@@ -3352,12 +3351,10 @@
 <translation id="6025215716629925253">Stack Trace</translation>
 <translation id="6026047032548434446">Install App?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB device connected</translation>
-<translation id="6028117231645531007">Add fingerprint</translation>
 <translation id="6029027682598229313">Linux installation is complete.</translation>
 <translation id="6029292188939175871">delete [<ph name="FINGERPRINT_NAME" />], button</translation>
 <translation id="6029587122245504742">Slowest</translation>
 <translation id="6032912588568283682">File system</translation>
-<translation id="6034662038931255275">OS update successful</translation>
 <translation id="6038929619733116134">Block if site shows intrusive or misleading ads</translation>
 <translation id="6039651071822577588">Network property dictionary malformed</translation>
 <translation id="604001903249547235">Cloud backup</translation>
@@ -4646,6 +4643,7 @@
 <translation id="7966241909927244760">C&amp;opy Image Address</translation>
 <translation id="7968742106503422125">Read and modify data that you copy and paste</translation>
 <translation id="7968833647796919681">Enable performance data collection</translation>
+<translation id="7969046989155602842">Command</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 With RSA Encryption</translation>
 <translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
 <translation id="7974566588408714340">Retry using <ph name="EXTENSIONNAME" /></translation>

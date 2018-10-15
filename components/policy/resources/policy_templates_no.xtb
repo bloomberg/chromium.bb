@@ -589,6 +589,9 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Alle nylige versjoner av Samba- og Windows-tjenere støtter NTLMv2. Dette bør bare slås av for bakoverkompatibilitet og reduserer sikkerheten for autentisering.
 
           Når denne regelen ikke er definert, er standardverdien «true» (sann) og NTLMv2 er slått på.</translation>
+<translation id="2598508021807251719">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
+
+      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle UI-lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på en lokalitet som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillatt UI-lokalitet neste gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokalitetene tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
 <translation id="2604182581880595781">Konfigurer retningslinjer knyttet til delte nettverksresurser.</translation>
 <translation id="2623014935069176671">Vent på første brukeraktivitet</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -1722,6 +1725,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5835124959204887277">Spesifiserer nettadresser og domener som det ikke blir vist noen forespørsel for når det blir bedt om attestsertifikater fra sikkerhetsnøkler. I tillegg blir et signal sendt til sikkerhetsnøkkelen. Dette signalet indikerer at enkeltattester kan brukes. Uten dette kommer brukere til å få opp en forespørsel i Chrome v65+ når nettsteder ber om attest for sikkerhetsnøkler.
 
       Nettadresser (for eksempel https://example.com/some/path) samsvarer bare som U2F-app-ID-er. Domener (for eksempel example.com) samsvarer bare som webauthn RP-ID-er. For å dekke både U2F- og webauthn-API-er for et bestemt nettsted må derfor både app-ID-nettadressen og domenet listes opp.</translation>
+<translation id="5835412847081687053">Konfigurer tillatte lokaliteter i brukerøkter</translation>
 <translation id="5836064773277134605">Begrens UDP-portområdet som brukes av fjerntilgangsverten</translation>
 <translation id="5862253018042179045">Angi standard tilstand for tilgjengelighetsfunksjonen for muntlig tilbakemelding på påloggingssiden.
 

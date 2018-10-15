@@ -681,7 +681,6 @@
 <translation id="197560921582345123">Voi muokata</translation>
 <translation id="1975841812214822307">Poista...</translation>
 <translation id="1976150099241323601">Kirjaudu sisään suojauslaitteeseen</translation>
-<translation id="1976315108329706992">Nyt voit käyttää Android-sovelluksia.</translation>
 <translation id="1976323404609382849">Useiden sivustojen evästeet estetty.</translation>
 <translation id="1977965994116744507">Tuo puhelimesi lähemmäs, jotta voit avata laitteen <ph name="DEVICE_TYPE" /> lukituksen.</translation>
 <translation id="1979280758666859181">Olet vaihtamassa kanavalle, jossa on käytössä tuotteen <ph name="PRODUCT_NAME" /> vanhempi versio. Kanavan muutos otetaan käyttöön, kun kanavaversio vastaa tällä hetkellä laitteellesi asennettua versiota.</translation>
@@ -3351,12 +3350,10 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6025215716629925253">Pinon jälki</translation>
 <translation id="6026047032548434446">Asennetaanko sovellus?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB-laite yhdistetty</translation>
-<translation id="6028117231645531007">Lisää sormenjälki</translation>
 <translation id="6029027682598229313">Linuxin asennus on valmis.</translation>
 <translation id="6029292188939175871">poista [<ph name="FINGERPRINT_NAME" />], painike</translation>
 <translation id="6029587122245504742">Hitain</translation>
 <translation id="6032912588568283682">Tiedostojärjestelmä</translation>
-<translation id="6034662038931255275">Käyttöjärjestelmän päivitys onnistui</translation>
 <translation id="6038929619733116134">Estä, jos sivustolla on häiritseviä tai harhaanjohtavia mainoksia</translation>
 <translation id="6039651071822577588">Verkko-omaisuuden sanakirja on virheellinen</translation>
 <translation id="604001903249547235">Pilvivarmuuskopiointi</translation>
@@ -4646,6 +4643,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7966241909927244760">K&amp;opioi kuvan osoite</translation>
 <translation id="7968742106503422125">lukea ja muokata kopioimiasi ja liittämiäsi tietoja</translation>
 <translation id="7968833647796919681">Ota käyttöön tehokkuustietojen kerääminen</translation>
+<translation id="7969046989155602842">Komento</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 ja RSA-salaus</translation>
 <translation id="7973962044839454485">PPP-todennus epäonnistui virheellisen käyttäjänimen tai salasanan vuoksi</translation>
 <translation id="7974566588408714340">Yritä uudelleen laajennuksella <ph name="EXTENSIONNAME" /></translation>

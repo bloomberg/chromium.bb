@@ -162,6 +162,7 @@
 <translation id="1973335181906896915">ข้อผิดพลาดในการจัดเรียง</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
 <translation id="1978555033938440688">เวอร์ชันของเฟิร์มแวร์</translation>
+<translation id="1981206234434200693">ล้างข้อมูลประวัติการเข้าชมของ Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{และอีก 1 แอป}other{และอีก # แอป}}</translation>
 <translation id="2003709556000175978">รีเซ็ตรหัสผ่านเลย</translation>
 <translation id="2025186561304664664">พร็อกซีถูกตั้งค่าให้ทำการกำหนดค่าโดยอัตโนมัติ</translation>
@@ -229,6 +230,7 @@
 <translation id="2473195200299095979">แปลหน้านี้</translation>
 <translation id="2479410451996844060">URL ค้นหาไม่ถูกต้อง</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
+<translation id="248348093745724435">นโยบายเครื่อง</translation>
 <translation id="2491120439723279231">ใบรับรองของเซิร์ฟเวอร์มีข้อผิดพลาด</translation>
 <translation id="2495083838625180221">โปรแกรมแยกวิเคราะห์ JSON</translation>
 <translation id="2495093607237746763">หากเลือกไว้ Chromium จะจัดเก็บสำเนาบัตรของคุณบนอุปกรณ์นี้เพื่อการกรอกแบบฟอร์มที่รวดเร็วขึ้น</translation>
@@ -298,6 +300,7 @@
 <translation id="2969319727213777354">หากต้องการสร้างการเชื่อมต่อที่ปลอดภัย คุณต้องตั้งค่านาฬิกาให้ถูกต้องเนื่องจากใบรับรองที่เว็บไซต์ใช้เพื่อระบุตัวตนจะใช้ได้ในช่วงเวลาที่เจาะจงเท่านั้น แต่เนื่องจากนาฬิกาของอุปกรณ์ไม่ถูกต้อง Google Chrome จึงไม่สามารถยืนยันใบรับรองเหล่านี้</translation>
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
 <translation id="2977665033722899841">เลือก <ph name="ROW_NAME" /> อยู่ตอนนี้ <ph name="ROW_CONTENT" /></translation>
+<translation id="2982481275546140226">ล้างข้อมูล</translation>
 <translation id="2985306909656435243">หากเปิดใช้ไว้ Chromium จะจัดเก็บสำเนาบัตรของคุณในอุปกรณ์นี้เพื่อการกรอกแบบฟอร์มที่รวดเร็วขึ้น</translation>
 <translation id="2985398929374701810">ป้อนที่อยู่ที่ถูกต้อง</translation>
 <translation id="2986368408720340940">วิธีการรับสินค้านี้ไม่พร้อมให้บริการ โปรดลองใช้วิธีการอื่น</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">คุณไม่มีสิทธิ์ดูหน้านี้</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยการเชื่อมต่อ<ph name="END_LINK" /></translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{ไม่มี}=1{ข้อมูลการลงชื่อเข้าใช้ของบัญชี 1 บัญชี}other{ข้อมูลการลงชื่อเข้าใช้ของบัญชี # บัญชี}}</translation>
 <translation id="3145945101586104090">การถอดรหัสการตอบกลับล้มเหลว</translation>
 <translation id="3150653042067488994">ข้อผิดพลาดชั่วคราวของเซิร์ฟเวอร์</translation>
 <translation id="3154506275960390542">หน้านี้มีฟอร์มที่อาจส่งอย่างไม่ปลอดภัย บุคคลอื่นสามารถดูข้อมูลที่คุณส่งได้ระหว่างทางหรือข้อมูลอาจถูกแก้ไขโดยผู้โจมตีเพื่อเปลี่ยนแปลงสิ่งที่เซิร์ฟเวอร์จะได้รับ</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">การตรวจสอบสำเร็จ</translation>
 <translation id="3655670868607891010">หากคุณเห็นข้อความนี้บ่อยๆ ให้ลองไปที่ <ph name="HELP_LINK" /></translation>
 <translation id="3658742229777143148">การแก้ไข</translation>
+<translation id="3676592649209844519">รหัสอุปกรณ์:</translation>
 <translation id="3678029195006412963">ไม่สามารถลงนามคำขอ</translation>
 <translation id="3678529606614285348">เปิดหน้าเว็บในหน้าต่างที่ไม่ระบุตัวตนใหม่ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> อัปโหลดเมื่อ <ph name="UPLOAD_TIME" /></translation>
@@ -583,6 +588,7 @@
 <translation id="4989163558385430922">ดูทั้งหมด</translation>
 <translation id="4989809363548539747">ไม่รองรับปลั๊กอินนี้</translation>
 <translation id="5002932099480077015">หากเปิดใช้ Chrome จะเก็บสำเนาการ์ดของคุณในอุปกรณ์นี้เพื่อให้การกรอกฟอร์มทำได้เร็วขึ้น</translation>
+<translation id="5015510746216210676">ชื่อเครื่อง:</translation>
 <translation id="5018422839182700155">ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5019198164206649151">ไม่สามารถจัดเก็บเนื่องจากระบบแบ็คเอนด์อยู่ในสถานะไม่ดี</translation>
 <translation id="5023310440958281426">ตรวจสอบนโยบายของผู้ดูแลระบบของคุณ</translation>
@@ -722,6 +728,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ซิงค์แล้ว)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ใช้งานอยู่ 1 รายการ}other{ใช้งานอยู่ # รายการ}}</translation>
 <translation id="5922853866070715753">เกือบเสร็จแล้ว</translation>
+<translation id="5932224571077948991">เว็บไซต์แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5951495562196540101">ลงทะเบียนด้วยบัญชีผู้ใช้ทั่วไปไม่ได้ (มีใบอนุญาตแบบแพ็กเกจ)</translation>
 <translation id="5966151627327109289">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ คุณอาจสูญเสียสิทธิ์เข้าถึงเนื้อหาที่มีการคุ้มครองจาก <ph name="SITE" /> และเว็บไซต์อื่นๆ บางเว็บ</translation>
@@ -759,6 +766,7 @@
 <translation id="6203231073485539293">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="6218753634732582820">ต้องการนำที่อยู่ออกจาก Chromium ใช่ไหม</translation>
 <translation id="6221345481584921695">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบมัลแวร์<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ที่โดยปกติจะปลอดภัยบางครั้งอาจติดมัลแวร์ เนื้อหาที่เป็นอันตรายมาจาก <ph name="SUBRESOURCE_HOST" /> ซึ่งเป็นผู้เผยแพร่มัลแวร์ที่เป็นที่รู้จัก</translation>
+<translation id="6240447795304464094">โลโก้ Google Pay</translation>
 <translation id="6251924700383757765">นโยบายความเป็นส่วนตัว</translation>
 <translation id="6254436959401408446">หน่วยความจำไม่เพียงพอที่จะเปิดหน้านี้</translation>
 <translation id="625755898061068298">คุณเลือกปิดใช้คำเตือนด้านความปลอดภัยของเว็บไซต์นี้</translation>
@@ -777,6 +785,7 @@
 <translation id="6337133576188860026">หากเพิ่มพื้นที่ว่างไม่ถึง <ph name="SIZE" /> ไซต์บางแห่งอาจโหลดช้าลงเมื่อคุณเข้าชมครั้งถัดไป</translation>
 <translation id="6337534724793800597">กรองนโยบายตามชื่อ</translation>
 <translation id="6358450015545214790">นี่หมายถึงอะไร</translation>
+<translation id="6383221683286411806">อาจมีการเรียกเก็บเงิน</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{อีก 1 คำแนะนำ}other{อีก # คำแนะนำ}}</translation>
 <translation id="6387754724289022810">เพื่อความสะดวกในการชำระเงินในครั้งถัดไป โปรดบันทึกบัตรและที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google สำหรับอุปกรณฺ์นี้</translation>
 <translation id="6397451950548600259">ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chrome ไม่สามารถเชื่อมต่อกับเว็บอย่างปลอดภัย</translation>
@@ -814,6 +823,7 @@
 <translation id="6685834062052613830">ออกจากระบบและตั้งค่าให้เสร็จสมบูรณ์</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6710594484020273272">&lt;พิมพ์ข้อความค้นหา&gt;</translation>
+<translation id="671076103358959139">โทเค็นการลงทะเบียน:</translation>
 <translation id="6711464428925977395">พร็อกซีเซิร์ฟเวอร์ผิดปกติหรือที่อยู่ไม่ถูกต้อง</translation>
 <translation id="674375294223700098">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="6744009308914054259">ระหว่างที่รอการเชื่อมต่อ คุณไปที่หน้า "ดาวน์โหลด" เพื่ออ่านบทความออฟไลน์ได้</translation>
@@ -879,6 +889,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /> เกี่ยวกับปัญหานี้</translation>
 <translation id="7219179957768738017">การเชื่อมต่อใช้ <ph name="SSL_VERSION" /></translation>
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" /> <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">ไซต์ที่จะเปิดมีมัลแวร์</translation>
 <translation id="724975217298816891">ป้อนวันหมดอายุและ CVC สำหรับ <ph name="CREDIT_CARD" /> เพื่ออัปเดตรายละเอียดของบัตร เมื่อคุณยืนยันแล้ว รายละเอียดบัตรของคุณจะแชร์กับเว็บไซต์นี้</translation>
 <translation id="7251437084390964440">การกำหนดค่าเครือข่ายไม่เป็นไปตามมาตรฐาน ONC ระบบอาจไม่นำเข้าการกำหนดค่าบางส่วน
@@ -1059,6 +1070,7 @@
 <translation id="8364627913115013041">ไม่ได้ตั้งค่า</translation>
 <translation id="8368476060205742148">บริการ Google Play</translation>
 <translation id="8380941800586852976">อันตราย</translation>
+<translation id="8381674639488873545">การเรียกเก็บเงินเหล่านี้อาจเกิดขึ้นครั้งเดียวหรือเป็นเกิดขึ้นซ้ำๆ และอาจไม่แสดงอย่างชัดแจ้ง <ph name="BEGIN_LINK" />เปิดเว็บไซต์<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">บุ๊กมาร์กที่คุณเข้าชมล่าสุดจะปรากฏที่นี่</translation>
 <translation id="8398259832188219207">อัปโหลดรายงานข้อขัดข้องเมื่อ <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">ข้อขัดข้อง (<ph name="CRASH_COUNT" />)</translation>
