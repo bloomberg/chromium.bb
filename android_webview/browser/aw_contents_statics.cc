@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "components/google/core/common/google_util.h"
@@ -50,6 +51,14 @@ void SafeBrowsingWhitelistAssigned(const JavaRef<jobject>& callback,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   Java_AwContentsStatics_safeBrowsingWhitelistAssigned(env, callback, success);
+}
+
+void ProxyOverrideChanged(const JavaRef<jobject>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (callback.is_null())
+    return;
+  JNIEnv* env = AttachCurrentThread();
+  Java_AwContentsStatics_proxyOverrideChanged(env, callback);
 }
 
 }  // namespace
@@ -138,23 +147,27 @@ void JNI_AwContentsStatics_SetProxyOverride(
     const JavaParamRef<jclass>&,
     const base::android::JavaParamRef<jstring>& jhost,
     jint port,
-    const base::android::JavaParamRef<jobjectArray>& jexclusion_list) {
+    const base::android::JavaParamRef<jobjectArray>& jexclusion_list,
+    const JavaParamRef<jobject>& callback) {
   std::string host;
   base::android::ConvertJavaStringToUTF8(env, jhost, &host);
   std::vector<std::string> exclusion_list;
   base::android::AppendJavaStringArrayToStringVector(env, jexclusion_list,
                                                      &exclusion_list);
-
   AwBrowserContext::GetDefault()->GetAwURLRequestContext()->SetProxyOverride(
-      host, port, exclusion_list);
+      host, port, exclusion_list,
+      base::BindOnce(&ProxyOverrideChanged,
+                     ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 // static
-void JNI_AwContentsStatics_ClearProxyOverride(JNIEnv* env,
-                                              const JavaParamRef<jclass>&) {
-  AwBrowserContext::GetDefault()
-      ->GetAwURLRequestContext()
-      ->ClearProxyOverride();
+void JNI_AwContentsStatics_ClearProxyOverride(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&,
+    const JavaParamRef<jobject>& callback) {
+  AwBrowserContext::GetDefault()->GetAwURLRequestContext()->ClearProxyOverride(
+      base::BindOnce(&ProxyOverrideChanged,
+                     ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 }  // namespace android_webview
