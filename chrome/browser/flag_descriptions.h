@@ -319,9 +319,6 @@ extern const char kEnableCSSFragmentIdentifiersDescription[];
 extern const char kEnableCursorMotionBlurName[];
 extern const char kEnableCursorMotionBlurDescription[];
 
-extern const char kEnableEphemeralFlashPermissionName[];
-extern const char kEnableEphemeralFlashPermissionDescription[];
-
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 
