@@ -114,13 +114,15 @@ void FetchEvent::OnNavigationPreloadResponse(
   DCHECK(!preload_response_);
   ScriptState::Scope scope(script_state);
   preload_response_ = std::move(response);
+  if (data_pipe.is_valid()) {
+    data_pipe_consumer_ = new DataPipeBytesConsumer(
+        ExecutionContext::From(script_state), std::move(data_pipe));
+  }
   // TODO(ricea): Verify that this response can't be aborted from JS.
   FetchResponseData* response_data =
-      data_pipe.is_valid()
+      data_pipe_consumer_
           ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
-                script_state,
-                new DataPipeBytesConsumer(ExecutionContext::From(script_state),
-                                          std::move(data_pipe)),
+                script_state, data_pipe_consumer_,
                 new AbortSignal(ExecutionContext::From(script_state))))
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);
@@ -148,6 +150,10 @@ void FetchEvent::OnNavigationPreloadError(
     std::unique_ptr<WebServiceWorkerError> error) {
   if (!script_state->ContextIsValid())
     return;
+  if (data_pipe_consumer_) {
+    data_pipe_consumer_->SignalError();
+    data_pipe_consumer_ = nullptr;
+  }
   DCHECK(preload_response_property_);
   if (preload_response_property_->GetState() !=
       PreloadResponseProperty::kPending) {
@@ -164,6 +170,10 @@ void FetchEvent::OnNavigationPreloadComplete(
     int64_t encoded_body_length,
     int64_t decoded_body_length) {
   DCHECK(preload_response_);
+  if (data_pipe_consumer_) {
+    data_pipe_consumer_->SignalComplete();
+    data_pipe_consumer_ = nullptr;
+  }
   std::unique_ptr<WebURLResponse> response = std::move(preload_response_);
   ResourceResponse resource_response = response->ToResourceResponse();
   resource_response.SetEncodedDataLength(encoded_data_length);
@@ -187,6 +197,7 @@ void FetchEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(request_);
   visitor->Trace(preload_response_property_);
+  visitor->Trace(data_pipe_consumer_);
   ExtendableEvent::Trace(visitor);
   ContextClient::Trace(visitor);
 }

@@ -132,8 +132,12 @@ class CORE_EXPORT BytesConsumer
   // Drains the data as a ScopedDataPipeConsumerHandle.
   // When this function returns a valid handle, the returned pipe handle
   // contains bytes that would be read through the BeginRead and
-  // EndRead functions without calling this function. In such a case, this
-  // object becomes closed.
+  // EndRead functions without calling this function. The consumer may
+  // become closed or remain in the open state depending on if it has
+  // received an explicit completion signal.  If the consumer becomes
+  // closed OnstateChange() will *not* be called.  Instead manually
+  // call GetPublicState() to check if draining closed the consumer.
+  //
   // When this function returns an invalid handle, this function does nothing.
   virtual mojo::ScopedDataPipeConsumerHandle DrainAsDataPipe() {
     return mojo::ScopedDataPipeConsumerHandle();
