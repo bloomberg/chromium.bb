@@ -340,9 +340,7 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 
 void AvatarToolbarButton::SetInsets() {
   // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
-  // is hard to read for user avatars. This constant is correspondingly smaller
-  // than GetLayoutInsets(TOOLBAR_BUTTON).
-  SetLayoutInsets(ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-                      ? gfx::Insets()
-                      : GetLayoutInsets(TOOLBAR_BUTTON) - gfx::Insets(2));
+  // is hard to read for user avatars, so we need to set corresponding insets.
+  SetLayoutInsetDelta(gfx::Insets(
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : -2));
 }

@@ -9,10 +9,12 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -83,6 +85,10 @@ void CastToolbarButton::UpdateIcon() {
   const gfx::VectorIcon& icon = GetCurrentIcon();
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon, GetIconColor(&icon)));
+  // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
+  // the insets to match.
+  SetLayoutInsetDelta(gfx::Insets(
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 4 : 0));
 }
 
 const gfx::VectorIcon& CastToolbarButton::GetCurrentIcon() const {
