@@ -513,7 +513,6 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
                                    reconcile_is_noop_);
   }
   first_execution_ = false;
-  ScheduleStartReconcileIfChromeAccountsChanged();
 }
 
 void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
