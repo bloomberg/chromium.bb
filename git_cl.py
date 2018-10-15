@@ -1585,6 +1585,7 @@ class Changelist(object):
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
+    assert self.IsGerrit()
     custom_cl_base = None
     if git_diff_args:
       custom_cl_base = base_branch = git_diff_args[0]
@@ -1596,15 +1597,6 @@ class Changelist(object):
       base_branch = self.GetCommonAncestorWithUpstream()
       git_diff_args = [base_branch, 'HEAD']
 
-    # Warn about Rietveld deprecation for initial uploads to Rietveld.
-    if not self.IsGerrit() and not self.GetIssue():
-      print('=====================================')
-      print('NOTICE: Rietveld is being deprecated. '
-            'You can upload changes to Gerrit with')
-      print('  git cl upload --gerrit')
-      print('or set Gerrit to be your default code review tool with')
-      print('  git config gerrit.host true')
-      print('=====================================')
 
     # Fast best-effort checks to abort before running potentially
     # expensive hooks if uploading is likely to fail anyway. Passing these
@@ -1638,30 +1630,9 @@ class Changelist(object):
         options.reviewers = hook_results.reviewers.split(',')
       self.ExtendCC(hook_results.more_cc)
 
-    # TODO(tandrii): Checking local patchset against remote patchset is only
-    # supported for Rietveld. Extend it to Gerrit or remove it completely.
-    if self.GetIssue() and not self.IsGerrit():
-      latest_patchset = self.GetMostRecentPatchset()
-      local_patchset = self.GetPatchset()
-      if (latest_patchset and local_patchset and
-          local_patchset != latest_patchset):
-        print('The last upload made from this repository was patchset #%d but '
-              'the most recent patchset on the server is #%d.'
-              % (local_patchset, latest_patchset))
-        print('Uploading will still work, but if you\'ve uploaded to this '
-              'issue from another machine or branch the patch you\'re '
-              'uploading now might not include those changes.')
-        confirm_or_exit(action='upload')
-
     print_stats(git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
     if not ret:
-      if not self.IsGerrit():
-        if options.use_commit_queue:
-          self.SetCQState(_CQState.COMMIT)
-        elif options.cq_dry_run:
-          self.SetCQState(_CQState.DRY_RUN)
-
       _git_set_branch_config_value('last-upload-hash',
                                    RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
@@ -1966,14 +1937,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return self._rietveld_server
 
   def EnsureAuthenticated(self, force, refresh=False):
-    """Best effort check that user is authenticated with Rietveld server."""
-    if self._auth_config.use_oauth2:
-      authenticator = auth.get_authenticator_for_host(
-          self.GetCodereviewServer(), self._auth_config)
-      if not authenticator.has_cached_credentials():
-        raise auth.LoginRequiredError(self.GetCodereviewServer())
-      if refresh:
-        authenticator.get_access_token()
+    raise NotImplementedError
 
   def EnsureCanUploadPatchset(self, force):
     # No checks for Rietveld because we are deprecating Rietveld.
@@ -2226,145 +2190,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def CMDUploadChange(self, options, args, custom_cl_base, change):
     """Upload the patch to Rietveld."""
-    upload_args = ['--assume_yes']  # Don't ask about untracked files.
-    upload_args.extend(['--server', self.GetCodereviewServer()])
-    upload_args.extend(auth.auth_config_to_command_options(self._auth_config))
-    if options.emulate_svn_auto_props:
-      upload_args.append('--emulate_svn_auto_props')
-
-    change_desc = None
-
-    if options.email is not None:
-      upload_args.extend(['--email', options.email])
-
-    if self.GetIssue():
-      if options.title is not None:
-        upload_args.extend(['--title', options.title])
-      if options.message:
-        upload_args.extend(['--message', options.message])
-      upload_args.extend(['--issue', str(self.GetIssue())])
-      print('This branch is associated with issue %s. '
-            'Adding patch to that issue.' % self.GetIssue())
-    else:
-      if options.title is not None:
-        upload_args.extend(['--title', options.title])
-      if options.message:
-        message = options.message
-      else:
-        message = CreateDescriptionFromLog(args)
-        if options.title:
-          message = options.title + '\n\n' + message
-      change_desc = ChangeDescription(message)
-      if options.reviewers or options.add_owners_to:
-        change_desc.update_reviewers(options.reviewers, options.tbrs,
-                                     options.add_owners_to, change)
-      if not options.force:
-        change_desc.prompt(bug=options.bug, git_footer=False)
-
-      if not change_desc.description:
-        print('Description is empty; aborting.')
-        return 1
-
-      upload_args.extend(['--message', change_desc.description])
-      if change_desc.get_reviewers():
-        upload_args.append('--reviewers=%s' % ','.join(
-            change_desc.get_reviewers()))
-      if options.send_mail:
-        if not change_desc.get_reviewers():
-          DieWithError("Must specify reviewers to send email.", change_desc)
-        upload_args.append('--send_mail')
-
-      # We only skip auto-CC-ing addresses from rietveld.cc when --private or
-      # --no-autocc is explicitly specified on the command line. Should private
-      # CL be created due to rietveld.private value, we assume that rietveld.cc
-      # only contains addresses where private CLs are allowed to be sent.
-      if options.private or options.no_autocc:
-        logging.warn('rietveld.cc is ignored since private/no-autocc flag is '
-                     'specified. You need to review and add them manually if '
-                     'necessary.')
-        cc = self.GetCCListWithoutDefault()
-      else:
-        cc = self.GetCCList()
-      cc = ','.join(filter(None, (cc, ','.join(options.cc))))
-      if change_desc.get_cced():
-        cc = ','.join(filter(None, (cc, ','.join(change_desc.get_cced()))))
-      if cc:
-        upload_args.extend(['--cc', cc])
-
-    if options.private or settings.GetDefaultPrivateFlag() == "True":
-      upload_args.append('--private')
-
-    # Include the upstream repo's URL in the change -- this is useful for
-    # projects that have their source spread across multiple repos.
-    remote_url = self.GetGitBaseUrlFromConfig()
-    if not remote_url:
-      if self.GetRemoteUrl() and '/' in self.GetUpstreamBranch():
-        remote_url = '%s@%s' % (self.GetRemoteUrl(),
-                                self.GetUpstreamBranch().split('/')[-1])
-    if remote_url:
-      remote, remote_branch = self.GetRemoteBranch()
-      target_ref = GetTargetRef(remote, remote_branch, options.target_branch)
-      if target_ref:
-        upload_args.extend(['--target_ref', target_ref])
-
-      # Look for dependent patchsets. See crbug.com/480453 for more details.
-      remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
-      upstream_branch = ShortBranchName(upstream_branch)
-      if remote is '.':
-        # A local branch is being tracked.
-        local_branch = upstream_branch
-        if settings.GetIsSkipDependencyUpload(local_branch):
-          print()
-          print('Skipping dependency patchset upload because git config '
-                'branch.%s.skip-deps-uploads is set to True.' % local_branch)
-          print()
-        else:
-          auth_config = auth.extract_auth_config_from_options(options)
-          branch_cl = Changelist(branchref='refs/heads/'+local_branch,
-                                 auth_config=auth_config)
-          branch_cl_issue_url = branch_cl.GetIssueURL()
-          branch_cl_issue = branch_cl.GetIssue()
-          branch_cl_patchset = branch_cl.GetPatchset()
-          if branch_cl_issue_url and branch_cl_issue and branch_cl_patchset:
-            upload_args.extend(
-                ['--depends_on_patchset', '%s:%s' % (
-                     branch_cl_issue, branch_cl_patchset)])
-            print(
-                '\n'
-                'The current branch (%s) is tracking a local branch (%s) with '
-                'an associated CL.\n'
-                'Adding %s/#ps%s as a dependency patchset.\n'
-                '\n' % (self.GetBranch(), local_branch, branch_cl_issue_url,
-                        branch_cl_patchset))
-
-    project = settings.GetProject()
-    if project:
-      upload_args.extend(['--project', project])
-    else:
-      print()
-      print('WARNING: Uploading without a project specified. Please ensure '
-            'your repo\'s codereview.settings has a "PROJECT: foo" line.')
-      print()
-
-    try:
-      upload_args = ['upload'] + upload_args + args
-      logging.info('upload.RealMain(%s)', upload_args)
-      issue, patchset = upload.RealMain(upload_args)
-      issue = int(issue)
-      patchset = int(patchset)
-    except KeyboardInterrupt:
-      sys.exit(1)
-    except:
-      # If we got an exception after the user typed a description for their
-      # change, back up the description before re-raising.
-      if change_desc:
-        SaveDescriptionBackup(change_desc)
-      raise
-
-    if not self.GetIssue():
-      self.SetIssue(issue)
-    self.SetPatchset(patchset)
-    return 0
+    raise NotImplementedError
 
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
@@ -4387,7 +4213,7 @@ def upload_branch_deps(cl, args):
   if root_branch is None:
     DieWithError('Can\'t find dependent branches from detached HEAD state. '
                  'Get on a branch!')
-  if not cl.GetIssue() or (not cl.IsGerrit() and not cl.GetPatchset()):
+  if not cl.GetIssue():
     DieWithError('Current branch does not have an uploaded CL. We cannot set '
                  'patchset dependencies without an uploaded CL.')
 
@@ -4426,10 +4252,6 @@ def upload_branch_deps(cl, args):
 
   confirm_or_exit('This command will checkout all dependent branches and run '
                   '"git cl upload".', action='continue')
-
-  # Add a default patchset title to all upload calls in Rietveld.
-  if not cl.IsGerrit():
-    args.extend(['-t', 'Updated patchset dependency'])
 
   # Record all dependents that failed to upload.
   failures = {}
@@ -5224,6 +5046,17 @@ def CMDupload(parser, args):
   settings.GetIsGerrit()
 
   cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
+  if not cl.IsGerrit():
+    # Error out with instructions for repos not yet configured for Gerrit.
+    print('=====================================')
+    print('NOTICE: Rietveld is no longer supported. '
+          'You can upload changes to Gerrit with')
+    print('  git cl upload --gerrit')
+    print('or set Gerrit to be your default code review tool with')
+    print('  git config gerrit.host true')
+    print('=====================================')
+    return 1
+
   return cl.CMDUpload(options, args, orig_args)
 
 
