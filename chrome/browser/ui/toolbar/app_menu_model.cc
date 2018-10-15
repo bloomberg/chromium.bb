@@ -669,20 +669,18 @@ bool AppMenuModel::GetAcceleratorForCommandId(
   return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 
-void AppMenuModel::ActiveTabChanged(WebContents* old_contents,
-                                    WebContents* new_contents,
-                                    int index,
-                                    int reason) {
-  // The user has switched between tabs and the new tab may have a different
-  // zoom setting.
-  UpdateZoomControls();
-}
+void AppMenuModel::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (tab_strip_model->empty())
+    return;
 
-void AppMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
-                                 WebContents* old_contents,
-                                 WebContents* new_contents,
-                                 int index) {
-  UpdateZoomControls();
+  if (selection.active_tab_changed()) {
+    // The user has switched between tabs and the new tab may have a different
+    // zoom setting. Or web contents for a tab has been replaced.
+    UpdateZoomControls();
+  }
 }
 
 void AppMenuModel::Observe(int type,

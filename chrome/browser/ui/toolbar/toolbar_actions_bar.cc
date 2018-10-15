@@ -769,12 +769,15 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   ResizeDelegate(gfx::Tween::EASE_OUT);
 }
 
-void ToolbarActionsBar::TabInsertedAt(TabStripModel* tab_strip_model,
-                                      content::WebContents* contents,
-                                      int index,
-                                      bool foreground) {
-  if (foreground)
-    extensions::MaybeShowExtensionControlledNewTabPage(browser_, contents);
+void ToolbarActionsBar::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (tab_strip_model->empty() || !selection.active_tab_changed())
+    return;
+
+  extensions::MaybeShowExtensionControlledNewTabPage(browser_,
+                                                     selection.new_contents);
 }
 
 void ToolbarActionsBar::ReorderActions() {
