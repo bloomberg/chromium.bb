@@ -185,6 +185,10 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   NGPaintFragment* FirstInlineFragment() const final;
   void SetFirstInlineFragment(NGPaintFragment*) final;
 
+  // Return true if this inline doesn't occur on any lines, i.e. when it creates
+  // no fragments.
+  bool IsEmpty() const { return !FirstLineBox() && !FirstInlineFragment(); }
+
   LayoutBoxModelObject* VirtualContinuation() const final {
     return Continuation();
   }
