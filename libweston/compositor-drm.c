@@ -1940,8 +1940,10 @@ drm_output_assign_state(struct drm_output_state *state,
 
 	output->state_cur = state;
 
-	if (b->atomic_modeset && mode == DRM_STATE_APPLY_ASYNC)
+	if (b->atomic_modeset && mode == DRM_STATE_APPLY_ASYNC) {
+		drm_debug(b, "\t[CRTC:%u] setting pending flip\n", output->crtc_id);
 		output->atomic_complete_pending = 1;
+	}
 
 	/* Replace state_cur on each affected plane with the new state, being
 	 * careful to dispose of orphaned (but only orphaned) previous state.
@@ -2697,6 +2699,7 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
 	}
 
 	ret = drmModeAtomicCommit(b->drm.fd, req, flags, b);
+	drm_debug(b, "[atomic] drmModeAtomicCommit\n");
 
 	/* Test commits do not take ownership of the state; return
 	 * without freeing here. */
@@ -3135,11 +3138,13 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
 
 	drm_output_update_msc(output, frame);
 
+	drm_debug(b, "[atomic][CRTC:%u] flip processing started\n", crtc_id);
 	assert(b->atomic_modeset);
 	assert(output->atomic_complete_pending);
 	output->atomic_complete_pending = 0;
 
 	drm_output_update_complete(output, flags, sec, usec);
+	drm_debug(b, "[atomic][CRTC:%u] flip processing completed\n", crtc_id);
 }
 #endif
 
