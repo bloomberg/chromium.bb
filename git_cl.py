@@ -1040,7 +1040,7 @@ class _ParsedIssueNumberArgument(object):
     self.issue = issue
     self.patchset = patchset
     self.hostname = hostname
-    assert codereview in (None, 'rietveld', 'gerrit')
+    assert codereview in (None, 'gerrit', 'rietveld')
     self.codereview = codereview
 
   @property
@@ -1078,11 +1078,7 @@ def ParseIssueNumberArgument(arg, codereview=None):
   if len(results) == 1:
     return results.values()[0]
 
-  if parsed_url.netloc and parsed_url.netloc.split('.')[0].endswith('-review'):
-    # This is likely Gerrit.
-    return results['gerrit']
-  # Choose Rietveld as before if URL can parsed by either.
-  return results['rietveld']
+  return results['gerrit']
 
 
 class GerritChangeNotExists(Exception):
