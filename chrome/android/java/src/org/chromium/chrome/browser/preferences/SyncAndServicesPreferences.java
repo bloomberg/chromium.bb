@@ -109,8 +109,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
     private static final String PREF_NAVIGATION_ERROR = "navigation_error";
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
-    private static final String PREF_SAFE_BROWSING_EXTENDED_REPORTING =
-            "safe_browsing_extended_reporting";
     private static final String PREF_SAFE_BROWSING_SCOUT_REPORTING =
             "safe_browsing_scout_reporting";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
@@ -256,16 +254,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSafeBrowsing.setOnPreferenceChangeListener(this);
         mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        Preference extendedReporting = findPreference(PREF_SAFE_BROWSING_EXTENDED_REPORTING);
-        Preference scoutReporting = findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
-        // Remove the extended reporting preference that is NOT active.
-        if (mPrefServiceBridge.isSafeBrowsingScoutReportingActive()) {
-            removePreference(mNonpersonalizedServices, extendedReporting);
-            mSafeBrowsingReporting = (ChromeBaseCheckBoxPreference) scoutReporting;
-        } else {
-            removePreference(mNonpersonalizedServices, scoutReporting);
-            mSafeBrowsingReporting = (ChromeBaseCheckBoxPreference) extendedReporting;
-        }
+        mSafeBrowsingReporting =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
         mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
         mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -399,8 +389,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
             mPrefServiceBridge.setSafeBrowsingEnabled((boolean) newValue);
-        } else if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
-                || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
+        } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
             mPrefServiceBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             mPrefServiceBridge.setNetworkPredictionEnabled((boolean) newValue);
@@ -924,8 +913,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
                 return mPrefServiceBridge.isSearchSuggestManaged();
             }
-            if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
-                    || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
+            if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
                 return mPrefServiceBridge.isSafeBrowsingExtendedReportingManaged();
             }
             if (PREF_SAFE_BROWSING.equals(key)) {
