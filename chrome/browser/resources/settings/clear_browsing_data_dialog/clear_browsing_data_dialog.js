@@ -390,10 +390,7 @@ Polymer({
       e.preventDefault();
       if (!this.syncStatus.hasError) {
         this.syncBrowserProxy_.pauseSync();
-        return;
-      }
-
-      if (this.isSyncPaused_) {
+      } else if (this.isSyncPaused_) {
         this.syncBrowserProxy_.startSignIn();
       } else {
         // In any other error case, navigate to the sync page.
