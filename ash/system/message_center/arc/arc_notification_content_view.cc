@@ -414,6 +414,11 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   if (surface_ == surface)
     return;
 
+  if (floating_control_buttons_widget_) {
+    floating_control_buttons_widget_->GetNativeWindow()->RemovePreTargetHandler(
+        mouse_enter_exit_handler_.get());
+  }
+
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
 
