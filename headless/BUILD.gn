@@ -866,6 +866,7 @@ jumbo_static_library("headless_shell_lib") {
 
   deps = [
     ":headless_renderer",
+    "//components/os_crypt",
     "//components/security_state/content",
     "//content/public/app:both",
     "//content/public/browser",
