@@ -887,6 +887,14 @@ class WebContents : public PageNavigator,
   // bugs.
   virtual void PausePageScheduledTasks(bool paused) = 0;
 
+  // Tells the WebContents that a frontend is connected to the
+  // devtools agent.
+  virtual void DevToolsAgentHostAttached() {}
+
+  // Tells the WebContents that a frontend disconnected from the
+  // devtools agent.
+  virtual void DevToolsAgentHostDetached() {}
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       const base::android::JavaRef<jobject>& jweb_contents_android);
