@@ -688,6 +688,16 @@ const DeviceCapabilities kHammerTouchpad = {
     arraysize(kHammerTouchpadAbsAxes),
 };
 
+// NB: Please use the capture_device_capabilities.py script to add more
+// test data here. This will help ensure the data matches what the kernel
+// reports for a real device and is entered correctly.
+//
+// For Chrome OS, you can run the script by installing a test image and running:
+//   DEVICE_IP=<your device IP>
+//   cd ui/events/ozone/evdev/
+//   scp capture_device_capabilities.py "root@${DEVICE_IP}:/tmp/"
+//   ssh "root@${DEVICE_IP}" /tmp/capture_device_capabilities.py
+
 bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
                               EventDeviceInfo* devinfo) {
   std::vector<unsigned long> ev_bits;
