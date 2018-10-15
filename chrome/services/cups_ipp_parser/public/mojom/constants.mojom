@@ -4,4 +4,4 @@
 
 module chrome.mojom;
 
-const string kCupsIppValidatorServiceName = "cups_ipp_validator";
+const string kCupsIppParserServiceName = "cups_ipp_parser";

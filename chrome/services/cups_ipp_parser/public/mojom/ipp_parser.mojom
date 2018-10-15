@@ -7,5 +7,5 @@
 
 module chrome.mojom;
 
-interface IppValidator {
+interface IppParser {
 };

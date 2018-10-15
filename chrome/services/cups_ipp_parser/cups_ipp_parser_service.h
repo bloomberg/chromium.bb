@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_CUPS_IPP_VALIDATOR_CUPS_IPP_VALIDATOR_SERVICE_H_
-#define CHROME_SERVICES_CUPS_IPP_VALIDATOR_CUPS_IPP_VALIDATOR_SERVICE_H_
+#ifndef CHROME_SERVICES_CUPS_IPP_PARSER_CUPS_IPP_PARSER_SERVICE_H_
+#define CHROME_SERVICES_CUPS_IPP_PARSER_CUPS_IPP_PARSER_SERVICE_H_
 
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-class CupsIppValidatorService : public service_manager::Service {
+class CupsIppParserService : public service_manager::Service {
  public:
-  CupsIppValidatorService();
-  ~CupsIppValidatorService() override;
+  CupsIppParserService();
+  ~CupsIppParserService() override;
 
   // Factory method for creating the service.
   static std::unique_ptr<service_manager::Service> CreateService();
@@ -30,7 +30,7 @@ class CupsIppValidatorService : public service_manager::Service {
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(CupsIppValidatorService);
+  DISALLOW_COPY_AND_ASSIGN(CupsIppParserService);
 };
 
-#endif  // CHROME_SERVICES_CUPS_IPP_VALIDATOR_CUPS_IPP_VALIDATOR_SERVICE_H_
+#endif  // CHROME_SERVICES_CUPS_IPP_PARSER_CUPS_IPP_PARSER_SERVICE_H_
