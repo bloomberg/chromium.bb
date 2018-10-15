@@ -2067,9 +2067,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /**
      * Callback after UpdateMenuItemHelper#checkForUpdateOnBackgroundThread is complete.
-     * @param updateAvailable Whether an update is available.
      */
-    public void onCheckForUpdate(boolean updateAvailable) {
+    public void onCheckForUpdate() {
         if (UpdateMenuItemHelper.getInstance().shouldShowToolbarBadge(this)) {
             mToolbarManager.showAppMenuUpdateBadge();
             mCompositorViewHolder.requestRender();
