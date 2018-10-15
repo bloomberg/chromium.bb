@@ -45729,6 +45729,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="kUpgradeIndexV5V6Failed"/>
   <int value="8" label="kWriteFakeIndexFileFailed"/>
   <int value="9" label="kReplaceFileFailed"/>
+  <int value="10" label="kBadFakeIndexReadSize"/>
 </enum>
 
 <enum name="SimpleCacheHeaderSizeChange">
