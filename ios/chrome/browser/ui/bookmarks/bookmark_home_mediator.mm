@@ -219,6 +219,8 @@ const int kMaxBookmarksSearchResults = 50;
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierMessages];
     return;
   }
+
+  [self updateTableViewBackground];
 }
 
 - (void)updateTableViewBackground {
@@ -238,7 +240,8 @@ const int kMaxBookmarksSearchResults = 50;
     return;
   }
 
-  if (![self hasBookmarksOrFolders]) {
+  if (![self hasBookmarksOrFolders] &&
+      !self.sharedState.currentlyShowingSearchResults) {
     [self.consumer
         updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleEmpty];
   } else {

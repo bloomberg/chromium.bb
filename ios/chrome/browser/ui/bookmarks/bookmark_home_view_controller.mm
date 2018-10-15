@@ -748,7 +748,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     }
 
     [self navigateAway];
-    [self.navigationController setViewControllers:stack animated:YES];
+
+    auto completion = ^{
+      [self.navigationController setViewControllers:stack animated:YES];
+    };
+
+    [self.searchController dismissViewControllerAnimated:YES
+                                              completion:completion];
     return;
   }
   BookmarkHomeViewController* controller =
@@ -1231,8 +1237,24 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (BOOL)hasBookmarksOrFolders {
-  return self.sharedState.tableViewDisplayedRootNode &&
-         !self.sharedState.tableViewDisplayedRootNode->empty();
+  if (!self.sharedState.tableViewDisplayedRootNode)
+    return NO;
+  if (self.sharedState.currentlyShowingSearchResults) {
+    return [self
+        hasItemsInSectionIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  } else {
+    return !self.sharedState.tableViewDisplayedRootNode->empty();
+  }
+}
+
+- (BOOL)hasItemsInSectionIdentifier:(NSInteger)sectionIdentifier {
+  BOOL hasSection = [self.sharedState.tableViewModel
+      hasSectionForSectionIdentifier:sectionIdentifier];
+  if (!hasSection)
+    return NO;
+  NSInteger section = [self.sharedState.tableViewModel
+      sectionForSectionIdentifier:sectionIdentifier];
+  return [self.sharedState.tableViewModel numberOfItemsInSection:section] > 0;
 }
 
 - (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector {
@@ -1762,6 +1784,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     [self.mediator computeBookmarkTableViewDataMatching:text
                              orShowMessageWhenNoResults:noResults];
     [self.sharedState.tableView reloadData];
+    [self setupContextBar];
   }
 }
 
