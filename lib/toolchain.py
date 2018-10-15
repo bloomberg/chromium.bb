@@ -255,31 +255,37 @@ class ToolchainInstaller(object):
       board_chost: str - The board's CHOST value.
       libc_path: str - The location of the libc archive.
     """
-    # TODO(saklein) reduce to a single extract with copies instead.
-    # Extract to sysroot/usr/{chost}.
     compressor = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
     if compressor.endswith('pbzip2'):
       compressor = '%s --ignore-trailing-garbage=1' % compressor
-    # Extract the cross-compiler's glibc (with /usr/$CTARGET paths) into the
-    # sysroot and strip off the /usr/$CTARGET prefixes in the process.
-    cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', sysroot.path,
-           os.path.join('./usr', board_chost), '--strip-components=3']
-    result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
-                                           combine_stdout_stderr=True)
-    if result.returncode:
-      raise Error('Error extracting libc: %s' % result.output)
-    # Make the debug directory.
-    osutils.SafeMakedirs(os.path.join(sysroot.path, 'usr/lib/debug'),
-                         sudo=True)
-    # Extract the debug info.
-    wd = os.path.join(sysroot.path, 'usr/lib/debug')
-    target = os.path.join('./usr/lib/debug/usr', board_chost)
-    cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', wd, target,
-           '--strip-components=6']
-    result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
-                                           combine_stdout_stderr=True)
-    if result.returncode:
-      logging.warning('libc debug info not copied: %s.', result.output)
+
+    with osutils.TempDir(sudo_rm=True) as tempdir:
+      # Extract to the temporary directory.
+      cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', tempdir]
+      result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
+                                             combine_stdout_stderr=True)
+      if result.returncode:
+        raise Error('Error extracting libc: %s' % result.error)
+
+      # Sync the files to the sysroot to install.
+      # Trailing / on source to sync contents instead of the directory itself.
+      source = os.path.join(tempdir, 'usr', board_chost)
+      cmd = ['rsync', '--archive', '%s/' % source, '%s/' % sysroot.path]
+      result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
+                                             combine_stdout_stderr=True)
+      if result.returncode:
+        raise Error('Error installing libc: %s' % result.output)
+
+      # Make the debug directory.
+      debug_dir = os.path.join(sysroot.path, 'usr/lib/debug')
+      osutils.SafeMakedirs(debug_dir, sudo=True)
+      # Sync the debug files to the debug directory.
+      source = os.path.join(tempdir, 'usr/lib/debug/usr', board_chost)
+      cmd = ['rsync', '--archive', '%s/' % source, '%s/' % debug_dir]
+      result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
+                                             combine_stdout_stderr=True)
+      if result.returncode:
+        logging.warning('libc debug info not copied: %s', result.output)
 
   def _NeedsInstalled(self, sysroot, tc_info):
     """Check if the toolchain installation needs to be run."""
