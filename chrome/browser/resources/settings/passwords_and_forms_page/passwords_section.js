@@ -163,7 +163,10 @@ Polymer({
 
   /** @override */
   attached: function() {
-    // The item uid is built from index, origin, and username for the
+    // TODO(crbug.com/892260): This description is inaccurate. Remove this and
+    // simplify logic below.
+    //
+    // The item uid is built from id, origin, and username for the
     // following reasons: origin and username are enough to describe and
     // uniquely identify an entry. It is impossible to have two entries
     // that have the same origin and username, but different passwords,
@@ -173,10 +176,9 @@ Polymer({
     // modification are uneffected, but the ones following need to be
     // refreshed. Including the index in the uid achieves this effect.
     // See https://crbug.com/862119 how this could lead to bugs otherwise.
-    const getItemUid =
-        item => [item.entry.index, item.entry.loginPair.urls.origin,
-                 item.entry.loginPair.username]
-                    .join('_');
+    const getItemUid = item => [item.entry.id, item.entry.loginPair.urls.origin,
+                                item.entry.loginPair.username]
+                                   .join('_');
 
     // Create listener functions.
     const setSavedPasswordsListener = list => {
@@ -284,7 +286,7 @@ Polymer({
    */
   onMenuRemovePasswordTap_: function() {
     this.passwordManager_.removeSavedPassword(
-        this.activePassword.item.entry.index);
+        this.activePassword.item.entry.id);
     this.fire('iron-announce', {text: this.$.undoLabel.textContent});
     this.$.undoToast.show();
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
@@ -316,7 +318,7 @@ Polymer({
    * @private
    */
   onRemoveExceptionButtonTap_: function(e) {
-    this.passwordManager_.removeException(e.model.item.index);
+    this.passwordManager_.removeException(e.model.item.id);
   },
 
   /**
@@ -389,7 +391,7 @@ Polymer({
    */
   showPassword_: function(event) {
     this.passwordManager_.getPlaintextPassword(
-        /** @type {!number} */ (event.detail.item.entry.index), item => {
+        /** @type {!number} */ (event.detail.item.entry.id), item => {
           event.detail.set('item.password', item.plaintextPassword);
         });
   },
