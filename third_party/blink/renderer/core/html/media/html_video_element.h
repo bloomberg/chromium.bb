@@ -189,7 +189,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   const std::vector<PictureInPictureControlInfo>&
   GetPictureInPictureCustomControls() const;
   bool HasPictureInPictureCustomControls() const;
-  bool UsesSurfaceLayer() const;
 
   void SetIsEffectivelyFullscreen(blink::WebFullscreenVideoStatus);
 

@@ -722,9 +722,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 // when a straightforward mechanism to detect the presence/absence of audio in a
 // media element with an assigned MediaStream becomes available.
 
-// TODO(https://crbug.com/894317): Re-enable when bug is solved.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_SrcObjectReassignSameObject) {
+                       SrcObjectReassignSameObject) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -754,9 +753,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("applyConstraintsVideoOverconstrained()");
 }
 
-// TODO(https://crbug.com/894317): Re-enable when bug is solved.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_ApplyConstraintsNonDevice) {
+                       ApplyConstraintsNonDevice) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
