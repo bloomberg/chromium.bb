@@ -101,6 +101,11 @@ extern const char kAutofillUpstreamUseGooglePayBrandingOnMobileDescription[];
 extern const char kBrowserContainerFullscreenName[];
 extern const char kBrowserContainerFullscreenDescription[];
 
+// Title and description for the flag to make browser container contain the NTP
+// directly.
+extern const char kBrowserContainerContainsNTPName[];
+extern const char kBrowserContainerContainsNTPDescription[];
+
 // Title and description for the flag to control redirection to the task
 // scheduler.
 extern const char kBrowserTaskScheduler[];

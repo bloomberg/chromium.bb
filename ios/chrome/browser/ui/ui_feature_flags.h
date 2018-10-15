@@ -16,6 +16,9 @@ extern const base::Feature kFirstResponderKeyWindow;
 // closing the last incognito tab.
 extern const base::Feature kClosingLastIncognitoTab;
 
+// Feature to contain the NTP directly from browser container.
+extern const base::Feature kBrowserContainerContainsNTP;
+
 // Feature to copy image to system pasteboard via context menu.
 extern const base::Feature kCopyImage;
 
