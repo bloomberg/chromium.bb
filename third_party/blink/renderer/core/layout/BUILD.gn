@@ -46,6 +46,8 @@ blink_core_sources("layout") {
     "custom/custom_layout_child.h",
     "custom/custom_layout_constraints.cc",
     "custom/custom_layout_constraints.h",
+    "custom/custom_layout_edges.cc",
+    "custom/custom_layout_edges.h",
     "custom/custom_layout_fragment.cc",
     "custom/custom_layout_fragment.h",
     "custom/custom_layout_fragment_request.cc",
