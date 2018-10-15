@@ -26,6 +26,7 @@ import time
 import urllib
 import urlparse
 from cStringIO import StringIO
+from multiprocessing.pool import ThreadPool
 
 import auth
 import gclient_utils
@@ -932,11 +933,34 @@ def GetAccountDetails(host, account_id='self'):
 
   Documentation:
     https://gerrit-review.googlesource.com/Documentation/rest-api-accounts.html#get-account
+
+  Returns None if account is not found (i.e., Gerrit returned 404).
   """
-  if account_id != 'self':
-    account_id = int(account_id)
   conn = CreateHttpConn(host, '/accounts/%s' % account_id)
-  return ReadHttpJsonResponse(conn)
+  return ReadHttpJsonResponse(conn, accept_statuses=[200, 404])
+
+
+def ValidAccounts(host, accounts, max_threads=10):
+  """Returns a mapping from valid account to its details.
+
+  Invalid accounts, either not existing or without unique match,
+  are not present as returned dictionary keys.
+  """
+  assert not isinstance(accounts, basestring), type(accounts)
+  accounts = list(set(accounts))
+  if not accounts:
+    return {}
+  def get_one(account):
+    try:
+      return account, GetAccountDetails(host, account)
+    except GerritError:
+      return None, None
+  valid = {}
+  with contextlib.closing(ThreadPool(min(max_threads, len(accounts)))) as pool:
+    for account, details in pool.map(get_one, accounts):
+      if account and details:
+        valid[account] = details
+  return valid
 
 
 def PercentEncodeForGitRef(original):

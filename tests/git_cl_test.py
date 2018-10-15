@@ -458,6 +458,43 @@ class TestGitClBasic(unittest.TestCase):
     finally:
       git_cl.gerrit_util._GERRIT_MIRROR_PREFIXES = origMirrors
 
+  def test_valid_accounts(self):
+    mock_per_account = {
+      'u1': None,  # 404, doesn't exist.
+      'u2': {
+        '_account_id': 123124,
+        'avatars': [],
+        'email': 'u2@example.com',
+        'name': 'User Number 2',
+        'status': 'OOO',
+      },
+      'u3': git_cl.gerrit_util.GerritError(500, 'retries didn\'t help :('),
+    }
+    def GetAccountDetailsMock(_, account):
+      # Poor-man's mock library's side_effect.
+      v = mock_per_account.pop(account)
+      if isinstance(v, Exception):
+        raise v
+      return v
+
+    original = git_cl.gerrit_util.GetAccountDetails
+    try:
+      git_cl.gerrit_util.GetAccountDetails = GetAccountDetailsMock
+      actual = git_cl.gerrit_util.ValidAccounts(
+          'host', ['u1', 'u2', 'u3'], max_threads=1)
+    finally:
+      git_cl.gerrit_util.GetAccountDetails = original
+    self.assertEqual(actual, {
+      'u2': {
+        '_account_id': 123124,
+        'avatars': [],
+        'email': 'u2@example.com',
+        'name': 'User Number 2',
+        'status': 'OOO',
+      },
+    })
+
+
 
 class TestParseIssueURL(unittest.TestCase):
   def _validate(self, parsed, issue=None, patchset=None, hostname=None,
@@ -692,6 +729,9 @@ class TestGitCl(TestCase):
               staticmethod(lambda: False))
     self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
               classmethod(lambda _: False))
+    self.mock(git_cl.gerrit_util, 'ValidAccounts',
+              lambda host, accounts:
+                  self._mocked_call('ValidAccounts', host, accounts))
     self.mock(git_cl, 'DieWithError',
               lambda msg, change=None: self._mocked_call(['DieWithError', msg]))
     # It's important to reset settings to not have inter-tests interference.
@@ -1262,7 +1302,13 @@ class TestGitCl(TestCase):
       ref_suffix += ',m=' + title
 
     calls += [
-        ((['git', 'config', 'rietveld.cc'],), ''),
+      ((['git', 'config', 'rietveld.cc'],), ''),
+      (('ValidAccounts', 'chromium-review.googlesource.com',
+        sorted(reviewers) + ['joe@example.com',
+        'chromium-reviews+test-more-cc@chromium.org'] + cc),
+       {
+         # TODO(tandrii): add here some valid accounts and make use of them.
+       }),
     ]
 
     calls.append((

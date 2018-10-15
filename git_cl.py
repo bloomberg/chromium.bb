@@ -3122,7 +3122,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       change_desc.update_reviewers(options.reviewers, options.tbrs,
                                    options.add_owners_to, change)
 
-    # TODO(tandrii): process reviewers and ccs into refspec.
     reviewers = sorted(change_desc.get_reviewers())
     # Add cc's from the CC_LIST and --cc flag (if any).
     if not options.private and not options.no_autocc:
@@ -3134,6 +3133,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     cc = filter(None, [email.strip() for email in cc])
     if change_desc.get_cced():
       cc.extend(change_desc.get_cced())
+    valid_accounts = gerrit_util.ValidAccounts(
+        self._GetGerritHost(), reviewers + cc)
+    logging.debug('accounts %s are valid, %s invalid', sorted(valid_accounts),
+                   set(reviewers + cc).difference(set(valid_accounts)))
+    # TODO(tandrii): add valid reviwers and ccs to push option.
 
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
