@@ -112,7 +112,7 @@ class SyncData {
   int64_t id_;
 
   // This may be null if the SyncData represents a deleted item.
-  // TODO(crbug.com/681921): Remove when directory-based sessions sync is
+  // TODO(crbug.com/895455): Remove when directory-based sessions sync is
   // removed, the only remaining reader.
   base::Time remote_modification_time_;
 
@@ -158,7 +158,7 @@ class SyncDataRemote : public SyncData {
 
   // Return the last motification time according to the server. This may be null
   // if the SyncData represents a deleted item.
-  // TODO(crbug.com/681921): Remove when directory-based sessions sync is
+  // TODO(crbug.com/895455): Remove when directory-based sessions sync is
   // removed, the only remaining reader.
   const base::Time& GetModifiedTime() const;
 
