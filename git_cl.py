@@ -4984,11 +4984,6 @@ def CMDupload(parser, args):
                           'can be applied multiple times'))
   parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer(s) and cc(s) immediately')
-  parser.add_option('--emulate_svn_auto_props',
-                    '--emulate-svn-auto-props',
-                    action="store_true",
-                    dest="emulate_svn_auto_props",
-                    help="Emulate Subversion's auto properties feature.")
   parser.add_option('-c', '--use-commit-queue', action='store_true',
                     help='tell the commit queue to commit this patchset; '
                           'implies --send-mail')
@@ -5026,10 +5021,6 @@ def CMDupload(parser, args):
                     help='Disables automatic addition of CC emails')
   parser.add_option('--private', action='store_true',
                     help='Set the review private. This implies --no-autocc.')
-
-  # TODO: remove Rietveld flags
-  parser.add_option('--email', default=None,
-                    help='email address to use to connect to Rietveld')
 
   orig_args = args
   auth.add_auth_options(parser)
