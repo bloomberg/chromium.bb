@@ -301,7 +301,7 @@ class TestRunner : public WebTestRunner {
   ///////////////////////////////////////////////////////////////////////////
   // Methods that modify the state of TestRunner
 
-  // This function sets a flag that tells the test_shell to print a line of
+  // This function sets a flag that tells the test runner to print a line of
   // descriptive text for each editing command. It takes no arguments, and
   // ignores any that may be present.
   void DumpEditingCallbacks();
@@ -311,7 +311,7 @@ class TestRunner : public WebTestRunner {
   // The pixel results will not be generated for this test.
   void DumpAsText();
 
-  // This function sets a flag that tells the test_shell to dump pages as
+  // This function sets a flag that tells the test runner to dump pages as
   // the DOM contents, rather than as a text representation of the renderer's
   // state. The pixel results will not be generated for this test.
   void DumpAsMarkup();
@@ -321,57 +321,48 @@ class TestRunner : public WebTestRunner {
   // It will also generate a pixel dump for the test.
   void DumpAsTextWithPixelResults();
 
-  // This function sets a flag that tells the test_shell to print out the
-  // scroll offsets of the child frames. It ignores all.
-  void DumpChildFrameScrollPositions();
+  // This function sets a flag that tells the test runner to recursively dump
+  // all frames as text, markup or layout if DumpAsText, DumpAsMarkup or none
+  // of them is effective.
+  void DumpChildFrames();
 
-  // This function sets a flag that tells the test_shell to recursively
-  // dump all frames as plain text if the DumpAsText flag is set.
-  // It takes no arguments, and ignores any that may be present.
-  void DumpChildFramesAsText();
-
-  // This function sets a flag that tells the test_shell to recursively
-  // dump all frames as the DOM contents if the DumpAsMarkup flag is set.
-  // It takes no arguments, and ignores any that may be present.
-  void DumpChildFramesAsMarkup();
-
-  // This function sets a flag that tells the test_shell to print out the
+  // This function sets a flag that tells the test runner to print out the
   // information about icon changes notifications from WebKit.
   void DumpIconChanges();
 
   // Deals with Web Audio WAV file data.
   void SetAudioData(const gin::ArrayBufferView& view);
 
-  // This function sets a flag that tells the test_shell to print a line of
+  // This function sets a flag that tells the test runner to print a line of
   // descriptive text for each frame load callback. It takes no arguments, and
   // ignores any that may be present.
   void DumpFrameLoadCallbacks();
 
-  // This function sets a flag that tells the test_shell to print a line of
+  // This function sets a flag that tells the test runner to print a line of
   // descriptive text for each PingLoader dispatch. It takes no arguments, and
   // ignores any that may be present.
   void DumpPingLoaderCallbacks();
 
-  // This function sets a flag that tells the test_shell to print a line of
+  // This function sets a flag that tells the test runner to print a line of
   // user gesture status text for some frame load callbacks. It takes no
   // arguments, and ignores any that may be present.
   void DumpUserGestureInFrameLoadCallbacks();
 
   void DumpTitleChanges();
 
-  // This function sets a flag that tells the test_shell to dump all calls to
+  // This function sets a flag that tells the test runner to dump all calls to
   // WebViewClient::createView().
   // It takes no arguments, and ignores any that may be present.
   void DumpCreateView();
 
   void SetCanOpenWindows();
 
-  // This function sets a flag that tells the test_shell to dump a descriptive
+  // This function sets a flag that tells the test runner to dump a descriptive
   // line for each resource load callback. It takes no arguments, and ignores
   // any that may be present.
   void DumpResourceLoadCallbacks();
 
-  // This function sets a flag that tells the test_shell to dump the MIME type
+  // This function sets a flag that tells the test runner to dump the MIME type
   // for each resource that was loaded. It takes no arguments, and ignores any
   // that may be present.
   void DumpResourceResponseMIMETypes();
@@ -392,11 +383,11 @@ class TestRunner : public WebTestRunner {
   void SetDisallowedSubresourcePathSuffixes(
       const std::vector<std::string>& suffixes);
 
-  // This function sets a flag that tells the test_shell to dump all
+  // This function sets a flag that tells the test runner to dump all
   // the lines of descriptive text about spellcheck execution.
   void DumpSpellCheckCallbacks();
 
-  // This function sets a flag that tells the test_shell to print out a text
+  // This function sets a flag that tells the test runner to print out a text
   // representation of the back/forward list. It ignores all arguments.
   void DumpBackForwardList();
 
@@ -543,10 +534,10 @@ class TestRunner : public WebTestRunner {
   // Flags controlling what content gets dumped as a layout text result.
   LayoutTestRuntimeFlags layout_test_runtime_flags_;
 
-  // If true, the test_shell will output a base64 encoded WAVE file.
+  // If true, the test runner will output a base64 encoded WAVE file.
   bool dump_as_audio_;
 
-  // If true, the test_shell will produce a dump of the back forward list as
+  // If true, the test runner will produce a dump of the back forward list as
   // well.
   bool dump_back_forward_list_;
 

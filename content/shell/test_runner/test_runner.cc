@@ -174,10 +174,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpAsMarkup();
   void DumpAsText();
   void DumpAsTextWithPixelResults();
+  void DumpChildFrames();
   void DumpBackForwardList();
-  void DumpChildFrameScrollPositions();
-  void DumpChildFramesAsMarkup();
-  void DumpChildFramesAsText();
   void DumpCreateView();
   void DumpDragImage();
   void DumpEditingCallbacks();
@@ -433,12 +431,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpAsTextWithPixelResults)
       .SetMethod("dumpBackForwardList",
                  &TestRunnerBindings::DumpBackForwardList)
-      .SetMethod("dumpChildFrameScrollPositions",
-                 &TestRunnerBindings::DumpChildFrameScrollPositions)
-      .SetMethod("dumpChildFramesAsMarkup",
-                 &TestRunnerBindings::DumpChildFramesAsMarkup)
-      .SetMethod("dumpChildFramesAsText",
-                 &TestRunnerBindings::DumpChildFramesAsText)
+      .SetMethod("dumpChildFrames", &TestRunnerBindings::DumpChildFrames)
       .SetMethod("dumpCreateView", &TestRunnerBindings::DumpCreateView)
       .SetMethod("dumpDatabaseCallbacks", &TestRunnerBindings::NotImplemented)
       .SetMethod("dumpDragImage", &TestRunnerBindings::DumpDragImage)
@@ -1041,19 +1034,9 @@ void TestRunnerBindings::DumpAsTextWithPixelResults() {
     runner_->DumpAsTextWithPixelResults();
 }
 
-void TestRunnerBindings::DumpChildFrameScrollPositions() {
+void TestRunnerBindings::DumpChildFrames() {
   if (runner_)
-    runner_->DumpChildFrameScrollPositions();
-}
-
-void TestRunnerBindings::DumpChildFramesAsText() {
-  if (runner_)
-    runner_->DumpChildFramesAsText();
-}
-
-void TestRunnerBindings::DumpChildFramesAsMarkup() {
-  if (runner_)
-    runner_->DumpChildFramesAsMarkup();
+    runner_->DumpChildFrames();
 }
 
 void TestRunnerBindings::DumpIconChanges() {
@@ -2311,18 +2294,8 @@ void TestRunner::DumpAsTextWithPixelResults() {
   OnLayoutTestRuntimeFlagsChanged();
 }
 
-void TestRunner::DumpChildFrameScrollPositions() {
-  layout_test_runtime_flags_.set_dump_child_frame_scroll_positions(true);
-  OnLayoutTestRuntimeFlagsChanged();
-}
-
-void TestRunner::DumpChildFramesAsMarkup() {
-  layout_test_runtime_flags_.set_dump_child_frames_as_markup(true);
-  OnLayoutTestRuntimeFlagsChanged();
-}
-
-void TestRunner::DumpChildFramesAsText() {
-  layout_test_runtime_flags_.set_dump_child_frames_as_text(true);
+void TestRunner::DumpChildFrames() {
+  layout_test_runtime_flags_.set_dump_child_frames(true);
   OnLayoutTestRuntimeFlagsChanged();
 }
 
