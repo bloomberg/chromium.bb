@@ -13,19 +13,30 @@ Polymer({
     /** Whether the forward button should be hidden. */
     forwardButtonHidden: {
       type: Boolean,
-      value: false,
+      value: true,
+    },
+
+    /** Whether the cancel button should be hidden. */
+    cancelButtonHidden: {
+      type: Boolean,
+      value: true,
     },
 
     /** Whether the backward button should be hidden. */
     backwardButtonHidden: {
       type: Boolean,
-      value: false,
+      value: true,
     },
   },
 
   /** @private */
   onForwardButtonClicked_: function() {
     this.fire('forward-navigation-requested');
+  },
+
+  /** @private */
+  onCancelButtonClicked_: function() {
+    this.fire('cancel-requested');
   },
 
   /** @private */

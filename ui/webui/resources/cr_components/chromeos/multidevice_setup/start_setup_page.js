@@ -13,7 +13,7 @@ Polymer({
     },
 
     /** Overridden from UiPageContainerBehavior. */
-    backwardButtonTextId: {
+    cancelButtonTextId: {
       type: String,
       value: 'cancel',
     },
