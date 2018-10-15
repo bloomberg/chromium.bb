@@ -74,6 +74,45 @@ If the task runs on a `DEDICATED SingleThreadTaskRunner`:
 explains the difference between `MAY_BLOCK ` and  `WILL_BLOCK` and gives
 examples of off-CPU blocking operations.
 
+### Do calls to blocking //base APIs need to be annotated with ScopedBlockingCall?
+
+No. All blocking //base APIs (e.g. base::ReadFileToString, base::File::Read,
+base::SysInfo::AmountOfFreeDiskSpace, base::WaitableEvent::Wait...) have their
+own internal annotations. See (base/threading/scoped_blocking_call.h)[https://cs
+.chromium.org/chromium/src/base/threading/scoped_blocking_call.h].
+
+### Can multiple ScopedBlockingCall be nested for the purpose of documentation?
+
+Nested `ScopedBlockingCall` are supported. Most of the time, the inner
+ScopedBlockingCalls will no-op (the exception is WILL_BLOCK nested in MAY_BLOCK).
+As such, it is permitted to add a ScopedBlockingCall in the scope where a function
+that is already annotated is called for documentation purposes.:
+
+```cpp
+Data GetDataFromNetwork() {
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  // Fetch data from network.
+  ...
+  return data;
+}
+
+void ProcessDataFromNetwork() {
+  Data data;
+  {
+    // Document the blocking behavior with a ScopedBlockingCall.
+    // Permitted, but not required since GetDataFromNetwork() is itself annotated.
+    ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+    data = GetDataFromNetwork();
+  }
+  CPUIntensiveProcessing(data);
+}
+```
+
+ However, CPU usage should always be minimal within the scope of
+`ScopedBlockingCall`. See (base/threading/scoped_blocking_call.h)[https://cs
+.chromium.org/chromium/src/base/threading/scoped_blocking_call.h].
+
+
 ## Sequences
 
 ### How to migrate from SingleThreadTaskRunner to SequencedTaskRunner?
