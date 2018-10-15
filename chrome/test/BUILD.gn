@@ -1937,7 +1937,6 @@ test("browser_tests") {
         "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
         "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
         "../browser/ui/cocoa/browser_window_mac_browsertest.mm",
-        "../browser/ui/cocoa/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
         "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
@@ -1945,6 +1944,7 @@ test("browser_tests") {
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/cocoa/touchbar/text_suggestions_touch_bar_controller_browsertest.mm",
+        "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.

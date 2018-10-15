@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/certificate_viewer.h"
+#import <Cocoa/Cocoa.h>
 
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/certificate_viewer_mac.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -44,7 +43,7 @@ void CheckCertificateViewerVisibility(NSWindow* overlay_window,
   EXPECT_EQ(ignore_events, [dialog_sheet ignoresMouseEvents]);
 }
 
-} // namespace
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, Basic) {
   scoped_refptr<net::X509Certificate> cert = GetSampleCertificate();
@@ -58,13 +57,13 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, Basic) {
 
   ShowCertificateViewer(web_contents, window, cert.get());
 
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
   test_api.CloseAllDialogs();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 }
 
@@ -83,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, HideShow) {
   // viewer is open.
   NSUInteger num_child_windows = [[window childWindows] count];
   ShowCertificateViewer(web_contents, window, cert.get());
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   EXPECT_EQ(num_child_windows + 1, [[window childWindows] count]);
@@ -104,6 +103,6 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, HideShow) {
 
   // Switch back and verify that the sheet is shown.
   chrome::SelectNumberedTab(browser(), 0);
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   CheckCertificateViewerVisibility(overlay_window, dialog_sheet, true);
 }
