@@ -30,10 +30,6 @@ Response DOMAgent::getDocument(std::unique_ptr<DOM::Node>* out_root) {
   return Response::OK();
 }
 
-Response DOMAgent::hideHighlight() {
-  return Response::OK();
-}
-
 Response DOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {

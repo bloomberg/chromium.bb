@@ -31,7 +31,6 @@ class UI_DEVTOOLS_EXPORT DOMAgent
   protocol::Response disable() override;
   protocol::Response getDocument(
       std::unique_ptr<protocol::DOM::Node>* out_root) override;
-  protocol::Response hideHighlight() override;
   protocol::Response pushNodesByBackendIdsToFrontend(
       std::unique_ptr<protocol::Array<int>> backend_node_ids,
       std::unique_ptr<protocol::Array<int>>* result) override;
