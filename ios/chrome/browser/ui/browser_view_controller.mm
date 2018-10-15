@@ -37,7 +37,6 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
-#include "components/infobars/core/infobar_manager.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -113,7 +112,6 @@
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
@@ -182,9 +180,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
-#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
@@ -434,7 +430,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     QRScannerPresenting,
                                     RepostFormTabHelperDelegate,
                                     SideSwipeControllerDelegate,
-                                    SigninPresenter,
                                     SnapshotGeneratorDelegate,
                                     TabDialogDelegate,
                                     TabModelObserver,
@@ -1564,6 +1559,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _downloadManagerCoordinator = nil;
   self.toolbarInterface = nil;
   self.tabStripView = nil;
+  [self.infoBarCoordinator stop];
   self.infoBarCoordinator = nil;
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
@@ -2144,8 +2140,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (!self.infoBarCoordinator) {
     self.infoBarCoordinator =
         [[InfobarCoordinator alloc] initWithBaseViewController:self
-                                                  browserState:_browserState];
+                                                  browserState:_browserState
+                                                      tabModel:_model];
+    self.infoBarCoordinator.dispatcher = self.dispatcher;
     self.infoBarCoordinator.positioner = self;
+    self.infoBarCoordinator.syncPresenter = self;
   }
 }
 
@@ -2294,13 +2293,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [self.sideSwipeController addHorizontalGesturesToView:self.view];
 
-  infobars::InfoBarManager* infoBarManager = nullptr;
-  if (_model.currentTab) {
-    DCHECK(_model.currentTab.webState);
-    infoBarManager =
-        InfoBarManagerImpl::FromWebState(_model.currentTab.webState);
-  }
-  [self.infoBarCoordinator setInfobarManager:infoBarManager];
+  [self.infoBarCoordinator start];
 
   // Create child coordinators.
   _activityServiceCoordinator = [[ActivityServiceLegacyCoordinator alloc]
@@ -4733,11 +4726,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // but that may change in the future.  Remove this DCHECK when it does.
   DCHECK(newTab);
   if (self.infoBarCoordinator) {
-    DCHECK(newTab.webState);
-    infobars::InfoBarManager* infoBarManager =
-        InfoBarManagerImpl::FromWebState(newTab.webState);
-    [self.infoBarCoordinator setInfobarManager:infoBarManager];
-
     // Dismiss the language selector, if any; this is a no-op when there's
     // no language selector presented.
     [_languageSelectionCoordinator dismissLanguageSelector];
@@ -4783,25 +4771,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       inBackground:(BOOL)background {
   DCHECK(tab);
   _temporaryNativeController = nil;
-
-  // When adding new tabs, check what kind of reminder infobar should
-  // be added to the new tab. Try to add only one of them.
-  // This check is done when a new tab is added either through the Tools Menu
-  // "New Tab" or through "New Tab" in Stack View Controller. This method
-  // is called after a new tab has added and finished initial navigation.
-  // If this is added earlier, the initial navigation may end up clearing
-  // the infobar(s) that are just added. See http://crbug/340250 for details.
-  web::WebState* webState = tab.webState;
-  DCHECK(webState);
-
-  infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webState);
-  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
-                                             forTabId:[tab tabId]];
-  if (!ReSignInInfoBarDelegate::Create(_browserState, tab,
-                                       self /* id<SigninPresenter> */)) {
-    DisplaySyncErrors(_browserState, tab, self /* id<SyncPresenter> */);
-  }
 
   // The rest of this function initiates the new tab animation, which is
   // phone-specific.  Call the foreground tab added completion block; for
@@ -4858,15 +4827,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           atIndex:(NSUInteger)index {
   [self uninstallDelegatesForTab:oldTab];
   [self installDelegatesForTab:newTab];
-
-  if (self.infoBarCoordinator) {
-    infobars::InfoBarManager* infoBarManager = nullptr;
-    if (newTab) {
-      DCHECK(newTab.webState);
-      infoBarManager = InfoBarManagerImpl::FromWebState(newTab.webState);
-    }
-    [self.infoBarCoordinator setInfobarManager:infoBarManager];
-  }
 
   // Add |newTab|'s view to the hierarchy if it's the current Tab.
   if (self.active && model.currentTab == newTab)
@@ -5403,12 +5363,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
-}
-
-#pragma mark - SigninPresenter
-
-- (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 #pragma mark - ConsentBumpCoordinatorDelegate

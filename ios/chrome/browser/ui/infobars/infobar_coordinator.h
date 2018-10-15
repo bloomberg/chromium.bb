@@ -13,12 +13,27 @@ namespace infobars {
 class InfoBarManager;
 }
 
+@class TabModel;
+@protocol ApplicationCommands;
 @protocol InfobarPositioner;
+@protocol SyncPresenter;
 
 // Coordinator that owns and manages an InfoBarContainer.
 @interface InfobarCoordinator : ChromeCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                                  tabModel:(TabModel*)tabModel
+    NS_DESIGNATED_INITIALIZER;
+;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 // The InfoBarContainer View.
@@ -30,14 +45,17 @@ class InfoBarManager;
 // Hides an Infobar if being shown.
 - (void)suspendInfobars;
 
-// Sets the InfobarContainer manager to |infobarManager|.
-- (void)setInfobarManager:(infobars::InfoBarManager*)infobarManager;
-
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
 
+// The dispatcher for this Coordinator.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
 // The delegate used to position the InfoBarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;
+
+// The SyncPresenter delegate for this Coordinator.
+@property(nonatomic, weak) id<SyncPresenter> syncPresenter;
 
 @end
 
