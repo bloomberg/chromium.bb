@@ -258,7 +258,7 @@ Polymer({
       historySummarySignedIn, historySummarySynced) {
     if (isSyncingHistory && !hasSyncError) {
       return historySummarySynced;
-    } else if (isSignedIn) {
+    } else if (isSignedIn && !this.isSyncPaused_) {
       return historySummarySignedIn;
     }
     return historySummary;
