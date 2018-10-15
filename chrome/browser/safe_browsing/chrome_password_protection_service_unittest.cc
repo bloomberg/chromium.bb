@@ -487,6 +487,11 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGmail) {
       "", service_->GetOrganizationName(PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ("", service_->GetOrganizationName(
                     PasswordReuseEvent::ENTERPRISE_PASSWORD));
+
+  // Verify GetSyncAccountType() for incognito profile.
+  service_->ConfigService(true /*is_incognito*/,
+                          false /*is_extended_reporting*/);
+  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGSuite) {
@@ -505,6 +510,11 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountTypeGSuite) {
                                PasswordReuseEvent::SIGN_IN_PASSWORD));
   EXPECT_EQ("", service_->GetOrganizationName(
                     PasswordReuseEvent::ENTERPRISE_PASSWORD));
+
+  // Verify GetSyncAccountType() for incognito profile.
+  service_->ConfigService(true /*is_incognito*/,
+                          false /*is_extended_reporting*/);
+  EXPECT_EQ(PasswordReuseEvent::GSUITE, service_->GetSyncAccountType());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
@@ -549,8 +559,47 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyPasswordReuseUserEventNotRecorded) {
+       VerifyPasswordReuseUserEventNotRecordedDueToNotSignedIn) {
   // Feature not enabled so nothing should be logged.
+  NavigateAndCommit(GURL("https:www.example.com/"));
+
+  // PasswordReuseDetected
+  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
+  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+  service_->MaybeLogPasswordReuseLookupEvent(
+      web_contents(), RequestOutcome::MATCHED_WHITELIST, nullptr);
+  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+
+  // PasswordReuseLookup
+  unsigned long t = 0;
+  for (const auto& it : kTestCasesWithoutVerdict) {
+    service_->MaybeLogPasswordReuseLookupEvent(web_contents(),
+                                               it.request_outcome, nullptr);
+    ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty()) << t;
+    t++;
+  }
+
+  // PasswordReuseDialogInteraction
+  service_->MaybeLogPasswordReuseDialogInteraction(
+      1000 /* navigation_id */,
+      PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
+  ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPasswordReuseUserEventNotRecordedDueToIncognito) {
+  // Configure sync account type to GMAIL.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
+  signin_manager->SetAuthenticatedAccountInfo(kTestGaiaID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
+                   std::string(kTestGaiaID), std::string(kTestEmail));
+  EXPECT_EQ(PasswordReuseEvent::GMAIL, service_->GetSyncAccountType());
+  service_->ConfigService(true /*is_incognito*/,
+                          false /*is_extended_reporting*/);
+  ASSERT_TRUE(service_->IsIncognito());
+
+  // Nothing should be logged because of incognito.
   NavigateAndCommit(GURL("https:www.example.com/"));
 
   // PasswordReuseDetected

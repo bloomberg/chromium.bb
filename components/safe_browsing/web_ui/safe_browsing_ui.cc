@@ -824,6 +824,8 @@ base::Value SerializeChromeUserPopulation(
   population_dict.SetKey(
       "is_under_advanced_protection",
       base::Value(population.is_under_advanced_protection()));
+  population_dict.SetKey("is_incognito",
+                         base::Value(population.is_incognito()));
 
   return std::move(population_dict);
 }
