@@ -244,25 +244,13 @@ HeadlessRequestContextManager::CreateSystemContext(
   auto manager = std::make_unique<HeadlessRequestContextManager>(
       options, base::FilePath());
   manager->is_system_context_ = true;
-  auto* network_service = content::GetNetworkService();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   auto auth_params = ::network::mojom::HttpAuthDynamicParams::New();
   auth_params->server_whitelist =
       command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist);
+  auto* network_service = content::GetNetworkService();
   network_service->ConfigureHttpAuthPrefs(std::move(auth_params));
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (manager->user_data_path_.empty()) {
-    ::network::mojom::CryptConfigPtr config =
-        ::network::mojom::CryptConfig::New();
-    config->store = command_line->GetSwitchValueASCII(switches::kPasswordStore);
-    config->product_name = kProductName;
-    config->should_use_preference = false;
-    config->user_data_path = manager->user_data_path_;
-    network_service->SetCryptConfig(std::move(config));
-  }
-#endif
 
   if (!manager->network_service_enabled_) {
     manager->Initialize();
@@ -279,6 +267,9 @@ HeadlessRequestContextManager::HeadlessRequestContextManager(
     base::FilePath user_data_path)
     : network_service_enabled_(
           base::FeatureList::IsEnabled(::network::features::kNetworkService)),
+      cookie_encryption_enabled_(
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableCookieEncryption)),
       io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO})),
       user_data_path_(std::move(user_data_path)),
@@ -297,6 +288,7 @@ HeadlessRequestContextManager::HeadlessRequestContextManager(
     proxy_config_monitor_ =
         std::make_unique<HeadlessProxyConfigMonitor>(proxy_monitor_task_runner);
   }
+  MaybeSetUpOSCrypt();
 }
 
 HeadlessRequestContextManager::~HeadlessRequestContextManager() {
@@ -382,21 +374,42 @@ void HeadlessRequestContextManager::InitializeOnIO() {
   url_request_context_getter_->SetURLRequestContext(builder.Build());
 }
 
+void HeadlessRequestContextManager::MaybeSetUpOSCrypt() {
+  static bool initialized = false;
+  if (initialized || !cookie_encryption_enabled_)
+    return;
+  if (user_data_path_.empty())
+    return;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ::network::mojom::CryptConfigPtr config =
+      ::network::mojom::CryptConfig::New();
+  config->store = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kPasswordStore);
+  config->product_name = kProductName;
+  config->should_use_preference = false;
+  config->user_data_path = user_data_path_;
+  content::GetNetworkService()->SetCryptConfig(std::move(config));
+#endif
+  initialized = true;
+}
+
 ::network::mojom::NetworkContextParamsPtr
 HeadlessRequestContextManager::CreateNetworkContextParams() {
   auto context_params = ::network::mojom::NetworkContextParams::New();
 
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
-  context_params->enable_encrypted_cookies = false;
   // TODO(skyostil): Make these configurable.
   context_params->enable_data_url_support = true;
   context_params->enable_file_url_support = true;
   context_params->primary_network_context = is_system_context_;
 
   if (!user_data_path_.empty()) {
+    context_params->enable_encrypted_cookies = cookie_encryption_enabled_;
     context_params->cookie_path =
         user_data_path_.Append(FILE_PATH_LITERAL("Cookies"));
+    context_params->channel_id_path =
+        user_data_path_.Append(FILE_PATH_LITERAL("Origin Bound Certs"));
   }
   if (proxy_config_) {
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
