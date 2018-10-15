@@ -2942,7 +2942,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         self._GetGerritHost(), reviewers + cc)
     logging.debug('accounts %s are valid, %s invalid', sorted(valid_accounts),
                    set(reviewers + cc).difference(set(valid_accounts)))
-    # TODO(tandrii): add valid reviwers and ccs to push option.
 
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
@@ -2968,6 +2967,22 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     if options.private:
       refspec_opts.append('private')
+
+    for r in sorted(reviewers):
+      if r in valid_accounts:
+        refspec_opts.append('r=%s' % r)
+        reviewers.remove(r)
+      else:
+        # TODO(tandrii): this should probably be a hard failure.
+        print('WARNING: reviewer %s doesn\'t have a Gerrit account, skipping'
+              % r)
+    for c in sorted(cc):
+      # refspec option will be rejected if cc doesn't correspond to an
+      # account, even though REST call to add such arbitrary cc may succeed.
+      if c in valid_accounts:
+        refspec_opts.append('cc=%s' % c)
+        cc.remove(c)
+
 
     if options.topic:
       # Documentation on Gerrit topics is here:
@@ -3069,7 +3084,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       self.SetIssue(change_numbers[0])
       self._GitSetBranchConfigValue('gerritsquashhash', ref_to_push)
 
-    if self.GetIssue():
+    if self.GetIssue() and (reviewers or cc):
       # GetIssue() is not set in case of non-squash uploads according to tests.
       # TODO(agable): non-squash uploads in git cl should be removed.
       gerrit_util.AddReviewers(

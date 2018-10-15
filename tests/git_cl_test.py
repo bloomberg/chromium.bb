@@ -1020,9 +1020,18 @@ class TestGitCl(TestCase):
         sorted(reviewers) + ['joe@example.com',
         'chromium-reviews+test-more-cc@chromium.org'] + cc),
        {
-         # TODO(tandrii): add here some valid accounts and make use of them.
+         e: {'email': e}
+         for e in (reviewers + ['joe@example.com'] + cc)
        }),
     ]
+    for r in sorted(reviewers):
+      if r != 'bad-account-or-email':
+        ref_suffix  += ',r=%s' % r
+        reviewers.remove(r)
+    for c in sorted(['joe@example.com'] + cc):
+      ref_suffix += ',cc=%s' % c
+      if c in cc:
+        cc.remove(c)
 
     calls.append((
       (['git', 'push',
@@ -1057,8 +1066,9 @@ class TestGitCl(TestCase):
           (('AddReviewers',
             'chromium-review.googlesource.com', 'my%2Frepo~123456',
             sorted(reviewers),
-            ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
-            cc, notify), ''),
+            cc + ['chromium-reviews+test-more-cc@chromium.org'],
+            notify),
+           ''),
       ]
     if tbr:
       calls += [
