@@ -2421,6 +2421,8 @@ Response InspectorCSSAgent::startRuleUsageTracking() {
 
 Response InspectorCSSAgent::stopRuleUsageTracking(
     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
+  for (Document* document : dom_agent_->Documents())
+    document->UpdateStyleAndLayoutTree();
   Response response = takeCoverageDelta(result);
   SetCoverageEnabled(false);
   return response;
