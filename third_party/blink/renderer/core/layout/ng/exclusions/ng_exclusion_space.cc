@@ -184,8 +184,8 @@ NGExclusionSpaceInternal::NGExclusionSpaceInternal(
   other.derived_geometry_ = nullptr;
 }
 
-NGExclusionSpaceInternal::NGExclusionSpaceInternal(NGExclusionSpaceInternal&&) =
-    default;
+NGExclusionSpaceInternal::NGExclusionSpaceInternal(
+    NGExclusionSpaceInternal&&) noexcept = default;
 
 NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
     const NGExclusionSpaceInternal& other) {
@@ -198,7 +198,7 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
 }
 
 NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
-    NGExclusionSpaceInternal&&) = default;
+    NGExclusionSpaceInternal&&) noexcept = default;
 
 NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry()
     : last_float_block_start_(LayoutUnit::Min()),
