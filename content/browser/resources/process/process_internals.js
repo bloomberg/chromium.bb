@@ -117,7 +117,7 @@ function frameToTreeItem(frame) {
  * Initialize and return a tree item representing the WebContentsInfo object
  * and contains all frames in it as a subtree.
  * @param {mojom.WebContentsInfo} webContents
- * @return {cr.ui.TreeItem}
+ * @return {!cr.ui.TreeItem}
  */
 function webContentsToTreeItem(webContents) {
   let itemLabel = 'WebContents: ';
