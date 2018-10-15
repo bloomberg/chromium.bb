@@ -13,6 +13,17 @@ import subprocess
 def log(msg):
   print "[ %s ]" % msg
 
+class UserInstructions(Exception):
+  """Handy exception subclass that just prints very verbose instructions to the
+  user.  Normal exceptions tend to lose the message in the stack trace, which we
+  probably don't care about."""
+  def __init__ (self, msg):
+    self._msg = msg
+
+  def __str__(self):
+    sep = "=" * 78
+    return "\n\n%s\n%s\n%s\n\n" % (sep, self._msg, sep)
+
 class RoboConfiguration:
   def __init__(self):
     """Ensure that our config has basic fields fill in, and passes some sanity
@@ -125,7 +136,9 @@ class RoboConfiguration:
     llvm_path = os.path.join(self.chrome_src(), "third_party",
             "llvm-build", "Release+Asserts", "bin")
     if llvm_path not in os.environ["PATH"]:
-      raise Exception("Please add %s to the beginning of $PATH" % llvm_path)
+      raise UserInstructions(
+                          "Please add:\n%s\nto the beginning of $PATH" %
+                          llvm_path)
 
   def ComputeBranchName(self):
     """Get the current branch name and set it."""

@@ -8,6 +8,7 @@
 
 import io
 import os
+from robo_lib import UserInstructions
 from subprocess import call
 import subprocess
 from robo_lib import log
@@ -114,14 +115,14 @@ def EnsureGClientTargets(robo_configuration):
     log("OUTSIDE of the solutions = [] section")
     log("Example line:")
     log("target_os = [ 'android', 'win' ]")
-    raise Exception("Please add target_os to %s" % gclient_filename)
+    raise UserInstructions("Please add target_os to %s" % gclient_filename)
 
   if ('android' not in scope['target_os']) or ('win' not in scope['target_os']):
     log("Missing 'android' and/or 'win' in target_os, which goes at the")
     log("end of .gclient, OUTSIDE of the solutions = [] section")
     log("Example line:")
     log("target_os = [ 'android', 'win' ]")
-    raise Exception("Please add 'android' and 'win' to target_os in %s" %
+    raise UserInstructions("Please add 'android' and 'win' to target_os in %s" %
         gclient_filename)
 
   # Sync regardless of whether we changed the config.

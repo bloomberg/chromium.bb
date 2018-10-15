@@ -14,6 +14,7 @@ import check_merge
 from datetime import datetime
 import find_patches
 import os
+from robo_lib import UserInstructions
 from robo_lib import log
 from subprocess import call
 from subprocess import check_output
@@ -81,7 +82,7 @@ def MergeUpstreamToSushiBranch(cfg):
   if call(["git", "fetch", "upstream"]):
     raise Exception("Could not fetch from upstream")
   if call(["git", "merge", "upstream/master"]):
-    raise Exception("Merge failed -- resolve conflicts manually.")
+    raise UserInstructions("Merge failed -- resolve conflicts manually.")
   log("Merge has completed successfully")
 
 def IsMergeCommitOnThisBranch(cfg):
@@ -106,7 +107,7 @@ def MergeUpstreamToSushiBranchIfNeeded(cfg):
   # See if a merge is in progress.  "git merge HEAD" will do nothing if it
   # succeeds, but will fail if a merge is in progress.
   if call(["git", "merge", "HEAD"]):
-    raise Exception(
+    raise UserInstructions(
       "Merge is in progress -- please resolve conflicts and complete it.")
   # There is no merge on this branch, and none is in progress.  Start a merge.
   MergeUpstreamToSushiBranch(cfg)
@@ -142,6 +143,7 @@ def AddAndCommit(cfg, commit_title):
   if IsWorkingDirectoryClean():
     log("No files to commit to %s" % commit_title)
     return
+  # TODO: Ignore this file, for the "comment out autorename exception" thing.
   if call(["git", "add", "-u"]):
     raise Exception("Could not add files")
   if call(["git", "commit", "-m", commit_title]):
@@ -173,10 +175,12 @@ def PushToOriginWithoutReviewAndTrackIfNeeded(cfg):
     raise Exception("Tracking branch is not set, but I just set it!")
 
 def HandleAutorename(cfg):
-  # Note that you probably also want to comment out the "build and import all
-  # configs" call in robosushi.  it'll work if you re-run it, but it takes a
-  # while and only needs to be done once.
-  raise Exception("Please commit autorename file changes and comment this out.")
+  # Since we don't know how to handle autorename, just stop.  Once it's handled,
+  # just comment out this line (don't commit it!) and re-run the merge.
+  # TODO(liberato): consider a magic commit, else this line will get checked in
+  # the next time we add-and-commit.
+  raise UserInstructions(
+          "Please commit autorename file changes and comment this line out.")
 
 def IsCommitOnThisBranch(robo_configuration, commit_title):
   """Detect if we've already committed the |commit_title| locally."""
