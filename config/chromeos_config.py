@@ -2582,6 +2582,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
   ])
 
+  _paladin_swarming = frozenset([
+      'nyan_blaze',
+  ])
+
   ### Master paladin (CQ builder).
   master_config = site_config.Add(
       'master-paladin',
@@ -2610,7 +2614,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # here in the configuration, rather than GetSlavesForMaster().
   # Something like the following:
   # master_paladin = site_config.AddConfig(internal_paladin, ...)
-  # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
+   # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
 
   for board in _paladin_boards:
     assert board in board_configs, '%s not in board_configs' % board
@@ -2709,6 +2713,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     if board in _lakitu_boards:
       customizations.update(
           site_config.templates.lakitu_paladin_test_customizations)
+
+    if board in _paladin_swarming:
+      customizations.update(
+          active_waterfall=waterfall.WATERFALL_SWARMING,
+          build_affinity=True,
+          luci_builder=config_lib.LUCI_BUILDER_CQ,
+      )
 
     config = site_config.Add(
         config_name,
