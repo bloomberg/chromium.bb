@@ -1440,7 +1440,6 @@ jumbo_component("platform") {
     "//third_party/blink/renderer/platform/heap",
     "//third_party/blink/renderer/platform/instrumentation",
     "//third_party/blink/renderer/platform/loader",
-    "//third_party/blink/renderer/platform/media",
     "//third_party/blink/renderer/platform/network",
     "//third_party/blink/renderer/platform/scheduler",
   ]
@@ -1463,6 +1462,8 @@ jumbo_component("platform") {
     "//third_party/blink/public/common",
     "//third_party/ced",
     "//third_party/icu",
+    "//third_party/zlib/google:compression_utils",
+    "//ui/base:base",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
