@@ -1002,7 +1002,7 @@ public class DateOrderedListMutatorTest {
 
     private DateOrderedListMutator createMutatorWithoutJustNowProvider() {
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
-        return new DateOrderedListMutator(mSource, mModel, new JustNowProvider(config) {
+        return new DateOrderedListMutator(mSource, mModel, config, new JustNowProvider(config) {
             @Override
             public boolean isJustNowItem(OfflineItem item) {
                 return false;
@@ -1012,7 +1012,7 @@ public class DateOrderedListMutatorTest {
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
-        return new DateOrderedListMutator(mSource, mModel, new JustNowProvider(config));
+        return new DateOrderedListMutator(mSource, mModel, config, new JustNowProvider(config));
     }
 
     private static void assertDatesAreEqual(Date date, Calendar calendar) {
