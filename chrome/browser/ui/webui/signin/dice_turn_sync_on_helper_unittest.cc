@@ -192,7 +192,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
         base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     profile_builder.AddTestingFactory(
         SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerBase));
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     profile_builder.AddTestingFactory(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));

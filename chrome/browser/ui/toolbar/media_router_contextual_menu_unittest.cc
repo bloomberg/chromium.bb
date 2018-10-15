@@ -102,7 +102,7 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
             {media_router::MediaRouterUIServiceFactory::GetInstance(),
              base::BindRepeating(&BuildUIService)},
             {SigninManagerFactory::GetInstance(),
-             base::BindRepeating(&BuildFakeSigninManagerBase)}};
+             base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
   }
 
  protected:

@@ -94,7 +94,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     // Replace the signin manager and account fetcher service with fakes.
     SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeSigninManagerBase);
+        context, &BuildFakeSigninManagerForTesting);
     AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
         context, &FakeAccountFetcherServiceBuilder::BuildForTests);
   }

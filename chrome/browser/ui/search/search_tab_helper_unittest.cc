@@ -117,8 +117,9 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     builder.AddTestingFactory(
         ProfileSyncServiceFactory::GetInstance(),
         base::BindRepeating(&BuildMockProfileSyncService));

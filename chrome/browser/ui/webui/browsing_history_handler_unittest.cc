@@ -111,8 +111,9 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildFakeSyncService));
     builder.AddTestingFactory(WebHistoryServiceFactory::GetInstance(),

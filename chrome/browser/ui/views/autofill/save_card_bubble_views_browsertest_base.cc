@@ -158,7 +158,7 @@ void SaveCardBubbleViewsBrowserTestBase::OnWillCreateBrowserContextServices(
     content::BrowserContext* context) {
   // Replace the signin manager and account fetcher service with fakes.
   SigninManagerFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&BuildFakeSigninManagerBase));
+      context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
   AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
       context,
       base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));

@@ -438,7 +438,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     // creating the browser so that a bunch of classes don't register as
     // observers and end up needing to unregister when the fake is substituted.
     SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, base::BindRepeating(&BuildFakeSigninManagerBase));
+        context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(

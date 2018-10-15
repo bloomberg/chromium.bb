@@ -64,7 +64,7 @@ class MultiUserUtilTest : public AshTestBase {
 
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
+                              BuildFakeSigninManagerForTesting);
     TestingProfile* profile = builder.Build().release();
     profile_.reset(new MultiUserTestingProfile(profile));
   }
