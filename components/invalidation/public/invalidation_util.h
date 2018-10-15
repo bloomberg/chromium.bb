@@ -68,7 +68,8 @@ typedef std::map<invalidation::ObjectId, int, ObjectIdLessThan>
     ObjectIdCountMap;
 
 using Topic = std::string;
-using TopicSet = std::unordered_set<std::string>;
+// It should be std::set, since std::set_difference is used for it.
+using TopicSet = std::set<std::string>;
 
 // Caller owns the returned DictionaryValue.
 std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
