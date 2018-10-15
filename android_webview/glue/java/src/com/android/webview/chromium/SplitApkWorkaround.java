@@ -29,12 +29,12 @@ public class SplitApkWorkaround {
      * This function runs in the WebView zygote, which cannot make any binder calls to the framework
      * and is a very restricted environment.
      *
-     * @param realRun If false, don't actually change any state in the framework; just verify that
+     * @param dryRun If true, don't actually change any state in the framework; just verify that
      *               the reflection succeeds.
      * @return a value from Result describing what happened.
      */
     @SuppressWarnings("unchecked")
-    public static @SplitApkWorkaroundResult int apply(boolean realRun) {
+    public static @SplitApkWorkaroundResult int apply(boolean dryRun) {
         int matchingEntries = 0;
         int exceptionEntries = 0;
         try {
@@ -97,7 +97,7 @@ public class SplitApkWorkaround {
                             }
 
                             matchingEntries++;
-                            if (realRun) {
+                            if (!dryRun) {
                                 // Add a new entry to the cache which maps the new, correct key to
                                 // the same classloader object. We do not remove the previous entry
                                 // from the cache, in case something attempts to look it up by the

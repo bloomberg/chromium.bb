@@ -2902,7 +2902,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/ApplicationStatus.java",
       "android/java/src/org/chromium/base/BaseSwitches.java",
       "android/java/src/org/chromium/base/BuildInfo.java",
-      "android/java/src/org/chromium/base/BundleUtils.java",
       "android/java/src/org/chromium/base/Callback.java",
       "android/java/src/org/chromium/base/CollectionUtil.java",
       "android/java/src/org/chromium/base/CommandLine.java",

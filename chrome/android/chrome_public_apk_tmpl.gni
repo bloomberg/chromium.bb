@@ -170,9 +170,6 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
     if (_target_type == "android_apk") {
       command_line_flags_file = "chrome-command-line"
-    } else {
-      java_files =
-          [ "//base/android/java/src/org/chromium/base/BundleCanary.java" ]
     }
     product_version_resources_dep = "//chrome/android:product_version_resources"
 
