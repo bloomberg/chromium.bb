@@ -436,7 +436,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
 
   for (const CSSSyntaxComponent& component : descriptor.Components()) {
     std::unique_ptr<CSSInterpolationType> interpolation_type =
-        CreateInterpolationTypeForCSSSyntax(component.type_, property,
+        CreateInterpolationTypeForCSSSyntax(component.GetType(), property,
                                             registration);
 
     if (!interpolation_type)
@@ -445,7 +445,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
     if (component.IsRepeatable()) {
       interpolation_type = std::make_unique<CSSCustomListInterpolationType>(
           property, &registration, std::move(interpolation_type),
-          component.repeat_);
+          component.GetRepeat());
     }
 
     result.push_back(std::move(interpolation_type));
