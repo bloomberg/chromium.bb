@@ -65,7 +65,6 @@ void VulkanBrowserCompositorOutputSurface::BindFramebuffer() {
 }
 
 bool VulkanBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
