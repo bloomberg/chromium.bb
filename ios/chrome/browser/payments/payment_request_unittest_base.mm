@@ -20,7 +20,7 @@ PaymentRequestUnitTestBase::PaymentRequestUnitTestBase()
 
 PaymentRequestUnitTestBase::~PaymentRequestUnitTestBase() {}
 
-void PaymentRequestUnitTestBase::SetUp() {
+void PaymentRequestUnitTestBase::DoSetUp() {
   TestChromeBrowserState::Builder test_cbs_builder;
   test_cbs_builder.AddTestingFactory(
       ios::SigninManagerFactory::GetInstance(),
@@ -30,7 +30,7 @@ void PaymentRequestUnitTestBase::SetUp() {
   personal_data_manager_.SetPrefService(pref_service_.get());
 }
 
-void PaymentRequestUnitTestBase::TearDown() {
+void PaymentRequestUnitTestBase::DoTearDown() {
   personal_data_manager_.SetPrefService(nullptr);
 }
 
