@@ -15,6 +15,8 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import factory
 
+from chromite.config import chromeos_config_boards as chromeos_boards
+
 # TODO(yshaul): Restrict the import when we're done splitting
 from chromite.config.chromeos_config_test import HWTestList
 from chromite.config.chromeos_config_test import TRADITIONAL_VM_TESTS_SUPPORTED
@@ -69,262 +71,6 @@ def remove_images(unsupported_images):
   return handler
 
 
-#
-# Define assorted constants describing various sets of boards.
-#
-
-# Base per-board configuration.
-# Every board must appear in exactly 1 of the following sets.
-
-_arm_internal_release_boards = frozenset([
-    'arkham',
-    'beaglebone',
-    'beaglebone_servo',
-    'bob',
-    'capri',
-    'capri-zfpga',
-    'cheza',
-    'cobblepot',
-    'daisy',
-    'daisy_skate',
-    'daisy_spring',
-    'elm',
-    'gale',
-    'gonzo',
-    'gru',
-    'hana',
-    'kevin',
-    'kevin-arcnext',
-    'kukui',
-    'lasilla-ground',
-    'lasilla-sky',
-    'macchiato-ground',
-    'nyan_big',
-    'nyan_blaze',
-    'nyan_kitty',
-    'oak',
-    'octavius',
-    'peach_pi',
-    'peach_pit',
-    'romer',
-    'scarlet',
-    'veyron_fievel',
-    'veyron_jaq',
-    'veyron_jerry',
-    'veyron_mickey',
-    'veyron_mighty',
-    'veyron_minnie',
-    'veyron_rialto',
-    'veyron_speedy',
-    'veyron_tiger',
-    'whirlwind',
-    'wooten',
-])
-
-_arm_external_boards = frozenset([
-    'arm-generic',
-    'arm64-generic',
-    'arm64-llvmpipe',
-    'tael',
-])
-
-_x86_internal_release_boards = frozenset([
-    'amd64-generic-cheets',
-    'amd64-generic-goofy',
-    'asuka',
-    'atlas',
-    'auron_paine',
-    'auron_yuna',
-    'banjo',
-    'banon',
-    'betty',
-    'betty-arc64',
-    'betty-arcnext',
-    'buddy',
-    'candy',
-    'caroline',
-    'caroline-arcnext',
-    'cave',
-    'celes',
-    'chell',
-    'clapper',
-    'coral',
-    'cyan',
-    'dragonegg',
-    'edgar',
-    'enguarde',
-    'eve',
-    'eve-arcnext',
-    'eve-arcvm',
-    'eve-campfire',
-    'expresso',
-    'falco',
-    'falco_li',
-    'fizz',
-    'fizz-accelerator',
-    'fizz-moblab',
-    'gandof',
-    'glados',
-    'glimmer',
-    'gnawty',
-    'grunt',
-    'guado',
-    'guado-accelerator',
-    'guado_labstation',
-    'guado_moblab',
-    'heli',
-    'jecht',
-    'kalista',
-    'kefka',
-    'kip',
-    'lakitu',
-    'lakitu-gpu',
-    'lakitu-nc',
-    'lakitu-st',
-    'lakitu_next',
-    'lars',
-    'leon',
-    'link',
-    'lulu',
-    'mccloud',
-    'monroe',
-    'nami',
-    'nautilus',
-    'ninja',
-    'nocturne',
-    'novato',
-    'novato-arc64',
-    'octopus',
-    'orco',
-    'panther',
-    'parrot_ivb',
-    'peppy',
-    'poppy',
-    'pyro',
-    'quawks',
-    'rammus',
-    'reef',
-    'reks',
-    'relm',
-    'rikku',
-    'samus',
-    'sand',
-    'sentry',
-    'setzer',
-    'slippy',
-    'snappy',
-    'soraka',
-    'squawks',
-    'stout',
-    'sumo',
-    'swanky',
-    'terra',
-    'tidus',
-    'tricky',
-    'ultima',
-    'winky',
-    'wizpig',
-    'wolf',
-    'zako',
-])
-
-_x86_external_boards = frozenset([
-    'amd64-generic',
-    'moblab-generic-vm',
-    'tatl',
-    'x32-generic',
-])
-
-# Board can appear in 1 or more of the following sets.
-_brillo_boards = frozenset([
-    'arkham',
-    'gale',
-    'whirlwind',
-])
-
-_accelerator_boards = frozenset([
-    'fizz-accelerator',
-    'guado-accelerator',
-])
-
-_beaglebone_boards = frozenset([
-    'beaglebone',
-    'beaglebone_servo',
-])
-
-_lakitu_boards = frozenset([
-    'lakitu',
-    'lakitu-gpu',
-    'lakitu-nc',
-    'lakitu-st',
-    'lakitu_next',
-])
-
-_lassen_boards = frozenset([
-    'lassen',
-])
-
-_loonix_boards = frozenset([
-    'capri',
-    'capri-zfpga',
-    'cobblepot',
-    'gonzo',
-    'lasilla-ground',
-    'lasilla-sky',
-    'macchiato-ground',
-    'octavius',
-    'romer',
-    'wooten',
-])
-
-_moblab_boards = frozenset([
-    'fizz-moblab',
-    'guado_moblab',
-    'moblab-generic-vm',
-])
-
-_scribe_boards = frozenset([
-    'guado-macrophage',
-])
-
-_termina_boards = frozenset([
-    'tatl',
-    'tael',
-])
-
-_nofactory_boards = (
-    _lakitu_boards | _termina_boards | _lassen_boards | frozenset([
-        'x30evb',
-    ])
-)
-
-_toolchains_from_source = frozenset([
-    'x32-generic',
-])
-
-_noimagetest_boards = (_lakitu_boards | _loonix_boards | _termina_boards
-                       | _scribe_boards)
-
-_nohwqual_boards = (_lakitu_boards | _lassen_boards | _loonix_boards
-                    | _termina_boards | _beaglebone_boards)
-
-_norootfs_verification_boards = frozenset([
-])
-
-_base_layout_boards = _lakitu_boards | _termina_boards
-
-_vmtest_boards = frozenset([
-    # Full VMTest support on ChromeOS is currently limited to devices derived
-    # from betty & co.
-    'amd64-generic', # Has kernel 4.4, used with public Chromium.
-    'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
-    'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
-    'betty-arcnext', # Like betty but with the next version of ARC++.
-    'novato',        # Like betty but with GMSCore but not the Play Store
-    'novato-arc64',  # 64 bit x86_64 ARC++ ABI
-]) | _lakitu_boards  # All lakitu boards have VM support.
-
-
 def GetBoardTypeToBoardsDict(ge_build_config):
   """Get board type to board names dict.
 
@@ -342,20 +88,20 @@ def GetBoardTypeToBoardsDict(ge_build_config):
   boards_dict = {}
 
   arm_internal_release_boards = (
-      _arm_internal_release_boards |
+      chromeos_boards.arm_internal_release_boards |
       ge_arch_board_dict.get(config_lib.CONFIG_ARM_INTERNAL, set())
   )
   arm_external_boards = (
-      _arm_external_boards |
+      chromeos_boards.arm_external_boards |
       ge_arch_board_dict.get(config_lib.CONFIG_ARM_EXTERNAL, set())
   )
 
   x86_internal_release_boards = (
-      _x86_internal_release_boards |
+      chromeos_boards.x86_internal_release_boards |
       ge_arch_board_dict.get(config_lib.CONFIG_X86_INTERNAL, set())
   )
   x86_external_boards = (
-      _x86_external_boards |
+      chromeos_boards.x86_external_boards |
       ge_arch_board_dict.get(config_lib.CONFIG_X86_EXTERNAL, set())
   )
 
@@ -378,8 +124,8 @@ def GetBoardTypeToBoardsDict(ge_build_config):
   x86_boards = x86_full_boards
 
   boards_dict['all_release_boards'] = (
-      _arm_internal_release_boards |
-      _x86_internal_release_boards
+      chromeos_boards.arm_internal_release_boards |
+      chromeos_boards.x86_internal_release_boards
   )
   boards_dict['all_full_boards'] = (
       arm_full_boards |
@@ -393,9 +139,9 @@ def GetBoardTypeToBoardsDict(ge_build_config):
   boards_dict['internal_boards'] = boards_dict['all_release_boards']
 
   # This set controls the final vmtest override. It allows us to specify
-  # vm_tests for each class of builders, but only execute on _vmtest_boards.
+  # vm_tests for each class of builders, but only execute on vmtest_boards.
   boards_dict['no_vmtest_boards'] = (
-      all_boards - _vmtest_boards
+      all_boards - chromeos_boards.vmtest_boards
   )
 
   return boards_dict
@@ -447,7 +193,7 @@ def GeneralTemplates(site_config, ge_build_config):
       unittests=False,
   )
 
-  # Notice all builders except for _vmtest_boards should not run vmtest.
+  # Notice all builders except for vmtest_boards should not run vmtest.
   site_config.AddTemplate(
       'no_vmtest_builder',
       vm_tests=[],
@@ -1186,38 +932,38 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
   for board in board_names:
     board_config = config_lib.BuildConfig(boards=[board])
 
-    if board in _brillo_boards:
+    if board in chromeos_boards.brillo_boards:
       board_config.apply(site_config.templates.brillo)
-    if board in _lakitu_boards:
+    if board in chromeos_boards.lakitu_boards:
       board_config.apply(site_config.templates.lakitu)
-    if board in _lassen_boards:
+    if board in chromeos_boards.lassen_boards:
       board_config.apply(site_config.templates.lassen)
     if board in ['x30evb']:
       board_config.apply(site_config.templates.x30evb)
-    if board in _loonix_boards:
+    if board in chromeos_boards.loonix_boards:
       board_config.apply(site_config.templates.loonix)
-    if board in _moblab_boards:
+    if board in chromeos_boards.moblab_boards:
       board_config.apply(site_config.templates.moblab)
-    if board in _accelerator_boards:
+    if board in chromeos_boards.accelerator_boards:
       board_config.apply(site_config.templates.accelerator)
-    if board in _termina_boards:
+    if board in chromeos_boards.termina_boards:
       board_config.apply(site_config.templates.termina)
-    if board in _nofactory_boards:
+    if board in chromeos_boards.nofactory_boards:
       board_config.apply(factory=False,
                          factory_toolkit=False,
                          factory_install_netboot=False,
                          images=remove_images(['factory_install']))
-    if board in _toolchains_from_source:
+    if board in chromeos_boards.toolchains_from_source:
       board_config.apply(usepkg_toolchain=False)
-    if board in _noimagetest_boards:
+    if board in chromeos_boards.noimagetest_boards:
       board_config.apply(image_test=False)
-    if board in _nohwqual_boards:
+    if board in chromeos_boards.nohwqual_boards:
       board_config.apply(hwqual=False)
-    if board in _norootfs_verification_boards:
+    if board in chromeos_boards.norootfs_verification_boards:
       board_config.apply(rootfs_verification=False)
-    if board in _base_layout_boards:
+    if board in chromeos_boards.base_layout_boards:
       board_config.apply(disk_layout='base')
-    if board in _beaglebone_boards:
+    if board in chromeos_boards.beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
     if board == 'moblab-generic-vm':
       board_config.apply(site_config.templates.moblab_vm_tests)
@@ -1229,7 +975,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
 
 def CreateInternalBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
-  result = CreateBoardConfigs(site_config, boards_dict, ge_build_config)
+  result = CreateBoardConfigs(
+      site_config, boards_dict, ge_build_config)
 
   for board in boards_dict['internal_boards']:
     if board in result:
@@ -1241,7 +988,7 @@ def CreateInternalBoardConfigs(site_config, boards_dict, ge_build_config):
 
 
 def UpdateBoardConfigs(board_configs, boards, *args, **kwargs):
-  """Update "board_configs" for selected boards.
+  """Update "board_configs" for selected chromeos_boards.
 
   Args:
     board_configs: Dict in CreateBoardConfigs format to filter from.
@@ -1432,7 +1179,8 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   # The PreCQ Launcher doesn't limit eternal PreCQ builds to external
   # CLs.  as a hack, use internal checkouts for external builds so
   # they can apply (and ignore) internal CLs. crbug.com/882965
-  for b in  _arm_external_boards | _x86_external_boards:
+  for b in (chromeos_boards.arm_external_boards
+            | chromeos_boards.x86_external_boards):
     board_configs[b].apply(site_config.templates.internal)
 
   site_config.AddTemplate(
@@ -2312,7 +2060,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.cq_luci_slave,
       )
 
-    if board in _lakitu_boards:
+    if board in chromeos_boards.lakitu_boards:
       customizations.update(
           site_config.templates.lakitu_paladin_test_customizations)
 
@@ -3049,7 +2797,8 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
-  _firmware_boards = _arm_internal_release_boards | _x86_internal_release_boards
+  _firmware_boards = (chromeos_boards.arm_internal_release_boards
+                      | chromeos_boards.x86_internal_release_boards)
 
   _x86_depthcharge_firmware_boards = frozenset([
       'link',
@@ -3208,8 +2957,9 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
-  _factory_boards = _arm_internal_release_boards | _x86_internal_release_boards
-  _factory_boards -= _nofactory_boards
+  _factory_boards = (chromeos_boards.arm_internal_release_boards |
+                     chromeos_boards.x86_internal_release_boards)
+  _factory_boards -= chromeos_boards.nofactory_boards
 
   for board in _factory_boards:
     site_config.Add(
@@ -3438,11 +3188,11 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     _AdjustUngroupedReleaseConfigs(builder_ungrouped_dict)
     _AdjustGroupedReleaseConfigs(builder_group_dict)
 
-    for board in _moblab_boards:
+    for board in chromeos_boards.moblab_boards:
       config_name = GetReleaseConfigName(board)
       if config_name not in site_config:
         continue
-      # If the board is in _moblab_boards, use moblab_release template
+      # If the board is in moblab_boards, use moblab_release template
       site_config[config_name].apply(
           site_config.templates.moblab_release,
           board_configs[board],
