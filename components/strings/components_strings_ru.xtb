@@ -161,6 +161,7 @@
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1978555033938440688">Версия ПО</translation>
+<translation id="1981206234434200693">Удалить данные о работе в браузере Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2003709556000175978">Сброс пароля</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
@@ -228,6 +229,7 @@
 <translation id="2473195200299095979">Перевести эту страницу</translation>
 <translation id="2479410451996844060">Недействительный URL поисковой системы.</translation>
 <translation id="2482878487686419369">Уведомления</translation>
+<translation id="248348093745724435">Правила для компьютера</translation>
 <translation id="2491120439723279231">Сертификат сервера содержит ошибки.</translation>
 <translation id="2495083838625180221">Синтаксический анализатор JSON</translation>
 <translation id="2495093607237746763">Если флажок установлен, Chromium будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
@@ -298,6 +300,7 @@
 <translation id="2972581237482394796">&amp;Повторить</translation>
 <translation id="2977665033722899841">Сейчас выбрано – <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" />.</translation>
 <translation id="298138621710431427">Получить помощь</translation>
+<translation id="2982481275546140226">Удалить данные</translation>
 <translation id="2985306909656435243">Если функция включена, Chromium будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="2985398929374701810">Укажите действительный адрес.</translation>
 <translation id="2986368408720340940">Этот способ выдачи недоступен. Выберите другой.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">У вас нет прав для просмотра этой страницы.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Выполните диагностику подключения<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{Нет}=1{данные для входа в 1 аккаунт}one{данные для входа в # аккаунт}few{данные для входа в # аккаунта}many{данные для входа в # аккаунтов}other{данные для входа в # аккаунта}}</translation>
 <translation id="3145945101586104090">Не удалось декодировать ответ</translation>
 <translation id="3150653042067488994">Временные неполадки на сервере</translation>
 <translation id="3154506275960390542">Эта страница содержит форму, которая может быть не защищена. Отправленные вами данные могут быть просмотрены третьими лицами во время передачи, а также могут быть изменены злоумышленником до получения сервером.</translation>
@@ -400,6 +404,7 @@
 <translation id="3650584904733503804">Проверка выполнена успешно</translation>
 <translation id="3655670868607891010">Если эта проблема возникает часто, изучите <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Версия</translation>
+<translation id="3676592649209844519">Идентификатор устройства:</translation>
 <translation id="3678029195006412963">Не удалось подписать запрос</translation>
 <translation id="3678529606614285348">Открыть страницу в новом окне в режиме инкогнито (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" />: отчет о сбоях сохранен. <ph name="UPLOAD_TIME" />: отчет о сбоях загружен.</translation>
@@ -585,6 +590,7 @@
 <translation id="4989163558385430922">Показать все</translation>
 <translation id="4989809363548539747">Плагин не поддерживается</translation>
 <translation id="5002932099480077015">Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
+<translation id="5015510746216210676">Имя компьютера:</translation>
 <translation id="5018422839182700155">Не удалось открыть страницу</translation>
 <translation id="5019198164206649151">Данные в хранилище повреждены</translation>
 <translation id="5023310440958281426">Проверьте правила, установленные администратором</translation>
@@ -724,6 +730,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используется # файла cookie}many{Используется # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="5922853866070715753">Почти готово…</translation>
+<translation id="5932224571077948991">Сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5951495562196540101">Регистрация невозможна, так как тип аккаунта не соответствует лицензии на устройстве.</translation>
 <translation id="5966151627327109289">Вы выйдете из аккаунтов на большинстве сайтов. При этом вы можете потерять доступ к защищенному контенту на <ph name="SITE" /> и других веб-ресурсах.</translation>
@@ -761,6 +768,7 @@
 <translation id="6203231073485539293">Проверьте подключение к Интернету</translation>
 <translation id="6218753634732582820">Удалить адрес из Chromium?</translation>
 <translation id="6221345481584921695">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />. Его источником является <ph name="SUBRESOURCE_HOST" />, не раз замеченным в распространении вирусов. Будьте внимательны, иногда даже на безопасных сайтах появляются вредоносные программы.</translation>
+<translation id="6240447795304464094">Логотип Google Pay</translation>
 <translation id="6251924700383757765">Политика конфиденциальности</translation>
 <translation id="6254436959401408446">Недостаточно памяти для загрузки страницы</translation>
 <translation id="625755898061068298">Вы отключили предупреждения системы безопасности для этого сайта.</translation>
@@ -779,6 +787,7 @@
 <translation id="6337133576188860026">Освободится менее <ph name="SIZE" /> пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="6337534724793800597">Фильтровать политики по названию</translation>
 <translation id="6358450015545214790">Что это значит?</translation>
+<translation id="6383221683286411806">Возможное списание средств</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{ещё 1 вариант}one{ещё # вариант}few{ещё # варианта}many{ещё # вариантов}other{ещё # варианта}}</translation>
 <translation id="6387754724289022810">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google и на этом устройстве.</translation>
 <translation id="6397451950548600259">ПО, установленное на компьютере, не позволяет Chrome безопасно подключиться к Интернету</translation>
@@ -816,6 +825,7 @@
 <translation id="6685834062052613830">Выйдите из аккаунта и завершите настройку</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6710594484020273272">&lt;Введите поисковый запрос&gt;</translation>
+<translation id="671076103358959139">Токен регистрации:</translation>
 <translation id="6711464428925977395">На прокси-сервере возникла проблема или адрес указан неверно.</translation>
 <translation id="674375294223700098">Неизвестная ошибка сертификата сервера.</translation>
 <translation id="6744009308914054259">В ожидании подключения вы можете открыть скачанные файлы и почитать статьи офлайн.</translation>
@@ -881,6 +891,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Подробнее <ph name="END_LINK" /> об этой неполадке.</translation>
 <translation id="7219179957768738017">В этом подключении используется протокол <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Подождите…</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Осторожно, вредоносное ПО!</translation>
 <translation id="724975217298816891">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" />. После этого ее данные будут переданы сайту.</translation>
 <translation id="7251437084390964440">Некоторые элементы сетевой конфигурации невозможно импортировать, поскольку она не соответствует стандарту ONC.
@@ -1061,6 +1072,7 @@
 <translation id="8364627913115013041">Не задано</translation>
 <translation id="8368476060205742148">Сервисы Google Play</translation>
 <translation id="8380941800586852976">Опасно</translation>
+<translation id="8381674639488873545">Списание может быть разовым или повторяющимся без каких-либо уведомлений. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Здесь появятся закладки, которые вы недавно открывали.</translation>
 <translation id="8398259832188219207"><ph name="UPLOAD_TIME" />: отчет о сбоях загружен.</translation>
 <translation id="8412145213513410671">Сбои (<ph name="CRASH_COUNT" />)</translation>

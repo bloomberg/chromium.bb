@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="101438888985615157">Scherm 180 graden draaien</translation>
+<translation id="1016912092715201525">Hiermee worden de standaard browsercontroles ingesteld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Als je deze instelling inschakelt, controleert <ph name="PRODUCT_NAME" /> bij het opstarten altijd of het de standaardbrowser is en registreert zichzelf indien mogelijk automatisch.
+
+      Als deze instelling is uitgeschakeld, controleert <ph name="PRODUCT_NAME" /> nooit of het de standaardbrowser is en worden gebruikersopties voor het instellen van deze optie uitgeschakeld.
+
+      Als deze instelling niet is ingeschakeld, kan de gebruiker bepalen of <ph name="PRODUCT_NAME" /> de standaardbrowser is, en of er een melding aan de gebruiker moet worden weergegeven wanneer dit niet het geval is.
+
+      Opmerking voor beheerders van <ph name="MS_WIN_NAME" />: Deze instelling werkt alleen op apparaten waarop Windows 7 wordt uitgevoerd. Voor Windows-versies vanaf Windows 8 moet je een bestand met 'standaard toepassingskoppelingen' maken waarin <ph name="PRODUCT_NAME" /> handler voor het <ph name="HHTPS_PROTOCOL" />- en het <ph name="HTTP_PROTOCOL" />-protocol wordt gemaakt (en optioneel van het <ph name="FTP_PROTOCOL" />-protocol en bestandsindelingen zoals <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, enzovoort). Ga naar <ph name="SUPPORT_URL" /> voor meer informatie.</translation>
 <translation id="1017967144265860778">Energiebeheer op het inlogscherm</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
 <translation id="1022361784792428773">Id's van extensies die de gebruiker niet mag installeren (of '*' voor alle extensies)</translation>
@@ -66,6 +75,9 @@
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, wordt de standaardcachedirectory gebruikt en kan de gebruiker deze overschrijven met de opdrachtregelmarkering '--disk-cache-dir'.</translation>
+<translation id="113521240853905588">Hiermee worden de talen ingesteld die door <ph name="PRODUCT_OS_NAME" /> als voorkeurstaal kunnen worden gebruikt.
+
+      Als dit beleid is ingesteld, kan de gebruiker slechts één van de in dit beleid vermelde talen toevoegen aan de lijst met voorkeurstalen. Als dit beleid niet is ingesteld of op een lege lijst is ingesteld, kan de gebruiker elke willekeurige taal instellen als voorkeurstaal. Als dit beleid is ingesteld op een lijst met ongeldige waarden, worden alle ongeldige waarden genegeerd. Als een gebruiker eerder talen aan de lijst met voorkeurstalen heeft toegevoegd die niet door dit beleid zijn toegestaan, worden deze talen verwijderd. Als de gebruiker <ph name="PRODUCT_OS_NAME" /> eerder heeft geconfigureerd voor weergave in een van de talen die niet door dit beleid zijn toegestaan, wordt de volgende keer dat de gebruiker inlogt een toegestane UI-taal als weergavetaal gebruikt. Anders gebruikt <ph name="PRODUCT_OS_NAME" /> de eerste geldige waarde die is opgegeven in dit beleid, of een reservetaal (momenteel 'en-US'), als dit beleid alleen ongeldige talen bevat.</translation>
 <translation id="1135264353752122851">Configureert welke toetsenbordindelingen zijn toegestaan voor <ph name="PRODUCT_OS_NAME" />-gebruikerssessies.
 
       Als dit beleid is ingesteld, kan de gebruiker alleen een van de invoermethoden selecteren die worden gespecificeerd door dit beleid. Als dit beleid niet is ingesteld of is ingesteld op een lege lijst, kan de gebruiker alle ondersteunde invoermethoden selecteren. Als de huidige invoermethode niet is toegestaan op basis van dit beleid, wordt de invoermethode overgeschakeld naar het hardwaretoetsenbord (indien toegestaan) of het eerste geldige item in deze lijst. Alle ongeldige of niet-ondersteunde invoermethoden in deze lijst worden genegeerd.</translation>
@@ -712,6 +724,7 @@
 <translation id="2873651257716068683">Hiermee overschrijf je de standaardgrootte voor de afdrukpagina. Als de paginagrootte niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
+<translation id="2890645751406497668">Automatisch toestemming verlenen aan deze sites om verbinding te maken met USB-apparaten met de opgegeven leveranciers- en product-ID's.</translation>
 <translation id="2892414556511568464">Hiermee beperk je afdrukken in de duplexmodus. Als er geen beleid is ingesteld of de instelling leeg is, gelden er geen beperkingen.</translation>
 <translation id="2893546967669465276">Systeemlogboeken naar de beheerserver verzenden</translation>
 <translation id="2899002520262095963">Android-apps kunnen de netwerkconfiguraties en CA-certificaten gebruiken die via dit beleid zijn ingesteld, maar hebben geen toegang tot bepaalde configuratieopties.</translation>
@@ -912,6 +925,7 @@
 
       Als deze instelling is ingesteld op 'Uit' of er is geen waarde ingesteld, wordt de 'Beperkte modus' op YouTube niet afgedwongen door <ph name="PRODUCT_NAME" />. De 'Beperkte modus' kan echter nog steeds worden afgedwongen door externe beleidsregels zoals het YouTube-beleid.</translation>
 <translation id="3428247105888806363">Netwerkvoorspelling inschakelen</translation>
+<translation id="3437924696598384725">De gebruiker toestaan VPN-verbindingen te beheren</translation>
 <translation id="3449886121729668969">Hiermee configureer je de proxyinstellingen voor <ph name="PRODUCT_NAME" />. Deze proxyinstellingen zijn ook beschikbaar voor ARC-apps.
 
       Dit beleid is nog niet klaar voor gebruik. Gebruik het dus niet.</translation>
@@ -1075,6 +1089,7 @@
           De suggestie-URL van Google kan worden opgegeven als: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="3864129983143201415">Instellen welke talen zijn toegestaan in een gebruikerssessie</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
 <translation id="3868347814555911633">Dit beleid is alleen actief in de commerciële modus.
 
@@ -1591,6 +1606,11 @@
 <translation id="5323128137188992869">Toestaan dat content wordt gecast naar het apparaat via <ph name="PRODUCT_NAME" />.
 
           Als dit beleid is ingesteld op 'False', kunnen gebruikers geen content casten naar hun apparaat. Als dit beleid is ingesteld op 'True', mogen gebruikers content casten. Als dit beleid niet is ingesteld, mogen gebruikers geen content naar geregistreerde Chrome OS-apparaten casten, maar wel naar niet-geregistreerde apparaten.</translation>
+<translation id="5329007337159326804">Waarschuwing: Het beleid voor de maximale TLS-versie wordt rond versie 75 (rond juni 2019) volledig verwijderd uit <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de standaard maximale versie.
+
+      Dit beleid kan ook worden ingesteld op een van de volgende waarden: 'tls1.2' of 'tls1.3'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen hogere SSL-/TLS-versies dan de opgegeven versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
 <translation id="5365946944967967336">Knop 'Homepage' in de werkbalk weergeven</translation>
 <translation id="5366745336748853475">Hiermee kun je een lijst met URL-patronen opgeven die sites specificeren waarvoor automatisch een clientcertificaat moet worden geselecteerd op het inlogscherm in het frame waarin de SAML-procedure wordt gehost als de site vraagt om een certificaat. Een voorbeeld van het gebruik is een certificaat voor het hele apparaat configureren om te presenteren aan de SAML IdP.
@@ -1620,6 +1640,15 @@
           Als deze instelling is ingeschakeld, worden de fysieke invoer- en uitvoerapparaten van hosts uitgeschakeld terwijl een externe verbinding tot stand wordt gebracht.
 
           Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen zowel lokale als externe gebruikers met de host communiceren terwijl deze wordt gedeeld.</translation>
+<translation id="5396049152026347991">De gebruiker toestaan VPN-verbindingen te beheren.
+
+      Als dit beleid is ingesteld op false, worden alle gebruikersinterfaces van <ph name="PRODUCT_NAME" /> uitgeschakeld die de gebruiker zouden toestaan VPN-verbindingen te verbreken of bewerken.
+
+      Als dit beleid niet is ingesteld of is ingesteld op true, kunnen gebruikers zoals gebruikelijk VPN-verbindingen verbreken of bewerken.
+
+      Als de VPN-verbinding via een VPN-app wordt gemaakt, heeft dit beleid geen gevolgen voor de gebruikersinterface binnen de app. Daarom kan de gebruiker nog steeds de app gebruiken om de VPN-verbinding te bewerken.
+
+      Dit beleid is bedoeld voor gebruik in combinatie met de functie 'Always-on VPN', waarmee de beheerder kan bepalen of er tijdens het opstarten een VPN-verbinding tot stand moet worden gebracht.</translation>
 <translation id="5405289061476885481">Hiermee configureer je welke toetsenbordindelingen zijn toegestaan voor het inlogscherm van <ph name="PRODUCT_OS_NAME" />.
 
       Als dit beleid is ingesteld op een lijst met invoermethode-ID's, zijn de opgegeven invoermethoden beschikbaar in het inlogscherm. De eerste opgegeven invoermethode wordt vooraf geselecteerd. Hoewel een gebruikerspod is gericht op het inlogscherm, is de laatst gebruikte invoermethode van de gebruiker beschikbaar naast de invoermethoden die door dit beleid worden aangegeven. Als dit beleid niet is ingesteld, worden de invoermethoden op het inlogscherm afgeleid van de taal waarin het inlogscherm wordt weergegeven. Waarden die geen geldige invoermethode-ID's zijn, worden genegeerd.</translation>
@@ -1705,6 +1734,11 @@
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers alle ondersteunde typen externe opslag gebruiken op hun apparaat.</translation>
 <translation id="5697306356229823047">Apparaatgebruikers melden</translation>
 <translation id="570062449808736508">Wanneer dit beleid is ingesteld op een niet-lege tekenreeks, leest de WebView de URL-beperkingen van de contentprovider met de opgegeven autoriteitsnaam.</translation>
+<translation id="5701714006401683963">Als dit beleid is ingesteld op false, vertoont de beheerde gastsessie het gedrag dat is gedocumenteerd op https://support.google.com/chrome/a/answer/3017014 (de standaard 'openbare sessie').
+
+      Als dit beleid is ingesteld op true of niet is ingesteld, vertoont de beheerde gastsessie het gedrag van een 'beheerde sessie', waardoor veel van de beperkingen die gelden voor gewone 'openbare sessies' worden opgeheven.
+
+      Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
 <translation id="5722934961007828462">Als deze instelling is ingeschakeld, voert <ph name="PRODUCT_NAME" /> altijd een intrekkingscontrole uit voor servercertificaten die kunnen worden gevalideerd en zijn ondertekend door lokaal geïnstalleerde CA-certificaten.
 
       Als <ph name="PRODUCT_NAME" /> geen informatie over de intrekkingsstatus kan verkrijgen, worden dergelijke certificaten beschouwd als ingetrokken ('hard-fail').
@@ -2088,6 +2122,13 @@
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
+<translation id="6816212867679667972">Hiermee bepaal je de hostnaam van het apparaat die wordt gebruikt in DHCP-verzoeken.
+
+      Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt deze tekenreeks tijdens het DHCP-verzoek gebruikt als hostnaam van het apparaat.
+
+      De tekenreeks kan de variabelen ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} bevatten, die worden vervangen door waarden op het apparaat voordat deze als hostnaam wordt gebruikt. Deze vervanging moet een geldige hostnaam opleveren (conform RFC 1035, sectie 3.1).
+
+      Als dit beleid niet is ingesteld of als de vervanging geen geldige hostnaam oplevert, wordt er geen hostnaam ingesteld in het DHCP-verzoek. </translation>
 <translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
 <translation id="6838056959556423778">Hiermee negeer je de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
 
@@ -2376,6 +2417,21 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
+<translation id="7337967786223261174">Hiermee configureer je een lijst met printers.
+
+      Met dit beleid kunnen beheerders hun gebruikers voorzien van printerconfiguraties.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> en <ph name="PRINTER_DESCRIPTION" /> zijn vrije tekenreeksen die kunnen worden aangepast om de printerselectie te vereenvoudigen. <ph name="PRINTER_MANUFACTURER" /> en <ph name="PRINTER_MODEL" /> en zijn bedoeld om de printeridentificatie door eindgebruikers te vereenvoudigen. Ze staan voor de fabrikant en het model van de printer. <ph name="PRINTER_URI" /> moet een adres zijn dat bereikbaar is vanaf een clientcomputer, inclusief <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> en <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optioneel. Als de UUID is opgegeven, wordt deze gebruikt om <ph name="ZEROCONF_DISCOVERY" />-printers te dedupliceren.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> moet overeenkomen met een van de tekenreeksen die een door <ph name="PRODUCT_NAME" /> ondersteunde printer vertegenwoordigen. De tekenreeks wordt gebruikt om de juiste PPD voor de printer te identificeren en te installeren. Je vindt meer informatie op https://support.google.com/chrome?p=noncloudprint.
+
+      De configuratie van de printer wordt voltooid wanneer de printer voor het eerst wordt gebruikt. PPD's worden pas gedownload wanneer de printer wordt gebruikt. Daarna worden veelgebruikte PPD's opgeslagen in het cachegeheugen.
+
+      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.
+
+      Voor apparaten die via Active Directory worden beheerd, ondersteunt dit beleid de uitbreiding van <ph name="MACHINE_NAME_VARIABLE" /> naar de naam van de Active Directory-machine of naar een subtekenreeks daarvan. Als de machinenaam bijvoorbeeld <ph name="MACHINE_NAME_EXAMPLE" /> is, wordt <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> vervangen door de vier tekens vanaf de zesde positie, oftewel <ph name="MACHINE_NAME_PART_EXAMPLE" />. Houd er rekening mee dat de positie op nul is gebaseerd.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (met kleine letters) is beëindigd in M71 en wordt verwijderd in M72.
+      </translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
 <translation id="7343497214039883642">Configuratiebestand voor zakelijke printers voor apparaten</translation>
 <translation id="7349338075015720646">Specificeert een lijst met web-apps die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
@@ -2787,6 +2843,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8359734107661430198">API voor ExampleDeprecatedFeature tot en met 02-09-2008 inschakelen</translation>
 <translation id="8367209241899435947">Chrome Cleanup inschakelen op Windows</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
+<translation id="8371178326720637170">Hiermee kunnen beheerde extensies de Enterprise Hardware Platform-API gebruiken</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
@@ -3056,6 +3113,11 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8970205333161758602">De prompt <ph name="PRODUCT_FRAME_NAME" /> negeren</translation>
 <translation id="8976248126101463034">Gnubby-verificatie toestaan voor hosts voor externe toegang</translation>
 <translation id="8976531594979650914">Standaardprinter van systeem gebruiken als standaard</translation>
+<translation id="898520305112996948">Hiermee kun je een lijst met URL-patronen instellen die aangeven welke sites automatisch toegang krijgen tot USB-apparaat met de opgegeven verkopers- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL-patronen bevat. Elk item in apparaten kan een veld voor verkopers-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering, namelijk dat een product-ID niet mag worden opgegeven zonder dat er een verkopers-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
+
+        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.
+
+        De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Als er een conflict is, krijgt dit beleid voorrang op WebUsbBlockedForUrls en WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="9012851181124311976">Configureer de lijst met zakelijke login-URL's (alleen http- en https-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
       Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="101438888985615157">Pagriezt ekrānu par 180 grādiem</translation>
+<translation id="1016912092715201525">Konfigurē noklusējuma pārlūka pārbaudi pārlūkā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem mainīt šo iestatījumu.
+
+      Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> pēc palaišanas vienmēr pārbaudīs, vai tas ir noklusējuma pārlūks, un automātiski reģistrēs sevi (ja iespējams).
+
+      Ja šis iestatījums ir atspējots, <ph name="PRODUCT_NAME" /> nekad nepārbaudīs, vai tas ir noklusējuma pārlūks, un atspējos lietotāja vadīklas šīs opcijas iestatīšanai.
+
+      Ja šis iestatījums nav iestatīts, <ph name="PRODUCT_NAME" /> ļaus lietotājam kontrolēt, vai tas ir noklusējuma pārlūks un vai lietotājam jārāda paziņojumi gadījumos, kad tas nav noklusējuma pārlūks.
+
+      Piezīme <ph name="MS_WIN_NAME" /> administratoriem: iespējotais iestatījums darbosies tikai ierīcēs ar operētājsistēmu Windows 7. Ja izmantojat operētājsistēmu Windows 8 vai jaunāku versiju, jums ir jāizvieto lietojumprogrammu noklusējuma saistības fails, kas nosaka <ph name="PRODUCT_NAME" /> kā protokolu <ph name="HHTPS_PROTOCOL" /> un <ph name="HTTP_PROTOCOL" /> apdarinātāju (neobligāti — arī kā protokola <ph name="FTP_PROTOCOL" /> un failu formātu, piemēram, <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, apdarinātāju). Plašāku informāciju skatiet vietnē <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Barošanas pārvaldība pieteikšanās ekrānā</translation>
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
@@ -53,6 +62,9 @@
       Izmantojamo mainīgo vērtību sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ja šī politika nav iestatīta, tiks izmantots noklusējuma kešatmiņas direktorijs un lietotājs varēs to ignorēt, iestatot komandrindas karodziņu “--disk-cache-dir”.</translation>
+<translation id="113521240853905588">Konfigurē valodas, ko <ph name="PRODUCT_OS_NAME" /> var izmantot kā vēlamās valodas.
+
+      Ja šī politika ir iestatīta, lietotājs var pievienot tikai vienu no šajā politikā norādītajām valodām vēlamo valodu sarakstam. Ja šī politika nav iestatīta vai ir iestatīts tukšs saraksts, lietotājs var norādīt jebkuru valodu kā vēlamo valodu. Ja šai politikai ir iestatīts saraksts ar nederīgām vērtībām, visas nederīgās vērtības tiks ignorētas. Ja lietotājs vēlamo valodu sarakstam iepriekš ir pievienojis valodas, kas politikā nav atļautas, tās tiks noņemtas. Ja lietotājs iepriekš ir konfigurējis <ph name="PRODUCT_OS_NAME" /> parādīšanu valodā, kas šajā politikā nav atļauta, nākamajā pierakstīšanās reizē attēlojuma valoda tiks pārslēgta uz atļautu lietotāja saskarnes valodu. Pretējā gadījumā operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks pārslēgta pirmā derīgā vērtība, kas norādīta politikā, vai, ja politikā ir tikai nederīgi ieraksti, tiks pārslēgta atkāpšanās lokalizācija (pašlaik en-US).</translation>
 <translation id="1135264353752122851">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> lietotāju sesijām.
 
       Ja šī politika ir iestatīta, lietotājs var atlasīt tikai vienu šīs politikas norādīto ievades metodi. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, lietotājs var atlasīt visas atbalstītās ievades metodes. Ja šī politika neatļauj izmantot pašreizējo ievades metodi, ievades metode tiks pārslēgta uz aparatūras tastatūras izkārtojumu (ja tas būs atļauts) vai pirmo derīgo ierakstu sarakstā. Visas nederīgās vai neatbalstītās ievades metodes sarakstā tiks ignorētas.</translation>
@@ -705,6 +717,7 @@
 <translation id="2873651257716068683">Tiek ignorēts noklusējuma drukāšanas lapas izmērs. Ja lapas izmērs nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
+<translation id="2890645751406497668">Automātiski šīm vietnēm piešķirt atļauju izveidot savienojumu ar USB ierīcēm, izmantojot norādīto pakalpojumu sniedzēja un produkta ID.</translation>
 <translation id="2892414556511568464">Ierobežo abpusējās drukāšanas režīmu. Ja politika nav iestatīta, tiek uzskatīts, ka ierobežojuma nav.</translation>
 <translation id="2893546967669465276">Sistēmas žurnālu sūtīšana pārvaldības serverim</translation>
 <translation id="2899002520262095963">Android lietotnes var izmantot tīkla konfigurācijas un CA sertifikātus, kas iestatīti, izmantojot šo politiku, bet lietotnēm nav piekļuves dažām konfigurācijas opcijām.</translation>
@@ -902,6 +915,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Vidēji”, lietotājs var izv�
 
 Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav iestatīta, ierobežotais režīms pakalpojumā YouTube nav ieslēgts pārlūkā <ph name="PRODUCT_NAME" />. Tomēr ar ārējām politikām, piemēram, YouTube politikām, joprojām var ieslēgt ierobežoto režīmu.</translation>
 <translation id="3428247105888806363">Iespējo tīkla paredzēšanu</translation>
+<translation id="3437924696598384725">Atļaut lietotājam pārvaldīt VPN savienojumus</translation>
 <translation id="3449886121729668969">Konfigurē pakalpojuma <ph name="PRODUCT_NAME" /> un ARC lietotņu starpniekservera iestatījumus. Šie starpniekservera iestatījumi būs pieejami arī ARC lietotnēm.
 
       Šī politika nav vēl gatava lietošanai; nelietojiet to.</translation>
@@ -1062,6 +1076,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Google ieteikumu vietrādi URL var norādīt šādi: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
+<translation id="3864129983143201415">Konfigurēt lietotāja sesijā atļautās valodas</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3868347814555911633">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
@@ -1581,6 +1596,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5323128137188992869">Atļaujiet ierīcē apraidīt saturu, izmantojot <ph name="PRODUCT_NAME" />.
 
           Ja šai politikai tiks iestatīta vērtība “False”, lietotāji nevarēs apraidīt saturu savā ierīcē. Ja šai politikai tiks iestatīta vērtība “True”, lietotājiem būs atļauts apraidīt saturu. Ja šī politika nebūs iestatīta, lietotājiem nebūs atļauts apraidīt saturu reģistrētajās Chrome OS ierīcēs, taču viņi varēs apraidīt saturu nereģistrētajās ierīcēs.</translation>
+<translation id="5329007337159326804">Brīdinājums! Sākot ar <ph name="PRODUCT_NAME" /> versiju 75, maksimālā TLS versijas politika tiks pilnībā noņemta (aptuveni 2019. gada jūnijā).
+
+      Ja šī politika nav konfigurēta, <ph name="PRODUCT_NAME" /> izmantos noklusējuma maksimālo versiju.
+
+      Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad tiks iestatīta attiecīgā politikas vērtība, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="5330684698007383292">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt tālāk norādītos satura veidus</translation>
 <translation id="5365946944967967336">Rīkjoslā parāda pogu Sākums</translation>
 <translation id="5366745336748853475">Ļauj norādīt URL modeļu sarakstu ar vietnēm, kurām klienta sertifikāts tiek automātiski atlasīts pierakstīšanās ekrāna rāmī, kas mitina SAML plūsmu (ja vietne pieprasa sertifikātu). Piemēram, var konfigurēt, lai ierīces sertifikāts tiktu rādīts SAML identitātes nodrošinātājam.
@@ -1611,6 +1631,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šis iestatījums ir iespējots, attālā savienojuma laikā saimniekdatoru fiziskās ievades un izvades ierīces ir atspējotas.
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, gan vietējie, gan attālie lietotāji var mijiedarboties ar saimniekdatoru, kad tas tiek koplietots.</translation>
+<translation id="5396049152026347991">Atļauj lietotājam pārvaldīt VPN savienojumus.
+
+      Ja šai politikai ir iestatīta vērtība “False”, tiks atspējotas visas <ph name="PRODUCT_NAME" /> lietotāja saskarnes, kurās lietotājs varētu atvienot vai mainīt VPN savienojumus.
+
+      Ja šī politika nav iestatīta vai ir iestatīta vērtība “True”, lietotāji var atvienot vai mainīt VPN savienojumus kā parasti.
+
+      Ja VPN savienojums tiek izveidots, izmantojot VPN lietotni, šī politika neietekmē lietotāja saskarni lietotnē. Iespējams, lietotājs joprojām varēs izmantot lietotni, lai mainītu VPN savienojumu.
+
+      Šo politiku paredzēts lietot kopā ar funkciju “Vienmēr ieslēgts VPN”, kas administratoram ļauj izveidot VPN savienojumu pēc palaišanas.</translation>
 <translation id="5405289061476885481">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> pierakstīšanās ekrānā.
 
       Ja šai politikai ir iestatīts saraksts ar ievades metožu identifikatoriem, norādītās ievades metodes būs pieejamas pierakstīšanās ekrānā. Pirmā norādītā ievades metode tiks priekšatlasīta. Kamēr lietotāja ierīce ir fokusēta uz pierakstīšanās ekrānu, papildus šajā politikā norādītajām metodēm būs pieejama lietotāja pēdējā izmantotā ievades metode. Ja šī politika nav iestatīta, pierakstīšanās ekrānā ievades metodes tiks izgūtas no lokalizācijas, kurā tiek rādīts pierakstīšanās ekrāns. Vērtības, kas nav derīgi ievades metožu identifikatori, tiks ignorētas.</translation>
@@ -1696,6 +1725,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šis iestatījums ir atspējots vai nav konfigurēts, lietotāji savās ierīcēs var izmantot visus atbalstītos ārējo krātuvju veidus.</translation>
 <translation id="5697306356229823047">Ziņošana par ierīces lietotājiem</translation>
 <translation id="570062449808736508">Ja šai politikai ir iestatīta virkne, kas nav tukša, komponents WebView lasīs URL ierobežojumus no satura nodrošinātāja ar norādīto iestādes nosaukumu.</translation>
+<translation id="5701714006401683963">Ja politikai ir iestatīta vērtība “False”, pārvaldītā viesa sesija norisināsies kā standarta publiskā sesija, kas aprakstīta vietnē https://support.google.com/chrome/a/answer/3017014.
+
+      Ja šai politikai ir iestatīta vērtība “True” vai tā nav iestatīta, pārvaldītā viesa sesija norisināsies kā pārvaldīta sesija, kas atceļ daudzus ierobežojumus, kuri ir spēkā parastai publiskajai sesijai.
+ 
+      Ja šī politika ir iestatīta, lietotājs to nevar mainīt vai ignorēt.</translation>
 <translation id="5722934961007828462">Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> vienmēr atcels tādu servera sertifikātu pārbaudīšanu, kuri ir veiksmīgi pārbaudīti un parakstīti, izmantojot lokāli instalētus CA sertifikātus.
 
       Ja <ph name="PRODUCT_NAME" /> nevar iegūt atcelšanas statusa informāciju, šādi sertifikāti tiks uzskatīti par atceltiem (“hard-fail”).
@@ -2073,6 +2107,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6786967369487349613">Iestatīt viesabonēšanas profila direktoriju</translation>
 <translation id="6810445994095397827">Bloķēt JavaScript šajās vietnēs</translation>
 <translation id="681446116407619279">Atbalstītās autentifikācijas shēmas</translation>
+<translation id="6816212867679667972">Nosaka DHCP pieprasījumiem izmantotās ierīces saimniekdatora nosaukumu.
+
+      Ja šai politikai ir iestatīta virkne, kas nav tukša, DHCP pieprasījuma laikā attiecīgā virkne tiks izmantota kā ierīces saimniekdatora nosaukums.
+
+      Virknē var būt mainīgie ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} un ${MACHINE_NAME}, kas pirms saimniekdatora nosaukuma izmantošanas tiks aizstāti ar vērtībām ierīcē. Aizstāšanas rezultātam ir jābūt derīgam saimniekdatora nosaukumam (atbilstoši RFC 1035 3.1. sadaļai).
+
+      Ja šī politika nav iestatīta vai vērtība pēc aizstāšanas nav derīgs saimniekdatora nosaukums, DHCP pieprasījumā netiks iestatīts saimniekdatora nosaukums. </translation>
 <translation id="6835883744948188639">Periodiski rādīt lietotājam uzvedni par ieteicamu atkārtotu palaišanu</translation>
 <translation id="6838056959556423778">Tiek ignorētas <ph name="PRODUCT_NAME" /> noklusējuma printera atlasīšanas kārtulas.
 
@@ -2370,6 +2411,21 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja šī politika nav iestatīta, automātiskajai tīrīšanai tiks izmantota noklusējuma tīrīšanas stratēģija. Pašlaik tā ir stratēģija “RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Sīkfailu saglabāšana sesijas laikā</translation>
+<translation id="7337967786223261174">Konfigurē printeru sarakstu.
+
+      Šī politika ļauj administratoram nodrošināt printeru konfigurācijas lietotājiem.
+
+      “<ph name="PRINTER_DISPLAY_NAME" />” un “<ph name="PRINTER_DESCRIPTION" />” ir brīvi aizpildāmas virknes, ko var pielāgot, lai atvieglotu printera atlasi. Parametri “<ph name="PRINTER_MANUFACTURER" />” un “<ph name="PRINTER_MODEL" />” ir paredzēti, lai galalietotāji varētu vieglāk identificēt printerus. Tie parāda printera ražotāju un modeli. “<ph name="PRINTER_URI" />” ir jābūt adresei, ko var sasniegt no klienta datora, tostarp jānorāda arī “<ph name="URI_SCHEME" />”, “<ph name="URI_PORT" />” un “<ph name="URI_QUEUE" />”. “<ph name="PRINTER_UUID" />” nav jānorāda obligāti. Ja šis parametrs ir norādīts, tas tiek izmantots, lai palīdzētu novērst “<ph name="ZEROCONF_DISCOVERY" />” printeru dublēšanu.
+
+      Parametram “<ph name="PRINTER_EFFECTIVE_MODEL" />” ir jāatbilst vienai no virknēm, kas attēlo <ph name="PRODUCT_NAME" /> atbalstītu printeri. Virkne tiks izmantota, lai identificētu un instalētu printerim atbilstošo PPD failu. Plašāku informāciju var atrast vietnē https://support.google.com/chrome?p=noncloudprint.
+
+      Printera iestatīšana tiek pabeigta, pirmo reizi izmantojot printeri. PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots. Pēc tam bieži izmantotie PPD faili tiek saglabāti kešatmiņā.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs. Tās mērķis ir papildināt printeru konfigurāciju, ko veic atsevišķi lietotāji.
+
+      Ierīcēm, kuru pārvaldībai tiek izmantots Active Directory, šī politika atbalsta “<ph name="MACHINE_NAME_VARIABLE" />” paplašināšanu uz Active Directory ierīces nosaukumu vai tā apakšvirkni. Piemēram, ja ierīces nosaukums ir “<ph name="MACHINE_NAME_EXAMPLE" />”, tad “<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />” tiktu aizstāts ar 4 rakstzīmēm pēc 6. pozīcijas, t.i., “<ph name="MACHINE_NAME_PART_EXAMPLE" />”. Ņemiet vērā, ka pozīcija ir balstīta uz nulli.
+      “<ph name="MACHINE_NAME_VARIABLE_LOWERCASE" />” (ar mazajiem burtiem) vairs netiek izmantots versijā M71 un tiks noņemts versijā M72.
+      </translation>
 <translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
 <translation id="7343497214039883642">Uzņēmuma printeru konfigurācijas fails ierīcēm</translation>
 <translation id="7349338075015720646">Saraksts ar vietnēm, kas tika instalētas neuzraudzīti (bez lietotāja mijiedarbības) un ko lietotājs nevar atinstalēt vai atspējot.
@@ -2791,6 +2847,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8359734107661430198">Iespējot ExampleDeprecatedFeature API, kas bija derīgs līdz 02.09.2008.</translation>
 <translation id="8367209241899435947">Iespējojiet Chrome tīrīšanas rīku Windows datorā</translation>
 <translation id="8369602308428138533">Aizkave līdz ekrāna izslēgšanai, ja ierīce darbojas ar maiņstrāvu</translation>
+<translation id="8371178326720637170">Ļauj pārvaldītajiem paplašinājumiem izmantot Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">Iespējot attālās apstiprināšanas lietošanu ierīces satura aizsardzībai</translation>
 <translation id="838870586332499308">Iespējot datu viesabonēšanu</translation>
 <translation id="8390049129576938611">Atspējo <ph name="PRODUCT_NAME" /> iekšējo PDF skatītāju. Tā vietā PDF faili tiek apstrādāti kā lejupielādes, un lietotājs tos var atvērt noklusējuma lietojumprogrammā.
@@ -3051,6 +3108,11 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> noraidīšanas uzvednes aizliegšana</translation>
 <translation id="8976248126101463034">Gnubby autentifikācijas atļaušana attālās piekļuves saimniekdatoriem</translation>
 <translation id="8976531594979650914">Sistēmas noklusējuma printera izmantošana pēc noklusējuma</translation>
+<translation id="898520305112996948">Ļauj jums iestatīt to URL modeļu sarakstu, kas norāda, kurām vietnēm tiks automātiski piešķirta atļauja piekļūt USB ierīcei, izmantojot norādīto pakalpojumu sniedzēja un produkta ID. Lai politika būtu derīga, katrā saraksta vienumā jānorāda gan ierīces, gan URL modeļi. Katrs vienums ierīcēs var ietvert pakalpojumus sniedzēja ID un produkta ID lauku. Katrs izlaistais ID tiek uzskatīts par aizstājējzīmi, izņemot vienu gadījumu — produkta ID nevar norādīt, ja nav norādīts arī pakalpojumu sniedzēja ID. Pretējā gadījumā politika nebūs spēkā. Nederīgas politikas vērtības tiks ignorētas.
+
+        Ja politika netiks iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta); pretējā gadījumā tiks izmantota lietotāja personīgā konfigurācija.
+
+        Šajā politikā norādītie URL modeļi nedrīkst būt pretrunā ar modeļiem, kas konfigurēti politikā “WebUsbBlockedForUrls”. Ja rodas pretrunas, šai politikai ir lielāka prioritāte nekā politikām “WebUsbBlockedForUrls” un “WebUsbAskForUrls”.</translation>
 <translation id="8992176907758534924">Neatļaut nevienai vietnei rādīt attēlus</translation>
 <translation id="9012851181124311976">Ļauj konfigurēt uzņēmuma pieteikšanās vietrāžus URL (tikai HTTP un HTTPS shēmas). Šajos vietrāžos URL tiks tverts paroles ciparfails, lai noteiktu atkārtotu paroles lietošanu.
       Lai <ph name="PRODUCT_NAME" /> pareizi tvertu paroles ciparfailu, pieteikšanās lapām ir jāatbilst šīm vadlīnijām: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

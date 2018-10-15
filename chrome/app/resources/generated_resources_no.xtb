@@ -420,6 +420,7 @@
 <translation id="1611584202130317952">Leveringsflyten ble avbrutt. Prøv igjen, eller kontakt enhetseieren eller administratoren.</translation>
 <translation id="1611649489706141841">fremover</translation>
 <translation id="1611704746353331382">Eksportér bokmerker til HTML-fil</translation>
+<translation id="1614511179807650956">Du kan ha brukt opp mobildatakvoten din. Gå til aktiveringsportalen for <ph name="NAME" /> for å kjøpe mer data.</translation>
 <translation id="161460670679785907">Finner ikke telefonen din</translation>
 <translation id="1616206807336925449">Denne utvidelsen krever ingen spesielle tillatelser.</translation>
 <translation id="1616298854599875024">Kan ikke importere utvidelsen «<ph name="IMPORT_NAME" />», fordi den ikke er en delt modul</translation>
@@ -685,6 +686,7 @@
 <translation id="1999115740519098545">Ved oppstart</translation>
 <translation id="2000419248597011803">Sender noen informasjonskapsler og søk fra adressefeltet og søkefeltet samt noen informasjonskapsler til standardsøkemotoren din</translation>
 <translation id="2001796770603320721">Administrer i Disk</translation>
+<translation id="2003130567827682533">For å aktivere «<ph name="NAME" />»-dataene må du først koble til et Wi-Fi-nettverk</translation>
 <translation id="2004663115385769400">Kan ikke åpne med $1</translation>
 <translation id="200544492091181894">Du kan endre dette senere i innstillingene</translation>
 <translation id="2006638907958895361">Åpne linken i <ph name="APP" /></translation>
@@ -2481,6 +2483,7 @@
 <translation id="4821935166599369261">&amp;Profilering aktivert</translation>
 <translation id="4823484602432206655">lese og endre bruker- og enhetsinnstillinger</translation>
 <translation id="4823651846660089135">Enheten er skrivebeskyttet</translation>
+<translation id="4827675678516992122">Kan ikke koble til</translation>
 <translation id="4828937774870308359">Australsk</translation>
 <translation id="4829768588131278040">Konfigurer en PIN-kode</translation>
 <translation id="4830502475412647084">Installerer OS-oppdateringen</translation>
@@ -2739,6 +2742,7 @@
 <translation id="5209320130288484488">Finner ingen enheter</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtrykk</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
+<translation id="5213481667492808996">Datatjenesten «<ph name="NAME" />» er klar for bruk</translation>
 <translation id="5213891612754844763">Vis innstillingene for proxy-tjener</translation>
 <translation id="521582610500777512">Bildet er forkastet</translation>
 <translation id="5222676887888702881">Logg av</translation>

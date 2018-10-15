@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="101438888985615157">Pasukti ekraną 180 laipsnių kampu</translation>
+<translation id="1016912092715201525">Konfigūruojamos „<ph name="PRODUCT_NAME" />“ vykdomos numatytosios naršyklės patikros; naudotojams šio nustatymo keisti neleidžiama.
+
+      Jei įgalinsite šį nustatymą, paleidžiant „<ph name="PRODUCT_NAME" />“ visada tikrins, ar ji yra numatytoji naršyklė, ir, jei galima, automatiškai užsiregistruos.
+
+      Jei šis nustatymas bus išjungtas, „<ph name="PRODUCT_NAME" />“ niekada netikrins, ar ji yra numatytoji naršyklė, o naudotojams bus neleidžiama naudoti šios parinkties nustatymo valdiklių.
+
+      Nenustačius šio nustatymo „<ph name="PRODUCT_NAME" />“ leis naudotojui valdyti numatytosios naršyklės parinktis ir nurodyti, ar turi būti pateikti naudotojui skirti pranešimai, jei naršyklė nėra numatytoji.
+
+      Pastaba „<ph name="MS_WIN_NAME" />“ administratoriams: įgalinti šį nustatymą galima tik įrenginiuose, kuriuose veikia versija „Windows 7“. Jei įrenginyje įdiegta „Windows 8“ arba vėlesnė versija, turite pritaikyti „numatytųjų programų susiejimų“ failą, kuris paverčia „<ph name="PRODUCT_NAME" />“ protokolų <ph name="HHTPS_PROTOCOL" /> ir <ph name="HTTP_PROTOCOL" /> (ir pasirinktinai protokolo <ph name="FTP_PROTOCOL" /> bei failų formatų <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> ir kt.) dorokle. Jei reikia daugiau informacijos, žr. <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Energijos valdymas prisijungimo ekrane</translation>
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
@@ -64,6 +73,9 @@
       Galimų naudoti kintamųjų sąrašą rasite apsilankę adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Jei ši politika nenustatyta, bus naudojamas numatytasis talpyklos katalogas ir naudotojas galės jo nepaisyti naudodamas komandos eilutės žymą „--disk-cache-dir“.</translation>
+<translation id="113521240853905588">Konfigūruojamos kalbos, kurios gali būti naudojamos kaip pageidaujamos „<ph name="PRODUCT_OS_NAME" />“ kalbos.
+
+      Jei nustatyta ši politika, naudotojas prie pageidaujamų kalbų sąrašo gali pridėti tik vieną iš šioje politikoje nurodytų kalbų. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, naudotojas gali nurodyti bet kokias pageidaujamas kalbas. Jei ši politika nustatyta kaip sąrašas su netinkamomis vertėmis, visų netinkamų verčių nepaisoma. Jei naudotojas prie pageidaujamų kalbų sąrašo anksčiau pridėjo kalbų, kurios neleidžiamos pagal šią politiką, šios kalbos bus pašalintos. Jei naudotojas anksčiau sukonfigūravo, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikiama kalba, kuri nėra leidžiama pagal šią politiką, kitą kartą naudotojui prisijungus pateikties kalba bus pakeista į leidžiamą NS kalbą. Priešingu atveju „<ph name="PRODUCT_OS_NAME" />“ bus taikoma pagal šią politiką nustatyta pirmoji tinkama vertė arba bus perjungta į atsarginę lokalę (šiuo metu „en-US“), jei šioje politikoje yra tik netinkami įrašai.</translation>
 <translation id="1135264353752122851">Konfigūruojama, kurie klaviatūros išdėstymai leidžiami „<ph name="PRODUCT_OS_NAME" />“ naudotojų sesijoms.
 
       Jei ši politika nustatyta, naudotojas gali pasirinkti tik vieną iš šios politikos nurodytų įvesties metodų. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, naudotojas gali pasirinkti visus palaikomus įvesties metodus. Jei dabartinis įvesties metodas neleidžiamas pagal šią politiką, įvesties metodas bus perjungtas į aparatinės įrangos klaviatūros išdėstymą (jei leidžiama) arba pirmą tinkamą įrašą šiame sąraše. Visų netinkamų ar nepalaikomų įvesties metodų šiame sąraše bus nepaisoma.</translation>
@@ -716,6 +728,7 @@
 <translation id="2873651257716068683">Nepaisoma numatytojo spausdinamo puslapio dydžio. Jei puslapio dydis nepasiekiamas, šios politikos nepaisoma.</translation>
 <translation id="2874209944580848064">„<ph name="PRODUCT_OS_NAME" />“ įrenginiams, kuriuose palaikomos „Android“ programos, skirta pastaba:</translation>
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>
+<translation id="2890645751406497668">Šioms svetainėms automatiškai suteikiamas leidimas prisijungti prie nurodyto gamintojo USB įrenginių, turinčių nurodytus produkto ID.</translation>
 <translation id="2892414556511568464">Apribojamas spausdinimas dvipusiu režimu. Jei politika nenustatyta ar nenurodyta vertė, netaikomas joks apribojimas.</translation>
 <translation id="2893546967669465276">Sistemos žurnalų siuntimas valdymo serveriui</translation>
 <translation id="2899002520262095963">„Android“ programos gali naudoti šioje politikoje nustatytas tinklo konfigūracijas ir CA sertifikatus, bet negali pasiekti kai kurių konfigūravimo parinkčių.</translation>
@@ -914,6 +927,7 @@
 
       Nustačius šį nustatymą į „Išjungta“ arba nenustačius jokios vertės, „<ph name="PRODUCT_NAME" />“ nevykdo riboto režimo sistemoje „YouTube“. Taikant išorinę politiką, pvz., „YouTube“ politiką, ribotą režimą vis tiek gali reikėti vykdyti.</translation>
 <translation id="3428247105888806363">Įgalinti tinklo prognozę</translation>
+<translation id="3437924696598384725">Leidimas naudotojams tvarkyti VPN ryšius</translation>
 <translation id="3449886121729668969">Sukonfigūruojami „<ph name="PRODUCT_NAME" />“ tarpinio serverio nustatymai. Šie tarpinio serverio nustatymai bus pasiekiami ir ARC programoms.
 
       Ši politika dar neparengta naudoti, nenaudokite jos.</translation>
@@ -1077,6 +1091,7 @@
           „Google“ siūlomą URL galima nurodyti kaip: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
+<translation id="3864129983143201415">Naudotojo sesijoje leidžiamų kalbų konfigūravimas</translation>
 <translation id="3866249974567520381">Aprašas</translation>
 <translation id="3868347814555911633">Ši politika taikoma tik mažmeninės prekybos režimu.
 
@@ -1596,6 +1611,11 @@
 <translation id="5323128137188992869">Leidimas perduoti turinį į įrenginį naudojant „<ph name="PRODUCT_NAME" />“.
 
           Jei ši politika nustatyta kaip „False“ (netiesa), naudotojai negalės perduoti turinio į įrenginį. Jei ši politika nustatyta kaip „True“ (tiesa), naudotojai perduoti turinį galės. Jei ši politika nenustatyta, naudotojai negalės perduoti turinio į užregistruotus „Chrome“ OS įrenginius, bet galės perduoti į neužregistruotus įrenginius.</translation>
+<translation id="5329007337159326804">Įspėjimas: maks. TLS versijos politika bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ maždaug tada, kai bus pristatyta 75 versija (maždaug 2019 m. birželio mėn.).
+
+      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudoja numatytąją didžiausią versiją.
+
+      Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių nei nurodyta SSL / TLS versijų. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="5330684698007383292">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti šių tipų turinį</translation>
 <translation id="5365946944967967336">Rodyti įrankių juostoje pagrindinio puslapio mygtuką</translation>
 <translation id="5366745336748853475">Galima sudaryti URL šablonų sąrašą, nurodantį, kurioms svetainėms prisijungimo ekrane, kur rėmelyje priglobiama SAML eiga, automatiškai pasirenkamas kliento sertifikatas (jei svetainėje jo reikalaujama). Naudojimo pavyzdys – sukonfigūruoti įrenginio sertifikatą, kad jis būtų pateiktas „SAML IdP“ eigoje.
@@ -1625,6 +1645,15 @@
           Jei įgalintas šis nustatymas, fiziniai prieglobos įvesties ir išvesties įrenginiai išjungiami, kai bandoma prisijungti prie nuotolinio ryšio.
 
           Jei šis nustatymas išjungtas arba nenustatytas, vietiniai ir nuotoliniai naudotojai gali sąveikauti su priegloba, kai ji bendrinama.</translation>
+<translation id="5396049152026347991">Naudotojui leidžiama tvarkyti VPN ryšius.
+
+      Jei ši politika nustatyta kaip „false“, visos „<ph name="PRODUCT_NAME" />“ naudotojo sąsajos, leidžiančios naudotojui atjungti arba keisti VPN ryšius, yra išjungtos.
+
+      Jei ši politika nenustatyta arba nustatyta kaip „true“, naudotojai gali atjungti arba keisti VPN ryšius kaip įprastai.
+
+      Jei VPN ryšys sukurtas naudojant VPN programą, ši politika neturi įtakos programos NS. Todėl gali būti, kad naudotojas vis tiek galės keisti VPN ryšį naudodamas programą.
+
+      Ši politika skirta naudoti kartu su funkcija „Visada įjungtas VPN“, leidžiančia administratoriui užmegzti VPN ryšį paleidžiant sistemą.</translation>
 <translation id="5405289061476885481">Konfigūruojama, kokie klaviatūros išdėstymai leidžiami „<ph name="PRODUCT_OS_NAME" />“ prisijungimo ekrane.
 
       Jei ši politika nustatyta į įvesties metodo identifikatorių sąrašą, pateikti įvesties metodai bus pasiekiami prisijungimo ekrane. Pirmas pateiktas įvesties metodas bus pasirinktas iš anksto. Kai naudotojas yra prisijungimo ekrane, be pagal šią politiką pasiekiamų metodų, bus pasiekiamas ir paskutinis naudotas įvesties metodas. Jei ši politika nenustatyta, įvesties metodai prisijungimo ekrane bus nustatyti atsižvelgiant į lokalę, kuria pateikiamas prisijungimo ekranas. Bus nepaisoma verčių, kurios nėra galiojantys įvesties metodo identifikatoriai.</translation>
@@ -1710,6 +1739,11 @@
       Jei šis nustatymas išjungtas arba nesukonfigūruotas, naudotojai įrenginyje gali naudoti visų palaikomų tipų išorinę saugyklą.</translation>
 <translation id="5697306356229823047">Pateikti įrenginio naudotojų ataskaitą</translation>
 <translation id="570062449808736508">Kai bus nustatyta ne tuščia šios politikos eilutė, „WebView“ perskaitys URL apribojimus iš turinio teikėjo su nurodytu įstaigos pavadinimu.</translation>
+<translation id="5701714006401683963">Jei ši politika nustatyta kaip „false“, tvarkoma svečių sesija bus dokumentuojama adresu https://support.google.com/chrome/a/answer/3017014 kaip įprasta vieša sesija.
+
+      Jei ši politika nustatyta kaip „true“ arba nenustatyta, tvarkoma svečių sesija vyks kaip tvarkoma sesija; tai panaikins daugelį apribojimų, taikomų įprastoms viešoms sesijoms.
+
+      Jei ši politika nustatyta, naudotojas negali jos keisti ar nepaisyti.</translation>
 <translation id="5722934961007828462">Kai šis nustatymas bus įgalintas, „<ph name="PRODUCT_NAME" />“ visada atliks serverio sertifikatų, kurie galioja ir yra pasirašyti vietoje įdiegtų CA sertifikatų, panaikinimo tikrinimą.
 
       Jei „<ph name="PRODUCT_NAME" />“ nepavyksta gauti panaikinimo būsenos informacijos, tokie sertifikatai laikomi atšauktais („įrangos triktis“).
@@ -2091,6 +2125,13 @@
 <translation id="6786967369487349613">Nustatyti tarptinklinio ryšio profilio katalogą</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
 <translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
+<translation id="6816212867679667972">Nustatomas įrenginio, naudoto DHCP užklausose, prieglobos serverio pavadinimas.
+
+      Jei ši politika nustatyta kaip netuščia eilutė, ši eilutė bus naudojama kaip įrenginio prieglobos serverio pavadinimas pateikiant DHCP užklausą.
+
+      Eilutėje gali būti kintamųjų ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME}, kurie bus pakeisti įrenginio vertėmis, prieš naudojant juos kaip prieglobos serverio pavadinimą. Rodomas pakeitimas turi būti tinkamas prieglobos serverio pavadinimas (RFC 1035, 3.1 skiltis).
+
+      Jei ši politika nenustatyta arba po pakeitimo rodoma vertė nėra tinkamas prieglobos serverio pavadinimas, DHCP užklausoje nebus nustatytas joks prieglobos serverio pavadinimas. </translation>
 <translation id="6835883744948188639">Pasikartojančio raginimo, kuriame nurodoma, kad rekomenduojama paleisti iš naujo, rodymas naudotojui</translation>
 <translation id="6838056959556423778">Nepaisoma „<ph name="PRODUCT_NAME" />“ numatytojo spausdintuvo pasirinkimo taisyklių.
 
@@ -2386,6 +2427,22 @@
 
       Jei ši politika nenustatyta, automatinis išvalymas naudos numatytąją įdiegtą strategiją. Šiuo metu tai strategija „RemoveLRUIfDormant“.</translation>
 <translation id="7336878834592315572">Išsaugoti slapukus vykstant sesijai</translation>
+<translation id="7337967786223261174">Konfigūruojamas spausdintuvų sąrašas.
+
+      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
+      naudotojams.
+
+      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ naudojami, kad galutiniams naudotojams būtų lengviau identifikuoti spausdintuvą. Jie nurodo spausdintuvo gamintoją ir modelį. <ph name="PRINTER_URI" /> turėtų būti adresas, kurį galima pasiekti iš kliento kompiuterio, įskaitant <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ir <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> yra pasirenkamas. Jei nurodytas, jis naudojamas siekiant panaikinti pasikartojančius „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvus.
+
+      „<ph name="PRINTER_EFFECTIVE_MODEL" />“ turi atitikti vieną iš eilučių, nurodančių „<ph name="PRODUCT_NAME" />“ palaikomą spausdintuvą. Eilutė bus naudojama siekiant identifikuoti ir įdiegti tinkamą spausdintuvo PPD. Daugiau informacijos galima rasti adresu https://support.google.com/chrome?p=noncloudprint.
+
+      Spausdintuvo sąranka užbaigiama pirmą kartą naudojant spausdintuvą. PPD neatsisiunčiami, jei spausdintuvas nenaudojamas. Vėliau dažnai naudojami PPD saugomi talpykloje.
+
+      Ši politika neturi įtakos tam, ar naudotojai gali konfigūruoti spausdintuvus atskiruose įrenginiuose. Ji skirta papildyti atskirų naudotojų spausdintuvų konfigūraciją.
+
+      Jei naudojami „Active Directory“ tvarkomi įrenginiai, ši politika palaiko „Active Directory“ įrenginio pavadinimo „<ph name="MACHINE_NAME_VARIABLE" />“ arba jo poeilučio plėtinį. Pavyzdžiui, jei įrenginio pavadinimas yra „<ph name="MACHINE_NAME_EXAMPLE" />“, tada „<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />“ turėtų būti pakeistas 4 simboliais nuo 6-osios pozicijos, pvz., „<ph name="MACHINE_NAME_PART_EXAMPLE" />“. Atminkite, kad pozicija nustatoma nuo nulio.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (mažosios raidės) ši politika nebenaudojama M71 ir bus pašalinta iš M72.
+      </translation>
 <translation id="7340034977315324840">Pranešti įrenginio veiklos laiką</translation>
 <translation id="7343497214039883642">Įrenginiams skirtas įmonės spausdintuvų konfigūracijos failas</translation>
 <translation id="7349338075015720646">Nurodomas svetainių, įdiegtų automatiškai, naudotojui neatliekant jokių veiksmų, sąrašas. Naudotojas negali jų nei išdiegti, nei išjungti.
@@ -2811,6 +2868,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8359734107661430198">Įgalinkite „ExampleDeprecatedFeature“ API iki 2008-09-02</translation>
 <translation id="8367209241899435947">„Chrome“ valymo įrankio įgalinimas sistemoje „Windows“</translation>
 <translation id="8369602308428138533">Ekrano išjungimo delsa, kai naudojama kintamosios srovės energija</translation>
+<translation id="8371178326720637170">Tvarkomi plėtiniai įgalinami naudoti įmonės aparatinės įrangos platformos API</translation>
 <translation id="8382184662529825177">Įgalinti nuotolinio patvirtinimo naudojimą siekiant apsaugoti įrenginio turinį</translation>
 <translation id="838870586332499308">Įgalinti duomenų tarptinklinį ryšį</translation>
 <translation id="8390049129576938611">Išjungiama vidinė PDF peržiūros priemonė „<ph name="PRODUCT_NAME" />“. Failai laikomi atsisiuntimu ir naudotojui leidžiama atidaryti PDF failus naudojant numatytąją programą.
@@ -3087,6 +3145,11 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8970205333161758602">Nerodyti „<ph name="PRODUCT_FRAME_NAME" />“ išjungimo paraginimo</translation>
 <translation id="8976248126101463034">Leidžiamas nuotolinės prieigos prieglobos serverių „Gnubby“ autentifikavimas</translation>
 <translation id="8976531594979650914">Naudoti sistemos numatytąjį spausdintuvą kaip numatytąjį nustatymą</translation>
+<translation id="898520305112996948">Leidžiama nustatyti URL šablonus, nurodančius, kurioms svetainėms bus automatiškai suteikiamas leidimas pasiekti nurodyto gamintojo USB įrenginį, turintį nurodytą produkto ID. Kad politika galiotų, kiekviename sąraše esančiame elemente turi būti įrenginių ir URL šablonai. Kiekvienas įrenginiuose esantis elementas gali turėti pardavėjo ID ir produkto ID lauką. Kiekvienas nenurodytas ID laikomas pakaitos simboliu su viena išimtimi – produkto ID negali būti nurodytas, jei nenurodytas pardavėjo ID. Priešingu atveju politika negalios. Negaliojančių politikų nepaisoma.
+
+        Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).
+
+        Šios politikos URL šablonai negali būti nesuderinami su tais, kurie sukonfigūruoti naudojant „WebUsbBlockedForUrls“. Jei jie nesuderinami, šiai politikai teikiama pirmenybė prieš „WebUsbBlockedForUrls“ ir „WebUsbAskForUrls“.</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
 <translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio piršto antspaudas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
       Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų slaptažodžių kontrolinius kodus, įsitikinkite, kad prisijungimo puslapiuose laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

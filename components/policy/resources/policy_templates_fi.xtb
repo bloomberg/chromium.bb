@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="101438888985615157">Kierrä näyttöä 180 astetta.</translation>
+<translation id="1016912092715201525">Määrittää oletusselaimen tarkistukset (<ph name="PRODUCT_NAME" />) ja estää käyttäjiä muuttamasta niitä.
+
+      Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> tarkistaa aina käynnistettäessä, onko se oletusselain, ja rekisteröi itsensä automaattisesti, jos mahdollista.
+
+      Jos tämä asetus on pois käytöstä, <ph name="PRODUCT_NAME" /> ei koskaan tarkista, onko se oletusselain eikä anna käyttäjän muuttaa asetusta.
+
+      Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> antaa käyttäjän valita, onko se oletusselain ja näytetäänkö käyttäjälle ilmoitus, jos tuote ei ole oletusselain.
+
+      Huomautus <ph name="MS_WIN_NAME" /> ‑järjestelmänvalvojille: Tämän asetuksen käyttöönotto on mahdollista vain Windows 7 ‑koneilla. Windows 8:ssa ja myöhemmissä Windows-versioissa sinun on luotava oletusarvoiset sovellusyhteydet ‑tiedosto, jossa <ph name="PRODUCT_NAME" /> määritetään <ph name="HHTPS_PROTOCOL" />- ja <ph name="HTTP_PROTOCOL" /> ‑protokollien käsittelijäksi (sekä valinnaisesti myös <ph name="FTP_PROTOCOL" /> ‑protokollan ja tiedostomuotojen <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> jne. käsittelijäksi). Lue lisää osoitteesta <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Virran hallinta kirjautumisruudulla</translation>
 <translation id="1019101089073227242">Aseta käyttäjätietojen hakemisto</translation>
 <translation id="1022361784792428773">Niiden laajennuksien tunnukset, joita käyttäjä ei saa asentaa (tai * = kaikki).</translation>
@@ -64,6 +73,9 @@
       Katso mahdollisten muuttujien luettelo osoitteesta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Jos tätä käytäntöä ei määritetä, välimuistin oletushakemistoa käytetään ja käyttäjä voi ohittaa tämän antamalla komentorivillä komennon --disk-cache-dir.</translation>
+<translation id="113521240853905588">Määrittää kielet, joita <ph name="PRODUCT_OS_NAME" /> voi käyttää ensisijaisina kielinä.
+
+      Jos tämä käytäntö on määritetty, käyttäjä voi lisätä vain tässä luettelossa olevia kieliä ensisijaisten kielten luetteloon. Jos sitä ei ole määritetty tai sen arvo on tyhjä luettelo, mitä tahansa kieliä voidaan valita ensisijaisiksi. Jos käytännön arvona olevassa luettelossa on virheellisiä arvoja, ne ohitetaan. Jos käyttäjä on aiemmin lisännyt ensisijaisia kieliä, joita tämä käytäntö ei salli, kielet poistetaan. Jos käyttäjä valitsi aiemmin, että <ph name="PRODUCT_OS_NAME" /> näytetään kielellä, jota tämä käytäntö ei salli, näyttökieli vaihdetaan sallituksi käyttöliittymäkieleksi käyttäjän seuraavan kirjautumisen yhteydessä. Muuten <ph name="PRODUCT_OS_NAME" /> ottaa käyttöön ensimmäisen käytännössä mainitun, oikein merkityn kielen tai varakielen (tällä hetkellä amerikanenglanti), jos käytännössä on vain virheellisiä kohteita.</translation>
 <translation id="1135264353752122851">Määrittää näppäimistöasettelut, joiden käytön <ph name="PRODUCT_OS_NAME" /> sallii käyttökerroissa.
 
       Jos tämä käytäntö on määritetty, käyttäjä voi valita vain yhden käytännössä määritetyn syöttötavan. Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä luettelo, käyttäjä voi valita kaikki tuetut syöttötavat. Jos käytäntö ei salli nykyistä syöttötapaa, syöttötavaksi vaihdetaan laitteiston näppäimistöasettelu (jos mahdollista) tai luettelon ensimmäinen kelvollinen kohta. Luettelon kaikki kelpaamattomat tai tukemattomat syöttötavat ohitetaan.</translation>
@@ -693,6 +705,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="2873651257716068683">Ohittaa tulostuksen oletussivukoon. Jos sivun koko ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="2874209944580848064">Huomioitavaa, jos laitteesi käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja tukee Android-sovelluksia:</translation>
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
+<translation id="2890645751406497668">Anna näille sivustoille automaattisesti lupa yhdistää USB-laitteisiin, joilla on tietyt myyjän ja tuotteen tunnukset.</translation>
 <translation id="2892414556511568464">Rajoittaa kaksipuolisen tulostuksen tilaa. Määrittämätön käytäntö ja tyhjä asetus tulkitaan rajoituksen puuttumiseksi.</translation>
 <translation id="2893546967669465276">Lähetä järjestelmälokeja hallintapalvelimelle</translation>
 <translation id="2899002520262095963">Android-sovellukset voivat käyttää tämän käytännön kautta asetettuja verkkomäärityksiä ja CA-varmenteita, mutta ne eivät voi käyttää joitain määritysasetuksia.</translation>
@@ -887,6 +900,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> ei pakota rajoitettua tilaa YouTubessa. Ulkoiset käytännöt, esim. YouTuben omat käytännöt, voivat silti pakottaa rajoitetun tilan.</translation>
 <translation id="3428247105888806363">Ota verkkojen esilataus käyttöön</translation>
+<translation id="3437924696598384725">Anna käyttäjän määrittää VPN-yhteyksiä.</translation>
 <translation id="3449886121729668969">Tämä käytäntö määrittää välityspalvelinasetukset, joita <ph name="PRODUCT_NAME" /> käyttää. Myös ARC-sovellukset voivat käyttää näitä välityspalvelinasetuksia.
 
       Tämä käytäntö ei ole vielä valmis käyttöön – älä käytä sitä.</translation>
@@ -1048,6 +1062,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Googlen ehdotus-URL-osoitteen voi antaa muodossa <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Tämä käytäntö toteutetaan vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="3864129983143201415">Määritä käyttökerran hyväksytyt kielet.</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="3868347814555911633">Tämä käytäntö toimii vain myyntitilassa.
 
@@ -1541,6 +1556,11 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="5323128137188992869">Määritä, onko <ph name="PRODUCT_NAME" /> käytettävissä sisällön suoratoistamiseen laitteeseen.
 
           Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi suoratoistaa sisältöä laitteeseen. Jos arvo on tosi, käyttäjät saavat suoratoistaa sisältöä. Jos tätä käytäntöä ei ole määritetty, käyttäjät eivät voi suoratoistaa sisältöä rekisteröityihin Chrome-käyttöjärjestelmää käyttäviin laitteisiin, mutta he voivat suoratoistaa sisältöä rekisteröimättömiin laitteisiin.</translation>
+<translation id="5329007337159326804">Varoitus: <ph name="PRODUCT_NAME" /> ei enää tue uusimman TLS-version käytäntöä versiosta 75 (arviolta kesäkuusta 2019) eteenpäin.
+
+      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena uusinta versiota.
+
+      Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1.2 tai tls1.3. Jos arvo on toinen näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa uudempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
 <translation id="5330684698007383292">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä seuraavia sisältötyyppejä</translation>
 <translation id="5365946944967967336">Näytä etusivupainike työkalupalkissa</translation>
 <translation id="5366745336748853475">Antaa määrittää URL-osoitemallien luettelon, jota vastaaville sivustoille valitaan kirjautumisnäytöltä automaattisesti käyttöoikeusvarmenne SAML-työnkulkua isännöivässä kehyksessä, jos sivusto pyytää varmennetta. Tätä voidaan käyttää esimerkiksi niin, että määritetään laitteen laajuinen varmenne, joka näytetään SAML-tunnistuspalvelulle.
@@ -1568,6 +1588,15 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
           Jos tämä asetus on käytössä, isännän tulo- ja lähtölaitteet poistetaan käytöstä, kun etäyhteys on muodostettu.
 
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, paikalliset ja etäkäyttäjät voivat olla vuorovaikutuksessa isännän kanssa, kun se jaetaan.</translation>
+<translation id="5396049152026347991">Antaa käyttäjän määrittää VPN-yhteyksiä.
+
+      Jos tämän käytännön arvo on Epätosi, kaikki <ph name="PRODUCT_NAME" /> ‑käyttöliittymät, joissa käyttäjä voisi katkaista VPN-yhteyden tai muokata sitä, poistetaan käytöstä.
+
+      Jos tämän käytännön arvo on Tosi tai sillä ei ole arvoa, käyttäjät voivat katkaista VPN-yhteyksiä tai muokata niitä normaalisti.
+
+      Jos VPN-yhteys luodaan VPN-sovelluksella, tämä käytäntö ei vaikuta sovelluksen sisäiseen käyttöliittymään. Käyttäjä voi siis ehkä edelleen muokata VPN-yhteyksiä sovelluksessa.
+
+      Käytäntöä on tarkoitus käyttää yhdessä Aina käytössä oleva VPN ‑ominaisuuden kanssa. Sillä ylläpitäjä voi valita VPN-yhteyden muodostamisen käynnistämisen yhteydessä.</translation>
 <translation id="5405289061476885481">Määrittää näppäimistöasettelut, joiden käytön <ph name="PRODUCT_OS_NAME" /> sallii kirjautumisnäytöllä.
 
       Jos tämän käytännön arvo on syöttötapojen tunnusten luettelo, luettelossa olevat syöttötavat ovat käytettävissä kirjautumisnäytöllä. Oletuksena valittuna on luettelon ensimmäinen syöttötapa. Kun kohdistus on käyttäjän tiedoissa kirjautumisnäytöllä, käyttäjän viimeksi käyttämä syöttötapa on käytettävissä tässä käytännössä määritettyjen syöttötapojen lisäksi. Jos tätä käytäntöä ei ole määritetty, syöttötavat päätellään kirjautumisnäytön kieli- ja maa-asetuksen perusteella. Jos arvo ei ole kelvollinen syöttötavan tunnus, se ohitetaan.</translation>
@@ -1648,6 +1677,11 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
       Jos asetus on poistettu käytöstä tai sitä ei ole määritetty, käyttäjät voivat käyttää laitteellaan kaikkia tuettuja ulkoisia tallennustilatyyppejä.</translation>
 <translation id="5697306356229823047">Raportoi laitteen käyttäjistä</translation>
 <translation id="570062449808736508">Kun tämän käytännön arvoksi asetetaan muu kuin tyhjä merkkijono, WebView lukee URL-osoiterajoitukset sisällöntarjoajalta, joka vastaa annettua merkkijonoa.</translation>
+<translation id="5701714006401683963">Jos tämän käytännön arvo on Epätosi, hallinnoidut vierailijakäyttökerrat toimivat kuten tavalliset julkiset käyttökerrat, joista kerrotaan artikkelissa https://support.google.com/chrome/a/answer/3017014.
+
+      Jos tämän käytännön arvo on Tosi tai sitä ei määritetä, hallinnoituja vierailijakäyttökertoja käsitellään hallinnoitujen käyttökertojen sääntöjen mukaisesti, jolloin monet julkisia käyttökertoja koskevat rajoitukset poistetaan.
+
+      Jos tämä käytäntö on määritetty, käyttäjä ei voi muuttaa tai ohittaa sitä.</translation>
 <translation id="5722934961007828462">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> tarkistaa aina, onko paikallisesti asennetuilla CA-varmenteilla allekirjoitetut ja todennetut palvelinvarmenteet peruutettu.
 
       Jos <ph name="PRODUCT_NAME" /> ei saa peruuttamistietoja, varmenteet katsotaan peruutetuiksi.
@@ -2016,6 +2050,13 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
+<translation id="6816212867679667972">Määrittää DHCP-pyynnöissä käytetyn laitteen isäntänimen.
+
+      Jos tämän käytännön arvo on muu kuin tyhjä merkkijono, merkkijonoa käytetään DHCP-pyynnössä laitteen isäntänimenä.
+
+      Merkkijono voi sisältää muuttujat ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} ja ${MACHINE_NAME} jotka korvataan laitteen arvoilla ennen isäntänimenä käyttöä. Kun muuttujat korvataan arvoilla, tuloksena pitäisi olla kelvollinen isäntänimi (RFC 1035, osio 3.1).
+
+      Jos käytäntöä ei ole määritetty tai jos korvaamisen jälkeinen arvo ei ole kelvollinen isäntänimi, DHCP-pyynnölle ei määritetä isäntänimeä. </translation>
 <translation id="6835883744948188639">Näytä käyttäjälle toistuva kehote suositellusta uudelleenkäynnistyksestä</translation>
 <translation id="6838056959556423778">Ohittaa tuotteen <ph name="PRODUCT_NAME" /> oletustulostimen valinnan säännöt.
 
@@ -2295,6 +2336,21 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
+<translation id="7337967786223261174">Määrittää tulostinluettelon.
+
+      Tämän käytännön avulla järjestelmänvalvojat voivat määrittää tulostinasetuksia käyttäjiä varten.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> ovat vapaamuotoisia merkkijonoja, joita voidaan muokata tulostimen valinnan helpottamiseksi. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> auttavat käyttäjiä tunnistamaan tulostimet. Ne vastaavat tulostimen valmistajaa ja mallia. Määritä kohteen <ph name="PRINTER_URI" /> arvoksi osoite, joka on käytettävissä asiakastietokoneelta ja johon sisältyvät <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valinnainen arvo. Sen tarkoituksena on auttaa <ph name="ZEROCONF_DISCOVERY" /> ‑tulostinkopioiden poistamisessa.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> on oltava sama kuin jokin <ph name="PRODUCT_NAME" /> ‑yhteensopivia tulostimia edustavista merkkijonoista. Merkkijonoa käytetään oikean PPD:n tunnistamiseen ja asentamiseen tulostinta varten. Saat lisätietoja osoitteesta https://support.google.com/chrome?p=noncloudprint.
+
+      Tulostin määritetään sen ensimmäisen käyttökerran yhteydessä. PPD:t ladataan vasta, kun tulostinta käytetään. Tämän jälkeen PPD:t tallennetaan välimuistiin, jos niitä käytetään usein.
+
+      Tämä käytäntö ei vaikuta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tekemien tulostinmääritysten lisäksi.
+
+      Jos laitetta hallinnoidaan Active Directoryn avulla, tämä käytäntö sallii, että <ph name="MACHINE_NAME_VARIABLE" /> liitetään Active Directory ‑koneen nimeen tai sen alimerkkijonoon. Jos koneen nimi on esimerkiksi <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> korvattaisiin kuudennetta kohtaa seuraavilla neljällä merkillä: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Huomaa, että kohtien laskeminen aloitetaan nollasta.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (pienet kirjaimet) poistuu käytöstä versiossa M71 ja poistuu kokonaan versiossa M72.
+      </translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
 <translation id="7343497214039883642">Yritystulostimen määritystiedosto laitteille</translation>
 <translation id="7349338075015720646">Määrittää listan verkkosivustoja, jotka asennetaan hiljaisesti, ilman käyttäjän toimia, ja joita käyttäjä ei voi poistaa käytöstä eikä poistaa kokonaan.
@@ -2709,6 +2765,7 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8359734107661430198">Ota käyttöön ExampleDeprecatedFeature-sovellusliittymä 2.9.2008 saakka</translation>
 <translation id="8367209241899435947">Salli Chrome Cleanup Windowsissa</translation>
 <translation id="8369602308428138533">Ruudun sammutuksen viive käytettäessä laitetta verkkovirralla</translation>
+<translation id="8371178326720637170">Antaa hallinnoitujen laajennusten käyttää Enterprise Hardware Platform ‑sovellusliittymää.</translation>
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
 <translation id="8390049129576938611">Poista käytöstä tuotteen <ph name="PRODUCT_NAME" /> sisäinen PDF-katseluohjelma. Tuote kohtelee PDF-tiedostoja latauksina ja sallii niiden avaamisen käyttäjän valitsemalla oletussovelluksella.
@@ -2974,6 +3031,11 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="8970205333161758602">Torju tuotteen <ph name="PRODUCT_FRAME_NAME" /> hylkäyspyyntö</translation>
 <translation id="8976248126101463034">Salli etäkäytön isäntien gnubby-todennus</translation>
 <translation id="8976531594979650914">Käytä oletuksena järjestelmän oletustulostinta</translation>
+<translation id="898520305112996948">Voit määrittää luettelon URL-osoitemalleja, joiden määrittämät sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
+
+        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
+
+        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbAskForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.</translation>
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>
 <translation id="9012851181124311976">Määritä yrityksen kirjautumisen URL-osoitteiden (vain HTTP ja HTTPS) luettelo. Salasanan tunnistetiedosto tallennetaan näihin URL-osoitteisiin, ja sitä käytetään salasanojen uudelleenkäytön tunnistamiseen.
       Jotta <ph name="PRODUCT_NAME" /> tallentaa salasanojen tunnistetiedostot oikein, varmista että kirjautumissivut noudattavat ohjeita osoitteessa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
