@@ -39,10 +39,9 @@ var util = (function() {
     }
 
     var date = new Date(timeMillis);
-    return pad(date.getUTCHours(), 2) + ':' +
-           pad(date.getUTCMinutes(), 2) + ':' +
-           pad(date.getUTCSeconds(), 2) + '.' +
-           pad((date.getMilliseconds()) % 1000, 3);
+    return pad(date.getUTCHours(), 2) + ':' + pad(date.getUTCMinutes(), 2) +
+        ':' + pad(date.getUTCSeconds(), 2) + '.' +
+        pad((date.getMilliseconds()) % 1000, 3);
   };
 
   return util;
