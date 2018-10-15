@@ -58,7 +58,30 @@ Polymer({
   behaviors: [
     UiPageContainerBehavior,
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener(
+        'multidevice_setup.initializeSetupFlow',
+        this.initializeSetupFlow_.bind(this));
+  },
+
+  /** @private */
+  initializeSetupFlow_: function() {
+    // The "Learn More" links are inside a grdp string, so we cannot actually
+    // add an onclick handler directly to the html. Instead, grab the two and
+    // manaully add onclick handlers.
+    let helpArticleLinks = [
+      this.$$('#multidevice-summary-message a'),
+      this.$$('#awm-summary-message a')
+    ];
+    for (let i = 0; i < helpArticleLinks.length; i++) {
+      helpArticleLinks[i].onclick = this.fire.bind(
+          this, 'open-learn-more-webview-requested', helpArticleLinks[i].href);
+    }
+  },
 
   /**
    * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices

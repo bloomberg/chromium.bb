@@ -50,7 +50,7 @@ cr.define('multidevice_setup', function() {
   const MultiDeviceSetupFirstRun = Polymer({
     is: 'multidevice-setup-first-run',
 
-    behaviors: [WebUIListenerBehavior],
+    behaviors: [I18nBehavior, WebUIListenerBehavior],
 
     properties: {
       /** @private {!multidevice_setup.MultiDeviceSetupDelegate} */
@@ -82,6 +82,25 @@ cr.define('multidevice_setup', function() {
         type: String,
         value: '',
       },
+
+      /** Whether the webview overlay should be hidden. */
+      webviewOverlayHidden_: {
+        type: Boolean,
+        value: true,
+      },
+
+      /**
+       * URL for the webview to display.
+       * @private {string|undefined}
+       */
+      webviewSrc_: {
+        type: String,
+        value: '',
+      },
+    },
+
+    listeners: {
+      'open-learn-more-webview-requested': 'onOpenLearnMoreWebviewRequested_',
     },
 
     /** @override */
@@ -99,7 +118,38 @@ cr.define('multidevice_setup', function() {
     /** @private */
     onExitRequested_: function() {
       chrome.send('login.MultiDeviceSetupScreen.userActed', ['setup-finished']);
-    }
+    },
+
+    /**
+     * @param {boolean} shouldShow
+     * @param {string=} opt_url
+     * @private
+     */
+    setWebviewOverlayVisibility_: function(shouldShow, opt_url) {
+      if (opt_url) {
+        this.webviewSrc_ = opt_url;
+      }
+      this.webviewOverlayHidden_ = !shouldShow;
+    },
+
+    /** @private */
+    hideWebviewOverlay_: function() {
+      this.setWebviewOverlayVisibility_(false /* shouldShow */);
+    },
+
+    /**
+     * @param {!{detail: string}} event
+     * @private
+     */
+    onOpenLearnMoreWebviewRequested_: function(event) {
+      this.setWebviewOverlayVisibility_(
+          true /* shouldShow */, event.detail /* url */);
+    },
+
+    /** @private */
+    getOverlayCloseTopTitle_: function() {
+      return this.i18n('arcOverlayClose');
+    },
   });
 
   return {
