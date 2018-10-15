@@ -33,16 +33,19 @@ enum AudioOutputState {
 
 class CastAudioManager;
 
-// Chromecast implementation of AudioOutputStream that forwards to CMA backend.
+// Chromecast implementation of AudioOutputStream.
+// This class forwards to MixerService if Direct Audio is available for
+// a lower latency audio playback (using MixerServiceWrapper), otherwise
+// it forwards to CMA backend (using CmaWrapper).
 //
-// This class lives inside two threads:
+// In either case, involved components live on two threads:
 // 1. Audio thread
 //    |CastAudioOutputStream|
 //    Where the object gets construction from AudioManager.
 //    How the object gets controlled from AudioManager.
-// 2. Media thread
-//    |CastAudioOutputStream::CmaWrapper|
-//    All CMA logic lives in this thread.
+// 2. Media thread or an IO thread opened within |AudioOutputStream|.
+//    |CastAudioOutputStream::CmaWrapper| or |MixerServiceWrapper| lives on
+//    this thread.
 //
 // The interface between AudioManager and AudioOutputStream is synchronous, so
 // in order to allow asynchronous thread hops, we:
@@ -51,8 +54,10 @@ class CastAudioManager;
 //
 // The individual thread states should nearly always be the same. The only time
 // they are expected to be different is when the audio thread has executed a
-// task and posted to the media thread, but the media thread has not executed
-// yet.
+// task and posted to the media thread/IO thread, but the media thread has not
+// executed yet.
+//
+// The below illustrates the case when CMA backend is used for playback.
 //
 //  Audio Thread |CAOS|                         Media Thread |CmaWrapper|
 //  ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯                         ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -76,9 +81,17 @@ class CastAudioManager;
 //      |
 //      v
 //   ( released)
-//
 // *  Initial states.
 // ** Final states.
+//
+// When MixerService is used in place of CMA backend, the state transition is
+// similar but a little simpler.
+// MixerServiceWrapper creates a new MixerServiceConnection at Start() and
+// destroys the MixerServiceConnection at Stop(). When the volume is adjusted
+// between a Stop() and the next Start(), the volume is recorded and then
+// applied to MixerServiceConnection after the MixerServiceConnection is
+// established on the Start() call.
+
 class CastAudioOutputStream : public ::media::AudioOutputStream {
  public:
   CastAudioOutputStream(CastAudioManager* audio_manager,
@@ -96,6 +109,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
 
  private:
   class CmaWrapper;
+  class MixerServiceWrapper;
 
   void FinishClose();
   void OnGetMultiroomInfo(const std::string& application_session_id,
@@ -110,6 +124,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   const ::media::AudioParameters audio_params_;
   chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
   std::unique_ptr<CmaWrapper> cma_wrapper_;
+  std::unique_ptr<MixerServiceWrapper> mixer_service_wrapper_;
 
   // Hold bindings to Start and SetVolume if they were called before Open
   // completed. After initialization has finished, these bindings will be
