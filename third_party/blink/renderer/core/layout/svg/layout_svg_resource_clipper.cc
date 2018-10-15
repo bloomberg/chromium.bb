@@ -238,7 +238,7 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
     const FloatRect& object_bounding_box,
     const FloatPoint& node_at_point) {
   FloatPoint point = node_at_point;
-  if (!SVGLayoutSupport::PointInClippingArea(*this, point))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, point))
     return false;
 
   AffineTransform user_space_transform =

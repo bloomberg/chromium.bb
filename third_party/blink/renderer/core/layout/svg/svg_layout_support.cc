@@ -410,8 +410,8 @@ bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
   return resources && resources->Filter();
 }
 
-bool SVGLayoutSupport::PointInClippingArea(const LayoutObject& object,
-                                           const FloatPoint& point) {
+bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
+                                          const FloatPoint& point) {
   ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
   if (!clip_path_operation)
     return true;
@@ -438,7 +438,7 @@ const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
   // HitTestLocation objects or inverse AffineTransforms, and performs no
   // matrix multiplies.
   if (local_transform.IsIdentity()) {
-    if (PointInClippingArea(object, location_in_parent.TransformedPoint()))
+    if (IntersectsClipPath(object, location_in_parent.TransformedPoint()))
       return &location_in_parent;
     return nullptr;
   }
@@ -454,7 +454,7 @@ const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
         inverse.MapPoint(location_in_parent.TransformedPoint())));
   }
 
-  if (PointInClippingArea(object, local_storage->TransformedPoint()))
+  if (IntersectsClipPath(object, local_storage->TransformedPoint()))
     return &*local_storage;
   return nullptr;
 }
