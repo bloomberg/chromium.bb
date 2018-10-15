@@ -180,31 +180,31 @@ PASS meter.hidden: 33 tests
 PASS meter.accessKey: 32 tests
 PASS meter.tabIndex: 24 tests
 PASS meter.value: 2 tests
-NOTRUN test
+FAIL meter.value: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
 PASS meter.value: 4 tests
-NOTRUN test
+FAIL meter.value: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
 PASS meter.min: 2 tests
-NOTRUN test
+FAIL meter.min: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
 PASS meter.min: 4 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
+FAIL meter.min: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.max: typeof IDL attribute
+FAIL meter.max: IDL get with DOM attribute unset assert_equals: expected 0 but got 1
+FAIL meter.max: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
 PASS meter.max: 4 tests
-NOTRUN test
+FAIL meter.max: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
 PASS meter.low: 2 tests
-NOTRUN test
+FAIL meter.low: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
 PASS meter.low: 4 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
+FAIL meter.low: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.high: typeof IDL attribute
+FAIL meter.high: IDL get with DOM attribute unset assert_equals: expected 0 but got 1
+FAIL meter.high: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
 PASS meter.high: 4 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
+FAIL meter.high: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.optimum: typeof IDL attribute
+FAIL meter.optimum: IDL get with DOM attribute unset assert_equals: expected 0 but got 0.5
+FAIL meter.optimum: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
 PASS meter.optimum: 4 tests
-NOTRUN test
+FAIL meter.optimum: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
 Harness: the test ran to completion.
 
