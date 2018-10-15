@@ -33,7 +33,8 @@ enum class SimpleCacheConsistencyResult {
   kUpgradeIndexV5V6Failed = 7,
   kWriteFakeIndexFileFailed = 8,
   kReplaceFileFailed = 9,
-  kMaxValue = kReplaceFileFailed,
+  kBadFakeIndexReadSize = 10,
+  kMaxValue = kBadFakeIndexReadSize,
 };
 
 // Performs all necessary disk IO to upgrade the cache structure if it is

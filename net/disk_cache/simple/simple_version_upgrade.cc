@@ -142,9 +142,12 @@ SimpleCacheConsistencyResult UpgradeSimpleCacheOnDisk(
 
   if (!fake_index_file.IsValid()) {
     if (fake_index_file.error_details() == base::File::FILE_ERROR_NOT_FOUND) {
-      return WriteFakeIndexFile(fake_index)
-                 ? SimpleCacheConsistencyResult::kOK
-                 : SimpleCacheConsistencyResult::kWriteFakeIndexFileFailed;
+      if (!WriteFakeIndexFile(fake_index)) {
+        base::DeleteFile(fake_index, /* recursive = */ false);
+        LOG(ERROR) << "Failed to write a new fake index.";
+        return SimpleCacheConsistencyResult::kWriteFakeIndexFileFailed;
+      }
+      return SimpleCacheConsistencyResult::kOK;
     }
     return SimpleCacheConsistencyResult::kBadFakeIndexFile;
   }
@@ -153,10 +156,13 @@ SimpleCacheConsistencyResult UpgradeSimpleCacheOnDisk(
   int bytes_read = fake_index_file.Read(0,
                                         reinterpret_cast<char*>(&file_header),
                                         sizeof(file_header));
-  if (bytes_read != sizeof(file_header) ||
-      file_header.initial_magic_number !=
-          disk_cache::simplecache_v5::kSimpleInitialMagicNumber) {
-    LOG(ERROR) << "File structure does not match the disk cache backend.";
+  if (bytes_read != sizeof(file_header)) {
+    LOG(ERROR) << "Disk cache backend fake index file has wrong size.";
+    return SimpleCacheConsistencyResult::kBadFakeIndexReadSize;
+  }
+  if (file_header.initial_magic_number !=
+      disk_cache::simplecache_v5::kSimpleInitialMagicNumber) {
+    LOG(ERROR) << "Disk cache backend fake index file has wrong magic number.";
     return SimpleCacheConsistencyResult::kBadInitialMagicNumber;
   }
   fake_index_file.Close();
