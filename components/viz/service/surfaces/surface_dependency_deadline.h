@@ -36,12 +36,6 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyDeadline : public BeginFrameObserver {
   // deadline set, then return base::nullopt.
   base::Optional<base::TimeDelta> Cancel();
 
-  // If a deadline had been set, then cancel the deadline and don't
-  // generate a UMA report. When a surface activation has been throttled
-  // then the time to activation could be arbitrarily delayed and may
-  // skew metrics.
-  void CancelWithoutReport();
-
   bool has_deadline() const { return deadline_.has_value(); }
 
   base::Optional<base::TimeTicks> deadline_for_testing() const {

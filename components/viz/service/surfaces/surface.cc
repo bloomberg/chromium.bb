@@ -198,11 +198,6 @@ void Surface::OnSurfaceDependencyAdded() {
 
   DCHECK(frame_sink_id_dependencies_.empty());
 
-  // Cancel the deadline and don't report UMA. The UMA metrics are only
-  // meaningful for activation dependencies and not throttling.
-  deadline_->CancelWithoutReport();
-  DCHECK(!deadline_->has_deadline());
-
   // All blockers have been cleared. The surface can be activated now.
   ActivatePendingFrame(base::nullopt);
 }
