@@ -298,9 +298,8 @@ class CORE_EXPORT HTMLMediaElement
   enum InvalidURLAction { kDoNothing, kComplain };
   bool IsSafeToLoadURL(const KURL&, InvalidURLAction);
 
-  // Checks to see if current media data is CORS-same-origin as the
-  // specified origin.
-  bool IsMediaDataCORSSameOrigin(const SecurityOrigin*) const;
+  // Checks to see if current media data is CORS-same-origin.
+  bool IsMediaDataCORSSameOrigin() const;
 
   // Returns this media element is in a cross-origin frame.
   bool IsInCrossOriginFrame() const;

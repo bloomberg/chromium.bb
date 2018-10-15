@@ -582,9 +582,8 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   return snapshot;
 }
 
-bool HTMLVideoElement::WouldTaintOrigin(
-    const SecurityOrigin* destination_security_origin) const {
-  return !IsMediaDataCORSSameOrigin(destination_security_origin);
+bool HTMLVideoElement::WouldTaintOrigin(const SecurityOrigin*) const {
+  return !IsMediaDataCORSSameOrigin();
 }
 
 FloatSize HTMLVideoElement::ElementSize(const FloatSize&) const {

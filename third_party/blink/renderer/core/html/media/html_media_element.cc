@@ -1492,8 +1492,7 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
   return true;
 }
 
-bool HTMLMediaElement::IsMediaDataCORSSameOrigin(
-    const SecurityOrigin* origin) const {
+bool HTMLMediaElement::IsMediaDataCORSSameOrigin() const {
   if (!GetWebMediaPlayer())
     return true;
 
@@ -4255,8 +4254,8 @@ void HTMLMediaElement::RequestPause() {
 }
 
 bool HTMLMediaElement::MediaShouldBeOpaque() const {
-  return !IsMediaDataCORSSameOrigin(GetDocument().GetSecurityOrigin()) &&
-         ready_state_ < kHaveMetadata && !FastGetAttribute(srcAttr).IsEmpty() &&
+  return !IsMediaDataCORSSameOrigin() && ready_state_ < kHaveMetadata &&
+         !FastGetAttribute(srcAttr).IsEmpty() &&
          EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
 }
 
