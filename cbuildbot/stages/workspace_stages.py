@@ -35,7 +35,7 @@ from chromite.lib import failures_lib
 from chromite.lib import osutils
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
-BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '5220.0.0'
+BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
