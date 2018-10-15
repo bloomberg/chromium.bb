@@ -56,7 +56,7 @@ class HttpProxyClientSocketPool;
 class HttpResponseBodyDrainer;
 class HttpServerProperties;
 class NetLog;
-class NetworkQualityProvider;
+class NetworkQualityEstimator;
 class ProxyResolutionService;
 }  // namespace net
 namespace quic {
@@ -257,7 +257,7 @@ class NET_EXPORT HttpNetworkSession {
     HttpServerProperties* http_server_properties;
     NetLog* net_log;
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
-    NetworkQualityProvider* network_quality_provider;
+    NetworkQualityEstimator* network_quality_estimator;
 
     // Source of time for QUIC connections.
     quic::QuicClock* quic_clock;

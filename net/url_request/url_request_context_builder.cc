@@ -243,7 +243,7 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       request_context->http_server_properties();
   session_context->net_log = request_context->net_log();
   session_context->channel_id_service = request_context->channel_id_service();
-  session_context->network_quality_provider =
+  session_context->network_quality_estimator =
       request_context->network_quality_estimator();
   if (request_context->network_quality_estimator()) {
     session_context->socket_performance_watcher_factory =

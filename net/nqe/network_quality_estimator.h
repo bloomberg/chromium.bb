@@ -34,7 +34,6 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/network_quality_observation.h"
 #include "net/nqe/network_quality_observation_source.h"
-#include "net/nqe/network_quality_provider.h"
 #include "net/nqe/network_quality_store.h"
 #include "net/nqe/observation_buffer.h"
 #include "net/nqe/rtt_throughput_estimates_observer.h"
@@ -65,8 +64,7 @@ class URLRequest;
 // thereby increasing the single NQE instance's accuracy by providing more
 // observed traffic characteristics.
 class NET_EXPORT NetworkQualityEstimator
-    : public NetworkChangeNotifier::ConnectionTypeObserver,
-      public NetworkQualityProvider {
+    : public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Observes measurements of round trip time.
   class NET_EXPORT_PRIVATE RTTObserver {
@@ -120,17 +118,46 @@ class NET_EXPORT NetworkQualityEstimator
   virtual EffectiveConnectionType GetRecentEffectiveConnectionType(
       const base::TimeTicks& start_time) const;
 
-  // NetworkQualityProvider implementation:
-  // Must be called on the IO thread.
-  EffectiveConnectionType GetEffectiveConnectionType() const override;
+  // Returns the current effective connection type.  The effective connection
+  // type is computed by the network quality estimator at regular intervals and
+  // at certain events (e.g., connection change). Virtualized for testing.
+  virtual EffectiveConnectionType GetEffectiveConnectionType() const;
+
+  // Adds |observer| to a list of effective connection type observers.
+  // The observer must register and unregister itself on the same thread.
+  // |observer| would be notified on the thread on which it registered.
+  // |observer| would be notified of the current effective connection
+  // type in the next message pump.
   void AddEffectiveConnectionTypeObserver(
-      EffectiveConnectionTypeObserver* observer) override;
+      EffectiveConnectionTypeObserver* observer);
+
+  // Removes |observer| from a list of effective connection type observers.
   void RemoveEffectiveConnectionTypeObserver(
-      EffectiveConnectionTypeObserver* observer) override;
-  base::Optional<base::TimeDelta> GetHttpRTT() const override;
-  base::Optional<base::TimeDelta> GetTransportRTT() const override;
-  base::Optional<int32_t> GetDownstreamThroughputKbps() const override;
-  base::Optional<int32_t> GetBandwidthDelayProductKbits() const override;
+      EffectiveConnectionTypeObserver* observer);
+
+  // Returns the current HTTP RTT estimate. If the estimate is unavailable,
+  // the returned optional value is null. The RTT at the HTTP layer measures the
+  // time from when the request was sent (this happens after the connection is
+  // established) to the time when the response headers were received.
+  // Virtualized for testing.
+  virtual base::Optional<base::TimeDelta> GetHttpRTT() const;
+
+  // Returns the current transport RTT estimate. If the estimate is
+  // unavailable, the returned optional value is null.  The RTT at the transport
+  // layer provides an aggregate estimate of the transport RTT as computed by
+  // various underlying TCP and QUIC connections. Virtualized for testing.
+  virtual base::Optional<base::TimeDelta> GetTransportRTT() const;
+
+  // Returns the current downstream throughput estimate (in kilobits per
+  // second). If the estimate is unavailable, the returned optional value is
+  // null.
+  base::Optional<int32_t> GetDownstreamThroughputKbps() const;
+
+  // Returns the current bandwidth delay product estimate (in kilobits). If the
+  // estimate is not available, the returned optional value is null. The
+  // bandwidth delay product is calculated from the transport RTT and the
+  // downlink bandwidth estimates. Virtualized for testing.
+  virtual base::Optional<int32_t> GetBandwidthDelayProductKbits() const;
 
   // Adds |observer| to the list of RTT and throughput estimate observers.
   // The observer must register and unregister itself on the same thread.

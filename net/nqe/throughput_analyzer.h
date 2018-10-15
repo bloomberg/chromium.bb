@@ -28,7 +28,7 @@ class TickClock;
 namespace net {
 
 class NetworkQualityEstimatorParams;
-class NetworkQualityProvider;
+class NetworkQualityEstimator;
 class URLRequest;
 
 namespace nqe {
@@ -59,7 +59,7 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // estimation.
   // Virtualized for testing.
   ThroughputAnalyzer(
-      const NetworkQualityProvider* network_quality_provider,
+      const NetworkQualityEstimator* network_quality_estimator,
       const NetworkQualityEstimatorParams* params,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ThroughputObservationCallback throughput_observation_callback,
@@ -162,7 +162,7 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   void BoundRequestsSize();
 
   // Guaranteed to be non-null during the duration of |this|.
-  const NetworkQualityProvider* network_quality_provider_;
+  const NetworkQualityEstimator* network_quality_estimator_;
 
   // Guaranteed to be non-null during the duration of |this|.
   const NetworkQualityEstimatorParams* params_;
