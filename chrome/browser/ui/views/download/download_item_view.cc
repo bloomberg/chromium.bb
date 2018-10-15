@@ -68,9 +68,9 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -94,20 +94,16 @@ constexpr base::TimeDelta kAccessibleAlertInterval =
     base::TimeDelta::FromSeconds(30);
 
 // The separator is drawn as a border. It's one dp wide.
-class SeparatorBorder : public views::FocusableBorder {
+class SeparatorBorder : public views::Border {
  public:
   explicit SeparatorBorder(SkColor separator_color)
-      : separator_color_(separator_color) {
-    // Set the color used by FocusableBorder::Paint(), which could otherwise
-    // change when FocusableBorder relies on FocusRings instead.
-    SetColorId(ui::NativeTheme::kColorId_FocusedBorderColor);
-  }
+      : separator_color_(separator_color) {}
   ~SeparatorBorder() override {}
 
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    // The FocusRing replaces the separator border when we have focus.
     if (view.HasFocus())
-      return FocusableBorder::Paint(view, canvas);
-
+      return;
     int end_x = base::i18n::IsRTL() ? 0 : view.width() - 1;
     canvas->DrawLine(gfx::Point(end_x, kTopBottomPadding),
                      gfx::Point(end_x, view.height() - kTopBottomPadding),
@@ -169,6 +165,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   status_font_list_ =
       rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(-2);
 
+  focus_ring_ = views::FocusRing::Install(this);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   OnDownloadUpdated();
@@ -329,6 +326,8 @@ void DownloadItemView::OnDownloadOpened() {
 
 // In dangerous mode we have to layout our buttons.
 void DownloadItemView::Layout() {
+  InkDropHostView::Layout();
+
   UpdateColorsFromTheme();
 
   if (IsShowingWarningDialog()) {
@@ -353,6 +352,14 @@ void DownloadItemView::Layout() {
         gfx::Point(width() - dropdown_button_->width() - kEndPadding,
                    (height() - dropdown_button_->height()) / 2));
   }
+}
+
+void DownloadItemView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  auto path = std::make_unique<SkPath>();
+  path->addRect(RectToSkRect(GetLocalBounds()));
+  SetProperty(views::kHighlightPathKey, path.release());
+
+  InkDropHostView::OnBoundsChanged(previous_bounds);
 }
 
 void DownloadItemView::UpdateDropdownButton() {
@@ -493,32 +500,8 @@ void DownloadItemView::OnThemeChanged() {
   UpdateDropdownButton();
 }
 
-void DownloadItemView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  InkDropHostView::AddInkDropLayer(ink_drop_layer);
-  // The layer that's added to host the ink drop layer must mask to bounds
-  // so the hover effect is clipped while animating open.
-  layer()->SetMasksToBounds(true);
-}
-
 std::unique_ptr<views::InkDrop> DownloadItemView::CreateInkDrop() {
   return CreateDefaultFloodFillInkDropImpl();
-}
-
-std::unique_ptr<views::InkDropRipple> DownloadItemView::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(),
-      color_utils::DeriveDefaultIconColor(GetTextColor()),
-      ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-DownloadItemView::CreateInkDropHighlight() const {
-  gfx::Size size = GetPreferredSize();
-  return std::make_unique<views::InkDropHighlight>(
-      size, ink_drop_small_corner_radius(),
-      gfx::RectF(gfx::SizeF(size)).CenterPoint(),
-      color_utils::DeriveDefaultIconColor(GetTextColor()));
 }
 
 void DownloadItemView::OnInkDropCreated() {
@@ -871,6 +854,10 @@ void DownloadItemView::SetDropdownState(State new_state) {
 void DownloadItemView::ConfigureInkDrop() {
   if (HasInkDrop())
     GetInkDrop()->SetShowHighlightOnHover(!IsShowingWarningDialog());
+}
+
+SkColor DownloadItemView::GetInkDropBaseColor() const {
+  return color_utils::DeriveDefaultIconColor(GetTextColor());
 }
 
 void DownloadItemView::SetMode(Mode mode) {
