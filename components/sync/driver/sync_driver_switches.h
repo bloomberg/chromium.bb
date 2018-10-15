@@ -26,6 +26,7 @@ extern const base::Feature kSyncClearDataOnPassphraseEncryption;
 extern const base::Feature kSyncPseudoUSSAppList;
 extern const base::Feature kSyncPseudoUSSApps;
 extern const base::Feature kSyncPseudoUSSDictionary;
+extern const base::Feature kSyncPseudoUSSExtensionSettings;
 extern const base::Feature kSyncPseudoUSSExtensions;
 extern const base::Feature kSyncPseudoUSSFavicons;
 extern const base::Feature kSyncPseudoUSSHistoryDeleteDirectives;

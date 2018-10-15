@@ -148,9 +148,9 @@ class LevelDbWriteBatch : public BlockingModelTypeStoreImpl::WriteBatch {
 
 BlockingModelTypeStoreImpl::BlockingModelTypeStoreImpl(
     ModelType type,
-    ModelTypeStoreBackend* backend)
+    scoped_refptr<ModelTypeStoreBackend> backend)
     : type_(type),
-      backend_(backend),
+      backend_(std::move(backend)),
       data_prefix_(FormatDataPrefix(type)),
       metadata_prefix_(FormatMetaPrefix(type)),
       global_metadata_key_(FormatGlobalMetadataKey(type)) {

@@ -54,6 +54,8 @@ const base::Feature kSyncPseudoUSSApps{"SyncPseudoUSSApps",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSDictionary{"SyncPseudoUSSDictionary",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncPseudoUSSExtensionSettings{
+    "SyncPseudoUSSExtensionSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSExtensions{"SyncPseudoUSSExtensions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSFavicons{"SyncPseudoUSSFavicons",

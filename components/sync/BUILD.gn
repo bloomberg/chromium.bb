@@ -128,6 +128,8 @@ jumbo_static_library("sync") {
     "driver/model_associator.h",
     "driver/model_type_controller.cc",
     "driver/model_type_controller.h",
+    "driver/non_ui_syncable_service_based_model_type_controller.cc",
+    "driver/non_ui_syncable_service_based_model_type_controller.h",
     "driver/proxy_data_type_controller.cc",
     "driver/proxy_data_type_controller.h",
     "driver/shared_change_processor.cc",

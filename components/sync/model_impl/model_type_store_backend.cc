@@ -57,7 +57,7 @@ StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
 }  // namespace
 
 // static
-std::unique_ptr<ModelTypeStoreBackend>
+scoped_refptr<ModelTypeStoreBackend>
 ModelTypeStoreBackend::CreateInMemoryForTest() {
   std::unique_ptr<leveldb::Env> env =
       leveldb_chrome::NewMemEnv("ModelTypeStore");
@@ -67,22 +67,21 @@ ModelTypeStoreBackend::CreateInMemoryForTest() {
   const base::FilePath path = base::FilePath::FromUTF8Unsafe(test_directory_str)
                                   .Append(FILE_PATH_LITERAL("in-memory"));
 
-  // WrapUnique() used because of private constructor.
-  auto backend = base::WrapUnique(new ModelTypeStoreBackend(std::move(env)));
+  scoped_refptr<ModelTypeStoreBackend> backend =
+      new ModelTypeStoreBackend(std::move(env));
+
   base::Optional<ModelError> error = backend->Init(path);
   DCHECK(!error);
   return backend;
 }
 
 // static
-std::unique_ptr<ModelTypeStoreBackend>
+scoped_refptr<ModelTypeStoreBackend>
 ModelTypeStoreBackend::CreateUninitialized() {
-  return base::WrapUnique(new ModelTypeStoreBackend(/*env=*/nullptr));
+  return new ModelTypeStoreBackend(/*env=*/nullptr);
 }
 
-ModelTypeStoreBackend::~ModelTypeStoreBackend() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+ModelTypeStoreBackend::~ModelTypeStoreBackend() {}
 
 base::Optional<ModelError> ModelTypeStoreBackend::Init(
     const base::FilePath& path) {

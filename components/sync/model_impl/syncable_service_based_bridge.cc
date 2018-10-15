@@ -104,6 +104,8 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
 
   SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
     std::unique_ptr<ModelTypeStore::WriteBatch> batch =
         store_->CreateWriteBatch();
 
@@ -211,6 +213,7 @@ class ChangeProcessorImpl : public SyncChangeProcessor {
   ModelTypeStore* const store_;
   std::map<std::string, sync_pb::EntitySpecifics>* const in_memory_store_;
   ModelTypeChangeProcessor* const other_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ChangeProcessorImpl);
 };
@@ -250,6 +253,7 @@ SyncableServiceBasedBridge::SyncableServiceBasedBridge(
 }
 
 SyncableServiceBasedBridge::~SyncableServiceBasedBridge() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Stop the syncable service to make sure instances of ChangeProcessorImpl are
   // not continued to be used.
   if (syncable_service_started_) {
@@ -259,11 +263,13 @@ SyncableServiceBasedBridge::~SyncableServiceBasedBridge() {
 
 std::unique_ptr<MetadataChangeList>
 SyncableServiceBasedBridge::CreateMetadataChangeList() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ModelTypeStore::WriteBatch::CreateMetadataChangeList();
 }
 
 void SyncableServiceBasedBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!syncable_service_started_);
 
   if (!store_factory_) {
@@ -284,6 +290,7 @@ void SyncableServiceBasedBridge::OnSyncStarting(
 base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_change_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(!syncable_service_started_);
@@ -322,6 +329,7 @@ base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
 base::Optional<ModelError> SyncableServiceBasedBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_change_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(syncable_service_started_);
@@ -339,6 +347,7 @@ base::Optional<ModelError> SyncableServiceBasedBridge::ApplySyncChanges(
 
 void SyncableServiceBasedBridge::GetData(StorageKeyList storage_keys,
                                          DataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
   store_->ReadData(
       storage_keys,
@@ -347,6 +356,7 @@ void SyncableServiceBasedBridge::GetData(StorageKeyList storage_keys,
 }
 
 void SyncableServiceBasedBridge::GetAllDataForDebugging(DataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
   store_->ReadAllData(
       base::BindOnce(&SyncableServiceBasedBridge::OnReadAllDataForProcessor,
@@ -377,6 +387,8 @@ bool SyncableServiceBasedBridge::SupportsGetStorageKey() const {
 ConflictResolution SyncableServiceBasedBridge::ResolveConflict(
     const EntityData& local_data,
     const EntityData& remote_data) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!remote_data.is_deleted()) {
     return ConflictResolution::UseRemote();
   }
@@ -396,6 +408,7 @@ ConflictResolution SyncableServiceBasedBridge::ResolveConflict(
 ModelTypeSyncBridge::StopSyncResponse
 SyncableServiceBasedBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
 
   if (delete_metadata_change_list) {
@@ -412,12 +425,15 @@ SyncableServiceBasedBridge::ApplyStopSyncChanges(
 }
 
 size_t SyncableServiceBasedBridge::EstimateSyncOverheadMemoryUsage() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::trace_event::EstimateMemoryUsage(in_memory_store_);
 }
 
 void SyncableServiceBasedBridge::OnStoreCreated(
     const base::Optional<ModelError>& error,
     std::unique_ptr<ModelTypeStore> store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (error) {
     change_processor()->ReportError(*error);
     return;
@@ -434,6 +450,7 @@ void SyncableServiceBasedBridge::OnStoreCreated(
 void SyncableServiceBasedBridge::OnReadAllDataForInit(
     const base::Optional<ModelError>& error,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(in_memory_store_.empty());
 
   if (error) {
@@ -460,6 +477,7 @@ void SyncableServiceBasedBridge::OnReadAllDataForInit(
 void SyncableServiceBasedBridge::OnReadAllMetadataForInit(
     const base::Optional<ModelError>& error,
     std::unique_ptr<MetadataBatch> metadata_batch) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!syncable_service_started_);
 
   if (error) {
@@ -608,6 +626,8 @@ void SyncableServiceBasedBridge::OnReadAllDataForProcessor(
     DataCallback callback,
     const base::Optional<ModelError>& error,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (error) {
     change_processor()->ReportError(*error);
     return;
