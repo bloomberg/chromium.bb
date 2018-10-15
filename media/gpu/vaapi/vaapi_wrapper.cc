@@ -161,12 +161,6 @@ static const struct {
      VaapiWrapper::CodecMode::kEncode,
      {VAProfileH264Baseline, VAProfileH264Main, VAProfileH264High,
       VAProfileH264ConstrainedBaseline}},
-    // TODO(hiroh): Remove once Chrome supports converting format.
-    // https://crbug.com/828119.
-    {"Mesa Gallium driver",
-     "AMD STONEY",
-     VaapiWrapper::CodecMode::kDecode,
-     {VAProfileJPEGBaseline}},
 };
 
 bool IsBlackListedDriver(const std::string& va_vendor_string,
