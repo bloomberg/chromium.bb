@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -34,10 +34,10 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_WIN)
@@ -75,10 +75,10 @@ constexpr PasswordStoreX::MigrationToLoginDBStep
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 std::string GetSyncUsername(Profile* profile) {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile);
-  return signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
-                        : std::string();
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(profile);
+  return identity_manager ? identity_manager->GetPrimaryAccountInfo().email
+                          : std::string();
 }
 #endif
 
@@ -128,7 +128,7 @@ PasswordStoreFactory::PasswordStoreFactory()
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // TODO(crbug.com/715987). Remove when PasswordReuseDetector is decoupled
   // from PasswordStore.
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 #endif
 }
 
