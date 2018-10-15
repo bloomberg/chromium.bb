@@ -2928,12 +2928,11 @@
     },
     {
       "id":273,
-      "cr_bugs": [866613],
+      "cr_bugs": [866613, 860021],
       "description": "Frequent crashes on Adreno (TM) on L and below",
       "os": {
         "type": "android"
       },
-      "gl_renderer": "Adreno.*",
       "features": [
         "use_es2_for_oopr"
       ]
