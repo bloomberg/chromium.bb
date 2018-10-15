@@ -38,8 +38,6 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
   options.fAvoidStencilBuffers = capabilities.avoid_stencil_buffers;
   options.fAllowPathMaskCaching = false;
   options.fSharpenMipmappedTextures = true;
-  options.fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kYes;
-  options.fSortRenderTargets = GrContextOptions::Enable::kYes;
   sk_sp<GrGLInterface> interface(
       skia_bindings::CreateGLES2InterfaceBindings(gl, context_support));
   gr_context_ = GrContext::MakeGL(std::move(interface), options);
