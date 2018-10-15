@@ -5,7 +5,7 @@
 
 # Copyright (C) 2008 Evan Martin <martine@danga.com>
 
-"""A git-command for integrating reviews on Rietveld and Gerrit."""
+"""A git-command for integrating reviews on Gerrit."""
 
 from __future__ import print_function
 
@@ -459,8 +459,7 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   buildbucket_put_url = (
       'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
           hostname=options.buildbucket_host))
-  buildset = 'patch/{codereview}/{hostname}/{issue}/{patch}'.format(
-      codereview='gerrit' if changelist.IsGerrit() else 'rietveld',
+  buildset = 'patch/gerrit/{hostname}/{issue}/{patch}'.format(
       hostname=codereview_host,
       issue=changelist.GetIssue(),
       patch=patchset)
@@ -552,8 +551,7 @@ def fetch_try_jobs(auth_config, changelist, buildbucket_host,
 
   http.force_exception_to_status_code = True
 
-  buildset = 'patch/{codereview}/{hostname}/{issue}/{patch}'.format(
-      codereview='gerrit' if changelist.IsGerrit() else 'rietveld',
+  buildset = 'patch/gerrit/{hostname}/{issue}/{patch}'.format(
       hostname=codereview_host,
       issue=changelist.GetIssue(),
       patch=patchset)
@@ -2018,25 +2016,10 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return self._props
 
   def CannotTriggerTryJobReason(self):
-    props = self.GetIssueProperties()
-    if not props:
-      return 'Rietveld doesn\'t know about your issue %s' % self.GetIssue()
-    if props.get('closed'):
-      return 'CL %s is closed' % self.GetIssue()
-    if props.get('private'):
-      return 'CL %s is private' % self.GetIssue()
-    return None
+    raise NotImplementedError()
 
   def GetTryJobProperties(self, patchset=None):
-    """Returns dictionary of properties to launch try job."""
-    project = (self.GetIssueProperties() or {}).get('project')
-    return {
-      'issue': self.GetIssue(),
-      'patch_project': project,
-      'patch_storage': 'rietveld',
-      'patchset': patchset or self.GetPatchset(),
-      'rietveld': self.GetCodereviewServer(),
-    }
+    raise NotImplementedError()
 
   def GetIssueOwner(self):
     return (self.GetIssueProperties() or {}).get('owner_email')
