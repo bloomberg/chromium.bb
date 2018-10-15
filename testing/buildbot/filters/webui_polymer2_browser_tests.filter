@@ -14,10 +14,6 @@
 # Note that some of these tests only fail inconsistently (like with
 # --gtest_repeat=5, but might pass on a single invocation).
 
-# Chrome Desktop failures (Mac, Linux, Windows).
--MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
--MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
-
 # ChromeOS only test failures.
 -DemoSetupTest.BackOnArcTermsScreen
 -DemoSetupTest.ClickConnectedNetworkOnNetworkScreen
@@ -232,11 +228,7 @@ MaterialHistorySupervisedUserTest.*
 MaterialHistorySyncedTabsTest.*
 MaterialHistoryToolbarTest.*
 MediaEngagementWebUIBrowserTest.*
-MediaRouterElementsBrowserTest.IssueBanner
-MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
-MediaRouterElementsBrowserTest.MediaRouterContainerSinkList
-MediaRouterElementsBrowserTest.MediaRouterHeader
-MediaRouterElementsBrowserTest.MediaRouterRouteDetails
+MediaRouterElementsBrowserTest.*
 Mock4JSWebUITest.*
 Mock4JSWebUITest.*
 Mock4JSWebUITestFails.*
