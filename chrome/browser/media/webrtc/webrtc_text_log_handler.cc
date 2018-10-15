@@ -11,7 +11,9 @@
 
 #include "base/bind.h"
 #include "base/cpu.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -26,11 +28,14 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/webrtc_log.h"
+#include "content/public/common/content_features.h"
 #include "gpu/config/gpu_info.h"
 #include "media/audio/audio_manager.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
+#include "services/service_manager/sandbox/features.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -446,6 +451,23 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   LogToCircularBuffer("OpenGL: gl-vendor=" + gpu_info.gl_vendor +
                       ", gl-renderer=" + gpu_info.gl_renderer +
                       ", gl-version=" + gpu_info.gl_version);
+
+  // AudioService features
+  auto enabled_or_disabled_string = [](auto& feature) {
+    return base::FeatureList::IsEnabled(feature) ? "enabled" : "disabled";
+  };
+  LogToCircularBuffer(base::StrCat(
+      {"AudioService: AudioStreams=",
+       enabled_or_disabled_string(features::kAudioServiceAudioStreams),
+       ", OutOfProcess=",
+       enabled_or_disabled_string(features::kAudioServiceOutOfProcess),
+       ", LaunchOnStartup=",
+       enabled_or_disabled_string(features::kAudioServiceLaunchOnStartup),
+       ", Sandbox=",
+       enabled_or_disabled_string(
+           service_manager::features::kAudioServiceSandbox),
+       ", ApmInAudioService=",
+       enabled_or_disabled_string(features::kWebRtcApmInAudioService)}));
 
   // Audio manager
   // On some platforms, this can vary depending on build flags and failure
