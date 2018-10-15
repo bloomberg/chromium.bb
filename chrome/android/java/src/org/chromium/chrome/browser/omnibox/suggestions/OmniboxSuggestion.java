@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,7 +174,7 @@ public class OmniboxSuggestion {
 
     @Override
     public String toString() {
-        return mType + " relevance=" +  mRelevance + " \"" + mDisplayText + "\" -> " + mUrl;
+        return mType + " relevance=" + mRelevance + " \"" + mDisplayText + "\" -> " + mUrl;
     }
 
     @Override
@@ -194,17 +195,12 @@ public class OmniboxSuggestion {
 
         OmniboxSuggestion suggestion = (OmniboxSuggestion) obj;
 
-        boolean answersAreEqual =
-                (mAnswerContents == null && suggestion.mAnswerContents == null)
-                || (mAnswerContents != null
-                && suggestion.mAnswerContents != null
-                && mAnswerContents.equals(suggestion.mAnswerContents));
-        return mType == suggestion.mType
-                && mFillIntoEdit.equals(suggestion.mFillIntoEdit)
-                && mDisplayText.equals(suggestion.mDisplayText)
-                && answersAreEqual
-                && mIsStarred == suggestion.mIsStarred
-                && mIsDeletable == suggestion.mIsDeletable;
+        boolean answersAreEqual = (mAnswerContents == null && suggestion.mAnswerContents == null)
+                || (mAnswerContents != null && suggestion.mAnswerContents != null
+                           && mAnswerContents.equals(suggestion.mAnswerContents));
+        return mType == suggestion.mType && mFillIntoEdit.equals(suggestion.mFillIntoEdit)
+                && mDisplayText.equals(suggestion.mDisplayText) && answersAreEqual
+                && mIsStarred == suggestion.mIsStarred && mIsDeletable == suggestion.mIsDeletable;
     }
 
     /**
@@ -218,14 +214,12 @@ public class OmniboxSuggestion {
         for (int i = 0; i < suggestions.size(); i++) {
             OmniboxSuggestion suggestion = suggestions.get(i);
             editor.putString(KEY_PREFIX_ZERO_SUGGEST_URL + i, suggestion.getUrl())
-                    .putString(KEY_PREFIX_ZERO_SUGGEST_DISPLAY_TEST + i,
-                            suggestion.getDisplayText())
-                    .putString(KEY_PREFIX_ZERO_SUGGEST_DESCRIPTION + i,
-                            suggestion.getDescription())
-                    .putString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT + i,
-                            suggestion.getAnswerContents())
-                    .putString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE + i,
-                            suggestion.getAnswerType())
+                    .putString(
+                            KEY_PREFIX_ZERO_SUGGEST_DISPLAY_TEST + i, suggestion.getDisplayText())
+                    .putString(KEY_PREFIX_ZERO_SUGGEST_DESCRIPTION + i, suggestion.getDescription())
+                    .putString(
+                            KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT + i, suggestion.getAnswerContents())
+                    .putString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE + i, suggestion.getAnswerType())
                     .putInt(KEY_PREFIX_ZERO_SUGGEST_NATIVE_TYPE + i, suggestion.getType())
                     .putBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE + i,
                             !suggestion.isUrlSuggestion())
@@ -256,11 +250,10 @@ public class OmniboxSuggestion {
                 boolean isSearchType =
                         prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE, true);
                 boolean isStarred = prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_STARRED + i, false);
-                boolean isDeletable = prefs.getBoolean(
-                        KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE + i, false);
-                OmniboxSuggestion suggestion = new OmniboxSuggestion(
-                        nativeType, !isSearchType, 0, 0, displayText,
-                        classifications, description, classifications, answerText,
+                boolean isDeletable =
+                        prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE + i, false);
+                OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, !isSearchType, 0,
+                        0, displayText, classifications, description, classifications, answerText,
                         answerType, "", url, isStarred, isDeletable);
                 suggestions.add(suggestion);
             }

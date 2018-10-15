@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.util.Log;
 
@@ -21,7 +21,7 @@ import java.util.List;
  * referred to as "additional text" and "status text".  The image, if present, contains a single
  * string, which may be a URL or base64-encoded image data.
  *
- * When represented in the UI, these elements should be styled and layed out according to the
+ * When represented in the UI, these elements should be styled and laid out according to the
  * specification at http://goto.google.com/ais_api.
  */
 public class SuggestionAnswer {
@@ -40,8 +40,7 @@ public class SuggestionAnswer {
     private static final String ANSWERS_JSON_IMAGE_DATA = "d";
     private static final String ANSWERS_JSON_NUMBER_OF_LINES = "ln";
 
-    private SuggestionAnswer() {
-    }
+    private SuggestionAnswer() {}
 
     /**
      * Parses the JSON representation of an answer and constructs a SuggestionAnswer from the

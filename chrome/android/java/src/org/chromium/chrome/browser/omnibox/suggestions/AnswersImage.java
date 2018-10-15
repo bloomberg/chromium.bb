@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.graphics.Bitmap;
 
@@ -20,7 +20,7 @@ public class AnswersImage {
         /**
          * Called when the image is updated.
          *
-         * @param answersImage the image
+         * @param bitmap the image
          */
         @CalledByNative("AnswersImageObserver")
         public void onAnswersImageChanged(Bitmap bitmap);

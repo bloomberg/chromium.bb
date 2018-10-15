@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox;
+package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.IntDef;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -29,9 +30,11 @@ import android.widget.TextView.BufferType;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -44,7 +47,8 @@ import java.util.List;
  * Container view for omnibox suggestions made very specific for omnibox suggestions to minimize
  * any unnecessary measures and layouts.
  */
-class SuggestionView extends ViewGroup {
+@VisibleForTesting
+public class SuggestionView extends ViewGroup {
     @IntDef({SuggestionIcon.UNDEFINED, SuggestionIcon.BOOKMARK, SuggestionIcon.HISTORY,
             SuggestionIcon.GLOBE, SuggestionIcon.MAGNIFIER, SuggestionIcon.VOICE})
     @Retention(RetentionPolicy.SOURCE)
@@ -96,9 +100,8 @@ class SuggestionView extends ViewGroup {
 
         mSuggestionHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.omnibox_suggestion_height);
-        mSuggestionAnswerHeight =
-                context.getResources().getDimensionPixelOffset(
-                        R.dimen.omnibox_suggestion_answer_height);
+        mSuggestionAnswerHeight = context.getResources().getDimensionPixelOffset(
+                R.dimen.omnibox_suggestion_answer_height);
 
         Resources resources = getResources();
         mDarkTitleColorStandardFont =
@@ -110,8 +113,8 @@ class SuggestionView extends ViewGroup {
         mLightUrlStandardColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.suggestion_url_light_modern);
 
-        TypedArray a = getContext().obtainStyledAttributes(
-                new int [] {R.attr.selectableItemBackground});
+        TypedArray a =
+                getContext().obtainStyledAttributes(new int[] {R.attr.selectableItemBackground});
         Drawable itemBackground = a.getDrawable(0);
         a.recycle();
 
@@ -125,8 +128,7 @@ class SuggestionView extends ViewGroup {
 
                 if (mRefineIcon == null) return;
                 canvas.save();
-                canvas.translate(
-                        (getMeasuredWidth() - mRefineIcon.getIntrinsicWidth()) / 2f,
+                canvas.translate((getMeasuredWidth() - mRefineIcon.getIntrinsicWidth()) / 2f,
                         (getMeasuredHeight() - mRefineIcon.getIntrinsicHeight()) / 2f);
                 mRefineIcon.draw(canvas);
                 canvas.restore();
@@ -154,8 +156,8 @@ class SuggestionView extends ViewGroup {
                 }
             }
         };
-        mRefineView.setContentDescription(getContext().getString(
-                R.string.accessibility_omnibox_btn_refine));
+        mRefineView.setContentDescription(
+                getContext().getString(R.string.accessibility_omnibox_btn_refine));
 
         // Although this has the same background as the suggestion view, it can not be shared as
         // it will result in the state of the drawable being shared and always showing up in the
@@ -167,8 +169,8 @@ class SuggestionView extends ViewGroup {
         mRefineView.setLayoutParams(new LayoutParams(0, 0));
         addView(mRefineView);
 
-        mRefineWidth = getResources()
-                .getDimensionPixelSize(R.dimen.omnibox_suggestion_refine_width);
+        mRefineWidth =
+                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_refine_width);
 
         mRefineViewModernEndPadding = getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
@@ -196,10 +198,7 @@ class SuggestionView extends ViewGroup {
 
         int refineViewOffsetX = isRtl ? mRefineViewOffsetPx
                                       : (getMeasuredWidth() - mRefineWidth) - mRefineViewOffsetPx;
-        mRefineView.layout(
-                refineViewOffsetX,
-                0,
-                refineViewOffsetX + mRefineWidth,
+        mRefineView.layout(refineViewOffsetX, 0, refineViewOffsetX + mRefineWidth,
                 mContentsView.getMeasuredHeight());
     }
 
@@ -231,8 +230,7 @@ class SuggestionView extends ViewGroup {
         mContentsView.getLayoutParams().width = mContentsView.getMeasuredWidth();
         mContentsView.getLayoutParams().height = mContentsView.getMeasuredHeight();
 
-        mRefineView.measure(
-                MeasureSpec.makeMeasureSpec(mRefineWidth, MeasureSpec.EXACTLY),
+        mRefineView.measure(MeasureSpec.makeMeasureSpec(mRefineWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         mRefineView.getLayoutParams().width = mRefineView.getMeasuredWidth();
         mRefineView.getLayoutParams().height = mRefineView.getMeasuredHeight();
@@ -289,10 +287,10 @@ class SuggestionView extends ViewGroup {
         mContentsView.resetTextWidths();
         mContentsView.mAnswerImage.setVisibility(GONE);
         mContentsView.mAnswerImage.setImageDrawable(null);
-        mContentsView.mTextLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
-                .getDimension(R.dimen.omnibox_suggestion_first_line_text_size));
-        mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
-                .getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
+        mContentsView.mTextLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                getResources().getDimension(R.dimen.omnibox_suggestion_first_line_text_size));
+        mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                getResources().getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
 
         mRefineViewOffsetPx = mRefineViewModernEndPadding;
 
@@ -396,9 +394,7 @@ class SuggestionView extends ViewGroup {
         mRefineIcon = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.btn_suggestion_refine, tintId);
         mRefineIcon.setBounds(
-                0, 0,
-                mRefineIcon.getIntrinsicWidth(),
-                mRefineIcon.getIntrinsicHeight());
+                0, 0, mRefineIcon.getIntrinsicWidth(), mRefineIcon.getIntrinsicHeight());
         mRefineIcon.setState(mRefineView.getDrawableState());
         mRefineView.postInvalidateOnAnimation();
     }
@@ -412,8 +408,8 @@ class SuggestionView extends ViewGroup {
     private boolean setUrlText(OmniboxResultItem result) {
         OmniboxSuggestion suggestion = result.getSuggestion();
         Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
-        boolean hasMatch = applyHighlightToMatchRegions(
-                str, suggestion.getDisplayTextClassifications());
+        boolean hasMatch =
+                applyHighlightToMatchRegions(str, suggestion.getDisplayTextClassifications());
         showDescriptionLine(str, true);
         return hasMatch;
     }
@@ -437,8 +433,8 @@ class SuggestionView extends ViewGroup {
 
                 hasMatch = true;
                 // Bold the part of the URL that matches the user query.
-                str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                        matchStartIndex, matchEndIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), matchStartIndex,
+                        matchEndIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
         return hasMatch;
@@ -476,9 +472,8 @@ class SuggestionView extends ViewGroup {
      * @param isUrlQuery Whether this suggestion is showing an URL.
      * @param isUrlHighlighted Whether the URL contains any highlighted matching sections.
      */
-    private void setSuggestedQuery(
-            OmniboxResultItem suggestionItem, boolean showDescriptionIfPresent,
-            boolean isUrlQuery, boolean isUrlHighlighted) {
+    private void setSuggestedQuery(OmniboxResultItem suggestionItem,
+            boolean showDescriptionIfPresent, boolean isUrlQuery, boolean isUrlHighlighted) {
         String userQuery = suggestionItem.getMatchedQuery();
         String suggestedQuery = null;
         List<MatchClassification> classifications;
@@ -501,8 +496,7 @@ class SuggestionView extends ViewGroup {
         if (mSuggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
             String fillIntoEdit = mSuggestion.getFillIntoEdit();
             // Data sanity checks.
-            if (fillIntoEdit.startsWith(userQuery)
-                    && fillIntoEdit.endsWith(suggestedQuery)
+            if (fillIntoEdit.startsWith(userQuery) && fillIntoEdit.endsWith(suggestedQuery)
                     && fillIntoEdit.length() < userQuery.length() + suggestedQuery.length()) {
                 final String ellipsisPrefix = "\u2026 ";
                 suggestedQuery = ellipsisPrefix + suggestedQuery;
@@ -510,9 +504,10 @@ class SuggestionView extends ViewGroup {
                 // Offset the match classifications by the length of the ellipsis prefix to ensure
                 // the highlighting remains correct.
                 for (int i = 0; i < classifications.size(); i++) {
-                    classifications.set(i, new MatchClassification(
-                            classifications.get(i).offset + ellipsisPrefix.length(),
-                            classifications.get(i).style));
+                    classifications.set(i,
+                            new MatchClassification(
+                                    classifications.get(i).offset + ellipsisPrefix.length(),
+                                    classifications.get(i).style));
                 }
                 classifications.add(0, new MatchClassification(0, MatchClassificationStyle.NONE));
 
@@ -864,9 +859,7 @@ class SuggestionView extends ViewGroup {
             }
             mSuggestionIcon = TintedDrawable.constructTintedDrawable(getContext(), drawableId,
                     mUseDarkColors ? R.color.dark_mode_tint : R.color.white_mode_tint);
-            mSuggestionIcon.setBounds(
-                    0, 0,
-                    mSuggestionIcon.getIntrinsicWidth(),
+            mSuggestionIcon.setBounds(0, 0, mSuggestionIcon.getIntrinsicWidth(),
                     mSuggestionIcon.getIntrinsicHeight());
             mSuggestionIconType = type;
             invalidate();
