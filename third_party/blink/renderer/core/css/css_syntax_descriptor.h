@@ -34,7 +34,8 @@ enum class CSSSyntaxType {
 
 enum class CSSSyntaxRepeat { kNone, kSpaceSeparated, kCommaSeparated };
 
-struct CSSSyntaxComponent {
+class CSSSyntaxComponent {
+ public:
   CSSSyntaxComponent(CSSSyntaxType type,
                      const String& string,
                      CSSSyntaxRepeat repeat)
@@ -44,6 +45,9 @@ struct CSSSyntaxComponent {
     return type_ == a.type_ && string_ == a.string_ && repeat_ == a.repeat_;
   }
 
+  CSSSyntaxType GetType() const { return type_; }
+  const String& GetString() const { return string_; }
+  CSSSyntaxRepeat GetRepeat() const { return repeat_; }
   bool IsRepeatable() const { return repeat_ != CSSSyntaxRepeat::kNone; }
   char Separator() const {
     DCHECK(IsRepeatable());
@@ -52,6 +56,7 @@ struct CSSSyntaxComponent {
 
   bool CanTake(const CSSStyleValue&) const;
 
+ private:
   CSSSyntaxType type_;
   String string_;  // Only used when type_ is CSSSyntaxType::kIdent
   CSSSyntaxRepeat repeat_;
@@ -68,11 +73,11 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   bool IsValid() const { return !syntax_components_.IsEmpty(); }
   bool IsTokenStream() const {
     return syntax_components_.size() == 1 &&
-           syntax_components_[0].type_ == CSSSyntaxType::kTokenStream;
+           syntax_components_[0].GetType() == CSSSyntaxType::kTokenStream;
   }
   bool HasUrlSyntax() const {
     for (const CSSSyntaxComponent& component : syntax_components_) {
-      if (component.type_ == CSSSyntaxType::kUrl)
+      if (component.GetType() == CSSSyntaxType::kUrl)
         return true;
     }
     return false;

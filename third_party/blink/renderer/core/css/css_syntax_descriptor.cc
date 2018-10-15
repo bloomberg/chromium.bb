@@ -154,12 +154,12 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   const CSSParserContext* context) {
   using namespace CSSPropertyParserHelpers;
 
-  switch (syntax.type_) {
+  switch (syntax.GetType()) {
     case CSSSyntaxType::kIdent:
       if (range.Peek().GetType() == kIdentToken &&
-          range.Peek().Value() == syntax.string_) {
+          range.Peek().Value() == syntax.GetString()) {
         range.ConsumeIncludingWhitespace();
-        return CSSCustomIdentValue::Create(AtomicString(syntax.string_));
+        return CSSCustomIdentValue::Create(AtomicString(syntax.GetString()));
       }
       return nullptr;
     case CSSSyntaxType::kLength:
@@ -202,7 +202,7 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
                                        CSSParserTokenRange range,
                                        const CSSParserContext* context) {
   // CSS-wide keywords are already handled by the CSSPropertyParser
-  if (syntax.repeat_ == CSSSyntaxRepeat::kSpaceSeparated) {
+  if (syntax.GetRepeat() == CSSSyntaxRepeat::kSpaceSeparated) {
     CSSValueList* list = CSSValueList::CreateSpaceSeparated();
     while (!range.AtEnd()) {
       const CSSValue* value = ConsumeSingleType(syntax, range, context);
@@ -212,7 +212,7 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
     }
     return list;
   }
-  if (syntax.repeat_ == CSSSyntaxRepeat::kCommaSeparated) {
+  if (syntax.GetRepeat() == CSSSyntaxRepeat::kCommaSeparated) {
     CSSValueList* list = CSSValueList::CreateCommaSeparated();
     do {
       const CSSValue* value = ConsumeSingleType(syntax, range, context);
