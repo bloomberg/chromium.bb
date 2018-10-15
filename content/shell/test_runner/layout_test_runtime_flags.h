@@ -55,22 +55,13 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // text representation of the renderer.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_as_text)
 
-  // If true and if dump_as_text_ is true, the test_shell will recursively
-  // dump all frames as plain text.
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frames_as_text)
-
   // If true, the test_shell will produce a dump of the DOM rather than a text
   // representation of the renderer.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_as_markup)
 
-  // If true and if dump_as_markup_ is true, the test_shell will recursively
-  // produce a dump of the DOM rather than a text representation of the
-  // renderer.
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frames_as_markup)
-
-  // If true, the test_shell will print out the child frame scroll offsets as
-  // well.
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frame_scroll_positions)
+  // If true, the test_shell will recursively dump all frames as text, markup
+  // or layout if dump_as_text, dump_as_markup or none of them is effective.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frames)
 
   // If true, layout is to target printed pages.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(is_printing)
@@ -197,16 +188,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
 
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
-
-  // Reports whether recursing over child frames is necessary.
-  bool dump_child_frames() const {
-    if (dump_as_text())
-      return dump_child_frames_as_text();
-    else if (dump_as_markup())
-      return dump_child_frames_as_markup();
-    else
-      return dump_child_frame_scroll_positions();
-  }
 
  private:
   TrackedDictionary dict_;
