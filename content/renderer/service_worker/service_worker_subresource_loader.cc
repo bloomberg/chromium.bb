@@ -204,6 +204,14 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   controller_connector_observer_.Add(controller_connector_.get());
   fetch_request_restarted_ = false;
 
+  // |service_worker_start_time| becomes web-exposed
+  // PerformanceResourceTiming#workerStart, which is the time before starting
+  // the worker or just before firing a fetch event. The idea is (fetchStart -
+  // workerStart) is the time taken to start service worker. In our case, we
+  // don't really know if the worker is started or not yet, but here is a good
+  // time to set workerStart, since it will either started soon or the fetch
+  // event will be dispatched soon.
+  // https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-workerstart
   response_head_.service_worker_start_time = base::TimeTicks::Now();
   DispatchFetchEvent();
 }
@@ -215,10 +223,6 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
       controller_connector_->GetControllerServiceWorker(
           mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
 
-  // GetControllerServiceWorker() makes sure that the connection to the
-  // service worker is established, which means that the service worker
-  // has started if it wasn't running.
-  response_head_.service_worker_ready_time = base::TimeTicks::Now();
   response_head_.load_timing.send_start = base::TimeTicks::Now();
   response_head_.load_timing.send_end = base::TimeTicks::Now();
 
@@ -353,6 +357,7 @@ void ServiceWorkerSubresourceLoader::OnResponse(
                          "ServiceWorkerSubresourceLoader::OnResponse", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
+  UpdateResponseTiming(std::move(timing));
   StartResponse(std::move(response), nullptr /* body_as_stream */);
 }
 
@@ -364,12 +369,14 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
+  UpdateResponseTiming(std::move(timing));
   StartResponse(std::move(response), std::move(body_as_stream));
 }
 
 void ServiceWorkerSubresourceLoader::OnFallback(
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
+  UpdateResponseTiming(std::move(timing));
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,
   // we can't simply fallback to the network here. It is because the CORS
@@ -422,6 +429,14 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // is moot.
   DCHECK(!fallback_factory_->HasOneRef());
   delete this;
+}
+
+void ServiceWorkerSubresourceLoader::UpdateResponseTiming(
+    blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
+  // |service_worker_ready_time| becomes web-exposed
+  // PerformanceResourceTiming#fetchStart, which is the time just before
+  // dispatching the fetch event, so set it to |dispatch_event_time|.
+  response_head_.service_worker_ready_time = timing->dispatch_event_time;
 }
 
 void ServiceWorkerSubresourceLoader::StartResponse(

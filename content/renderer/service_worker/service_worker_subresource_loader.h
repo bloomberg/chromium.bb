@@ -85,6 +85,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnFallback(
       blink::mojom::ServiceWorkerFetchEventTimingPtr timing) override;
 
+  void UpdateResponseTiming(
+      blink::mojom::ServiceWorkerFetchEventTimingPtr timing);
+
   void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 
