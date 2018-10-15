@@ -2512,7 +2512,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
     tab.view.frame = self.contentArea.bounds;
-    [_browserContainerCoordinator.viewController displayContentView:tab.view];
+    _browserContainerCoordinator.viewController.contentView = tab.view;
   }
   [self updateToolbar];
 
@@ -4896,7 +4896,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab {
   if (tab == [model currentTab]) {
-    [_browserContainerCoordinator.viewController displayContentView:nil];
+    _browserContainerCoordinator.viewController.contentView = nil;
   }
 
   [_paymentRequestManager stopTrackingWebState:tab.webState];
