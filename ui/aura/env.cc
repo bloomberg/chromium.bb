@@ -215,6 +215,11 @@ mojo::ScopedSharedBufferHandle Env::GetLastMouseLocationMemory() {
   return mouse_location_manager_->GetMouseLocationMemory();
 }
 
+void Env::SetGestureRecognizer(
+    std::unique_ptr<ui::GestureRecognizer> gesture_recognizer) {
+  gesture_recognizer_ = std::move(gesture_recognizer);
+}
+
 void Env::SetWindowTreeClient(WindowTreeClient* window_tree_client) {
   // The WindowTreeClient should only be set once. Test code may need to change
   // the value after the fact, to do that use EnvTestHelper.

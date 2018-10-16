@@ -12,6 +12,7 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -20,7 +21,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/mus/mus_client.h"
@@ -730,6 +733,13 @@ Widget::MoveLoopResult DesktopWindowTreeHostMus::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
     Widget::MoveLoopEscapeBehavior escape_behavior) {
+  // When using WindowService, the touch events for the window move will
+  // happen on the root window, so the events need to be transferred from
+  // widget to its root before starting move loop.
+  window()->env()->gesture_recognizer()->TransferEventsTo(
+      desktop_native_widget_aura_->content_window(), window(),
+      ui::TransferTouchesBehavior::kDontCancel);
+
   static_cast<internal::NativeWidgetPrivate*>(
       desktop_native_widget_aura_)->ReleaseCapture();
 
@@ -741,8 +751,11 @@ Widget::MoveLoopResult DesktopWindowTreeHostMus::RunMoveLoop(
           : ws::mojom::MoveLoopSource::TOUCH;
 
   bool success = false;
-  gfx::Point cursor_location =
-      display::Screen::GetScreen()->GetCursorScreenPoint();
+  // Don't use display::Screen::GetCursorScreenPoint() -- that's incorrect for
+  // touch events. Rather the cursor location can be computed from window's
+  // location with drag_offset.
+  gfx::Point cursor_location = window()->GetBoundsInScreen().origin() +
+                               gfx::ToFlooredVector2d(drag_offset);
   WindowTreeHostMus::PerformWindowMove(
       mus_source, cursor_location,
       base::Bind(OnMoveLoopEnd, &success, run_loop.QuitClosure()));

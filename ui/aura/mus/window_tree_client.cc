@@ -38,6 +38,7 @@
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/gesture_recognizer_impl_mus.h"
 #include "ui/aura/mus/gesture_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
@@ -538,6 +539,8 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   drag_drop_controller_ = std::make_unique<DragDropControllerMus>(this, tree_);
   capture_synchronizer_ = std::make_unique<CaptureSynchronizer>(this, tree_);
   focus_synchronizer_ = std::make_unique<FocusSynchronizer>(this, tree_);
+  Env::GetInstance()->SetGestureRecognizer(
+      std::make_unique<GestureRecognizerImplMus>(this));
   gesture_synchronizer_ = std::make_unique<GestureSynchronizer>(tree_);
 }
 
@@ -1441,6 +1444,8 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
     current_move_loop_change_ = 0;
     on_current_move_finished_.Run(success);
     on_current_move_finished_.Reset();
+    for (auto& observer : observers_)
+      observer.OnWindowMoveEnded(success);
   }
 
   if (!change)
@@ -1558,6 +1563,10 @@ void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
   // Tell the window manager to take over moving us.
   tree_->PerformWindowMove(current_move_loop_change_, window_mus->server_id(),
                            source, cursor_location);
+  for (auto& observer : observers_) {
+    observer.OnWindowMoveStarted(window_tree_host->window(), cursor_location,
+                                 source);
+  }
 }
 
 void WindowTreeClient::OnWindowTreeHostCancelWindowMove(
