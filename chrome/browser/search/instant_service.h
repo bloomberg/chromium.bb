@@ -165,7 +165,7 @@ class InstantService : public KeyedService,
       const GURL& url,
       chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback,
       bool resolves,
-      const base::TimeDelta& duration);
+      base::TimeDelta duration);
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -231,7 +231,7 @@ class InstantService : public KeyedService,
   std::unique_ptr<SearchProviderObserver> search_provider_observer_;
 
   // Test UrlValidityChecker used for testing.
-  UrlValidityChecker* url_checker_for_testing_;
+  UrlValidityChecker* url_checker_for_testing_ = nullptr;
 
   PrefChangeRegistrar pref_change_registrar_;
 

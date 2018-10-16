@@ -5,24 +5,21 @@
 #ifndef CHROME_BROWSER_SEARCH_URL_VALIDITY_CHECKER_FACTORY_H_
 #define CHROME_BROWSER_SEARCH_URL_VALIDITY_CHECKER_FACTORY_H_
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/search/url_validity_checker_impl.h"
 
 // Singleton that owns a single UrlValidityCheckerImpl instance. Should only be
 // called from the UI thread.
 class UrlValidityCheckerFactory {
  public:
-  static UrlValidityChecker* GetInstance();
+  static UrlValidityChecker* GetUrlValidityChecker();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<UrlValidityCheckerFactory>;
+  friend class base::NoDestructor<UrlValidityCheckerFactory>;
 
   UrlValidityCheckerFactory();
   ~UrlValidityCheckerFactory();
-
-  // The only instance that exists.
-  UrlValidityCheckerImpl url_validity_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlValidityCheckerFactory);
 };

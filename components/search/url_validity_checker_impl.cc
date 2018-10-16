@@ -41,9 +41,9 @@ struct UrlValidityCheckerImpl::PendingRequest {
 };
 
 UrlValidityCheckerImpl::UrlValidityCheckerImpl(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory),
-      clock_(base::DefaultTickClock::GetInstance()) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const base::TickClock* tick_clock)
+    : url_loader_factory_(std::move(url_loader_factory)), clock_(tick_clock) {}
 
 UrlValidityCheckerImpl::~UrlValidityCheckerImpl() = default;
 
@@ -56,8 +56,9 @@ void UrlValidityCheckerImpl::DoesUrlResolve(
   resource_request->method = "HEAD";
   resource_request->allow_credentials = false;
 
-  auto request_iter = pending_requests_.emplace(
-      pending_requests_.begin(), url, NowTicks(), clock_, std::move(callback));
+  auto request_iter = pending_requests_.emplace(pending_requests_.begin(), url,
+                                                clock_->NowTicks(), clock_,
+                                                std::move(callback));
   request_iter->loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   // Don't follow redirects to prevent leaking URL data to HTTP sites.
@@ -94,13 +95,8 @@ void UrlValidityCheckerImpl::OnSimpleLoaderComplete(
 void UrlValidityCheckerImpl::OnSimpleLoaderHandler(
     std::list<PendingRequest>::iterator request_iter,
     bool valid) {
-  base::TimeDelta elapsed_time = NowTicks() - request_iter->time_created;
+  base::TimeDelta elapsed_time =
+      clock_->NowTicks() - request_iter->time_created;
   std::move(request_iter->callback).Run(valid, elapsed_time);
   pending_requests_.erase(request_iter);
-}
-
-base::TimeTicks UrlValidityCheckerImpl::NowTicks() const {
-  if (!time_ticks_for_testing_.is_null())
-    return time_ticks_for_testing_;
-  return base::TimeTicks::Now();
 }
