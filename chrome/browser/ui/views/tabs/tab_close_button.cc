@@ -39,12 +39,13 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
       mouse_event_callback_(std::move(mouse_event_callback)) {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Disable animation so that the red danger sign shows up immediately
   // to help avoid mis-clicks.
   SetAnimationDuration(0);
 
-  if (focus_ring())
-    SetFocusPainter(nullptr);
+  SetInstallFocusRingOnFocus(true);
+  SetFocusPainter(nullptr);
 }
 
 TabCloseButton::~TabCloseButton() {}

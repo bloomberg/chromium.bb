@@ -36,7 +36,9 @@ class TabStyle {
     // child views. Does not have to be the same shape as the border.
     kInteriorClip,
     // The outline of the tab, used for occlusion in certain special situations.
-    kExteriorClip
+    kExteriorClip,
+    // The path used for focus rings.
+    kHighlight,
   };
 
   // How we want the resulting path scaled.
