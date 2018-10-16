@@ -652,6 +652,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HideDownloadUI() const override;
   bool HasPersistentVideo() const override;
   RenderFrameHost* GetPendingMainFrame() override;
+  void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
+  void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1258,8 +1260,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
   void OnUpdateFaviconURL(RenderFrameHostImpl* source,
                           const std::vector<FaviconURL>& candidates);
-  void OnFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source);
-  void OnCommitAndDrawCompositorFrame(RenderViewHostImpl* source);
   void OnShowValidationMessage(RenderViewHostImpl* source,
                                const gfx::Rect& anchor_in_root_view,
                                const base::string16& main_text,

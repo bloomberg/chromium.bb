@@ -785,6 +785,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            ResizeAndCrossProcessPostMessagePreserveOrder);
   friend class MockRenderWidgetHost;
   friend class OverscrollNavigationOverlayTest;
+  friend class RenderViewHostTester;
   friend class TestRenderViewHost;
   friend bool TestChildOrGuestAutoresize(bool,
                                          RenderProcessHost*,
@@ -801,6 +802,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
+  void OnRouteCloseEvent();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
@@ -828,6 +830,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
+  void OnFirstVisuallyNonEmptyPaint();
+  void OnCommitAndDrawCompositorFrame();
   void OnHasTouchEventHandlers(bool has_handlers);
 
   // Called when visual properties have changed in the renderer.

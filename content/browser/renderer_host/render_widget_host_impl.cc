@@ -626,14 +626,12 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!renderer_initialized())
     return false;
 
-  if (owner_delegate_ && owner_delegate_->OnMessageReceived(msg))
-    return true;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
@@ -651,10 +649,14 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_ForceRedrawComplete,
-                        OnForceRedrawComplete)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_ForceRedrawComplete,
+                        OnForceRedrawComplete)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint,
+                        OnFirstVisuallyNonEmptyPaint)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_DidCommitAndDrawCompositorFrame,
+                        OnCommitAndDrawCompositorFrame)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1867,6 +1869,16 @@ void RenderWidgetHostImpl::OnForceRedrawComplete(int snapshot_id) {
 #endif
 }
 
+void RenderWidgetHostImpl::OnFirstVisuallyNonEmptyPaint() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidFirstVisuallyNonEmptyPaint();
+}
+
+void RenderWidgetHostImpl::OnCommitAndDrawCompositorFrame() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidCommitAndDrawCompositorFrame();
+}
+
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
   if (!renderer_initialized_)
@@ -2114,7 +2126,22 @@ void RenderWidgetHostImpl::OnHittestData(
 }
 
 void RenderWidgetHostImpl::OnClose() {
-  ShutdownAndDestroyWidget(true);
+  if (owner_delegate_) {
+    owner_delegate_->RenderWidgetDidClose();
+  } else {
+    ShutdownAndDestroyWidget(true);
+  }
+}
+
+void RenderWidgetHostImpl::OnRouteCloseEvent() {
+  // This is only used by swapped out RenderWidgets to signal to the active
+  // RenderWidget that JS has requested a page to close. It is only triggered
+  // by blink::WebPagePopupImpl and blink::Page (through ChromeCilent). This
+  // message should be on RenderFrameHost or RenderFrameProxyHost.
+  //
+  // TODO(https://crbug.com/419087): Move to RenderFrameHost or
+  // RenderFrameProxyHost.
+  owner_delegate_->RenderWidgetNeedsToRouteCloseEvent();
 }
 
 void RenderWidgetHostImpl::OnSetTooltipText(

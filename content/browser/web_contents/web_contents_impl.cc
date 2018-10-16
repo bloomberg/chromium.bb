@@ -855,10 +855,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_view_host)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
-                        OnFirstVisuallyNonEmptyPaint)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidCommitAndDrawCompositorFrame,
-                        OnCommitAndDrawCompositorFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
@@ -4860,7 +4856,8 @@ void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
   is_overlay_content_ = is_overlay_content;
 }
 
-void WebContentsImpl::OnFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {
+void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
+    RenderViewHostImpl* source) {
   // TODO(nick): When this is ported to FrameHostMsg_, we should only listen if
   // |source| is the main frame.
   for (auto& observer : observers_)
@@ -4876,7 +4873,7 @@ void WebContentsImpl::OnFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {
   }
 }
 
-void WebContentsImpl::OnCommitAndDrawCompositorFrame(
+void WebContentsImpl::DidCommitAndDrawCompositorFrame(
     RenderViewHostImpl* source) {
   for (auto& observer : observers_)
     observer.DidCommitAndDrawCompositorFrame();

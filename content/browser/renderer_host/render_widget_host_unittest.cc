@@ -38,7 +38,6 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
-#include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -2051,7 +2050,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
-  messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2079,7 +2078,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
-  messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2109,8 +2108,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2155,8 +2154,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2201,8 +2200,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2238,8 +2237,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages3;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages3.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages3.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   // Mocking |renderer_compositor_frame_sink_| to prevent crashes in
   // renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources).
