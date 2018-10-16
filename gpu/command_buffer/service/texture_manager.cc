@@ -513,6 +513,20 @@ TexturePassthrough::~TexturePassthrough() {
   }
 }
 
+TextureBase::Type TexturePassthrough::GetType() const {
+  return TextureBase::Type::kPassthrough;
+}
+
+// static
+TexturePassthrough* TexturePassthrough::CheckedCast(TextureBase* texture) {
+  if (!texture)
+    return nullptr;
+  if (texture->GetType() == TextureBase::Type::kPassthrough)
+    return static_cast<TexturePassthrough*>(texture);
+  DLOG(ERROR) << "Bad typecast";
+  return nullptr;
+}
+
 void TexturePassthrough::MarkContextLost() {
   have_context_ = false;
 }
@@ -600,6 +614,20 @@ void Texture::MaybeDeleteThis(bool have_context) {
   if (have_context)
     glDeleteTextures(1, &owned_service_id_);
   delete this;
+}
+
+TextureBase::Type Texture::GetType() const {
+  return TextureBase::Type::kValidated;
+}
+
+// static
+Texture* Texture::CheckedCast(TextureBase* texture) {
+  if (!texture)
+    return nullptr;
+  if (texture->GetType() == TextureBase::Type::kValidated)
+    return static_cast<Texture*>(texture);
+  DLOG(ERROR) << "Bad typecast";
+  return nullptr;
 }
 
 MemoryTypeTracker* Texture::GetMemTracker() {
@@ -3544,7 +3572,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   // Add a |service_guid| which expresses shared ownership between the various
   // |client_guid|s.
   auto service_guid =
-      gl::GetGLTextureServiceGUIDForTracing(ref->texture()->service_id());
+      gl::GetGLTextureServiceGUIDForTracing(ref->texture()->GetTracingId());
   pmd->CreateSharedGlobalAllocatorDump(service_guid);
 
   int importance = 0;  // Default importance.

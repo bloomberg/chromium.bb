@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gl/trace_util.h"
 
@@ -28,6 +29,7 @@ SharedImageFactory::SharedImageFactory(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info,
+    raster::RasterDecoderContextState* context_state,
     MailboxManager* mailbox_manager,
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
@@ -41,7 +43,11 @@ SharedImageFactory::SharedImageFactory(
                                                                workarounds,
                                                                gpu_feature_info,
                                                                image_factory,
-                                                               tracker)) {}
+                                                               tracker)),
+      wrapped_sk_image_factory_(
+          gpu_preferences.enable_raster_to_sk_image
+              ? std::make_unique<raster::WrappedSkImageFactory>(context_state)
+              : nullptr) {}
 
 SharedImageFactory::~SharedImageFactory() {
   DCHECK(mailboxes_.empty());
@@ -57,8 +63,16 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
     return false;
   }
 
-  auto backing =
-      backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  std::unique_ptr<SharedImageBacking> backing;
+  if (wrapped_sk_image_factory_ &&
+      (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION)) {
+    backing = wrapped_sk_image_factory_->CreateSharedImage(format, size,
+                                                           color_space, usage);
+  } else {
+    backing =
+        backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  }
+
   if (!backing) {
     LOG(ERROR) << "CreateSharedImage: could not create backing.";
     return false;
@@ -95,10 +109,10 @@ bool SharedImageFactory::DestroySharedImage(const Mailbox& mailbox) {
 }
 
 void SharedImageFactory::DestroyAllSharedImages(bool have_context) {
-    for (const auto& mailbox : mailboxes_) {
-      shared_image_manager_->Unregister(mailbox, have_context);
-    }
-    mailboxes_.clear();
+  for (const auto& mailbox : mailboxes_) {
+    shared_image_manager_->Unregister(mailbox, have_context);
+  }
+  mailboxes_.clear();
 }
 
 bool SharedImageFactory::OnMemoryDump(
@@ -111,9 +125,23 @@ bool SharedImageFactory::OnMemoryDump(
 
   // TODO(ericrk): Move some of this to SharedImageBacking.
   for (const auto& mailbox : mailboxes_) {
-    auto* texture =
-        static_cast<gles2::Texture*>(mailbox_manager_->ConsumeTexture(mailbox));
-    DCHECK(texture);
+    uint64_t estimated_size = 0;
+    TextureBase* texture_base = mailbox_manager_->ConsumeTexture(mailbox);
+
+    gles2::Texture* texture = nullptr;
+    switch (texture_base->GetType()) {
+      case TextureBase::Type::kValidated:
+        texture = gles2::Texture::CheckedCast(texture_base);
+        estimated_size = texture->estimated_size();
+        break;
+      case TextureBase::Type::kSkImage:
+        estimated_size =
+            raster::WrappedSkImage::CheckedCast(texture_base)->estimated_size();
+        break;
+      default:
+        NOTREACHED();
+        continue;
+    }
 
     // Unique name in the process.
     std::string dump_name =
@@ -124,7 +152,7 @@ bool SharedImageFactory::OnMemoryDump(
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    static_cast<uint64_t>(texture->estimated_size()));
+                    estimated_size);
     // Add a mailbox guid which expresses shared ownership with the client
     // process.
     // This must match the client-side.
@@ -134,7 +162,7 @@ bool SharedImageFactory::OnMemoryDump(
     // Add a |service_guid| which expresses shared ownership between the
     // various GPU dumps.
     auto service_guid =
-        gl::GetGLTextureServiceGUIDForTracing(texture->service_id());
+        gl::GetGLTextureServiceGUIDForTracing(texture->GetTracingId());
     pmd->CreateSharedGlobalAllocatorDump(service_guid);
     // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
     int importance = 2;  // This client always owns the ref.
@@ -143,7 +171,8 @@ bool SharedImageFactory::OnMemoryDump(
 
     // Dump all sub-levels held by the texture. They will appear below the
     // main gl/textures/client_X/mailbox_Y dump.
-    texture->DumpLevelMemory(pmd, client_tracing_id, dump_name);
+    if (texture)
+      texture->DumpLevelMemory(pmd, client_tracing_id, dump_name);
   }
 
   return true;

@@ -58,6 +58,11 @@ class GPU_GLES2_EXPORT TexturePassthrough final
  public:
   TexturePassthrough(GLuint service_id, GLenum target);
 
+  // TextureBase implementation:
+  TextureBase::Type GetType() const override;
+
+  static TexturePassthrough* CheckedCast(TextureBase* texture);
+
   // Notify the texture that the context is lost and it shouldn't delete the
   // native GL texture in the destructor
   void MarkContextLost();
@@ -118,6 +123,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   };
 
   explicit Texture(GLuint service_id);
+
+  // TextureBase implementation:
+  TextureBase::Type GetType() const override;
+
+  static Texture* CheckedCast(TextureBase* texture);
 
   const SamplerState& sampler_state() const {
     return sampler_state_;

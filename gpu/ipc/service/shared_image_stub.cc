@@ -113,7 +113,8 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
     factory_ = std::make_unique<SharedImageFactory>(
         channel_manager->gpu_preferences(),
         channel_manager->gpu_driver_bug_workarounds(),
-        channel_manager->gpu_feature_info(), channel_manager->mailbox_manager(),
+        channel_manager->gpu_feature_info(), context_state_.get(),
+        channel_manager->mailbox_manager(),
         channel_manager->shared_image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this);
     return true;

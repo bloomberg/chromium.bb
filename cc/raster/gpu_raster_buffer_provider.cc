@@ -133,7 +133,8 @@ static void RasterizeSourceOOP(
   if (mailbox->IsZero()) {
     DCHECK(!sync_token.HasData());
     auto* sii = context_provider->SharedImageInterface();
-    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER;
+    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
+                     gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     if (texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     *mailbox = sii->CreateSharedImage(resource_format, resource_size,
@@ -142,10 +143,6 @@ static void RasterizeSourceOOP(
   } else {
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
-
-  GLuint texture_id = ri->CreateAndConsumeTexture(
-      texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT, resource_format,
-      mailbox->name);
 
   // TODO(enne): Use the |texture_target|? GpuMemoryBuffer backed textures don't
   // use GL_TEXTURE_2D.
@@ -169,8 +166,6 @@ static void RasterizeSourceOOP(
 
   // TODO(ericrk): Handle unpremultiply+dither for 4444 cases.
   // https://crbug.com/789153
-
-  ri->DeleteTextures(1, &texture_id);
 }
 
 static void RasterizeSource(

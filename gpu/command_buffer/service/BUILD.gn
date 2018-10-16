@@ -227,6 +227,8 @@ target(link_target_type, "gles2_sources") {
     "shared_image_factory.h",
     "shared_image_manager.cc",
     "shared_image_manager.h",
+    "skia_utils.cc",
+    "skia_utils.h",
     "texture_definition.cc",
     "texture_definition.h",
     "texture_manager.cc",
@@ -245,6 +247,8 @@ target(link_target_type, "gles2_sources") {
     "webgpu_cmd_validation_implementation_autogen.h",
     "webgpu_decoder.cc",
     "webgpu_decoder.h",
+    "wrapped_sk_image.cc",
+    "wrapped_sk_image.h",
   ]
 
   configs += [

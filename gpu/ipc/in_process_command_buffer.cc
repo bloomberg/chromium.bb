@@ -583,22 +583,20 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     if (!use_passthrough_cmd_decoder &&
         params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
-      scoped_refptr<raster::RasterDecoderContextState> context_state =
-          new raster::RasterDecoderContextState(gl_share_group_, surface_,
-                                                real_context,
-                                                use_virtualized_gl_context_);
+      context_state_ = base::MakeRefCounted<raster::RasterDecoderContextState>(
+          gl_share_group_, surface_, real_context, use_virtualized_gl_context_);
       gr_shader_cache_ = params.gr_shader_cache;
-      context_state->InitializeGrContext(workarounds, params.gr_shader_cache,
-                                         params.activity_flags);
+      context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
+                                          params.activity_flags);
 
       if (base::ThreadTaskRunnerHandle::IsSet()) {
-        gr_cache_controller_.emplace(context_state.get(),
+        gr_cache_controller_.emplace(context_state_.get(),
                                      base::ThreadTaskRunnerHandle::Get());
       }
 
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
-          context_group_.get(), std::move(context_state)));
+          context_group_.get(), context_state_));
     } else {
       decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
                                                  task_executor_->outputter(),
@@ -731,7 +729,7 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   gl_share_group_ = nullptr;
   context_group_ = nullptr;
   task_sequence_ = nullptr;
-
+  context_state_ = nullptr;
   return true;
 }
 
@@ -1304,7 +1302,8 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
   if (!shared_image_factory_) {
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         GetGpuPreferences(), context_group_->feature_info()->workarounds(),
-        GetGpuFeatureInfo(), context_group_->mailbox_manager(),
+        GetGpuFeatureInfo(), context_state_.get(),
+        context_group_->mailbox_manager(),
         context_group_->shared_image_manager(), image_factory_, nullptr);
   }
   if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
