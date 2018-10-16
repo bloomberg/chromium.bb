@@ -11573,13 +11573,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int reach_first_comp_mode = 0;
 
   // Temporary buffers used by handle_inter_mode().
-  // We allocate them once and reuse it in every call to that function.
-  // Note: Must be allocated on the heap due to large size of the arrays.
-  uint8_t *tmp_buf_orig;
-  CHECK_MEM_ERROR(
-      cm, tmp_buf_orig,
-      (uint8_t *)aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE));
-  uint8_t *const tmp_buf = get_buf_by_bd(xd, tmp_buf_orig);
+  uint8_t *const tmp_buf = get_buf_by_bd(xd, x->tmp_obmc_bufs[0]);
 
   CompoundTypeRdBuffers rd_buffers;
   alloc_compound_type_rd_buffers(cm, &rd_buffers);
@@ -11836,8 +11830,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (x->skip && !comp_pred) break;
   }
 
-  aom_free(tmp_buf_orig);
-  tmp_buf_orig = NULL;
   release_compound_type_rd_buffers(&rd_buffers);
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS

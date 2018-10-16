@@ -2435,7 +2435,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   for (int i = 0; i < 2; ++i) {
     if (x->tmp_obmc_bufs[i] == NULL) {
       CHECK_MEM_ERROR(cm, x->tmp_obmc_bufs[i],
-                      aom_memalign(16, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
+                      aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
                                            sizeof(*x->tmp_obmc_bufs[i])));
       x->e_mbd.tmp_obmc_bufs[i] = x->tmp_obmc_bufs[i];
     }
@@ -3043,6 +3043,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);
       aom_free(thread_data->td->wsrc_buf);
+
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
       aom_free(thread_data->td->inter_modes_info);
 #endif
