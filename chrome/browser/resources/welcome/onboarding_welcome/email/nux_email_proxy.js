@@ -61,7 +61,10 @@ cr.define('nux', function() {
     /** @param {boolean} show */
     toggleBookmarkBar(show) {}
 
-    /** @return {!Array<Object>} Array of email providers. */
+    /**
+     * Returns a promise for an array of email providers.
+     * @return {!Promise<!Array<!nux.BookmarkListItem>>}
+     */
     getEmailList() {}
 
     recordPageInitialized() {}
@@ -111,17 +114,7 @@ cr.define('nux', function() {
 
     /** @override */
     getEmailList() {
-      let emailCount = loadTimeData.getInteger('email_count');
-      let emailList = [];
-      for (let i = 0; i < emailCount; ++i) {
-        emailList.push({
-          id: loadTimeData.getValue(`email_id_${i}`),
-          name: loadTimeData.getString(`email_name_${i}`),
-          icon: loadTimeData.getString(`email_name_${i}`).toLowerCase(),
-          url: loadTimeData.getString(`email_url_${i}`)
-        });
-      }
-      return emailList;
+      return cr.sendWithPromise('getEmailList');
     }
 
     /** @override */

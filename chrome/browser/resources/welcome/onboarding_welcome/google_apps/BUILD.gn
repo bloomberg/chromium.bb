@@ -12,13 +12,16 @@ js_type_check("closure_compile") {
 }
 
 js_library("apps_chooser") {
-  deps = []
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
 }
 
 js_library("nux_google_apps") {
   deps = [
     ":apps_chooser",
     ":nux_google_apps_proxy",
+    "../shared:nux_types",
   ]
 }
 

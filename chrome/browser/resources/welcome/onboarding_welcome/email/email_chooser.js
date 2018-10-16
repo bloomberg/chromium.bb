@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @const
- */
-var nuxEmail = nuxEmail || {};
+cr.exportPath('nuxEmail');
 
 /**
- * @typedef {?{
- *    name: string,
- *    icon: string,
- *    url: string,
- *    bookmarkId: (string|undefined),
+ * @typedef {{
+ *   id: number,
+ *   name: string,
+ *   icon: string,
+ *   url: string,
+ *   bookmarkId: (string|undefined),
  * }}
  */
 nuxEmail.EmailProviderModel;
@@ -23,7 +21,11 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    emailList: Array,
+    /**
+     * @type {!Array<!nux.BookmarkListItem>}
+     * @private
+     */
+    emailList_: Array,
 
     /** @private */
     bookmarkBarWasShown_: {
@@ -34,7 +36,7 @@ Polymer({
     /** @private */
     finalized_: Boolean,
 
-    /** @private {nuxEmail.EmailProviderModel} */
+    /** @private {?nuxEmail.EmailProviderModel} */
     selectedEmailProvider_: {
       type: Object,
       value: () => null,
@@ -57,7 +59,9 @@ Polymer({
     this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
     this.browserProxy_.recordPageInitialized();
 
-    this.emailList = this.browserProxy_.getEmailList();
+    this.browserProxy_.getEmailList().then(list => {
+      this.emailList_ = list;
+    });
 
     window.addEventListener('beforeunload', () => {
       // Only need to clean up if user didn't interact with the buttons.
@@ -110,11 +114,11 @@ Polymer({
   },
 
   /**
-   * @param {nuxEmail.EmailProviderModel=} emailProvider
+   * @param {nuxEmail.EmailProviderModel=} opt_emailProvider
    * @private
    */
-  revertBookmark_: function(emailProvider) {
-    emailProvider = emailProvider || this.selectedEmailProvider_;
+  revertBookmark_: function(opt_emailProvider) {
+    let emailProvider = opt_emailProvider || this.selectedEmailProvider_;
 
     if (emailProvider && emailProvider.bookmarkId)
       this.browserProxy_.removeBookmark(emailProvider.bookmarkId);

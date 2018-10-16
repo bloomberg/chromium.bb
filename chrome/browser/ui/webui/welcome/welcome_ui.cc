@@ -111,7 +111,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>(
         profile->GetPrefs(), FaviconServiceFactory::GetForProfile(
                                  profile, ServiceAccessType::EXPLICIT_ACCESS)));
-    nux::GoogleAppsHandler::AddSources(html_source);
+    nux::GoogleAppsHandler::AddSources(html_source, profile->GetPrefs());
 
     // Add set-as-default onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());

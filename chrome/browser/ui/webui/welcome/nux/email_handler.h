@@ -43,6 +43,7 @@ class EmailHandler : public content::WebUIMessageHandler {
   // Callbacks for JS APIs.
   void HandleCacheEmailIcon(const base::ListValue* args);
   void HandleToggleBookmarkBar(const base::ListValue* args);
+  void HandleGetEmailList(const base::ListValue* args);
 
   // Adds webui sources.
   static void AddSources(content::WebUIDataSource* html_source,

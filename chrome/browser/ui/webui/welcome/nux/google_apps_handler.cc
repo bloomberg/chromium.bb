@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -26,7 +27,7 @@ namespace nux {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class GoogleApps {
-  kGmail = 0,
+  kGmailDoNotUse = 0,  // Deprecated.
   kYouTube = 1,
   kMaps = 2,
   kTranslate = 3,
@@ -39,31 +40,21 @@ const char* kGoogleAppsInteractionHistogram =
     "FirstRun.NewUserExperience.GoogleAppsInteraction";
 
 // Strings in costants not translated because this is an experiment.
-// Translate before wide release.
-
-constexpr const char* kGoogleAppNames[] = {
-    "Gmail", "YouTube", "Maps", "Translate", "News", "Chrome Web Store",
-};
-
-constexpr const char* kGoogleAppUrls[] = {
-    "https://gmail.com",       "https://youtube.com",
-    "https://maps.google.com", "https://translate.google.com",
-    "https://news.google.com", "https://chrome.google.com/webstore",
+// TODO(hcarmona): Translate before wide release.
+const BookmarkItem kGoogleApps[] = {
+    {static_cast<int>(GoogleApps::kYouTube), "YouTube", "youtube",
+     "https://youtube.com", IDR_NUX_GOOGLE_APPS_YOUTUBE_1X},
+    {static_cast<int>(GoogleApps::kMaps), "Maps", "maps",
+     "https://maps.google.com", IDR_NUX_GOOGLE_APPS_MAPS_1X},
+    {static_cast<int>(GoogleApps::kTranslate), "Translate", "translate",
+     "https://translate.google.com", IDR_NUX_GOOGLE_APPS_TRANSLATE_1X},
+    {static_cast<int>(GoogleApps::kNews), "News", "news",
+     "https://news.google.com", IDR_NUX_GOOGLE_APPS_NEWS_1X},
+    {static_cast<int>(GoogleApps::kChromeWebStore), "Web Store", "web-store",
+     "https://chrome.google.com/webstore", IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X},
 };
 
 constexpr const int kGoogleAppIconSize = 48;  // Pixels.
-constexpr const int kGoogleAppIcons[] = {
-    IDR_NUX_EMAIL_GMAIL_1X, IDR_NUX_GOOGLE_APPS_YOUTUBE_1X,
-    IDR_NUX_GOOGLE_APPS_MAPS_1X,  IDR_NUX_GOOGLE_APPS_TRANSLATE_1X,
-    IDR_NUX_GOOGLE_APPS_NEWS_1X,  IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X,
-};
-
-static_assert(base::size(kGoogleAppNames) == base::size(kGoogleAppUrls),
-              "names and urls must match");
-static_assert(base::size(kGoogleAppNames) == (size_t)GoogleApps::kCount,
-              "names and histograms must match");
-static_assert(base::size(kGoogleAppNames) == base::size(kGoogleAppIcons),
-              "names and icons must match");
 
 GoogleAppsHandler::GoogleAppsHandler(PrefService* prefs,
                                      favicon::FaviconService* favicon_service)
@@ -81,6 +72,11 @@ void GoogleAppsHandler::RegisterMessages() {
       "addGoogleApps",
       base::BindRepeating(&GoogleAppsHandler::HandleAddGoogleApps,
                           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "getGoogleAppsList",
+      base::BindRepeating(&GoogleAppsHandler::HandleGetGoogleAppsList,
+                          base::Unretained(this)));
 }
 
 void GoogleAppsHandler::HandleRejectGoogleApps(const base::ListValue* args) {
@@ -91,14 +87,14 @@ void GoogleAppsHandler::HandleRejectGoogleApps(const base::ListValue* args) {
 
 void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
   // Add bookmarks for all selected apps.
-  for (size_t i = 0; i < (size_t)GoogleApps::kCount; ++i) {
+  for (size_t i = 0; i < base::size(kGoogleApps); ++i) {
     bool selected = false;
     CHECK(args->GetBoolean(i, &selected));
     if (selected) {
       UMA_HISTOGRAM_ENUMERATION(
-          "FirstRun.NewUserExperience.GoogleAppsSelection", (GoogleApps)i,
-          GoogleApps::kCount);
-      GURL app_url = GURL(kGoogleAppUrls[i]);
+          "FirstRun.NewUserExperience.GoogleAppsSelection",
+          (GoogleApps)kGoogleApps[i].id, GoogleApps::kCount);
+      GURL app_url = GURL(kGoogleApps[i].url);
       // TODO(hcarmona): Add bookmark from JS.
 
       // Preload the favicon cache with Chrome-bundled images. Otherwise, the
@@ -107,7 +103,7 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
       favicon_service_->MergeFavicon(
           app_url, app_url, favicon_base::IconType::kFavicon,
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              kGoogleAppIcons[i]),
+              kGoogleApps[i].icon),
           gfx::Size(kGoogleAppIconSize, kGoogleAppIconSize));
     }
   }
@@ -120,7 +116,18 @@ void GoogleAppsHandler::HandleAddGoogleApps(const base::ListValue* args) {
                             GoogleAppsInteraction::kCount);
 }
 
-void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
+void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  ResolveJavascriptCallback(
+      *callback_id,
+      bookmarkItemsToListValue(kGoogleApps, base::size(kGoogleApps)));
+}
+
+void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source,
+                                   PrefService* prefs) {
   // Localized strings.
   html_source->AddLocalizedString("noThanks", IDS_NO_THANKS);
   html_source->AddLocalizedString("getStarted",
@@ -170,6 +177,12 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_1X);
   html_source->AddResourcePath("apps/youtube_2x.png",
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_2X);
+
+  // Add constants to loadtime data
+  html_source->AddBoolean(
+      "bookmark_bar_shown",
+      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
+  html_source->SetJsonPath("strings.js");
 }
 
 }  // namespace nux
