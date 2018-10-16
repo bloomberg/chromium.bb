@@ -84,18 +84,11 @@ void AppendAllDescendantIds(const ReadTransaction* trans,
   }
 }
 
-}  // namespace
-
-bool MigrateDirectoryData(ModelType type,
-                          UserShare* user_share,
-                          ModelTypeWorker* worker) {
-  return MigrateDirectoryDataWithBatchSize(type, user_share, worker, 64);
-}
-
 bool MigrateDirectoryDataWithBatchSize(ModelType type,
+                                       int batch_size,
                                        UserShare* user_share,
                                        ModelTypeWorker* worker,
-                                       int batch_size) {
+                                       int* cumulative_migrated_entity_count) {
   DCHECK_NE(PASSWORDS, type);
   ReadTransaction trans(FROM_HERE, user_share);
 
@@ -143,11 +136,33 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
       }
     }
 
+    *cumulative_migrated_entity_count += entity_ptrs.size();
     worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs, nullptr);
   }
 
   worker->PassiveApplyUpdates(nullptr);
   return true;
+}
+
+}  // namespace
+
+bool MigrateDirectoryData(ModelType type,
+                          UserShare* user_share,
+                          ModelTypeWorker* worker,
+                          int* migrated_entity_count) {
+  *migrated_entity_count = 0;
+  return MigrateDirectoryDataWithBatchSize(type, 64, user_share, worker,
+                                           migrated_entity_count);
+}
+
+bool MigrateDirectoryDataWithBatchSizeForTesting(
+    ModelType type,
+    int batch_size,
+    UserShare* user_share,
+    ModelTypeWorker* worker,
+    int* cumulative_migrated_entity_count) {
+  return MigrateDirectoryDataWithBatchSize(type, batch_size, user_share, worker,
+                                           cumulative_migrated_entity_count);
 }
 
 }  // namespace syncer
