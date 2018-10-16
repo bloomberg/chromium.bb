@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.xx.xxxx */
 /* at a redacted point in time
  */
-/* Compiler settings for ../../chrome/credential_provider/gaiacp/gaia_credential_provider.idl:
+/* Compiler settings for gen/chrome/credential_provider/gaiacp/gaia_credential_provider.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.xx.xxxx 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 

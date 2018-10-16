@@ -48,8 +48,11 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
   eventlog_path =
       eventlog_path.Append(FILE_PATH_LITERAL("gcp_eventlog_provider.dll"));
 
+  wchar_t guid_in_wchar[64];
+  StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar, base::size(guid_in_wchar));
+
   ATL::_ATL_REGMAP_ENTRY regmap[] = {
-      {L"APPID", L"{C2DDF2F2-F760-4B27-92F4-3461EE8A7A0B}"},
+      {L"CREDENTIAL_PROVIDER_CLASS_GUID", guid_in_wchar},
       {L"VERSION", TEXT(CHROME_VERSION_STRING)},
       {L"EVENTLOG_PATH", eventlog_path.value().c_str()},
       {nullptr, nullptr},

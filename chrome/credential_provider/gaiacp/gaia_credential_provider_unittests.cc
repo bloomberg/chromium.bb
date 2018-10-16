@@ -87,14 +87,12 @@ TEST_F(GcpCredentialProviderTest, CleanupStaleTokenHandles) {
 
   // Expect "good" sid to still in the registry, "bad" one to be cleaned up.
   base::win::RegKey key;
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Open(HKEY_LOCAL_MACHINE, L"Software\\Google\\GCP\\Users\\",
-                     KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE,
+                                    GetUsersRootKeyForTesting(), KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.OpenKey(OLE2CW(sid_good), KEY_READ));
 
-  ASSERT_EQ(ERROR_SUCCESS,
-            key.Open(HKEY_LOCAL_MACHINE, L"Software\\Google\\GCP\\Users\\",
-                     KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE,
+                                    GetUsersRootKeyForTesting(), KEY_READ));
   EXPECT_NE(ERROR_SUCCESS, key.OpenKey(OLE2CW(sid_bad), KEY_READ));
 }
 

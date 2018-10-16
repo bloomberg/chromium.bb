@@ -512,6 +512,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
 
 // static
 void CGaiaCredentialBase::TellOmahaDidRun() {
+#if defined(GOOGLE_CHROME_BUILD)
   // Tell omaha that product was used.  Best effort only.
   //
   // This code always runs as LocalSystem, which means that HKCU maps to
@@ -527,6 +528,7 @@ void CGaiaCredentialBase::TellOmahaDidRun() {
     if (sts != ERROR_SUCCESS)
       LOGFN(INFO) << "Unable to write omaha dr value sts=" << sts;
   }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 // static
