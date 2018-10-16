@@ -1296,16 +1296,12 @@ content::KeyboardEventProcessingResult Browser::PreHandleKeyboardEvent(
   return window()->PreHandleKeyboardEvent(event);
 }
 
-void Browser::HandleKeyboardEvent(content::WebContents* source,
+bool Browser::HandleKeyboardEvent(content::WebContents* source,
                                   const NativeWebKeyboardEvent& event) {
   DevToolsWindow* devtools_window =
       DevToolsWindow::GetInstanceForInspectedWebContents(source);
-  bool handled = false;
-  if (devtools_window)
-    handled = devtools_window->ForwardKeyboardEvent(event);
-
-  if (!handled)
-    window()->HandleKeyboardEvent(event);
+  return (devtools_window && devtools_window->ForwardKeyboardEvent(event)) ||
+         window()->HandleKeyboardEvent(event);
 }
 
 bool Browser::TabsNeedBeforeUnloadFired() {

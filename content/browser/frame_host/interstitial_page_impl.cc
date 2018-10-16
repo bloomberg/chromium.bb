@@ -594,10 +594,9 @@ bool InterstitialPageImpl::PreHandleMouseEvent(
   return false;
 }
 
-void InterstitialPageImpl::HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) {
-  if (enabled())
-    render_widget_host_delegate_->HandleKeyboardEvent(event);
+bool InterstitialPageImpl::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return enabled() && render_widget_host_delegate_->HandleKeyboardEvent(event);
 }
 
 WebContents* InterstitialPageImpl::web_contents() const {

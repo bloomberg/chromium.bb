@@ -77,9 +77,9 @@ void SpokenFeedbackEventRewriterDelegate::OnUnhandledSpokenFeedbackEvent(
       std::move(event));
 }
 
-void SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
+bool SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  OnUnhandledSpokenFeedbackEvent(
-      ui::Event::Clone(*static_cast<ui::Event*>(event.os_event)));
+  OnUnhandledSpokenFeedbackEvent(ui::Event::Clone(*event.os_event));
+  return true;
 }

@@ -210,7 +210,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                               const base::string16& source_id) final;
   void CloseContents(content::WebContents* source) final;
   bool HandleContextMenu(const content::ContextMenuParams& params) final;
-  void HandleKeyboardEvent(content::WebContents* source,
+  bool HandleKeyboardEvent(content::WebContents* source,
                            const content::NativeWebKeyboardEvent& event) final;
   void LoadProgressChanged(content::WebContents* source, double progress) final;
   bool PreHandleGestureEvent(content::WebContents* source,

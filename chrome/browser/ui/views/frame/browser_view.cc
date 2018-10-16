@@ -1523,12 +1523,12 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
   return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
 }
 
-void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (frame_->HandleKeyboardEvent(event))
-    return;
+    return true;
 
-  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                        GetFocusManager());
+  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, GetFocusManager());
 }
 
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always

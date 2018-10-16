@@ -2232,13 +2232,12 @@ KeyboardEventProcessingResult WebContentsImpl::PreHandleKeyboardEvent(
                    : KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
-void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+bool WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (browser_plugin_embedder_ &&
       browser_plugin_embedder_->HandleKeyboardEvent(event)) {
-    return;
+    return true;
   }
-  if (delegate_)
-    delegate_->HandleKeyboardEvent(this, event);
+  return delegate_ && delegate_->HandleKeyboardEvent(this, event);
 }
 
 bool WebContentsImpl::HandleWheelEvent(
