@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
@@ -38,6 +39,7 @@ import java.util.TreeMap;
  */
 class DateOrderedListMutator implements OfflineItemFilterObserver {
     private static final Date JUST_NOW_DATE = new Date(Long.MAX_VALUE);
+    private final DownloadManagerUiConfig mConfig;
     private final JustNowProvider mJustNowProvider;
     private final ListItemModel mModel;
 
@@ -51,10 +53,13 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
      * Creates an DateOrderedList instance that will reflect {@code source}.
      * @param source The source of data for this list.
      * @param model  The model that will be the storage for the updated list.
+     * @param config The {@link DownloadManagerUiConfig}.
+     * @param justNowProvider The provider for Just Now section.
      */
-    public DateOrderedListMutator(
-            OfflineItemFilterSource source, ListItemModel model, JustNowProvider justNowProvider) {
+    public DateOrderedListMutator(OfflineItemFilterSource source, ListItemModel model,
+            DownloadManagerUiConfig config, JustNowProvider justNowProvider) {
         mModel = model;
+        mConfig = config;
         mJustNowProvider = justNowProvider;
         source.addObserver(this);
         onItemsAdded(source.getItems());
@@ -170,7 +175,7 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
                 // Add the items in the section.
                 for (OfflineItem offlineItem : section.items.values()) {
                     OfflineItemListItem item = new OfflineItemListItem(offlineItem);
-                    if (section.items.size() == 1
+                    if (mConfig.supportFullWidthImages && section.items.size() == 1
                             && offlineItem.filter == OfflineItemFilter.FILTER_IMAGE) {
                         item.spanFullWidth = true;
                     }
