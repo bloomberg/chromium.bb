@@ -176,12 +176,6 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
-  // Added 07/2014.
-  translate::TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
-
-  // Added 08/2015.
-  prefs->ClearPref(::prefs::kSigninSharedAuthenticationUserId);
-
   // Added 01/2018.
   prefs->ClearPref(::prefs::kNtpShownPage);
 

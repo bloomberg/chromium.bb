@@ -132,11 +132,6 @@ const char kSigninLastAccounts[] = "ios.signin.last_accounts";
 // accounts was migrated to use account ids instead of emails.
 const char kSigninLastAccountsMigrated[] = "ios.signin.last_accounts_migrated";
 
-// String which contains the user id of the user signed in with shared
-// authentication.
-const char kSigninSharedAuthenticationUserId[] =
-    "ios.signin.shared_authentication_user_id";
-
 // Boolean which indicates if user should be prompted to sign in again
 // when a new tab is created.
 const char kSigninShouldPromptForSigninAgain[] =
