@@ -136,6 +136,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kReaderModeInCCT,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
+    &kServiceManagerForDownload,
     &kSoleIntegration,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleFeature,
@@ -383,6 +384,9 @@ const base::Feature kPwaPersistentNotification{
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kServiceManagerForDownload{
+    "ServiceManagerForDownload", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSimplifiedNTP{"SimplifiedNTP",
                                    base::FEATURE_ENABLED_BY_DEFAULT};

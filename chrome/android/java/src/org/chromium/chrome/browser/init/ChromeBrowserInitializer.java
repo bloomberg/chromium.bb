@@ -422,6 +422,7 @@ public class ChromeBrowserInitializer {
 
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
+        ServiceManagerStartupUtils.registerEnabledFeatures();
 
         // When a minidump is detected, extract and append a logcat to it, then upload it to the
         // crash server. Note that the logcat extraction might fail. This is ok; in that case, the
