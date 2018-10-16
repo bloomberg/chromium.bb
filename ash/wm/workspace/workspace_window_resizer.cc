@@ -559,11 +559,7 @@ void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     CompleteDrag();
 
-    // TODO(pkotwicz): Fix tests which inadvertently start flings and check
-    // window_resizer_->IsMove() instead of the hittest component at |event|'s
-    // location.
-    if (wm::GetNonClientComponent(GetTarget(), event->location()) !=
-            HTCAPTION ||
+    if (details().bounds_change != WindowResizer::kBoundsChange_Repositions ||
         !wm::GetWindowState(GetTarget())->IsNormalOrSnapped()) {
       return;
     }
