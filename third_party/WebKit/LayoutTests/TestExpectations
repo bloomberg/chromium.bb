@@ -5326,3 +5326,4 @@ crbug.com/891155 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAut
 # Sheriff 2018-10-15
 crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font-matching.html [ Failure Pass ]
 crbug.com/891155 [ Linux ] fast/events/middleClickAutoscroll-event-fired.html [ Failure Pass ]
+crbug.com/891155 [ Linux ] fast/events/middleClickAutoscroll-drag.html [ Failure Pass ]
