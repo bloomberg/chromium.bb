@@ -623,6 +623,10 @@ void AssistantMainStage::OnUiVisibilityChanged(
                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
                   kFooterEntryAnimationFadeInDelay),
               CreateOpacityElement(1.f, kFooterEntryAnimationFadeInDuration)));
+    } else {
+      // A pending query is present so we simulate a change event to synchronize
+      // view state with interaction model state.
+      OnPendingQueryChanged(pending_query);
     }
 
     return;
