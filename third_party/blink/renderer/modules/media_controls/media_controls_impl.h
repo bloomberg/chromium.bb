@@ -283,7 +283,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateOverflowMenuWanted() const;
   void UpdateScrubbingMessageFits() const;
   void UpdateSizingCSSClass();
-  void UpdateOverlayPlayButtonWidthCSSVar();
   void MaybeRecordElementsDisplayed() const;
 
   // Takes a popup menu (caption, overflow) and position on the screen. This is
@@ -409,10 +408,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Timer for distinguishing double-taps.
   TaskRunnerTimer<MediaControlsImpl> tap_timer_;
-
-  // Holds the currently set --overlay-play-button-width value. Used to check if
-  // we need to update.
-  base::Optional<double> overlay_play_button_width_;
 
   bool is_test_mode_ = false;
 };
