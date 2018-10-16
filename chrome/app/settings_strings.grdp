@@ -1442,7 +1442,7 @@
       Error mounting share. The specified share was not found on the network.
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE" desc="The message shown when mounting a new SMB share fails because the specified device is not supported.">
-      Error mounting share. The specified share is not supported.
+      Error mounting share. Please check that the file server you are connecting to supports SMBv2 or later.
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE" desc="The message shown when mounting a new SMB share fails because the share is already mounted.">
       Error mounting share. The specified share is already mounted.
