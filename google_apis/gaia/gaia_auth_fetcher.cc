@@ -691,7 +691,7 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
 void GaiaAuthFetcher::StartListAccounts() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
   list_accounts_system_uptime_ = base::SysInfo::Uptime();
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   list_accounts_process_uptime_ =
       base::Time::Now() - base::CurrentProcessInfo::CreationTime();
 #endif
@@ -953,7 +953,7 @@ void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
     UMA_HISTOGRAM_LONG_TIMES(
         "Gaia.AuthFetcher.ListAccounts.SystemUptime.Success",
         list_accounts_system_uptime_);
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
     UMA_HISTOGRAM_LONG_TIMES(
         "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Success",
         list_accounts_process_uptime_);
@@ -961,7 +961,7 @@ void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
   } else {
     UMA_HISTOGRAM_LONG_TIMES("Gaia.AuthFetcher.ListAccounts.SystemUptime.Error",
                              list_accounts_system_uptime_);
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
     UMA_HISTOGRAM_LONG_TIMES(
         "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Error",
         list_accounts_process_uptime_);

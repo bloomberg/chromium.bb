@@ -376,8 +376,8 @@ class GaiaAuthFetcher {
 
   // For investigation of https://crbug.com/876306.
   base::TimeDelta list_accounts_system_uptime_;
-#if !defined(OS_IOS)
-  // There is no easy way to get the process uptime on iOS.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // Process creation time is not available on iOS and Android.
   base::TimeDelta list_accounts_process_uptime_;
 #endif
 
