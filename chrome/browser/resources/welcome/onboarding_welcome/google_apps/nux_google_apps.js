@@ -13,13 +13,13 @@ Polymer({
   /** @private */
   onNoThanksClicked_: function() {
     chrome.send('rejectGoogleApps');
-    window.location.replace('chrome://newtab');
+    welcome.navigateToNextStep();
   },
 
   /** @private */
   onGetStartedClicked_: function() {
     let selectedApps = this.$.appChooser.getSelectedAppList();
     nux.NuxGoogleAppsProxyImpl.getInstance().addGoogleApps(selectedApps);
-    window.location.replace('chrome://newtab');
+    welcome.navigateToNextStep();
   },
 });

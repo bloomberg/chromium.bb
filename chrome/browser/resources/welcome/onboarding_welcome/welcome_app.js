@@ -22,8 +22,8 @@ Polymer({
   // TODO(scottchen): instead of dummy, get data from finch/load time data.
   /** @private {NuxOnboardingModules} */
   modules_: {
-    'new-user': ['h1', 'h1', 'h1'],
-    'returning-user': ['h3', 'h3'],
+    'new-user': ['nux-email', 'nux-google-apps', 'nux-set-as-default'],
+    'returning-user': ['nux-set-as-default'],
   },
 
   /**
@@ -65,13 +65,6 @@ Polymer({
       element.id = 'step-' + (index + 1);
       element.setAttribute('slot', 'view');
       this.$.viewManager.appendChild(element);
-
-      // TODO(scottchen): this is just to test routing works. Actual elements
-      //     will have buttons that are responsible for navigation.
-      element.textContent = index + 1;
-      element.addEventListener('click', () => {
-        this.navigateToNextStep();
-      });
     });
   },
 });

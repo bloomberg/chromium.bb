@@ -76,8 +76,9 @@ cr.define('nux', function() {
     /**
      * @param {number} providerId This should match one of the histogram enum
      *     value for NuxEmailProvidersSelections.
+     * @param {number} length
      */
-    recordProviderSelected(providerId) {}
+    recordProviderSelected(providerId, length) {}
 
     recordNoThanks() {}
 
@@ -145,10 +146,11 @@ cr.define('nux', function() {
     }
 
     /** @override */
-    recordProviderSelected(providerId) {
+    recordProviderSelected(providerId, length) {
+      // TODO(hcarmona): get enum's max from loadTimeData instead, since length
+      //     might not be accurate once we start localizing.
       chrome.metricsPrivate.recordEnumerationValue(
-          SELECTION_METRIC_NAME, providerId,
-          loadTimeData.getInteger('email_count'));
+          SELECTION_METRIC_NAME, providerId, length);
     }
 
     /** @override */

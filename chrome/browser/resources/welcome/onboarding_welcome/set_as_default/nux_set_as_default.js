@@ -45,7 +45,6 @@ Polymer({
 
   /** @private */
   finished_: function() {
-    // TODO(scottchen): use navigation behavior to go to next step once this
-    //     module is integrated with onboarding-welcome's welcome-app.
+    welcome.navigateToNextStep();
   },
 });

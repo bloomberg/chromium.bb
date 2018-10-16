@@ -70,7 +70,7 @@ Polymer({
 
       if (this.selectedEmailProvider_) {
         this.browserProxy_.recordProviderSelected(
-            this.selectedEmailProvider_.id);
+            this.selectedEmailProvider_.id, this.emailList_.length);
       }
 
       this.browserProxy_.recordFinalize();
@@ -170,15 +170,18 @@ Polymer({
     this.revertBookmark_();
     this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
     this.browserProxy_.recordNoThanks();
-    window.location.replace('chrome://newtab');
+    welcome.navigateToNextStep();
   },
 
   /** @private */
   onGetStartedClicked_: function() {
     this.finalized_ = true;
-    this.browserProxy_.recordProviderSelected(this.selectedEmailProvider_.id);
+    this.browserProxy_.recordProviderSelected(
+        this.selectedEmailProvider_.id, this.emailList_.length);
     this.browserProxy_.recordGetStarted();
-    window.location.replace(this.selectedEmailProvider_.url);
+    // TODO(scottchen): store the selected email provider URL somewhere to
+    //     redirect to at the end.
+    welcome.navigateToNextStep();
   },
 
   /** @private */
