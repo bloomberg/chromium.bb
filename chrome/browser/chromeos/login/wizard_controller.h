@@ -221,7 +221,6 @@ class WizardController : public BaseScreenDelegate,
   void OnUpdateErrorCheckingForUpdate();
   void OnUpdateErrorUpdating(bool is_critical_update);
   void OnUserImageSelected();
-  void OnUserImageSkipped();
   void OnEnrollmentDone();
   void OnDeviceModificationCanceled();
   void OnKioskAutolaunchCanceled();
