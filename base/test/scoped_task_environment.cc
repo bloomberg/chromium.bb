@@ -5,6 +5,7 @@
 #include "base/test/scoped_task_environment.h"
 
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -16,6 +17,7 @@
 #include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequence_local_storage_map.h"
+#include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -28,6 +30,9 @@ namespace base {
 namespace test {
 
 namespace {
+
+LazyInstance<ThreadLocalPointer<ScopedTaskEnvironment::LifetimeObserver>>::Leaky
+    environment_lifetime_observer;
 
 std::unique_ptr<MessageLoop> CreateMessageLoopForMainThreadType(
     ScopedTaskEnvironment::MainThreadType main_thread_type) {
@@ -146,6 +151,12 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
 
   if (execution_control_mode_ == ExecutionMode::QUEUED)
     CHECK(task_tracker_->DisallowRunTasks());
+
+  LifetimeObserver* observer = environment_lifetime_observer.Get().Get();
+  if (observer) {
+    observer->OnScopedTaskEnvironmentCreated(main_thread_type,
+                                             GetMainThreadTaskRunner());
+  }
 }
 
 ScopedTaskEnvironment::~ScopedTaskEnvironment() {
@@ -165,6 +176,16 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   // on their main thread.
   ScopedAllowBaseSyncPrimitivesForTesting allow_waits_to_destroy_task_tracker;
   TaskScheduler::SetInstance(nullptr);
+
+  LifetimeObserver* observer = environment_lifetime_observer.Get().Get();
+  if (observer)
+    observer->OnScopedTaskEnvironmentDestroyed();
+}
+
+void ScopedTaskEnvironment::SetLifetimeObserver(
+    ScopedTaskEnvironment::LifetimeObserver* lifetime_observer) {
+  DCHECK_NE(!!environment_lifetime_observer.Get().Get(), !!lifetime_observer);
+  environment_lifetime_observer.Get().Set(lifetime_observer);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
