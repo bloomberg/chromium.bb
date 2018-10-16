@@ -162,11 +162,11 @@ void WebController::OnScrollIntoView(
 
   devtools_client_->GetDOM()->GetBoxModel(
       dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
-      base::BindOnce(&WebController::OnGetBoxModel,
+      base::BindOnce(&WebController::OnGetBoxModelForClick,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebController::OnGetBoxModel(
+void WebController::OnGetBoxModelForClick(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<dom::GetBoxModelResult> result) {
   if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
@@ -188,12 +188,12 @@ void WebController::OnGetBoxModel(
           .SetButton(input::DispatchMouseEventButton::LEFT)
           .SetType(input::DispatchMouseEventType::MOUSE_PRESSED)
           .Build(),
-      base::BindOnce(&WebController::OnDispatchPressMoustEvent,
+      base::BindOnce(&WebController::OnDispatchPressMouseEvent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback), x,
                      y));
 }
 
-void WebController::OnDispatchPressMoustEvent(
+void WebController::OnDispatchPressMouseEvent(
     base::OnceCallback<void(bool)> callback,
     double x,
     double y,
@@ -206,11 +206,11 @@ void WebController::OnDispatchPressMoustEvent(
           .SetButton(input::DispatchMouseEventButton::LEFT)
           .SetType(input::DispatchMouseEventType::MOUSE_RELEASED)
           .Build(),
-      base::BindOnce(&WebController::OnDispatchReleaseMoustEvent,
+      base::BindOnce(&WebController::OnDispatchReleaseMouseEvent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebController::OnDispatchReleaseMoustEvent(
+void WebController::OnDispatchReleaseMouseEvent(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
   OnResult(true, std::move(callback));
@@ -230,7 +230,22 @@ void WebController::ElementExists(const std::vector<std::string>& selectors,
 void WebController::OnFindElementForExist(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> result) {
-  OnResult(!result->object_id.empty(), std::move(callback));
+  if (result->object_id.empty()) {
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  devtools_client_->GetDOM()->GetBoxModel(
+      dom::GetBoxModelParams::Builder().SetObjectId(result->object_id).Build(),
+      base::BindOnce(&WebController::OnGetBoxModelForExist,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetBoxModelForExist(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<dom::GetBoxModelResult> result) {
+  OnResult(result && result->GetModel() && result->GetModel()->GetContent(),
+           std::move(callback));
 }
 
 void WebController::FindElement(const std::vector<std::string>& selectors,

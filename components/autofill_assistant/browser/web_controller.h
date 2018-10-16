@@ -68,7 +68,8 @@ class WebController {
                             base::OnceCallback<void(bool)> callback);
 
   // Check whether at least one element given by |selectors| exists on the web
-  // page.
+  // page. The element must have a valid BoxModel (i.e. it must be visible and
+  // have a size greater than 0).
   virtual void ElementExists(const std::vector<std::string>& selectors,
                              base::OnceCallback<void(bool)> callback);
 
@@ -158,18 +159,20 @@ class WebController {
   void OnScrollIntoView(base::OnceCallback<void(bool)> callback,
                         std::string object_id,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnGetBoxModel(base::OnceCallback<void(bool)> callback,
-                     std::unique_ptr<dom::GetBoxModelResult> result);
-  void OnDispatchPressMoustEvent(
+  void OnGetBoxModelForClick(base::OnceCallback<void(bool)> callback,
+                             std::unique_ptr<dom::GetBoxModelResult> result);
+  void OnDispatchPressMouseEvent(
       base::OnceCallback<void(bool)> callback,
       double x,
       double y,
       std::unique_ptr<input::DispatchMouseEventResult> result);
-  void OnDispatchReleaseMoustEvent(
+  void OnDispatchReleaseMouseEvent(
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnFindElementForExist(base::OnceCallback<void(bool)> callback,
                              std::unique_ptr<FindElementResult> result);
+  void OnGetBoxModelForExist(base::OnceCallback<void(bool)> callback,
+                             std::unique_ptr<dom::GetBoxModelResult> result);
 
   // Find the element given by |selectors|. If multiple elements match
   // |selectors| and if |strict_mode| is false, return the first one that is
