@@ -5,29 +5,38 @@
 #ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_WIN_H_
 #define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_WIN_H_
 
-#include <Windows.h>
-#include <commdlg.h>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace ui {
 
 class SelectFilePolicy;
 
-// Implementation detail exported for unit tests.
-SHELL_DIALOGS_EXPORT std::wstring AppendExtensionIfNeeded(
-    const std::wstring& filename,
-    const std::wstring& filter_selected,
-    const std::wstring& suggested_ext);
+using ExecuteSelectFileCallback =
+    base::RepeatingCallback<std::pair<std::vector<base::FilePath>, int>(
+        SelectFileDialog::Type type,
+        const base::string16& title,
+        const base::FilePath& default_path,
+        const base::string16& filter,
+        int file_type_index,
+        const base::string16& default_extension,
+        HWND owner)>;
 
 SHELL_DIALOGS_EXPORT SelectFileDialog* CreateWinSelectFileDialog(
     SelectFileDialog::Listener* listener,
     std::unique_ptr<SelectFilePolicy> policy,
-    const base::Callback<bool(OPENFILENAME* ofn)>& get_open_file_name_impl,
-    const base::Callback<bool(OPENFILENAME* ofn)>& get_save_file_name_impl);
+    const ExecuteSelectFileCallback& execute_select_file_callback);
 
 }  // namespace ui
 

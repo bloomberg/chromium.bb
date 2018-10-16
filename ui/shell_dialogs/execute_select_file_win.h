@@ -1,0 +1,43 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_SHELL_DIALOGS_EXECUTE_SELECT_FILE_WIN_H_
+#define UI_SHELL_DIALOGS_EXECUTE_SELECT_FILE_WIN_H_
+
+#include <utility>
+#include <vector>
+
+#include "base/strings/string16.h"
+#include "base/win/windows_types.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
+
+namespace base {
+class FilePath;
+}
+
+namespace ui {
+
+// Implementation detail exported for unit tests.
+SHELL_DIALOGS_EXPORT std::wstring AppendExtensionIfNeeded(
+    const std::wstring& filename,
+    const std::wstring& filter_selected,
+    const std::wstring& suggested_ext);
+
+// Shows the file selection dialog modal to |owner| returns the selected
+// file(s) and file type index via the return value. The file path vector will
+// be empty on failure.
+SHELL_DIALOGS_EXPORT
+std::pair<std::vector<base::FilePath>, int> ExecuteSelectFile(
+    SelectFileDialog::Type type,
+    const base::string16& title,
+    const base::FilePath& default_path,
+    const base::string16& filter,
+    int file_type_index,
+    const base::string16& default_extension,
+    HWND owner);
+
+}  // namespace ui
+
+#endif  // UI_SHELL_DIALOGS_EXECUTE_SELECT_FILE_WIN_H_
