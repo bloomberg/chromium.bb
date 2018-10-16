@@ -123,7 +123,8 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
         }
         if (key == ExploreSitesPage.SCROLL_TO_CATEGORY_KEY) {
             int pos = mCategoryModel.get(ExploreSitesPage.SCROLL_TO_CATEGORY_KEY);
-            mLayoutManager.scrollToPosition(pos);
+            // Add 1 for title.
+            mLayoutManager.scrollToPosition(pos + 1);
         }
     }
 
