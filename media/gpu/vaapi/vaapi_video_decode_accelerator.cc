@@ -298,7 +298,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     scoped_refptr<DecoderBuffer> buffer,
     int32_t bitstream_id) {
   DVLOGF(4) << "Queueing new input buffer id: " << bitstream_id
-            << " size: " << buffer->data_size();
+            << " size: " << (buffer->end_of_stream() ? 0 : buffer->data_size());
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("media,gpu", "QueueInputBuffer", "input_id", bitstream_id);
 
