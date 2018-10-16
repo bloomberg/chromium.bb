@@ -36,15 +36,14 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
   if (!entry.download_info)
     return nullptr;
 
-  // DownloadDBEntry migrated from in-progress cache doesn't have Ids.
-  if (!entry.download_info->id)
+  // DownloadDBEntry migrated from in-progress cache has negative Ids.
+  if (entry.download_info->id < 0)
     return nullptr;
 
   base::Optional<InProgressInfo> in_progress_info =
       entry.download_info->in_progress_info;
   if (!in_progress_info)
     return nullptr;
-
   return std::make_unique<DownloadItemImpl>(
       delegate, entry.download_info->guid, entry.download_info->id,
       in_progress_info->current_path, in_progress_info->target_path,
@@ -494,7 +493,6 @@ void InProgressDownloadManager::OnMetadataCacheInitialized(
                 DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
                 metadata_cache_dir));
   download_db_cache_->Initialize(
-      download_metadata_cache_->GetAllEntries(),
       base::BindOnce(&InProgressDownloadManager::OnInitialized,
                      weak_factory_.GetWeakPtr()));
 }
