@@ -735,6 +735,11 @@ void LocalFrameClientImpl::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
+void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction) {
+  if (WebLocalFrameClient* client = web_frame_->Client())
+    client->DidObserveLayoutJank(jank_fraction);
+}
+
 bool LocalFrameClientImpl::ShouldTrackUseCounter(const KURL& url) {
   if (web_frame_->Client())
     return web_frame_->Client()->ShouldTrackUseCounter(url);

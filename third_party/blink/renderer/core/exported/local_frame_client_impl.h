@@ -148,6 +148,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(int, bool) override;
+  void DidObserveLayoutJank(double jank_fraction) override;
   bool ShouldTrackUseCounter(const KURL&) override;
   void SelectorMatchChanged(const Vector<String>& added_selectors,
                             const Vector<String>& removed_selectors) override;

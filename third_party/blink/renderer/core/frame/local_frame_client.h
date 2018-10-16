@@ -223,6 +223,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // process for histograms.
   virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
                                              bool /*is_animated*/) {}
+
+  // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
+  virtual void DidObserveLayoutJank(double jank_fraction) {}
+
   // Will be called by a Page upon DidCommitLoad, deciding whether to track
   // UseCounter usage or not based on its url.
   virtual bool ShouldTrackUseCounter(const KURL&) { return true; }
