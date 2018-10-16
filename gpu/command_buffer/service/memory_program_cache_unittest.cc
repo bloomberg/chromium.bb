@@ -94,7 +94,6 @@ class MemoryProgramCacheTest : public GpuServiceTest, public DecoderClient {
     shader_cache_shader_ = shader;
   }
   void OnFenceSyncRelease(uint64_t release) override {}
-  bool OnWaitSyncToken(const gpu::SyncToken&) override { return false; }
   void OnDescheduleUntilFinished() override {}
   void OnRescheduleAfterFinished() override {}
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override {}

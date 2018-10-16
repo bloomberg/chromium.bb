@@ -72,10 +72,6 @@ class TaskForwardingSequence : public gpu::CommandBufferTaskExecutor::Sequence {
 
   bool ShouldYield() override { return false; }
 
-  // Should not be called because BlockThreadOnWaitSyncToken() returns true,
-  // and the client should not disable sequences to wait for sync tokens.
-  void SetEnabled(bool enabled) override { NOTREACHED(); }
-
   void ScheduleTask(base::OnceClosure task,
                     std::vector<gpu::SyncToken> sync_token_fences) override {
     uint32_t order_num =
@@ -285,10 +281,6 @@ void DeferredGpuCommandService::RunTasks() {
       has_more_tasks = tasks_.size() > 0;
     }
   }
-}
-
-bool DeferredGpuCommandService::BlockThreadOnWaitSyncToken() const {
-  return true;
 }
 
 bool DeferredGpuCommandService::CanSupportThreadedTextureMailbox() const {

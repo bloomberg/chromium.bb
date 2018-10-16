@@ -51,7 +51,9 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
 
  private:
   void OnTakeFrontBuffer(const Mailbox& mailbox) override;
-  void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
+  void OnReturnFrontBuffer(const Mailbox& mailbox,
+                           const SyncToken& sync_token,
+                           bool is_lost) override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
 
   // Keep a more specifically typed reference to the decoder to avoid

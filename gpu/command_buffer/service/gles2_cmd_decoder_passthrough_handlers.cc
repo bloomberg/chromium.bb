@@ -1685,31 +1685,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleInsertFenceSyncCHROMIUM(
   return DoInsertFenceSyncCHROMIUM(release_count);
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleWaitSyncTokenCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::WaitSyncTokenCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::WaitSyncTokenCHROMIUM*>(
-          cmd_data);
-  CommandBufferNamespace namespace_id =
-      static_cast<gpu::CommandBufferNamespace>(c.namespace_id);
-  const uint64_t release_count = c.release_count();
-  CommandBufferId command_buffer_id =
-      CommandBufferId::FromUnsafeValue(c.command_buffer_id());
-
-  const CommandBufferNamespace kMinNamespaceId =
-      CommandBufferNamespace::INVALID;
-  const CommandBufferNamespace kMaxNamespaceId =
-      CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES;
-  if ((namespace_id < static_cast<int32_t>(kMinNamespaceId)) ||
-      (namespace_id >= static_cast<int32_t>(kMaxNamespaceId))) {
-    namespace_id = gpu::CommandBufferNamespace::INVALID;
-  }
-
-  return DoWaitSyncTokenCHROMIUM(namespace_id, command_buffer_id,
-                                 release_count);
-}
-
 error::Error GLES2DecoderPassthroughImpl::HandleDiscardBackbufferCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
