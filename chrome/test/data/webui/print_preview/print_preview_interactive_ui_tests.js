@@ -159,6 +159,12 @@ TEST_F('PrintPreviewPagesSettingsTest', 'IgnoreInputKeyEvents', function() {
   this.runMochaTest(pages_settings_test.TestNames.IgnoreInputKeyEvents);
 });
 
+TEST_F(
+    'PrintPreviewPagesSettingsTest', 'EnterOnInputTriggersPrint', function() {
+      this.runMochaTest(
+          pages_settings_test.TestNames.EnterOnInputTriggersPrint);
+    });
+
 PrintPreviewNumberSettingsSectionInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */

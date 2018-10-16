@@ -13,6 +13,7 @@ cr.define('pages_settings_test', function() {
     ClickingCustomFocusesInput: 'clicking custom focuses input',
     InputNotDisabledOnValidityChange: 'input not disabled on validity change',
     IgnoreInputKeyEvents: 'ignore input key events',
+    EnterOnInputTriggersPrint: 'enter on input triggers print',
   };
 
   const suiteName = 'PagesSettingsTest';
@@ -500,6 +501,49 @@ cr.define('pages_settings_test', function() {
             assertTrue(pagesSection.$.customRadioButton.checked);
           });
 
+    });
+
+    // Verifies that the enter key event is bubbled to the pages settings
+    // element, so that it will be bubbled to the print preview app to trigger a
+    // print.
+    test(assert(TestNames.EnterOnInputTriggersPrint), function() {
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+      const radioGroup = pagesSection.$$('paper-radio-group');
+      const whenPrintReceived =
+          test_util.eventToPromise('keydown', pagesSection);
+
+      // Setup an empty input by clicking on the custom radio button.
+      const inputFocused = test_util.eventToPromise('focus', input);
+      pagesSection.$.customRadioButton.click();
+      return inputFocused
+          .then(function() {
+            assertEquals(
+                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
+            return whenPrintReceived;
+          })
+          // All gets automatically selected
+          .then(function() {
+            assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
+            // Refocus the radio group to reset the focused button to "all".
+            // Normally, enter results in print, so this does not need to
+            // happen.
+            radioGroup.focus();
+            return setupInput('1', 3);
+          })
+          // Re-select custom and print again.
+          .then(function() {
+            assertEquals(
+                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+            const whenPrintReceived =
+                test_util.eventToPromise('keydown', pagesSection);
+            MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
+            return whenPrintReceived;
+          })
+          .then(function() {
+            assertEquals(
+                pagesSection.pagesValueEnum_.CUSTOM, radioGroup.selected);
+          });
     });
   });
 
