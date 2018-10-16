@@ -3919,6 +3919,7 @@
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
+          'webkit_unit_tests',
         ],
       },
       'linux_chromium_compile': {
@@ -3930,6 +3931,7 @@
           'jingle_unittests',
           'remoting_unittests',
           'remoting/webapp:webapp',
+          'webkit_unit_tests',
         ],
       },
       'mac_chromium_compile': {
@@ -3941,6 +3943,7 @@
           'jingle_unittests',
           'remoting_unittests',
           'remoting/webapp:webapp',
+          'webkit_unit_tests',
         ],
       },
       'win_chromium_compile': {
@@ -3952,6 +3955,7 @@
           'jingle_unittests',
           'remoting_unittests',
           'remoting/webapp:webapp',
+          'webkit_unit_tests',
         ],
       },
     },
