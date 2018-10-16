@@ -44,7 +44,8 @@ namespace blink {
 namespace touch_adjustment {
 
 const float kZeroTolerance = 1e-6f;
-constexpr float kMaxAdjustmentSizeDips = 32.f;
+// The maximum adjustment range (diameters) in css pixel.
+constexpr float kMaxAdjustmentSize = 32.f;
 
 // Class for remembering absolute quads of a target node and what node they
 // represent.
@@ -513,10 +514,11 @@ bool FindBestContextMenuCandidate(Node*& target_node,
       subtargets, touch_adjustment::HybridDistanceFunction);
 }
 
-LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area) {
-  const LayoutSize max_size(touch_adjustment::kMaxAdjustmentSizeDips,
-                            touch_adjustment::kMaxAdjustmentSizeDips);
-  return touch_area.ShrunkTo(max_size);
+LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area,
+                                       float zoom_factor) {
+  const LayoutSize max_size(touch_adjustment::kMaxAdjustmentSize,
+                            touch_adjustment::kMaxAdjustmentSize);
+  return touch_area.ShrunkTo(max_size * zoom_factor);
 }
 
 }  // namespace blink
