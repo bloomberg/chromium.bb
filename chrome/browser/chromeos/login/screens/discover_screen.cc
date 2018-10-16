@@ -26,6 +26,10 @@ DiscoverScreen::~DiscoverScreen() {
 }
 
 void DiscoverScreen::Show() {
+  if (IsPublicSessionOrEphemeralLogin()) {
+    Finish(ScreenExitCode::DISCOVER_FINISHED);
+    return;
+  }
   view_->Show();
 }
 

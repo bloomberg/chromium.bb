@@ -107,7 +107,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -255,15 +254,6 @@ bool IsBootstrappingSlave() {
 bool IsBootstrappingMaster() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kOobeBootstrappingMaster);
-}
-
-bool IsPublicSessionOrEphemeralLogin() {
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  return user_manager->IsLoggedInAsPublicAccount() ||
-         (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-          user_manager->GetActiveUser()->GetType() !=
-              user_manager::USER_TYPE_REGULAR);
 }
 
 bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
@@ -605,19 +595,11 @@ void WizardController::ShowPreviousScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
-  // Skip user image selection for public sessions and ephemeral non-regular
-  // user logins.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnUserImageSkipped();
-    return;
-  }
   VLOG(1) << "Showing user image screen.";
-
   // Status area has been already shown at sign in screen so it
   // doesn't make sense to hide it here and then show again at user session as
   // this produces undesired UX transitions.
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER);
-
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER));
 }
 
@@ -698,35 +680,15 @@ void WizardController::ShowSyncConsentScreen() {
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
-  // Skip the screen for public sessions and non-regular ephemeral users.
-  // TODO(agawronska): Test that there are no wizard screens shown every time
-  // Public Session launches.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnFingerprintSetupFinished();
-    return;
-  }
   VLOG(1) << "Showing Fingerprint Setup screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP));
 }
 
 void WizardController::ShowMarketingOptInScreen() {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  // Skip the screen if:
-  //   1) the feature is disabled, or
-  //   2) the screen has been shown for this user, or
-  //   3) it is public session or non-regular ephemeral user login.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableMarketingOptInScreen) ||
-      prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished) ||
-      IsPublicSessionOrEphemeralLogin()) {
-    OnMarketingOptInFinished();
-    return;
-  }
   VLOG(1) << "Showing Marketing Opt-In screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MARKETING_OPT_IN);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MARKETING_OPT_IN));
-  prefs->SetBoolean(prefs::kOobeMarketingOptInScreenFinished, true);
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -855,48 +817,12 @@ void WizardController::ShowAssistantOptInFlowScreen() {
 }
 
 void WizardController::ShowMultiDeviceSetupScreen() {
-  // If multi-device flags are disabled, skip the associated setup flow.
-  if (!base::FeatureList::IsEnabled(features::kMultiDeviceApi) ||
-      !base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
-  // Only attempt the setup flow for non-guest users.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
-  multidevice_setup::MultiDeviceSetupClient* client =
-      multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
-          ProfileManager::GetActiveUserProfile());
-
-  if (!client) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
-  // If there is no eligible multi-device host phone or if there is a phone and
-  // it has already been set, skip the setup flow.
-  if (client->GetHostStatus().first !=
-      multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
-    VLOG(1) << "Skipping MultiDevice setup screen; host status: "
-            << client->GetHostStatus().first;
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
   VLOG(1) << "Showing MultiDevice setup screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP));
 }
 
 void WizardController::ShowDiscoverScreen() {
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnDiscoverScreenFinished();
-    return;
-  }
   VLOG(1) << "Showing Discover screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DISCOVER);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DISCOVER));
@@ -1081,10 +1007,6 @@ void WizardController::OnUserImageSelected() {
     }
   }
   OnOobeFlowFinished();
-}
-
-void WizardController::OnUserImageSkipped() {
-  OnUserImageSelected();
 }
 
 void WizardController::OnEnrollmentDone() {

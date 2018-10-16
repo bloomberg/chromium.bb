@@ -27,6 +27,9 @@ class MultiDeviceSetupScreen : public BaseScreen {
   void OnUserAction(const std::string& action_id) override;
 
  private:
+  // Exits the screen.
+  void ExitScreen();
+
   MultiDeviceSetupScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupScreen);
