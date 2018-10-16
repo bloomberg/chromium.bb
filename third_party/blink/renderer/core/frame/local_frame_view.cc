@@ -2457,7 +2457,12 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 
 bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     DocumentLifecycle::LifecycleState target_state) {
-  UpdateStyleAndLayoutIfNeededRecursive();
+  TRACE_EVENT0("blink,benchmark",
+               "LocalFrameView::RunStyleAndLayoutLifecyclePhases");
+  {
+    SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kStyleAndLayout);
+    UpdateStyleAndLayoutIfNeededRecursive();
+  }
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
   frame_->GetDocument()
@@ -2516,6 +2521,8 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
 
 bool LocalFrameView::RunCompositingLifecyclePhase(
     DocumentLifecycle::LifecycleState target_state) {
+  TRACE_EVENT0("blink,benchmark",
+               "LocalFrameView::RunCompositingLifecyclePhase");
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
 
@@ -2548,7 +2555,7 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
 
 bool LocalFrameView::RunPrePaintLifecyclePhase(
     DocumentLifecycle::LifecycleState target_state) {
-  TRACE_EVENT0("blink,benchmark", "LocalFrameView::prePaint");
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPrePaintLifecyclePhase");
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
@@ -2577,6 +2584,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
 }
 
 void LocalFrameView::RunPaintLifecyclePhase() {
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
   // While printing a document, the paint walk is done by the printing
   // component into a special canvas. There is no point doing a normal paint
   // step (or animations update for BlinkGenPropertyTrees/SPv2) when in this
@@ -2778,7 +2786,6 @@ static void PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
 }
 
 void LocalFrameView::PaintTree() {
-  TRACE_EVENT0("blink,benchmark", "LocalFrameView::paintTree");
   SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kPaint);
 
   DCHECK(GetFrame().IsLocalRoot());
@@ -2935,11 +2942,6 @@ std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
 }
 
 void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
-  SCOPED_UMA_AND_UKM_TIMER(LocalFrameUkmAggregator::kStyleAndLayout);
-  UpdateStyleAndLayoutIfNeededRecursiveInternal();
-}
-
-void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
   if (ShouldThrottleRendering() || !frame_->GetDocument()->IsActive())
     return;
 
@@ -2999,7 +3001,7 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
   }
 
   for (const auto& frame_view : frame_views)
-    frame_view->UpdateStyleAndLayoutIfNeededRecursiveInternal();
+    frame_view->UpdateStyleAndLayoutIfNeededRecursive();
 
   // These asserts ensure that parent frames are clean, when child frames
   // finished updating layout and style.
