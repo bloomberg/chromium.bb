@@ -149,6 +149,26 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedalCommon {
 
 // =============================================================================
 
+class OmniboxPedalLaunchIncognito : public OmniboxPedalCommon {
+ public:
+  OmniboxPedalLaunchIncognito()
+      : OmniboxPedalCommon(
+            LabelStrings(
+                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT,
+                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT,
+                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS),
+            GURL(),
+            {
+                "what is incognito", "what's incognito mode",
+            }) {}
+
+  void Execute(ExecutionContext& context) const override {
+    context.client_.NewIncognitoWindow();
+  }
+};
+
+// =============================================================================
+
 class OmniboxPedalTranslate : public OmniboxPedalCommon {
  public:
   OmniboxPedalTranslate()
@@ -182,6 +202,7 @@ std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   add(new OmniboxPedalManagePasswords());
   add(new OmniboxPedalChangeHomePage());
   add(new OmniboxPedalUpdateCreditCard());
+  add(new OmniboxPedalLaunchIncognito());
   add(new OmniboxPedalTranslate());
   return pedals;
 }

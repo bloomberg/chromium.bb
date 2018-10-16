@@ -190,7 +190,7 @@ void ProcessMirrorHeaderUIThread(
     BrowserWindow::AvatarBubbleMode bubble_mode;
     switch (service_type) {
       case GAIA_SERVICE_TYPE_INCOGNITO:
-        chrome::NewIncognitoWindow(browser);
+        chrome::NewIncognitoWindow(profile);
         return;
       case GAIA_SERVICE_TYPE_ADDSESSION:
         bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT;

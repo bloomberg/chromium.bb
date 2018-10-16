@@ -70,7 +70,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition);
 void OpenCurrentURL(Browser* browser);
 void Stop(Browser* browser);
 void NewWindow(Browser* browser);
-void NewIncognitoWindow(Browser* browser);
+void NewIncognitoWindow(Profile* profile);
 void CloseWindow(Browser* browser);
 void NewTab(Browser* browser);
 void CloseTab(Browser* browser);
