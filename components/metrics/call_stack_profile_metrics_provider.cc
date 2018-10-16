@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
@@ -115,31 +116,32 @@ class PendingProfiles {
   // Returns true if collection is enabled for a given profile based on its
   // |profile_start_time|. The |lock_| must be held prior to calling this
   // method.
-  bool IsCollectionEnabledForProfile(base::TimeTicks profile_start_time) const;
+  bool IsCollectionEnabledForProfile(base::TimeTicks profile_start_time) const
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Whether there is spare capacity to store an additional profile.
   // The |lock_| must be held prior to calling this method.
-  bool HasSpareCapacity() const;
+  bool HasSpareCapacity() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   mutable base::Lock lock_;
 
   // If true, profiles provided to MaybeCollect*Profile should be collected.
   // Otherwise they will be ignored.
-  bool collection_enabled_;
+  bool collection_enabled_ GUARDED_BY(lock_);
 
   // The last time collection was disabled. Used to determine if collection was
   // disabled at any point since a profile was started.
-  base::TimeTicks last_collection_disable_time_;
+  base::TimeTicks last_collection_disable_time_ GUARDED_BY(lock_);
 
   // The last time collection was enabled. Used to determine if collection was
   // enabled at any point since a profile was started.
-  base::TimeTicks last_collection_enable_time_;
+  base::TimeTicks last_collection_enable_time_ GUARDED_BY(lock_);
 
   // The set of completed unserialized profiles that should be reported.
-  std::vector<SampledProfile> unserialized_profiles_;
+  std::vector<SampledProfile> unserialized_profiles_ GUARDED_BY(lock_);
 
   // The set of completed serialized profiles that should be reported.
-  std::vector<std::string> serialized_profiles_;
+  std::vector<std::string> serialized_profiles_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(PendingProfiles);
 };
