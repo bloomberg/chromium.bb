@@ -8,6 +8,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 
 namespace chromeos {
 namespace power {
@@ -90,6 +93,58 @@ MonotoneCubicSpline::MonotoneCubicSpline(const MonotoneCubicSpline& spline) =
 
 MonotoneCubicSpline::~MonotoneCubicSpline() = default;
 
+base::Optional<MonotoneCubicSpline> MonotoneCubicSpline::FromString(
+    const std::string& data) {
+  std::vector<double> xs;
+  std::vector<double> ys;
+
+  if (data.empty())
+    return base::nullopt;
+
+  base::StringPairs key_value_pairs;
+  if (!base::SplitStringIntoKeyValuePairs(data, ',', '\n', &key_value_pairs)) {
+    LOG(ERROR) << "Ill-formatted spline";
+    return base::nullopt;
+  }
+
+  for (base::StringPairs::iterator it = key_value_pairs.begin();
+       it != key_value_pairs.end(); ++it) {
+    double x;
+    if (!base::StringToDouble(it->first, &x)) {
+      LOG(ERROR) << "Ill-formatted xs";
+      return base::nullopt;
+    }
+
+    double y;
+    if (!base::StringToDouble(it->second, &y)) {
+      LOG(ERROR) << "Ill-formatted ys";
+      return base::nullopt;
+    }
+    xs.push_back(x);
+    ys.push_back(y);
+  }
+
+  if (xs.size() < 2)
+    return base::nullopt;
+
+  return MonotoneCubicSpline(xs, ys);
+}
+
+bool MonotoneCubicSpline::operator==(const MonotoneCubicSpline& spline) const {
+  if (xs_.size() != spline.xs_.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < xs_.size(); ++i) {
+    if (std::abs(xs_[i] - spline.xs_[i]) >= kTol ||
+        std::abs(ys_[i] - spline.ys_[i]) >= kTol) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 double MonotoneCubicSpline::Interpolate(double x) const {
   DCHECK_GT(num_points_, 1u);
 
@@ -134,6 +189,16 @@ std::vector<double> MonotoneCubicSpline::GetControlPointsX() const {
 
 std::vector<double> MonotoneCubicSpline::GetControlPointsY() const {
   return ys_;
+}
+
+std::string MonotoneCubicSpline::ToString() const {
+  std::vector<std::string> rows;
+  for (size_t i = 0; i < num_points_; ++i) {
+    rows.push_back(base::JoinString(
+        {base::NumberToString(xs_[i]), base::NumberToString(ys_[i])}, ","));
+  }
+
+  return base::JoinString(rows, "\n");
 }
 
 }  // namespace auto_screen_brightness

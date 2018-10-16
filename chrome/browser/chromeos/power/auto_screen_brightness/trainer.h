@@ -5,18 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_AUTO_SCREEN_BRIGHTNESS_TRAINER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_AUTO_SCREEN_BRIGHTNESS_TRAINER_H_
 
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
+
 namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
-// It is a mapping from ambient light (in lux) to brightness percent. It should
-// be sorted in the ascending order in lux.
-using BrightnessCurve = std::vector<std::pair<double, double>>;
-
 struct TrainingDataPoint {
   double brightness_old;
   double brightness_new;
-  double ambient_lux;
+  double ambient_log_lux;
   base::TimeTicks sample_time;
 };
 
@@ -25,8 +24,13 @@ class Trainer {
  public:
   virtual ~Trainer() = default;
 
-  virtual BrightnessCurve Train(const BrightnessCurve& curve,
-                                const std::vector<TrainingDataPoint>& data) = 0;
+  virtual void SetInitialCurves(const MonotoneCubicSpline& global_curve,
+                                const MonotoneCubicSpline& current_curve) = 0;
+
+  // Updates current curve stored in trainer with |data|. This function should
+  // only be called after |SetInitialCurves|.
+  virtual MonotoneCubicSpline Train(
+      const std::vector<TrainingDataPoint>& data) = 0;
 };
 
 }  // namespace auto_screen_brightness

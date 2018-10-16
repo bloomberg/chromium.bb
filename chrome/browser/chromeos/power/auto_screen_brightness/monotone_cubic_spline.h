@@ -28,6 +28,15 @@ class MonotoneCubicSpline {
 
   ~MonotoneCubicSpline();
 
+  // Parses and returns a MonotoneCubicSpline from input |data| or nullopt if
+  // parsing fails. Correct formatting in |data| should be 1 row per
+  // (<x>, <y>) mapping, and values of xs should strictly increase per row and
+  // ys should be non-decreasing.
+  static base::Optional<MonotoneCubicSpline> FromString(
+      const std::string& data);
+
+  bool operator==(const MonotoneCubicSpline& spline) const;
+
   // Returns interpolated value for |x|. If |x| is smaller|greater than
   // smallest|largest value in |xs_|, then smallest|largest value in |ys_| will
   // be returned.
@@ -36,6 +45,10 @@ class MonotoneCubicSpline {
   std::vector<double> GetControlPointsX() const;
 
   std::vector<double> GetControlPointsY() const;
+
+  // Converts to a string. Each (x, y) point in this curve will be converted to
+  // 1 row and each (x, y) point will converted to x:y format.
+  std::string ToString() const;
 
  private:
   const std::vector<double> xs_;

@@ -10,21 +10,13 @@
 
 #include "base/containers/ring_buffer.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 
 namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
-// Replaces |curve| with the parsed curve data from |data|, returning true if
-// successful. Correct formatting in |data| should be 1 row per
-// (<ambient_light>, <brightness>) mapping. Ambient light should be a double and
-// brightness should be a double.
-bool CurveFromString(const std::string& data, BrightnessCurve* const curve);
-
-// Converts |curve| to a string. An empty string will be returned if |curve| is
-// empty.
-std::string CurveToString(const BrightnessCurve& curve);
+// Returns natural log of 1+|value|.
+double ConvertToLog(double value);
 
 struct AmbientLightSample {
   int lux;

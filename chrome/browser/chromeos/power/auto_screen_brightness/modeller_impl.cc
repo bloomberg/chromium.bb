@@ -26,33 +26,48 @@ namespace power {
 namespace auto_screen_brightness {
 
 namespace {
-// Loads data from a specified location on disk. This should run in another
+
+// Creates a global/default brightness curve.
+// TODO(crbug.com/881215): add actual default curve and then add unit test too.
+// TODO(crbug.com/881215): add param flag to allow for experiments.
+MonotoneCubicSpline CreateGlobalCurve() {
+  const std::vector<double> default_log_lux = {0, 100};
+  const std::vector<double> default_brightness = {50, 100};
+  return MonotoneCubicSpline(default_log_lux, default_brightness);
+}
+
+// Loads curve from a specified location on disk. This should run in another
 // thread to be non-blocking to the main thread (if |is_testing| is false).
-std::string LoadDataFromDisk(const base::FilePath& path, bool is_testing) {
+// The ambient values read from disk should be in the log-domain already.
+base::Optional<MonotoneCubicSpline> LoadCurveFromDisk(
+    const base::FilePath& path,
+    bool is_testing) {
   DCHECK(is_testing ||
          !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!PathExists(path)) {
-    return "";
+    return base::nullopt;
   }
 
   std::string content;
-  if (!base::ReadFileToString(path, &content)) {
-    return "";
+  if (!base::ReadFileToString(path, &content) || content.empty()) {
+    return base::nullopt;
   }
-  return content;
+
+  return MonotoneCubicSpline::FromString(content);
 }
 
-// Saves data to disk. This should run in another thread to be non-blocking to
-// the main thread (if |is_testing| is false).
+// Saves |curve| to disk. This should run in another thread to be non-blocking
+// to the main thread (if |is_testing| is false).
 // TODO(jiameng): alternative to WriteFile is WriteFileAtomically, but the
 // latter is very slow. Investigate whether we need to change to
 // WriteFileAtomically.
 void SaveCurveToDisk(const base::FilePath& path,
-                     const BrightnessCurve& curve,
+                     const MonotoneCubicSpline& curve,
                      bool is_testing) {
   DCHECK(is_testing ||
          !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  const std::string data = CurveToString(curve);
+  const std::string data = curve.ToString();
+  DCHECK(!data.empty());
   const int bytes_written = base::WriteFile(path, data.data(), data.size());
   if (bytes_written != static_cast<int>(data.size())) {
     LOG(ERROR) << "Wrote " << bytes_written << " byte(s) instead of "
@@ -60,22 +75,24 @@ void SaveCurveToDisk(const base::FilePath& path,
   }
 }
 
-// Trains a new curve using the current |curve| and training |data|. Returns the
-// new curve. This should run in another thread to be non-blocking to the main
+// Trains a new curve using training |data| and returns the new curve. This
+// should only be called after trainer has been initialized with a global curve
+// and a latest curve.
+// This should run in another thread to be non-blocking to the main
 // thread (if |is_testing| is false).
-BrightnessCurve TrainModel(Trainer* trainer,
-                           const BrightnessCurve& curve,
-                           const std::vector<TrainingDataPoint>& data,
-                           bool is_testing) {
+MonotoneCubicSpline TrainModel(Trainer* trainer,
+                               const std::vector<TrainingDataPoint>& data,
+                               bool is_testing) {
   DCHECK(is_testing ||
          !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  return trainer->Train(curve, data);
+  return trainer->Train(data);
 }
 
 }  // namespace
 
 constexpr base::TimeDelta ModellerImpl::kTrainingDelay;
-constexpr int ModellerImpl::kMaxTrainingDataPoints;
+constexpr size_t ModellerImpl::kMaxTrainingDataPoints;
+constexpr size_t ModellerImpl::kMinTrainingDataPoints;
 constexpr int ModellerImpl::kAmbientLightHorizonSeconds;
 constexpr base::TimeDelta ModellerImpl::kAmbientLightHorizon;
 constexpr int ModellerImpl::kNumberAmbientValuesToTrack;
@@ -103,7 +120,7 @@ void ModellerImpl::AddObserver(Modeller::Observer* observer) {
   DCHECK(observer);
   observers_.AddObserver(observer);
   if (model_status_ != Modeller::Status::kInitializing) {
-    observer->OnModelInitialized(model_status_, curve_);
+    observer->OnModelInitialized(model_status_, current_curve_);
   }
 }
 
@@ -148,7 +165,8 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
 
   const double average_ambient_lux = AverageAmbient(ambient_light_values_, -1);
   data_cache_.push_back({old_brightness_percent, new_brightness_percent,
-                         average_ambient_lux, tick_clock_->NowTicks()});
+                         ConvertToLog(average_ambient_lux),
+                         tick_clock_->NowTicks()});
 
   if (data_cache_.size() == kMaxTrainingDataPoints) {
     model_timer_.Stop();
@@ -181,12 +199,16 @@ double ModellerImpl::AverageAmbientForTesting() const {
   return AverageAmbient(ambient_light_values_, -1);
 }
 
-int ModellerImpl::NumberTrainingDataPointsForTesting() const {
+size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
   return data_cache_.size();
 }
 
 base::FilePath ModellerImpl::GetCurvePathForTesting(Profile* profile) const {
   return GetCurvePathFromProfile(profile);
+}
+
+MonotoneCubicSpline ModellerImpl::GetGlobalCurveForTesting() const {
+  return global_curve_;
 }
 
 ModellerImpl::ModellerImpl(
@@ -207,6 +229,7 @@ ModellerImpl::ModellerImpl(
                base::OnTaskRunnerDeleter(model_task_runner_)),
       tick_clock_(tick_clock),
       model_timer_(tick_clock_),
+      global_curve_(CreateGlobalCurve()),
       weak_ptr_factory_(this) {
   DCHECK(als_reader);
   DCHECK(brightness_monitor);
@@ -274,7 +297,7 @@ void ModellerImpl::HandleStatusUpdate() {
 
   base::PostTaskAndReplyWithResult(
       model_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&LoadDataFromDisk, curve_path_, is_testing_),
+      base::BindOnce(&LoadCurveFromDisk, curve_path_, is_testing_),
       base::BindOnce(&ModellerImpl::OnCurveLoadedFromDisk,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -282,25 +305,22 @@ void ModellerImpl::HandleStatusUpdate() {
 void ModellerImpl::OnInitializationComplete() {
   DCHECK_NE(model_status_, Status::kInitializing);
   for (auto& observer : observers_)
-    observer.OnModelInitialized(model_status_, curve_);
+    observer.OnModelInitialized(model_status_, current_curve_);
 }
 
-// TODO(crbug.com/881215): add actual default curve and then add unit test too.
-void ModellerImpl::InitWithDefaultCurve() {
-  curve_.clear();
-  return;
-}
-
-void ModellerImpl::OnCurveLoadedFromDisk(const std::string& content) {
-  if (content.empty() || !CurveFromString(content, &curve_)) {
-    InitWithDefaultCurve();
+void ModellerImpl::OnCurveLoadedFromDisk(
+    const base::Optional<MonotoneCubicSpline>& curve) {
+  if (!curve.has_value()) {
+    current_curve_.emplace(global_curve_);
     model_status_ = Status::kGlobal;
   } else {
+    current_curve_.emplace(curve.value());
     model_status_ = Status::kPersonal;
   }
 
   OnInitializationComplete();
 
+  trainer_->SetInitialCurves(global_curve_, current_curve_.value());
   ScheduleTrainerStart();
 }
 
@@ -311,28 +331,28 @@ void ModellerImpl::ScheduleTrainerStart() {
 }
 
 void ModellerImpl::StartTraining() {
-  if (data_cache_.empty()) {
+  if (data_cache_.size() < kMinTrainingDataPoints) {
     ScheduleTrainerStart();
     return;
   }
 
   base::PostTaskAndReplyWithResult(
       model_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&TrainModel, trainer_.get(), curve_,
-                     std::move(data_cache_), is_testing_),
+      base::BindOnce(&TrainModel, trainer_.get(), std::move(data_cache_),
+                     is_testing_),
       base::BindOnce(&ModellerImpl::OnTrainingFinished,
                      weak_ptr_factory_.GetWeakPtr()));
   data_cache_.clear();
 }
 
-void ModellerImpl::OnTrainingFinished(const BrightnessCurve& curve) {
-  curve_ = curve;
+void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
+  current_curve_.emplace(curve);
   for (auto& observer : observers_)
     observer.OnModelTrained(curve);
 
   model_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&SaveCurveToDisk, curve_path_, curve_, is_testing_));
+      base::BindOnce(&SaveCurveToDisk, curve_path_, curve, is_testing_));
   ScheduleTrainerStart();
 }
 

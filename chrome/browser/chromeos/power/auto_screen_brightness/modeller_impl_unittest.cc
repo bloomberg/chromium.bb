@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/fake_als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/fake_brightness_monitor.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/test/base/testing_profile.h"
@@ -29,18 +30,23 @@ namespace auto_screen_brightness {
 
 namespace {
 
-void CompareBrightnessCurve(const BrightnessCurve& expected,
-                            const BrightnessCurve& actual) {
-  EXPECT_EQ(expected.size(), actual.size());
-  for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_DOUBLE_EQ(expected[i].first, actual[i].first);
-    EXPECT_DOUBLE_EQ(expected[i].second, actual[i].second);
-  }
-}
+MonotoneCubicSpline CreateTestCurveFromTrainingData(
+    const std::vector<TrainingDataPoint>& data) {
+  CHECK_GT(data.size(), 1u);
 
-std::pair<double, double> DataToCurvePoint(const TrainingDataPoint& data) {
-  return std::make_pair(data.ambient_lux,
-                        (data.brightness_old + data.brightness_new) / 2);
+  std::vector<double> xs;
+  std::vector<double> ys;
+
+  const auto& data_point = data[0];
+  xs.push_back(data_point.ambient_log_lux);
+  ys.push_back((data_point.brightness_old + data_point.brightness_new) / 2);
+
+  for (size_t i = 1; i < data.size(); ++i) {
+    xs.push_back(xs[i - 1] + 1);
+    ys.push_back(ys[i - 1] + 1);
+  }
+
+  return MonotoneCubicSpline(xs, ys);
 }
 
 // Testing trainer.
@@ -50,16 +56,26 @@ class FakeTrainer : public Trainer {
   ~FakeTrainer() override = default;
 
   // Trainer overrides:
-  BrightnessCurve Train(const BrightnessCurve& /* curve */,
-                        const std::vector<TrainingDataPoint>& data) override {
-    BrightnessCurve result_curve;
-    for (const auto& training_data_point : data) {
-      result_curve.push_back(DataToCurvePoint(training_data_point));
-    }
-    return result_curve;
+  void SetInitialCurves(const MonotoneCubicSpline& global_curve,
+                        const MonotoneCubicSpline& current_curve) override {
+    CHECK(!global_curve_.has_value());
+    CHECK(!current_curve_.has_value());
+
+    global_curve_.emplace(global_curve);
+    current_curve_.emplace(current_curve);
+  }
+
+  MonotoneCubicSpline Train(
+      const std::vector<TrainingDataPoint>& data) override {
+    CHECK(current_curve_.has_value());
+    current_curve_.emplace(CreateTestCurveFromTrainingData(data));
+    return current_curve_.value();
   }
 
  private:
+  base::Optional<MonotoneCubicSpline> global_curve_;
+  base::Optional<MonotoneCubicSpline> current_curve_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeTrainer);
 };
 
@@ -69,32 +85,38 @@ class TestObserver : public Modeller::Observer {
   ~TestObserver() override = default;
 
   // Modeller::Observer overrides:
-  void OnModelTrained(const BrightnessCurve& brightness_curve) override {
-    brightness_curve_ = base::Optional<BrightnessCurve>(brightness_curve);
+  void OnModelTrained(const MonotoneCubicSpline& brightness_curve) override {
+    brightness_curve_.emplace(brightness_curve);
+    trained_curve_received_ = true;
   }
 
-  void OnModelInitialized(const Modeller::Status model_status,
-                          const BrightnessCurve& brightness_curve) override {
+  void OnModelInitialized(
+      const Modeller::Status model_status,
+      const base::Optional<MonotoneCubicSpline>& brightness_curve) override {
     model_status_ = base::Optional<Modeller::Status>(model_status);
-    brightness_curve_ = base::Optional<BrightnessCurve>(brightness_curve);
+    if (brightness_curve.has_value()) {
+      brightness_curve_.emplace(brightness_curve.value());
+    }
   }
 
   Modeller::Status model_status() const {
-    DCHECK(model_status_.has_value());
+    CHECK(model_status_.has_value());
     return model_status_.value();
   }
 
-  BrightnessCurve brightness_curve() const {
-    DCHECK(brightness_curve_.has_value());
+  MonotoneCubicSpline brightness_curve() const {
+    CHECK(brightness_curve_.has_value());
     return brightness_curve_.value();
   }
 
   bool HasModelStatus() { return model_status_.has_value(); }
   bool HasBrightnessCurve() { return brightness_curve_.has_value(); }
+  bool trained_curve_received() { return trained_curve_received_; }
 
  private:
   base::Optional<Modeller::Status> model_status_;
-  base::Optional<BrightnessCurve> brightness_curve_;
+  base::Optional<MonotoneCubicSpline> brightness_curve_;
+  bool trained_curve_received_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -130,12 +152,12 @@ class ModellerImplTest : public testing::Test {
   }
 
  protected:
-  void WriteCurveToFile(const BrightnessCurve& curve) {
+  void WriteCurveToFile(const MonotoneCubicSpline& curve) {
     const base::FilePath curve_path =
         modeller_->GetCurvePathForTesting(profile_.get());
     CHECK(!curve_path.empty());
 
-    const std::string& data = CurveToString(curve);
+    const std::string data = curve.ToString();
     const int bytes_written =
         base::WriteFile(curve_path, data.data(), data.size());
     ASSERT_EQ(bytes_written, static_cast<int>(data.size()))
@@ -168,6 +190,7 @@ TEST_F(ModellerImplTest, AlsReaderDisabledOnInit) {
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
+  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
 }
 
 // BrightnessMonitor is |kDisabled| when Modeller is created.
@@ -177,6 +200,7 @@ TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnInit) {
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
+  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
 }
 
 // AlsReader is |kDisabled| on later notification.
@@ -191,6 +215,7 @@ TEST_F(ModellerImplTest, AlsReaderDisabledOnNotification) {
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kDisabled);
   fake_als_reader_.ReportReaderInitialized();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
+  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
 }
 
 // AlsReader is |kSuccess| on later notification.
@@ -206,7 +231,8 @@ TEST_F(ModellerImplTest, AlsReaderEnabledOnNotification) {
   fake_als_reader_.ReportReaderInitialized();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
-  EXPECT_TRUE(test_observer_->brightness_curve().empty());
+  EXPECT_EQ(test_observer_->brightness_curve(),
+            modeller_->GetGlobalCurveForTesting());
 }
 
 // BrightnessMonitor is |kDisabled| on later notification.
@@ -221,6 +247,7 @@ TEST_F(ModellerImplTest, BrightnessMonitorDisabledOnNotification) {
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kDisabled);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
   EXPECT_EQ(Modeller::Status::kDisabled, test_observer_->model_status());
+  EXPECT_FALSE(test_observer_->HasBrightnessCurve());
 }
 
 // BrightnessMonitor is |kSuccess| on later notification.
@@ -236,7 +263,8 @@ TEST_F(ModellerImplTest, BrightnessMonitorEnabledOnNotification) {
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
-  EXPECT_TRUE(test_observer_->brightness_curve().empty());
+  EXPECT_EQ(test_observer_->brightness_curve(),
+            modeller_->GetGlobalCurveForTesting());
 }
 
 // There is no saved curve, hence a global curve is created.
@@ -246,13 +274,16 @@ TEST_F(ModellerImplTest, NoSavedCurve) {
   SetUpModeller();
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
-  EXPECT_TRUE(test_observer_->brightness_curve().empty());
+  EXPECT_EQ(test_observer_->brightness_curve(),
+            modeller_->GetGlobalCurveForTesting());
 }
 
 // A curve is loaded from disk, this is a personal curve.
 TEST_F(ModellerImplTest, CurveLoadedFromProfilePath) {
-  const BrightnessCurve curve = {{10, 15}, {20, 25}, {30, 35}, {40, 45},
-                                 {50, 55}, {60, 65}, {70, 75}, {80, 85}};
+  const std::vector<double> xs = {0, 10, 20, 40, 60, 80, 90, 100};
+  const std::vector<double> ys = {0, 5, 10, 15, 20, 25, 30, 40};
+  MonotoneCubicSpline curve(xs, ys);
+
   WriteCurveToFile(curve);
 
   scoped_task_environment_.RunUntilIdle();
@@ -303,7 +334,7 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
 
   std::vector<TrainingDataPoint> expected_data;
-  for (int i = 0; i < ModellerImpl::kMaxTrainingDataPoints - 1; ++i) {
+  for (size_t i = 0; i < ModellerImpl::kMaxTrainingDataPoints - 1; ++i) {
     EXPECT_EQ(i, modeller_->NumberTrainingDataPointsForTesting());
     scoped_task_environment_.FastForwardBy(
         base::TimeDelta::FromMilliseconds(1));
@@ -314,8 +345,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
     const double brightness_old = 10.0 + i;
     const double brightness_new = 20.0 + i;
     modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
-    expected_data.push_back({brightness_old, brightness_new,
-                             modeller_->AverageAmbientForTesting(), now});
+    expected_data.push_back(
+        {brightness_old, brightness_new,
+         ConvertToLog(modeller_->AverageAmbientForTesting()), now});
   }
 
   // Training should not have started.
@@ -330,16 +362,16 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   const double brightness_new = 95;
   modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
   expected_data.push_back({brightness_old, brightness_new,
-                           modeller_->AverageAmbientForTesting(), now});
+                           ConvertToLog(modeller_->AverageAmbientForTesting()),
+                           now});
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_EQ(0, modeller_->NumberTrainingDataPointsForTesting());
-  const BrightnessCurve result_curve = test_observer_->brightness_curve();
-  BrightnessCurve expected_curve;
-  for (auto& training_data_point : expected_data) {
-    expected_curve.push_back(DataToCurvePoint(training_data_point));
-  }
-  CompareBrightnessCurve(expected_curve, result_curve);
+  EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
+  const MonotoneCubicSpline& result_curve = test_observer_->brightness_curve();
+
+  const MonotoneCubicSpline expected_curve =
+      CreateTestCurveFromTrainingData(expected_data);
+  EXPECT_EQ(expected_curve, result_curve);
 }
 
 // User activities resets timer used to start training.
@@ -351,10 +383,25 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
   ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
 
   fake_als_reader_.ReportAmbientLightUpdate(30);
-  modeller_->OnUserBrightnessChanged(10, 20);
-  const TrainingDataPoint expected_data = {
-      10, 20, 30, scoped_task_environment_.GetMockTickClock()->NowTicks()};
-  EXPECT_EQ(1, modeller_->NumberTrainingDataPointsForTesting());
+  std::vector<TrainingDataPoint> expected_data;
+  for (size_t i = 0; i < ModellerImpl::kMinTrainingDataPoints; ++i) {
+    EXPECT_EQ(i, modeller_->NumberTrainingDataPointsForTesting());
+    scoped_task_environment_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(1));
+    const base::TimeTicks now =
+        scoped_task_environment_.GetMockTickClock()->NowTicks();
+    const int lux = i * 20;
+    fake_als_reader_.ReportAmbientLightUpdate(lux);
+    const double brightness_old = 10.0 + i;
+    const double brightness_new = 20.0 + i;
+    modeller_->OnUserBrightnessChanged(brightness_old, brightness_new);
+    expected_data.push_back(
+        {brightness_old, brightness_new,
+         ConvertToLog(modeller_->AverageAmbientForTesting()), now});
+  }
+
+  EXPECT_EQ(ModellerImpl::kMinTrainingDataPoints,
+            modeller_->NumberTrainingDataPointsForTesting());
 
   scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay -
                                          base::TimeDelta::FromSeconds(10));
@@ -365,7 +412,8 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
 
   scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay -
                                          base::TimeDelta::FromSeconds(2));
-  EXPECT_EQ(1, modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_EQ(ModellerImpl::kMinTrainingDataPoints,
+            modeller_->NumberTrainingDataPointsForTesting());
 
   // Another user event is received.
   modeller_->OnUserActivity(&mouse_event);
@@ -374,16 +422,40 @@ TEST_F(ModellerImplTest, MultipleUserActivities) {
   scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay -
                                          base::TimeDelta::FromSeconds(2));
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(1, modeller_->NumberTrainingDataPointsForTesting());
+  EXPECT_EQ(ModellerImpl::kMinTrainingDataPoints,
+            modeller_->NumberTrainingDataPointsForTesting());
 
   // After another 2 seconds, training is scheduled.
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_EQ(0, modeller_->NumberTrainingDataPointsForTesting());
-  const BrightnessCurve result_curve = test_observer_->brightness_curve();
-  BrightnessCurve expected_curve = {DataToCurvePoint(expected_data)};
-  CompareBrightnessCurve(expected_curve, result_curve);
+  EXPECT_EQ(0u, modeller_->NumberTrainingDataPointsForTesting());
+  const MonotoneCubicSpline& result_curve = test_observer_->brightness_curve();
+
+  const MonotoneCubicSpline expected_curve =
+      CreateTestCurveFromTrainingData(expected_data);
+  EXPECT_EQ(expected_curve, result_curve);
+}
+
+// No training is done because number of training data points is less than
+// |kMinTrainingDataPoints|.
+TEST_F(ModellerImplTest, MinTrainingDataPointsRequired) {
+  fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
+  fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
+  SetUpModeller();
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_EQ(Modeller::Status::kGlobal, test_observer_->model_status());
+
+  fake_als_reader_.ReportAmbientLightUpdate(30);
+  modeller_->OnUserBrightnessChanged(10, 20);
+
+  // No training is done because we have too few training data points.
+  scoped_task_environment_.FastForwardBy(ModellerImpl::kTrainingDelay +
+                                         base::TimeDelta::FromSeconds(10));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1u, modeller_->NumberTrainingDataPointsForTesting());
+
+  EXPECT_FALSE(test_observer_->trained_curve_received());
 }
 
 }  // namespace auto_screen_brightness
