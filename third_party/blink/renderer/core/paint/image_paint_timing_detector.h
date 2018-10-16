@@ -69,6 +69,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
                    const PaintLayer& painting_layer);
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
+  base::TimeTicks LargestImagePaint() { return largest_image_paint_; }
+  base::TimeTicks LastImagePaint() { return last_image_paint_; }
   void Trace(blink::Visitor*);
 
  private:
@@ -84,7 +86,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
                       WebLayerTreeView::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
-  void InvokeCallback();
+  void OnLargestImagePaintDetected(const ImageRecord&);
+  void OnLastImagePaintDetected(const ImageRecord&);
 
   bool IsJustLoaded(const LayoutImage*, const ImageRecord&) const;
   void Analyze();
@@ -121,6 +124,9 @@ class CORE_EXPORT ImagePaintTimingDetector final
   unsigned frame_index_ = 1;
 
   unsigned last_frame_index_queued_for_timing_ = 0;
+
+  base::TimeTicks largest_image_paint_;
+  base::TimeTicks last_image_paint_;
   Member<LocalFrameView> frame_view_;
 };
 }  // namespace blink

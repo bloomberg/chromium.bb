@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
@@ -43,6 +45,14 @@ void PaintTracker::NotifyNodeRemoved(const LayoutObject& object) {
       DOMNodeIds::IdForNode(object.GetNode()));
   image_paint_timing_detector_->NotifyNodeRemoved(
       DOMNodeIds::IdForNode(object.GetNode()));
+}
+
+void PaintTracker::DidChangePerformanceTiming() {
+  Document* document = frame_view_->GetFrame().GetDocument();
+  if (!document)
+    return;
+  DocumentLoader* loader = document->Loader();
+  loader->DidChangePerformanceTiming();
 }
 
 void PaintTracker::Dispose() {
