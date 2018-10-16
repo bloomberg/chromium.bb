@@ -27,6 +27,7 @@ Polymer({
     loadingDestinations: {
       type: Boolean,
       value: false,
+      observer: 'forceIronResize',
     },
 
     listName: String,
