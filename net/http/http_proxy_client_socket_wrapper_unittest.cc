@@ -120,8 +120,8 @@ class HttpProxyClientSocketWrapperTest
     quic_stream_factory_.reset(new QuicStreamFactory(
         net_log_.net_log(), &host_resolver_, ssl_config_service_.get(),
         &socket_factory_, &http_server_properties_, cert_verifier_.get(),
-        &ct_policy_enforcer_, channel_id_service_.get(),
-        &transport_security_state_, cert_transparency_verifier_.get(),
+        &ct_policy_enforcer_, &transport_security_state_,
+        cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory=*/nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         quic::kDefaultMaxPacketSize, /*user_agent_id=*/kUserAgent,
@@ -144,7 +144,7 @@ class HttpProxyClientSocketWrapperTest
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
         client_headers_include_h2_stream_dependency_, connection_options_,
-        client_connection_options_, /*enable_channel_id=*/false,
+        client_connection_options_,
         /*enable_socket_recv_optimization=*/false));
   }
 

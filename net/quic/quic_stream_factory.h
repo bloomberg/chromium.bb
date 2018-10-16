@@ -59,7 +59,6 @@ namespace net {
 
 class CTPolicyEnforcer;
 class CertVerifier;
-class ChannelIDService;
 class ClientSocketFactory;
 class CTVerifier;
 class HostResolver;
@@ -230,7 +229,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       HttpServerProperties* http_server_properties,
       CertVerifier* cert_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
-      ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
@@ -261,7 +259,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool headers_include_h2_stream_dependency,
       const quic::QuicTagVector& connection_options,
       const quic::QuicTagVector& client_connection_options,
-      bool enable_channel_id,
       bool enable_socket_recv_optimization);
   ~QuicStreamFactory() override;
 
