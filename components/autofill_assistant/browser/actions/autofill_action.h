@@ -43,6 +43,9 @@ class AutofillAction : public Action {
   // Fill the form using data with GUID |guid|. Return whether filling succeeded
   // or not through |callback|.
   void FillFormWithData(const std::string& guid, ActionDelegate* delegate);
+  void OnWaitForElement(const std::string& guid,
+                        ActionDelegate* delegate,
+                        bool element_found);
 
   // Called after getting full credit card with its cvc.
   void OnGetFullCard(ActionDelegate* delegate,

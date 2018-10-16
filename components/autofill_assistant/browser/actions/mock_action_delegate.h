@@ -24,6 +24,15 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(CreateBatchElementChecker,
                std::unique_ptr<BatchElementChecker>());
 
+  void WaitForElement(const std::vector<std::string>& selectors,
+                      base::OnceCallback<void(bool)> callback) {
+    OnWaitForElement(selectors, callback);
+  }
+
+  MOCK_METHOD2(OnWaitForElement,
+               void(const std::vector<std::string>&,
+                    base::OnceCallback<void(bool)>&));
+
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
   MOCK_METHOD2(ClickElement,
                void(const std::vector<std::string>& selectors,

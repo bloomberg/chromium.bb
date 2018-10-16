@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
@@ -31,6 +35,11 @@ class Action {
 
  protected:
   explicit Action(const ActionProto& proto);
+
+  // Returns selectors as a string from a repeated proto field.
+  static std::vector<std::string> ExtractSelectors(
+      const google::protobuf::RepeatedPtrField<std::string>& selectors_proto);
+
   void UpdateProcessedAction(ProcessedActionStatusProto status);
 
   const ActionProto proto_;

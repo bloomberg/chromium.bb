@@ -27,20 +27,10 @@ WaitForDomAction::~WaitForDomAction() {}
 
 void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
                                      ProcessActionCallback callback) {
-  std::vector<std::string> selectors;
-  for (const auto& selector : proto_.wait_for_dom().selectors()) {
-    selectors.emplace_back(selector);
-  }
-  if (selectors.empty()) {
-    UpdateProcessedAction(OTHER_ACTION_STATUS);
-    DLOG(ERROR) << "Empty selector, failing action.";
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-
+  DCHECK_GT(proto_.wait_for_dom().selectors_size(), 0);
   batch_element_checker_ = delegate->CreateBatchElementChecker();
-  batch_element_checker_->AddElementExistenceCheck(selectors,
-                                                   base::DoNothing());
+  batch_element_checker_->AddElementExistenceCheck(
+      ExtractSelectors(proto_.wait_for_dom().selectors()), base::DoNothing());
 
   base::TimeDelta duration = kDefaultCheckDuration;
   int timeout_ms = proto_.wait_for_dom().timeout_ms();

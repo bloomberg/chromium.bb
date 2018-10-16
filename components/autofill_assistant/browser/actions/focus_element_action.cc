@@ -21,26 +21,35 @@ void FocusElementAction::ProcessAction(ActionDelegate* delegate,
                                        ProcessActionCallback callback) {
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   const FocusElementProto& focus_element = proto_.focus_element();
-
-  std::vector<std::string> selectors;
-  for (const auto& selector : focus_element.element().selectors()) {
-    selectors.emplace_back(selector);
-  }
-  DCHECK(!selectors.empty());
+  DCHECK_GT(focus_element.element().selectors_size(), 0);
 
   if (!focus_element.title().empty()) {
     delegate->ShowStatusMessage(focus_element.title());
   }
+  delegate->WaitForElement(
+      ExtractSelectors(focus_element.element().selectors()),
+      base::BindOnce(&FocusElementAction::OnWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
+                     std::move(callback)));
+}
+
+void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
+                                          ProcessActionCallback callback,
+                                          bool element_found) {
+  if (!element_found) {
+    UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
+
   delegate->FocusElement(
-      selectors,
+      ExtractSelectors(proto_.focus_element().element().selectors()),
       base::BindOnce(&FocusElementAction::OnFocusElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FocusElementAction::OnFocusElement(ProcessActionCallback callback,
                                         bool status) {
-  // TODO(crbug.com/806868): Distinguish element not found from other error and
-  // report them as ELEMENT_RESOLUTION_FAILED.
   UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

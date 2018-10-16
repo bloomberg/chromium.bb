@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_RUN_ONCE_CALLBACK_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_RUN_ONCE_CALLBACK_H_
 
+#include <utility>
+
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -22,6 +24,12 @@ namespace autofill_assistant {
 //       void(..., base::OnceCallback<void(bool)>& callback));
 //
 //
+
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  return std::move(std::get<k>(args)).Run();
+}
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),

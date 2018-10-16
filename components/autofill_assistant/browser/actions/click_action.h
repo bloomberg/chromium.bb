@@ -25,6 +25,9 @@ class ClickAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnWaitForElement(ActionDelegate* delegate,
+                        ProcessActionCallback callback,
+                        bool element_found);
   void OnClick(ProcessActionCallback callback, bool status);
 
   std::vector<std::string> target_element_selectors_;
