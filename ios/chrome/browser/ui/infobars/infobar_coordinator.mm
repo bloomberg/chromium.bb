@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,7 +29,8 @@
 
 @interface InfobarCoordinator ()<InfobarContainerStateDelegate,
                                  TabModelObserver,
-                                 SigninPresenter> {
+                                 SigninPresenter,
+                                 UpgradeCenterClient> {
   // Bridge class to deliver container change notifications.
   std::unique_ptr<InfoBarContainerDelegateIOS> _infoBarContainerDelegate;
 
@@ -73,10 +76,14 @@
         InfoBarManagerImpl::FromWebState(self.tabModel.currentTab.webState);
   }
   _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+
+  [[UpgradeCenter sharedInstance] registerClient:self
+                                  withDispatcher:self.dispatcher];
 }
 
 - (void)stop {
   [self.tabModel removeObserver:self];
+  [[UpgradeCenter sharedInstance] unregisterClient:self];
 }
 
 #pragma mark - Public Interface
@@ -96,6 +103,15 @@
 
 - (void)updateInfobarContainer {
   [self infoBarContainerStateDidChangeAnimated:NO];
+}
+
+- (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState {
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(webState);
+  if (infoBarManager->infobar_count() > 0) {
+    return YES;
+  }
+  return NO;
 }
 
 #pragma mark - InfobarContainerStateDelegate
@@ -184,6 +200,25 @@
 - (void)showSignin:(ShowSigninCommand*)command {
   [self.dispatcher showSignin:command
            baseViewController:self.baseViewController];
+}
+
+#pragma mark - UpgradeCenterClient
+
+- (void)showUpgrade:(UpgradeCenter*)center {
+  if (!self.tabModel)
+    return;
+
+  // Add an infobar on all the open tabs.
+  DCHECK(self.tabModel.webStateList);
+  WebStateList* webStateList = self.tabModel.webStateList;
+  for (int index = 0; index < webStateList->count(); ++index) {
+    web::WebState* webState = webStateList->GetWebStateAt(index);
+    NSString* tabId = TabIdTabHelper::FromWebState(webState)->tab_id();
+    infobars::InfoBarManager* infoBarManager =
+        InfoBarManagerImpl::FromWebState(webState);
+    DCHECK(infoBarManager);
+    [center addInfoBarToManager:infoBarManager forTabId:tabId];
+  }
 }
 
 @end

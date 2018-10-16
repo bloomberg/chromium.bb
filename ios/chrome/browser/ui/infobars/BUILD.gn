@@ -19,6 +19,8 @@ source_set("infobars") {
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/upgrade",
+    "//ios/chrome/browser/web:tab_id_tab_helper",
+    "//ios/chrome/browser/web_state_list",
   ]
 }
 

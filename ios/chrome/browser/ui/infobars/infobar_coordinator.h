@@ -12,6 +12,9 @@
 namespace infobars {
 class InfoBarManager;
 }
+namespace web {
+class WebState;
+}
 
 @class TabModel;
 @protocol ApplicationCommands;
@@ -47,6 +50,9 @@ class InfoBarManager;
 
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
+
+// YES if an infobar is being presented for |webState|.
+- (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;

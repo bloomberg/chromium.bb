@@ -323,7 +323,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/geolocation:geolocation_internal",
-    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/language",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/net",

@@ -70,7 +70,6 @@
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
-#include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
@@ -225,7 +224,6 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -277,8 +275,6 @@
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkNode;
-
-class InfoBarContainerDelegateIOS;
 
 namespace {
 
@@ -442,7 +438,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     TabStripPresentation,
                                     ToolbarHeightProviderForFullscreen,
                                     UIGestureRecognizerDelegate,
-                                    UpgradeCenterClient,
                                     WebStatePrinter> {
   // The dependency factory passed on initialization.  Used to vend objects used
   // by the BVC.
@@ -989,9 +984,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
     _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
-    // TODO(leng): Delay this.
-    [[UpgradeCenter sharedInstance] registerClient:self
-                                    withDispatcher:self.dispatcher];
     _inNewTabAnimation = NO;
 
     _footerFullscreenProgress = 1.0;
@@ -1581,7 +1573,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.infoBarCoordinator stop];
   self.infoBarCoordinator = nil;
   [_model removeObserver:self];
-  [[UpgradeCenter sharedInstance] unregisterClient:self];
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(nil);
   [_model closeAllTabs];
@@ -1787,8 +1778,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super didReceiveMemoryWarning];
 
   if (![self isViewLoaded]) {
-    // Do not release |_infoBarContainer|, as this must have the same lifecycle
-    // as the BrowserViewController.
+    // Do not release |_infoBarCoordinator|, as this must have the same
+    // lifecycle as the BrowserViewController.
     [_browserContainerCoordinator stop];
     _browserContainerCoordinator = nil;
     self.typingShield = nil;
@@ -3150,10 +3141,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* currentTab = [_model currentTab];
   if (currentTab && tab == currentTab) {
     DCHECK(currentTab.webState);
-    infobars::InfoBarManager* infoBarManager =
-        InfoBarManagerImpl::FromWebState(currentTab.webState);
-    if (infoBarManager->infobar_count() > 0) {
-      DCHECK(self.infoBarCoordinator);
+    DCHECK(self.infoBarCoordinator);
+    if ([self.infoBarCoordinator
+            isInfobarPresentingForWebState:currentTab.webState]) {
       return [self.infoBarCoordinator view];
     }
   }
@@ -3164,7 +3154,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab {
   if (tab != [_model currentTab] || !self.infoBarCoordinator) {
     // There is no UI representation for non-current tabs or there is
-    // no _infoBarContainer instantiated yet.
+    // no _infoBarCoordinator instantiated yet.
     // Return offset outside of tab.
     return CGRectGetMaxY(self.view.frame);
   } else if (IsIPadIdiom()) {
@@ -5025,25 +5015,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)animateNewTab:(Tab*)tab
     inBackgroundWithCompletion:(ProceduralBlock)completion {
   self.inNewTabAnimation = NO;
-}
-
-#pragma mark - UpgradeCenterClient
-
-- (void)showUpgrade:(UpgradeCenter*)center {
-  if (!_model)
-    return;
-
-  // Add an infobar on all the open tabs.
-  DCHECK(_model.webStateList);
-  WebStateList* webStateList = _model.webStateList;
-  for (int index = 0; index < webStateList->count(); ++index) {
-    web::WebState* webState = webStateList->GetWebStateAt(index);
-    NSString* tabId = TabIdTabHelper::FromWebState(webState)->tab_id();
-    infobars::InfoBarManager* infoBarManager =
-        InfoBarManagerImpl::FromWebState(webState);
-    DCHECK(infoBarManager);
-    [center addInfoBarToManager:infoBarManager forTabId:tabId];
-  }
 }
 
 #pragma mark - InfobarPositioner
