@@ -94,9 +94,16 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->dual_filter_type = mi->filter[0] * 3 + mi->filter[1];
       // Transform
       // TODO(anyone): extract tx type info from mbmi->txk_type[].
-      mi->tx_type = DCT_DCT;
-      mi->tx_size = mbmi->tx_size;
 
+      const BLOCK_SIZE bsize = mbmi->sb_type;
+      const int c = i % mi_size_wide[bsize];
+      const int r = j % mi_size_high[bsize];
+      if (is_inter_block(mbmi) || is_intrabc_block(mbmi))
+        mi->tx_size = mbmi->inter_tx_size[av1_get_txb_size_index(bsize, r, c)];
+      else
+        mi->tx_size = mbmi->tx_size;
+
+      mi->tx_type = mbmi->txk_type[av1_get_txk_type_index(bsize, r, c)];
       mi->cdef_level =
           cm->cdef_strengths[mbmi->cdef_strength] / CDEF_SEC_STRENGTHS;
       mi->cdef_strength =

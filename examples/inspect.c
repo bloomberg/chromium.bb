@@ -155,7 +155,7 @@ const map_entry tx_size_map[] = {
   ENUM(TX_64X64), ENUM(TX_4X8),   ENUM(TX_8X4),   ENUM(TX_8X16),
   ENUM(TX_16X8),  ENUM(TX_16X32), ENUM(TX_32X16), ENUM(TX_32X64),
   ENUM(TX_64X32), ENUM(TX_4X16),  ENUM(TX_16X4),  ENUM(TX_8X32),
-  ENUM(TX_32X8),  LAST_ENUM
+  ENUM(TX_32X8),  ENUM(TX_16X64), ENUM(TX_64X16), LAST_ENUM
 };
 
 const map_entry tx_type_map[] = { ENUM(DCT_DCT),
