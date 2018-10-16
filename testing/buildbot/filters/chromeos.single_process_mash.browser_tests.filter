@@ -72,10 +72,6 @@
 # CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -LoginScreenDefaultPolicyLoginScreenBrowsertest.*
 
-# ash::Shell access in test for display configuration.
-# http://crbug.com/831826
--ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
-
 # Timeout because first non-empty paint isn't triggered.
 # https://crbug.com/885318
 -NoBackgroundTasksTest.FirstNonEmptyPaintWithoutBackgroundTasks
@@ -109,7 +105,7 @@
 -PictureInPictureLazyBackgroundPageApiTest.PictureInPictureInBackgroundPage
 
 # These started failing with the switch to ws2.
-# https:://crbug.com/855767
+# https://crbug.com/855767
 -AppWindowApiTest.OnRestoredEvent
 -BrowserActionApiTest.BrowserActionPopupWithIframe
 -FirstRunUIBrowserTest.ModalWindowDoesNotBlock
