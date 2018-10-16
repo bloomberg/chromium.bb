@@ -3181,7 +3181,12 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
 
 DISABLE_CFI_PERF
 void LayoutBox::UpdateLogicalHeight() {
-  intrinsic_content_logical_height_ = ContentLogicalHeight();
+  if (!HasOverrideLogicalHeight()) {
+    // If we have an override height, our children will have sized themselves
+    // relative to our override height, which would make our intrinsic size
+    // incorrect (too big).
+    intrinsic_content_logical_height_ = ContentLogicalHeight();
+  }
 
   LogicalExtentComputedValues computed_values;
   ComputeLogicalHeight(computed_values);
