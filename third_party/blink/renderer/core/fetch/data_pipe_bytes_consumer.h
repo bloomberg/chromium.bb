@@ -39,12 +39,19 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
 
   void Trace(blink::Visitor*) override;
 
+  // One of these methods must be called to signal the end of the data
+  // stream.  We cannot assume that the end of the pipe completes the
+  // stream successfully since errors can occur after the last byte is
+  // written into the pipe.
+  void SignalComplete();
+  void SignalError();
+
  private:
-  void Close();
+  bool IsReadableOrWaiting() const;
+  void MaybeClose();
   void SetError();
   void Notify(MojoResult);
-
-  void MaybeStartWatching();
+  void ClearDataPipe();
 
   Member<ExecutionContext> execution_context_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
@@ -54,7 +61,9 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   Error error_;
   bool is_in_two_phase_read_ = false;
   bool has_pending_notification_ = false;
-  uint64_t total_read_ = 0;
+  bool has_pending_complete_ = false;
+  bool has_pending_error_ = false;
+  bool completion_signaled_ = false;
 };
 
 }  // namespace blink
