@@ -322,7 +322,8 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
 
   // Layout view establishes isolation with the exception of local roots (since
   // they are already essentially isolated).
-  if (object.IsLayoutView()) {
+  if (RuntimeEnabledFeatures::LayoutViewIsolationNodesEnabled() &&
+      object.IsLayoutView()) {
     const auto* parent_frame = object.GetFrame()->Tree().Parent();
     return parent_frame && parent_frame->IsLocalFrame();
   }
