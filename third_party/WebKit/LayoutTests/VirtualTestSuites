@@ -648,6 +648,11 @@
     "args": ["--enable-features=SignedHTTPExchange"]
   },
   {
+    "prefix": "sxg",
+    "base": "external/wpt/signed-exchange",
+    "args": ["--enable-features=SignedHTTPExchange"]
+  },
+  {
     "prefix": "sxg-with-network-service",
     "base": "http/tests/loading/sxg",
     "args": ["--enable-features=SignedHTTPExchange,NetworkService"]

@@ -103,7 +103,8 @@ FONT_FILES = [
 WPT_FINGERPRINT = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
 # One for 127.0.0.1.sxg.pem
 SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
-
+# And one for external/wpt/signed-exchange/resources/127.0.0.1.sxg.pem
+SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
 
 class Port(object):
     """Abstract class for Port-specific hooks for the layout_test package."""
@@ -253,7 +254,7 @@ class Port(object):
             flags += [
                 '--run-web-tests',
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
-                ',' + SXG_FINGERPRINT,
+                ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
                 '--user-data-dir']
         if TESTS_IN_BLINK:
             flags += ['--tests-in-blink']
