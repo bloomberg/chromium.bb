@@ -18,6 +18,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cors.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -228,8 +229,9 @@ class CORSURLLoaderTest : public testing::Test {
                                   const std::string& protocol,
                                   const std::string& domain,
                                   bool allow_subdomains) {
-    origin_access_list_.AddAllowListEntryForOrigin(source_origin, protocol,
-                                                   domain, allow_subdomains);
+    origin_access_list_.AddAllowListEntryForOrigin(
+        source_origin, protocol, domain, allow_subdomains,
+        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
   }
 
   static net::RedirectInfo CreateRedirectInfo(

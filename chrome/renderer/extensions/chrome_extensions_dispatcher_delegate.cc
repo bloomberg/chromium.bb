@@ -74,12 +74,16 @@ void ChromeExtensionsDispatcherDelegate::AddOriginAccessPermissions(
   // to avoid granting them in "unblessed" (non-extension) processes.  If a
   // component extension somehow starts as inactive and becomes active later,
   // we'll re-init the origin permissions, so there's no danger in being
-  // conservative.
+  // conservative. Components shouldn't be subject to enterprise policy controls
+  // or blocking access to the webstore so they get the highest priority
+  // allowlist entry.
   if (extensions::Manifest::IsComponentLocation(extension.location()) &&
       is_extension_active) {
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
-        blink::WebString::FromUTF8(chrome::kChromeUIThemeHost), false);
+        blink::WebString::FromUTF8(chrome::kChromeUIThemeHost),
+        false /*allow_destination_subdomains*/,
+        network::mojom::CORSOriginAccessMatchPriority::kMaxPriority);
   }
 
   // TODO(jstritar): We should try to remove this special case. Also, these
@@ -89,7 +93,9 @@ void ChromeExtensionsDispatcherDelegate::AddOriginAccessPermissions(
                                  extensions::APIPermission::kManagement)) {
     blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
         extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
-        blink::WebString::FromUTF8(chrome::kChromeUIExtensionIconHost), false);
+        blink::WebString::FromUTF8(chrome::kChromeUIExtensionIconHost),
+        false /*allow_destination_subdomains*/,
+        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
   }
 }
 
