@@ -93,17 +93,10 @@ class AssertNavigationHandleFlagObserver : public WebContentsObserver {
 
 }  // namespace
 
-enum class SignedExchangeRequestHandlerBrowserTestPrefetchParam {
-  kPrefetchDisabled,
-  kPrefetchEnabled
-};
-
-class SignedExchangeRequestHandlerBrowserTest
-    : public CertVerifierBrowserTest,
-      public testing::WithParamInterface<
-          SignedExchangeRequestHandlerBrowserTestPrefetchParam> {
+class SignedExchangeRequestHandlerBrowserTestBase
+    : public CertVerifierBrowserTest {
  public:
-  SignedExchangeRequestHandlerBrowserTest() {
+  SignedExchangeRequestHandlerBrowserTestBase() {
     // This installs "root_ca_cert.pem" from which our test certificates are
     // created. (Needed for the tests that use real certificate, i.e.
     // RealCertVerifier)
@@ -114,7 +107,7 @@ class SignedExchangeRequestHandlerBrowserTest
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Time::UnixEpoch() +
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
-    SetUpFeatures();
+    feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
     CertVerifierBrowserTest::SetUp();
   }
 
@@ -125,10 +118,6 @@ class SignedExchangeRequestHandlerBrowserTest
   }
 
  protected:
-  virtual void SetUpFeatures() {
-    feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
-  }
-
   static scoped_refptr<net::X509Certificate> LoadCertificate(
       const std::string& cert_file) {
     base::ScopedAllowBlockingForTesting allow_io;
@@ -143,10 +132,10 @@ class SignedExchangeRequestHandlerBrowserTest
   void InstallUrlInterceptor(const GURL& url, const std::string& data_path) {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       if (!interceptor_) {
-        interceptor_ =
-            std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
-                &SignedExchangeRequestHandlerBrowserTest::OnInterceptCallback,
-                base::Unretained(this)));
+        interceptor_ = std::make_unique<
+            URLLoaderInterceptor>(base::BindRepeating(
+            &SignedExchangeRequestHandlerBrowserTestBase::OnInterceptCallback,
+            base::Unretained(this)));
       }
       interceptor_data_path_map_[url] = data_path;
     } else {
@@ -156,9 +145,19 @@ class SignedExchangeRequestHandlerBrowserTest
     }
   }
 
-  bool PrefetchIsEnabled() {
-    return GetParam() == SignedExchangeRequestHandlerBrowserTestPrefetchParam::
-                             kPrefetchEnabled;
+  void InstallMockCert() {
+    // Make the MockCertVerifier treat the certificate
+    // "prime256v1-sha256.public.pem" as valid for "test.example.org".
+    scoped_refptr<net::X509Certificate> original_cert =
+        LoadCertificate("prime256v1-sha256.public.pem");
+    net::CertVerifyResult dummy_result;
+    dummy_result.verified_cert = original_cert;
+    dummy_result.cert_status = net::OK;
+    dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+    dummy_result.ocsp_result.revocation_status =
+        net::OCSPRevocationStatus::GOOD;
+    mock_cert_verifier()->AddResultForCertAndHost(
+        original_cert, "test.example.org", dummy_result, net::OK);
   }
 
   void TriggerPrefetch(const GURL& url, bool expect_success) {
@@ -171,7 +170,6 @@ class SignedExchangeRequestHandlerBrowserTest
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  base::test::ScopedFeatureList feature_list_;
   const base::HistogramTester histogram_tester_;
 
  private:
@@ -192,9 +190,32 @@ class SignedExchangeRequestHandlerBrowserTest
     return true;
   }
 
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<URLLoaderInterceptor> interceptor_;
   std::map<GURL, std::string> interceptor_data_path_map_;
 
+  DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTestBase);
+};
+
+enum class SignedExchangeRequestHandlerBrowserTestPrefetchParam {
+  kPrefetchDisabled,
+  kPrefetchEnabled
+};
+
+class SignedExchangeRequestHandlerBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTestBase,
+      public testing::WithParamInterface<
+          SignedExchangeRequestHandlerBrowserTestPrefetchParam> {
+ public:
+  SignedExchangeRequestHandlerBrowserTest() = default;
+
+ protected:
+  bool PrefetchIsEnabled() {
+    return GetParam() == SignedExchangeRequestHandlerBrowserTestPrefetchParam::
+                             kPrefetchEnabled;
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
 };
 
@@ -202,18 +223,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
-
-  // Make the MockCertVerifier treat the certificate
-  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
-  scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("prime256v1-sha256.public.pem");
-  net::CertVerifyResult dummy_result;
-  dummy_result.verified_cert = original_cert;
-  dummy_result.cert_status = net::OK;
-  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier()->AddResultForCertAndHost(
-      original_cert, "test.example.org", dummy_result, net::OK);
+  InstallMockCert();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -244,6 +254,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   const net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateFingerprint256(
           entry->GetSSL().certificate->cert_buffer());
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256.public.pem");
   const net::SHA256HashValue original_fingerprint =
       net::X509Certificate::CalculateFingerprint256(
           original_cert->cert_buffer());
@@ -274,18 +286,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
       "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
-
-  // Make the MockCertVerifier treat the certificate
-  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
-  scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("prime256v1-sha256.public.pem");
-  net::CertVerifyResult dummy_result;
-  dummy_result.verified_cert = original_cert;
-  dummy_result.cert_status = net::OK;
-  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier()->AddResultForCertAndHost(
-      original_cert, "test.example.org", dummy_result, net::OK);
+  InstallMockCert();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -315,18 +316,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
       "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
-
-  // Make the MockCertVerifier treat the certificate
-  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
-  scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("prime256v1-sha256.public.pem");
-  net::CertVerifyResult dummy_result;
-  dummy_result.verified_cert = original_cert;
-  dummy_result.cert_status = net::OK;
-  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier()->AddResultForCertAndHost(
-      original_cert, "test.example.org", dummy_result, net::OK);
+  InstallMockCert();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -417,7 +407,7 @@ INSTANTIATE_TEST_CASE_P(
             kPrefetchEnabled));
 
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
-    : public SignedExchangeRequestHandlerBrowserTest {
+    : public SignedExchangeRequestHandlerBrowserTestBase {
  public:
   SignedExchangeRequestHandlerRealCertVerifierBrowserTest() {
     // Use "real" CertVerifier.
@@ -450,6 +440,78 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
   // Verify that it failed at the OCSP check step.
   histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
                                        SignedExchangeLoadResult::kOCSPError, 1);
+}
+
+enum class SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam {
+  kLegacy,
+  kServiceWorkerServicification
+};
+
+class SignedExchangeRequestHandlerWithServiceWorkerBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTestBase,
+      public testing::WithParamInterface<
+          SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam> {
+ public:
+  SignedExchangeRequestHandlerWithServiceWorkerBrowserTest() = default;
+  void SetUp() override {
+    if (GetParam() ==
+        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam ::
+            kServiceWorkerServicification) {
+      feature_list_.InitWithFeatures(
+          {blink::features::kServiceWorkerServicification}, {});
+    } else {
+      feature_list_.InitWithFeatures(
+          {}, {blink::features::kServiceWorkerServicification});
+    }
+    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      SignedExchangeRequestHandlerWithServiceWorkerBrowserTest);
+};
+
+INSTANTIATE_TEST_CASE_P(
+    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+    testing::Values(
+        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::kLegacy,
+        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
+            kServiceWorkerServicification));
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+                       Simple) {
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCert();
+
+  const GURL install_sw_url =
+      GURL("https://test.example.org/test/publisher-service-worker.html");
+
+  InstallUrlInterceptor(install_sw_url,
+                        "content/test/data/sxg/publisher-service-worker.html");
+  InstallUrlInterceptor(
+      GURL("https://test.example.org/test/publisher-service-worker.js"),
+      "content/test/data/sxg/publisher-service-worker.js");
+  {
+    base::string16 title = base::ASCIIToUTF16("Done");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    NavigateToURL(shell(), install_sw_url);
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  }
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+
+  base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Generated"));
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
 struct SignedExchangeAcceptHeaderBrowserTestParam {

@@ -18,6 +18,7 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
+#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -227,6 +228,12 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
     RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
         &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
         base::Unretained(this)));
+    // Note: This URLLoaderFactory creation callback will be used not only for
+    // subresource loading from service workers (i.e., fetch()), but also for
+    // loading non-installed service worker scripts.
+    EmbeddedWorkerInstance::SetNetworkFactoryForTesting(base::BindRepeating(
+        &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+        base::Unretained(this)));
   }
 
   StoragePartitionImpl::
@@ -252,6 +259,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     RenderFrameHostImpl::SetNetworkFactoryForTesting(
+        RenderFrameHostImpl::CreateNetworkFactoryCallback());
+    EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
         RenderFrameHostImpl::CreateNetworkFactoryCallback());
   }
 

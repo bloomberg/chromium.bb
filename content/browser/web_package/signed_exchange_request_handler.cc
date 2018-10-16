@@ -83,7 +83,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
-    ThrottlingURLLoader* url_loader) {
+    ThrottlingURLLoader* url_loader,
+    bool* skip_other_interceptors) {
   DCHECK(!signed_exchange_loader_);
   if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           request_initiator_.GetURL(), response)) {
@@ -109,6 +110,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
       url_loader_factory_, url_loader_throttles_getter_,
       base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
       metric_recorder_);
+
+  *skip_other_interceptors = true;
   return true;
 }
 
