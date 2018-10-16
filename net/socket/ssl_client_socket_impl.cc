@@ -30,6 +30,7 @@
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
+#include "net/base/features.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
@@ -75,12 +76,6 @@ const int kSSLClientSocketNoPendingResult = 1;
 
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
-
-// This feature disables the TLS 1.3 downgrade protection that may be triggered
-// by buggy TLS-terminating proxies. It will be removed once TLS 1.3 is
-// successfully deployed without needing to disable this feature.
-const base::Feature kIgnoreTLS13Downgrade{"IgnoreTLS13Downgrade",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
     uint16_t algorithm,
@@ -344,10 +339,6 @@ class SSLClientSocketImpl::SSLContext {
     SSL_CTX_set_timeout(ssl_ctx_.get(), 1 * 60 * 60 /* one hour */);
 
     SSL_CTX_set_grease_enabled(ssl_ctx_.get(), 1);
-
-    if (base::FeatureList::IsEnabled(kIgnoreTLS13Downgrade)) {
-      SSL_CTX_set_ignore_tls13_downgrade(ssl_ctx_.get(), 1);
-    }
 
     // Deduplicate all certificates minted from the SSL_CTX in memory.
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
@@ -888,6 +879,10 @@ int SSLClientSocketImpl::Init() {
       break;
   }
 
+  if (!base::FeatureList::IsEnabled(features::kEnforceTLS13Downgrade)) {
+    SSL_set_ignore_tls13_downgrade(ssl_.get(), 1);
+  }
+
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
   SslSetClearMask options;
@@ -1070,15 +1065,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     base::UmaHistogramSparse("Net.SSLSignatureAlgorithm", signature_algorithm);
   }
 
-  if (base::FeatureList::IsEnabled(kIgnoreTLS13Downgrade) &&
-      IsTLS13ExperimentHost(host_and_port_.host())) {
-    // Record whether the TLS 1.3 anti-downgrade mechanism has fired. This is
-    // only recorded when enforcement is disabled. See
-    // https://crbug.com/boringssl/226.
-    UMA_HISTOGRAM_BOOLEAN("Net.SSLTLS13DowngradeTLS13Experiment",
-                          !!SSL_is_tls13_downgrade(ssl_.get()));
-  }
-
   // Verify the certificate.
   next_handshake_state_ = STATE_VERIFY_CERT;
   return OK;
@@ -1231,6 +1217,57 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
         UMA_HISTOGRAM_ENUMERATION(
             "Net.SSLRSAKeyUsage.UnknownRoot", rsa_key_usage,
             static_cast<int>(RSAKeyUsage::kLastValue) + 1);
+      }
+    }
+
+    if (!base::FeatureList::IsEnabled(features::kEnforceTLS13Downgrade)) {
+      // Record metrics on the TLS 1.3 anti-downgrade mechanism. This is only
+      // recorded when enforcement is disabled. (When enforcement is enabled,
+      // the connection will fail with ERR_TLS13_DOWNGRADE_DETECTED.) See
+      // https://crbug.com/boringssl/226.
+      //
+      // Record metrics for both servers overall and the TLS 1.3 experiment
+      // set. These metrics are only useful on TLS 1.3 servers, so the latter is
+      // more precise, but there is a large enough TLS 1.3 deployment that the
+      // overall numbers may be more robust. In particular, the DowngradeType
+      // metrics do not need to be filtered.
+      bool is_downgrade = !!SSL_is_tls13_downgrade(ssl_.get());
+      UMA_HISTOGRAM_BOOLEAN("Net.SSLTLS13Downgrade", is_downgrade);
+      bool is_tls13_experiment_host =
+          IsTLS13ExperimentHost(host_and_port_.host());
+      if (is_tls13_experiment_host) {
+        UMA_HISTOGRAM_BOOLEAN("Net.SSLTLS13DowngradeTLS13Experiment",
+                              is_downgrade);
+      }
+
+      if (is_downgrade) {
+        // Record whether connections which hit the downgrade used known vs
+        // unknown roots and which key exchange type.
+
+        // This enum is persisted into histograms. Values may not be renumbered.
+        enum class DowngradeType {
+          kKnownRootRSA = 0,
+          kKnownRootECDHE = 1,
+          kUnknownRootRSA = 2,
+          kUnknownRootECDHE = 3,
+          kMaxValue = kUnknownRootECDHE,
+        };
+
+        DowngradeType type;
+        int kx_nid = SSL_CIPHER_get_kx_nid(SSL_get_current_cipher(ssl_.get()));
+        DCHECK(kx_nid == NID_kx_rsa || kx_nid == NID_kx_ecdhe);
+        if (server_cert_verify_result_.is_issued_by_known_root) {
+          type = kx_nid == NID_kx_rsa ? DowngradeType::kKnownRootRSA
+                                      : DowngradeType::kKnownRootECDHE;
+        } else {
+          type = kx_nid == NID_kx_rsa ? DowngradeType::kUnknownRootRSA
+                                      : DowngradeType::kUnknownRootECDHE;
+        }
+        UMA_HISTOGRAM_ENUMERATION("Net.SSLTLS13DowngradeType", type);
+        if (is_tls13_experiment_host) {
+          UMA_HISTOGRAM_ENUMERATION("Net.SSLTLS13DowngradeTypeTLS13Experiment",
+                                    type);
+        }
       }
     }
   }

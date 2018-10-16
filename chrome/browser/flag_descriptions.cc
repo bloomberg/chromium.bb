@@ -540,6 +540,14 @@ const char kEnableEmojiContextMenuDescription[] =
     "Enables the Emoji picker item in context menus for editable text areas, if"
     " supported by the operating system.";
 
+const char kEnforceTLS13DowngradeName[] = "TLS 1.3 downgrade hardening";
+const char kEnforceTLS13DowngradeDescription[] =
+    "This option enables the TLS 1.3 downgrade hardening mechanism. This "
+    "hardens TLS 1.3 connections while remaining compatible with TLS 1.0 "
+    "through 1.2 connections. Firewalls and proxies that do not function when "
+    "this is enabled do not implement TLS 1.0 through 1.2 correctly or "
+    "securely. They must be fixed by vendors.";
+
 const char kEnableEnumeratingAudioDevicesName[] =
     "Experimentally enable enumerating audio devices.";
 const char kEnableEnumeratingAudioDevicesDescription[] =

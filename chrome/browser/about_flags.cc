@@ -117,7 +117,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
-#include "net/cert/cert_verify_proc_android.h"
+#include "net/base/features.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
@@ -2659,6 +2659,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"tls13-variant", flag_descriptions::kTLS13VariantName,
      flag_descriptions::kTLS13VariantDescription, kOsAll,
      MULTI_VALUE_TYPE(kTLS13VariantChoices)},
+    {"enforce-tls13-downgrade", flag_descriptions::kEnforceTLS13DowngradeName,
+     flag_descriptions::kEnforceTLS13DowngradeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kEnforceTLS13Downgrade)},
     {"enable-scroll-anchor-serialization",
      flag_descriptions::kEnableScrollAnchorSerializationName,
      flag_descriptions::kEnableScrollAnchorSerializationDescription, kOsAll,

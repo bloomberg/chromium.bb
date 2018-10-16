@@ -681,6 +681,9 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("tls-intolerance-type", GetTLSIntoleranceType(
           ssl_options_.tls_intolerance_type));
     }
+    if (ssl_options_.tls_max_version != SSLOptions::TLS_MAX_VERSION_DEFAULT) {
+      arguments->SetInteger("tls-max-version", ssl_options_.tls_max_version);
+    }
     if (ssl_options_.fallback_scsv_enabled)
       arguments->Set("fallback-scsv", std::make_unique<base::Value>());
     if (!ssl_options_.signed_cert_timestamps_tls_ext.empty()) {
@@ -716,6 +719,14 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("disable-channel-id", std::make_unique<base::Value>());
     if (ssl_options_.disable_extended_master_secret) {
       arguments->Set("disable-extended-master-secret",
+                     std::make_unique<base::Value>());
+    }
+    if (ssl_options_.simulate_tls13_downgrade) {
+      arguments->Set("simulate-tls13-downgrade",
+                     std::make_unique<base::Value>());
+    }
+    if (ssl_options_.simulate_tls12_downgrade) {
+      arguments->Set("simulate-tls12-downgrade",
                      std::make_unique<base::Value>());
     }
   }
