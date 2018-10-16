@@ -13,13 +13,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/net/chrome_accept_language_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
@@ -35,6 +35,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "net/http/http_util.h"
 #include "net/net_buildflags.h"
 #include "services/network/public/cpp/features.h"
 
@@ -51,6 +52,14 @@ std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
     strings.push_back(value.GetString());
   }
   return strings;
+}
+
+std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
+  std::string accept_languages_str =
+      base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
+          ? net::HttpUtil::ExpandLanguageList(language_pref)
+          : language_pref;
+  return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
 }
 
 }  // namespace
@@ -218,8 +227,7 @@ void ProfileNetworkContextService::UpdateBlockThirdPartyCookies() {
 }
 
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
-  return chrome_accept_language_settings::ComputeAcceptLanguageFromPref(
-      pref_accept_language_.GetValue());
+  return ComputeAcceptLanguageFromPref(pref_accept_language_.GetValue());
 }
 
 void ProfileNetworkContextService::UpdateReferrersEnabled() {

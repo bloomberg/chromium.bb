@@ -1570,4 +1570,28 @@ TEST(HttpUtilTest, ParseContentEncoding) {
   }
 }
 
+// Test the expansion of the Language List.
+TEST(HttpUtilTest, ExpandLanguageList) {
+  EXPECT_EQ("", HttpUtil::ExpandLanguageList(""));
+  EXPECT_EQ("en-US,en", HttpUtil::ExpandLanguageList("en-US"));
+  EXPECT_EQ("fr", HttpUtil::ExpandLanguageList("fr"));
+
+  // The base language is added after all regional codes...
+  EXPECT_EQ("en-US,en-CA,en", HttpUtil::ExpandLanguageList("en-US,en-CA"));
+
+  // ... but before other language families.
+  EXPECT_EQ("en-US,en-CA,en,fr",
+            HttpUtil::ExpandLanguageList("en-US,en-CA,fr"));
+  EXPECT_EQ("en-US,en-CA,en,fr,en-AU",
+            HttpUtil::ExpandLanguageList("en-US,en-CA,fr,en-AU"));
+  EXPECT_EQ("en-US,en-CA,en,fr-CA,fr",
+            HttpUtil::ExpandLanguageList("en-US,en-CA,fr-CA"));
+
+  // Add a base language even if it's already in the list.
+  EXPECT_EQ("en-US,en,fr-CA,fr,it,es-AR,es,it-IT",
+            HttpUtil::ExpandLanguageList("en-US,fr-CA,it,fr,es-AR,it-IT"));
+  // Trims a whitespace.
+  EXPECT_EQ("en-US,en,fr", HttpUtil::ExpandLanguageList("en-US, fr"));
+}
+
 }  // namespace net
