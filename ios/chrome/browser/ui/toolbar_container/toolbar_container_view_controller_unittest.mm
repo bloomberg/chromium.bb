@@ -228,7 +228,13 @@ TEST_F(ToolbarContainerViewControllerTest, TopToBottomCollapsed) {
 
 // Tests the layout of the toolbar views in when oriented from bottom to top
 // and the toolbars are fully expanded.
-TEST_F(ToolbarContainerViewControllerTest, BottomToTopExpanded) {
+// TODO(crbug.com/895766): reenable these tests on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_BottomToTopExpanded BottomToTopExpanded
+#else
+#define MAYBE_BottomToTopExpanded DISABLED_BottomToTopExpanded
+#endif
+TEST_F(ToolbarContainerViewControllerTest, MAYBE_BottomToTopExpanded) {
   SetOrientation(ToolbarContainerOrientation::kBottomToTop);
   SetExpanded(true);
   CGFloat container_height = CGRectGetHeight(container_view().bounds);
@@ -247,7 +253,13 @@ TEST_F(ToolbarContainerViewControllerTest, BottomToTopExpanded) {
 
 // Tests the layout of the toolbar views in when oriented from bottom to top
 // and the toolbars are fully collapsed.
-TEST_F(ToolbarContainerViewControllerTest, BottomToTopCollapsed) {
+// TODO(crbug.com/895766): reenable these tests on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_BottomToTopCollapsed BottomToTopCollapsed
+#else
+#define MAYBE_BottomToTopCollapsed DISABLED_BottomToTopCollapsed
+#endif
+TEST_F(ToolbarContainerViewControllerTest, MAYBE_BottomToTopCollapsed) {
   SetOrientation(ToolbarContainerOrientation::kBottomToTop);
   SetExpanded(false);
   CGFloat container_height = CGRectGetHeight(container_view().bounds);
