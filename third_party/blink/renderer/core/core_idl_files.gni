@@ -304,7 +304,6 @@ core_idl_files =
                     "intersection_observer/intersection_observer_entry.idl",
                     "invisible_dom/activate_invisible_event.idl",
                     "layout/custom/layout_constraints.idl",
-                    "layout/custom/layout_edges.idl",
                     "layout/custom/layout_fragment.idl",
                     "layout/custom/layout_fragment_request.idl",
                     "layout/custom/layout_child.idl",
