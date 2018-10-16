@@ -419,15 +419,25 @@ void SyncedBookmarkTracker::UpdateUponCommitResponse(
     return;
   }
 
-  if (old_id != new_id) {
-    auto it = sync_id_to_entities_map_.find(old_id);
-    entity->metadata()->set_server_id(new_id);
-    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-    // Should be removed after figuring out the reason for the crash.
-    CHECK_EQ(0U, sync_id_to_entities_map_.count(new_id));
-    sync_id_to_entities_map_[new_id] = std::move(it->second);
-    sync_id_to_entities_map_.erase(old_id);
+  UpdateSyncForLocalCreationIfNeeded(old_id, new_id);
+}
+
+void SyncedBookmarkTracker::UpdateSyncForLocalCreationIfNeeded(
+    const std::string& old_id,
+    const std::string& new_id) {
+  if (old_id == new_id) {
+    return;
   }
+  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+  // Should be removed after figuring out the reason for the crash.
+  CHECK_EQ(1U, sync_id_to_entities_map_.count(old_id));
+  CHECK_EQ(0U, sync_id_to_entities_map_.count(new_id));
+
+  std::unique_ptr<Entity> entity =
+      std::move(sync_id_to_entities_map_.at(old_id));
+  entity->metadata()->set_server_id(new_id);
+  sync_id_to_entities_map_[new_id] = std::move(entity);
+  sync_id_to_entities_map_.erase(old_id);
 }
 
 void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {

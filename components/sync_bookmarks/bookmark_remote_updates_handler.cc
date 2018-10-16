@@ -160,6 +160,28 @@ void BookmarkRemoteUpdatesHandler::Process(
       // Seen this update before; just ignore it.
       continue;
     }
+
+    // If a commit succeeds, but the response does not come back fast enough
+    // (e.g. before shutdown or crash), then the |bookmark_tracker_| might
+    // assume that it was never committed. The server will track the client that
+    // sent up the original commit and return this in a get updates response. We
+    // need to check if we have an entry that didn't get its server id updated
+    // correctly. The server sends down a |originator_cache_guid| and an
+    // |original_client_item_id|. If we have a entry by that description, we
+    // should update the |sync_id| in |bookmark_tracker_|. The rest of code will
+    // handle this a conflict and adjust the model if needed.
+    if (update_entity.originator_cache_guid ==
+            bookmark_tracker_->model_type_state().cache_guid() &&
+        bookmark_tracker_->GetEntityForSyncId(
+            update_entity.originator_client_item_id) != nullptr) {
+      bookmark_tracker_->UpdateSyncForLocalCreationIfNeeded(
+          /*old_id=*/update_entity.originator_client_item_id,
+          /*new_id=*/update_entity.id);
+
+      // The tracker has changed. Re-retrieve the |tracker_entity|.
+      tracked_entity = bookmark_tracker_->GetEntityForSyncId(update_entity.id);
+    }
+
     // TODO(crbug.com/516866): Handle the case of conflict as a result of
     // re-encryption request.
     if (tracked_entity && tracked_entity->IsUnsynced()) {

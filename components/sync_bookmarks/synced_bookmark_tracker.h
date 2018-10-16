@@ -170,6 +170,11 @@ class SyncedBookmarkTracker {
                                 int64_t acked_sequence_number,
                                 int64_t server_version);
 
+  // Informs the tracker that the sync id for an entity has changed. It updates
+  // the internal state of the tracker accordingly.
+  void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
+                                          const std::string& new_id);
+
   // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
   // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is
   // not returned in GetEntitiesWithLocalChanges().

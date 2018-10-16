@@ -25,6 +25,7 @@ using base::ASCIIToUTF16;
 using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
+using testing::IsNull;
 using testing::NotNull;
 
 namespace sync_bookmarks {
@@ -704,6 +705,74 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
               DeleteFaviconMappings(ElementsAre(kUrl),
                                     favicon_base::IconType::kFavicon));
   updates_handler.Process(updates);
+}
+
+// This tests the case when a local creation is successfully committed to the
+// server but the commit respone isn't received for some reason. Further updates
+// to that entity should update the sync id in the tracker.
+TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
+     ShouldUpdateSyncIdWhenRecevingAnUpdateForNewlyCreatedLocalNode) {
+  const std::string kCacheGuid = "generated_id";
+  const std::string kOriginatorClientItemId = "tmp_server_id";
+  const std::string kSyncId = "server_id";
+  const int64_t kServerVersion = 1000;
+  const base::Time kModificationTime(base::Time::Now() -
+                                     base::TimeDelta::FromSeconds(1));
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_cache_guid(kCacheGuid);
+  model_type_state.set_initial_sync_done(true);
+
+  SyncedBookmarkTracker tracker(
+      std::vector<NodeMetadataPair>(),
+      std::make_unique<sync_pb::ModelTypeState>(model_type_state));
+  const sync_pb::UniquePosition unique_position;
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bookmark_specifics = specifics.mutable_bookmark();
+  bookmark_specifics->set_title("Title");
+  bookmarks::BookmarkNode node(/*id=*/1, GURL());
+  // Track a sync entity (similar to what happens after a local creation). The
+  // |originator_client_item_id| is used a temp sync id and mark the entity that
+  // it needs to be committed..
+  tracker.Add(/*sync_id=*/kOriginatorClientItemId, &node, kServerVersion,
+              kModificationTime, unique_position, specifics);
+  tracker.IncrementSequenceNumber(/*sync_id=*/kOriginatorClientItemId);
+
+  ASSERT_THAT(tracker.GetEntityForSyncId(kOriginatorClientItemId), NotNull());
+
+  // Now receive an update with the actual server id.
+  syncer::UpdateResponseDataList updates;
+  syncer::EntityData data;
+  data.id = kSyncId;
+  data.originator_cache_guid = kCacheGuid;
+  data.originator_client_item_id = kOriginatorClientItemId;
+  // Set the other required fields.
+  data.unique_position = syncer::UniquePosition::InitialPosition(
+                             syncer::UniquePosition::RandomSuffix())
+                             .ToProto();
+  data.specifics = specifics;
+  data.is_folder = true;
+
+  syncer::UpdateResponseData response_data;
+  response_data.entity = data.PassToPtr();
+  // Similar to what's done in the loopback_server.
+  response_data.response_version = 0;
+  updates.push_back(response_data);
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
+                                               &favicon_service, &tracker);
+  updates_handler.Process(updates);
+
+  // The sync id in the tracker should have been updated.
+  EXPECT_THAT(tracker.GetEntityForSyncId(kOriginatorClientItemId), IsNull());
+  const SyncedBookmarkTracker::Entity* entity =
+      tracker.GetEntityForSyncId(kSyncId);
+  ASSERT_THAT(entity, NotNull());
+  EXPECT_THAT(entity->metadata()->server_id(), Eq(kSyncId));
+  EXPECT_THAT(entity->bookmark_node(), Eq(&node));
 }
 
 }  // namespace
