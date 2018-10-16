@@ -951,11 +951,15 @@ template("mojom") {
         testonly = invoker.testonly
       }
       defines = []
-      if (defined(invoker.export_define)) {
-        defines += [ invoker.export_define ]
-      }
-      if (defined(invoker.export_define_blink)) {
-        defines += [ invoker.export_define_blink ]
+      if (defined(bindings_configuration.for_blink) &&
+          bindings_configuration.for_blink) {
+        if (defined(invoker.export_define_blink)) {
+          defines += [ invoker.export_define_blink ]
+        }
+      } else {
+        if (defined(invoker.export_define)) {
+          defines += [ invoker.export_define ]
+        }
       }
       if (enabled_sources != []) {
         sources = process_file_template(enabled_sources, generator_cpp_outputs)
