@@ -145,7 +145,8 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            true /* should_ask_for_child_region */);
+            true /* should_ask_for_child_region */,
+            true /* root_accepts_events */);
   }
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(

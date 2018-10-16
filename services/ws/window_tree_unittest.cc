@@ -893,10 +893,6 @@ TEST(WindowTreeTest, EventObserver) {
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
-  setup.window_tree_test_helper()->SetEventTargetingPolicy(
-      top_level, mojom::EventTargetingPolicy::NONE);
-  EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
-            top_level->event_targeting_policy());
   // Start observing mouse press and release.
   setup.window_tree_test_helper()->window_tree()->ObserveEventTypes(
       {ui::mojom::EventType::MOUSE_PRESSED_EVENT,

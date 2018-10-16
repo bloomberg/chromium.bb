@@ -551,6 +551,20 @@ bool Window::HasObserver(const WindowObserver* observer) const {
 }
 
 void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
+#if DCHECK_IS_ON()
+  const bool old_window_accepts_events =
+      (event_targeting_policy_ ==
+       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+      (event_targeting_policy_ ==
+       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  const bool new_window_accepts_events =
+      (policy == ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+      (policy == ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  if (new_window_accepts_events != old_window_accepts_events) {
+    DCHECK(!created_layer_tree_frame_sink_);
+  }
+#endif
+
   if (event_targeting_policy_ == policy)
     return;
 
@@ -1089,6 +1103,7 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   DCHECK(frame_sink_id_.is_valid());
   DCHECK(embeds_external_client_);
   DCHECK(GetLocalSurfaceId().is_valid());
+  created_layer_tree_frame_sink_ = true;
   return sink;
 }
 
