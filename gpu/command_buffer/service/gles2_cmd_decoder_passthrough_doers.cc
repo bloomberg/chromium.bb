@@ -4051,7 +4051,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
 
   const Mailbox& mb = Mailbox::FromVolatile(
       *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  scoped_refptr<TexturePassthrough> texture = static_cast<TexturePassthrough*>(
+  scoped_refptr<TexturePassthrough> texture = TexturePassthrough::CheckedCast(
       group_->mailbox_manager()->ConsumeTexture(mb));
   if (texture == nullptr) {
     // Create texture to handle invalid mailbox (see http://crbug.com/472465 and

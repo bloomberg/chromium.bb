@@ -29,11 +29,17 @@ namespace gles2 {
 class MemoryTracker;
 };  // namespace gles2
 
+namespace raster {
+class WrappedSkImageFactory;
+struct RasterDecoderContextState;
+}  // namespace raster
+
 class GPU_GLES2_EXPORT SharedImageFactory {
  public:
   SharedImageFactory(const GpuPreferences& gpu_preferences,
                      const GpuDriverBugWorkarounds& workarounds,
                      const GpuFeatureInfo& gpu_feature_info,
+                     raster::RasterDecoderContextState* context_state,
                      MailboxManager* mailbox_manager,
                      SharedImageManager* manager,
                      ImageFactory* image_factory,
@@ -65,6 +71,9 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   // TODO(ericrk): This should be some sort of map from usage to factory
   // eventually.
   std::unique_ptr<SharedImageBackingFactory> backing_factory_;
+
+  // Non-null if gpu_preferences.enable_raster_to_sk_image.
+  std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
 };
 
 }  // namespace gpu

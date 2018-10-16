@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -301,13 +302,10 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     return;
   }
   BindOrCopyTextureIfNecessary(texture_base);
-  GrGLTextureInfo texture_info;
-  texture_info.fTarget = texture_base->target();
-  texture_info.fID = texture_base->service_id();
-  texture_info.fFormat = *metadata.backend_format.getGLFormat();
-  *backend_texture =
-      GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                       metadata.mip_mapped, texture_info);
+  GetGrBackendTexture(*gl_version_info(),
+                      /*function_name=*/nullptr,
+                      /*error_state=*/nullptr, *texture_base,
+                      metadata.color_type, backend_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
@@ -429,14 +427,14 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
     gpu::TextureBase* texture_base) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (gpu_service_->gpu_preferences().use_passthrough_cmd_decoder)
+  if (texture_base->GetType() != gpu::TextureBase::Type::kValidated)
     return;
-  // If a texture created with non-passthrough command buffer and bind with
-  // an image, the Chrome will defer copying the image to the texture until
-  // the texture is used. It is for implementing low latency drawing and
-  // avoiding unnecessary texture copy. So we need check the texture image
-  // state, and bind or copy the image to the texture if necessary.
-  auto* texture = static_cast<gpu::gles2::Texture*>(texture_base);
+  // If a texture is validated and bound to an image, we may defer copying the
+  // image to the texture until the texture is used. It is for implementing low
+  // latency drawing (e.g. fast ink) and avoiding unnecessary texture copy. So
+  // we need check the texture image state, and bind or copy the image to the
+  // texture if necessary.
+  auto* texture = gpu::gles2::Texture::CheckedCast(texture_base);
   gpu::gles2::Texture::ImageState image_state;
   auto* image = texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state);
   if (image && image_state == gpu::gles2::Texture::UNBOUND) {

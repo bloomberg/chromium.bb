@@ -17571,7 +17571,7 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
     return;
   }
   Texture* texture =
-      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
+      Texture::CheckedCast(group_->mailbox_manager()->ConsumeTexture(mailbox));
   if (!texture) {
     // Create texture to handle invalid mailbox (see http://crbug.com/472465).
     bool result = GenTexturesHelper(1, &client_id);
