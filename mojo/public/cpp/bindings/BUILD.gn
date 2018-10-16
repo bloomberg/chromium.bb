@@ -208,6 +208,7 @@ if (!is_ios) {
   # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
   source_set("wtf_support") {
     sources = [
+      "array_traits_web_vector.h",
       "array_traits_wtf_vector.h",
       "lib/string_traits_wtf.cc",
       "lib/wtf_clone_equals_util.h",
@@ -219,6 +220,7 @@ if (!is_ios) {
 
     public_deps = [
       ":bindings",
+      "//third_party/blink/public:blink_headers",
       "//third_party/blink/renderer/platform:platform_export",
       "//third_party/blink/renderer/platform/wtf",
     ]
