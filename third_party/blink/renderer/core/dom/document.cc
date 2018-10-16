@@ -2019,67 +2019,70 @@ void Document::PropagateStyleToViewport() {
   // http://www.w3.org/TR/css3-background/#body-background
   // <html> root element with no background steals background from its first
   // <body> child.
-  // Also see LayoutBoxModelObject::backgroundStolenForBeingBody()
-  if (IsHTMLHtmlElement(documentElement()) && IsHTMLBodyElement(body) &&
-      !background_style->HasBackground())
+  // Also see LayoutBoxModelObject::BackgroundStolenForBeingBody()
+  if (IsHTMLHtmlElement(documentElement()) &&
+      document_element_style->Display() != EDisplay::kNone &&
+      IsHTMLBodyElement(body) && !background_style->HasBackground()) {
     background_style = body_style;
-
-  Color background_color =
-      background_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
-  FillLayer background_layers = background_style->BackgroundLayers();
-  for (auto* current_layer = &background_layers; current_layer;
-       current_layer = current_layer->Next()) {
-    // http://www.w3.org/TR/css3-background/#root-background
-    // The root element background always have painting area of the whole
-    // canvas.
-    current_layer->SetClip(EFillBox::kBorder);
-
-    // The root element doesn't scroll. It always propagates its layout overflow
-    // to the viewport. Positioning background against either box is equivalent
-    // to positioning against the scrolled box of the viewport.
-    if (current_layer->Attachment() == EFillAttachment::kScroll)
-      current_layer->SetAttachment(EFillAttachment::kLocal);
   }
-  EImageRendering image_rendering = background_style->ImageRendering();
+
+  Color background_color = Color::kTransparent;
+  FillLayer background_layers(EFillLayerType::kBackground, true);
+  EImageRendering image_rendering = EImageRendering::kAuto;
+
+  if (background_style->Display() != EDisplay::kNone) {
+    background_color = background_style->VisitedDependentColor(
+        GetCSSPropertyBackgroundColor());
+    background_layers = background_style->BackgroundLayers();
+    for (auto* current_layer = &background_layers; current_layer;
+         current_layer = current_layer->Next()) {
+      // http://www.w3.org/TR/css3-background/#root-background
+      // The root element background always have painting area of the whole
+      // canvas.
+      current_layer->SetClip(EFillBox::kBorder);
+
+      // The root element doesn't scroll. It always propagates its layout
+      // overflow to the viewport. Positioning background against either box is
+      // equivalent to positioning against the scrolled box of the viewport.
+      if (current_layer->Attachment() == EFillAttachment::kScroll)
+        current_layer->SetAttachment(EFillAttachment::kLocal);
+    }
+    image_rendering = background_style->ImageRendering();
+  }
 
   const ComputedStyle* overflow_style = nullptr;
-  if (Element* element = ViewportDefiningElement(document_element_style)) {
-    if (element == body) {
-      overflow_style = body_style;
-    } else {
-      DCHECK_EQ(element, documentElement());
-      overflow_style = document_element_style;
+  Element* viewport_element = ViewportDefiningElement();
+  DCHECK(viewport_element);
+  if (viewport_element == body) {
+    overflow_style = body_style;
+  } else {
+    DCHECK_EQ(viewport_element, documentElement());
+    overflow_style = document_element_style;
 
-      // The body element has its own scrolling box, independent from the
-      // viewport.  This is a bit of a weird edge case in the CSS spec that we
-      // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
-      // see http://crbug.com/157855).
-      if (body_style && !body_style->IsOverflowVisible())
-        UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
-    }
+    // The body element has its own scrolling box, independent from the
+    // viewport.  This is a bit of a weird edge case in the CSS spec that we
+    // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
+    // see http://crbug.com/157855).
+    if (body_style && !body_style->IsOverflowVisible())
+      UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
   }
+  DCHECK(overflow_style);
 
-  EOverflowAnchor overflow_anchor = EOverflowAnchor::kAuto;
-  EOverflow overflow_x = EOverflow::kAuto;
-  EOverflow overflow_y = EOverflow::kAuto;
-  GapLength column_gap;
-  if (overflow_style) {
-    overflow_anchor = overflow_style->OverflowAnchor();
-    overflow_x = overflow_style->OverflowX();
-    overflow_y = overflow_style->OverflowY();
-    // Visible overflow on the viewport is meaningless, and the spec says to
-    // treat it as 'auto':
-    if (overflow_x == EOverflow::kVisible)
-      overflow_x = EOverflow::kAuto;
-    if (overflow_y == EOverflow::kVisible)
-      overflow_y = EOverflow::kAuto;
-    if (overflow_anchor == EOverflowAnchor::kVisible)
-      overflow_anchor = EOverflowAnchor::kAuto;
-    // Column-gap is (ab)used by the current paged overflow implementation (in
-    // lack of other ways to specify gaps between pages), so we have to
-    // propagate it too.
-    column_gap = overflow_style->ColumnGap();
-  }
+  EOverflowAnchor overflow_anchor = overflow_style->OverflowAnchor();
+  EOverflow overflow_x = overflow_style->OverflowX();
+  EOverflow overflow_y = overflow_style->OverflowY();
+  // Visible overflow on the viewport is meaningless, and the spec says to
+  // treat it as 'auto':
+  if (overflow_x == EOverflow::kVisible)
+    overflow_x = EOverflow::kAuto;
+  if (overflow_y == EOverflow::kVisible)
+    overflow_y = EOverflow::kAuto;
+  if (overflow_anchor == EOverflowAnchor::kVisible)
+    overflow_anchor = EOverflowAnchor::kAuto;
+  // Column-gap is (ab)used by the current paged overflow implementation (in
+  // lack of other ways to specify gaps between pages), so we have to
+  // propagate it too.
+  GapLength column_gap = overflow_style->ColumnGap();
 
   ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
   ScrollBehavior scroll_behavior = document_element_style->GetScrollBehavior();
@@ -3329,8 +3332,7 @@ HTMLHeadElement* Document::head() const {
   return Traversal<HTMLHeadElement>::FirstChild(*de);
 }
 
-Element* Document::ViewportDefiningElement(
-    const ComputedStyle* root_style) const {
+Element* Document::ViewportDefiningElement() const {
   // If a BODY element sets non-visible overflow, it is to be propagated to the
   // viewport, as long as the following conditions are all met:
   // (1) The root element is HTML.
@@ -3342,11 +3344,9 @@ Element* Document::ViewportDefiningElement(
   Element* body_element = body();
   if (!root_element)
     return nullptr;
-  if (!root_style) {
-    root_style = root_element->GetComputedStyle();
-    if (!root_style)
-      return nullptr;
-  }
+  const ComputedStyle* root_style = root_element->GetComputedStyle();
+  if (!root_style)
+    return nullptr;
   if (body_element && root_style->IsOverflowVisible() &&
       IsHTMLHtmlElement(*root_element))
     return body_element;
