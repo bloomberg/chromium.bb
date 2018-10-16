@@ -97,6 +97,8 @@ class ScriptExecutor : public ActionDelegate {
   void StopCurrentScript(const std::string& message) override;
   void HideDetails() override;
   void ShowDetails(const DetailsProto& details) override;
+  void ShowProgressBar(int progress, const std::string& message) override;
+  void HideProgressBar() override;
 
  private:
   void OnGetActions(bool result, const std::string& response);

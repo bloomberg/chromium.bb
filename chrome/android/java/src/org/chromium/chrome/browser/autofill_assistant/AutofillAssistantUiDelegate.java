@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -55,6 +56,7 @@ class AutofillAssistantUiDelegate {
     private final LinearLayout mBottomBar;
     private final ViewGroup mChipsViewContainer;
     private final TextView mStatusMessageView;
+    private final MaterialProgressBar mProgressBar;
 
     private final ViewGroup mDetails;
     private final AppCompatImageView mDetailsImage;
@@ -189,6 +191,7 @@ class AutofillAssistantUiDelegate {
                                 FEEDBACK_CATEGORY_TAG));
         mChipsViewContainer = mBottomBar.findViewById(R.id.carousel);
         mStatusMessageView = mBottomBar.findViewById(R.id.status_message);
+        mProgressBar = mBottomBar.findViewById(R.id.progress_bar);
 
         mDetails = (ViewGroup) mBottomBar.findViewById(R.id.details);
         mDetailsImage = (AppCompatImageView) mDetails.findViewById(R.id.details_image);
@@ -327,6 +330,21 @@ class AutofillAssistantUiDelegate {
         // TODO(crbug.com/806868): Get radius from resources dimensions.
         roundedBitmap.setCornerRadius(10);
         return roundedBitmap;
+    }
+
+    public void showProgressBar(int progress, String message) {
+        ensureFullContainerIsShown();
+        // TODO(crbug.com/806868): Animate the progress change.
+        mProgressBar.setProgress(progress);
+        mProgressBar.setVisibility(View.VISIBLE);
+
+        if (!message.isEmpty()) {
+            mStatusMessageView.setText(message);
+        }
+    }
+
+    public void hideProgressBar() {
+        mProgressBar.setVisibility(View.INVISIBLE);
     }
 
     /**
