@@ -8,6 +8,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -57,11 +58,12 @@ public class ListUtils {
     /**
      * Analyzes a {@link ListItem} and finds the most appropriate {@link ViewType} based on the
      * current state.
-     * @param item The {@link ListItem} to determine the {@link ViewType} for.
-     * @return     The type of {@link ViewType} to use for a particular {@link ListItem}.
-     * @see        ViewType
+     * @param item   The {@link ListItem} to determine the {@link ViewType} for.
+     * @param config The {@link DownloadManagerUiConfig}.
+     * @return       The type of {@link ViewType} to use for a particular {@link ListItem}.
+     * @see          ViewType
      */
-    public static @ViewType int getViewTypeForItem(ListItem item) {
+    public static @ViewType int getViewTypeForItem(ListItem item, DownloadManagerUiConfig config) {
         if (item instanceof ViewListItem) return ViewType.CUSTOM_VIEW;
         if (item instanceof ListItem.SectionHeaderListItem) return ViewType.SECTION_HEADER;
         if (item instanceof ListItem.SeparatorViewListItem) {
@@ -72,13 +74,17 @@ public class ListUtils {
         if (item instanceof OfflineItemListItem) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
 
-            if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
-
             boolean inProgress = offlineItem.item.state == OfflineItemState.IN_PROGRESS
                     || offlineItem.item.state == OfflineItemState.PAUSED
                     || offlineItem.item.state == OfflineItemState.INTERRUPTED
                     || offlineItem.item.state == OfflineItemState.PENDING
                     || offlineItem.item.state == OfflineItemState.FAILED;
+
+            if (config.useGenericViewTypes) {
+                return inProgress ? ViewType.IN_PROGRESS : ViewType.GENERIC;
+            }
+
+            if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
 
             switch (offlineItem.item.filter) {
                 case OfflineItemFilter.FILTER_VIDEO:
@@ -125,16 +131,17 @@ public class ListUtils {
      * size determines how many columns this {@link ListItem}'s {@link View} will take up in the
      * overall list.
      * @param item      The {@link ListItem} to determine the span size for.
+     * @param config    The {@link DownloadManagerUiConfig}.
      * @param spanCount The maximum span amount of columns {@code item} can take up.
      * @return          The number of columns {@code item} should take.
      * @see             GridLayoutManager.SpanSizeLookup
      */
-    public static int getSpanSize(ListItem item, int spanCount) {
+    public static int getSpanSize(ListItem item, DownloadManagerUiConfig config, int spanCount) {
         if (item instanceof OfflineItemListItem && ((OfflineItemListItem) item).spanFullWidth) {
             return spanCount;
         }
 
-        switch (getViewTypeForItem(item)) {
+        switch (getViewTypeForItem(item, config)) {
             case ViewType.IMAGE: // Intentional fallthrough.
             case ViewType.IN_PROGRESS_IMAGE:
                 return 1;
