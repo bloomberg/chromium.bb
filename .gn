@@ -422,7 +422,6 @@ exec_script_whitelist =
 
       # TODO(dpranke): Get these from the appropriate repos instead.
       "//third_party/catapult/tracing/BUILD.gn",
-      "//third_party/google_input_tools/inputview.gni",
 
       "//tools/grit/grit_rule.gni",
 
