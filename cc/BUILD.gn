@@ -295,6 +295,7 @@ cc_component("cc") {
     "trees/layer_tree_impl.h",
     "trees/layer_tree_mutator.cc",
     "trees/layer_tree_mutator.h",
+    "trees/layer_tree_painter.h",
     "trees/layer_tree_settings.cc",
     "trees/layer_tree_settings.h",
     "trees/managed_memory_policy.cc",
