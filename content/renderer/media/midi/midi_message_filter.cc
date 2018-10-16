@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -51,9 +52,7 @@ void MidiMessageFilter::AddClient(blink::WebMIDIAccessorClient* client) {
 
 void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
   DCHECK(clients_.find(client) != clients_.end() ||
-         std::find(clients_waiting_session_queue_.begin(),
-                   clients_waiting_session_queue_.end(),
-                   client) != clients_waiting_session_queue_.end())
+         base::ContainsValue(clients_waiting_session_queue_, client))
       << "RemoveClient call was not ballanced with AddClient call";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   clients_.erase(client);

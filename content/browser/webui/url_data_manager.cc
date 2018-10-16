@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
@@ -160,10 +161,7 @@ void URLDataManager::UpdateWebUIDataSource(
 bool URLDataManager::IsScheduledForDeletion(
     const URLDataSourceImpl* data_source) {
   base::AutoLock lock(g_delete_lock.Get());
-  if (!data_sources_)
-    return false;
-  return std::find(data_sources_->begin(), data_sources_->end(), data_source) !=
-      data_sources_->end();
+  return data_sources_ && base::ContainsValue(*data_sources_, data_source);
 }
 
 }  // namespace content

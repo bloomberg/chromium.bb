@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -1951,10 +1952,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  const auto& child_events = child_frame_monitor.events_received();
-  EXPECT_NE(child_events.end(),
-            std::find(child_events.begin(), child_events.end(),
-                      blink::WebInputEvent::kMouseWheel));
+  EXPECT_TRUE(base::ContainsValue(child_frame_monitor.events_received(),
+                                  blink::WebInputEvent::kMouseWheel));
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
@@ -2402,9 +2401,7 @@ class TooltipMonitor : public CursorManager::TooltipObserver {
 
   void WaitUntil(const base::string16& tooltip_text) {
     tooltip_text_wanted_ = tooltip_text;
-    auto it = std::find(tooltips_received_.begin(), tooltips_received_.end(),
-                        tooltip_text);
-    if (it != tooltips_received_.end())
+    if (base::ContainsValue(tooltips_received_, tooltip_text))
       return;
     run_loop_->Run();
   }
@@ -3434,10 +3431,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  const auto& child_events = child_frame_monitor.events_received();
-  EXPECT_NE(child_events.end(),
-            std::find(child_events.begin(), child_events.end(),
-                      blink::WebInputEvent::kMouseWheel));
+  EXPECT_TRUE(base::ContainsValue(child_frame_monitor.events_received(),
+                                  blink::WebInputEvent::kMouseWheel));
 
   // Kill the wheel target view process. This must reset the wheel_target_.
   RenderProcessHost* child_process =

@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/child/child_process.h"
@@ -49,7 +50,7 @@ void MediaStreamVideoSource::AddTrack(
     const VideoCaptureDeliverFrameCB& frame_callback,
     const ConstraintsCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(std::find(tracks_.begin(), tracks_.end(), track) == tracks_.end());
+  DCHECK(!base::ContainsValue(tracks_, track));
   tracks_.push_back(track);
   secure_tracker_.Add(track, true);
 

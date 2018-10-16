@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -340,9 +341,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
                               0 /* process_id */, 0 /* render_frame_id */,
                               net::LOAD_ONLY_FROM_CACHE) == net::OK;
     } else {
-      std::vector<std::string> cache_keys = cache_test_util_->GetEntryKeys();
-      return std::find(cache_keys.begin(), cache_keys.end(), url.spec()) !=
-             cache_keys.end();
+      return base::ContainsValue(cache_test_util_->GetEntryKeys(), url.spec());
     }
   }
 
