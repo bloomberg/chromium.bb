@@ -72,6 +72,9 @@
         "browse:social:twitter": {
             "DEFAULT": "system_health_desktop_053.wprgo"
         },
+        "browse:social:twitter:2018": {
+            "DEFAULT": "system_health_desktop_6bd6f0c70a.wprgo"
+        },
         "browse:social:twitter_infinite_scroll": {
             "DEFAULT": "system_health_desktop_054.wprgo"
         },
