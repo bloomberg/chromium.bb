@@ -87,6 +87,7 @@
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 #include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
 #endif
+#include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
@@ -190,6 +191,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   }
   InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   ::blink::ProvideSpeechRecognitionTo(frame);
+  InspectorAccessibilityAgent::ProvideTo(&frame);
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
