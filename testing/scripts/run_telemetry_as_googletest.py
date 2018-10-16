@@ -35,23 +35,57 @@ import sys
 
 import common
 
-
-class TelemetryUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
-
-  def generate_test_output_args(self, output):
-    return ['--write-full-results-to', output]
-
-  def generate_test_filter_args(self, test_filter_str):
-    return ['--test-filter', test_filter_str]
-
-  def generate_sharding_args(self, total_shards, shard_index):
-    return ['--total-shards=%d' % total_shards,
-            '--shard-index=%d' % shard_index]
+# Add src/testing/ into sys.path for importing xvfb.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import xvfb
 
 
 def main():
-  adapter = TelemetryUnittestAdapter()
-  return adapter.run_test()
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+      '--isolated-script-test-output', type=str,
+      required=True)
+  parser.add_argument(
+      '--isolated-script-test-filter', type=str,
+      required=False)
+  parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
+  args, rest_args = parser.parse_known_args()
+  # Remove the chartjson extra arg until this script cares about chartjson
+  # results from telemetry
+  index = 0
+  for arg in rest_args:
+    if ('--isolated-script-test-chartjson-output' in arg or
+        '--isolated-script-test-perf-output' in arg):
+      rest_args.pop(index)
+      break
+    index += 1
+  if args.isolated_script_test_filter:
+    rest_args += ['--test-filter', args.isolated_script_test_filter]
+
+  # Compatibility with gtest-based sharding.
+  total_shards = None
+  shard_index = None
+  env = os.environ.copy()
+  env['CHROME_HEADLESS'] = '1'
+
+  if 'GTEST_TOTAL_SHARDS' in env:
+    total_shards = int(env['GTEST_TOTAL_SHARDS'])
+    del env['GTEST_TOTAL_SHARDS']
+  if 'GTEST_SHARD_INDEX' in env:
+    shard_index = int(env['GTEST_SHARD_INDEX'])
+    del env['GTEST_SHARD_INDEX']
+  sharding_args = []
+  if total_shards is not None and shard_index is not None:
+    sharding_args = [
+      '--total-shards=%d' % total_shards,
+      '--shard-index=%d' % shard_index
+    ]
+  cmd = [sys.executable] + rest_args + sharding_args + [
+      '--write-full-results-to', args.isolated_script_test_output]
+  if args.xvfb:
+    return xvfb.run_executable(cmd, env)
+  else:
+    return common.run_command(cmd, env=env)
 
 
 # This is not really a "script test" so does not need to manually add
