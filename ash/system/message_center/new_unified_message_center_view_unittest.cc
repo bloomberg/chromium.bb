@@ -93,6 +93,19 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
     size_changed_count_ = 0;
   }
 
+  void AnimateToMiddle() {
+    GetMessageListView()->animation_->SetCurrentValue(0.5);
+    GetMessageListView()->AnimationProgressed(
+        GetMessageListView()->animation_.get());
+  }
+
+  void AnimateToEnd() { GetMessageListView()->animation_->End(); }
+
+  void AnimateUntilIdle() {
+    while (GetMessageListView()->animation_->is_animating())
+      GetMessageListView()->animation_->End();
+  }
+
   gfx::Rect GetMessageViewVisibleBounds(int index) {
     gfx::Rect bounds = GetMessageListView()->child_at(index)->bounds();
     bounds -= GetScroller()->GetVisibleRect().OffsetFromOrigin();
@@ -141,6 +154,9 @@ TEST_F(NewUnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   EXPECT_TRUE(message_center_view()->visible());
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  AnimateToMiddle();
+  EXPECT_TRUE(message_center_view()->visible());
+  AnimateToEnd();
   EXPECT_FALSE(message_center_view()->visible());
 }
 
@@ -157,6 +173,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, ContentsRelayout) {
   const int previous_list_height = GetMessageListView()->height();
 
   MessageCenter::Get()->RemoveNotification(ids.back(), true /* by_user */);
+  AnimateUntilIdle();
   EXPECT_TRUE(message_center_view()->visible());
   EXPECT_GT(previous_contents_height, GetScrollerContents()->height());
   EXPECT_GT(previous_list_height, GetMessageListView()->height());
@@ -197,6 +214,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, ClearAllPressed) {
   // When Clear All button is pressed, all notifications are removed and the
   // view becomes invisible.
   message_center_view()->ButtonPressed(nullptr, DummyEvent());
+  AnimateUntilIdle();
   EXPECT_FALSE(message_center_view()->visible());
 }
 
@@ -345,8 +363,10 @@ TEST_F(NewUnifiedMessageCenterViewTest,
             message_center_view()->bounds().height());
 
   EXPECT_TRUE(GetStackingCounter()->visible());
-  for (size_t i = 0; i < 5; ++i)
+  for (size_t i = 0; i < 5; ++i) {
     MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
+    AnimateUntilIdle();
+  }
   EXPECT_FALSE(GetStackingCounter()->visible());
 }
 

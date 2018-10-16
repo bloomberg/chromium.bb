@@ -111,6 +111,19 @@ class UnifiedMessageListViewTest : public AshTestBase,
     return message_list_view()->child_at(index)->bounds();
   }
 
+  void AnimateToMiddle() {
+    message_list_view()->animation_->SetCurrentValue(0.5);
+    message_list_view()->AnimationProgressed(
+        message_list_view()->animation_.get());
+  }
+
+  void AnimateToEnd() { message_list_view()->animation_->End(); }
+
+  void AnimateUntilIdle() {
+    while (message_list_view()->animation_->is_animating())
+      message_list_view()->animation_->End();
+  }
+
   UnifiedMessageListView* message_list_view() const {
     return message_list_view_.get();
   }
@@ -202,6 +215,7 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
 
   gfx::Rect previous_bounds = GetMessageViewBounds(0);
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  AnimateUntilIdle();
   EXPECT_EQ(1, size_changed_count());
   EXPECT_EQ(previous_bounds.y(), GetMessageViewBounds(0).y());
   EXPECT_LT(0, message_list_view()->GetPreferredSize().height());
@@ -211,6 +225,7 @@ TEST_F(UnifiedMessageListViewTest, RemoveNotification) {
   EXPECT_EQ(kUnifiedTrayCornerRadius, GetMessageViewAt(0)->bottom_radius());
 
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
+  AnimateUntilIdle();
   EXPECT_EQ(2, size_changed_count());
   EXPECT_EQ(0, message_list_view()->GetPreferredSize().height());
 }
@@ -237,6 +252,43 @@ TEST_F(UnifiedMessageListViewTest, CollapseOlderNotifications) {
   EXPECT_TRUE(GetMessageViewAt(1)->IsExpanded());
   EXPECT_FALSE(GetMessageViewAt(2)->IsExpanded());
   EXPECT_TRUE(GetMessageViewAt(3)->IsExpanded());
+}
+
+TEST_F(UnifiedMessageListViewTest, RemovingNotificationAnimation) {
+  auto id0 = AddNotification();
+  auto id1 = AddNotification();
+  auto id2 = AddNotification();
+  CreateMessageListView();
+  int previous_height = message_list_view()->GetPreferredSize().height();
+  gfx::Rect bounds0 = GetMessageViewBounds(0);
+  gfx::Rect bounds1 = GetMessageViewBounds(1);
+
+  MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
+  AnimateToMiddle();
+  EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
+  previous_height = message_list_view()->GetPreferredSize().height();
+  AnimateToEnd();
+  // Now it lost separator border.
+  bounds1.Inset(gfx::Insets(0, 0, 1, 0));
+  EXPECT_EQ(bounds0, GetMessageViewBounds(0));
+  EXPECT_EQ(bounds1, GetMessageViewBounds(1));
+
+  MessageCenter::Get()->RemoveNotification(id2, true /* by_user */);
+  AnimateToMiddle();
+  EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
+  previous_height = message_list_view()->GetPreferredSize().height();
+  AnimateToEnd();
+  // Now it lost separator border.
+  bounds0.Inset(gfx::Insets(0, 0, 1, 0));
+  EXPECT_EQ(bounds0, GetMessageViewBounds(0));
+
+  MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  AnimateToMiddle();
+  EXPECT_GT(previous_height, message_list_view()->GetPreferredSize().height());
+  previous_height = message_list_view()->GetPreferredSize().height();
+  AnimateToEnd();
+
+  EXPECT_EQ(0, message_list_view()->GetPreferredSize().height());
 }
 
 }  // namespace ash

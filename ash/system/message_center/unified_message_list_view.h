@@ -6,9 +6,14 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_UNIFIED_MESSAGE_LIST_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/view.h"
+
+namespace gfx {
+class LinearAnimation;
+}  // namespace gfx
 
 namespace message_center {
 class MessageView;
@@ -24,7 +29,8 @@ class NewUnifiedMessageCenterView;
 class ASH_EXPORT UnifiedMessageListView
     : public views::View,
       public message_center::MessageCenterObserver,
-      public message_center::MessageView::SlideObserver {
+      public message_center::MessageView::SlideObserver,
+      public gfx::AnimationDelegate {
  public:
   // |message_center_view| can be null in unit tests.
   explicit UnifiedMessageListView(
@@ -46,6 +52,8 @@ class ASH_EXPORT UnifiedMessageListView
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // message_center::MessageCenterObserver:
   void OnNotificationAdded(const std::string& id) override;
@@ -55,17 +63,43 @@ class ASH_EXPORT UnifiedMessageListView
   // message_center::MessageView::SlideObserver:
   void OnSlideChanged(const std::string& notification_id) override;
 
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
+
  protected:
   // Virtual for testing.
   virtual message_center::MessageView* CreateMessageView(
       const message_center::Notification& notification);
 
  private:
+  friend class NewUnifiedMessageCenterViewTest;
+  friend class UnifiedMessageListViewTest;
   class MessageViewContainer;
 
   MessageViewContainer* GetContainer(int index);
+  const MessageViewContainer* GetContainer(int index) const;
+
+  // Current progress of the animation between 0.0 and 1.0. Returns 1.0 when
+  // it's not animating.
+  double GetCurrentValue() const;
+
+  // Collapses all the existing notifications. It does not trigger
+  // PreferredSizeChanged() (See |ignore_size_change_|).
   void CollapseAllNotifications();
+
+  // Updates the borders of notifications. It adds separators between
+  // notifications, and rounds notification corners at the top and the bottom.
   void UpdateBorders();
+
+  // Updates |final_bounds| of all notifications and moves old |final_bounds| to
+  // |start_bounds|.
+  void UpdateBounds();
+
+  // Resets the animation, and makes all notifications immediately positioned at
+  // |final_bounds|.
+  void ResetBounds();
 
   NewUnifiedMessageCenterView* const message_center_view_;
 
@@ -73,6 +107,18 @@ class ASH_EXPORT UnifiedMessageListView
   // CollapseAllNotifications() to prevent PreferredSizeChanged() triggered
   // multiple times because of sequential SetExpanded() calls.
   bool ignore_size_change_ = false;
+
+  // Manages notification closing animation. UnifiedMessageListView does not use
+  // implicit animation.
+  const std::unique_ptr<gfx::LinearAnimation> animation_;
+
+  // The height the UnifiedMessageListView starts animating from. If not
+  // animating, it's ignored.
+  int start_height_ = 0;
+
+  // The final height of the UnifiedMessageListView. If not animating, it's same
+  // as height().
+  int ideal_height_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListView);
 };
