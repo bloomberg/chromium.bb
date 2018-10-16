@@ -29608,6 +29608,7 @@ from previous Chrome versions.
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
+  <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
   <int value="-406850932" label="EnableEmojiContextMenu:enabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
@@ -30343,6 +30344,7 @@ from previous Chrome versions.
   <int value="1050664817" label="CSSFragmentIdentifiers:enabled"/>
   <int value="1053743655" label="NewOverviewAnimations:enabled"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
+  <int value="1057014709" label="EnforceTLS13Downgrade:enabled"/>
   <int value="1057887829" label="AutofillScanThemeDialog:disabled"/>
   <int value="1059007599" label="enable-gpu-appcontainer"/>
   <int value="1059698271" label="EnableZeroStateSuggestions:disabled"/>
@@ -48746,6 +48748,13 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Failure"/>
   <int value="2" label="Server error"/>
   <int value="3" label="Request is cancelled."/>
+</enum>
+
+<enum name="TLS13DowngradeType">
+  <int value="0" label="Known root with RSA key exchange"/>
+  <int value="1" label="Known root with ECDHE key exchange"/>
+  <int value="2" label="Unknown root with RSA key exchange"/>
+  <int value="3" label="Unknown root with ECDHE key exchange"/>
 </enum>
 
 <enum name="TLSRenegotiationPatched">

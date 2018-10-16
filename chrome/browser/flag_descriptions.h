@@ -356,6 +356,9 @@ extern const char kEnableDockedMagnifierDescription[];
 extern const char kEnableEmojiContextMenuName[];
 extern const char kEnableEmojiContextMenuDescription[];
 
+extern const char kEnforceTLS13DowngradeName[];
+extern const char kEnforceTLS13DowngradeDescription[];
+
 extern const char kEnableEnumeratingAudioDevicesName[];
 extern const char kEnableEnumeratingAudioDevicesDescription[];
 

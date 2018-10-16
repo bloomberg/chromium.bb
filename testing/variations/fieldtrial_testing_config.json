@@ -4460,10 +4460,7 @@
                     "name": "FinalV7",
                     "params": {
                         "variant": "final"
-                    },
-                    "enable_features": [
-                        "IgnoreTLS13Downgrade"
-                    ]
+                    }
                 }
             ]
         }

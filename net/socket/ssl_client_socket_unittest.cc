@@ -26,6 +26,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -4749,6 +4750,272 @@ TEST_F(SSLClientSocketTest, Tag) {
   sock->ApplySocketTag(tag);
   EXPECT_EQ(tagging_sock->tag(), tag);
 #endif  // OS_ANDROID
+}
+
+// Test downgrade enforcement works for the 1.3 to 1.2 downgrade.
+TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS12) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls13_downgrade = true;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
+  EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Test downgrade enforcement works for the 1.3 to 1.1 downgrade.
+TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS11) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls12_downgrade = true;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
+  EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Test downgrade enforcement works for the 1.3 to 1.0 downgrade.
+TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS10) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls12_downgrade = true;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
+  EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Test downgrade enforcement lets valid connections through.
+TEST_F(SSLClientSocketTest, TLS13DowngradeValid) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo info;
+  EXPECT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
+            SSLConnectionStatusToVersion(info.connection_status));
+}
+
+// Test the downgrade is not enforced for the TLS 1.3 to TLS 1.2 downgrade if
+// disabled.
+TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS12) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
+  ssl_options.simulate_tls13_downgrade = true;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo info;
+  EXPECT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
+            SSLConnectionStatusToVersion(info.connection_status));
+}
+
+// Test the downgrade is not enforced for the TLS 1.3 to TLS 1.1 downgrade if
+// disabled.
+TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS11) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls12_downgrade = true;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo info;
+  EXPECT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_1,
+            SSLConnectionStatusToVersion(info.connection_status));
+}
+
+// Test the downgrade is not enforced for the TLS 1.3 to TLS 1.0 downgrade if
+// disabled.
+TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS10) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls13_downgrade = true;
+  ssl_options.tls_max_version =
+      SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo info;
+  EXPECT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1,
+            SSLConnectionStatusToVersion(info.connection_status));
+}
+
+struct TLS13DowngradeMetricsParams {
+  bool downgrade;
+  bool known_root;
+  SpawnedTestServer::SSLOptions::KeyExchange key_exchanges;
+  bool tls13_experiment_host;
+  int expect_downgrade_type;
+};
+
+const TLS13DowngradeMetricsParams kTLS13DowngradeMetricsParams[] = {
+    // Not a downgrade.
+    {false, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ANY,
+     false, -1},
+    {false, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ANY,
+     true, -1},
+    // Downgrades with a known root.
+    {true, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
+     false, 0},
+    {true, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
+     true, 0},
+    {true, true,
+     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, false,
+     1},
+    {true, true,
+     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, true,
+     1},
+    // Downgrades with an unknown root.
+    {true, false, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
+     false, 2},
+    {true, false, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
+     true, 2},
+    {true, false,
+     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, false,
+     3},
+    {true, false,
+     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, true,
+     3},
+};
+
+class TLS13DowngradeMetricsTest
+    : public SSLClientSocketTest,
+      public ::testing::WithParamInterface<TLS13DowngradeMetricsParams> {};
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        TLS13DowngradeMetricsTest,
+                        ::testing::ValuesIn(kTLS13DowngradeMetricsParams));
+
+TEST_P(TLS13DowngradeMetricsTest, Metrics) {
+  const TLS13DowngradeMetricsParams& params = GetParam();
+  base::HistogramTester histograms;
+
+  // Metrics are only gathered when enforcement is disabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnforceTLS13Downgrade);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.simulate_tls13_downgrade = params.downgrade;
+  ssl_options.key_exchanges = params.key_exchanges;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  HostPortPair host_port_pair = spawned_test_server()->host_port_pair();
+  if (params.tls13_experiment_host) {
+    host_port_pair.set_host("mail.google.com");
+  }
+
+  if (params.known_root) {
+    scoped_refptr<X509Certificate> server_cert =
+        spawned_test_server()->GetCertificate();
+
+    // Certificate is trusted and chains to a public root.
+    CertVerifyResult verify_result;
+    verify_result.is_issued_by_known_root = true;
+    verify_result.verified_cert = server_cert;
+    cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+  }
+
+  auto transport =
+      std::make_unique<TCPClientSocket>(addr(), nullptr, &log_, NetLogSource());
+  TestCompletionCallback callback;
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  ASSERT_THAT(rv, IsOk());
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  std::unique_ptr<SSLClientSocket> ssl_socket =
+      CreateSSLClientSocket(std::move(transport), host_port_pair, config);
+  rv = callback.GetResult(ssl_socket->Connect(callback.callback()));
+  EXPECT_THAT(rv, IsOk());
+
+  histograms.ExpectUniqueSample("Net.SSLTLS13Downgrade", params.downgrade, 1);
+  if (params.tls13_experiment_host) {
+    histograms.ExpectUniqueSample("Net.SSLTLS13DowngradeTLS13Experiment",
+                                  params.downgrade, 1);
+  } else {
+    histograms.ExpectTotalCount("Net.SSLTLS13DowngradeTLS13Experiment", 0);
+  }
+
+  if (params.downgrade) {
+    histograms.ExpectUniqueSample("Net.SSLTLS13DowngradeType",
+                                  params.expect_downgrade_type, 1);
+  } else {
+    histograms.ExpectTotalCount("Net.SSLTLS13DowngradeType", 0);
+  }
+
+  if (params.tls13_experiment_host && params.downgrade) {
+    histograms.ExpectUniqueSample("Net.SSLTLS13DowngradeTypeTLS13Experiment",
+                                  params.expect_downgrade_type, 1);
+  } else {
+    histograms.ExpectTotalCount("Net.SSLTLS13DowngradeTypeTLS13Experiment", 0);
+  }
 }
 
 }  // namespace net
