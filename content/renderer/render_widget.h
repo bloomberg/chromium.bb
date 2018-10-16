@@ -301,7 +301,6 @@ class CONTENT_EXPORT RenderWidget
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
-  blink::WebLayerTreeView* InitializeLayerTreeView() override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
@@ -560,6 +559,8 @@ class CONTENT_EXPORT RenderWidget
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
+
+  LayerTreeView* InitializeLayerTreeView();
 
   void DoDeferredClose();
   void NotifyOnClose();

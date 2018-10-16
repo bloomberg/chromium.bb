@@ -3717,13 +3717,9 @@ class TouchEventHandlerWebWidgetClient
 // correctly is the job of LayoutTests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, HasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
-  // We need to create a LayerTreeView for the client before loading the page,
-  // otherwise ChromeClient will default to assuming there are touch handlers.
-  WebLayerTreeView* layer_tree_view = client.InitializeLayerTreeView();
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(url, nullptr, nullptr, &client);
-  ASSERT_TRUE(layer_tree_view);
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking;
 

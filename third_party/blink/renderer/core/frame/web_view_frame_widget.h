@@ -85,6 +85,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 
   // WebFrameWidgetBase overrides:
   void Initialize() override;
+  void SetLayerTreeView(WebLayerTreeView*) override;
   bool ForSubframe() const override { return false; }
   void ScheduleAnimation() override;
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>

@@ -134,6 +134,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WebFrameWidgetBase overrides:
   void Initialize() override;
+  void SetLayerTreeView(WebLayerTreeView*) override;
   bool ForSubframe() const override { return true; }
   void ScheduleAnimation() override;
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
@@ -169,8 +170,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
       const LayoutPoint& pos_in_root_frame);
-
-  void InitializeLayerTreeView();
 
   void SetIsAcceleratedCompositingActive(bool);
   void UpdateLayerTreeViewport();

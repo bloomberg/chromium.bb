@@ -82,6 +82,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  private:
   // WebWidget functions
+  void SetLayerTreeView(WebLayerTreeView*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
@@ -116,7 +117,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   explicit WebPagePopupImpl(WebWidgetClient*);
   void DestroyPage();
-  void InitializeLayerTreeView();
   void SetRootLayer(cc::Layer*);
 
   WebRect WindowRectInScreen() const;

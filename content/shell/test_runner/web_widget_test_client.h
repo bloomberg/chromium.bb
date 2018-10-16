@@ -44,7 +44,6 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
                      const blink::WebPoint& image_offset) override;
 
   // WebWidgetClient overrides that are not used.
-  blink::WebLayerTreeView* InitializeLayerTreeView() override;
   bool AllowsBrokenNullLayerTreeView() const override;
 
  private:
