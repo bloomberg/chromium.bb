@@ -95,7 +95,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
@@ -1503,11 +1503,9 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     nav_params.window_action = NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
   nav_params.blob_url_loader_factory = params.blob_url_loader_factory;
-  bool is_popup = source && PopupBlockerTabHelper::ConsiderForPopupBlocking(
-                                params.disposition);
-  if (is_popup && PopupBlockerTabHelper::MaybeBlockPopup(
-                      source, base::Optional<GURL>(), &nav_params, &params,
-                      blink::mojom::WindowFeatures())) {
+  bool is_popup = source && ConsiderForPopupBlocking(params.disposition);
+  if (is_popup && MaybeBlockPopup(source, base::Optional<GURL>(), &nav_params,
+                                  &params, blink::mojom::WindowFeatures())) {
     return nullptr;
   }
 
@@ -1570,7 +1568,7 @@ void Browser::AddNewContents(WebContents* source,
 
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
-  if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
+  if (source && ConsiderForPopupBlocking(disposition))
     PopupTracker::CreateForWebContents(new_contents.get(), source);
   chrome::AddWebContents(this, source, std::move(new_contents), disposition,
                          initial_rect);
