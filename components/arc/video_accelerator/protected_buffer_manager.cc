@@ -23,7 +23,7 @@ namespace arc {
 
 namespace {
 // Size of the pixmap to be used as the dummy handle for protected buffers.
-constexpr gfx::Size kDummyBufferSize(16, 16);
+constexpr gfx::Size kDummyBufferSize(32, 32);
 
 // Maximum number of concurrent ProtectedBufferAllocatorImpl instances.
 // Currently we have no way to know the resources of ProtectedBufferAllocator.
@@ -463,8 +463,8 @@ scoped_refptr<gfx::NativePixmap> ProtectedBufferManager::ImportDummyFd(
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   scoped_refptr<gfx::NativePixmap> pixmap =
       factory->CreateNativePixmapForProtectedBufferHandle(
-          gfx::kNullAcceleratedWidget, kDummyBufferSize,
-          gfx::BufferFormat::RGBA_8888, pixmap_handle);
+          gfx::kNullAcceleratedWidget, kDummyBufferSize, gfx::BufferFormat::R_8,
+          pixmap_handle);
   if (!pixmap) {
     VLOGF(1) << "Failed importing dummy handle";
     return nullptr;
