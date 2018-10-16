@@ -35,7 +35,6 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/mojo.fyi.network_browser_tests.filter",
     "//testing/buildbot/filters/webui_polymer2_browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
-    "//testing/buildbot/filters/webrtc_perf.browser_tests.filter",
   ]
 }
 
