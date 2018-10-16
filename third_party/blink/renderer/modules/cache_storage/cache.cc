@@ -64,8 +64,6 @@ bool VaryHeaderContainsAsterisk(const Response* response) {
 
 bool ShouldGenerateV8CodeCache(ScriptState* script_state,
                                const Response* response) {
-  if (!RuntimeEnabledFeatures::PWAFullCodeCacheEnabled())
-    return false;
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsServiceWorkerGlobalScope())
     return false;

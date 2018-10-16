@@ -1038,9 +1038,6 @@
       status: "stable",
     },
     {
-      name: "PWAFullCodeCache"
-    },
-    {
       name: "RasterInducingScroll",
       status: "experimental",
     },

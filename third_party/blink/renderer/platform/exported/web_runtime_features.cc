@@ -540,10 +540,6 @@ void WebRuntimeFeatures::EnableScheduledScriptStreaming(bool enable) {
   RuntimeEnabledFeatures::SetScheduledScriptStreamingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
-  RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableOffMainThreadWebSocket(bool enable) {
   RuntimeEnabledFeatures::SetOffMainThreadWebSocketEnabled(enable);
 }

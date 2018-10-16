@@ -631,11 +631,6 @@ const char kEnablePolicyToolDescription[] =
     "If enabled, the chrome://policy-tool URL loads a page for managing "
     "policies.";
 
-const char kEnablePWAFullCodeCacheName[] = "Enable PWA full code cache";
-const char kEnablePWAFullCodeCacheDescription[] =
-    "Generate V8 code cache in Cache Storage while installing Service Worker "
-    "for PWAs.";
-
 const char kDisableMultiMirroringName[] =
     "Display mirroring across multiple displays.";
 const char kDisableMultiMirroringDescription[] =
