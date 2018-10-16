@@ -479,9 +479,6 @@ extern const char kEnablePictureInPictureDescription[];
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
 
-extern const char kEnablePWAFullCodeCacheName[];
-extern const char kEnablePWAFullCodeCacheDescription[];
-
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];

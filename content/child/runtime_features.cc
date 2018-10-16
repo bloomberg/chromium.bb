@@ -415,9 +415,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableV8ContextSnapshot(
       base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
 
-  WebRuntimeFeatures::EnablePWAFullCodeCache(
-      base::FeatureList::IsEnabled(features::kPWAFullCodeCache));
-
   WebRuntimeFeatures::EnableRequireCSSExtensionForFile(
       base::FeatureList::IsEnabled(features::kRequireCSSExtensionForFile));
 

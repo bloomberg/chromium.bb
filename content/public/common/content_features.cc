@@ -324,10 +324,6 @@ const base::Feature kPurgeAndSuspend {
 #endif
 };
 
-// Generate V8 full code cache for PWAs.
-const base::Feature kPWAFullCodeCache{"PWAFullCodeCache",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable raster-inducing scroll.
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
