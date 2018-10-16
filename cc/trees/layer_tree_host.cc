@@ -376,22 +376,14 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
   if (VLOG_IS_ON(3)) {
-    VLOG(3) << "After finishing commit on impl, the sync tree:";
-    // Because the property tree and layer list output can be verbose, the VLOG
-    // output is split by line to avoid line buffer limits on android.
-    VLOG(3) << "property trees:";
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *sync_tree->property_trees()->AsTracedValue()->ToBaseValue(),
         base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
-    std::stringstream property_trees_stream(property_trees);
-    for (std::string line; std::getline(property_trees_stream, line);)
-      VLOG(3) << line;
-
-    VLOG(3) << "layers:";
-    std::stringstream layers_stream(host_impl->LayerListAsJson());
-    for (std::string line; std::getline(layers_stream, line);)
-      VLOG(3) << line;
+    VLOG(3) << "After finishing commit on impl, the sync tree:"
+            << "\nproperty_trees:\n"
+            << property_trees << "\nlayers:\n"
+            << host_impl->LayerListAsJson();
   }
 }
 
@@ -813,33 +805,27 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   //   --vmodule=layer_tree_host=3
   // This only prints output for the renderer.
   if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
-    VLOG(3) << "After updating layers on the main thread:";
-    // Because the property tree and layer list output can be verbose, the VLOG
-    // output is split by line to avoid line buffer limits on android.
-    VLOG(3) << "property trees:";
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *property_trees_.AsTracedValue()->ToBaseValue(),
         base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
-    std::stringstream property_trees_stream(property_trees);
-    for (std::string line; std::getline(property_trees_stream, line);)
-      VLOG(3) << line;
-
-    VLOG(3) << "layers:";
+    std::ostringstream layers;
     for (auto* layer : *this) {
-      VLOG(3) << "  layer id " << layer->id();
-      VLOG(3) << "    element_id: " << layer->element_id();
-      VLOG(3) << "    bounds: " << layer->bounds().ToString();
-      VLOG(3) << "    opacity: " << layer->opacity();
-      VLOG(3) << "    position: " << layer->position().ToString();
-      VLOG(3) << "    draws_content: " << layer->DrawsContent();
-      VLOG(3) << "    scrollable: " << layer->scrollable();
-      VLOG(3) << "    contents_opaque: " << layer->contents_opaque();
-      VLOG(3) << "    transform_tree_index: " << layer->transform_tree_index();
-      VLOG(3) << "    clip_tree_index: " << layer->clip_tree_index();
-      VLOG(3) << "    effect_tree_index: " << layer->effect_tree_index();
-      VLOG(3) << "    scroll_tree_index: " << layer->scroll_tree_index();
+      layers << "\n  layer id " << layer->id();
+      layers << "\n    element_id: " << layer->element_id();
+      layers << "\n    bounds: " << layer->bounds().ToString();
+      layers << "\n    opacity: " << layer->opacity();
+      layers << "\n    position: " << layer->position().ToString();
+      layers << "\n    draws_content: " << layer->DrawsContent();
+      layers << "\n    scrollable: " << layer->scrollable();
+      layers << "\n    contents_opaque: " << layer->contents_opaque();
+      layers << "\n    transform_tree_index: " << layer->transform_tree_index();
+      layers << "\n    clip_tree_index: " << layer->clip_tree_index();
+      layers << "\n    effect_tree_index: " << layer->effect_tree_index();
+      layers << "\n    scroll_tree_index: " << layer->scroll_tree_index();
     }
+    VLOG(3) << "After updating layers on the main thread:\nproperty trees:\n"
+            << property_trees << "\nlayers:" << layers.str();
   }
 
   bool painted_content_has_slow_paths = false;
