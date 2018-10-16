@@ -16,3 +16,5 @@ class GpuProcessExpectations(GpuTestExpectations):
     # Test needs fixing for Nexus 9
     self.Fail('GpuProcess_disabling_workarounds_works', ['android', 'nvidia'],
               bug=895020)
+    self.Fail('GpuProcess_webgl_disabled_extension', ['android', 'nvidia'],
+              bug=895945)
