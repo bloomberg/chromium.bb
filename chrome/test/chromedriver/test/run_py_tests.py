@@ -237,6 +237,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'LaunchDesktopTest.*',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
         'ChromeDriverTest.testTakeElementScreenshot',
+        'ChromeDriverTest.testTakeElementScreenshotInIframe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -248,6 +249,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         'ChromeDriverTest.testSwitchToWindow',
+        # Feature not yet supported in this version
+        'ChromeDriverTest.testGenerateTestReport',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
@@ -257,6 +260,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         'ChromeDriverTest.testSwitchToWindow',
+        # Feature not yet supported in this version
+        'ChromeDriverTest.testGenerateTestReport',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
