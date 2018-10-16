@@ -194,8 +194,10 @@ camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
  */
 camera.Camera.prototype.start = function() {
   var model = new camera.models.Gallery();
-  this.cameraView_ = new camera.views.Camera(this.context_, this.router_, model);
-  this.browserView_ = new camera.views.Browser(this.context_, this.router_, model);
+  this.cameraView_ =
+      new camera.views.Camera(this.context_, this.router_, model);
+  this.browserView_ =
+      new camera.views.Browser(this.context_, this.router_, model);
   this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
 
   var promptMigrate = () => {

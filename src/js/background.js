@@ -64,8 +64,8 @@ camera.bg.create = function() {
     }, inAppWindow => {
       // Temporary workaround for crbug.com/452737.
       // 'state' option in CreateWindowOptions is ignored when a window is
-      // launched with 'hidden' option, so we maintain window state manually here.
-      // Don't launch in fullscreen mode as the topbar might not work as expected.
+      // launched with 'hidden' option, so we restore window state here.
+      // Don't launch in fullscreen as the topbar might not work as expected.
       if (maximized)
         inAppWindow.maximize();
 
