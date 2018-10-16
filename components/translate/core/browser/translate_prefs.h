@@ -321,8 +321,6 @@ class TranslatePrefs {
   void MigrateSitesBlacklist();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-  static void MigrateUserPrefs(PrefService* user_prefs,
-                               const char* accept_languages_pref);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, UpdateLanguageList);

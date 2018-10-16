@@ -44,7 +44,6 @@ extern const char kShowMemoryDebuggingTools[];
 
 extern const char kSigninLastAccounts[];
 extern const char kSigninLastAccountsMigrated[];
-extern const char kSigninSharedAuthenticationUserId[];
 extern const char kSigninShouldPromptForSigninAgain[];
 
 extern const char kOmniboxGeolocationAuthorizationState[];
