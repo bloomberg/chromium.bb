@@ -89,7 +89,6 @@ js_library("importer_common") {
   ]
   externs_list = [
     "//third_party/analytics/externs.js",
-    "../../../externs/volume_info_list.js",
     "../../../externs/background_window.js",
     "../../../externs/background/file_browser_background.js",
   ]
@@ -110,6 +109,7 @@ js_library("importer_common_unittest") {
     ":mock_entry",
     ":test_importer_common",
     ":util",
+    "//ui/file_manager/base/js:mock_chrome",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
   ]
 }

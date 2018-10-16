@@ -153,32 +153,3 @@ MockChromeStorageAPI.prototype.set_ = function(values, opt_callback) {
   if (opt_callback)
     opt_callback();
 };
-
-/**
- * Mocks chrome.commandLinePrivate.
- * @constructor
- */
-function MockCommandLinePrivate() {
-  this.flags_ = {};
-  if (!chrome) {
-    /** @suppress {const|checkTypes} */
-    chrome = {};
-  }
-  if (!chrome.commandLinePrivate) {
-    /** @suppress {checkTypes} */
-    chrome.commandLinePrivate = {};
-  }
-  chrome.commandLinePrivate.hasSwitch = function(name, callback) {
-    window.setTimeout(() => {
-      callback(name in this.flags_);
-    }, 0);
-  }.bind(this);
-}
-
-/**
- * Add a switch.
- * @param {string} name of the switch to add.
- */
-MockCommandLinePrivate.prototype.addSwitch = function(name) {
-  this.flags_[name] = true;
-};

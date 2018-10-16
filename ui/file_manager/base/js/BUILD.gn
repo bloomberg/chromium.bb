@@ -21,6 +21,7 @@ js_type_check("closure_compile_module") {
 
 js_type_check("test_support_type_check") {
   deps = [
+    ":mock_chrome",
     ":test_error_reporting",
   ]
 }
@@ -37,6 +38,9 @@ js_library("filtered_volume_manager") {
   ]
   externs_list =
       [ "//ui/file_manager/externs/background/volume_manager_factory.js" ]
+}
+
+js_library("mock_chrome") {
 }
 
 js_library("test_error_reporting") {
