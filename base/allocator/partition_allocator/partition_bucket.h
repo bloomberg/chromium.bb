@@ -11,6 +11,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 
 namespace base {
 namespace internal {

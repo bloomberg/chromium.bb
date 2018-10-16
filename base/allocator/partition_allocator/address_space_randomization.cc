@@ -7,6 +7,7 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
 

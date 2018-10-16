@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_INTERNALS_WIN_H_
 
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
+#include "base/logging.h"
 
 namespace base {
 
