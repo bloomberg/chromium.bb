@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/in_product_help/reopen_tab_iph_trigger.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_trigger.h"
 
 #include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -22,18 +22,19 @@ namespace in_product_help {
 
 namespace {
 
-void DismissImmediately(ReopenTabIPHTrigger* trigger) {
+void DismissImmediately(ReopenTabInProductHelpTrigger* trigger) {
   trigger->HelpDismissed();
 }
 
-void DismissAndSetFlag(ReopenTabIPHTrigger* trigger, bool* triggered) {
+void DismissAndSetFlag(ReopenTabInProductHelpTrigger* trigger,
+                       bool* triggered) {
   *triggered = true;
   trigger->HelpDismissed();
 }
 
 }  // namespace
 
-TEST(ReopenTabIPHTriggerTest, TriggersIPH) {
+TEST(ReopenTabInProductHelpTriggerTest, TriggersIPH) {
   NiceMock<MockTracker> mock_tracker;
 
   // We expect to send the backend our trigger event and ask if we should
@@ -50,19 +51,19 @@ TEST(ReopenTabIPHTriggerTest, TriggersIPH) {
 
   // Instantiate IPH and send sequence of user interactions.
   base::SimpleTestTickClock clock;
-  ReopenTabIPHTrigger reopen_tab_iph(&mock_tracker, &clock);
+  ReopenTabInProductHelpTrigger reopen_tab_iph(&mock_tracker, &clock);
 
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissImmediately, &reopen_tab_iph));
 
   auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.ActiveTabClosed(activation_time);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
 
-TEST(ReopenTabIPHTriggerTest, RespectsBackendShouldTrigger) {
+TEST(ReopenTabInProductHelpTriggerTest, RespectsBackendShouldTrigger) {
   NiceMock<MockTracker> mock_tracker;
 
   EXPECT_CALL(mock_tracker, ShouldTriggerHelpUI(_))
@@ -71,62 +72,62 @@ TEST(ReopenTabIPHTriggerTest, RespectsBackendShouldTrigger) {
   EXPECT_CALL(mock_tracker, Dismissed(_)).Times(0);
 
   base::SimpleTestTickClock clock;
-  ReopenTabIPHTrigger reopen_tab_iph(&mock_tracker, &clock);
+  ReopenTabInProductHelpTrigger reopen_tab_iph(&mock_tracker, &clock);
 
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissImmediately, &reopen_tab_iph));
 
   auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.ActiveTabClosed(activation_time);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
 
-TEST(ReopenTabIPHTriggerTest, TabNotActiveLongEnough) {
+TEST(ReopenTabInProductHelpTriggerTest, TabNotActiveLongEnough) {
   NiceMock<MockTracker> mock_tracker;
 
   EXPECT_CALL(mock_tracker, NotifyEvent(_)).Times(0);
   EXPECT_CALL(mock_tracker, ShouldTriggerHelpUI(_)).Times(0);
 
   base::SimpleTestTickClock clock;
-  ReopenTabIPHTrigger reopen_tab_iph(&mock_tracker, &clock);
+  ReopenTabInProductHelpTrigger reopen_tab_iph(&mock_tracker, &clock);
 
   auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration / 2);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration / 2);
   reopen_tab_iph.ActiveTabClosed(activation_time);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
 
-TEST(ReopenTabIPHTriggerTest, RespectsTimeouts) {
+TEST(ReopenTabInProductHelpTriggerTest, RespectsTimeouts) {
   NiceMock<MockTracker> mock_tracker;
 
   EXPECT_CALL(mock_tracker, NotifyEvent(_)).Times(0);
   EXPECT_CALL(mock_tracker, ShouldTriggerHelpUI(_)).Times(0);
 
   base::SimpleTestTickClock clock;
-  ReopenTabIPHTrigger reopen_tab_iph(&mock_tracker, &clock);
+  ReopenTabInProductHelpTrigger reopen_tab_iph(&mock_tracker, &clock);
 
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissImmediately, &reopen_tab_iph));
 
   auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.ActiveTabClosed(activation_time);
-  clock.Advance(ReopenTabIPHTrigger::kNewTabOpenedTimeout);
+  clock.Advance(ReopenTabInProductHelpTrigger::kNewTabOpenedTimeout);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 
   activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.ActiveTabClosed(activation_time);
   reopen_tab_iph.NewTabOpened();
-  clock.Advance(ReopenTabIPHTrigger::kOmniboxFocusedTimeout);
+  clock.Advance(ReopenTabInProductHelpTrigger::kOmniboxFocusedTimeout);
   reopen_tab_iph.OmniboxFocused();
 }
 
-TEST(ReopenTabIPHTriggerTest, TriggersTwice) {
+TEST(ReopenTabInProductHelpTriggerTest, TriggersTwice) {
   NiceMock<MockTracker> mock_tracker;
 
   EXPECT_CALL(
@@ -139,14 +140,14 @@ TEST(ReopenTabIPHTriggerTest, TriggersTwice) {
   EXPECT_CALL(mock_tracker, Dismissed(_)).Times(2);
 
   base::SimpleTestTickClock clock;
-  ReopenTabIPHTrigger reopen_tab_iph(&mock_tracker, &clock);
+  ReopenTabInProductHelpTrigger reopen_tab_iph(&mock_tracker, &clock);
 
   bool triggered = false;
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissAndSetFlag, &reopen_tab_iph, &triggered));
 
   auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.ActiveTabClosed(activation_time);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
@@ -154,7 +155,7 @@ TEST(ReopenTabIPHTriggerTest, TriggersTwice) {
   EXPECT_TRUE(triggered);
   triggered = false;
 
-  clock.Advance(ReopenTabIPHTrigger::kTabMinimumActiveDuration);
+  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.ActiveTabClosed(activation_time);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IPH_TRIGGER_H_
-#define CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IPH_TRIGGER_H_
+#ifndef CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_TRIGGER_H_
+#define CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_TRIGGER_H_
 
 #include "base/callback.h"
 #include "base/time/tick_clock.h"
@@ -22,11 +22,11 @@ namespace in_product_help {
 //
 // Clients should listen for the relevant user events and pass them to this
 // class. Additionally, clients must display IPH when told by this class.
-class ReopenTabIPHTrigger {
+class ReopenTabInProductHelpTrigger {
  public:
-  ReopenTabIPHTrigger(feature_engagement::Tracker* tracker,
-                      const base::TickClock* clock);
-  ~ReopenTabIPHTrigger();
+  ReopenTabInProductHelpTrigger(feature_engagement::Tracker* tracker,
+                                const base::TickClock* clock);
+  ~ReopenTabInProductHelpTrigger();
 
   using ShowHelpCallback = base::RepeatingCallback<void()>;
 
@@ -74,9 +74,9 @@ class ReopenTabIPHTrigger {
 
   base::TimeTicks time_of_last_step_;
 
-  DISALLOW_COPY_AND_ASSIGN(ReopenTabIPHTrigger);
+  DISALLOW_COPY_AND_ASSIGN(ReopenTabInProductHelpTrigger);
 };
 
 }  // namespace in_product_help
 
-#endif  // CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IPH_TRIGGER_H_
+#endif  // CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_TRIGGER_H_

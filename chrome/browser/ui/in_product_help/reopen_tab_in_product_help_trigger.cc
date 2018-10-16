@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/in_product_help/reopen_tab_iph_trigger.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_trigger.h"
 
 #include <utility>
 
@@ -13,17 +13,18 @@
 namespace in_product_help {
 
 // static
-const base::TimeDelta ReopenTabIPHTrigger::kTabMinimumActiveDuration =
+const base::TimeDelta ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration =
     base::TimeDelta::FromSeconds(10);
 // static
-const base::TimeDelta ReopenTabIPHTrigger::kNewTabOpenedTimeout =
+const base::TimeDelta ReopenTabInProductHelpTrigger::kNewTabOpenedTimeout =
     base::TimeDelta::FromSeconds(10);
 // static
-const base::TimeDelta ReopenTabIPHTrigger::kOmniboxFocusedTimeout =
+const base::TimeDelta ReopenTabInProductHelpTrigger::kOmniboxFocusedTimeout =
     base::TimeDelta::FromSeconds(10);
 
-ReopenTabIPHTrigger::ReopenTabIPHTrigger(feature_engagement::Tracker* tracker,
-                                         const base::TickClock* clock)
+ReopenTabInProductHelpTrigger::ReopenTabInProductHelpTrigger(
+    feature_engagement::Tracker* tracker,
+    const base::TickClock* clock)
     : tracker_(tracker), clock_(clock), trigger_state_(NO_ACTIONS_SEEN) {
   DCHECK(tracker);
   DCHECK(clock);
@@ -33,14 +34,16 @@ ReopenTabIPHTrigger::ReopenTabIPHTrigger(feature_engagement::Tracker* tracker,
   DCHECK(!kOmniboxFocusedTimeout.is_zero());
 }
 
-ReopenTabIPHTrigger::~ReopenTabIPHTrigger() = default;
+ReopenTabInProductHelpTrigger::~ReopenTabInProductHelpTrigger() = default;
 
-void ReopenTabIPHTrigger::SetShowHelpCallback(ShowHelpCallback callback) {
+void ReopenTabInProductHelpTrigger::SetShowHelpCallback(
+    ShowHelpCallback callback) {
   DCHECK(callback);
   cb_ = std::move(callback);
 }
 
-void ReopenTabIPHTrigger::ActiveTabClosed(base::TimeTicks activation_time) {
+void ReopenTabInProductHelpTrigger::ActiveTabClosed(
+    base::TimeTicks activation_time) {
   // Reset all flags at this point. We should only trigger IPH if the events
   // happen in the prescribed order.
   ResetTriggerState();
@@ -53,7 +56,7 @@ void ReopenTabIPHTrigger::ActiveTabClosed(base::TimeTicks activation_time) {
   }
 }
 
-void ReopenTabIPHTrigger::NewTabOpened() {
+void ReopenTabInProductHelpTrigger::NewTabOpened() {
   if (trigger_state_ != ACTIVE_TAB_CLOSED)
     return;
 
@@ -67,7 +70,7 @@ void ReopenTabIPHTrigger::NewTabOpened() {
   }
 }
 
-void ReopenTabIPHTrigger::OmniboxFocused() {
+void ReopenTabInProductHelpTrigger::OmniboxFocused() {
   if (trigger_state_ != NEW_TAB_OPENED)
     return;
 
@@ -83,12 +86,12 @@ void ReopenTabIPHTrigger::OmniboxFocused() {
   }
 }
 
-void ReopenTabIPHTrigger::HelpDismissed() {
+void ReopenTabInProductHelpTrigger::HelpDismissed() {
   tracker_->Dismissed(feature_engagement::kIPHReopenTabFeature);
   ResetTriggerState();
 }
 
-void ReopenTabIPHTrigger::ResetTriggerState() {
+void ReopenTabInProductHelpTrigger::ResetTriggerState() {
   time_of_last_step_ = base::TimeTicks();
   trigger_state_ = NO_ACTIONS_SEEN;
 }
