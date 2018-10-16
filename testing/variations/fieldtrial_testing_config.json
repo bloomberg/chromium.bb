@@ -2370,6 +2370,25 @@
             ]
         }
     ],
+    "LegacySymantecPKI": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20181012",
+                    "enable_features": [
+                        "LegacySymantecPKI"
+                    ]
+                }
+            ]
+        }
+    ],
     "LocalScreenCasting": [
         {
             "platforms": [
