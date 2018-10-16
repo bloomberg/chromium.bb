@@ -2996,9 +2996,6 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
             JavaScript memory
           </message>
-          <message name="IDS_TASK_MANAGER_MEMORY_STATE_COLUMN" desc="Task manager memory state column.  Shows the memory coordinator's state of a process">
-            Memory state
-          </message>
           <message name="IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN" desc="Task manager keepalive count column.  Specific to Chrome extension processes, and only to those which use 'lazy' event pages, this indicates how many activities are making use of the extension, and therefore causing it to be kept alive.">
             Keepalive count
           </message>
@@ -3073,9 +3070,6 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
             JavaScript Memory
           </message>
-          <message name="IDS_TASK_MANAGER_MEMORY_STATE_COLUMN" desc="Task manager memory state column.  Shows the memory coordinator's state of a process">
-            Memory State
-          </message>
           <message name="IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN" desc="Task manager keepalive count column.  Specific to Chrome extension processes, and only to those which use 'lazy' event pages, this indicates how many activities are making use of the extension, and therefore causing it to be kept alive.">
             Keepalive Count
           </message>
@@ -3100,15 +3094,6 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_TASK_MANAGER_DISABLED_NACL_DBG_TEXT" desc="The value displayed for NaCl debug stub port in the task manager when the flag #enable-nacl-debug is disabled.">
           Disabled
-        </message>
-        <message name="IDS_TASK_MANAGER_MEMORY_STATE_NORMAL_TEXT" desc="The value displayed for a process with memory state 'normal'.">
-          Normal
-        </message>
-        <message name="IDS_TASK_MANAGER_MEMORY_STATE_THROTTLED_TEXT" desc="The value displayed for a process with memory state 'throttled'.">
-          Throttled
-        </message>
-        <message name="IDS_TASK_MANAGER_MEMORY_STATE_SUSPENDED_TEXT" desc="The value displayed for a process with memory state 'suspended'.">
-          Suspended
         </message>
         <message name="IDS_TASK_MANAGER_HANDLES_CELL_TEXT" desc="The value displayed in the user/gdi cells.">
           <ph name="NUM_HANDLES">$1<ex>300</ex></ph> (<ph name="NUM_KILOBYTES_LIVE">$2<ex>500</ex></ph> peak)
