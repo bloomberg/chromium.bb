@@ -12,6 +12,8 @@ cr.define('multidevice_setup', () => {
 
       /** @private {boolean} */
       this.shouldSetHostSucceed_ = true;
+
+      this.numSetHostDeviceCalls = 0;
     }
 
     set isPasswordRequired(isPasswordRequired) {
@@ -30,6 +32,7 @@ cr.define('multidevice_setup', () => {
     /** @override */
     setHostDevice(hostDeviceId, opt_authToken) {
       return new Promise((resolve) => {
+        this.numSetHostDeviceCalls++;
         resolve({success: this.shouldSetHostSucceed_});
       });
     }
@@ -74,6 +77,12 @@ cr.define('multidevice_setup', () => {
       let forwardButton;
 
       /**
+       * Cancel button. Defined in setUp.
+       * @type {PaperButton|undefined}
+       */
+      let cancelButton;
+
+      /**
        * Backward navigation button. Defined in setUp.
        * @type {PaperButton|undefined}
        */
@@ -82,9 +91,15 @@ cr.define('multidevice_setup', () => {
       /** @type {!FakeMojoService} */
       let fakeMojoService;
 
+      /** @type {!settings.FakeQuickUnlockPrivate} */
+      let fakeQuickUnlockPrivate;
+
       const PASSWORD = 'password-page';
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
+
+      const CORRECT_PASSWORD = 'correctPassword';
+      const WRONG_PASSWORD = 'wrongPassword';
 
       setup(() => {
         multiDeviceSetupElement = document.createElement('multidevice-setup');
@@ -94,9 +109,17 @@ cr.define('multidevice_setup', () => {
             new FakeMojoInterfaceProviderImpl(fakeMojoService);
 
         document.body.appendChild(multiDeviceSetupElement);
+        Polymer.dom.flush();
+
         forwardButton = multiDeviceSetupElement.$$('button-bar').$$('#forward');
+        cancelButton = multiDeviceSetupElement.$$('button-bar').$$('#cancel');
         backwardButton =
             multiDeviceSetupElement.$$('button-bar').$$('#backward');
+
+        fakeQuickUnlockPrivate = new settings.FakeQuickUnlockPrivate();
+        fakeQuickUnlockPrivate.accountPassword = CORRECT_PASSWORD;
+        multiDeviceSetupElement.$$(PASSWORD).quickUnlockPrivate_ =
+            fakeQuickUnlockPrivate;
       });
 
       /** @param {boolean} isOobeMode */
@@ -106,107 +129,236 @@ cr.define('multidevice_setup', () => {
             isOobeMode;
       }
 
-      /** @param {string} visiblePageName */
+      /**
+       * @param {string} visiblePageName
+       * @return {!Promise} Promise that resolves when the page renders.
+       */
       function setVisiblePage(visiblePageName) {
         multiDeviceSetupElement.visiblePageName_ = visiblePageName;
         Polymer.dom.flush();
+        return test_util.waitForRender(
+            multiDeviceSetupElement.$$(visiblePageName));
       }
 
-      // From SetupSucceededPage
+      /**
+       * @param {string} input
+       * @return {!Promise} Promise that resolves when the page renders.
+       */
+      function enterPassword(input) {
+        multiDeviceSetupElement.$$(PASSWORD).$$('#passwordInput').value = input;
+        Polymer.dom.flush();
+        return test_util.waitForRender(multiDeviceSetupElement);
+      }
 
-      test('SetupSucceededPage forward button closes UI', done => {
-        setVisiblePage(SUCCESS);
-        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
+      function getNumSetHostDeviceCalls() {
+        return multiDeviceSetupElement.delegate.numSetHostDeviceCalls;
+      }
 
-        multiDeviceSetupElement.async(() => {
-          forwardButton.click();
+      // *** From SetupSucceededPage ***
+
+      test('SetupSucceededPage buttons: forward', () => {
+        return setVisiblePage(SUCCESS).then(() => {
+          assertFalse(forwardButton.hidden);
+          assertTrue(cancelButton.hidden);
+          assertTrue(backwardButton.hidden);
         });
       });
 
-      // From StartSetupPage
+      test('SetupSucceededPage forward button closes UI', () => {
+        return setVisiblePage(SUCCESS).then(() => {
+          const whenSetupExits =
+              test_util.eventToPromise('setup-exited', multiDeviceSetupElement);
+          forwardButton.click();
+          return whenSetupExits;
+        });
+      });
+
+      // Post-OOBE
+
+      test('SetupSucceededPage Settings link closes UI (post-OOBE)', () => {
+        setMode(false /* isOobeMode */);
+        return setVisiblePage(SUCCESS).then(() => {
+          const whenSetupExits =
+              test_util.eventToPromise('setup-exited', multiDeviceSetupElement);
+          multiDeviceSetupElement.$$(SUCCESS).$$('#settings-link').click();
+          return whenSetupExits;
+        });
+      });
+
+      // *** From StartSetupPage ***
+
+      test('StartSetupPage buttons: forward, cancel', () => {
+        return setVisiblePage(START).then(() => {
+          assertFalse(forwardButton.hidden);
+          assertFalse(cancelButton.hidden);
+          assertTrue(backwardButton.hidden);
+        });
+      });
 
       // OOBE
 
-      test('StartSetupPage backward button continues OOBE (OOBE)', done => {
-        multiDeviceSetupElement.addEventListener('setup-exited', () => {
-          done();
-        });
-
+      test('StartSetupPage cancel button exits OOBE (OOBE)', () => {
         setMode(true /* isOobeMode */);
-        setVisiblePage(START);
-        multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
-        backwardButton.click();
+        return setVisiblePage(START)
+            .then(() => {
+              const whenSetupExits = test_util.eventToPromise(
+                  'setup-exited', multiDeviceSetupElement);
+              cancelButton.click();
+              return whenSetupExits;
+            })
+            .then(() => {
+              assertEquals(0, getNumSetHostDeviceCalls());
+            });
       });
 
       test(
           'StartSetupPage forward button sets host in background and ' +
-              'goes to PasswordPage (OOBE).',
-          done => {
-            multiDeviceSetupElement.addEventListener('setup-exited', () => {
-              done();
-            });
-
+              'exits OOBE (OOBE)',
+          () => {
             setMode(true /* isOobeMode */);
-            setVisiblePage(START);
-            multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
-            multiDeviceSetupElement.async(() => {
-              forwardButton.click();
-            });
+            return setVisiblePage(START)
+                .then(() => {
+                  multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
+                  const whenSetupExits = test_util.eventToPromise(
+                      'setup-exited', multiDeviceSetupElement);
+                  forwardButton.click();
+                  return whenSetupExits;
+                })
+                .then(() => {
+                  assertEquals(1, getNumSetHostDeviceCalls());
+                });
           });
 
       // Post-OOBE
 
-      test('StartSetupPage backward button closes UI (post-OOBE)', done => {
-        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
-
+      test('StartSetupPage cancel button closes UI (post-OOBE)', () => {
         setMode(false /* isOobeMode */);
-        setVisiblePage(START);
-        multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
-        backwardButton.click();
+        return setVisiblePage(START)
+            .then(() => {
+              const whenSetupExits = test_util.eventToPromise(
+                  'setup-exited', multiDeviceSetupElement);
+              cancelButton.click();
+              return whenSetupExits;
+            })
+            .then(() => {
+              assertEquals(0, getNumSetHostDeviceCalls());
+            });
       });
 
-      test('PasswordPage backward button closes UI (post-OOBE)', done => {
-        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
+      // *** From PasswordPage ***
 
+      // Post-OOBE
+
+      test(
+          'PasswordPage buttons: forward, cancel, backward (post-OOBE)', () => {
+            return setVisiblePage(PASSWORD).then(() => {
+              assertFalse(forwardButton.hidden);
+              assertFalse(cancelButton.hidden);
+              assertFalse(backwardButton.hidden);
+            });
+          });
+
+      test('PasswordPage cancel button closes UI (post-OOBE)', () => {
         setMode(false /* isOobeMode */);
-        setVisiblePage(PASSWORD);
-        multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
-        backwardButton.click();
+        return setVisiblePage(PASSWORD)
+            .then(() => {
+              const whenSetupExits = test_util.eventToPromise(
+                  'setup-exited', multiDeviceSetupElement);
+              cancelButton.click();
+              return whenSetupExits;
+            })
+            .then(() => {
+              assertEquals(0, getNumSetHostDeviceCalls());
+            });
       });
+
+      test(
+          'PasswordPage backward button goes to start page (post-OOBE)', () => {
+            setMode(false /* isOobeMode */);
+
+            return setVisiblePage(PASSWORD)
+                .then(() => {
+                  const whenPageChanges = test_util.eventToPromise(
+                      'visible-page-name_-changed', multiDeviceSetupElement);
+                  backwardButton.click();
+                  return whenPageChanges;
+                })
+                .then(() => {
+                  assertEquals(START, multiDeviceSetupElement.visiblePageName_);
+                  assertEquals(0, getNumSetHostDeviceCalls());
+                });
+          });
 
       test(
           'PasswordPage forward button goes to success page if mojo works ' +
               '(post-OOBE)',
-          done => {
-            multiDeviceSetupElement.addEventListener(
-                'visible-page-name_-changed', () => {
-                  if (multiDeviceSetupElement.visiblePageName_ == SUCCESS)
-                    done();
-                });
-
+          () => {
             setMode(false /* isOobeMode */);
-            setVisiblePage(PASSWORD);
-            multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
 
-            multiDeviceSetupElement.async(() => {
-              forwardButton.click();
-            });
+            return setVisiblePage(PASSWORD)
+                .then(() => {
+                  return enterPassword(CORRECT_PASSWORD);
+                })
+                .then(() => {
+                  multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
+                  const whenPageChanges = test_util.eventToPromise(
+                      'visible-page-name_-changed', multiDeviceSetupElement);
+                  forwardButton.click();
+                  return whenPageChanges;
+                })
+                .then(() => {
+                  assertEquals(
+                      SUCCESS, multiDeviceSetupElement.visiblePageName_);
+                  assertEquals(1, getNumSetHostDeviceCalls());
+                });
           });
 
-      test('SuccessPage Settings link closes UI (post-OOBE)', done => {
-        multiDeviceSetupElement.addEventListener('setup-exited', () => done());
+      test(
+          'PasswordPage forward button does nothing if invalid password ' +
+              '(post-OOBE)',
+          () => {
+            setMode(false /* isOobeMode */);
 
-        setMode(false /* isOobeMode */);
-        setVisiblePage(SUCCESS);
+            return setVisiblePage(PASSWORD)
+                .then(() => {
+                  return enterPassword(WRONG_PASSWORD);
+                })
+                .then(() => {
+                  multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
+                  forwardButton.click();
+                  Polymer.dom.flush();
+                  return test_util.waitForRender(multiDeviceSetupElement);
+                })
+                .then(() => {
+                  assertEquals(
+                      PASSWORD, multiDeviceSetupElement.visiblePageName_);
+                  assertEquals(0, getNumSetHostDeviceCalls());
+                });
+          });
 
-        multiDeviceSetupElement.$$('setup-succeeded-page')
-            .$$('#settings-link')
-            .click();
-      });
+      test(
+          'PasswordPage forward button is disabled if invalid password ' +
+              '(post-OOBE)',
+          () => {
+            const whenMultiDeviceSetupLoads = setMode(false /* isOobeMode */);
+
+            return setVisiblePage(PASSWORD)
+                .then(() => {
+                  return enterPassword(WRONG_PASSWORD);
+                })
+                .then(() => {
+                  forwardButton.click();
+                  Polymer.dom.flush();
+                  return test_util.waitForRender(multiDeviceSetupElement);
+                })
+                .then(() => {
+                  assertTrue(multiDeviceSetupElement.forwardButtonDisabled);
+                });
+          });
     });
   }
   return {registerIntegrationTests: registerIntegrationTests};

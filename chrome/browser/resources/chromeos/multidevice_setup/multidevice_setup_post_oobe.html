@@ -9,6 +9,7 @@
   <template>
     <style include="multidevice-setup-shared">
       #backward-button,
+      #cancel-button,
       #forward-button {
         align-items: center;
         display: flex;
@@ -21,10 +22,15 @@
         on-forward-button-focus-requested="onForwardButtonFocusRequested_"
         forward-button-text="{{forwardButtonText_}}"
         forward-button-disabled="{{forwardButtonDisabled_}}"
+        cancel-button-text="{{cancelButtonText_}}"
         backward-button-text="{{backwardButtonText_}}">
       <paper-button id="backward-button"
           slot="backward-button" class="cancel-button">
         [[backwardButtonText_]]
+      </paper-button>
+      <paper-button id="cancel-button"
+          slot="cancel-button" class="cancel-button">
+        [[cancelButtonText_]]
       </paper-button>
       <paper-button id="forward-button"
           slot="forward-button" class="action-button"

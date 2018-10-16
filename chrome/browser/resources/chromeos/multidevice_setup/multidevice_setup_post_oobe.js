@@ -31,6 +31,15 @@ Polymer({
     },
 
     /**
+     * Text to be shown on the cancel navigation button.
+     * @private {string|undefined}
+     */
+    cancelButtonText_: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * Text to be shown on the backward navigation button.
      * @private {string|undefined}
      */

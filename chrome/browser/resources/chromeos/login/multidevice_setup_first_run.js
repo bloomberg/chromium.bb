@@ -75,10 +75,10 @@ cr.define('multidevice_setup', function() {
       },
 
       /**
-       * Text to be shown on the backward navigation button.
+       * Text to be shown on the cancel button.
        * @private {string|undefined}
        */
-      backwardButtonText_: {
+      cancelButtonText_: {
         type: String,
         value: '',
       },

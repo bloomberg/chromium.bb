@@ -7,14 +7,18 @@
     <style include="multidevice-setup-shared">
       :host {
         display: flex;
-        justify-content: flex-end;
       }
     </style>
-    <div class="flex"></div>
     <div id="backward"
         on-click="onBackwardButtonClicked_"
         hidden$="[[backwardButtonHidden]]">
       <slot name="backward-button"></slot>
+    </div>
+    <div class="flex"></div>
+    <div id="cancel"
+        on-click="onCancelButtonClicked_"
+        hidden$="[[cancelButtonHidden]]">
+      <slot name="cancel-button"></slot>
     </div>
     <div id="forward"
         on-click="onForwardButtonClicked_"

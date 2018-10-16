@@ -46,6 +46,16 @@ cr.define('multidevice_setup', function() {
       },
 
       /**
+       * Text to be shown on the cancel button.
+       * @type {string|undefined}
+       */
+      cancelButtonText: {
+        type: String,
+        computed: 'getCancelButtonText_(visiblePage_)',
+        notify: true,
+      },
+
+      /**
        * Text to be shown on the backward navigation button.
        * @type {string|undefined}
        */
@@ -63,7 +73,7 @@ cr.define('multidevice_setup', function() {
       visiblePageName_: {
         type: String,
         value: PageName.START,
-        notify: true,  // For testing purporses only.
+        notify: true,  // For testing purposes only.
       },
 
       /**
@@ -116,6 +126,7 @@ cr.define('multidevice_setup', function() {
 
     listeners: {
       'backward-navigation-requested': 'onBackwardNavigationRequested_',
+      'cancel-requested': 'onCancelRequested_',
       'forward-navigation-requested': 'onForwardNavigationRequested_',
     },
 
@@ -149,12 +160,24 @@ cr.define('multidevice_setup', function() {
     },
 
     /** @private */
-    onBackwardNavigationRequested_: function() {
+    onCancelRequested_: function() {
       this.exitSetupFlow_();
     },
 
     /** @private */
+    onBackwardNavigationRequested_: function() {
+      // The back button is only visible on the password page.
+      assert(this.visiblePageName_ == PageName.PASSWORD);
+
+      this.$$('password-page').clearPasswordTextInput();
+      this.visiblePageName_ = PageName.START;
+    },
+
+    /** @private */
     onForwardNavigationRequested_: function() {
+      if (this.forwardButtonDisabled)
+        return;
+
       this.visiblePage_.getCanNavigateToNextPage().then((canNavigate) => {
         if (!canNavigate)
           return;
@@ -236,6 +259,17 @@ cr.define('multidevice_setup', function() {
     },
 
     /**
+     * @return {string|undefined} The cancel button text, which is undefined
+     *     if no button should be displayed.
+     * @private
+     */
+    getCancelButtonText_: function() {
+      if (!this.visiblePage_)
+        return undefined;
+      return this.visiblePage_.cancelButtonText;
+    },
+
+    /**
      * @return {string|undefined} The backward button text, which is undefined
      *     if no button should be displayed.
      * @private
@@ -244,7 +278,6 @@ cr.define('multidevice_setup', function() {
       if (!this.visiblePage_)
         return undefined;
       return this.visiblePage_.backwardButtonText;
-
     },
 
     /**

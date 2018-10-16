@@ -15,6 +15,15 @@ const UiPageContainerBehaviorImpl = {
     forwardButtonTextId: String,
 
     /**
+     * ID for cancel button label, which must be translated for display.
+     *
+     * Undefined if the visible page has no cancel button.
+     *
+     * @type {string|undefined}
+     */
+    cancelButtonTextId: String,
+
+    /**
      * ID for backward button label, which must be translated for display.
      *
      * Undefined if the visible page has no backward-navigation button.
@@ -47,6 +56,18 @@ const UiPageContainerBehaviorImpl = {
     forwardButtonText: {
       type: String,
       computed: 'computeLocalizedText_(forwardButtonTextId)',
+    },
+
+    /**
+     * Translated text to display on the cancel button.
+     *
+     * Undefined if the visible page has no cancel button.
+     *
+     * @type {string|undefined}
+     */
+    cancelButtonText: {
+      type: String,
+      computed: 'computeLocalizedText_(cancelButtonTextId)',
     },
 
     /**

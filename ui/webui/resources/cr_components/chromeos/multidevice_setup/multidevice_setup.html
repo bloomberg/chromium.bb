@@ -54,8 +54,10 @@
     </iron-pages>
     <div class="flex"></div>
     <button-bar forward-button-hidden="[[!forwardButtonText]]"
-        backward-button-hidden="[[!backwardButtonText]]">
+        backward-button-hidden="[[!backwardButtonText]]"
+        cancel-button-hidden="[[!cancelButtonText]]">
       <slot name="backward-button" slot="backward-button"></slot>
+      <slot name="cancel-button" slot="cancel-button"></slot>
       <slot name="forward-button" slot="forward-button"></slot>
     </button-bar>
   </template>
