@@ -843,33 +843,17 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
-  // Adding one ARC IME.
-  {
-    const std::string android_ime_id = "test.arc.ime";
-    const std::string display_name = "DisplayName";
-    const std::string settings_url = "url_to_settings";
-    mojom::ImeInfoPtr info = mojom::ImeInfo::New();
-    info->ime_id = android_ime_id;
-    info->display_name = display_name;
-    info->enabled = false;
-    info->settings_url = settings_url;
-
-    std::vector<mojom::ImeInfoPtr> info_array;
-    info_array.emplace_back(std::move(info));
-    service()->OnImeInfoChanged(std::move(info_array));
-  }
-  // The proxy IME engine should be added.
-  ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
-  ui::IMEEngineHandlerInterface* engine_handler =
-      std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
-  // Enable it
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
-
   const std::string extension_ime_id =
       ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
   const std::string component_extension_ime_id =
       ceiu::GetComponentInputMethodID(
           GenerateId("test.component.extension.ime"), "us");
+  const std::string arc_ime_id = ceiu::GetArcInputMethodID(
+      GenerateId("test.arc.ime"), "ime.id.in.arc.container");
+
+  // Set active input method to the extension ime.
+  imm()->state()->SetActiveInputMethod(extension_ime_id);
+  service()->InputMethodChanged(imm(), profile(), false /* show_message */);
 
   // Enable Chrome OS virtual keyboard
   keyboard::SetTouchKeyboardEnabled(true);
@@ -877,16 +861,13 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
   // It's disabled when the ARC IME is activated.
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
-  engine_handler->Enable(
-      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
-          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
-              .at(0)
-              .id()));
+  imm()->state()->SetActiveInputMethod(arc_ime_id);
+  service()->InputMethodChanged(imm(), profile(), false);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 
   // It's re-enabled when the ARC IME is deactivated.
-  engine_handler->Disable();
+  imm()->state()->SetActiveInputMethod(component_extension_ime_id);
+  service()->InputMethodChanged(imm(), profile(), false);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 }
 
