@@ -338,7 +338,10 @@ TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
 }
 
 TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
-  const char* jpeg_file = "/images/resources/icc-v2-gbr.jpg";  // 275x207
+  // This 272x200 image uses 4:2:2 sampling format. The MCU is therefore 16x8.
+  // The width is a multiple of 16 and the height is a multiple of 8, so it's
+  // okay for the decoder to downscale it.
+  const char* jpeg_file = "/images/resources/icc-v2-gbr-422-whole-mcus.jpg";
 
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
@@ -349,9 +352,9 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
   std::vector<SkISize> expected_sizes = {
-      SkISize::Make(35, 26),   SkISize::Make(69, 52),   SkISize::Make(104, 78),
-      SkISize::Make(138, 104), SkISize::Make(172, 130), SkISize::Make(207, 156),
-      SkISize::Make(241, 182), SkISize::Make(275, 207)};
+      SkISize::Make(34, 25),   SkISize::Make(68, 50),   SkISize::Make(102, 75),
+      SkISize::Make(136, 100), SkISize::Make(170, 125), SkISize::Make(204, 150),
+      SkISize::Make(238, 175), SkISize::Make(272, 200)};
 
   auto sizes = decoder->GetSupportedDecodeSizes();
   ASSERT_EQ(expected_sizes.size(), sizes.size());
@@ -360,6 +363,70 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
         << "Expected " << expected_sizes[i].width() << "x"
         << expected_sizes[i].height() << ". Got " << sizes[i].width() << "x"
         << sizes[i].height();
+  }
+}
+
+TEST(JPEGImageDecoderTest,
+     SupportedSizesRectangleNotMultipleOfMCUIfMemoryBound) {
+  // This 275x207 image uses 4:2:0 sampling format. The MCU is therefore 16x16.
+  // Neither the width nor the height is a multiple of the MCU, so downscaling
+  // should not be supported. However, we limit the memory so that the decoder
+  // is forced to support downscaling.
+  const char* jpeg_file = "/images/resources/icc-v2-gbr.jpg";
+
+  scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
+  ASSERT_TRUE(data);
+
+  // Make the memory limit one fewer byte than what is needed in order to force
+  // downscaling.
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(275 * 207 * 4 - 1);
+  decoder->SetData(data.get(), true);
+  // This will decode the size and needs to be called to avoid DCHECKs
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  std::vector<SkISize> expected_sizes = {
+      SkISize::Make(35, 26),   SkISize::Make(69, 52),   SkISize::Make(104, 78),
+      SkISize::Make(138, 104), SkISize::Make(172, 130), SkISize::Make(207, 156),
+      SkISize::Make(241, 182)};
+
+  auto sizes = decoder->GetSupportedDecodeSizes();
+  ASSERT_EQ(expected_sizes.size(), sizes.size());
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    EXPECT_TRUE(expected_sizes[i] == sizes[i])
+        << "Expected " << expected_sizes[i].width() << "x"
+        << expected_sizes[i].height() << ". Got " << sizes[i].width() << "x"
+        << sizes[i].height();
+  }
+}
+
+TEST(JPEGImageDecoderTest, SupportedSizesRectangleNotMultipleOfMCU) {
+  struct {
+    const char* jpeg_file;
+    SkISize expected_size;
+  } recs[] = {
+      {// This 264x192 image uses 4:2:0 sampling format. The MCU is therefore
+       // 16x16. The height is a multiple of 16, but the width is not a
+       // multiple of 16, so it's not okay for the decoder to downscale it.
+       "/images/resources/icc-v2-gbr-420-width-not-whole-mcu.jpg",
+       SkISize::Make(264, 192)},
+      {// This 272x200 image uses 4:2:0 sampling format. The MCU is therefore
+       // 16x16. The width is a multiple of 16, but the width is not a multiple
+       // of 16, so it's not okay for the decoder to downscale it.
+       "/images/resources/icc-v2-gbr-420-height-not-whole-mcu.jpg",
+       SkISize::Make(272, 200)}};
+  for (const auto& rec : recs) {
+    scoped_refptr<SharedBuffer> data = ReadFile(rec.jpeg_file);
+    ASSERT_TRUE(data);
+    std::unique_ptr<ImageDecoder> decoder =
+        CreateJPEGDecoder(std::numeric_limits<int>::max());
+    decoder->SetData(data.get(), true);
+    // This will decode the size and needs to be called to avoid DCHECKs
+    ASSERT_TRUE(decoder->IsSizeAvailable());
+    auto sizes = decoder->GetSupportedDecodeSizes();
+    ASSERT_EQ(1u, sizes.size());
+    EXPECT_EQ(rec.expected_size, sizes[0])
+        << "Expected " << rec.expected_size.width() << "x"
+        << rec.expected_size.height() << ". Got " << sizes[0].width() << "x"
+        << sizes[0].height();
   }
 }
 
