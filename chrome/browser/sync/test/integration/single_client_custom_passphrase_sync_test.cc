@@ -8,9 +8,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/system_encryptor.h"
-#include "components/sync/engine/sync_engine_switches.h"
 
 namespace {
 
@@ -162,27 +160,6 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
     return cryptographer;
   }
 
-  void SetScryptFeaturesState(bool force_disabled,
-                              bool use_for_new_passphrases) {
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
-    if (force_disabled) {
-      enabled_features.push_back(
-          switches::kSyncForceDisableScryptForCustomPassphrase);
-    } else {
-      disabled_features.push_back(
-          switches::kSyncForceDisableScryptForCustomPassphrase);
-    }
-    if (use_for_new_passphrases) {
-      enabled_features.push_back(
-          switches::kSyncUseScryptForNewCustomPassphrases);
-    } else {
-      disabled_features.push_back(
-          switches::kSyncUseScryptForNewCustomPassphrases);
-    }
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
-
   void InjectEncryptedServerBookmark(const std::string& title,
                                      const GURL& url,
                                      const KeyParams& key_params) {
@@ -195,7 +172,6 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
 
  private:
   SystemEncryptor system_encryptor_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientCustomPassphraseSyncTest);
 };
@@ -219,8 +195,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        CommitsEncryptedDataUsingPbkdf2WhenScryptDisabled) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*use_for_new_passphrases=*/false);
+  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                     /*use_for_new_passphrases=*/false);
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AddURL(/*profile=*/0, "PBKDF2 encrypted",
@@ -238,8 +214,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        CommitsEncryptedDataUsingScryptWhenScryptEnabled) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*use_for_new_passphrases=*/true);
+  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                     /*use_for_new_passphrases=*/true);
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
 
@@ -274,8 +250,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*used_for_new_passphrases_=*/false);
+  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                     /*use_for_new_passphrases_=*/false);
   KeyParams key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
   InjectEncryptedServerBookmark("scypt-encrypted bookmark",
@@ -301,8 +277,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                                 key_params);
   // Can only set feature state now because creating a Nigori and injecting an
   // encrypted bookmark both require key derivation using scrypt.
-  SetScryptFeaturesState(/*force_disabled=*/true,
-                         /*used_for_new_passphrases_=*/false);
+  ScopedScryptFeatureToggler toggler(/*force_disabled=*/true,
+                                     /*use_for_new_passphrases_=*/false);
   SetNigoriInFakeServer(GetFakeServer(), nigori);
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 
@@ -313,8 +289,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        DoesNotLeakUnencryptedData) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*use_for_new_passphrases=*/false);
+  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                     /*use_for_new_passphrases=*/false);
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   DatatypeCommitCountingFakeServerObserver observer(GetFakeServer());
   ASSERT_TRUE(SetupSync());
@@ -338,8 +314,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*use_for_new_passphrases=*/false);
+  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                     /*use_for_new_passphrases=*/false);
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
   ASSERT_TRUE(AddURL(/*profile=*/0, "Re-encryption is great",
