@@ -82,8 +82,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        E2E_ENABLED(MAYBE_SetPassphraseAndAddPassword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  GetSyncService(0)->SetEncryptionPassphrase(
-      kValidPassphrase, browser_sync::ProfileSyncService::EXPLICIT);
+  GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
 
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
@@ -147,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SetupClients());
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  GetSyncService(0)->SetEncryptionPassphrase(
-      kValidPassphrase, browser_sync::ProfileSyncService::EXPLICIT);
+  GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
 
   // When client 1 hits a passphrase required state, we can infer that

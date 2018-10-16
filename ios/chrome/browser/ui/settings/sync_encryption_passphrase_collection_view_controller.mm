@@ -365,8 +365,7 @@ const CGFloat kSpinnerButtonPadding = 18;
     }
   } else {
     service->EnableEncryptEverything();
-    service->SetEncryptionPassphrase(
-        passphrase, browser_sync::ProfileSyncService::EXPLICIT);
+    service->SetEncryptionPassphrase(passphrase);
   }
   [self reloadData];
 }

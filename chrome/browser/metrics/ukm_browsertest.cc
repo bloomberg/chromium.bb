@@ -841,8 +841,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTestUnifiedConsentDisabled,
   // Setting an encryption passphrase is done on the "sync" thread meaning the
   // method only posts a task and returns. That task, when executed, will
   // set the passphrase and notify observers (which disables UKM).
-  harness->service()->SetEncryptionPassphrase("foo",
-                                              syncer::SyncService::EXPLICIT);
+  harness->service()->SetEncryptionPassphrase("foo");
   UkmEnabledChecker checker(this, harness->service(), false);
   EXPECT_TRUE(checker.Wait());
 

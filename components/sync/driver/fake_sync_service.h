@@ -66,8 +66,7 @@ class FakeSyncService : public SyncService {
   bool IsUsingSecondaryPassphrase() const override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
-  void SetEncryptionPassphrase(const std::string& passphrase,
-                               PassphraseType type) override;
+  void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
   bool IsCryptographerReady(const BaseTransaction* trans) const override;
   UserShare* GetUserShare() const override;

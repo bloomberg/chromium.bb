@@ -298,7 +298,7 @@ void ProfileSyncServiceAndroid::SetEncryptionPassphrase(
     const JavaParamRef<jstring>& passphrase) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string key = ConvertJavaStringToUTF8(env, passphrase);
-  sync_service_->SetEncryptionPassphrase(key, ProfileSyncService::EXPLICIT);
+  sync_service_->SetEncryptionPassphrase(key);
 }
 
 jboolean ProfileSyncServiceAndroid::SetDecryptionPassphrase(
