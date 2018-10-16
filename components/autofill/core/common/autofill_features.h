@@ -112,10 +112,6 @@ enum class LocalCardMigrationExperimentalFlag {
 // settings page migration.
 LocalCardMigrationExperimentalFlag GetLocalCardMigrationExperimentalFlag();
 
-// Returns the time delay for the local card migration dialog to show the close
-// button.
-base::TimeDelta GetTimeoutForMigrationPromptFeedbackCloseButton();
-
 // For testing purposes; not to be launched.  When enabled, Chrome Upstream
 // always requests that the user enters/confirms cardholder name in the
 // offer-to-save dialog, regardless of if it was present or if the user is a
