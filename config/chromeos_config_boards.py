@@ -257,14 +257,3 @@ norootfs_verification_boards = frozenset([
 ])
 
 base_layout_boards = lakitu_boards | termina_boards
-
-vmtest_boards = frozenset([
-    # Full VMTest support on ChromeOS is currently limited to devices derived
-    # from betty & co.
-    'amd64-generic', # Has kernel 4.4, used with public Chromium.
-    'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
-    'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
-    'betty-arcnext', # Like betty but with the next version of ARC++.
-    'novato',        # Like betty but with GMSCore but not the Play Store
-    'novato-arc64',  # 64 bit x86_64 ARC++ ABI
-]) | lakitu_boards  # All lakitu boards have VM support.

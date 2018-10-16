@@ -16,6 +16,7 @@ from chromite.lib import constants
 from chromite.lib import factory
 
 from chromite.config import chromeos_config_boards as chromeos_boards
+from chromite.config import chromeos_config_test as chromeos_test
 
 # TODO(yshaul): Restrict the import when we're done splitting
 from chromite.config.chromeos_config_test import HWTestList
@@ -141,7 +142,7 @@ def GetBoardTypeToBoardsDict(ge_build_config):
   # This set controls the final vmtest override. It allows us to specify
   # vm_tests for each class of builders, but only execute on vmtest_boards.
   boards_dict['no_vmtest_boards'] = (
-      all_boards - chromeos_boards.vmtest_boards
+      all_boards - chromeos_test.vmtest_boards
   )
 
   return boards_dict

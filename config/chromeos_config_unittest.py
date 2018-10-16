@@ -15,7 +15,7 @@ import re
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
-from chromite.config import chromeos_config_boards as chromeos_boards
+from chromite.config import chromeos_config_test as chromeos_test
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import constants
@@ -607,12 +607,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for _, config in self.site_config.iteritems():
       if config['vm_tests'] or config['vm_tests_override']:
         for board in config['boards']:
-          self.assertIn(board, chromeos_boards.vmtest_boards,
+          self.assertIn(board, chromeos_test.vmtest_boards,
                         'Board %s not able to run VM tests.' % board)
       for child_config in config.child_configs:
         if child_config['vm_tests'] or child_config['vm_tests_override']:
           for board in config['boards']:
-            self.assertIn(board, chromeos_boards.vmtest_boards,
+            self.assertIn(board, chromeos_test.vmtest_boards,
                           'Board %s not able to run VM tests.' % board)
 
   def testHWTestsArchivingHWTestArtifacts(self):
