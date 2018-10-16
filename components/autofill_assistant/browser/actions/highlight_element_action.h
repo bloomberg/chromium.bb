@@ -27,6 +27,9 @@ class HighlightElementAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnWaitForElement(ActionDelegate* delegate,
+                        ProcessActionCallback callback,
+                        bool element_found);
   void OnHighlightElement(ProcessActionCallback callback, bool status);
 
   base::WeakPtrFactory<HighlightElementAction> weak_ptr_factory_;

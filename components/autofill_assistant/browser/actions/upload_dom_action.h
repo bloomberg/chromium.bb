@@ -23,6 +23,9 @@ class UploadDomAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnWaitForElement(ActionDelegate* delegate,
+                        ProcessActionCallback callback,
+                        bool element_found);
   void OnGetOuterHtml(ProcessActionCallback callback,
                       bool successful,
                       const std::string& outer_html);

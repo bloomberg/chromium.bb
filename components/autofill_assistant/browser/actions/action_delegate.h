@@ -40,6 +40,19 @@ class ActionDelegate {
   // Create a helper for checking element existence and field value.
   virtual std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() = 0;
 
+  // Wait for a short time for a given selector to appear.
+  //
+  // Most actions should call this before issuing a command on an element, to
+  // account for timing issues with needed elements not showing up right away.
+  //
+  // Longer-time waiting should still be controlled explicitly, using
+  // WaitForDom.
+  //
+  // TODO(crbug.com/806868): Consider embedding that wait right into
+  // WebController and eliminate double-lookup.
+  virtual void WaitForElement(const std::vector<std::string>& selectors,
+                              base::OnceCallback<void(bool)> callback) = 0;
+
   // Click the element given by |selectors| on the web page.
   virtual void ClickElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;

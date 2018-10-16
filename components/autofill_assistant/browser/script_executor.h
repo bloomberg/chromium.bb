@@ -55,6 +55,8 @@ class ScriptExecutor : public ActionDelegate {
 
   // Override ActionDelegate:
   std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
+  void WaitForElement(const std::vector<std::string>& selectors,
+                      base::OnceCallback<void(bool)> callback) override;
   void ShowStatusMessage(const std::string& message) override;
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;

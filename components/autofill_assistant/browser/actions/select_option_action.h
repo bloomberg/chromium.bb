@@ -25,6 +25,9 @@ class SelectOptionAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnWaitForElement(ActionDelegate* delegate,
+                        ProcessActionCallback callback,
+                        bool element_found);
   void OnSelectOption(ProcessActionCallback callback, bool status);
 
   base::WeakPtrFactory<SelectOptionAction> weak_ptr_factory_;

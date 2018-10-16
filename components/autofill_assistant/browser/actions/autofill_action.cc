@@ -95,10 +95,8 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     is_autofill_card_ = false;
     prompt_ = proto.use_address().prompt();
     name_ = proto.use_address().name();
-    for (const auto& selector :
-         proto.use_address().form_field_element().selectors()) {
-      selectors_.emplace_back(selector);
-    }
+    selectors_ =
+        ExtractSelectors(proto.use_address().form_field_element().selectors());
     fill_form_message_ = proto.use_address().strings().fill_form();
     check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
@@ -108,10 +106,8 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     is_autofill_card_ = true;
     prompt_ = proto.use_card().prompt();
     name_ = "";
-    for (const auto& selector :
-         proto.use_card().form_field_element().selectors()) {
-      selectors_.emplace_back(selector);
-    }
+    selectors_ =
+        ExtractSelectors(proto.use_card().form_field_element().selectors());
     fill_form_message_ = proto.use_card().strings().fill_form();
     check_form_message_ = proto.use_card().strings().check_form();
   }
@@ -200,6 +196,20 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
 
 void AutofillAction::FillFormWithData(const std::string& guid,
                                       ActionDelegate* delegate) {
+  delegate->WaitForElement(selectors_,
+                           base::BindOnce(&AutofillAction::OnWaitForElement,
+                                          weak_ptr_factory_.GetWeakPtr(), guid,
+                                          base::Unretained(delegate)));
+}
+
+void AutofillAction::OnWaitForElement(const std::string& guid,
+                                      ActionDelegate* delegate,
+                                      bool element_found) {
+  if (!element_found) {
+    EndAction(/* successful= */ false);
+    return;
+  }
+
   DCHECK(!selectors_.empty());
   if (is_autofill_card_) {
     autofill::CreditCard* card =
@@ -268,16 +278,12 @@ void AutofillAction::CheckRequiredFields(const std::string& guid,
   batch_element_checker_ = delegate->CreateBatchElementChecker();
   for (int i = 0; i < proto_.use_address().required_fields_size(); i++) {
     auto& required_address_field = proto_.use_address().required_fields(i);
-    std::vector<std::string> selectors;
-    for (const auto& selector : required_address_field.element().selectors()) {
-      selectors.emplace_back(selector);
-    }
-    DCHECK(!selectors.empty());
-
+    DCHECK_GT(required_address_field.element().selectors_size(), 0);
     batch_element_checker_->AddFieldValueCheck(
-        selectors, base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
-                                  // this instance owns batch_element_checker_
-                                  base::Unretained(this), i));
+        ExtractSelectors(required_address_field.element().selectors()),
+        base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
+                       // this instance owns batch_element_checker_
+                       base::Unretained(this), i));
   }
   batch_element_checker_->Run(
       base::TimeDelta::FromSeconds(0),
@@ -380,13 +386,12 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
     return;
   }
 
-  std::vector<std::string> selectors;
-  for (const auto& selector :
-       required_fields.Get(required_fields_index).element().selectors()) {
-    selectors.emplace_back(selector);
-  }
+  DCHECK_GT(
+      required_fields.Get(required_fields_index).element().selectors_size(), 0);
   delegate->SetFieldValue(
-      selectors, fallback_value,
+      ExtractSelectors(
+          required_fields.Get(required_fields_index).element().selectors()),
+      fallback_value,
       base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,
                      weak_ptr_factory_.GetWeakPtr(), guid, delegate,
                      required_fields_index));

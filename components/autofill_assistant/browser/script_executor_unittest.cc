@@ -37,7 +37,9 @@ class ScriptExecutorTest : public testing::Test, public ScriptExecutorDelegate {
     executor_ = std::make_unique<ScriptExecutor>("script path", this);
 
     // In this test, "tell" actions always succeed and "click" actions always
-    // fail.
+    // fail. The following makes a click action fail immediately
+    ON_CALL(mock_web_controller_, OnElementExists(_, _))
+        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_, OnClickElement(_, _))
         .WillByDefault(RunOnceCallback<1>(false));
   }

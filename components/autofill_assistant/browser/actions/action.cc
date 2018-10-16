@@ -16,4 +16,13 @@ void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
   processed_action_proto_->set_status(status);
 }
 
+// static
+std::vector<std::string> Action::ExtractSelectors(
+    const google::protobuf::RepeatedPtrField<std::string>& selectors_proto) {
+  std::vector<std::string> selectors;
+  for (const auto& selector : selectors_proto) {
+    selectors.emplace_back(selector);
+  }
+  return selectors;
+}
 }  // namespace autofill_assistant

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
@@ -19,6 +20,13 @@
 #include "components/autofill_assistant/browser/web_controller.h"
 
 namespace autofill_assistant {
+namespace {
+
+// Maximum amount of time normal actions should implicitly wait for a selector
+// to show up.
+constexpr base::TimeDelta kWaitForSelectorDeadline =
+    base::TimeDelta::FromSeconds(2);
+}  // namespace
 
 ScriptExecutor::ScriptExecutor(const std::string& script_path,
                                ScriptExecutorDelegate* delegate)
@@ -53,6 +61,21 @@ void ScriptExecutor::Stop() {
 std::unique_ptr<BatchElementChecker>
 ScriptExecutor::CreateBatchElementChecker() {
   return std::make_unique<BatchElementChecker>(delegate_->GetWebController());
+}
+
+void ScriptExecutor::WaitForElement(const std::vector<std::string>& selectors,
+                                    base::OnceCallback<void(bool)> callback) {
+  std::unique_ptr<BatchElementChecker> checker = CreateBatchElementChecker();
+  checker->AddElementExistenceCheck(selectors, base::DoNothing());
+  checker->Run(kWaitForSelectorDeadline,
+               /* try_done= */ base::DoNothing(),
+               /* all_done= */
+               base::BindOnce(
+                   [](std::unique_ptr<BatchElementChecker> checker_to_delete,
+                      base::OnceCallback<void(bool)> callback) {
+                     std::move(callback).Run(checker_to_delete->all_found());
+                   },
+                   std::move(checker), std::move(callback)));
 }
 
 void ScriptExecutor::ShowStatusMessage(const std::string& message) {
