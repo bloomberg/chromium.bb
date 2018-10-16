@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/image_fetcher/core/storage/image_store_types.h"
 
@@ -21,12 +23,13 @@ class SequencedTaskRunner;
 
 namespace image_fetcher {
 
+class ImageCache;
 class ImageDataStore;
 class ImageMetadataStore;
 
 // Persist image meta/data via the given implementations of ImageDataStore and
 // ImageMetadataStore.
-class ImageCache {
+class ImageCache : public base::RefCounted<ImageCache> {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -35,7 +38,6 @@ class ImageCache {
              PrefService* pref_service,
              base::Clock* clock,
              scoped_refptr<base::SequencedTaskRunner> task_runner);
-  ~ImageCache();
 
   // Adds or updates the image data for the |url|. If the class hasn't been
   // initialized yet, the call is queued.
@@ -50,6 +52,8 @@ class ImageCache {
 
  private:
   friend class ImageCacheTest;
+  friend class base::RefCounted<ImageCache>;
+  ~ImageCache();
 
   // Queue or start |request| depending if the cache is initialized.
   void QueueOrStartRequest(base::OnceClosure request);

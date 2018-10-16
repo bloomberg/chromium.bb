@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
@@ -72,10 +73,9 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
         data_dir_.GetPath(), base::SequencedTaskRunnerHandle::Get());
 
     ImageCache::RegisterProfilePrefs(test_prefs_.registry());
-    auto image_cache = std::make_unique<ImageCache>(
+    image_cache_ = base::MakeRefCounted<ImageCache>(
         std::move(data_store), std::move(metadata_store), &test_prefs_, &clock_,
         base::SequencedTaskRunnerHandle::Get());
-    image_cache_ = image_cache.get();
 
     image_cache_->SaveImage(kImageUrl.spec(), kImageData);
     RunUntilIdle();
@@ -93,7 +93,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
     cached_image_fetcher_ = std::make_unique<CachedImageFetcher>(
         std::make_unique<image_fetcher::ImageFetcherImpl>(std::move(decoder),
                                                           shared_factory_),
-        std::move(image_cache));
+        image_cache_);
 
     RunUntilIdle();
   }
@@ -103,7 +103,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   CachedImageFetcher* cached_image_fetcher() {
     return cached_image_fetcher_.get();
   }
-  ImageCache* image_cache() { return image_cache_; }
+  scoped_refptr<ImageCache> image_cache() { return image_cache_; }
   FakeImageDecoder* image_decoder() { return fake_image_decoder_; }
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
@@ -117,7 +117,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   FakeImageDecoder* fake_image_decoder_;
 
-  ImageCache* image_cache_;
+  scoped_refptr<ImageCache> image_cache_;
   base::SimpleTestClock clock_;
   TestingPrefServiceSimple test_prefs_;
   base::ScopedTempDir data_dir_;

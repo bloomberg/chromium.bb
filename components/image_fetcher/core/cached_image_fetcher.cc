@@ -55,9 +55,9 @@ bool EncodeSkBitmapToPNG(const SkBitmap& bitmap,
 
 CachedImageFetcher::CachedImageFetcher(
     std::unique_ptr<ImageFetcher> image_fetcher,
-    std::unique_ptr<ImageCache> image_cache)
+    scoped_refptr<ImageCache> image_cache)
     : image_fetcher_(std::move(image_fetcher)),
-      image_cache_(std::move(image_cache)),
+      image_cache_(image_cache),
       weak_ptr_factory_(this) {
   DCHECK(image_fetcher_);
   DCHECK(image_cache_);

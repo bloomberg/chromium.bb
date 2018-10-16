@@ -4,6 +4,9 @@
 
 #include "components/image_fetcher/core/storage/image_cache.h"
 
+#include <map>
+#include <utility>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -49,7 +52,7 @@ class ImageCacheTest : public testing::Test {
     data_store_ = data_store.get();
 
     ImageCache::RegisterProfilePrefs(test_prefs_.registry());
-    image_cache_ = std::make_unique<ImageCache>(
+    image_cache_ = base::MakeRefCounted<ImageCache>(
         std::move(data_store), std::move(metadata_store), &test_prefs_, &clock_,
         base::SequencedTaskRunnerHandle::Get());
   }
@@ -116,7 +119,7 @@ class ImageCacheTest : public testing::Test {
   MOCK_METHOD1(DataCallback, void(std::string));
 
  private:
-  std::unique_ptr<ImageCache> image_cache_;
+  scoped_refptr<ImageCache> image_cache_;
   ImageMetadataStoreLevelDB* metadata_store_;
   ImageDataStoreDisk* data_store_;
   base::SimpleTestClock clock_;

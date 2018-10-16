@@ -6,6 +6,8 @@ static_library("core") {
   sources = [
     "cached_image_fetcher.cc",
     "cached_image_fetcher.h",
+    "cached_image_fetcher_service.cc",
+    "cached_image_fetcher_service.h",
     "image_data_fetcher.cc",
     "image_data_fetcher.h",
     "image_decoder.h",
@@ -22,6 +24,7 @@ static_library("core") {
   public_deps = [
     "//base",
     "//components/data_use_measurement/core",
+    "//components/keyed_service/core",
     "//net",
     "//services/network/public/cpp",
     "//ui/gfx",
