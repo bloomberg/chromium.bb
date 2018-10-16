@@ -121,7 +121,8 @@ void SecurityContext::InitializeFeaturePolicy(
 }
 
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
-                                       ReportOptions report_on_failure) const {
+                                       ReportOptions report_on_failure,
+                                       const String& message) const {
   // The policy should always be initialized before checking it to ensure we
   // properly inherit the parent policy.
   DCHECK(feature_policy_);
@@ -129,7 +130,7 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
   if (feature_policy_->IsFeatureEnabled(feature))
     return true;
   if (report_on_failure == ReportOptions::kReportOnFailure)
-    ReportFeaturePolicyViolation(feature);
+    ReportFeaturePolicyViolation(feature, message);
   return false;
 }
 

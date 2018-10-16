@@ -103,10 +103,9 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
       document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
   if (!document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMidiFeature,
-                                 ReportOptions::kReportOnFailure)) {
+                                 ReportOptions::kReportOnFailure,
+                                 kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
-    document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, kFeaturePolicyConsoleWarning));
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyErrorMessage));
