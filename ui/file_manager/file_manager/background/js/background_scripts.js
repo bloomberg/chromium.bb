@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// error_util.js must be loaded before all other scripts of the Files app.
-// <include src="../../../base/js/error_util.js">
+// error_counter.js must be loaded before all other scripts of the Files app.
+// <include src="../../../base/js/error_counter.js">
 // <include src="metrics_start.js">
 // <include src="../../common/js/lru_cache.js">
 // <include src="../../common/js/progress_center_common.js">
