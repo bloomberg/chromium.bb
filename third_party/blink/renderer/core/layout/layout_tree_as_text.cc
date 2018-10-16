@@ -560,7 +560,7 @@ void Write(WTF::TextStream& ts,
   if (o.IsText() && !o.IsBR()) {
     const LayoutText& text = ToLayoutText(o);
     if (const NGPhysicalBoxFragment* box_fragment =
-            text.EnclosingBlockFlowFragment()) {
+            text.ContainingBlockFlowFragment()) {
       for (const auto& child :
            NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, &text)) {
         WriteIndent(ts, indent + 1);

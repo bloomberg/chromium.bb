@@ -913,7 +913,7 @@ static const NGPaintFragment* FindNGPaintFragmentInternal(
 static const NGPaintFragment& GetNGPaintFragment(
     const LayoutObject* layout_object) {
   DCHECK(layout_object->IsText());
-  LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();
+  LayoutBlockFlow* block_flow = layout_object->ContainingNGBlockFlow();
   DCHECK(block_flow);
   DCHECK(block_flow->IsLayoutNGMixin());
   LayoutNGBlockFlow* layout_ng = ToLayoutNGBlockFlow(block_flow);

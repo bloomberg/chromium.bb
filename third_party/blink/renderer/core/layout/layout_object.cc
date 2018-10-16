@@ -747,21 +747,24 @@ LayoutBox* LayoutObject::EnclosingBox() const {
   return nullptr;
 }
 
-LayoutBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
+LayoutBlockFlow* LayoutObject::ContainingNGBlockFlow() const {
+  DCHECK(IsInline());
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return nullptr;
-  LayoutBox* box = EnclosingBox();
-  DCHECK(box);
-#if DCHECK_IS_ON()
-  if (NGBlockNode::CanUseNewLayout(*box))
-    DCHECK(box->IsLayoutBlockFlow());
-#endif
-  return NGBlockNode::CanUseNewLayout(*box) ? ToLayoutBlockFlow(box) : nullptr;
+  if (LayoutObject* parent = Parent()) {
+    LayoutBox* box = parent->EnclosingBox();
+    DCHECK(box);
+    if (NGBlockNode::CanUseNewLayout(*box)) {
+      DCHECK(box->IsLayoutBlockFlow());
+      return ToLayoutBlockFlow(box);
+    }
+  }
+  return nullptr;
 }
 
-const NGPhysicalBoxFragment* LayoutObject::EnclosingBlockFlowFragment() const {
+const NGPhysicalBoxFragment* LayoutObject::ContainingBlockFlowFragment() const {
   DCHECK(IsInline() || IsText());
-  LayoutBlockFlow* const block_flow = EnclosingNGBlockFlow();
+  LayoutBlockFlow* const block_flow = ContainingNGBlockFlow();
   if (!block_flow || !block_flow->ChildrenInline())
     return nullptr;
   // TODO(kojii): CurrentFragment isn't always available after layout clean.

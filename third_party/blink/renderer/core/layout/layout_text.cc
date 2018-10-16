@@ -485,7 +485,7 @@ void LayoutText::Quads(Vector<FloatQuad>& quads,
                        LocalOrAbsoluteOption local_or_absolute,
                        MapCoordinatesFlags mode) const {
   if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragment()) {
+          ContainingBlockFlowFragment()) {
     const auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     const LayoutBlock* block_for_flipping = nullptr;
@@ -772,7 +772,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 
 PositionWithAffinity LayoutText::PositionForPoint(
     const LayoutPoint& point) const {
-  if (const LayoutBlockFlow* ng_block_flow = EnclosingNGBlockFlow())
+  if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
     return ng_block_flow->PositionForPoint(point);
 
   DCHECK(CanUseInlineBox(*this));
@@ -1971,7 +1971,7 @@ float LayoutText::Width(unsigned from,
 
 LayoutRect LayoutText::LinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragment()) {
+          ContainingBlockFlowFragment()) {
     NGPhysicalOffsetRect bounding_box;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);

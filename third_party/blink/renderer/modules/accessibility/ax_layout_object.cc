@@ -1368,7 +1368,7 @@ void AXLayoutObject::LoadInlineTextBoxes() {
 
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
   return (layout_object.IsLayoutInline() || layout_object.IsText()) &&
-         layout_object.EnclosingNGBlockFlow();
+         layout_object.ContainingNGBlockFlow();
 }
 
 // Note: |NextOnLineInternalNG()| returns null when fragment for |layout_object|

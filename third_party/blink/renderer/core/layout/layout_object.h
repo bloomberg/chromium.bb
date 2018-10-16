@@ -332,12 +332,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   LayoutBox* EnclosingScrollableBox() const;
 
-  // Returns |EnclosingBox()| if it's a LayoutNGBlockFlow, or nullptr otherwise.
-  LayoutBlockFlow* EnclosingNGBlockFlow() const;
+  // Returns the containing block flow if it's a LayoutNGBlockFlow, or nullptr
+  // otherwise. Note that the semantics is different from |EnclosingBox| for
+  // atomic inlines that this function returns the container, while
+  // |EnclosingBox| returns the atomic inline itself.
+  LayoutBlockFlow* ContainingNGBlockFlow() const;
 
-  // Returns |NGPhysicalBoxFragment| for |EnclosingNGBlockFlow()| or nullptr
+  // Returns |NGPhysicalBoxFragment| for |ContainingNGBlockFlow()| or nullptr
   // otherwise.
-  const NGPhysicalBoxFragment* EnclosingBlockFlowFragment() const;
+  const NGPhysicalBoxFragment* ContainingBlockFlowFragment() const;
 
   // Function to return our enclosing flow thread if we are contained inside
   // one. This function follows the containing block chain.

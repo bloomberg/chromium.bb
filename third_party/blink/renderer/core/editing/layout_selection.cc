@@ -36,10 +36,26 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
+
+namespace {
+
+// TODO(yoichio): Share condition between NGOffsetMapping::AcceptsPosition.
+bool ShouldUseLayoutNGTextContent(const Node& node) {
+  LayoutObject* layout_object = node.GetLayoutObject();
+  DCHECK(layout_object);
+  if (layout_object->IsInline())
+    return layout_object->ContainingNGBlockFlow();
+  if (LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(layout_object))
+    return NGBlockNode::CanUseNewLayout(*block_flow);
+  return false;
+}
+
+}  // namespace
 
 // The current selection to be painted is represented as 2 pairs of
 // (Node, offset).
@@ -464,7 +480,7 @@ static base::Optional<unsigned> GetTextContentOffset(const Position& position) {
 #if DCHECK_IS_ON()
   DCHECK(IsPositionValidText(position));
 #endif
-  DCHECK(position.AnchorNode()->GetLayoutObject()->EnclosingNGBlockFlow());
+  DCHECK(ShouldUseLayoutNGTextContent(*position.AnchorNode()));
   const NGOffsetMapping* const offset_mapping =
       NGOffsetMapping::GetFor(position);
   DCHECK(offset_mapping);
@@ -514,13 +530,13 @@ static SelectionPaintRange* ComputeNewPaintRange(
   const Node& start_node = *paint_range.start_node;
   // If LayoutObject is not in NG, use legacy offset.
   const base::Optional<unsigned> start_offset =
-      start_node.GetLayoutObject()->EnclosingNGBlockFlow()
+      ShouldUseLayoutNGTextContent(start_node)
           ? GetTextContentOffsetStart(start_node, paint_range.start_offset)
           : paint_range.start_offset;
 
   const Node& end_node = *paint_range.end_node;
   const base::Optional<unsigned> end_offset =
-      end_node.GetLayoutObject()->EnclosingNGBlockFlow()
+      ShouldUseLayoutNGTextContent(end_node)
           ? GetTextContentOffsetEnd(end_node, paint_range.end_offset)
           : paint_range.end_offset;
 

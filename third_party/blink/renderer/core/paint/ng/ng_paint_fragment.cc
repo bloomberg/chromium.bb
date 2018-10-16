@@ -72,7 +72,7 @@ NGLogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
   if (selection_status.line_break == SelectSoftLineBreak::kNotSelected)
     return rect;
   if (paint_fragment.GetLayoutObject()
-          ->EnclosingNGBlockFlow()
+          ->ContainingNGBlockFlow()
           ->ShouldTruncateOverflowingText())
     return rect;
   // Copy from InlineTextBoxPainter::PaintSelection.
@@ -406,22 +406,16 @@ void NGPaintFragment::AssociateWithLayoutObject(
 NGPaintFragment* NGPaintFragment::GetForInlineContainer(
     const LayoutObject* layout_object) {
   DCHECK(layout_object && layout_object->IsInline());
-  // Search from its parent because |EnclosingNGBlockFlow| returns itself when
-  // the LayoutObject is a box (i.e., atomic inline, including inline block and
-  // replaced elements.)
-  if (LayoutObject* parent = layout_object->Parent()) {
-    if (LayoutBlockFlow* block_flow = parent->EnclosingNGBlockFlow()) {
-      if (NGPaintFragment* fragment = block_flow->PaintFragment())
-        return fragment;
+  if (LayoutBlockFlow* block_flow = layout_object->ContainingNGBlockFlow()) {
+    if (NGPaintFragment* fragment = block_flow->PaintFragment())
+      return fragment;
 
-      // TODO(kojii): IsLayoutFlowThread should probably be done in
-      // EnclosingNGBlockFlow(), but there seem to be both expectations today.
-      // This needs cleanup.
-      if (block_flow->IsLayoutFlowThread()) {
-        DCHECK(block_flow->Parent() &&
-               block_flow->Parent()->IsLayoutBlockFlow());
-        return ToLayoutBlockFlow(block_flow->Parent())->PaintFragment();
-      }
+    // TODO(kojii): IsLayoutFlowThread should probably be done in
+    // ContainingNGBlockFlow(), but there seem to be both expectations today.
+    // This needs cleanup.
+    if (block_flow->IsLayoutFlowThread()) {
+      DCHECK(block_flow->Parent() && block_flow->Parent()->IsLayoutBlockFlow());
+      return ToLayoutBlockFlow(block_flow->Parent())->PaintFragment();
     }
   }
   return nullptr;
@@ -439,7 +433,7 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
 
 void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
   if (child->IsInline()) {
-    LayoutBlockFlow* const block = child->EnclosingNGBlockFlow();
+    LayoutBlockFlow* const block = child->ContainingNGBlockFlow();
     if (block && block->PaintFragment())
       MarkLineBoxesDirtyFor(*child);
   }
