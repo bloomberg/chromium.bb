@@ -456,6 +456,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -4026,6 +4027,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       if (bookmark_app_throttle)
         throttles.push_back(std::move(bookmark_app_throttle));
     }
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kMimeHandlerViewInCrossProcessFrame)) {
+    auto plugin_frame_attach_throttle =
+        extensions::ExtensionsGuestViewMessageFilter::MaybeCreateThrottle(
+            handle);
+    if (plugin_frame_attach_throttle)
+      throttles.push_back(std::move(plugin_frame_attach_throttle));
   }
 #endif
 
