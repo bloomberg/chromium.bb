@@ -29,6 +29,8 @@ public class HostBrowserUtils {
 
     private static final int MINIMUM_REQUIRED_CHROME_VERSION = 57;
 
+    private static final int MINIMUM_REQUIRED_INTENT_HELPER_VERSION = 2;
+
     private static final String TAG = "cr_HostBrowserUtils";
 
     /**
@@ -212,7 +214,16 @@ public class HostBrowserUtils {
     }
 
     /** Returns whether a WebAPK should be launched as a tab. See crbug.com/772398. */
-    public static boolean shouldLaunchInTab(int hostBrowserChromiumMajorVersion) {
+    public static boolean shouldLaunchInTab(
+            String hostBrowserPackageName, int hostBrowserChromiumMajorVersion) {
+        if (!sBrowsersSupportingWebApk.contains(hostBrowserPackageName)) {
+            return true;
+        }
+
+        if (TextUtils.equals(hostBrowserPackageName, "org.chromium.arc.intent_helper")) {
+            return hostBrowserChromiumMajorVersion < MINIMUM_REQUIRED_INTENT_HELPER_VERSION;
+        }
+
         return hostBrowserChromiumMajorVersion < MINIMUM_REQUIRED_CHROME_VERSION;
     }
 }
