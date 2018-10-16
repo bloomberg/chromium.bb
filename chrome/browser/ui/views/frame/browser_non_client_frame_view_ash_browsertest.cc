@@ -354,7 +354,12 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   test.EndAnimations();
   const gfx::Rect after_restore =
       frame_view->caption_button_container_->bounds();
-  EXPECT_EQ(initial, after_restore);
+  EXPECT_EQ(initial.origin(), after_restore.origin());
+  EXPECT_EQ(initial.width(), after_restore.width());
+
+  // Switching from non-tablet to tablet mode will increase the height of the
+  // top frame and toolbar if the MD mode is set to "Dynamic Refresh".
+  EXPECT_GE(initial.height(), after_restore.height());
 }
 
 // Tests that browser frame minimum size constraint is updated in response to
@@ -1351,6 +1356,11 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
       ws::mojom::kResizeBehaviorCanMaximize |
           ws::mojom::kResizeBehaviorCanResize);
 
+  // Setting the tablet mode must be done before calculating the expected height
+  // since the height may change depending on the tablet mode when in the
+  // dynamic refresh MD mode.
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
+
   // Maximize the widget and store its frame header height.
   widget->Maximize();
   const int expected_height = frame_view->frame_header_->GetHeaderHeight();
@@ -1365,7 +1375,6 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
       frame_view->CreateInterfacePtrForTesting());
   frame_view->split_view_controller_.FlushForTesting();
 
-  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
