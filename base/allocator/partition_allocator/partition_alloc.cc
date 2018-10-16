@@ -13,8 +13,8 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 
 namespace base {
 
@@ -57,8 +57,10 @@ PartitionRootGeneric::~PartitionRootGeneric() = default;
 PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
 PartitionAllocatorGeneric::~PartitionAllocatorGeneric() = default;
 
-static LazyInstance<subtle::SpinLock>::Leaky g_initialized_lock =
-    LAZY_INSTANCE_INITIALIZER;
+subtle::SpinLock& GetLock() {
+  static NoDestructor<subtle::SpinLock> s_initialized_lock;
+  return *s_initialized_lock;
+}
 static bool g_initialized = false;
 
 void (*internal::PartitionRootBase::gOomHandlingFunction)() = nullptr;
@@ -69,7 +71,7 @@ PartitionAllocHooks::FreeHook* PartitionAllocHooks::free_hook_ = nullptr;
 static void PartitionAllocBaseInit(internal::PartitionRootBase* root) {
   DCHECK(!root->initialized);
   {
-    subtle::SpinLock::Guard guard(g_initialized_lock.Get());
+    subtle::SpinLock::Guard guard(GetLock());
     if (!g_initialized) {
       g_initialized = true;
       // We mark the sentinel bucket/page as free to make sure it is skipped by
