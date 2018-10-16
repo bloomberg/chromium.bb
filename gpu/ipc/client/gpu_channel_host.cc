@@ -156,7 +156,8 @@ void GpuChannelHost::EnqueuePendingOrderingBarrier() {
   deferred_message.message = GpuCommandBufferMsg_AsyncFlush(
       pending_ordering_barrier_->route_id,
       pending_ordering_barrier_->put_offset,
-      pending_ordering_barrier_->deferred_message_id);
+      pending_ordering_barrier_->deferred_message_id,
+      pending_ordering_barrier_->sync_token_fences);
   deferred_message.sync_token_fences =
       std::move(pending_ordering_barrier_->sync_token_fences);
   deferred_messages_.push_back(std::move(deferred_message));

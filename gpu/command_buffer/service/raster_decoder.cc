@@ -292,7 +292,6 @@ bool PermitsInconsistentContextState(CommandId command) {
     case kInsertFenceSyncCHROMIUM:
     case kRasterCHROMIUM:
     case kUnlockTransferCacheEntryINTERNAL:
-    case kWaitSyncTokenCHROMIUM:
       return true;
     default:
       return false;
@@ -1852,34 +1851,6 @@ void RasterDecoderImpl::OnOutOfMemoryError() {
     }
     group_->LoseContexts(other);
   }
-}
-
-error::Error RasterDecoderImpl::HandleWaitSyncTokenCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::WaitSyncTokenCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::WaitSyncTokenCHROMIUM*>(
-          cmd_data);
-
-  static constexpr CommandBufferNamespace kMinNamespaceId =
-      CommandBufferNamespace::INVALID;
-  static constexpr CommandBufferNamespace kMaxNamespaceId =
-      CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES;
-
-  CommandBufferNamespace namespace_id =
-      static_cast<CommandBufferNamespace>(c.namespace_id);
-  if ((namespace_id < static_cast<int32_t>(kMinNamespaceId)) ||
-      (namespace_id >= static_cast<int32_t>(kMaxNamespaceId))) {
-    namespace_id = CommandBufferNamespace::INVALID;
-  }
-  const CommandBufferId command_buffer_id =
-      CommandBufferId::FromUnsafeValue(c.command_buffer_id());
-  const uint64_t release = c.release_count();
-
-  SyncToken sync_token;
-  sync_token.Set(namespace_id, command_buffer_id, release);
-  return client_->OnWaitSyncToken(sync_token) ? error::kDeferCommandUntilLater
-                                              : error::kNoError;
 }
 
 error::Error RasterDecoderImpl::HandleSetColorSpaceMetadata(

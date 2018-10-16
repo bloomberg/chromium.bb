@@ -365,12 +365,7 @@ _FUNCTION_INFO = {
     'type': 'NoCommand',
   },
   'WaitSyncTokenCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'cmd_args': 'GLint namespace_id, '
-                'GLuint64 command_buffer_id, '
-                'GLuint64 release_count',
-    'client_test': False,
+    'type': 'NoCommand',
   },
   'InitializeDiscardableTextureCHROMIUM': {
     'type': 'Custom',

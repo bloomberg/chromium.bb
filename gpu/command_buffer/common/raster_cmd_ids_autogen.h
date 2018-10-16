@@ -23,27 +23,26 @@
   OP(EndQueryEXT)                              /* 264 */ \
   OP(LoseContextCHROMIUM)                      /* 265 */ \
   OP(InsertFenceSyncCHROMIUM)                  /* 266 */ \
-  OP(WaitSyncTokenCHROMIUM)                    /* 267 */ \
-  OP(UnpremultiplyAndDitherCopyCHROMIUM)       /* 268 */ \
-  OP(BeginRasterCHROMIUMImmediate)             /* 269 */ \
-  OP(RasterCHROMIUM)                           /* 270 */ \
-  OP(EndRasterCHROMIUM)                        /* 271 */ \
-  OP(CreateTransferCacheEntryINTERNAL)         /* 272 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)         /* 273 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)         /* 274 */ \
-  OP(CreateTexture)                            /* 275 */ \
-  OP(SetColorSpaceMetadata)                    /* 276 */ \
-  OP(ProduceTextureDirectImmediate)            /* 277 */ \
-  OP(CreateAndConsumeTextureINTERNALImmediate) /* 278 */ \
-  OP(TexParameteri)                            /* 279 */ \
-  OP(BindTexImage2DCHROMIUM)                   /* 280 */ \
-  OP(ReleaseTexImage2DCHROMIUM)                /* 281 */ \
-  OP(TexStorage2D)                             /* 282 */ \
-  OP(CopySubTexture)                           /* 283 */ \
-  OP(TraceBeginCHROMIUM)                       /* 284 */ \
-  OP(TraceEndCHROMIUM)                         /* 285 */ \
-  OP(SetActiveURLCHROMIUM)                     /* 286 */ \
-  OP(ResetActiveURLCHROMIUM)                   /* 287 */
+  OP(UnpremultiplyAndDitherCopyCHROMIUM)       /* 267 */ \
+  OP(BeginRasterCHROMIUMImmediate)             /* 268 */ \
+  OP(RasterCHROMIUM)                           /* 269 */ \
+  OP(EndRasterCHROMIUM)                        /* 270 */ \
+  OP(CreateTransferCacheEntryINTERNAL)         /* 271 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)         /* 272 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)         /* 273 */ \
+  OP(CreateTexture)                            /* 274 */ \
+  OP(SetColorSpaceMetadata)                    /* 275 */ \
+  OP(ProduceTextureDirectImmediate)            /* 276 */ \
+  OP(CreateAndConsumeTextureINTERNALImmediate) /* 277 */ \
+  OP(TexParameteri)                            /* 278 */ \
+  OP(BindTexImage2DCHROMIUM)                   /* 279 */ \
+  OP(ReleaseTexImage2DCHROMIUM)                /* 280 */ \
+  OP(TexStorage2D)                             /* 281 */ \
+  OP(CopySubTexture)                           /* 282 */ \
+  OP(TraceBeginCHROMIUM)                       /* 283 */ \
+  OP(TraceEndCHROMIUM)                         /* 284 */ \
+  OP(SetActiveURLCHROMIUM)                     /* 285 */ \
+  OP(ResetActiveURLCHROMIUM)                   /* 286 */
 
 enum CommandId {
   kOneBeforeStartPoint =
