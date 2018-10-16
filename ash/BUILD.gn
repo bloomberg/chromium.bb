@@ -1141,8 +1141,6 @@ component("ash") {
     "wm/gestures/overview_gesture_handler.h",
     "wm/immersive_context_ash.cc",
     "wm/immersive_context_ash.h",
-    "wm/immersive_focus_watcher_classic.cc",
-    "wm/immersive_focus_watcher_classic.h",
     "wm/immersive_gesture_handler_classic.cc",
     "wm/immersive_gesture_handler_classic.h",
     "wm/immersive_handler_factory_ash.cc",
