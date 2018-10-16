@@ -4145,9 +4145,6 @@
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_ADD_ANOTHER" desc="In fingerprint setup screen, button label to add another fingerprint.">
     Add another
   </message>
-  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_ADD_FINGERPRINT" desc="In fingerprint setup screen, button label to add fingerprint.">
-    Add fingerprint
-  </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME_1" desc="The default name for first newly added fingerprint.">
     Finger 1
   </message>
