@@ -57,7 +57,7 @@ base::FilePath CreateInstallDirectory() {
     return base::FilePath();
   }
 
-  dest_path = dest_path.Append(FILE_PATH_LITERAL("Google"))
+  dest_path = dest_path.Append(GetInstallParentDirectoryName())
                   .Append(FILE_PATH_LITERAL("Credential Provider"));
 
   if (!base::CreateDirectory(dest_path)) {
@@ -377,6 +377,14 @@ void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
                                size_t* count) {
   *names = kFilenames;
   *count = base::size(kFilenames);
+}
+
+base::FilePath::StringType GetInstallParentDirectoryName() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return FILE_PATH_LITERAL("Google");
+#else
+  return FILE_PATH_LITERAL("Chromium");
+#endif
 }
 
 }  // namespace credential_provider

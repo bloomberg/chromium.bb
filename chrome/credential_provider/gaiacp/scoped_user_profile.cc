@@ -23,7 +23,11 @@ namespace credential_provider {
 namespace {
 
 // Registry key under HKCU to write account info into.
+#if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kRegAccountsPath[] = L"Software\\Google\\Accounts";
+#else
+const wchar_t kRegAccountsPath[] = L"Software\\Chromium\\Accounts";
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,

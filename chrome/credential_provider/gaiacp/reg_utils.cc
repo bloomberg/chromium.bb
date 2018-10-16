@@ -15,9 +15,13 @@ namespace credential_provider {
 namespace {
 
 // Root registry key for GCP configuration and state.
-// TODO(crbug.com/883943): This should be different between Chromium and
-// Google Chrome builds.
-const wchar_t kGcpRootKeyName[] = L"Software\\Google\\GCP";
+#if defined(GOOGLE_CHROME_BUILD)
+#define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Google\\GCP"
+#else
+#define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Chromium\\GCP"
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+const wchar_t kGcpRootKeyName[] = CREDENTIAL_PROVIDER_REGISTRY_KEY;
 
 HRESULT GetRegDWORD(const base::string16& key_name,
                     const base::string16& name,
@@ -175,6 +179,10 @@ HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles) {
       handles->emplace(sid, token_handle);
   }
   return S_OK;
+}
+
+const wchar_t* GetUsersRootKeyForTesting() {
+  return CREDENTIAL_PROVIDER_REGISTRY_KEY L"\\Users";
 }
 
 }  // namespace credential_provider

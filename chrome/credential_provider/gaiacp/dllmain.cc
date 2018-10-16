@@ -74,6 +74,7 @@ STDAPI DllRegisterServer(void) {
     LOGFN(INFO) << "_AtlModule.DllRegisterServer hr=" << putHR(hr);
   }
 
+#if defined(GOOGLE_CHROME_BUILD)
   // Register with Google Update.
   if (SUCCEEDED(hr)) {
     base::win::RegKey key(HKEY_LOCAL_MACHINE,
@@ -92,17 +93,22 @@ STDAPI DllRegisterServer(void) {
       }
     }
   }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
   return hr;
 }
 
 // DllUnregisterServer - Removes entries from the system registry.
 STDAPI DllUnregisterServer(void) {
-  // Unegister with Google Update.
+#if defined(GOOGLE_CHROME_BUILD)
+  // Unregister with Google Update.
   base::win::RegKey key(HKEY_LOCAL_MACHINE, L"", DELETE | KEY_WOW64_32KEY);
   LONG sts = key.DeleteKey(credential_provider::kRegUpdaterClientsAppPath);
 
   bool all_succeeded = sts == ERROR_SUCCESS;
+#else
+  bool all_succeeded = true;
+#endif
 
   HRESULT hr =
       credential_provider::CGaiaCredentialBase::OnDllUnregisterServer();

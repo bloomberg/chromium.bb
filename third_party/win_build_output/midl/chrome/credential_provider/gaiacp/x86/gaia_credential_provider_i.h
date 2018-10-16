@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.xx.xxxx */
 /* at a redacted point in time
  */
-/* Compiler settings for ../../chrome/credential_provider/gaiacp/gaia_credential_provider.idl:
+/* Compiler settings for gen/chrome/credential_provider/gaiacp/gaia_credential_provider.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.xx.xxxx 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -83,30 +83,6 @@ typedef struct GaiaCredentialProvider GaiaCredentialProvider;
 #endif /* __cplusplus */
 
 #endif 	/* __GaiaCredentialProvider_FWD_DEFINED__ */
-
-
-#ifndef __GaiaCredential_FWD_DEFINED__
-#define __GaiaCredential_FWD_DEFINED__
-
-#ifdef __cplusplus
-typedef class GaiaCredential GaiaCredential;
-#else
-typedef struct GaiaCredential GaiaCredential;
-#endif /* __cplusplus */
-
-#endif 	/* __GaiaCredential_FWD_DEFINED__ */
-
-
-#ifndef __ReauthCredential_FWD_DEFINED__
-#define __ReauthCredential_FWD_DEFINED__
-
-#ifdef __cplusplus
-typedef class ReauthCredential ReauthCredential;
-#else
-typedef struct ReauthCredential ReauthCredential;
-#endif /* __cplusplus */
-
-#endif 	/* __ReauthCredential_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -514,24 +490,8 @@ EXTERN_C const CLSID CLSID_GaiaCredentialProvider;
 
 #ifdef __cplusplus
 
-class DECLSPEC_UUID("0B5BFDF0-4594-47AC-940A-CFC69ABC561C")
+class DECLSPEC_UUID("89adae71-aee5-4ee2-bffb-e8424e06f519")
 GaiaCredentialProvider;
-#endif
-
-EXTERN_C const CLSID CLSID_GaiaCredential;
-
-#ifdef __cplusplus
-
-class DECLSPEC_UUID("44AF95AC-6B23-4C54-94BE-EDB1CB52DAFD")
-GaiaCredential;
-#endif
-
-EXTERN_C const CLSID CLSID_ReauthCredential;
-
-#ifdef __cplusplus
-
-class DECLSPEC_UUID("E6CC5D8B-54C2-4586-ADC3-748ED16284B7")
-ReauthCredential;
 #endif
 #endif /* __GaiaCredentialProviderLib_LIBRARY_DEFINED__ */
 
