@@ -80,6 +80,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #endif
 
@@ -425,6 +426,10 @@ class DetachToBrowserTabDragControllerTest
 #if defined(OS_CHROMEOS)
     root_ = browser()->window()->GetNativeWindow()->GetRootWindow();
     event_generator_ = std::make_unique<ui::test::EventGenerator>(root_);
+    // Disable flings which might otherwise inadvertently be generated from
+    // tests' touch events.
+    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
+        std::numeric_limits<float>::max());
 #endif
 #if defined(OS_MACOSX)
     // Currently MacViews' browser windows are shown in the background and could
