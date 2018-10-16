@@ -466,7 +466,14 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
             for header, value in response.iteritems()
             if header.lower() in INTERESTING_HEADERS
         )
-        GERRIT_ERR_LOGGER.info('Gerrit RPC failures:\n%s\n', rpc_headers)
+        GERRIT_ERR_LOGGER.info(
+            'Gerrit RPC failure headers:\n'
+            '  Host: %s\n'
+            '  Ip: %s\n'
+            '%s\n',
+            conn.connections.values()[0].host,
+            conn.connections.values()[0].sock.getpeername(),
+            rpc_headers)
     else:
       # A status >=500 is assumed to be a possible transient error; retry.
       http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
