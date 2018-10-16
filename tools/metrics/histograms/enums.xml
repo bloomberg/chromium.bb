@@ -5300,6 +5300,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="31" label="Chooser Permissions Bubble"/>
 </enum>
 
+<enum name="CachedImageFetcherEvent">
+  <int value="0" label="Request for an image"/>
+  <int value="1" label="Cache hit"/>
+  <int value="2" label="Cache miss"/>
+  <int value="3" label="Cache decoding error"/>
+  <int value="4" label="Network transcoding error"/>
+  <int value="5" label="Failure to fetch the image from the network"/>
+</enum>
+
 <enum name="CacheResult">
   <int value="0" label="MEMORY_CACHE_HIT"/>
   <int value="1" label="DISK_CACHE_HIT"/>

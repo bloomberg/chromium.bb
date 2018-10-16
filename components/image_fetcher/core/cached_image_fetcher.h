@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -29,12 +30,29 @@ class ImageCache;
 class ImageFetcher;
 struct RequestMetadata;
 
+// Enum for the result of the fetch, reported through UMA Present in enums.xml
+// as CachedImageFetcherEvent. New values should be added at the end and things
+// should not be renumbered.
+enum class CachedImageFetcherEvent {
+  kImageRequest = 0,
+  kCacheHit = 1,
+  kCacheMiss = 2,
+  kCacheDecodingError = 3,
+  kTranscodingError = 4,
+  kFailure = 5,
+  kMaxValue = kFailure,
+};
+
 // TODO(wylieb): Transcode the image once it's downloaded.
 // TODO(wylieb): Consider creating a struct to encapsulate the request.
 // CachedImageFetcher takes care of fetching images from the network and caching
 // them.
 class CachedImageFetcher : public ImageFetcher {
  public:
+  // Report CachedImageFetcher events, used by sub-systems to report events (as
+  // well as CachedImageFetcher).
+  static void ReportEvent(CachedImageFetcherEvent event);
+
   CachedImageFetcher(std::unique_ptr<ImageFetcher> image_fetcher,
                      scoped_refptr<ImageCache> image_cache);
   ~CachedImageFetcher() override;
@@ -55,6 +73,7 @@ class CachedImageFetcher : public ImageFetcher {
  private:
   // Cache
   void OnImageFetchedFromCache(
+      base::Time start_time,
       const std::string& id,
       const GURL& image_url,
       ImageDataFetcherCallback image_data_callback,
@@ -62,6 +81,7 @@ class CachedImageFetcher : public ImageFetcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       std::string image_data);
   void OnImageDecodedFromCache(
+      base::Time start_time,
       const std::string& id,
       const GURL& image_url,
       ImageDataFetcherCallback image_data_callback,
@@ -72,22 +92,25 @@ class CachedImageFetcher : public ImageFetcher {
 
   // Network
   void FetchImageFromNetwork(
+      bool cache_hit,
+      base::Time start_time,
       const std::string& id,
       const GURL& image_url,
       ImageDataFetcherCallback image_data_callback,
       ImageFetcherCallback image_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
-  void OnImageFetchedFromNetwork(ImageFetcherCallback image_callback,
+  void OnImageFetchedFromNetwork(bool cache_hit,
+                                 base::Time start_time,
+                                 ImageFetcherCallback image_callback,
+                                 const GURL& image_url,
                                  const std::string& id,
                                  const gfx::Image& image,
                                  const RequestMetadata& request_metadata);
-  void OnImageDataFetchedFromNetwork(
-      ImageDataFetcherCallback image_data_callback,
-      const GURL& image_url,
-      const std::string& image_data,
-      const RequestMetadata& request_metadata);
-  void OnImageDecodedFromNetwork(const GURL& image_url,
-                                 const gfx::Image& image);
+  void DecodeDataForCaching(ImageDataFetcherCallback image_data_callback,
+                            const GURL& image_url,
+                            const std::string& image_data,
+                            const RequestMetadata& request_metadata);
+  void EncodeDataAndCache(const GURL& image_url, const gfx::Image& image);
 
   // ImageFetcher has some state that's stored, so it's owned by
   // CachedImageFetcher.
