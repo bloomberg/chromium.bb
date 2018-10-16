@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
@@ -541,25 +540,11 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
         local_location.emplace(local_point);
       }
 
-      for (LayoutObject* child = LastChild(); child;
-           child = child->PreviousSibling()) {
-        bool found = false;
-        if (child->IsSVGForeignObject()) {
-          found = ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
-              result, *local_location, LayoutPoint(), hit_test_action);
-        } else {
-          found = child->NodeAtPoint(result, *local_location, LayoutPoint(),
-                                     hit_test_action);
-        }
-
-        if (found) {
-          UpdateHitTestResult(result, local_border_box_location.Point());
-          if (result.AddNodeToListBasedTestResult(
-                  child->GetNode(), location_in_container) == kStopHitTesting) {
-            return true;
-          }
-        }
-      }
+      LayoutPoint accumulated_offset_for_children;
+      if (SVGLayoutSupport::HitTestChildren(
+              LastChild(), result, *local_location,
+              accumulated_offset_for_children, hit_test_action))
+        return true;
     }
   }
 

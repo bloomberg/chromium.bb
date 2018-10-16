@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
@@ -457,6 +458,26 @@ const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
   if (IntersectsClipPath(object, local_storage->TransformedPoint()))
     return &*local_storage;
   return nullptr;
+}
+
+bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
+                                       HitTestResult& result,
+                                       const HitTestLocation& location,
+                                       const LayoutPoint& accumulated_offset,
+                                       HitTestAction hit_test_action) {
+  for (LayoutObject* child = last_child; child;
+       child = child->PreviousSibling()) {
+    if (child->IsSVGForeignObject()) {
+      if (ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
+              result, location, accumulated_offset, hit_test_action))
+        return true;
+    } else {
+      if (child->NodeAtPoint(result, location, accumulated_offset,
+                             hit_test_action))
+        return true;
+    }
+  }
+  return false;
 }
 
 DashArray SVGLayoutSupport::ResolveSVGDashArray(
