@@ -2,6 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("toolbar_container") {
+  sources = [
+    "toolbar_container_coordinator.h",
+    "toolbar_container_coordinator.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":ui",
+    "//base",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/fullscreen",
+  ]
+}
+
 source_set("feature_flags") {
   sources = [
     "toolbar_container_features.h",
@@ -12,5 +28,44 @@ source_set("feature_flags") {
 
   deps = [
     "//base",
+  ]
+}
+
+source_set("ui") {
+  sources = [
+    "collapsing_toolbar_height_constraint.h",
+    "collapsing_toolbar_height_constraint.mm",
+    "toolbar_collapsing.h",
+    "toolbar_container_view.h",
+    "toolbar_container_view.mm",
+    "toolbar_container_view_controller.h",
+    "toolbar_container_view_controller.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/fullscreen:ui",
+    "//ios/chrome/common/ui_util",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "collapsing_toolbar_height_constraint_unittest.mm",
+    "toolbar_container_view_controller_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":ui",
+    "//base/test:test_support",
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/common/ui_util",
+    "//testing/gtest",
   ]
 }
