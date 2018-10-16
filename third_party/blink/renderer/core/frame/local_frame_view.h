@@ -747,11 +747,9 @@ class CORE_EXPORT LocalFrameView final
   void RunPaintLifecyclePhase();
 
   void NotifyFrameRectsChangedIfNeededRecursive();
-  void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
   void PaintTree();
-
-  void UpdateStyleAndLayoutIfNeededRecursiveInternal();
+  void UpdateStyleAndLayoutIfNeededRecursive();
 
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
