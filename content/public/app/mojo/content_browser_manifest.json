@@ -105,6 +105,7 @@
         "data_decoder": [ "image_decoder", "json_parser", "xml_parser" ],
         "device": [
           "device:battery_monitor",
+          "device:bluetooth_system",
           "device:generic_sensor",
           "device:geolocation",
           "device:hid",
