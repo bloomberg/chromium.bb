@@ -114,12 +114,12 @@ void SyncBackendHostImpl::StartSyncingWithServer() {
                                 last_poll_time));
 }
 
-void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
-                                                  bool is_explicit) {
+void SyncBackendHostImpl::SetEncryptionPassphrase(
+    const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncBackendHostCore::DoSetEncryptionPassphrase,
-                                core_, passphrase, is_explicit));
+                                core_, passphrase));
 }
 
 void SyncBackendHostImpl::SetDecryptionPassphrase(

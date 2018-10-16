@@ -1723,8 +1723,7 @@ void ProfileSyncService::SetEncryptionPassphrase(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_type_manager_);
   DCHECK(data_type_manager_->IsNigoriEnabled());
-  // TODO(treib): Remove the |is_explicit| parameter.
-  crypto_->SetEncryptionPassphrase(passphrase, /*is_explicit=*/true);
+  crypto_->SetEncryptionPassphrase(passphrase);
 }
 
 bool ProfileSyncService::SetDecryptionPassphrase(

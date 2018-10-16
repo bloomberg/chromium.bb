@@ -175,18 +175,14 @@ bool SyncServiceCrypto::IsEncryptEverythingEnabled() const {
   return encrypt_everything_ || encryption_pending_;
 }
 
-void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
-                                                bool is_explicit) {
+void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called when the engine has been initialized.
   DCHECK(engine_);
-  DCHECK(!(!is_explicit && IsUsingSecondaryPassphrase()))
-      << "Data is already encrypted using an explicit passphrase";
-  DCHECK(!(is_explicit && passphrase_required_reason_ == REASON_DECRYPTION))
+  DCHECK(passphrase_required_reason_ != REASON_DECRYPTION)
       << "Can not set explicit passphrase when decryption is needed.";
 
-  DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit")
-           << " passphrase for encryption.";
+  DVLOG(1) << "Setting explicit passphrase for encryption.";
   if (passphrase_required_reason_ == REASON_ENCRYPTION) {
     // REASON_ENCRYPTION implies that the cryptographer does not have pending
     // keys. Hence, as long as we're not trying to do an invalid passphrase
@@ -205,7 +201,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
   DCHECK(cached_passphrase_type_ == PassphraseType::KEYSTORE_PASSPHRASE ||
          cached_passphrase_type_ == PassphraseType::IMPLICIT_PASSPHRASE);
 
-  engine_->SetEncryptionPassphrase(passphrase, is_explicit);
+  engine_->SetEncryptionPassphrase(passphrase);
 }
 
 bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
