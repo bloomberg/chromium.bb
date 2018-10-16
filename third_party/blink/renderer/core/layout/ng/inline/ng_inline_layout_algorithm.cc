@@ -888,12 +888,12 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
   NGBfcOffset origin_bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
                                    bfc_block_offset + content_size};
 
-  const NGPositionedFloatVector positioned_floats =
-      PositionFloats(ConstraintSpace().AvailableSize(),
-                     ConstraintSpace().PercentageResolutionSize(),
-                     ConstraintSpace().ReplacedPercentageResolutionSize(),
-                     origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
-                     ConstraintSpace(), exclusion_space);
+  NGPositionedFloatVector positioned_floats;
+  PositionFloats(ConstraintSpace().AvailableSize(),
+                 ConstraintSpace().PercentageResolutionSize(),
+                 ConstraintSpace().ReplacedPercentageResolutionSize(),
+                 origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
+                 ConstraintSpace(), exclusion_space, &positioned_floats);
 
   positioned_floats_.AppendVector(positioned_floats);
   unpositioned_floats_.clear();

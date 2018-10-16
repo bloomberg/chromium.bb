@@ -2081,10 +2081,11 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
           ? container_builder_.BfcBlockOffset().value()
           : ConstraintSpace().FloatsBfcBlockOffset().value();
 
-  const auto positioned_floats = PositionFloats(
-      child_available_size_, child_percentage_size_,
-      replaced_child_percentage_size_, origin_bfc_offset, bfc_block_offset,
-      unpositioned_floats_, ConstraintSpace(), &exclusion_space_);
+  NGPositionedFloatVector positioned_floats;
+  PositionFloats(child_available_size_, child_percentage_size_,
+                 replaced_child_percentage_size_, origin_bfc_offset,
+                 bfc_block_offset, unpositioned_floats_, ConstraintSpace(),
+                 &exclusion_space_, &positioned_floats);
 
   AddPositionedFloats(positioned_floats);
 
