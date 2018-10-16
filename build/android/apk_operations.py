@@ -391,13 +391,13 @@ def _RunDiskUsage(devices, package_name, verbose):
   def disk_usage_helper(d):
     package_output = '\n'.join(d.RunShellCommand(
         ['dumpsys', 'package', package_name], check_return=True))
-    # Prints a message but does not return error when apk is not installed.
-    if 'Unable to find package:' in package_output:
+    # Does not return error when apk is not installed.
+    if not package_output or 'Unable to find package:' in package_output:
       return None
-    # Ignore system apks.
-    idx = package_output.find('Hidden system packages:')
-    if idx != -1:
-      package_output = package_output[:idx]
+
+    # Ignore system apks that have updates installed.
+    package_output = re.sub(r'Hidden system packages:.*?^\b', '',
+                            package_output, flags=re.S | re.M)
 
     try:
       data_dir = re.search(r'dataDir=(.*)', package_output).group(1)
@@ -406,6 +406,10 @@ def _RunDiskUsage(devices, package_name, verbose):
                            package_output).group(1)
     except AttributeError:
       raise Exception('Error parsing dumpsys output: ' + package_output)
+
+    if code_path.startswith('/system'):
+      logging.warning('Measurement of system image apks can be innacurate')
+
     compilation_filters = set()
     # Match "compilation_filter=value", where a line break can occur at any spot
     # (refer to examples above).
@@ -952,7 +956,9 @@ class _Command(object):
     self.devices = []
     if self.need_device_args:
       # See https://crbug.com/887964 regarding bundle support in apk_helper.
-      abis = self.apk_helper.GetAbis() if not self.is_bundle else None
+      abis = None
+      if not self.is_bundle and self.apk_helper is not None:
+        abis = self.apk_helper.GetAbis()
       self.devices = device_utils.DeviceUtils.HealthyDevices(
           device_arg=args.devices,
           enable_device_files_cache=bool(args.output_directory),
