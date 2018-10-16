@@ -32,6 +32,24 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override = default;
 };
 
+class TestNewUnifiedMessageCenterView : public NewUnifiedMessageCenterView {
+ public:
+  TestNewUnifiedMessageCenterView() : NewUnifiedMessageCenterView(nullptr) {}
+
+  ~TestNewUnifiedMessageCenterView() override = default;
+
+  void SetNotificationHeightBelowScroll(int height_below_scroll) override {
+    height_below_scroll_ = height_below_scroll;
+  }
+
+  int height_below_scroll() const { return height_below_scroll_; }
+
+ private:
+  int height_below_scroll_ = -1;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNewUnifiedMessageCenterView);
+};
+
 }  // namespace
 
 class NewUnifiedMessageCenterViewTest : public AshTestBase,
@@ -68,7 +86,7 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   }
 
   void CreateMessageCenterView(int max_height = kDefaultMaxHeight) {
-    message_center_view_ = std::make_unique<NewUnifiedMessageCenterView>();
+    message_center_view_ = std::make_unique<TestNewUnifiedMessageCenterView>();
     message_center_view_->AddObserver(this);
     message_center_view_->SetMaxHeight(max_height);
     OnViewPreferredSizeChanged(message_center_view_.get());
@@ -100,7 +118,7 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
     return message_center_view()->stacking_counter_;
   }
 
-  NewUnifiedMessageCenterView* message_center_view() {
+  TestNewUnifiedMessageCenterView* message_center_view() {
     return message_center_view_.get();
   }
 
@@ -110,7 +128,7 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   int id_ = 0;
   int size_changed_count_ = 0;
 
-  std::unique_ptr<NewUnifiedMessageCenterView> message_center_view_;
+  std::unique_ptr<TestNewUnifiedMessageCenterView> message_center_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NewUnifiedMessageCenterViewTest);
 };
@@ -330,6 +348,24 @@ TEST_F(NewUnifiedMessageCenterViewTest,
   for (size_t i = 0; i < 5; ++i)
     MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
   EXPECT_FALSE(GetStackingCounter()->visible());
+}
+
+TEST_F(NewUnifiedMessageCenterViewTest, HeightBelowScroll) {
+  for (size_t i = 0; i < 6; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // MessageCenterView is maxed out.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_EQ(0, message_center_view()->height_below_scroll());
+
+  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  message_center_view()->OnMessageCenterScrolled();
+  EXPECT_LT(0, message_center_view()->height_below_scroll());
 }
 
 }  // namespace ash
