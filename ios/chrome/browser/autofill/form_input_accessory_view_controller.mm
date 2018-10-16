@@ -124,19 +124,20 @@ CGFloat const kInputAccessoryHeight = 44.0f;
       return;
     }
 
-    // If this is a form suggestion view and no suggestions have been triggered
-    // yet, don't show the custom view.
-    FormSuggestionView* formSuggestionView =
-        base::mac::ObjCCast<FormSuggestionView>(view);
-    if (formSuggestionView) {
-      int numSuggestions = [[formSuggestionView suggestions] count];
-      if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
-        self.customAccessoryView = nil;
-        return;
+    if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+      // If this is a form suggestion view and no suggestions have been
+      // triggered yet, don't show the custom view.
+      FormSuggestionView* formSuggestionView =
+          base::mac::ObjCCast<FormSuggestionView>(view);
+      if (formSuggestionView) {
+        int numSuggestions = [[formSuggestionView suggestions] count];
+        if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
+          self.customAccessoryView = nil;
+          return;
+        }
       }
+      _suggestionsHaveBeenShown = YES;
     }
-    _suggestionsHaveBeenShown = YES;
-
     self.customAccessoryView = [[FormInputAccessoryView alloc] init];
     [self.customAccessoryView setUpWithCustomView:view];
     [self addCustomAccessoryViewIfNeeded];
@@ -249,7 +250,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   // keyboard view is created by the system, i.e. the first time the keyboard
   // will appear.
   if (!IsIPadIdiom()) {
-    [self addCustomAccessoryViewIfNeeded];
     [self addCustomKeyboardViewIfNeeded];
   }
 }

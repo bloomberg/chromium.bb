@@ -6,6 +6,7 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -62,17 +63,21 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIColor* tintColor = [self activeTintColor];
+  NSMutableArray<UIView*>* icons = [[NSMutableArray alloc] init];
 
-  self.keyboardButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  UIImage* keyboardImage = [UIImage imageNamed:@"ic_keyboard"];
-  [self.keyboardButton setImage:keyboardImage forState:UIControlStateNormal];
-  self.keyboardButton.tintColor = tintColor;
-  self.keyboardButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.keyboardButton addTarget:self
-                          action:@selector(keyboardButtonPressed)
-                forControlEvents:UIControlEventTouchUpInside];
-  self.keyboardButton.accessibilityIdentifier =
-      manual_fill::AccessoryKeyboardAccessibilityIdentifier;
+  if (!IsIPadIdiom()) {
+    self.keyboardButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    UIImage* keyboardImage = [UIImage imageNamed:@"ic_keyboard"];
+    [self.keyboardButton setImage:keyboardImage forState:UIControlStateNormal];
+    self.keyboardButton.tintColor = tintColor;
+    self.keyboardButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.keyboardButton addTarget:self
+                            action:@selector(keyboardButtonPressed)
+                  forControlEvents:UIControlEventTouchUpInside];
+    self.keyboardButton.accessibilityIdentifier =
+        manual_fill::AccessoryKeyboardAccessibilityIdentifier;
+    [icons addObject:self.keyboardButton];
+  }
 
   self.passwordButton = [UIButton buttonWithType:UIButtonTypeSystem];
   UIImage* keyImage = [UIImage imageNamed:@"ic_vpn_key"];
@@ -80,12 +85,12 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   self.passwordButton.tintColor = tintColor;
   self.passwordButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.passwordButton addTarget:self
-                          action:@selector(passwordButtonPressed)
+                          action:@selector(passwordButtonPressed:)
                 forControlEvents:UIControlEventTouchUpInside];
   self.passwordButton.accessibilityIdentifier =
       manual_fill::AccessoryPasswordAccessibilityIdentifier;
+  [icons addObject:self.passwordButton];
 
-  NSArray* views;
   if (autofill::features::IsAutofillManualFallbackEnabled()) {
     self.cardsButton = [UIButton buttonWithType:UIButtonTypeSystem];
     UIImage* cardImage = [UIImage imageNamed:@"ic_credit_card"];
@@ -97,6 +102,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                forControlEvents:UIControlEventTouchUpInside];
     self.cardsButton.accessibilityIdentifier =
         manual_fill::AccessoryCreditCardAccessibilityIdentifier;
+    [icons addObject:self.cardsButton];
 
     self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
     UIImage* accountImage = [UIImage imageNamed:@"addresses"];
@@ -108,15 +114,9 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                  forControlEvents:UIControlEventTouchUpInside];
     self.accountButton.accessibilityIdentifier =
         manual_fill::AccessoryAddressAccessibilityIdentifier;
-
-    views = @[
-      self.keyboardButton, self.passwordButton, self.accountButton,
-      self.cardsButton
-    ];
-  } else {
-    views = @[ self.keyboardButton, self.passwordButton ];
+    [icons addObject:self.accountButton];
   }
-  UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
+  UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
   stackView.spacing = 10;
   stackView.axis = UILayoutConstraintAxisHorizontal;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -177,11 +177,11 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   [self.delegate keyboardButtonPressed];
 }
 
-- (void)passwordButtonPressed {
+- (void)passwordButtonPressed:(UIButton*)sender {
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.passwordButton setTintColor:UIColor.cr_manualFillTintColor];
-  [self.delegate passwordButtonPressed];
+  [self.delegate passwordButtonPressed:sender];
 }
 
 - (void)cardButtonPressed {

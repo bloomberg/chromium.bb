@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -30,6 +31,12 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   CredentialsSectionIdentifier = kSectionIdentifierEnumZero,
   ActionsSectionIdentifier,
 };
+
+// This is the width used for |self.preferredContentSize|.
+constexpr float PopoverPreferredWidth = 320;
+
+// This is the maximum height used for |self.preferredContentSize|.
+constexpr float PopoverMaxHeight = 250;
 
 }  // namespace
 
@@ -80,10 +87,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   NSString* titleString =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD);
   self.title = titleString;
-  self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                           target:self
-                           action:@selector(handleDoneNavigationItemTap)];
 
   if (!base::ios::IsRunningOnIOS11OrLater()) {
     // On iOS 11 this is not needed since the cell constrains are updated by the
@@ -107,11 +110,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 }
 
 #pragma mark - Private
-
-// Callback for the "Done" navigation item.
-- (void)handleDoneNavigationItemTap {
-  [self dismissViewControllerAnimated:YES completion:nil];
-}
 
 // Presents |items| in the respective section. Handles creating or deleting the
 // section accordingly.
@@ -145,6 +143,15 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
     }
   }
   [self.tableView reloadData];
+  if (IsIPadIdiom()) {
+    // Update the preffered content size on iPad so the popover shows the right
+    // size.
+    [self.tableView layoutIfNeeded];
+    CGSize systemLayoutSize = self.tableView.contentSize;
+    CGFloat preferredHeight = MIN(systemLayoutSize.height, PopoverMaxHeight);
+    self.preferredContentSize =
+        CGSizeMake(PopoverPreferredWidth, preferredHeight);
+  }
 }
 
 @end

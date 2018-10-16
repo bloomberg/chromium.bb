@@ -131,6 +131,14 @@
                       selector:@selector(handleTextInputDidBeginEditing:)
                           name:UITextFieldTextDidBeginEditingNotification
                         object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(handleTextInputDidEndEditing:)
+                          name:UITextFieldTextDidEndEditingNotification
+                        object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(handleKeyboardWillShow:)
+                          name:UIKeyboardWillShowNotification
+                        object:nil];
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
     _keyboardObserver.delegate = self;
   }
@@ -416,11 +424,27 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
                            navigationDelegate:self.formInputAccessoryHandler];
 }
 
-// When any text field or text view (e.g. omnibox, settings, card unmask dialog)
-// begins editing, reset ourselves so that we don't present our custom view over
+#pragma mark - Keyboard Notifications
+
+// When the keyboard is shown, send the last suggestions to the consumer.
+- (void)handleKeyboardWillShow:(NSNotification*)notification {
+  if (self.lastSuggestionView) {
+    [self updateWithProvider:self.lastProvider
+              suggestionView:self.lastSuggestionView];
+  }
+}
+
+// When any text field or text view (e.g. omnibox, settings search bar)
+// begins editing, pause the consumer so it doesn't present the custom view over
 // the keyboard.
 - (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
   [self.consumer pauseCustomKeyboardView];
+}
+
+// When any text field or text view (e.g. omnibox, settings, card unmask dialog)
+// ends editing, continue presenting.
+- (void)handleTextInputDidEndEditing:(NSNotification*)notification {
+  [self.consumer continueCustomKeyboardView];
 }
 
 #pragma mark - Tests
