@@ -100,11 +100,44 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
     // Add resources shared by the NUX modules.
     html_source->AddResourcePath(
+        "shared/action_link_style_css.html",
+        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ACTION_LINK_STYLE_CSS_HTML);
+    html_source->AddResourcePath(
+        "shared/action_link_style.js",
+        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ACTION_LINK_STYLE_JS);
+    html_source->AddResourcePath(
         "shared/chooser_shared_css.html",
         IDR_WELCOME_ONBOARDING_WELCOME_SHARED_CHOOSER_SHARED_CSS);
     html_source->AddResourcePath(
+        "shared/onboarding_background.html",
+        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_HTML);
+    html_source->AddResourcePath(
+        "shared/onboarding_background.js",
+        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_JS);
+    html_source->AddResourcePath(
         "shared/i18n_setup.html",
         IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML);
+    html_source->AddResourcePath(
+        "images/background_svgs/blue_circle.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_BLUE_CIRCLE_SVG);
+    html_source->AddResourcePath(
+        "images/background_svgs/green_rectangle.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREEN_RECTANGLE_SVG);
+    html_source->AddResourcePath(
+        "images/background_svgs/grey_oval.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_OVAL_SVG);
+    html_source->AddResourcePath(
+        "images/background_svgs/grey_rounded_rectangle.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_GREY_ROUNDED_RECTANGLE_SVG);
+    html_source->AddResourcePath(
+        "images/background_svgs/red_triangle.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_RED_TRIANGLE_SVG);
+    html_source->AddResourcePath(
+        "images/background_svgs/yellow_dots.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_DOTS_SVG);
+    html_source->AddResourcePath(
+        "images/background_svgs/yellow_semicircle.svg",
+        IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_YELLOW_SEMICIRCLE_SVG);
 
     // Add email provider bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
