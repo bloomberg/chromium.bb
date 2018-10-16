@@ -28,11 +28,13 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -387,8 +389,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   using chromeos::file_system_provider::IconSet;
-  file_manager::test_util::WaitUntilDriveMountPointIsAdded(
-      browser()->profile());
+  profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, true);
 
   // Add a provided file system, to test passing the |configurable| and
   // |source| flags properly down to Files app.
