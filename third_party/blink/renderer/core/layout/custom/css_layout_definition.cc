@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_edges.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
@@ -113,8 +112,6 @@ bool CSSLayoutDefinition::Instance::Layout(
       return false;
   }
 
-  CustomLayoutEdges* edges = CustomLayoutEdges::Create(layout_custom);
-
   LayoutUnit fixed_block_size(-1);
   if (IsLogicalHeightDefinite(layout_custom)) {
     LayoutBox::LogicalExtentComputedValues computed_values;
@@ -135,8 +132,10 @@ bool CSSLayoutDefinition::Instance::Layout(
           layout_custom.GetNode(), definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);
 
+  // TODO(ikilpatrick): Fill in layout constraints, and edges.
   Vector<v8::Local<v8::Value>> argv = {
-      children, ToV8(edges, context->Global(), isolate),
+      children,
+      v8::Undefined(isolate),  // edges
       ToV8(constraints, context->Global(), isolate),
       ToV8(style_map, context->Global(), isolate),
   };
