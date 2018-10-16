@@ -130,21 +130,20 @@ class DataReductionProxyConfigTest : public testing::Test {
   class TestResponder {
    public:
     void ExecuteCallback(SecureProxyCheckerCallback callback) {
-      callback.Run(response, status.error(), http_response_code);
+      callback.Run(response, net_error, http_response_code);
     }
 
     std::string response;
-    net::URLRequestStatus status;
+    net::Error net_error;
     int http_response_code;
   };
 
-  // TODO(tonikitoo): Get rid of the use of net::URLRequestStatus altogether.
   void CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType connection_type,
       const std::string& response,
       bool is_captive_portal,
       int response_code,
-      net::URLRequestStatus status,
+      net::Error net_error,
       SecureProxyCheckFetchResult expected_fetch_result,
       const std::vector<net::ProxyServer>& expected_proxies_for_http) {
     base::HistogramTester histogram_tester;
@@ -152,7 +151,7 @@ class DataReductionProxyConfigTest : public testing::Test {
 
     TestResponder responder;
     responder.response = response;
-    responder.status = status;
+    responder.net_error = net_error;
     responder.http_response_code = response_code;
     EXPECT_CALL(*mock_config(), SecureProxyCheck(_))
         .Times(1)
@@ -162,10 +161,9 @@ class DataReductionProxyConfigTest : public testing::Test {
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
 
-    if (!status.is_success() &&
-        status.error() != net::ERR_INTERNET_DISCONNECTED) {
+    if (net_error != net::OK && net_error != net::ERR_INTERNET_DISCONNECTED) {
       histogram_tester.ExpectUniqueSample("DataReductionProxy.ProbeURLNetError",
-                                          std::abs(status.error()), 1);
+                                          std::abs(net_error), 1);
     } else {
       histogram_tester.ExpectTotalCount("DataReductionProxy.ProbeURLNetError",
                                         0);
@@ -285,11 +283,12 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
 
 TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   RecreateContextWithMockConfig();
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
       "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  int kInvalidResponseCode = -1;
 
   SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
   ResetSettings();
@@ -302,35 +301,35 @@ TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   // remains unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", false,
-      net::HTTP_OK, kSuccess, SUCCEEDED_PROXY_ALREADY_ENABLED,
+      net::HTTP_OK, net::OK, SUCCEEDED_PROXY_ALREADY_ENABLED,
       {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that succeeds but captive
   // portal fails. Proxy is restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", true, net::HTTP_OK,
-      kSuccess, SUCCEEDED_PROXY_ALREADY_ENABLED,
+      net::OK, SUCCEEDED_PROXY_ALREADY_ENABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that fails. Proxy is
   // restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", false,
-      net::HTTP_OK, kSuccess, FAILED_PROXY_DISABLED,
+      net::HTTP_OK, net::OK, FAILED_PROXY_DISABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that succeeds. Proxies
   // are unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", false,
-      net::HTTP_OK, kSuccess, SUCCEEDED_PROXY_ENABLED,
+      net::HTTP_OK, net::OK, SUCCEEDED_PROXY_ENABLED,
       {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that fails. Proxy is
   // restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", true,
-      net::HTTP_OK, kSuccess, FAILED_PROXY_DISABLED,
+      net::HTTP_OK, net::OK, FAILED_PROXY_DISABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that fails due to the
@@ -338,23 +337,21 @@ TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   // unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, std::string(), false,
-      net::URLFetcher::RESPONSE_CODE_INVALID,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                            net::ERR_INTERNET_DISCONNECTED),
+      kInvalidResponseCode, net::ERR_INTERNET_DISCONNECTED,
       INTERNET_DISCONNECTED, std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that fails. Proxy remains
   // restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", false,
-      net::HTTP_OK, kSuccess, FAILED_PROXY_ALREADY_DISABLED,
+      net::HTTP_OK, net::OK, FAILED_PROXY_ALREADY_DISABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", false,
-      net::HTTP_OK, kSuccess, SUCCEEDED_PROXY_ENABLED,
+      net::HTTP_OK, net::OK, SUCCEEDED_PROXY_ENABLED,
       {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that fails due to the
@@ -362,23 +359,19 @@ TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   // unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, std::string(), false,
-      net::URLFetcher::RESPONSE_CODE_INVALID,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                            net::ERR_INTERNET_DISCONNECTED),
+      kInvalidResponseCode, net::ERR_INTERNET_DISCONNECTED,
       INTERNET_DISCONNECTED, {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that fails because of a
   // redirect response, e.g. by a captive portal. Proxy is restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", false,
-      net::HTTP_FOUND,
-      net::URLRequestStatus(net::URLRequestStatus::CANCELED, net::ERR_ABORTED),
-      FAILED_PROXY_DISABLED, std::vector<net::ProxyServer>(1, kHttpProxy));
+      net::HTTP_FOUND, net::ERR_ABORTED, FAILED_PROXY_DISABLED,
+      std::vector<net::ProxyServer>(1, kHttpProxy));
 }
 
 // Verifies that the warm up URL is fetched correctly.
 TEST_F(DataReductionProxyConfigTest, WarmupURL) {
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -864,7 +857,6 @@ TEST_F(DataReductionProxyConfigTest,
 
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1014,7 +1006,6 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
 // as failed when the warmup fetched callback returns an invalid proxy.
 TEST_F(DataReductionProxyConfigTest,
        HandleWarmupFetcherResponse_InvalidProxyServer) {
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1042,7 +1033,6 @@ TEST_F(DataReductionProxyConfigTest,
 // as failed when the warmup fetched callback returns a direct proxy.
 TEST_F(DataReductionProxyConfigTest,
        HandleWarmupFetcherResponse_DirectProxyServer) {
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1070,7 +1060,6 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
   constexpr size_t kMaxWarmupURLFetchAttempts = 3;
 
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1209,7 +1198,6 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
 // Tests the behavior when warmup URL fetcher times out.
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1267,7 +1255,6 @@ TEST_F(DataReductionProxyConfigTest,
   constexpr size_t kMaxWarmupURLFetchAttempts = 3;
 
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
