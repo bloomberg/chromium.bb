@@ -10,6 +10,12 @@ cr.define('nux', function() {
      * @param {!Array<boolean>} selectedApps
      */
     addGoogleApps(selectedApps) {}
+
+    /**
+     * Returns a promise for an array of Google apps.
+     * @return {!Promise<!Array<!nux.BookmarkListItem>>}
+     */
+    getGoogleAppsList() {}
   }
 
   /** @implements {nux.NuxGoogleAppsProxy} */
@@ -17,6 +23,11 @@ cr.define('nux', function() {
     /** @override */
     addGoogleApps(selectedApps) {
       chrome.send('addGoogleApps', selectedApps);
+    }
+
+    /** @override */
+    getGoogleAppsList() {
+      return cr.sendWithPromise('getGoogleAppsList');
     }
   }
 

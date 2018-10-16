@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -35,29 +36,22 @@ enum class EmailProviders {
   kCount,
 };
 
-struct EmailProviderType {
-  const EmailProviders id;
-  const char* name;  // Icon in WebUI should use name to match CSS.
-  const char* url;
-  const int icon;  // Corresponds with resource ID, used for bookmark cache.
-};
-
 const char* kEmailInteractionHistogram =
     "FirstRun.NewUserExperience.EmailInteraction";
 
 // Strings in costants not translated because this is an experiment.
 // Translate before wide release.
-// TODO(hcarmona): populate with icon ids.
-const EmailProviderType kEmail[] = {
-    {EmailProviders::kGmail, "Gmail",
+const BookmarkItem kEmail[] = {
+    {static_cast<int>(EmailProviders::kGmail), "Gmail", "gmail",
      "https://accounts.google.com/b/0/AddMailService", IDR_NUX_EMAIL_GMAIL_1X},
-    {EmailProviders::kYahoo, "Yahoo", "https://mail.yahoo.com",
-     IDR_NUX_EMAIL_YAHOO_1X},
-    {EmailProviders::kOutlook, "Outlook", "https://login.live.com/login.srf?",
-     IDR_NUX_EMAIL_OUTLOOK_1X},
-    {EmailProviders::kAol, "AOL", "https://mail.aol.com", IDR_NUX_EMAIL_AOL_1X},
-    {EmailProviders::kiCloud, "iCloud", "https://www.icloud.com/mail",
-     IDR_NUX_EMAIL_ICLOUD_1X},
+    {static_cast<int>(EmailProviders::kYahoo), "Yahoo", "yahoo",
+     "https://mail.yahoo.com", IDR_NUX_EMAIL_YAHOO_1X},
+    {static_cast<int>(EmailProviders::kOutlook), "Outlook", "outlook",
+     "https://login.live.com/login.srf?", IDR_NUX_EMAIL_OUTLOOK_1X},
+    {static_cast<int>(EmailProviders::kAol), "AOL", "aol",
+     "https://mail.aol.com", IDR_NUX_EMAIL_AOL_1X},
+    {static_cast<int>(EmailProviders::kiCloud), "iCloud", "icloud",
+     "https://www.icloud.com/mail", IDR_NUX_EMAIL_ICLOUD_1X},
 };
 
 constexpr const int kEmailIconSize = 48;  // Pixels.
@@ -80,15 +74,18 @@ void EmailHandler::RegisterMessages() {
       "toggleBookmarkBar",
       base::BindRepeating(&EmailHandler::HandleToggleBookmarkBar,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getEmailList", base::BindRepeating(&EmailHandler::HandleGetEmailList,
+                                          base::Unretained(this)));
 }
 
 void EmailHandler::HandleCacheEmailIcon(const base::ListValue* args) {
   int emailId;
   args->GetInteger(0, &emailId);
 
-  const EmailProviderType* selectedEmail = NULL;
+  const BookmarkItem* selectedEmail = NULL;
   for (size_t i = 0; i < base::size(kEmail); i++) {
-    if ((int)kEmail[i].id == emailId) {
+    if (static_cast<int>(kEmail[i].id) == emailId) {
       selectedEmail = &kEmail[i];
       break;
     }
@@ -110,6 +107,15 @@ void EmailHandler::HandleToggleBookmarkBar(const base::ListValue* args) {
   bool show = false;
   CHECK(args->GetBoolean(0, &show));
   prefs_->SetBoolean(bookmarks::prefs::kShowBookmarkBar, show);
+}
+
+void EmailHandler::HandleGetEmailList(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  ResolveJavascriptCallback(
+      *callback_id, bookmarkItemsToListValue(kEmail, base::size(kEmail)));
 }
 
 void EmailHandler::AddSources(content::WebUIDataSource* html_source,
@@ -155,12 +161,6 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source,
   html_source->AddResourcePath("email/yahoo_2x.png", IDR_NUX_EMAIL_YAHOO_2X);
 
   // Add constants to loadtime data
-  for (size_t i = 0; i < (size_t)EmailProviders::kCount; ++i) {
-    html_source->AddInteger("email_id_" + std::to_string(i), (int)kEmail[i].id);
-    html_source->AddString("email_name_" + std::to_string(i), kEmail[i].name);
-    html_source->AddString("email_url_" + std::to_string(i), kEmail[i].url);
-  }
-  html_source->AddInteger("email_count", (int)EmailProviders::kCount);
   html_source->AddBoolean(
       "bookmark_bar_shown",
       prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));

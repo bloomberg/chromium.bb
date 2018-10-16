@@ -2,64 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @const
- */
-var nuxGoogleApps = nuxGoogleApps || {};
+cr.exportPath('nuxGoogleApps');
 
 /**
  * @typedef {{
- *   item: !{
- *     name: string,
- *     icon: string,
- *     selected: boolean,
- *   },
+ *   id: number,
+ *   name: string,
+ *   icon: string,
+ *   url: string,
+ *   selected: boolean,
+ * }}
+ */
+nuxGoogleApps.AppItem;
+
+/**
+ * @typedef {{
+ *   item: !nuxGoogleApps.AppItem,
  *   set: function(string, boolean):void
  * }}
  */
-nuxGoogleApps.AppsArrayModel;
+nuxGoogleApps.AppItemModel;
 
 Polymer({
   is: 'apps-chooser',
   properties: {
-    // TODO(hcarmona): Get this list dynamically.
-    appList: {
-      type: Array,
-      value: function() {
-        return [
-          {
-            name: 'Gmail',
-            icon: 'gmail',
-            selected: true,
-          },
-          {
-            name: 'YouTube',
-            icon: 'youtube',
-            selected: true,
-          },
-          {
-            name: 'Maps',
-            icon: 'maps',
-            selected: true,
-          },
-          {
-            name: 'Translate',
-            icon: 'translate',
-            selected: true,
-          },
-          {
-            name: 'News',
-            icon: 'news',
-            selected: true,
-          },
-          {
-            name: 'Web Store',
-            icon: 'chrome-store',
-            selected: true,
-          },
-        ];
-      },
-    },
+    /**
+     * @type {!Array<!nuxGoogleApps.AppItem>}
+     * @private
+     */
+    appList_: Array,
 
     hasAppsSelected: {
       type: Boolean,
@@ -68,17 +39,27 @@ Polymer({
     }
   },
 
+  /** @override */
+  ready() {
+    nux.NuxGoogleAppsProxyImpl.getInstance().getGoogleAppsList().then(list => {
+      this.appList_ = list.map(app => {
+        app.selected = true;  // default all items selected.
+        return app;
+      });
+    });
+  },
+
   /**
    * Returns an array of booleans for each selected app.
-   * @return {Array<boolean>}
+   * @return {!Array<boolean>}
    */
   getSelectedAppList() {
-    return this.appList.map(a => a.selected);
+    return this.appList_.map(a => a.selected);
   },
 
   /**
    * Handle toggling the apps selected.
-   * @param {!{model: !nuxGoogleApps.AppsArrayModel}} e
+   * @param {!{model: !nuxGoogleApps.AppItemModel}} e
    * @private
    */
   onAppClick_: function(e) {
@@ -107,6 +88,6 @@ Polymer({
    * @private
    */
   computeHasAppsSelected_: function() {
-    return this.appList.some(a => a.selected);
+    return this.appList_.some(a => a.selected);
   },
 });

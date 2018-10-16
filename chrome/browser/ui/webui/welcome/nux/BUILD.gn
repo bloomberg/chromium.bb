@@ -15,6 +15,18 @@ source_set("constants") {
   ]
 }
 
+static_library("bookmark_item") {
+  sources = [
+    "bookmark_item.cc",
+    "bookmark_item.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+  ]
+}
+
 static_library("email_feature") {
   sources = [
     "email_handler.cc",
@@ -28,6 +40,7 @@ static_library("email_feature") {
   ]
 
   deps = [
+    ":bookmark_item",
     "//chrome/app:generated_resources",
     "//chrome/browser:resources",
     "//components/bookmarks/browser",
@@ -56,6 +69,7 @@ static_library("google_apps_feature") {
   ]
 
   deps = [
+    ":bookmark_item",
     "//chrome/app:generated_resources",
     "//chrome/browser:resources",
     "//components/bookmarks/browser",

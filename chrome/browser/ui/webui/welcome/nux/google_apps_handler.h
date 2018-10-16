@@ -44,9 +44,11 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   // Callbacks for JS APIs.
   void HandleRejectGoogleApps(const base::ListValue* args);
   void HandleAddGoogleApps(const base::ListValue* args);
+  void HandleGetGoogleAppsList(const base::ListValue* args);
 
   // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source);
+  static void AddSources(content::WebUIDataSource* html_source,
+                         PrefService* prefs);
 
  private:
   // Weak reference.
