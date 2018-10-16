@@ -95,6 +95,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/lazy_instance.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -770,8 +771,17 @@ LogMessage::~LogMessage() {
         priority = ANDROID_LOG_FATAL;
         break;
     }
+#if DCHECK_IS_ON()
+    // Split the output by new lines to prevent the Android system from
+    // truncating the log.
+    for (const auto& line : base::SplitString(
+             str_newline, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL))
+      __android_log_write(priority, "chromium", line.c_str());
+#else
+    // The Android system may truncate the string if it's too long.
     __android_log_write(priority, "chromium", str_newline.c_str());
 #endif
+#endif  // OS_ANDROID
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
   } else if (severity_ >= kAlwaysPrintErrorLevel) {
