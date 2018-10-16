@@ -26,102 +26,6 @@
    */
   let cursorPositionUsed = -1;
 
-  class OmniboxElement extends HTMLElement {
-    /** @param {string} templateId Template's HTML id attribute */
-    constructor(templateId) {
-      super();
-      /** @type {string} */
-      this.templateId = templateId;
-    }
-
-    /** @override */
-    connectedCallback() {
-      this.attachShadow({mode: 'open'});
-      let template = $(this.templateId).content.cloneNode(true);
-      this.shadowRoot.appendChild(template);
-    }
-
-    /**
-     * Searches local shadow root for element by id
-     * @param {string} id
-     * @return {Element}
-     */
-    $$(id) {
-      return this.shadowRoot.getElementById(id);
-    }
-  }
-
-  class OmniboxInputs extends OmniboxElement {
-    /** @return {string} */
-    static get is() {
-      return 'omnibox-inputs';
-    }
-
-    constructor() {
-      super('omnibox-inputs-template');
-    }
-
-    /** @override */
-    connectedCallback() {
-      super.connectedCallback();
-      this.setupElementListeners();
-    }
-
-    setupElementListeners() {
-      const onQueryInputsChanged = this.onQueryInputsChanged.bind(this);
-      const onDisplayInputsChagned = this.onDisplayInputsChagned.bind(this);
-
-      this.$$('input-text').addEventListener('input', onQueryInputsChanged);
-      [
-        this.$$('prevent-inline-autocomplete'),
-        this.$$('prefer-keyword'),
-        this.$$('page-classification'),
-      ].forEach(element => element.addEventListener('change', onQueryInputsChanged));
-      [
-        this.$$('show-incomplete-results'),
-        this.$$('show-details'),
-        this.$$('show-all-providers'),
-      ].forEach(element => element.addEventListener('change', onDisplayInputsChagned));
-    }
-
-    onQueryInputsChanged() {
-      this.dispatchEvent(new CustomEvent('query-inputs-changed', {
-        detail: {
-          inputText: this.$$('input-text').value,
-          cursorPosition: this.$$('input-text').selectionEnd,
-          preventInlineAutocomplete: this.$$('prevent-inline-autocomplete').checked,
-          preferKeyword: this.$$('prefer-keyword').checked,
-          pageClassification: this.$$('page-classification').checked,
-        }
-      }));
-    }
-
-    onDisplayInputsChagned() {
-      this.dispatchEvent(new CustomEvent('display-inputs-changed'));
-    }
-  }
-
-  class OmniboxOutput extends OmniboxElement {
-    /** @return {string} */
-    static get is() {
-      return 'omnibox-output';
-    }
-
-    constructor() {
-      super('omnibox-output-template');
-    }
-
-    /** @param {Element} element the element to the output */
-    addOutput(element) {
-      this.$$('contents').appendChild(element);
-    }
-
-    clearOutput() {
-      while (this.$$('contents').firstChild)
-        this.$$('contents').removeChild(this.$$('contents').firstChild);
-    }
-  }
-
   /**
    * Returns a simple object with information about how to display an
    * autocomplete result data field.
@@ -169,8 +73,8 @@
     new PresentationInfoRecord(
         'Can Be Default', '', 'allowedToBeDefaultMatch', false,
         'A green checkmark indicates that the result can be the default ' +
-            'match (i.e., can be the match that pressing enter in the ' +
-            'omnibox navigates to).'),
+        'match (i.e., can be the match that pressing enter in the ' +
+        'omnibox navigates to).'),
     new PresentationInfoRecord(
         'Starred', '', 'starred', false,
         'A green checkmark indicates that the result has been bookmarked.'),
@@ -188,32 +92,32 @@
     new PresentationInfoRecord(
         'Inline Autocompletion', '', 'inlineAutocompletion', false,
         'The text shown in the omnibox as a blue highlight selection ' +
-            'following the cursor, if this match is shown inline.'),
+        'following the cursor, if this match is shown inline.'),
     new PresentationInfoRecord(
         'Del', '', 'deletable', false,
         'A green checkmark indicates that the result can be deleted from ' +
-            'the visit history.'),
+        'the visit history.'),
     new PresentationInfoRecord('Prev', '', 'fromPrevious', false, ''),
     new PresentationInfoRecord(
         'Tran',
         'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
-            '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
+        '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
         'transition', false, 'How the user got to the result.'),
     new PresentationInfoRecord(
         'Done', '', 'providerDone', false,
         'A green checkmark indicates that the provider is done looking for ' +
-            'more results.'),
+        'more results.'),
     new PresentationInfoRecord(
         'Associated Keyword', '', 'associatedKeyword', false,
         'If non-empty, a "press tab to search" hint will be shown and will ' +
-            'engage this keyword.'),
+        'engage this keyword.'),
     new PresentationInfoRecord(
         'Keyword', '', 'keyword', false,
         'The keyword of the search engine to be used.'),
     new PresentationInfoRecord(
         'Duplicates', '', 'duplicates', false,
         'The number of matches that have been marked as duplicates of this ' +
-            'match.'),
+        'match.'),
     new PresentationInfoRecord(
         'Additional Info', '', 'additionalInfo', false,
         'Provider-specific information about the result.'),
@@ -534,26 +438,18 @@
   /** @type {OmniboxOutput} */
   let omniboxOutput;
 
-  /** Defines our custom HTML elements. */
-  function init() {
-    window.customElements.define(OmniboxInputs.is, OmniboxInputs);
-    window.customElements.define(OmniboxOutput.is, OmniboxOutput);
-
-    document.addEventListener('DOMContentLoaded', () => {
-      browserProxy = new BrowserProxy();
-      omniboxInputs = /** @type {!OmniboxInputs} */ ($('omnibox-inputs'));
-      omniboxOutput = /** @type {!OmniboxOutput} */ ($('omnibox-output'));
-      omniboxInputs.addEventListener('query-inputs-changed', event =>
-          browserProxy.makeRequest(
-              event.detail.inputText,
-              event.detail.cursorPosition,
-              event.detail.preventInlineAutocomplete,
-              event.detail.preferKeyword,
-              event.detail.pageClassification
-          ));
-      omniboxInputs.addEventListener('display-inputs-changed', refreshAllResults);
-    });
-  }
-
-  init();
+  document.addEventListener('DOMContentLoaded', () => {
+    browserProxy = new BrowserProxy();
+    omniboxInputs = /** @type {!OmniboxInputs} */ ($('omnibox-inputs'));
+    omniboxOutput = /** @type {!OmniboxOutput} */ ($('omnibox-output'));
+    omniboxInputs.addEventListener('query-inputs-changed', event =>
+        browserProxy.makeRequest(
+            event.detail.inputText,
+            event.detail.cursorPosition,
+            event.detail.preventInlineAutocomplete,
+            event.detail.preferKeyword,
+            event.detail.pageClassification
+        ));
+    omniboxInputs.addEventListener('display-inputs-changed', refreshAllResults);
+  });
 })();
