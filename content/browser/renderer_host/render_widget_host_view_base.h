@@ -28,10 +28,10 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/widget_type.h"
-#include "ipc/ipc_listener.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
@@ -94,7 +94,6 @@ struct TextInputState;
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase
     : public RenderWidgetHostView,
-      public IPC::Listener,
       public RenderFrameMetadataProvider::Observer {
  public:
   using CreateCompositorFrameSinkCallback =
@@ -152,9 +151,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   gfx::PointF TransformRootPointToViewCoordSpace(
       const gfx::PointF& point) override;
 
-  // IPC::Listener implementation:
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
   // RenderFrameMetadataProvider::Observer
   void OnRenderFrameMetadataChangedBeforeActivation(
       const cc::RenderFrameMetadata& metadata) override;
@@ -162,6 +158,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void OnRenderFrameSubmission() override;
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
+
+  virtual void UpdateIntrinsicSizingInfo(
+      const blink::WebIntrinsicSizingInfo& sizing_info);
 
   static void CopyMainAndPopupFromSurface(
       base::WeakPtr<RenderWidgetHostImpl> main_host,

@@ -66,7 +66,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   RenderWidgetHostViewBase* GetParentView() override;
 
   // RenderWidgetHostView implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
