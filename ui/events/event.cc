@@ -1083,10 +1083,9 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
     // Bit 30 of lParam represents the "previous key state". If set, the key
     // was already down, therefore this is an auto-repeat.
     is_repeat = (event.native_event().lParam & 0x40000000) != 0;
-  } else
+  }
 #endif
-  {
-    // Note that this is only reach for non-native events under Windows.
+  if (!is_repeat) {
     if (event.key_code() == (*last_key_event)->key_code() &&
         event.flags() == ((*last_key_event)->flags() & ~ui::EF_IS_REPEAT) &&
         (event.time_stamp() - (*last_key_event)->time_stamp())
