@@ -4,7 +4,12 @@
 
 #include "content/renderer/input/input_event_prediction.h"
 
+#include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
@@ -14,12 +19,15 @@ using blink::WebMouseEvent;
 using blink::WebPointerProperties;
 using blink::WebTouchEvent;
 
+namespace {}  // namespace
+
 namespace content {
 
 class InputEventPredictionTest : public testing::Test {
  public:
   InputEventPredictionTest() {
-    event_predictor_ = std::make_unique<InputEventPrediction>();
+    event_predictor_ =
+        std::make_unique<InputEventPrediction>(true /* enable_resampling */);
   }
 
   int GetPredictorMapSize() const {
@@ -49,15 +57,65 @@ class InputEventPredictionTest : public testing::Test {
   void HandleEvents(const WebInputEvent& event) {
     blink::WebCoalescedInputEvent coalesced_event(event);
     event_predictor_->HandleEvents(coalesced_event,
-                                   WebInputEvent::GetStaticTimeStampForTests(),
-                                   coalesced_event.EventPointer());
+                                   WebInputEvent::GetStaticTimeStampForTests());
+  }
+
+  void ConfigureFieldTrial(const std::string& predictor_type) {
+    const std::string kTrialName = "TestTrial";
+    const std::string kGroupName = "TestGroup";
+
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(nullptr));
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
+    std::map<std::string, std::string> params;
+    params["predictor"] = predictor_type;
+    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+        kTrialName, kGroupName, params);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kResamplingInputEvents.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+
+    EXPECT_EQ(params["predictor"],
+              GetFieldTrialParamValueByFeature(features::kResamplingInputEvents,
+                                               "predictor"));
   }
 
  protected:
   std::unique_ptr<InputEventPrediction> event_predictor_;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+
   DISALLOW_COPY_AND_ASSIGN(InputEventPredictionTest);
 };
+
+TEST_F(InputEventPredictionTest, PredictorType) {
+  EXPECT_TRUE(event_predictor_->enable_resampling_);
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            InputEventPrediction::PredictorType::kEmpty);
+
+  ConfigureFieldTrial("empty");
+  event_predictor_->SetUpPredictorType();
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            InputEventPrediction::PredictorType::kEmpty);
+
+  ConfigureFieldTrial("kalman");
+  event_predictor_->SetUpPredictorType();
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            InputEventPrediction::PredictorType::kKalman);
+
+  ConfigureFieldTrial("lsq");
+  event_predictor_->SetUpPredictorType();
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            InputEventPrediction::PredictorType::kLsq);
+}
 
 TEST_F(InputEventPredictionTest, MouseEvent) {
   WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
@@ -208,6 +266,48 @@ TEST_F(InputEventPredictionTest, TouchScrollStartedRemoveAllTouchPoints) {
   touch_event.SetType(WebInputEvent::kTouchScrollStarted);
   HandleEvents(touch_event);
   EXPECT_EQ(GetPredictorMapSize(), 0);
+}
+
+class PredictedEventTest : public InputEventPredictionTest {
+ public:
+  PredictedEventTest() {
+    event_predictor_ =
+        std::make_unique<InputEventPrediction>(false /* enable_resampling */);
+  }
+};
+
+TEST_F(PredictedEventTest, ResamplingDisabled) {
+  // When resampling is disable, use kalman filter predictor to generate
+  // predicted event.
+  EXPECT_FALSE(event_predictor_->enable_resampling_);
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            InputEventPrediction::PredictorType::kKalman);
+
+  // Send 3 mouse move to get kalman predictor ready.
+  WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseMove, 10, 10, 0);
+  HandleEvents(mouse_move);
+  mouse_move =
+      SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove, 11, 9, 0);
+  HandleEvents(mouse_move);
+
+  mouse_move =
+      SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove, 12, 8, 0);
+  HandleEvents(mouse_move);
+
+  // The 4th move event should generate predicted events.
+  mouse_move =
+      SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove, 13, 7, 0);
+  blink::WebCoalescedInputEvent coalesced_event(mouse_move);
+  event_predictor_->HandleEvents(coalesced_event, ui::EventTimeForNow());
+
+  EXPECT_GT(coalesced_event.PredictedEventSize(), 0u);
+
+  // Verify when resampling event is disabled, event coordinate doesn't change.
+  const WebMouseEvent& event =
+      static_cast<const blink::WebMouseEvent&>(coalesced_event.Event());
+  EXPECT_EQ(event.PositionInWidget().x, 13);
+  EXPECT_EQ(event.PositionInWidget().y, 7);
 }
 
 }  // namespace content
