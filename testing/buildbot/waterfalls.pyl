@@ -1383,6 +1383,16 @@
           'scripts': 'chromium_linux_scripts',
         },
       },
+      'mac-mojo-rel': {
+        'mixins': [
+            'mac_10.13',
+            'no_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'network_service_gtests',
+          'isolated_scripts': 'mojo_network_isolated_scripts',
+        },
+      },
       'mac-osxbeta-rel': {
         'mixins': [
             'intel_iris_5100',
