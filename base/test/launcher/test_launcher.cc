@@ -252,6 +252,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
 
   // Handled by the launcher process.
   switches.erase(kGTestRepeatFlag);
+  switches.erase(kIsolatedScriptTestRepeatFlag);
   switches.erase(kGTestShuffleFlag);
   switches.erase(kGTestRandomSeedFlag);
 
@@ -568,6 +569,20 @@ void DoLaunchChildTestProcess(
                output_file_contents));
 }
 
+std::vector<std::string> ExtractTestsFromFilter(const std::string& filter,
+                                                bool double_colon_supported) {
+  std::vector<std::string> tests;
+  if (double_colon_supported) {
+    tests =
+        SplitString(filter, "::", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  if (tests.size() <= 1) {
+    tests =
+        SplitString(filter, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  return tests;
+}
+
 }  // namespace
 
 const char kGTestBreakOnFailure[] = "gtest_break_on_failure";
@@ -580,6 +595,10 @@ const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 const char kGTestShuffleFlag[] = "gtest_shuffle";
 const char kGTestRandomSeedFlag[] = "gtest_random_seed";
+const char kIsolatedScriptRunDisabledTestsFlag[] =
+    "isolated-script-test-also-run-disabled-tests";
+const char kIsolatedScriptTestFilterFlag[] = "isolated-script-test-filter";
+const char kIsolatedScriptTestRepeatFlag[] = "isolated-script-test-repeat";
 
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
@@ -946,6 +965,13 @@ bool TestLauncher::Init() {
     LOG(ERROR) << "Invalid value for " << kGTestRepeatFlag;
     return false;
   }
+  if (command_line->HasSwitch(kIsolatedScriptTestRepeatFlag) &&
+      !StringToInt(
+          command_line->GetSwitchValueASCII(kIsolatedScriptTestRepeatFlag),
+          &cycles_)) {
+    LOG(ERROR) << "Invalid value for " << kIsolatedScriptTestRepeatFlag;
+    return false;
+  }
 
   if (command_line->HasSwitch(switches::kTestLauncherRetryLimit)) {
     int retry_limit = -1;
@@ -957,7 +983,22 @@ bool TestLauncher::Init() {
     }
 
     retry_limit_ = retry_limit;
-  } else if (!command_line->HasSwitch(kGTestFilterFlag) || BotModeEnabled()) {
+  } else if (command_line->HasSwitch(
+                 switches::kIsolatedScriptTestLauncherRetryLimit)) {
+    int retry_limit = -1;
+    if (!StringToInt(command_line->GetSwitchValueASCII(
+                         switches::kIsolatedScriptTestLauncherRetryLimit),
+                     &retry_limit) ||
+        retry_limit < 0) {
+      LOG(ERROR) << "Invalid value for "
+                 << switches::kIsolatedScriptTestLauncherRetryLimit;
+      return false;
+    }
+
+    retry_limit_ = retry_limit;
+  } else if (BotModeEnabled() ||
+             !(command_line->HasSwitch(kGTestFilterFlag) ||
+               command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
     // Retry failures 3 times by default if we are running all of the tests or
     // in bot mode.
     retry_limit_ = 3;
@@ -1022,21 +1063,22 @@ bool TestLauncher::Init() {
 
   // Split --gtest_filter at '-', if there is one, to separate into
   // positive filter and negative filter portions.
-  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
+  bool double_colon_supported = !command_line->HasSwitch(kGTestFilterFlag);
+  std::string filter = command_line->GetSwitchValueASCII(
+      double_colon_supported ? kIsolatedScriptTestFilterFlag
+                             : kGTestFilterFlag);
   size_t dash_pos = filter.find('-');
   if (dash_pos == std::string::npos) {
     positive_gtest_filter =
-        SplitString(filter, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        ExtractTestsFromFilter(filter, double_colon_supported);
   } else {
     // Everything up to the dash.
-    positive_gtest_filter =
-        SplitString(filter.substr(0, dash_pos), ":", base::TRIM_WHITESPACE,
-                    base::SPLIT_WANT_ALL);
+    positive_gtest_filter = ExtractTestsFromFilter(filter.substr(0, dash_pos),
+                                                   double_colon_supported);
 
     // Everything after the dash.
-    for (std::string pattern :
-         SplitString(filter.substr(dash_pos + 1), ":", base::TRIM_WHITESPACE,
-                     base::SPLIT_WANT_ALL)) {
+    for (std::string pattern : ExtractTestsFromFilter(
+             filter.substr(dash_pos + 1), double_colon_supported)) {
       negative_test_filter_.push_back(pattern);
     }
   }
@@ -1168,7 +1210,8 @@ void TestLauncher::RunTests() {
       results_tracker_.AddDisabledTest(test_name);
 
       // Skip disabled tests unless explicitly requested.
-      if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag))
+      if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
+          !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag))
         continue;
     }
 
@@ -1366,7 +1409,9 @@ size_t NumParallelJobs() {
     }
     return jobs;
   }
-  if (command_line->HasSwitch(kGTestFilterFlag) && !BotModeEnabled()) {
+  if (!BotModeEnabled() &&
+      (command_line->HasSwitch(kGTestFilterFlag) ||
+       command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
     // Do not run jobs in parallel by default if we are running a subset of
     // the tests and if bot mode is off.
     return 1U;
