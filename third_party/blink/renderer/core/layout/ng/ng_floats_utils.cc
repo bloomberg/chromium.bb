@@ -306,26 +306,24 @@ NGPositionedFloat PositionFloat(
   return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
 }
 
-const NGPositionedFloatVector PositionFloats(
-    const NGLogicalSize& float_available_size,
-    const NGLogicalSize& float_percentage_size,
-    const NGLogicalSize& float_replaced_percentage_size,
-    const NGBfcOffset& origin_bfc_offset,
-    LayoutUnit parent_bfc_block_offset,
-    NGUnpositionedFloatVector& unpositioned_floats,
-    const NGConstraintSpace& space,
-    NGExclusionSpace* exclusion_space) {
-  NGPositionedFloatVector positioned_floats;
-  positioned_floats.ReserveCapacity(unpositioned_floats.size());
+void PositionFloats(const NGLogicalSize& float_available_size,
+                    const NGLogicalSize& float_percentage_size,
+                    const NGLogicalSize& float_replaced_percentage_size,
+                    const NGBfcOffset& origin_bfc_offset,
+                    LayoutUnit parent_bfc_block_offset,
+                    NGUnpositionedFloatVector& unpositioned_floats,
+                    const NGConstraintSpace& space,
+                    NGExclusionSpace* exclusion_space,
+                    NGPositionedFloatVector* positioned_floats) {
+  positioned_floats->ReserveCapacity(positioned_floats->size() +
+                                     unpositioned_floats.size());
 
   for (NGUnpositionedFloat& unpositioned_float : unpositioned_floats) {
-    positioned_floats.push_back(PositionFloat(
+    positioned_floats->push_back(PositionFloat(
         float_available_size, float_percentage_size,
         float_replaced_percentage_size, origin_bfc_offset,
         parent_bfc_block_offset, &unpositioned_float, space, exclusion_space));
   }
-
-  return positioned_floats;
 }
 
 void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
