@@ -324,7 +324,7 @@ void PublishPageDone(
     file_path_or_empty = file_path;
 
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.Sharing.PublishInternalPageResult",
-                            result, SavePageResult::RESULT_COUNT);
+                            result);
 
   base::android::RunStringCallbackAndroid(j_published_callback_obj,
                                           file_path.value());

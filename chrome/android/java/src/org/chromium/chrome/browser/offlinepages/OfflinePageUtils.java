@@ -371,8 +371,10 @@ public class OfflinePageUtils {
      * @param result The result for publishing file.
      */
     public static void recordPublishPageResult(int result) {
+        // TODO(https://crbug.com/894714): Find a safer way to define the boundary value when
+        // using MAX_VALUE.
         RecordHistogram.recordEnumeratedHistogram("OfflinePages.Sharing.PublishInternalPageResult",
-                result, SavePageResult.RESULT_COUNT);
+                result, SavePageResult.MAX_VALUE + 1);
     }
 
     /**
