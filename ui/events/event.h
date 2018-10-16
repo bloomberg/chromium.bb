@@ -167,7 +167,6 @@ class EVENTS_EXPORT Event {
   // |this| is not a PointerEvent.
   bool IsMousePointerEvent() const;
   bool IsTouchPointerEvent() const;
-  bool IsPenPointerEvent() const;
 
   bool IsGestureEvent() const {
     switch (type_) {
