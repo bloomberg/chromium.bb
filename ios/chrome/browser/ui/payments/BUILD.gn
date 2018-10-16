@@ -258,6 +258,7 @@ source_set("eg_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/image_fetcher/core",
     "//components/payments/core",
+    "//components/payments/core:payments_test_bundle_data",
     "//components/payments/mojom",
     "//components/prefs",
     "//components/strings",

@@ -157,6 +157,11 @@ class SaveCardInfobarEGTestHelper {
     personal_data_manager_->RemoveByGUID(creditCard->guid());
   }
 
+  // Clear existing profiles.
+  for (const auto* profile : personal_data_manager_->GetProfiles()) {
+    personal_data_manager_->RemoveByGUID(profile->guid());
+  }
+
   [super tearDown];
 }
 
@@ -409,6 +414,10 @@ class SaveCardInfobarEGTestHelper {
 // Google Payments, and UMA metrics are correctly logged if the user accepts
 // upload.
 - (void)testUMA_Upstream_UserAccepts {
+  // TODO(crbug.com/895687): Re-enable this test after eliminating the need for
+  // disabling EarlGrey synchronization.
+  EARL_GREY_TEST_DISABLED(@"Test disabled.");
+
   base::HistogramTester histogram_tester;
 
   [ChromeEarlGrey
