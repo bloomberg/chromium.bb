@@ -3178,34 +3178,6 @@
         },
         "test": "services_unittests"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--jobs=1",
-          "--browser=cros-chrome",
-          "--remote=127.0.0.1",
-          "--remote-ssh-port=9222",
-          "--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView",
-          "--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-CrOS-VM"
-            }
-          ],
-          "hard_timeout": 3600,
-          "idempotent": false,
-          "io_timeout": 3600,
-          "shards": 12
-        }
-      }
     ]
   },
   "chromeos-kevin-rel-hw-tests": {
