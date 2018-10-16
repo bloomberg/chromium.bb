@@ -2175,6 +2175,8 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   // (Windows) or Ctrl+Back/Forward (Chrome OS).  If one of these is
   // invisible or has no focusable children, it will be automatically
   // skipped.
+  if (tabstrip_)
+    panes->push_back(tabstrip_);
   panes->push_back(toolbar_button_provider_->GetAsAccessiblePaneView());
   if (bookmark_bar_view_.get())
     panes->push_back(bookmark_bar_view_.get());

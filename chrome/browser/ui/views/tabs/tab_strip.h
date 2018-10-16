@@ -27,6 +27,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/mouse_watcher.h"
@@ -62,7 +63,7 @@ class ImageView;
 //  - It takes part in Tab Drag & Drop with Tab, TabDragHelper and
 //    DraggedTab, focusing on tasks that require reshuffling other tabs
 //    in response to dragged tabs.
-class TabStrip : public views::View,
+class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
                  public views::ViewTargeterDelegate,

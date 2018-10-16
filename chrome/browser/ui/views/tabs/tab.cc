@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -67,6 +68,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -168,6 +170,10 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   title_animation_.SetContainer(animation_container_.get());
 
   hover_controller_.SetAnimationContainer(animation_container_.get());
+
+  // Enable keyboard focus.
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  focus_ring_ = views::FocusRing::Install(this);
 }
 
 Tab::~Tab() {
@@ -379,10 +385,19 @@ void Tab::Layout() {
     }
   }
   title_->SetVisible(show_title);
+
+  if (focus_ring_)
+    focus_ring_->Layout();
 }
 
 const char* Tab::GetClassName() const {
   return kViewClassName;
+}
+
+void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Update focus ring path.
+  const SkPath path = tab_style_->GetPath(TabStyle::PathType::kHighlight, 1.0);
+  SetProperty(views::kHighlightPathKey, new SkPath(path));
 }
 
 namespace {
@@ -552,10 +567,17 @@ bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTab;
-  node_data->SetName(controller_->GetAccessibleTabName(this));
   node_data->AddState(ax::mojom::State::kMultiselectable);
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
+
+  base::string16 name = controller_->GetAccessibleTabName(this);
+  if (!name.empty()) {
+    node_data->SetName(name);
+  } else {
+    // Under some conditions, |GetAccessibleTabName| returns an empty string.
+    node_data->SetNameExplicitlyEmpty();
+  }
 }
 
 gfx::Size Tab::CalculatePreferredSize() const {
@@ -596,6 +618,14 @@ void Tab::OnThemeChanged() {
 void Tab::SetClosing(bool closing) {
   closing_ = closing;
   ActiveStateChanged();
+
+  if (closing) {
+    // When closing, sometimes DCHECK fails because
+    // cc::Layer::IsPropertyChangeAllowed() returns false. Deleting
+    // the focus ring fixes this. TODO(collinbaker): investigate why
+    // this happens.
+    focus_ring_.reset();
+  }
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {

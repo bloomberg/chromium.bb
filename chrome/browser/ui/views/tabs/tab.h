@@ -21,6 +21,7 @@
 #include "ui/gfx/paint_throbber.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
@@ -82,6 +83,7 @@ class Tab : public gfx::AnimationDelegate,
   // views::View:
   void Layout() override;
   const char* GetClassName() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -296,6 +298,9 @@ class Tab : public gfx::AnimationDelegate,
   // different from View::IsMouseHovered() which does a naive intersection with
   // the view bounds.
   bool mouse_hovered_ = false;
+
+  // Focus ring for accessibility.
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };
