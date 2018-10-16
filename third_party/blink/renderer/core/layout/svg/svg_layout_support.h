@@ -88,6 +88,13 @@ class CORE_EXPORT SVGLayoutSupport {
       const HitTestLocation& location_in_parent,
       base::Optional<HitTestLocation>& local_storage);
 
+  // Shared child hit-testing code between LayoutSVGRoot/LayoutSVGContainer.
+  static bool HitTestChildren(LayoutObject* last_child,
+                              HitTestResult&,
+                              const HitTestLocation&,
+                              const LayoutPoint& accumulated_offset,
+                              HitTestAction);
+
   static void ComputeContainerBoundingBoxes(const LayoutObject* container,
                                             FloatRect& object_bounding_box,
                                             bool& object_bounding_box_valid,
