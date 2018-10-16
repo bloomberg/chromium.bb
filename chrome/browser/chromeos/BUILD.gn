@@ -69,7 +69,7 @@ source_set("chromeos") {
     "//chrome/browser/extensions",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
     "//chrome/browser/ssl:proto",
-    "//chrome/browser/web_applications",
+    "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/browser/web_applications/components",
     "//chrome/common",

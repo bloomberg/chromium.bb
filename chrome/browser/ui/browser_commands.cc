@@ -99,9 +99,9 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -1256,15 +1256,13 @@ bool CanViewSource(const Browser* browser) {
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
-  extensions::TabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())
-      ->CreateHostedAppFromWebContents(force_shortcut_app);
+  web_app::WebAppProvider::InstallWebApp(
+      browser->tab_strip_model()->GetActiveWebContents(), force_shortcut_app);
 }
 
 bool CanCreateBookmarkApp(const Browser* browser) {
-  return extensions::TabHelper::FromWebContents(
-             browser->tab_strip_model()->GetActiveWebContents())
-      ->CanCreateBookmarkApp();
+  return web_app::WebAppProvider::CanInstallWebApp(
+      browser->tab_strip_model()->GetActiveWebContents());
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

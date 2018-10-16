@@ -134,6 +134,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsStayInWindow;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsWithoutExtensions;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDisallowUnsafeHttpDownloads;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kDisallowUnsafeHttpDownloadsParamName[];
