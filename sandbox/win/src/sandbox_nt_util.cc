@@ -228,14 +228,15 @@ NTSTATUS CopyData(void* destination, const void* source, size_t bytes) {
   return ret;
 }
 
-NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
+NTSTATUS AllocAndGetFullPath(
+    HANDLE root,
+    const wchar_t* path,
+    std::unique_ptr<wchar_t, NtAllocDeleter>* full_path) {
   if (!InitHeap())
     return STATUS_NO_MEMORY;
 
   DCHECK_NT(full_path);
   DCHECK_NT(path);
-  *full_path = nullptr;
-  OBJECT_NAME_INFORMATION* handle_name = nullptr;
   NTSTATUS ret = STATUS_UNSUCCESSFUL;
   __try {
     do {
@@ -247,14 +248,15 @@ NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
       // Query the name information a first time to get the size of the name.
       ret = NtQueryObject(root, ObjectNameInformation, nullptr, 0, &size);
 
+      std::unique_ptr<OBJECT_NAME_INFORMATION, NtAllocDeleter> handle_name;
       if (size) {
-        handle_name = reinterpret_cast<OBJECT_NAME_INFORMATION*>(
-            new (NT_ALLOC) BYTE[size]);
+        handle_name.reset(reinterpret_cast<OBJECT_NAME_INFORMATION*>(
+            new (NT_ALLOC) BYTE[size]));
 
         // Query the name information a second time to get the name of the
         // object referenced by the handle.
-        ret = NtQueryObject(root, ObjectNameInformation, handle_name, size,
-                            &size);
+        ret = NtQueryObject(root, ObjectNameInformation, handle_name.get(),
+                            size, &size);
       }
 
       if (STATUS_SUCCESS != ret)
@@ -263,10 +265,10 @@ NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
       // Space for path + '\' + name + '\0'.
       size_t name_length =
           handle_name->ObjectName.Length + (wcslen(path) + 2) * sizeof(wchar_t);
-      *full_path = new (NT_ALLOC) wchar_t[name_length / sizeof(wchar_t)];
+      full_path->reset(new (NT_ALLOC) wchar_t[name_length / sizeof(wchar_t)]);
       if (!*full_path)
         break;
-      wchar_t* off = *full_path;
+      wchar_t* off = full_path->get();
       ret = CopyData(off, handle_name->ObjectName.Buffer,
                      handle_name->ObjectName.Length);
       if (!NT_SUCCESS(ret))
@@ -284,16 +286,8 @@ NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path) {
     ret = GetExceptionCode();
   }
 
-  if (!NT_SUCCESS(ret)) {
-    if (*full_path) {
-      operator delete(*full_path, NT_ALLOC);
-      *full_path = nullptr;
-    }
-    if (handle_name) {
-      operator delete(handle_name, NT_ALLOC);
-      handle_name = nullptr;
-    }
-  }
+  if (!NT_SUCCESS(ret) && *full_path)
+    full_path->reset(nullptr);
 
   return ret;
 }
