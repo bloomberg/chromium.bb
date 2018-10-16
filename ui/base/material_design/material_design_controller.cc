@@ -143,7 +143,12 @@ void MaterialDesignController::Initialize() {
                  << "' for command line switch '" << switches::kTopChromeMD
                  << "'.";
     }
+#if defined(OS_CHROMEOS)
+    is_refresh_dynamic_ui_ = true;
+    SetMode(MATERIAL_REFRESH);
+#else
     SetMode(DefaultMode());
+#endif
   }
 
   // Ideally, there would be a more general, "initialize random stuff here"
