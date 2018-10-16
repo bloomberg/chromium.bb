@@ -45,6 +45,7 @@ const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 #endif
 
 // Supported media types.
+
 const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
@@ -54,10 +55,18 @@ const char kWebMVorbisAudioVp8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMp4Avc1VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
 const char kMp4AacAudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+#if !defined(OS_ANDROID)
+const char kWebMVp9Profile2VideoOnly[] =
+    "video/webm; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
+const char kMp4Vp9Profile2VideoOnly[] =
+    "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
+#endif  // !defined(OS_ANDROID)
 
 // EME-specific test results and errors.
 const char kEmeKeyError[] = "KEYERROR";
@@ -272,12 +281,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
 }
 
-// TODO(crbug.com/707127): Decide when it's supported on Android. Also support
-// VP9 Profile2 query and update the mime type.
+// TODO(crbug.com/707127): Decide when it's supported on Android.
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Profile2Video_WebM) {
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
-                     kWebMVp9VideoOnly);
+                     kWebMVp9Profile2VideoOnly);
 }
 #endif
 
@@ -295,8 +303,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly);
 }
 
-// TODO(crbug.com/707127): Decide when it's supported on Android. Also support
-// VP9 Profile2 query and update the mime type.
+// TODO(crbug.com/707127): Decide when it's supported on Android.
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
@@ -305,7 +312,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
     return;
   }
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
-                     kMp4Vp9VideoOnly);
+                     kMp4Vp9Profile2VideoOnly);
 }
 #endif
 

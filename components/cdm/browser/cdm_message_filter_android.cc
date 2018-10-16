@@ -38,9 +38,9 @@ struct CodecInfo {
 
 const CodecInfo<media::VideoCodec> kVideoCodecsToQuery[] = {
     {media::EME_CODEC_VP8, media::kCodecVP8, "video/webm"},
-    {media::EME_CODEC_LEGACY_VP9, media::kCodecVP9, "video/webm"},
-    {media::EME_CODEC_VP9, media::kCodecVP9, "video/webm"},
-    {media::EME_CODEC_VP9, media::kCodecVP9, "video/mp4"},
+    // TODO(crbug.com/707127): Support query for VP9 profile 1/2/3 on Android.
+    {media::EME_CODEC_VP9_PROFILE0, media::kCodecVP9, "video/webm"},
+    {media::EME_CODEC_VP9_PROFILE0, media::kCodecVP9, "video/mp4"},
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {media::EME_CODEC_AVC1, media::kCodecH264, "video/mp4"},
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

@@ -904,13 +904,6 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
       default:
         ambiguous_platform_support = true;
     }
-  } else if (codec == MimeUtil::VP9 && video_profile != VP9PROFILE_PROFILE0 &&
-             is_encrypted) {
-    // LibVPX is not generally used for encrypted videos, so we do not know
-    // whether higher profiles are supported.
-    // TODO(chcunningham/xhwang): Add details to indicate which key system will
-    // be used and check support by querying the matching KeySystemProperties.
-    ambiguous_platform_support = true;
   }
 
   AudioCodec audio_codec = MimeUtilToAudioCodec(codec);

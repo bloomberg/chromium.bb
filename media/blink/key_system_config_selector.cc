@@ -167,6 +167,16 @@ bool IsSupportedMediaType(const std::string& container_mime_type,
   return (support_result == IsSupported);
 }
 
+// Replaces any codec in |codecs| starting with "vp09.00." with "vp09-profile0".
+void OverrideVp9Profile0(std::vector<std::string>* codecs) {
+  for (std::string& codec : *codecs) {
+    if (base::StartsWith(codec, "vp09.00.", base::CompareCase::SENSITIVE)) {
+      DVLOG(3) << "Replace codec " << codec << " with vp09-profile0";
+      codec = "vp09-profile0";
+    }
+  }
+}
+
 }  // namespace
 
 struct KeySystemConfigSelector::SelectionRequest {
@@ -321,7 +331,9 @@ bool KeySystemConfigSelector::IsSupportedContentType(
     const std::string& container_mime_type,
     const std::string& codecs,
     KeySystemConfigSelector::ConfigState* config_state) {
-  DVLOG(3) << __func__;
+  DVLOG(3) << __func__ << ": key_system = " << key_system
+           << ", container_mime_type = " << container_mime_type
+           << ", codecs = " << codecs;
 
   // From RFC6838: "Both top-level type and subtype names are case-insensitive."
   std::string container_lower = base::ToLowerASCII(container_mime_type);
@@ -346,12 +358,18 @@ bool KeySystemConfigSelector::IsSupportedContentType(
     return false;
   }
 
-  // Check that |container_mime_type| and |codecs| are supported by the CDM.
-  // This check does not handle extended codecs, so extended codec information
-  // is stripped (extended codec information was checked above).
+  // Before checking CDM support, split and strip the |codecs| because
+  // |key_systems_| does not handle extended codecs. Note that extended codec
+  // information was checked above.
   std::vector<std::string> stripped_codec_vector;
   SplitCodecs(codecs, &stripped_codec_vector);
+  // Since both "vp09.00.*" and "vp09.01.*" will be stripped to "vp09", before
+  // stripping codecs, replace "vp09.00.*" with "vp09-profile0" to avoid
+  // ambiguity.
+  OverrideVp9Profile0(&stripped_codec_vector);
   StripCodecs(&stripped_codec_vector);
+
+  // Check that |container_mime_type| and |codecs| are supported by the CDM.
   EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
       key_system, media_type, container_lower, stripped_codec_vector);
   if (!config_state->IsRuleSupported(codecs_rule)) {
