@@ -79,64 +79,28 @@ public abstract class ListItem {
         public boolean showTitle;
         public boolean showMenu;
         public boolean isJustNow;
+        public boolean showDivider;
         public List<OfflineItem> items;
 
         /**
          * Creates a {@link SectionHeaderListItem} instance for a given {@code filter} and
          * {@code timestamp}.
          */
-        public SectionHeaderListItem(
-                int filter, long timestamp, boolean showDate, boolean isJustNow) {
+        public SectionHeaderListItem(int filter, long timestamp, boolean showDate,
+                boolean isJustNow, boolean showDivider) {
             super(isJustNow && showDate ? StableIds.JUST_NOW_SECTION
                                         : generateStableId(timestamp, filter),
                     new Date(timestamp));
             this.filter = filter;
             this.showDate = showDate;
             this.isJustNow = isJustNow;
+            this.showDivider = showDivider;
         }
 
         @VisibleForTesting
         static long generateStableId(long timestamp, int filter) {
             long hash = new Date(timestamp).hashCode();
             return hash + filter + SECTION_HEADER_HASH_CODE_OFFSET;
-        }
-    }
-
-    /** A {@link ListItem} representing a divider that separates sections and dates. */
-    public static class SeparatorViewListItem extends DateListItem {
-        private final boolean mIsDateDivider;
-
-        /**
-         * Creates a separator to be shown at the end of a given date.
-         * @param timestamp The date corresponding to this group of downloads.
-         */
-        public SeparatorViewListItem(long timestamp) {
-            super(generateStableId(timestamp), new Date(timestamp));
-            mIsDateDivider = true;
-        }
-
-        /**
-         * Creates a separator to be shown at the end of a section for a given section on a given
-         * date.
-         * @param timestamp The date corresponding to the section.
-         * @param filter The type of downloads contained in this section.
-         */
-        public SeparatorViewListItem(long timestamp, int filter) {
-            super(generateStableId(timestamp, filter), new Date(timestamp));
-            mIsDateDivider = false;
-        }
-
-        /** Whether this view represents a date divider. */
-        public boolean isDateDivider() {
-            return mIsDateDivider;
-        }
-
-        private static long generateStableId(long timestamp) {
-            return ((long) (new Date(timestamp).hashCode())) + DATE_SEPARATOR_HASH_CODE_OFFSET;
-        }
-
-        private static long generateStableId(long timestamp, int filter) {
-            return generateStableId(timestamp) + filter + SECTION_SEPARATOR_HASH_CODE_OFFSET;
         }
     }
 

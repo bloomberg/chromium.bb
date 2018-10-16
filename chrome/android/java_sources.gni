@@ -531,7 +531,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/list/holder/OfflineItemViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/PrefetchViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/SectionTitleViewHolder.java",
-  "java/src/org/chromium/chrome/browser/download/home/list/holder/SeparatorViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/holder/VideoViewHolder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/view/AspectRatioFrameLayout.java",
   "java/src/org/chromium/chrome/browser/download/home/list/view/AsyncImageView.java",
