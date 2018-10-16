@@ -1927,3 +1927,28 @@ def GetSiteParams():
   site_params = SiteParameters()
   site_params.update(DefaultSiteParameters())
   return site_params
+
+def append_useflags(useflags):
+  """Used to append a set of useflags to existing useflags.
+
+  Useflags that shadow prior use flags will cause the prior flag to be removed.
+  (e.g. appending '-foo' to 'foo' will cause 'foo' to be removed)
+
+  Examples:
+    new_config = base_config.derive(useflags=append_useflags(['foo', '-bar'])
+
+  Args:
+    useflags: List of string useflags to append.
+  """
+  assert isinstance(useflags, (list, set))
+  shadowed_useflags = {'-' + flag for flag in useflags
+                       if not flag.startswith('-')}
+  shadowed_useflags.update({flag[1:] for flag in useflags
+                            if flag.startswith('-')})
+  def handler(old_useflags):
+    new_useflags = set(old_useflags or [])
+    new_useflags.update(useflags)
+    new_useflags.difference_update(shadowed_useflags)
+    return sorted(list(new_useflags))
+
+  return handler

@@ -25,6 +25,7 @@ vmtest_boards = frozenset([
     'novato-arc64',  # 64 bit x86_64 ARC++ ABI
 ]) | config_boards.lakitu_boards  # All lakitu boards have VM support.
 
+
 def getInfoVMTest():
   suites = [
       'vmtest-informational4'
@@ -483,6 +484,125 @@ def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
         continue
       c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
 
+
+def ApplyCustomOverrides(site_config, ge_build_config):
+  """Method with to override specific flags for specific builders.
+
+  Generally try really hard to avoid putting anything here that isn't
+  a really special case for a single specific builder. This is performed
+  after every other bit of processing, so it always has the final say.
+
+  Args:
+    site_config: config_lib.SiteConfig containing builds to have their
+                 waterfall values updated.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  hw_test_list = HWTestList(ge_build_config)
+
+  overwritten_configs = {
+      'lakitu-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
+      'lakitu-gpu-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
+      'lakitu-nc-pre-cq':
+          site_config.templates.lakitu_nc_customizations,
+
+      'lakitu-st-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
+      'lakitu_next-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
+      'lakitu-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+      ),
+
+      # This is the full build of open-source overlay.
+      'lakitu-full': config_lib.BuildConfig().apply(
+          # logging_CrashSender is expected to fail for lakitu-full.
+          # See b/111567339 for more details.
+          useflags=config_lib.append_useflags(['-tests_logging_CrashSender']),
+      ),
+
+      'lakitu-gpu-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+      ),
+
+      'lakitu-nc-release': config_lib.BuildConfig().apply(
+          signer_tests=False,
+      ),
+
+      'lakitu-st-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+      ),
+
+      'lakitu_next-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+          signer_tests=False,
+      ),
+
+      'guado_labstation-release': {
+          'hw_tests': [],
+          # 'hwqual':False,
+          'image_test':False,
+          #'images':['test'],
+          'signer_tests':False,
+          'vm_tests':[],
+      },
+
+      'chell-chrome-pfq': {
+          'hw_tests': [hw_test_list.AFDORecordTest()]
+      },
+
+      'cyan-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'caroline-arcnext-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'grunt-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'kevin-arcnext-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'peppy-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'reef-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'veyron_minnie-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'peach_pit-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'tricky-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'betty-release': site_config.templates.tast_vm_canary_tests,
+  }
+
+  for config_name, overrides in overwritten_configs.iteritems():
+    # TODO: Turn this assert into a unittest.
+    # config = site_config[config_name]
+    # for k, v in overrides.iteritems():
+    #   assert config[k] != v, ('Unnecessary override: %s: %s' %
+    #                           (config_name, k))
+    site_config[config_name].apply(**overrides)
+
 def ApplyConfig(site_config, boards_dict, ge_build_config):
   """Apply test specific config to site_config
 
@@ -499,3 +619,5 @@ def ApplyConfig(site_config, boards_dict, ge_build_config):
   EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
 
   EnsureVmTestsOnBaremetal(site_config, ge_build_config)
+
+  ApplyCustomOverrides(site_config, ge_build_config)

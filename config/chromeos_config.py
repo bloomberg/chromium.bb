@@ -24,32 +24,6 @@ from chromite.config.chromeos_config_test import TRADITIONAL_VM_TESTS_SUPPORTED
 from chromite.config.chromeos_config_test import getInfoVMTest
 
 
-def append_useflags(useflags):
-  """Used to append a set of useflags to existing useflags.
-
-  Useflags that shadow prior use flags will cause the prior flag to be removed.
-  (e.g. appending '-foo' to 'foo' will cause 'foo' to be removed)
-
-  Examples:
-    new_config = base_config.derive(useflags=append_useflags(['foo', '-bar'])
-
-  Args:
-    useflags: List of string useflags to append.
-  """
-  assert isinstance(useflags, (list, set))
-  shadowed_useflags = {'-' + flag for flag in useflags
-                       if not flag.startswith('-')}
-  shadowed_useflags.update({flag[1:] for flag in useflags
-                            if flag.startswith('-')})
-  def handler(old_useflags):
-    new_useflags = set(old_useflags or [])
-    new_useflags.update(useflags)
-    new_useflags.difference_update(shadowed_useflags)
-    return sorted(list(new_useflags))
-
-  return handler
-
-
 def remove_images(unsupported_images):
   """Remove unsupported images when applying changes to a BuildConfig.
 
@@ -429,7 +403,7 @@ def GeneralTemplates(site_config, ge_build_config):
   # This adds Chrome branding.
   site_config.AddTemplate(
       'official_chrome',
-      useflags=append_useflags([constants.USE_CHROME_INTERNAL]),
+      useflags=config_lib.append_useflags([constants.USE_CHROME_INTERNAL]),
   )
 
   # This sets chromeos_official.
@@ -602,7 +576,7 @@ def GeneralTemplates(site_config, ge_build_config):
           'perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
           timeout=90 * 60, critical=True)],
       use_chrome_lkgm=True,
-      useflags=append_useflags(['-cros-debug']),
+      useflags=config_lib.append_useflags(['-cros-debug']),
   )
 
   site_config.AddTemplate(
@@ -642,7 +616,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'internal_nowithdebug_paladin',
       site_config.templates.internal_paladin,
-      useflags=append_useflags(['-cros-debug']),
+      useflags=config_lib.append_useflags(['-cros-debug']),
       description=(site_config.templates.paladin.description +
                    ' (internal, nowithdebug)'),
       prebuilts=False,
@@ -699,7 +673,7 @@ def GeneralTemplates(site_config, ge_build_config):
       chroot_use_image=False,
       suite_scheduling=True,
       build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
-      useflags=append_useflags(['-cros-debug']),
+      useflags=config_lib.append_useflags(['-cros-debug']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
@@ -836,7 +810,7 @@ def GeneralTemplates(site_config, ge_build_config):
       dev_installer_prebuilts=False,
       upload_hw_test_artifacts=False,
       upload_symbols=False,
-      useflags=append_useflags(['chromeless_tty']),
+      useflags=config_lib.append_useflags(['chromeless_tty']),
       signer_tests=False,
       paygen=False,
       image_test=False,
@@ -855,14 +829,14 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'depthcharge_firmware',
       site_config.templates.firmware,
-      useflags=append_useflags(['depthcharge']))
+      useflags=config_lib.append_useflags(['depthcharge']))
 
   site_config.AddTemplate(
       'depthcharge_full_firmware',
       site_config.templates.full,
       site_config.templates.internal,
       site_config.templates.firmware_base,
-      useflags=append_useflags(['depthcharge']),
+      useflags=config_lib.append_useflags(['depthcharge']),
       description='Firmware Informational',
   )
 
@@ -885,7 +859,8 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'build_external_chrome',
-      useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
+      useflags=config_lib.append_useflags(
+          ['-%s' % constants.USE_CHROME_INTERNAL]),
   )
 
   # Tast is an alternate system for running integration tests.
@@ -1041,16 +1016,17 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # Need to reenable power_DarkResumeDisplay after crosbug/703250 is fixed.
       # Need to reenable cheets_SELinuxTest after crosbug/693308 is fixed.
       # Need to reenable security_SMMLocked when crosbug/654610 is fixed.
-      useflags=append_useflags(['-cros-debug',
-                                '-tests_security_OpenFDs',
-                                '-tests_platform_SyncCrash',
-                                '-tests_network_VPNConnect.l2tpipsec_xauth',
-                                '-tests_network_VPNConnect.l2tpipsec_psk',
-                                '-tests_power_DarkResumeShutdownServer',
-                                '-tests_power_DarkResumeDisplay',
-                                '-tests_security_SMMLocked',
-                                '-tests_cheets_SELinuxTest',
-                                'thinlto']),
+      useflags=config_lib.append_useflags([
+          '-cros-debug',
+          '-tests_security_OpenFDs',
+          '-tests_platform_SyncCrash',
+          '-tests_network_VPNConnect.l2tpipsec_xauth',
+          '-tests_network_VPNConnect.l2tpipsec_psk',
+          '-tests_power_DarkResumeShutdownServer',
+          '-tests_power_DarkResumeDisplay',
+          '-tests_security_SMMLocked',
+          '-tests_cheets_SELinuxTest',
+          'thinlto']),
       afdo_use=True,
       latest_toolchain=True,
       manifest=constants.OFFICIAL_MANIFEST,
@@ -1062,7 +1038,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'gcc_toolchain',
       site_config.templates.toolchain,
       description='Full release build with next minor GCC toolchain revision',
-      useflags=append_useflags(['next_gcc']),
+      useflags=config_lib.append_useflags(['next_gcc']),
       hw_tests=hw_test_list.ToolchainTestFull(constants.HWTEST_SUITES_POOL),
       hw_tests_override=hw_test_list.ToolchainTestFull(
           constants.HWTEST_SUITES_POOL),
@@ -1079,7 +1055,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'llvm_next_toolchain',
       site_config.templates.llvm_toolchain,
       description='Full release build with LLVM (next) toolchain',
-      useflags=append_useflags(['llvm-next']),
+      useflags=config_lib.append_useflags(['llvm-next']),
   )
 
   ### Toolchain waterfall entries.
@@ -1155,7 +1131,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       # Run clang-tidy specific stages.
       builder_class_name='clang_tidy_builders.ClangTidyBuilder',
-      useflags=append_useflags(['clang_tidy']),
+      useflags=config_lib.append_useflags(['clang_tidy']),
       boards=['grunt'],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Weekly on Sunday 3 AM UTC
@@ -1376,7 +1352,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       board_configs['lakitu'],
       site_config.templates.lakitu,
       site_config.templates.external,
-      useflags=append_useflags(['-chrome_internal']),
+      useflags=config_lib.append_useflags(['-chrome_internal']),
   )
 
   site_config.AddWithoutTemplate(
@@ -2258,7 +2234,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           board_configs['daisy'],
           site_config.templates.external,
           manifest_version=True,
-          useflags=append_useflags(['-chrome_internal']),
+          useflags=config_lib.append_useflags(['-chrome_internal']),
       )
   )
 
@@ -3218,7 +3194,7 @@ def PayloadBuilders(site_config, boards_dict):
       )
 
 
-def ApplyCustomOverrides(site_config, ge_build_config):
+def ApplyCustomOverrides(site_config):
   """Method with to override specific flags for specific builders.
 
   Generally try really hard to avoid putting anything here that isn't
@@ -3228,29 +3204,12 @@ def ApplyCustomOverrides(site_config, ge_build_config):
   Args:
     site_config: config_lib.SiteConfig containing builds to have their
                  waterfall values updated.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  hw_test_list = HWTestList(ge_build_config)
 
   overwritten_configs = {
       'amd64-generic-chromium-pfq': {
           'useflags': [],
       },
-
-      'lakitu-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu-gpu-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu-nc-pre-cq':
-          site_config.templates.lakitu_nc_customizations,
-
-      'lakitu-st-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu_next-pre-cq':
-          site_config.templates.lakitu_test_customizations,
 
       'whirlwind-release': {
           'dev_installer_prebuilts':True,
@@ -3261,7 +3220,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'lakitu-release': config_lib.BuildConfig().apply(
-          site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
       ),
@@ -3269,13 +3227,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       # This is the full build of open-source overlay.
       'lakitu-full': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_notification_emails,
-          # logging_CrashSender is expected to fail for lakitu-full.
-          # See b/111567339 for more details.
-          useflags=append_useflags(['-tests_logging_CrashSender']),
       ),
 
       'lakitu-gpu-release': config_lib.BuildConfig().apply(
-          site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
           paygen=False,
@@ -3284,39 +3238,33 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lakitu-nc-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_nc_customizations,
           site_config.templates.lakitu_notification_emails,
-          signer_tests=False,
           paygen=False,
       ),
 
       'lakitu-st-release': config_lib.BuildConfig().apply(
-          site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
           paygen=False,
       ),
 
       'lakitu_next-release': config_lib.BuildConfig().apply(
-          site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
-          signer_tests=False,
       ),
 
+      # TODO(yshaul): find out if hwqual needs to go as well
+      # TODO(yshaul): fix apply method to merge base and test
       'guado_labstation-release': {
-          'hw_tests': [],
           'hwqual':False,
-          'image_test':False,
           'images':['base', 'test'],
-          'signer_tests':False,
           'paygen':False,
-          'vm_tests':[],
       },
 
       'peach_pit-release': {
-          'useflags': append_useflags(['cfi']),
+          'useflags': config_lib.append_useflags(['cfi']),
       },
 
       'kevin-release': {
-          'useflags': append_useflags(['cfi']),
+          'useflags': config_lib.append_useflags(['cfi']),
       },
 
       'chell-chrome-pfq': {
@@ -3326,47 +3274,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           # Disable debug fission before collecting AFDO profile.
           # Disable thinlto before collecting AFDO profile.
           # Disable cfi before collecting AFDO profile.
-          'useflags': append_useflags(['-transparent_hugepage',
-                                       '-debug_fission',
-                                       '-thinlto',
-                                       '-cfi']),
-          'hw_tests': [hw_test_list.AFDORecordTest()]
-      },
-
-      'cyan-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'caroline-arcnext-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'grunt-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'kevin-arcnext-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'peppy-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'reef-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'veyron_minnie-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'peach_pit-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'tricky-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
+          'useflags': config_lib.append_useflags(['-transparent_hugepage',
+                                                  '-debug_fission',
+                                                  '-thinlto',
+                                                  '-cfi']),
       },
 
       # Currently factory and firmware branches will be created after DVT stage
@@ -3398,22 +3309,17 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       # --- end from here ---
 
-      # Disabled pending resolution of crbug.com/894820.
-      #'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
-      #'betty-paladin': site_config.templates.tast_vm_paladin_tests,
-      'betty-release': site_config.templates.tast_vm_canary_tests,
-
       # Enable the new tcmalloc version on certain boards.
       'elm-release': {
-          'useflags': append_useflags(['new_tcmalloc']),
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
 
       'kip-release': {
-          'useflags': append_useflags(['new_tcmalloc']),
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
 
       'veyron_minnie-release': {
-          'useflags': append_useflags(['new_tcmalloc']),
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
   }
 
@@ -3610,10 +3516,10 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       sync_chrome=True,
       chrome_rev=constants.CHROME_REV_STICKY,
       hw_tests=[hw_test_list.AFDORecordTest()],
-      useflags=append_useflags(['-transparent_hugepage',
-                                '-debug_fission',
-                                '-thinlto',
-                                '-cfi']),
+      useflags=config_lib.append_useflags(['-transparent_hugepage',
+                                           '-debug_fission',
+                                           '-thinlto',
+                                           '-cfi']),
       prebuilts=constants.PRIVATE,
       archive_build_debug=True,
   )
@@ -3861,9 +3767,9 @@ def GetConfig():
 
   FullBuilders(site_config, boards_dict, ge_build_config)
 
-  chromeos_test.ApplyConfig(site_config, boards_dict, ge_build_config)
+  ApplyCustomOverrides(site_config)
 
-  ApplyCustomOverrides(site_config, ge_build_config)
+  chromeos_test.ApplyConfig(site_config, boards_dict, ge_build_config)
 
   TryjobMirrors(site_config)
 
