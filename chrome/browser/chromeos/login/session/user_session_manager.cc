@@ -680,7 +680,15 @@ bool UserSessionManager::UserSessionsRestoreInProgress() const {
 
 void UserSessionManager::InitRlz(Profile* profile) {
 #if BUILDFLAG(ENABLE_RLZ)
-  if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand)) {
+  // Initialize the brand code in the local prefs if it does not exist yet or
+  // if it is empty.  The latter is to correct a problem in older builds where
+  // an empty brand code would be persisted if the first login after OOBE was
+  // a guest session.
+  if (!g_browser_process->local_state()->HasPrefPath(prefs::kRLZBrand) ||
+      g_browser_process->local_state()
+          ->Get(prefs::kRLZBrand)
+          ->GetString()
+          .empty()) {
     // Read brand code asynchronously from an OEM data and repost ourselves.
     google_brand::chromeos::InitBrand(
         base::Bind(&UserSessionManager::InitRlz, AsWeakPtr(), profile));
@@ -1674,9 +1682,30 @@ void UserSessionManager::RestoreAuthSessionImpl(
 void UserSessionManager::InitRlzImpl(Profile* profile,
                                      const RlzInitParams& params) {
 #if BUILDFLAG(ENABLE_RLZ)
-  // RLZ is disabled if disabled explicitly or if the device is not yet locked.
+  // If RLZ is disabled then clear the brand for the session.
+  //
+  // RLZ is disabled if disabled explicitly OR if the device's enrollment
+  // state is not yet known. The device's enrollment state is definitively
+  // known once the device is locked. Note that for enrolled devices, the
+  // enrollment login locks the device.
+  //
+  // There the following cases to consider when a session starts:
+  //
+  // 1) This is a regular session.
+  // 1a) The device is LOCKED. Thus, the enrollment state is KNOWN.
+  // 1b) The device is NOT LOCKED. This should only happen on the first
+  //     regular login (due to lock race condition with this code) if the
+  //     device is NOT enrolled; thus, the enrollment state is also KNOWN.
+  //
+  // 2) This is a guest session.
+  // 2a) The device is LOCKED. Thus, the enrollment state is KNOWN.
+  // 2b) The device is NOT locked. This should happen if ONLY Guest mode
+  //     sessions have ever been used on this device. This is the only
+  //     situation where the enrollment state is NOT KNOWN at this point.
+
   PrefService* local_state = g_browser_process->local_state();
-  if (params.disabled || !InstallAttributes::Get()->IsDeviceLocked()) {
+  if (params.disabled || (profile->IsGuestSession() &&
+                          !InstallAttributes::Get()->IsDeviceLocked())) {
     // Empty brand code means an organic install (no RLZ pings are sent).
     google_brand::chromeos::ClearBrandForCurrentSession();
   }
