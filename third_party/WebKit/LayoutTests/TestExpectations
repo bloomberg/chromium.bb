@@ -4733,6 +4733,7 @@ crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.
 # These tests will pass once the --enable-features=SignedHTTPExchange flag is enabled by default.
 crbug.com/803774 http/tests/devtools/sxg/ [ Skip ]
 crbug.com/803774 http/tests/loading/sxg/ [ Skip ]
+crbug.com/803774 external/wpt/signed-exchange/ [ Skip ]
 
 # Prefetching Signed Exchange DevTools tests are flaky.
 crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
