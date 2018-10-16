@@ -196,6 +196,17 @@ bool NativeThemeMac::UsesHighContrastColors() const {
   return false;
 }
 
+bool NativeThemeMac::SystemDarkModeEnabled() const {
+  if (@available(macOS 10.14, *)) {
+    NSAppearanceName appearance =
+        [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[
+          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
+        ]];
+    return [appearance isEqual:NSAppearanceNameDarkAqua];
+  }
+  return NativeThemeBase::SystemDarkModeEnabled();
+}
+
 NativeThemeMac::NativeThemeMac() {
 }
 
