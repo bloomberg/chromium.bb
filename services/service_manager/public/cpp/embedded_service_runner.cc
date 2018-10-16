@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/embedder/embedded_service_runner.h"
+#include "services/service_manager/public/cpp/embedded_service_runner.h"
 
 #include "base/bind.h"
-#include "services/service_manager/embedder/embedded_instance_manager.h"
+#include "services/service_manager/public/cpp/embedded_instance_manager.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {
-
 
 EmbeddedServiceRunner::EmbeddedServiceRunner(const base::StringPiece& name,
                                              const EmbeddedServiceInfo& info)

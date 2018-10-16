@@ -238,6 +238,7 @@ test("vr_android_unittests") {
     "//components/translate/core/language_detection:language_detection",
     "//device/vr:fakes",
     "//device/vr/public/mojom",
+    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//services/network:test_support",
     "//testing/android/native_test:native_test_native_code",

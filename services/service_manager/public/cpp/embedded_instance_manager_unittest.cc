@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/embedder/embedded_instance_manager.h"
+#include "services/service_manager/public/cpp/embedded_instance_manager.h"
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/embedder/embedded_instance_manager.h"
+#include "services/service_manager/public/cpp/embedded_instance_manager.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
