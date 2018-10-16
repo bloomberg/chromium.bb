@@ -126,11 +126,6 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
   if (process_type == switches::kPpapiPluginProcess)
     return SANDBOX_TYPE_PPAPI;
 
-#if defined(OS_MACOSX)
-  if (process_type == switches::kNaClLoaderProcess)
-    return SANDBOX_TYPE_NACL_LOADER;
-#endif
-
   // This is a process which we don't know about.
   return SANDBOX_TYPE_INVALID;
 }
