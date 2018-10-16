@@ -359,13 +359,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchscreen];
   }
 
-#if defined(OS_MACOSX)
-  // Pause for a moment to wait for pending repaint or resize messages sent to
-  // the renderer to arrive. If pending resize messages are for an old window
-  // size, then also pump through a new resize message if there is time.
-  void PauseForPendingResizeOrRepaints();
-#endif
-
   bool visual_properties_ack_pending_for_testing() {
     return visual_properties_ack_pending_;
   }
