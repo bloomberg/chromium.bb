@@ -296,20 +296,20 @@ bool RunOpenMultiFileDialog(HWND owner,
 // '*.something', for example '*.*' or it can be blank (which is treated as
 // *.*). |suggested_ext| should contain the extension without the dot (.) in
 // front, for example 'jpg'.
-std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
-                                     const std::wstring& filter_selected,
-                                     const std::wstring& suggested_ext) {
+base::string16 AppendExtensionIfNeeded(const base::string16& filename,
+                                       const base::string16& filter_selected,
+                                       const base::string16& suggested_ext) {
   DCHECK(!filename.empty());
-  std::wstring return_value = filename;
+  base::string16 return_value = filename;
 
   // If we wanted a specific extension, but the user's filename deleted it or
   // changed it to something that the system doesn't understand, re-append.
   // Careful: Checking net::GetMimeTypeFromExtension() will only find
   // extensions with a known MIME type, which many "known" extensions on Windows
   // don't have.  So we check directly for the "known extension" registry key.
-  std::wstring file_extension(
+  base::string16 file_extension(
       GetExtensionWithoutLeadingDot(base::FilePath(filename).Extension()));
-  std::wstring key(L"." + file_extension);
+  base::string16 key(L"." + file_extension);
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
       !base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
       file_extension != suggested_ext) {

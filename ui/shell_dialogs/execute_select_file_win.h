@@ -20,10 +20,10 @@ class FilePath;
 namespace ui {
 
 // Implementation detail exported for unit tests.
-SHELL_DIALOGS_EXPORT std::wstring AppendExtensionIfNeeded(
-    const std::wstring& filename,
-    const std::wstring& filter_selected,
-    const std::wstring& suggested_ext);
+SHELL_DIALOGS_EXPORT base::string16 AppendExtensionIfNeeded(
+    const base::string16& filename,
+    const base::string16& filter_selected,
+    const base::string16& suggested_ext);
 
 // Shows the file selection dialog modal to |owner| returns the selected
 // file(s) and file type index via the return value. The file path vector will
