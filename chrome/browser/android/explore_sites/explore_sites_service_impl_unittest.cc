@@ -18,6 +18,7 @@
 
 namespace {
 const char kCategoryName[] = "Technology";
+const char kSite1UrlNoTrailingSlash[] = "https://example.com";
 const char kSite1Url[] = "https://example.com/";
 const char kSite2Url[] = "https://sample.com/";
 const char kSite1Name[] = "example";
@@ -135,8 +136,9 @@ std::string ExploreSitesServiceImplTest::CreateTestDataProto() {
 
   // Fill in fields we need to add to the EoS database.
 
-  // Create two sites.
-  site1->set_site_url(kSite1Url);
+  // Create two sites.  We create one with no trailing slash.  The trailing
+  // slash should be added when we convert it to a GURL for canonicalization.
+  site1->set_site_url(kSite1UrlNoTrailingSlash);
   site1->set_title(kSite1Name);
   site2->set_site_url(kSite2Url);
   site2->set_title(kSite2Name);
