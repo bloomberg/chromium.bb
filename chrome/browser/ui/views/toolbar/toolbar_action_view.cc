@@ -300,9 +300,6 @@ void ToolbarActionView::DoShowContextMenu(
 
   DCHECK(visible());  // We should never show a context menu for a hidden item.
 
-  gfx::Point screen_loc;
-  ConvertPointToScreen(this, &screen_loc);
-
   int run_types =
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
   if (delegate_->ShownInsideMenu())
@@ -323,7 +320,7 @@ void ToolbarActionView::DoShowContextMenu(
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
+  menu_runner_->RunMenuAt(parent, this, GetAnchorBoundsInScreen(),
                           views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
