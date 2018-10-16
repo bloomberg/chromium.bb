@@ -34,20 +34,9 @@
 namespace viz {
 namespace {
 
-// Maximum bucket size for the UMA stats.
-constexpr int kUmaStatMaxSurfaces = 30;
-
 // Used for determine when to treat opacity close to 1.f as opaque. The value is
 // chosen to be smaller than 1/255.
 constexpr float kOpacityEpsilon = 0.001f;
-
-const char kUmaValidSurface[] =
-    "Compositing.SurfaceAggregator.SurfaceDrawQuad.ValidSurface";
-const char kUmaUsingFallbackSurface[] =
-    "Compositing.SurfaceAggregator.SurfaceDrawQuad.UsingFallbackSurface";
-const char kUmaManhattanDistanceToPrimary[] =
-    "Compositing.SurfaceAggregator.LatestInFlightSurface."
-    "ManhattanDistanceToPrimary";
 
 void MoveMatchingRequests(
     RenderPassId render_pass_id,
@@ -212,34 +201,22 @@ void SurfaceAggregator::HandleSurfaceQuad(
     return;
   }
 
-  if (latest_surface->surface_id() != primary_surface_id) {
-    if (primary_surface_id.frame_sink_id() ==
-            latest_surface->surface_id().frame_sink_id() &&
-        primary_surface_id.local_surface_id().embed_token() ==
-            latest_surface->surface_id().local_surface_id().embed_token()) {
-      UMA_HISTOGRAM_COUNTS_100(
-          kUmaManhattanDistanceToPrimary,
-          latest_surface->surface_id().ManhattanDistanceTo(primary_surface_id));
-    }
+  if (latest_surface->surface_id() != primary_surface_id &&
+      !surface_quad->stretch_content_to_fill_bounds) {
+    const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
 
-    if (!surface_quad->stretch_content_to_fill_bounds) {
-      const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
+    gfx::Rect fallback_rect(latest_surface->GetActiveFrame().size_in_pixels());
 
-      gfx::Rect fallback_rect(
-          latest_surface->GetActiveFrame().size_in_pixels());
+    float scale_ratio =
+        parent_device_scale_factor / fallback_frame.device_scale_factor();
+    fallback_rect =
+        gfx::ScaleToEnclosingRect(fallback_rect, scale_ratio, scale_ratio);
+    fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
 
-      float scale_ratio =
-          parent_device_scale_factor / fallback_frame.device_scale_factor();
-      fallback_rect =
-          gfx::ScaleToEnclosingRect(fallback_rect, scale_ratio, scale_ratio);
-      fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
-
-      EmitGutterQuadsIfNecessary(
-          surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
-          target_transform, clip_rect,
-          fallback_frame.metadata.root_background_color, dest_pass);
-    }
-    ++uma_stats_.using_fallback_surface;
+    EmitGutterQuadsIfNecessary(
+        surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
+        target_transform, clip_rect,
+        fallback_frame.metadata.root_background_color, dest_pass);
   }
 
   EmitSurfaceContent(latest_surface, parent_device_scale_factor,
@@ -291,7 +268,6 @@ void SurfaceAggregator::EmitSurfaceContent(
   scaled_quad_to_target_transform.Scale(SK_MScalar1 / layer_to_content_scale_x,
                                         SK_MScalar1 / layer_to_content_scale_y);
 
-  ++uma_stats_.valid_surface;
   const CompositorFrame& frame = surface->GetActiveFrame();
   TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Graphics.Pipeline",
@@ -1112,8 +1088,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
     int64_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
 
-  uma_stats_.Reset();
-
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
   contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
@@ -1195,17 +1169,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
       break;
     }
   }
-
-  // TODO(jamesr): Aggregate all resource references into the returned frame's
-  // resource list.
-
-  // Log UMA stats for SurfaceDrawQuads on the number of surfaces that were
-  // aggregated together and any failures.
-  UMA_HISTOGRAM_EXACT_LINEAR(kUmaValidSurface, uma_stats_.valid_surface,
-                             kUmaStatMaxSurfaces);
-  UMA_HISTOGRAM_EXACT_LINEAR(kUmaUsingFallbackSurface,
-                             uma_stats_.using_fallback_surface,
-                             kUmaStatMaxSurfaces);
   return frame;
 }
 
