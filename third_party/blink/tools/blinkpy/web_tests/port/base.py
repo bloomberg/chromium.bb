@@ -256,6 +256,16 @@ class Port(object):
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
                 ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
                 '--user-data-dir']
+
+        # If we're already repeating the tests more than once, then we're not
+        # particularly concerned with speed. Resetting the shell between tests
+        # increases test run time by 2-5X, but provides more consistent results
+        # [less state leaks between tests].
+        if (self.get_option('reset_shell_between_tests') or
+            self.get_option('repeat_each') > 1 or
+            self.get_option('iterations') > 1):
+            flags += ['--reset-shell-between-tests']
+
         if TESTS_IN_BLINK:
             flags += ['--tests-in-blink']
         return flags

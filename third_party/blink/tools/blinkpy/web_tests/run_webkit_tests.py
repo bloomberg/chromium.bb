@@ -356,6 +356,14 @@ def parse_args(args):
                 action='store',
                 help='Output per-test profile information, using the specified profiler.'),
             optparse.make_option(
+                '--reset-shell-between-tests',
+                action='store_true',
+                default=False,
+                help='Resetting the shell between tests causes the tests to '
+                     'take twice as long to run on average, but provides more '
+                     'consistent results. This is automatically enabled if '
+                     '--repeat-each or --gtest_repeat is specified'),
+            optparse.make_option(
                 '--repeat-each',
                 type='int',
                 default=1,
