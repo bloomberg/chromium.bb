@@ -4641,11 +4641,9 @@ def CMDdescription(parser, args):
     if not target_issue_arg.valid:
       parser.error('invalid codereview url or CL id')
 
-  auth_config = auth.extract_auth_config_from_options(options)
-
   kwargs = {
-      'auth_config': auth_config,
-      'codereview': options.forced_codereview,
+    'auth_config': auth.extract_auth_config_from_options(options),
+    'codereview': options.forced_codereview,
   }
   detected_codereview_from_url = False
   if target_issue_arg:
