@@ -366,7 +366,7 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Allows the BrowserWindow object to handle the specified keyboard event,
   // if the renderer did not process it.
-  virtual void HandleKeyboardEvent(
+  virtual bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
   // Clipboard commands applied to the whole browser window.

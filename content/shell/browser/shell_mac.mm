@@ -317,10 +317,10 @@ void Shell::URLEntered(const std::string& url_string) {
   }
 }
 
-void Shell::HandleKeyboardEvent(WebContents* source,
+bool Shell::HandleKeyboardEvent(WebContents* source,
                                 const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || headless_ || hide_toolbar_)
-    return;
+    return false;
 
   // The event handling to get this strictly right is a tangle; cheat here a bit
   // by just letting the menus have a chance at it.
@@ -328,11 +328,13 @@ void Shell::HandleKeyboardEvent(WebContents* source,
     if (([event.os_event modifierFlags] & NSCommandKeyMask) &&
         [[event.os_event characters] isEqual:@"l"]) {
       [window_ makeFirstResponder:url_edit_view_];
-      return;
+      return true;
     }
 
     [[NSApp mainMenu] performKeyEquivalent:event.os_event];
+    return true;
   }
+  return false;
 }
 
 }  // namespace content

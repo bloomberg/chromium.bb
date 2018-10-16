@@ -220,7 +220,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   virtual void OnRenderFrameHostDeleted(int process_id, int routing_id);
 
   // WebContentsDelegate implementation.
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
   bool PreHandleGestureEvent(content::WebContents* source,

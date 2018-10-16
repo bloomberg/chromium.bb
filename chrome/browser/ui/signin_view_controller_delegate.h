@@ -98,7 +98,7 @@ class SigninViewControllerDelegate
                            bool to_different_document) override;
 
   // Subclasses must override this method to correctly handle accelerators.
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
 

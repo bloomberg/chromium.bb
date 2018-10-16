@@ -717,7 +717,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override;
-  void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
+  bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override;
   bool PreHandleGestureEvent(const blink::WebGestureEvent& event) override;
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;

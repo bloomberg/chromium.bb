@@ -10,11 +10,12 @@
 namespace views {
 
 // static
-void UnhandledKeyboardEventHandler::HandleNativeKeyboardEvent(
+bool UnhandledKeyboardEventHandler::HandleNativeKeyboardEvent(
     gfx::NativeEvent event,
     FocusManager* focus_manager) {
   [[base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>([event window])
       commandDispatcher] redispatchKeyEvent:event];
+  return true;
 }
 
 }  // namespace views

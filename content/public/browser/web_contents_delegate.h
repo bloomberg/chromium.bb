@@ -253,9 +253,11 @@ class CONTENT_EXPORT WebContentsDelegate {
       const NativeWebKeyboardEvent& event);
 
   // Allows delegates to handle unhandled keyboard messages coming back from
-  // the renderer.
-  virtual void HandleKeyboardEvent(WebContents* source,
-                                   const NativeWebKeyboardEvent& event) {}
+  // the renderer. Returns true if the event was handled, false otherwise. A
+  // true value means no more processing should happen on the event. The default
+  // return value is false
+  virtual bool HandleKeyboardEvent(WebContents* source,
+                                   const NativeWebKeyboardEvent& event);
 
   // Allows delegates to handle gesture events before sending to the renderer.
   // Returns true if the |event| was handled and thus shouldn't be processed

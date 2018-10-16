@@ -453,15 +453,16 @@ bool WebUILoginView::HandleContextMenu(
 #endif
 }
 
-void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
+bool WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
                                          const NativeWebKeyboardEvent& event) {
+  bool handled = false;
   if (forward_keyboard_event_) {
     // Disable arrow key traversal because arrow keys are handled via
     // accelerator when this view has focus.
     ScopedArrowKeyTraversal arrow_key_traversal(false);
 
-    unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                          GetFocusManager());
+    handled = unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+        event, GetFocusManager());
   }
 
   // Make sure error bubble is cleared on keyboard event. This is needed
@@ -472,6 +473,7 @@ void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
     if (web_ui)
       web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
   }
+  return handled;
 }
 
 bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {

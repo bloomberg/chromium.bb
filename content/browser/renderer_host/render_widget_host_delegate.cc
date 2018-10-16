@@ -35,6 +35,11 @@ bool RenderWidgetHostDelegate::HandleWheelEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::ShouldIgnoreInputEvents() {
   return false;
 }

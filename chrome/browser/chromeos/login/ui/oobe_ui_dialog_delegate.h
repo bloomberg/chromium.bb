@@ -94,7 +94,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
 
   // content::WebContentsDelegate:
   bool TakeFocus(content::WebContents* source, bool reverse) override;
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
 

@@ -193,17 +193,18 @@ ExtensionViewHost::PreHandleKeyboardEvent(WebContents* source,
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
-void ExtensionViewHost::HandleKeyboardEvent(
+bool ExtensionViewHost::HandleKeyboardEvent(
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
     if (event.GetType() == NativeWebKeyboardEvent::kRawKeyDown &&
         event.windows_key_code == ui::VKEY_ESCAPE) {
       Close();
-      return;
+      return true;
     }
   }
   UnhandledKeyboardEvent(source, event);
+  return true;
 }
 
 bool ExtensionViewHost::PreHandleGestureEvent(

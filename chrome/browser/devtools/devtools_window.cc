@@ -144,7 +144,7 @@ class DevToolsToolboxDelegate
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
   void WebContentsDestroyed() override;
@@ -186,16 +186,15 @@ DevToolsToolboxDelegate::PreHandleKeyboardEvent(
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
-void DevToolsToolboxDelegate::HandleKeyboardEvent(
+bool DevToolsToolboxDelegate::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   if (event.windows_key_code == 0x08) {
     // Do not navigate back in history on Windows (http://crbug.com/74156).
-    return;
+    return false;
   }
   BrowserWindow* window = GetInspectedBrowserWindow();
-  if (window)
-    window->HandleKeyboardEvent(event);
+  return window && window->HandleKeyboardEvent(event);
 }
 
 void DevToolsToolboxDelegate::WebContentsDestroyed() {
@@ -1249,16 +1248,15 @@ content::KeyboardEventProcessingResult DevToolsWindow::PreHandleKeyboardEvent(
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
-void DevToolsWindow::HandleKeyboardEvent(
+bool DevToolsWindow::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   if (event.windows_key_code == 0x08) {
     // Do not navigate back in history on Windows (http://crbug.com/74156).
-    return;
+    return true;
   }
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-  if (inspected_window)
-    inspected_window->HandleKeyboardEvent(event);
+  return inspected_window && inspected_window->HandleKeyboardEvent(event);
 }
 
 content::JavaScriptDialogManager* DevToolsWindow::GetJavaScriptDialogManager(

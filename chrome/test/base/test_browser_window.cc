@@ -150,6 +150,11 @@ TestBrowserWindow::PreHandleKeyboardEvent(
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
+bool TestBrowserWindow::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 bool TestBrowserWindow::IsBookmarkBarVisible() const {
   return false;
 }

@@ -405,7 +405,7 @@ content::KeyboardEventProcessingResult AppWindow::PreHandleKeyboardEvent(
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
-void AppWindow::HandleKeyboardEvent(
+bool AppWindow::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   // If the window is currently fullscreen and not forced, ESC should leave
@@ -414,10 +414,10 @@ void AppWindow::HandleKeyboardEvent(
   if (event.windows_key_code == ui::VKEY_ESCAPE && IsFullscreen() &&
       !IsForcedFullscreen()) {
     Restore();
-    return;
+    return true;
   }
 
-  native_app_window_->HandleKeyboardEvent(event);
+  return native_app_window_->HandleKeyboardEvent(event);
 }
 
 void AppWindow::RequestToLockMouse(WebContents* web_contents,
