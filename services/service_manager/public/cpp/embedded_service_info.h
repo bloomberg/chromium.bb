@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_INFO_H_
-#define SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_INFO_H_
+#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_SERVICE_INFO_H_
+#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_SERVICE_INFO_H_
 
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "services/service_manager/embedder/service_manager_embedder_export.h"
 
 namespace service_manager {
 class Service;
 
 // EmbeddedServiceInfo provides details necessary to construct and bind new
 // instances of embedded services.
-struct SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceInfo {
+struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) EmbeddedServiceInfo {
   using ServiceFactory =
       base::RepeatingCallback<std::unique_ptr<service_manager::Service>()>;
 
@@ -62,4 +62,4 @@ struct SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceInfo {
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_INFO_H_
+#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_SERVICE_INFO_H_

@@ -29,8 +29,8 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_features.h"
 

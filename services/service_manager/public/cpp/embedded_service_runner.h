@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_RUNNER_H_
-#define SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_RUNNER_H_
+#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_SERVICE_RUNNER_H_
+#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_SERVICE_RUNNER_H_
 
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
-#include "services/service_manager/embedder/service_manager_embedder_export.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -23,7 +23,7 @@ namespace service_manager {
 class EmbeddedInstanceManager;
 
 // Hosts in-process service instances for a given service.
-class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceRunner {
+class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) EmbeddedServiceRunner {
  public:
   // Constructs a runner for a service. Every new instance started by the
   // Service Manager for this service will invoke the factory function on |info|
@@ -56,4 +56,4 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceRunner {
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_RUNNER_H_
+#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_SERVICE_RUNNER_H_

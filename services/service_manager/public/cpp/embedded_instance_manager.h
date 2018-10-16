@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_INSTANCE_MANAGER_H_
-#define SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_INSTANCE_MANAGER_H_
+#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_INSTANCE_MANAGER_H_
+#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_INSTANCE_MANAGER_H_
 
 #include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
-#include "services/service_manager/embedder/service_manager_embedder_export.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace base {
@@ -33,7 +33,7 @@ class EmbeddedInstanceManagerTestApi;
 
 // EmbeddedInstanceManager is an implementation detail of EmbeddedServiceRunner.
 // Outside of tests there is no need to use it directly.
-class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedInstanceManager
+class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) EmbeddedInstanceManager
     : public base::RefCountedThreadSafe<EmbeddedInstanceManager> {
  public:
   EmbeddedInstanceManager(const base::StringPiece& name,
@@ -98,4 +98,4 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedInstanceManager
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_INSTANCE_MANAGER_H_
+#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_EMBEDDED_INSTANCE_MANAGER_H_

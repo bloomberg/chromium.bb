@@ -1338,7 +1338,7 @@ component("ash") {
     "//components/discardable_memory/public/interfaces",
     "//mojo/public/cpp/system",
     "//services/device/public/mojom",
-    "//services/service_manager/embedder",
+    "//services/service_manager/public/cpp",
     "//services/ws:host",
     "//services/ws:lib",
     "//services/ws/common",
@@ -2401,6 +2401,7 @@ static_library("interactive_ui_test_support") {
   deps = [
     ":test_support_with_content",
     "//base",
+    "//mojo/core/embedder",
     "//skia",
     "//testing/gtest",
     "//ui/aura",

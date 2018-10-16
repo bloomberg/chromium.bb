@@ -242,7 +242,6 @@ jumbo_source_set("common_sources") {
     "//net",
     "//services/network:network_service",
     "//services/network/public/mojom",
-    "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/blink/public:blink_headers",
