@@ -5400,16 +5400,6 @@ def CMDtry(parser, args):
       return 1
 
   patchset = cl.GetMostRecentPatchset()
-  # TODO(tandrii): Checking local patchset against remote patchset is only
-  # supported for Rietveld. Extend it to Gerrit or remove it completely.
-  if not cl.IsGerrit() and patchset != cl.GetPatchset():
-    print('Warning: Codereview server has newer patchsets (%s) than most '
-          'recent upload from local checkout (%s). Did a previous upload '
-          'fail?\n'
-          'By default, git cl try uses the latest patchset from '
-          'codereview, continuing to use patchset %s.\n' %
-          (patchset, cl.GetPatchset(), patchset))
-
   try:
     _trigger_try_jobs(auth_config, cl, buckets, options, patchset)
   except BuildbucketResponseException as ex:
@@ -5459,15 +5449,6 @@ def CMDtry_results(parser, args):
                    'Either upload first, or pass --patchset explicitly' %
                    cl.GetIssue())
 
-    # TODO(tandrii): Checking local patchset against remote patchset is only
-    # supported for Rietveld. Extend it to Gerrit or remove it completely.
-    if not cl.IsGerrit() and patchset != cl.GetPatchset():
-      print('Warning: Codereview server has newer patchsets (%s) than most '
-            'recent upload from local checkout (%s). Did a previous upload '
-            'fail?\n'
-            'By default, git cl try-results uses the latest patchset from '
-            'codereview, continuing to use patchset %s.\n' %
-            (patchset, cl.GetPatchset(), patchset))
   try:
     jobs = fetch_try_jobs(auth_config, cl, options.buildbucket_host, patchset)
   except BuildbucketResponseException as ex:

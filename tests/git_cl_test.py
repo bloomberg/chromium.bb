@@ -2526,38 +2526,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl, '_buildbucket_retry', lambda *_, **__:
               self._mocked_call(['_buildbucket_retry']))
 
-  def _setup_fetch_try_jobs_rietveld(self, *request_results):
-    self._setup_fetch_try_jobs(most_recent_patchset=20001)
-    self.calls += [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', 'branch.feature.rietveldissue'],), '1'),
-      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-      ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
-      ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
-      ((['git', 'config', 'branch.feature.rietveldserver'],),
-       'codereview.example.com'),
-      ((['get_authenticator_for_host', 'codereview.example.com'],),
-       AuthenticatorMock()),
-    ] + [((['_buildbucket_retry'],), r) for r in request_results]
-
-  def test_fetch_try_jobs_none_rietveld(self):
-    self._setup_fetch_try_jobs_rietveld({})
-    # Simulate that user isn't logged in.
-    self.mock(AuthenticatorMock, 'has_cached_credentials', lambda _: False)
-    self.assertEqual(0, git_cl.main(['try-results']))
-    self.assertRegexpMatches(sys.stdout.getvalue(),
-                             'Warning: Some results might be missing')
-    self.assertRegexpMatches(sys.stdout.getvalue(), 'No try jobs')
-
-  def test_fetch_try_jobs_some_rietveld(self):
-    self._setup_fetch_try_jobs_rietveld({
-      'builds': self.BUILDBUCKET_BUILDS_MAP.values(),
-    })
-    self.assertEqual(0, git_cl.main(['try-results']))
-    self.assertRegexpMatches(sys.stdout.getvalue(), '^Failures:')
-    self.assertRegexpMatches(sys.stdout.getvalue(), 'Started:')
-    self.assertRegexpMatches(sys.stdout.getvalue(), '2 try jobs')
-
   def _setup_fetch_try_jobs_gerrit(self, *request_results):
     self._setup_fetch_try_jobs(most_recent_patchset=13)
     self.calls += [
