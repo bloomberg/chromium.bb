@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -97,7 +98,7 @@
   [self.childCoordinators removeAllObjects];
 }
 
-- (void)startPasswords {
+- (void)startPasswordsFromButton:(UIButton*)button {
   ManualFillPasswordCoordinator* passwordCoordinator =
       [[ManualFillPasswordCoordinator alloc]
           initWithBaseViewController:self.baseViewController
@@ -105,10 +106,14 @@
                         webStateList:self.webStateList
                     injectionHandler:self.manualFillInjectionHandler];
   passwordCoordinator.delegate = self;
-  [self.formInputAccessoryViewController
-      presentView:passwordCoordinator.viewController.view];
-  [self.childCoordinators addObject:passwordCoordinator];
+  if (IsIPadIdiom()) {
+    [passwordCoordinator presentFromButton:button];
+  } else {
+    [self.formInputAccessoryViewController
+        presentView:passwordCoordinator.viewController.view];
+  }
 
+  [self.childCoordinators addObject:passwordCoordinator];
   [self.formInputAccessoryMediator disableSuggestions];
 }
 
@@ -129,15 +134,19 @@
   // TODO(crbug.com/845472): implement.
 }
 
-- (void)passwordButtonPressed {
+- (void)passwordButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  [self startPasswords];
+  [self startPasswordsFromButton:sender];
 }
 
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
   [self.delegate openPasswordSettings];
+}
+
+- (void)resetAccessoryView {
+  [self.manualFillAccessoryViewController reset];
 }
 
 @end

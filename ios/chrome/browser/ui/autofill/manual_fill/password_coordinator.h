@@ -10,8 +10,17 @@
 @class ManualFillInjectionHandler;
 class WebStateList;
 
+namespace manual_fill {
+
+extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
+
+}  // namespace manual_fill
+
 // Delegate for the coordinator actions.
 @protocol PasswordCoordinatorDelegate<NSObject>
+
+// Resets the accessory view.
+- (void)resetAccessoryView;
 
 // Opens the passwords settings.
 - (void)openPasswordSettings;
@@ -42,6 +51,9 @@ initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+
+// Presents the password view controller as a popover from the passed button.
+- (void)presentFromButton:(UIButton*)button;
 
 @end
 

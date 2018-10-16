@@ -33,7 +33,7 @@ extern NSString* const AccessoryCreditCardAccessibilityIdentifier;
 - (void)keyboardButtonPressed;
 
 // Invoked after the user touches the `passwords` button.
-- (void)passwordButtonPressed;
+- (void)passwordButtonPressed:(UIButton*)sender;
 
 @end
 
