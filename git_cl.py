@@ -1079,6 +1079,20 @@ def ParseIssueNumberArgument(arg, codereview=None):
   return results['gerrit']
 
 
+def _create_description_from_log(args):
+  """Pulls out the commit log to use as a base for the CL description."""
+  log_args = []
+  if len(args) == 1 and not args[0].endswith('.'):
+    log_args = [args[0] + '..']
+  elif len(args) == 1 and args[0].endswith('...'):
+    log_args = [args[0][:-1]]
+  elif len(args) == 2:
+    log_args = [args[0] + '..' + args[1]]
+  else:
+    log_args = args[:]  # Hope for the best!
+  return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
+
+
 class GerritChangeNotExists(Exception):
   def __init__(self, issue, url):
     self.issue = issue
@@ -2826,7 +2840,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         if options.message:
           message = options.message
         else:
-          message = CreateDescriptionFromLog(git_diff_args)
+          message = _create_description_from_log(git_diff_args)
           if options.title:
             message = options.title + '\n\n' + message
         change_desc = ChangeDescription(message)
@@ -2866,7 +2880,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         os.remove(desc_tempfile.name)
     else:
       change_desc = ChangeDescription(
-          options.message or CreateDescriptionFromLog(git_diff_args))
+          options.message or _create_description_from_log(git_diff_args))
       if not change_desc.description:
         DieWithError("Description is empty. Aborting...")
 
@@ -3146,10 +3160,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     """Re-commits using the current message, assumes the commit hook is in
     place.
     """
-    log_desc = options.message or CreateDescriptionFromLog(args)
+    log_desc = options.message or _create_description_from_log(args)
     git_command = ['commit', '--amend', '-m', log_desc]
     RunGit(git_command)
-    new_log_desc = CreateDescriptionFromLog(args)
+    new_log_desc = _create_description_from_log(args)
     if git_footers.get_footer_change_id(new_log_desc):
       print('git-cl: Added Change-Id to commit message.')
       return new_log_desc
@@ -4684,20 +4698,6 @@ def CMDdescription(parser, args):
   if cl.GetDescription().strip() != description.description:
     cl.UpdateDescription(description.description, force=options.force)
   return 0
-
-
-def CreateDescriptionFromLog(args):
-  """Pulls out the commit log to use as a base for the CL description."""
-  log_args = []
-  if len(args) == 1 and not args[0].endswith('.'):
-    log_args = [args[0] + '..']
-  elif len(args) == 1 and args[0].endswith('...'):
-    log_args = [args[0][:-1]]
-  elif len(args) == 2:
-    log_args = [args[0] + '..' + args[1]]
-  else:
-    log_args = args[:]  # Hope for the best!
-  return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
 
 
 @metrics.collector.collect_metrics('git cl lint')
