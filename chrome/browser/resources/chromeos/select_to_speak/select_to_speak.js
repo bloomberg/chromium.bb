@@ -161,7 +161,8 @@ SelectToSpeak.prototype = {
         NodeUtils.findAllMatching(focusedNode.root, rect, nodes);
       }
       if (nodes.length == 1 &&
-          nodes[0].className == SELECT_TO_SPEAK_TRAY_CLASS_NAME) {
+          AutomationUtil.getAncestors(nodes[0]).find(
+              (n) => n.className == SELECT_TO_SPEAK_TRAY_CLASS_NAME)) {
         // Don't read only the Select-to-Speak toggle button in the tray unless
         // more items are being read.
         return;
