@@ -372,10 +372,6 @@ class NET_EXPORT NetworkQualityEstimator
   // |observed_http_rtt| with the expected HTTP and transport RTT.
   bool IsHangingRequest(base::TimeDelta observed_http_rtt) const;
 
-  base::Optional<int32_t> ComputeIncreaseInTransportRTTForTests() {
-    return ComputeIncreaseInTransportRTT();
-  }
-
   // Returns the current network signal strength by querying the platform APIs.
   // Set to INT32_MIN when the value is unavailable. Otherwise, must be between
   // 0 and 4 (both inclusive). This may take into account many different radio
@@ -421,11 +417,6 @@ class NET_EXPORT NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ForceEffectiveConnectionTypeThroughFieldTrial);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestBDPComputation);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
-                           TestComputeIncreaseInTransportRTTFullHostsOverlap);
-  FRIEND_TEST_ALL_PREFIXES(
-      NetworkQualityEstimatorTest,
-      TestComputeIncreaseInTransportRTTPartialHostsOverlap);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ObservationDiscardedIfCachedEstimateAvailable);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
@@ -527,17 +518,6 @@ class NET_EXPORT NetworkQualityEstimator
   // stored in |bandwidth_delay_product_kbits_| and can be accessed using
   // |GetBandwidthDelayProductKbits|.
   void ComputeBandwidthDelayProduct();
-
-  // Computes the current increase in transport RTT in milliseconds over the
-  // baseline transport RTT due to congestion. This value can be interpreted as
-  // the additional delay caused due to an increase in queue length in the last
-  // mile. The baseline is computed using the transport RTT observations in the
-  // past 60 seconds. The current RTT is computed using the observations in the
-  // past 5 seconds. Returns an empty optional when there was no recent data.
-  base::Optional<int32_t> ComputeIncreaseInTransportRTT() const;
-
-  // Periodically updates |increase_in_transport_rtt_| by posting delayed tasks.
-  void IncreaseInTransportRTTUpdater();
 
   // Gathers metrics for the next connection type. Called when there is a change
   // in the connection type.
@@ -647,12 +627,6 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Current estimate of the bandwidth delay product (BDP) in kilobits.
   base::Optional<int32_t> bandwidth_delay_product_kbits_;
-
-  // Current estimate of the increase in the transport RTT due to congestion.
-  base::Optional<int32_t> increase_in_transport_rtt_;
-
-  // This is true if there is a task posted for |IncreaseInTransportRTTUpdater|.
-  bool increase_in_transport_rtt_updater_posted_;
 
   // Current effective connection type. It is updated on connection change
   // events. It is also updated every time there is network traffic (provided
