@@ -102,8 +102,10 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);
 
-  if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting())
-    controller->ToggleOverview();
+  if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting()) {
+    controller->ToggleOverview(
+        WindowSelector::EnterExitOverviewType::kWindowDragged);
+  }
 
   if (controller->IsSelecting()) {
     // Only do animation if overview was open before the drag started. If the

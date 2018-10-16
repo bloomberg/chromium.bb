@@ -63,8 +63,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   };
 
   // Enum describing the different ways overview can be entered or exited.
-  // TODO(minch|xdai): Investigate if we should add kWindowDragged and/or
-  // kWindowSnapped to this.
   enum class EnterExitOverviewType {
     // The default way, window(s) animate from their initial bounds to the grid
     // bounds. Window(s) that are not visible to the user do not get animated.
@@ -80,9 +78,11 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     // code does not need to handle any animations. This is an exit only type.
     kSwipeFromShelf,
     // Overview can be opened by start dragging a window from top or be closed
-    // if the dragged window restores back to maximized/full-screened. Used as
-    // an exit type only currently to avoid the update bounds animation of the
-    // windows in overview grid on overview mode ended.
+    // if the dragged window restores back to maximized/full-screened. On enter
+    // this mode is same as kNormal, except when all windows are minimized, the
+    // launcher does not animate in. On exit this mode is used to avoid the
+    // update bounds animation of the windows in overview grid on overview mode
+    // ended.
     kWindowDragged
   };
 

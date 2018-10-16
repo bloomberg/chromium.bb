@@ -38,6 +38,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -3185,6 +3186,31 @@ TEST_F(WindowSelectorTest, OverviewEnterExitAnimationTablet) {
   // All windows are minimized, so we should use the slide animation.
   ToggleOverview();
   EXPECT_TRUE(observer.last_animation_was_slide());
+}
+
+// Tests that overview mode is entered with kWindowDragged mode when an app is
+// dragged from the top of the screen.
+TEST_F(WindowSelectorTest, DraggingFromTopAnimation) {
+  // Ensure calls to EnableTabletModeWindowManager complete.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  base::RunLoop().RunUntilIdle();
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<views::Widget> widget(CreateWindowWidget(bounds));
+
+  // Drag from the the top of the app to enter overview.
+  auto drag_controller = std::make_unique<TabletModeAppWindowDragController>();
+  ui::GestureEvent event(0, 0, 0, base::TimeTicks(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+  ui::Event::DispatcherApi dispatch_helper(&event);
+  dispatch_helper.set_target(widget->GetNativeWindow());
+  drag_controller->DragWindowFromTop(&event);
+
+  ASSERT_TRUE(IsSelecting());
+  EXPECT_EQ(WindowSelector::EnterExitOverviewType::kWindowDragged,
+            window_selector()->enter_exit_overview_type());
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
