@@ -689,7 +689,7 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
     const WebScriptSource& source_in) {
   DCHECK(GetFrame());
   CHECK_GT(world_id, 0);
-  CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
+  CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
   // Note: An error event in an isolated world will never be dispatched to
   // a foreign world.
@@ -704,7 +704,7 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
     const WebScriptSource& source_in) {
   DCHECK(GetFrame());
   CHECK_GT(world_id, 0);
-  CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
+  CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
   // Note: An error event in an isolated world will never be dispatched to
   // a foreign world.
@@ -850,7 +850,7 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
     WebScriptExecutionCallback* callback) {
   DCHECK(GetFrame());
   CHECK_GT(world_id, 0);
-  CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
+  CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
   scoped_refptr<DOMWrapperWorld> isolated_world =
       DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);

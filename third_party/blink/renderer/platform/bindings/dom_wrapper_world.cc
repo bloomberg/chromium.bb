@@ -56,7 +56,7 @@ static WorldMap& GetWorldMap() {
 #if DCHECK_IS_ON()
 static bool IsIsolatedWorldId(int world_id) {
   return DOMWrapperWorld::kMainWorldId < world_id &&
-         world_id < DOMWrapperWorld::kIsolatedWorldIdLimit;
+         world_id < DOMWrapperWorld::kDOMWrapperWorldIsolatedWorldIdLimit;
 }
 
 static bool IsMainWorldId(int world_id) {
