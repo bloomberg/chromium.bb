@@ -19,6 +19,7 @@
 #include "base/memory/singleton.h"
 #include "base/profiler/native_stack_sampler.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -201,15 +202,19 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // Thread API (Start, Stop, StopSoon, & DetachFromSequence) so that
   // multiple threads may make those calls.
   Lock thread_execution_state_lock_;  // Protects all thread_execution_state_*
-  ThreadExecutionState thread_execution_state_ = NOT_STARTED;
-  scoped_refptr<SingleThreadTaskRunner> thread_execution_state_task_runner_;
-  bool thread_execution_state_disable_idle_shutdown_for_testing_ = false;
+  ThreadExecutionState thread_execution_state_
+      GUARDED_BY(thread_execution_state_lock_) = NOT_STARTED;
+  scoped_refptr<SingleThreadTaskRunner> thread_execution_state_task_runner_
+      GUARDED_BY(thread_execution_state_lock_);
+  bool thread_execution_state_disable_idle_shutdown_for_testing_
+      GUARDED_BY(thread_execution_state_lock_) = false;
 
   // A counter that notes adds of new collection requests. It is incremented
   // when changes occur so that delayed shutdown tasks are able to detect if
   // something new has happened while it was waiting. Like all "execution_state"
   // vars, this must be accessed while holding |thread_execution_state_lock_|.
-  int thread_execution_state_add_events_ = 0;
+  int thread_execution_state_add_events_
+      GUARDED_BY(thread_execution_state_lock_) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SamplingThread);
 };
