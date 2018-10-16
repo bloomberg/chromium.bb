@@ -80,9 +80,10 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
       base::OnceClosure change_completed_cb);
 
  private:
-  // Contains state shared between main and media thread.
-  // Main thread can only read. Media thread can both - read and write.
-  // So it is not necessary to lock when reading from the media thread.
+  // Contains state shared between main and media thread. On the media thread
+  // each member can be read without locking, but writing requires locking. On
+  // the main thread reading requires a lock and writing is prohibited.
+  //
   // This struct should only contain state that is not immediately needed by
   // PipelineClient and can be cached on the media thread until queried.
   // Alternatively we could cache it on the main thread by posting the
@@ -93,6 +94,10 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   struct SharedState {
     // TODO(scherkus): Enforce that Renderer is only called on a single thread,
     // even for accessing media time http://crbug.com/370634
+    //
+    // Note: Renderer implementations must support GetMediaTime() being called
+    // on both the main and media threads. RendererWrapper::GetMediaTime() calls
+    // it from the main thread (locked).
     std::unique_ptr<Renderer> renderer;
 
     // True when OnBufferedTimeRangesChanged() has been called more recently
@@ -536,6 +541,7 @@ void PipelineImpl::RendererWrapper::OnEnded() {
 
 // TODO(crbug/817089): Combine this functionality into renderer->GetMediaTime().
 base::TimeDelta PipelineImpl::RendererWrapper::GetCurrentTimestamp() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_);
   DCHECK(shared_state_.renderer || state_ != kPlaying);
 
