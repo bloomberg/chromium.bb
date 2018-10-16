@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "url/gurl.h"
 
@@ -53,12 +54,26 @@ class CallbackAggregator : public base::RefCounted<CallbackAggregator> {
   void OnGetPages(std::string feed_url,
                   const std::vector<OfflinePageItem>& pages) {
     if (!pages.empty()) {
-      OfflinePageItem newest =
+      OfflinePageItem best =
           *std::max_element(pages.begin(), pages.end(), [](auto lhs, auto rhs) {
-            return lhs.creation_time < rhs.creation_time;
+            // Prefer prefetched articles over any other. They are typically of
+            // higher quality.
+            bool leftIsPrefetch = lhs.client_id.name_space ==
+                                  offline_pages::kSuggestedArticlesNamespace;
+            bool rightIsPrefetch = rhs.client_id.name_space ==
+                                   offline_pages::kSuggestedArticlesNamespace;
+            if (leftIsPrefetch != rightIsPrefetch) {
+              // Only one is prefetch, if that is |rhs|, then they're in the
+              // correct order.
+              return rightIsPrefetch;
+            } else {
+              // Newer articles are also better, but not as important as being
+              // prefetched.
+              return lhs.creation_time < rhs.creation_time;
+            }
           });
       urls_.push_back(feed_url);
-      on_each_result_.Run(std::move(feed_url), newest.offline_id);
+      on_each_result_.Run(feed_url, best.offline_id);
     }
   }
 
