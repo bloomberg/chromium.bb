@@ -79,7 +79,6 @@ enum class Channel;
 }
 
 namespace views {
-class EventMonitor;
 class ExternalFocusTracker;
 class WebView;
 }
@@ -524,13 +523,12 @@ class BrowserView : public BrowserWindow,
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }
   views::WebView* GetDevToolsWebViewForTest() { return devtools_web_view_; }
+  FullscreenControlHost* fullscreen_control_host_for_test() {
+    return fullscreen_control_host_.get();
+  }
 
   // Called by BrowserFrame during theme changes.
   void NativeThemeUpdated(const ui::NativeTheme* theme);
-
-  // Gets the FullscreenControlHost for this BrowserView, creating it if it does
-  // not yet exist.
-  FullscreenControlHost* GetFullscreenControlHost();
 
   // Gets the amount to vertically shift the placement of the icons on the
   // bookmark bar so the icons appear centered relative to the views above and
@@ -794,10 +792,6 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<BrowserWindowHistogramHelper> histogram_helper_;
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
-
-#if !defined(USE_AURA)
-  std::unique_ptr<views::EventMonitor> fullscreen_control_host_event_monitor_;
-#endif
 
   struct ResizeSession {
     // The time when user started resizing the window.
