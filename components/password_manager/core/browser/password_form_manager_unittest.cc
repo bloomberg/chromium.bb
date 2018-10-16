@@ -446,7 +446,7 @@ class PasswordFormManagerTest : public testing::Test {
     if (field_type) {
       // Show the password generation popup to check that the generation vote
       // would be ignored.
-      form_manager.set_generation_element(saved_match()->password_element);
+      form_manager.SetGenerationElement(saved_match()->password_element);
       form_manager.SetGenerationPopupWasShown(/*shown=*/true,
                                               /*manually_triggered*/ true);
       expect_generation_vote =
@@ -689,7 +689,7 @@ class PasswordFormManagerTest : public testing::Test {
     base::string16 generation_element = is_change_password_form
                                             ? form.new_password_element
                                             : form.password_element;
-    form_manager.set_generation_element(generation_element);
+    form_manager.SetGenerationElement(generation_element);
     form_manager.SetGenerationPopupWasShown(true, is_manual_generation);
     form_manager.SetHasGeneratedPassword(has_generated_password);
     if (has_generated_password)
@@ -798,7 +798,7 @@ class PasswordFormManagerTest : public testing::Test {
     base::string16 generation_element = is_change_password_form
                                             ? form.new_password_element
                                             : form.password_element;
-    form_manager->set_generation_element(generation_element);
+    form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(true, is_manual_generation);
     form_manager->SetHasGeneratedPassword(has_generated_password);
     if (has_generated_password)

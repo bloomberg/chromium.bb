@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/stl_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -300,8 +301,51 @@ bool NewPasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
   return pending_credentials_.is_public_suffix_match;
 }
 
+void NewPasswordFormManager::PresaveGeneratedPassword(
+    const PasswordForm& form) {
+  std::unique_ptr<PasswordForm> parsed_form =
+      ParseFormAndMakeLogging(form.form_data, FormDataParser::Mode::kSaving);
+
+  if (!parsed_form)
+    return;
+
+  // Clear the username value if there are already saved credentials with the
+  // same username in order to prevent overwriting.
+  if (base::ContainsKey(best_matches_, parsed_form->username_value))
+    parsed_form->username_value.clear();
+
+  form_saver_->PresaveGeneratedPassword(*parsed_form);
+
+  // If a password had been generated already, a call to
+  // PresaveGeneratedPassword() implies that this password was modified.
+  SetGeneratedPasswordChanged(has_generated_password_);
+  if (!has_generated_password_)
+    SetHasGeneratedPassword(true);
+}
+
+void NewPasswordFormManager::PasswordNoLongerGenerated() {
+  DCHECK(has_generated_password_);
+  form_saver_->RemovePresavedPassword();
+  SetHasGeneratedPassword(false);
+  SetGeneratedPasswordChanged(false);
+}
+
 bool NewPasswordFormManager::HasGeneratedPassword() const {
   return has_generated_password_;
+}
+
+void NewPasswordFormManager::SetGenerationPopupWasShown(
+    bool generation_popup_was_shown,
+    bool is_manual_generation) {
+  votes_uploader_.set_generation_popup_was_shown(generation_popup_was_shown);
+  votes_uploader_.set_is_manual_generation(is_manual_generation);
+  metrics_recorder_->SetPasswordGenerationPopupShown(generation_popup_was_shown,
+                                                     is_manual_generation);
+}
+
+void NewPasswordFormManager::SetGenerationElement(
+    const base::string16& generation_element) {
+  votes_uploader_.set_generation_element(generation_element);
 }
 
 bool NewPasswordFormManager::IsPossibleChangePasswordFormWithoutUsername()
@@ -821,6 +865,18 @@ NewPasswordFormManager::FindOtherCredentialsToUpdate() {
   }
 
   return credentials_to_update;
+}
+
+void NewPasswordFormManager::SetHasGeneratedPassword(bool generated_password) {
+  has_generated_password_ = generated_password;
+  votes_uploader_.set_has_generated_password(generated_password);
+  metrics_recorder_->SetHasGeneratedPassword(generated_password);
+}
+
+void NewPasswordFormManager::SetGeneratedPasswordChanged(
+    bool generated_password_changed) {
+  votes_uploader_.set_generated_password_changed(generated_password_changed);
+  metrics_recorder_->SetHasGeneratedPasswordChanged(generated_password_changed);
 }
 
 std::unique_ptr<PasswordForm> NewPasswordFormManager::ParseFormAndMakeLogging(
