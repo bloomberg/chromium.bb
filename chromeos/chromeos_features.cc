@@ -14,7 +14,7 @@ const base::Feature kAndroidMessagesIntegration{
 
 // Point to the production Android Messages URL instead of sandbox.
 const base::Feature kAndroidMessagesProdEndpoint{
-    "AndroidMessagesProdEndpoint", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AndroidMessagesProdEndpoint", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables native ChromeVox support for Arc.
 const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
