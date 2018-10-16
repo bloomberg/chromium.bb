@@ -189,6 +189,7 @@ FileManagerJsTest.*
 FileManagerPathUtilConvertUrlTest.*
 FileManagerUITest.*
 FileTasksBrowserTest.*
+*/FilesAppBrowserTest.*
 GalleryBrowserTest.*
 GalleryBrowserTestInGuestMode.*
 GalleryJsTest.*
@@ -279,7 +280,6 @@ SettingsUIBrowserTest.*
 SigninSyncConfirmationTest.*
 SiteEngagementBrowserTest.*
 SysInternalsBrowserTest.*
-TabIndex/FilesAppBrowserTest.*
 TextDefaultsTest.*
 TtsAccessibilityTest.*
 UserManagerBrowserTest.*
