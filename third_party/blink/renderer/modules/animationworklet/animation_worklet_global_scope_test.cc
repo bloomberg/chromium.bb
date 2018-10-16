@@ -222,7 +222,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
     state.added_and_updated_animations.emplace_back(animation_id, "test", 5000,
-                                                    nullptr);
+                                                    nullptr, 1);
 
     std::unique_ptr<AnimationWorkletOutput> output =
         global_scope->Mutate(state);
@@ -273,14 +273,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
     state.added_and_updated_animations.emplace_back(animation_id, "test", 5000,
-                                                    nullptr);
+                                                    nullptr, 1);
 
     std::unique_ptr<AnimationWorkletOutput> output =
         global_scope->Mutate(state);
     EXPECT_TRUE(output);
 
     EXPECT_EQ(output->animations.size(), 1ul);
-    EXPECT_EQ(output->animations[0].local_time,
+    EXPECT_EQ(output->animations[0].local_times[0],
               WTF::TimeDelta::FromMillisecondsD(123));
 
     waitable_event->Signal();
@@ -329,7 +329,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     state.added_and_updated_animations.push_back(
-        {animation_id, "test", 5000, nullptr});
+        {animation_id, "test", 5000, nullptr, 1});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
     global_scope->Mutate(state);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
@@ -366,7 +366,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
     state.added_and_updated_animations.push_back(
-        {animation_id, "test", 5000, nullptr});
+        {animation_id, "test", 5000, nullptr, 1});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
     global_scope->Mutate(state);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);

@@ -28,5 +28,7 @@ blink_modules_sources("animationworklet") {
     "worklet_animation.h",
     "worklet_animation_options.cc",
     "worklet_animation_options.h",
+    "worklet_group_effect_proxy.cc",
+    "worklet_group_effect_proxy.h",
   ]
 }
