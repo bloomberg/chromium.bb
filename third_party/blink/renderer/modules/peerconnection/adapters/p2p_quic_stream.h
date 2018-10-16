@@ -38,6 +38,8 @@ class P2PQuicStream {
     virtual void OnRemoteFinish() {}
   };
 
+  virtual ~P2PQuicStream() = default;
+
   // Sends a RST_STREAM frame to the remote side. This closes the P2PQuicStream
   // for reading & writing and it will be deleted by the quic::QuicSession. When
   // the remote side receives the RST_STREAM frame it will close the stream for

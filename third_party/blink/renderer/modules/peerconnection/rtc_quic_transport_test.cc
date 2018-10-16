@@ -73,6 +73,36 @@ RTCQuicTransport* RTCQuicTransportTest::CreateQuicTransport(
                                   std::move(mock_factory));
 }
 
+RTCQuicTransport* RTCQuicTransportTest::CreateConnectedQuicTransport(
+    V8TestingScope& scope,
+    P2PQuicTransport::Delegate** delegate_out) {
+  return CreateConnectedQuicTransport(
+      scope, std::make_unique<MockP2PQuicTransport>(), delegate_out);
+}
+
+RTCQuicTransport* RTCQuicTransportTest::CreateConnectedQuicTransport(
+    V8TestingScope& scope,
+    std::unique_ptr<MockP2PQuicTransport> mock_transport,
+    P2PQuicTransport::Delegate** delegate_out) {
+  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                       ASSERT_NO_EXCEPTION);
+  P2PQuicTransport::Delegate* delegate = nullptr;
+  Persistent<RTCQuicTransport> quic_transport =
+      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
+                          std::move(mock_transport), &delegate);
+  quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
+  RunUntilIdle();
+  DCHECK(delegate);
+  delegate->OnConnected();
+  RunUntilIdle();
+  DCHECK_EQ("connected", quic_transport->state());
+  if (delegate_out) {
+    *delegate_out = delegate;
+  }
+  return quic_transport;
+}
+
 // Test that calling start() creates a P2PQuicTransport with the correct
 // P2PQuicTransportConfig. The config should have:
 // 1. The P2PQuicPacketTransport returned by the MockIceTransportAdapter.

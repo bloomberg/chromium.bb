@@ -12,7 +12,7 @@ namespace blink {
 class RTCQuicStream;
 class RTCQuicStreamEventInit;
 
-class RTCQuicStreamEvent final : public Event {
+class MODULES_EXPORT RTCQuicStreamEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
