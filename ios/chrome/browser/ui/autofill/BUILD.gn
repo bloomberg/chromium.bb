@@ -105,6 +105,7 @@ source_set("eg_tests") {
   deps = [
     ":autofill_ui",
     "//components/autofill/core/browser",
+    "//components/autofill/ios/browser:autofill_test_bundle_data",
     "//components/autofill/ios/browser:test_support",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser/autofill",

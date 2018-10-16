@@ -23,13 +23,6 @@
       "xctest": true
     },
     {
-      "app": "ios_chrome_payments_egtests",
-      "test args": [
-        "--enable-features=WebPayments"
-      ],
-      "xctest": true
-    },
-    {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
         "--enable-reading-list"

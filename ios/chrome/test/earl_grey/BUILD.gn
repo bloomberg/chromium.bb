@@ -8,7 +8,6 @@ group("all_tests") {
   testonly = true
   deps = [
     ":ios_chrome_autofill_automation_egtests",
-    ":ios_chrome_autofill_egtests",
     ":ios_chrome_bookmarks_egtests",
     ":ios_chrome_device_check_egtests",
     ":ios_chrome_external_url_egtests",
@@ -16,7 +15,6 @@ group("all_tests") {
     ":ios_chrome_integration_egtests",
     ":ios_chrome_manual_fill_egtests",
     ":ios_chrome_multitasking_egtests",
-    ":ios_chrome_payments_egtests",
     ":ios_chrome_perf_egtests",
     ":ios_chrome_reading_list_egtests",
     ":ios_chrome_settings_egtests",
@@ -43,18 +41,8 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
   ]
 }
 
-chrome_ios_eg_test("ios_chrome_autofill_egtests") {
-  deps = [
-    ":test_support",
-    "//components/autofill/ios/browser:autofill_test_bundle_data",
-    "//ios/chrome/browser/ui/autofill:eg_tests",
-  ]
-}
-
 chrome_ios_eg_test("ios_chrome_autofill_automation_egtests") {
   deps = [
-    ":test_support",
-    "//components/autofill/ios/browser:autofill_test_bundle_data",
     "//ios/chrome/browser/autofill/automation:eg_tests",
   ]
 }
@@ -63,14 +51,6 @@ chrome_ios_eg_test("ios_chrome_manual_fill_egtests") {
   deps = [
     ":test_support",
     "//ios/chrome/browser/ui/autofill/manual_fill:eg_tests",
-  ]
-}
-
-chrome_ios_eg_test("ios_chrome_payments_egtests") {
-  deps = [
-    ":test_support",
-    "//components/payments/core:payments_test_bundle_data",
-    "//ios/chrome/browser/ui/payments:eg_tests",
   ]
 }
 
@@ -106,6 +86,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui:eg_tests",
     "//ios/chrome/browser/ui/activity_services:eg_tests",
     "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
+    "//ios/chrome/browser/ui/autofill:eg_tests",
     "//ios/chrome/browser/ui/content_suggestions:eg_tests",
     "//ios/chrome/browser/ui/dialogs:eg_tests",
     "//ios/chrome/browser/ui/download:eg_tests",
@@ -115,6 +96,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/history:eg_tests",
     "//ios/chrome/browser/ui/infobars:eg_tests",
     "//ios/chrome/browser/ui/ntp:eg_tests",
+    "//ios/chrome/browser/ui/payments:eg_tests",
     "//ios/chrome/browser/ui/popup_menu:eg_tests",
     "//ios/chrome/browser/ui/print:eg_tests",
     "//ios/chrome/browser/ui/qr_scanner:eg_tests",
