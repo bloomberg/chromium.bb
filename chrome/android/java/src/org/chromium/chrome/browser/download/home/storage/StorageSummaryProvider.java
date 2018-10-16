@@ -96,7 +96,7 @@ public class StorageSummaryProvider implements OfflineItemFilterObserver {
     public void onItemUpdated(OfflineItem oldItem, OfflineItem item) {
         // Computes the delta of storage used by downloads.
         mTotalDownloadSize -= oldItem.receivedBytes;
-        mTotalDownloadSize += oldItem.receivedBytes;
+        mTotalDownloadSize += item.receivedBytes;
 
         if (item.state != OfflineItemState.IN_PROGRESS) update();
     }
