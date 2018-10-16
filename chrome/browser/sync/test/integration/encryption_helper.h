@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
@@ -74,6 +75,14 @@ class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
 
  private:
   bool desired_state_;
+};
+
+class ScopedScryptFeatureToggler {
+ public:
+  ScopedScryptFeatureToggler(bool force_disabled, bool use_for_new_passphrases);
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_ENCRYPTION_HELPER_H_
