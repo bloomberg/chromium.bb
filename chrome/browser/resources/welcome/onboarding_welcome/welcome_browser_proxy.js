@@ -11,7 +11,7 @@ cr.define('welcome', function() {
 
   /** @interface */
   class WelcomeBrowserProxy {
-    /** @param {string} redirectUrl the URL to redirect to, after signing in. */
+    /** @param {string=} redirectUrl the URL to go to, after signing in. */
     handleActivateSignIn(redirectUrl) {}
     goToNewTabPage() {}
   }

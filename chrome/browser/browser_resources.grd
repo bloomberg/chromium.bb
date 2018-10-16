@@ -65,6 +65,8 @@
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS" file="resources\welcome\onboarding_welcome\landing_view.js" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_HTML" file="resources\welcome\onboarding_welcome\navigation_behavior.html" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_JS" file="resources\welcome\onboarding_welcome\navigation_behavior.js" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SIGNIN_VIEW_HTML" file="resources\welcome\onboarding_welcome\signin_view.html" type="chrome_html" preprocess="true"/>
+        <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SIGNIN_VIEW_JS" file="resources\welcome\onboarding_welcome\signin_view.js" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML" file="resources\welcome\onboarding_welcome\welcome_app.html" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS" file="resources\welcome\onboarding_welcome\welcome_app.js" type="chrome_html" preprocess="true"/>
         <structure name="IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_HTML" file="resources\welcome\onboarding_welcome\welcome_browser_proxy.html" type="chrome_html"/>
