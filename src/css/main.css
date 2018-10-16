@@ -575,35 +575,6 @@ body.capturing.grid #preview-grid-vertical {
   transition: transform 500ms;
 }
 
-#toast {
-  align-items: center;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transition: opacity 250ms;
-  z-index: 1;
-}
-
-#toast #toast-message {
-  background: #1e1e23;
-  border-radius: 16px;
-  color: white;
-  font-size: 16px;
-  line-height: 32px;
-  opacity: 0.9;
-  padding: 0 16px;
-}
-
-#toast.visible {
-  opacity: 1;
-}
-
 #record-time {
   align-items: center;
   display: flex;
@@ -762,6 +733,24 @@ body.capturing.grid #preview-grid-vertical {
 #tooltip.visible {
   transition: opacity 350ms;
   opacity: 1;
+}
+
+#toast {
+  background: #1e1e23;
+  border-radius: 16px;
+  color: white;
+  font-size: 16px;
+  font-family: 'Roboto', sans-serif;
+  line-height: 32px;
+  padding: 0 16px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 250ms;
+  z-index: 100;
+}
+
+#toast.visible {
+  opacity: 0.9;
 }
 
 #dialog {

@@ -7,6 +7,7 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="../css/main.css">
     <script src="../js/util.js"></script>
+    <script src="../js/toast.js"></script>
     <script src="../js/tooltip.js"></script>
     <script src="../js/scrollbar.js"></script>
     <script src="../js/models/gallery.js"></script>
@@ -19,7 +20,6 @@
     <script src="../js/views/camera/options.js"></script>
     <script src="../js/views/camera/preview.js"></script>
     <script src="../js/views/camera/recordtime.js"></script>
-    <script src="../js/views/camera_toast.js"></script>
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/browser.js"></script>
     <script src="../js/router.js"></script>
@@ -76,9 +76,6 @@
         <input type="checkbox" id="toggle-mic" disabled tabindex="0"
                i18n-label="toggleMicButton">
       </div>
-      <div id="toast">
-        <div id="toast-message"></div>
-      </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
     <div id="browser" role="listbox" i18n-aria-label="galleryImages">
@@ -110,6 +107,7 @@
         </div>
       </div>
     </div>
+    <div class="centered-overlay" id="toast"></div>
     <div id="tooltip"></div>
   </body>
 </html>
