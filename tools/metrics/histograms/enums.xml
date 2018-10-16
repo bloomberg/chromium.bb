@@ -20455,6 +20455,21 @@ Called by update_net_error_codes.py.-->
   <int value="2591"
       label="RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics"/>
   <int value="2592" label="ResizeObserver_Constructor"/>
+  <int value="2593" label="Collator"/>
+  <int value="2594" label="NumberFormat"/>
+  <int value="2595" label="DateTimeFormat"/>
+  <int value="2596" label="PluralRules"/>
+  <int value="2597" label="RelativeTimeFormat"/>
+  <int value="2598" label="Locale"/>
+  <int value="2599" label="ListFormat"/>
+  <int value="2600" label="Segmenter"/>
+  <int value="2601" label="StringLocaleCompare"/>
+  <int value="2602" label="StringToLocaleUpperCase"/>
+  <int value="2603" label="StringToLocaleLowerCase"/>
+  <int value="2604" label="NumberToLocaleString"/>
+  <int value="2605" label="DateToLocaleString"/>
+  <int value="2606" label="DateToLocaleDateString"/>
+  <int value="2607" label="DateToLocaleTimeString"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
