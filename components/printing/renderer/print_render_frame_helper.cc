@@ -638,9 +638,6 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
    public:
     // blink::WebWidgetClient implementation.
     bool AllowsBrokenNullLayerTreeView() const override { return true; }
-    blink::WebLayerTreeView* InitializeLayerTreeView() override {
-      return nullptr;
-    }
   };
 
   HeaderAndFooterClient frame_client;
@@ -730,10 +727,9 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
  private:
   // blink::WebViewClient:
   void DidStopLoading() override;
-  // TODO(ojan): Remove this override and have this class use a non-null
-  // layerTreeView.
+  // TODO(ojan): Remove this override and have this class give a LayerTreeView
+  // to the WebWidget.
   bool AllowsBrokenNullLayerTreeView() const override;
-  blink::WebLayerTreeView* InitializeLayerTreeView() override;
   WebWidgetClient* WidgetClient() override { return this; }
 
   // blink::WebLocalFrameClient:
@@ -889,11 +885,6 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
 bool PrepareFrameAndViewForPrint::AllowsBrokenNullLayerTreeView() const {
   return true;
-}
-
-blink::WebLayerTreeView*
-PrepareFrameAndViewForPrint::InitializeLayerTreeView() {
-  return nullptr;
 }
 
 void PrepareFrameAndViewForPrint::DidStopLoading() {

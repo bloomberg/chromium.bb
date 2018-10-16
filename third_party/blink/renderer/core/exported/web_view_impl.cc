@@ -349,15 +349,10 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   // they avoid the compositor by using a null client, and sometimes by having
   // the client return a null compositor. We should make things more consistent
   // and clear.
-  if (WidgetClient()) {
-    if (WidgetClient()->AllowsBrokenNullLayerTreeView()) {
-      // For some reason this was not set when WidgetClient() is not provided,
-      // even though there will be no LayerTreeView in that case either.
-      page_->GetSettings().SetAcceleratedCompositingEnabled(false);
-    } else {
-      InitializeLayerTreeView();
-    }
-  }
+  // For some reason this was not set when WidgetClient() is not provided,
+  // even though there will be no LayerTreeView in that case either.
+  if (WidgetClient() && WidgetClient()->AllowsBrokenNullLayerTreeView())
+    page_->GetSettings().SetAcceleratedCompositingEnabled(false);
 
   dev_tools_emulator_ = DevToolsEmulator::Create(this);
 
@@ -3269,8 +3264,8 @@ void WebViewImpl::ScheduleAnimationForWidget() {
     client_->WidgetClient()->ScheduleAnimation();
 }
 
-void WebViewImpl::InitializeLayerTreeView() {
-  layer_tree_view_ = WidgetClient()->InitializeLayerTreeView();
+void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+  layer_tree_view_ = layer_tree_view;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
     animation_host_ = std::make_unique<CompositorAnimationHost>(
         layer_tree_view_->CompositorAnimationHost());

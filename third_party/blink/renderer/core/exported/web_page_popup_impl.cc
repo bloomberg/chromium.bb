@@ -313,7 +313,8 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
 
-  InitializeLayerTreeView();
+  layer_tree_view_->SetVisible(true);
+  page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
@@ -322,6 +323,15 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 
   widget_client_->Show(WebNavigationPolicy());
   SetFocus(true);
+}
+
+void WebPagePopupImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+  // The WebWidgetClient is given |this| as its WebWidget but it is set up
+  // before Initialize() is called on |this|. So we store the |layer_tree_view|
+  // here, but finish setting it up in Initialize().
+  layer_tree_view_ = layer_tree_view;
+  animation_host_ = std::make_unique<CompositorAnimationHost>(
+      layer_tree_view_->CompositorAnimationHost());
 }
 
 void WebPagePopupImpl::PostMessageToPopup(const String& message) {
@@ -367,15 +377,6 @@ void WebPagePopupImpl::SetRootLayer(cc::Layer* layer) {
       layer_tree_view_->ClearRootLayer();
     }
   }
-}
-
-void WebPagePopupImpl::InitializeLayerTreeView() {
-  TRACE_EVENT0("blink", "WebPagePopupImpl::InitializeLayerTreeView");
-  layer_tree_view_ = widget_client_->InitializeLayerTreeView();
-  layer_tree_view_->SetVisible(true);
-  animation_host_ = std::make_unique<CompositorAnimationHost>(
-      layer_tree_view_->CompositorAnimationHost());
-  page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
 }
 
 void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(

@@ -560,8 +560,6 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
 }
 
 void WebFrameWidgetImpl::Initialize() {
-  InitializeLayerTreeView();
-
   if (LocalRoot()->Parent())
     SetBackgroundColorOverride(Color::kTransparent);
 }
@@ -1043,11 +1041,10 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
   return document->FocusedElement();
 }
 
-void WebFrameWidgetImpl::InitializeLayerTreeView() {
+void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
   DCHECK(Client());
   DCHECK(!mutator_dispatcher_);
-  layer_tree_view_ = Client()->InitializeLayerTreeView();
-  DCHECK(layer_tree_view_);
+  layer_tree_view_ = layer_tree_view;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
     animation_host_ = std::make_unique<CompositorAnimationHost>(
         layer_tree_view_->CompositorAnimationHost());

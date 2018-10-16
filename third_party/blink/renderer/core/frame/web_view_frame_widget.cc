@@ -185,6 +185,12 @@ void WebViewFrameWidget::Initialize() {
   web_view_->SetCompositorVisibility(true);
 }
 
+void WebViewFrameWidget::SetLayerTreeView(WebLayerTreeView*) {
+  // The WebViewImpl already has its LayerTreeView, the WebWidgetClient
+  // thus does not initialize and set another one here.
+  NOTREACHED();
+}
+
 void WebViewFrameWidget::ScheduleAnimation() {
   web_view_->ScheduleAnimationForWidget();
 }

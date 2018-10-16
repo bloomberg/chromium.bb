@@ -108,6 +108,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static bool UseExternalPopupMenus();
 
   // WebWidget methods:
+  void SetLayerTreeView(WebLayerTreeView*) override;
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
@@ -490,8 +491,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   HitTestResult HitTestResultForRootFramePos(const LayoutPoint&);
 
   void ConfigureAutoResizeMode();
-
-  void InitializeLayerTreeView();
 
   void SetIsAcceleratedCompositingActive(bool);
   void DoComposite();
