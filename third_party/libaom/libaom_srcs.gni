@@ -380,6 +380,7 @@ aom_dsp_common_intrin_neon = [
 ]
 
 aom_dsp_common_intrin_sse2 = [
+  "//third_party/libaom/source/libaom/aom_dsp/x86/aom_subpixel_8t_intrin_sse2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/aom_asm_stubs.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/convolve.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/convolve_sse2.h",
