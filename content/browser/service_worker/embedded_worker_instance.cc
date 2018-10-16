@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
@@ -43,6 +46,14 @@
 namespace content {
 
 namespace {
+
+base::Optional<EmbeddedWorkerInstance::CreateNetworkFactoryCallback>&
+GetNetworkFactoryCallbackForTest() {
+  static base::NoDestructor<
+      base::Optional<EmbeddedWorkerInstance::CreateNetworkFactoryCallback>>
+      callback;
+  return *callback;
+}
 
 // When a service worker version's failure count exceeds
 // |kMaxSameProcessFailureCount|, the embedded worker is forced to start in a
@@ -95,7 +106,16 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     bool use_non_network_factories) {
   auto factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  rph->CreateURLLoaderFactory(origin, mojo::MakeRequest(&default_factory_info));
+  if (!GetNetworkFactoryCallbackForTest()) {
+    rph->CreateURLLoaderFactory(origin,
+                                mojo::MakeRequest(&default_factory_info));
+  } else {
+    network::mojom::URLLoaderFactoryPtr original_factory;
+    rph->CreateURLLoaderFactory(origin, mojo::MakeRequest(&original_factory));
+    GetNetworkFactoryCallbackForTest()->Run(
+        mojo::MakeRequest(&default_factory_info), rph->GetID(),
+        original_factory.PassInterface());
+  }
   factory_bundle->default_factory_info() = std::move(default_factory_info);
 
   if (use_non_network_factories) {
@@ -1067,6 +1087,12 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
   }
   NOTREACHED() << phase;
   return std::string();
+}
+
+// static
+void EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
+    const CreateNetworkFactoryCallback& create_network_factory_callback) {
+  GetNetworkFactoryCallbackForTest() = create_network_factory_callback;
 }
 
 }  // namespace content

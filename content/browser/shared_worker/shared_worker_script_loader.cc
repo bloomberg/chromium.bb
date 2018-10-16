@@ -253,9 +253,13 @@ bool SharedWorkerScriptLoader::MaybeCreateLoaderForResponse(
     ThrottlingURLLoader* url_loader) {
   DCHECK(default_loader_used_);
   for (auto& interceptor : interceptors_) {
-    if (interceptor->MaybeCreateLoaderForResponse(response, response_url_loader,
-                                                  response_client_request,
-                                                  url_loader)) {
+    bool skip_other_interceptors = false;
+    if (interceptor->MaybeCreateLoaderForResponse(
+            response, response_url_loader, response_client_request, url_loader,
+            &skip_other_interceptors)) {
+      // Both ServiceWorkerRequestHandler and AppCacheRequestHandler don't set
+      // skip_other_interceptors.
+      DCHECK(!skip_other_interceptors);
       subresource_loader_params_ =
           interceptor->MaybeCreateSubresourceLoaderParams();
       return true;

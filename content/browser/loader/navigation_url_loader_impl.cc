@@ -1391,16 +1391,24 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!default_loader_used_)
       return false;
 
-    for (auto& interceptor : interceptors_) {
+    for (size_t i = 0u; i < interceptors_.size(); ++i) {
+      NavigationLoaderInterceptor* interceptor = interceptors_[i].get();
       network::mojom::URLLoaderClientRequest response_client_request;
+      bool skip_other_interceptors = false;
       if (interceptor->MaybeCreateLoaderForResponse(
               response, &response_url_loader_, &response_client_request,
-              url_loader_.get())) {
+              url_loader_.get(), &skip_other_interceptors)) {
         if (response_loader_binding_.is_bound())
           response_loader_binding_.Close();
         response_loader_binding_.Bind(std::move(response_client_request));
         default_loader_used_ = false;
         url_loader_.reset();
+        if (skip_other_interceptors) {
+          std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+              new_interceptors;
+          new_interceptors.push_back(std::move(interceptors_[i]));
+          new_interceptors.swap(interceptors_);
+        }
         return true;
       }
     }
