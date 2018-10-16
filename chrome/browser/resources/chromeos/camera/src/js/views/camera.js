@@ -93,13 +93,6 @@ camera.views.Camera = function(context, router, model) {
   this.locked_ = false;
 
   /**
-   * Toast for showing the messages.
-   * @type {camera.views.Toast}
-   * @private
-   */
-  this.toast_ = new camera.views.Toast();
-
-  /**
    * Options for the camera.
    * @type {camera.views.camera.Options}
    * @private
@@ -241,7 +234,7 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
     this.beginTake_();
   } catch (e) {
     console.error(e);
-    this.showToastMessage_(this.recordMode ?
+    this.context_.onToast(this.recordMode ?
         'errorMsgRecordStartFailed' : 'errorMsgTakePhotoFailed', true);
   }
 };
@@ -290,26 +283,15 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
   if (this.keyBuffer_.indexOf('VER') !== -1) {
-    this.showToastMessage_(chrome.runtime.getManifest().version, false);
+    this.context_.onToast(chrome.runtime.getManifest().version, false);
     this.keyBuffer_ = '';
   }
   if (this.keyBuffer_.indexOf('RES') !== -1) {
-    var result = this.preview_.toString();
-    if (result) {
-      this.showToastMessage_(result, false);
+    if (this.capturing) {
+      this.context_.onToast(this.preview_.toString(), false);
     }
     this.keyBuffer_ = '';
   }
-};
-
-/**
- * Shows a non-intrusive toast message.
- * @param {string} message Message to be shown.
- * @param {boolean} named True if it's i18n named message, false otherwise.
- * @private
- */
-camera.views.Camera.prototype.showToastMessage_ = function(message, named) {
-  this.toast_.showMessage(named ? chrome.i18n.getMessage(message) : message);
 };
 
 /**
@@ -372,9 +354,9 @@ camera.views.Camera.prototype.endTake_ = function() {
         throw [error, 'errorMsgSaveFileFailed'];
       });
     }
-  }).catch(([error, toast]) => {
+  }).catch(([error, message]) => {
     console.error(error);
-    this.showToastMessage_(toast, true);
+    this.context_.onToast(message, true);
   }).finally(() => {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;

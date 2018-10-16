@@ -22,7 +22,14 @@ camera.Camera = function(aspectRatio) {
   this.context_ = new camera.Camera.Context(
       this.onAspectRatio_.bind(this),
       this.onError_.bind(this),
-      this.onErrorRecovered_.bind(this));
+      this.onErrorRecovered_.bind(this),
+      this.onToast_.bind(this));
+
+  /**
+   * @type {camera.Toast}
+   * @private
+   */
+  this.toast_ = new camera.Toast();
 
   /**
    * @type {Array.<camera.ViewsStack>}
@@ -83,15 +90,18 @@ camera.Camera = function(aspectRatio) {
 
 /**
  * Creates context for the views.
- * @param {function(number)} onAspectRatio Callback to be called, when setting a
- *     new aspect ratio. The argument is the aspect ratio.
- * @param {function(string, string, opt_string)} onError Callback to be called,
- *     when an error occurs. Arguments: identifier, first line, second line.
- * @param {function(string)} onErrorRecovered Callback to be called,
- *     when the error goes away. The argument is the error id.
+ * @param {function(number)} onAspectRatio Callback when the aspect ratio is
+ *     changed. Arguments: aspect ratio.
+ * @param {function(string, string, string=)} onError Callback when an error
+ *     occurs. Arguments: identifier, first line, second line.
+ * @param {function(string)} onErrorRecovered Callback when an error goes away.
+ *     Arguments: error id.
+ * @param {function(string, boolean)} onToast Callback when a toast occurs.
+ *     Arguments: toast message, i18n-named.
  * @constructor
  */
-camera.Camera.Context = function(onAspectRatio, onError, onErrorRecovered) {
+camera.Camera.Context = function(
+    onAspectRatio, onError, onErrorRecovered, onToast) {
   camera.View.Context.call(this);
 
   /**
@@ -105,7 +115,7 @@ camera.Camera.Context = function(onAspectRatio, onError, onErrorRecovered) {
   this.onAspectRatio = onAspectRatio;
 
   /**
-   * @type {function(string, string, string)}
+   * @type {function(string, string, string=)}
    */
   this.onError = onError;
 
@@ -113,6 +123,11 @@ camera.Camera.Context = function(onAspectRatio, onError, onErrorRecovered) {
    * @type {function(string)}
    */
   this.onErrorRecovered = onErrorRecovered;
+
+  /**
+   * @type {function(string, boolean)}
+   */
+  this.onToast = onToast;
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -350,7 +365,8 @@ camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
  * @private
  */
 camera.Camera.prototype.onError_ = function(identifier, message, opt_hint) {
-  // TODO(yuli): Use error-identifier to look up its message and hint.
+  // TODO(yuli): Implement error-identifier to look up messages/hints and handle
+  // multiple errors. Make 'error' a view to block buttons on other views.
   document.body.classList.add('has-error');
   this.context_.hasError = true;
   document.querySelector('#error-msg').textContent = message;
@@ -363,10 +379,18 @@ camera.Camera.prototype.onError_ = function(identifier, message, opt_hint) {
  * @private
  */
 camera.Camera.prototype.onErrorRecovered_ = function(identifier) {
-  // TODO(mtomasz): Implement identifiers handling in case of multiple
-  // error messages at once.
   this.context_.hasError = false;
   document.body.classList.remove('has-error');
+};
+
+/**
+ * Shows a non-intrusive toast message.
+ * @param {string} message Message to be shown.
+ * @param {boolean} named True if it's i18n named message, false otherwise.
+ * @private
+ */
+camera.Camera.prototype.onToast_ = function(message, named) {
+  this.toast_.showMessage(named ? chrome.i18n.getMessage(message) : message);
 };
 
 /**

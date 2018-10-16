@@ -97,6 +97,7 @@ SRC_RESOURCES= \
 	src/js/models/file_system.js \
 	src/js/router.js \
 	src/js/scrollbar.js \
+	src/js/toast.js \
 	src/js/tooltip.js \
 	src/js/util.js \
 	src/js/view.js \
@@ -107,7 +108,6 @@ SRC_RESOURCES= \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
-	src/js/views/camera_toast.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
 	src/sounds/record_end.ogg \
