@@ -48,6 +48,13 @@ The metrics we're collecting are:
   - Are you setting `use\_relative\_paths=True`?
   - Are you using `recursedeps`?
 
+# How can I check if metrics are being collected?
+
+You can run `gclient metrics` and it will report if you have opted in, out, or
+not chosen for metrics collection.
+
+If you have not yet explicitly opted in or out you will see a message after
+each time we collect metrics.
 
 # How can I stop seeing this message?
 
