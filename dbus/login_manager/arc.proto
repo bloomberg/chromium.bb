@@ -14,6 +14,8 @@ message StartArcMiniContainerRequest {
   optional bool native_bridge_experiment = 1 [default = false];
   // The density value passed to "ro.sf.lcd_density" property.
   optional int32 lcd_density = 2 [default = -1];
+  // Experiment flag for go/arc-file-picker.
+  optional bool arc_file_picker_experiment = 3 [default = false];
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
