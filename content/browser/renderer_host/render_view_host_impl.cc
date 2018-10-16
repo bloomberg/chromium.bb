@@ -53,8 +53,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
-// TODO(ajwong): Remove widget_messages.h when WidgetHostMsg_Close is moved to
-// only RenderWidgetHostImpl.
 #include "content/common/widget_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -744,6 +742,14 @@ void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
   }
 }
 
+void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
+  delegate_->DidFirstVisuallyNonEmptyPaint(this);
+}
+
+void RenderViewHostImpl::RenderWidgetDidCommitAndDrawCompositorFrame() {
+  delegate_->DidCommitAndDrawCompositorFrame(this);
+}
+
 bool RenderViewHostImpl::SuddenTerminationAllowed() const {
   return sudden_termination_allowed_;
 }
@@ -782,15 +788,10 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
-    // TODO:(ajwong): Move OnClose to RenderWidgetHostOwnerDelegate.
-    // https://crbug.com/545684
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnDidContentsPreferredSizeChange)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
-                        OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
@@ -802,6 +803,17 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
 void RenderViewHostImpl::RenderWidgetDidInit() {
   PostRenderViewReady();
+}
+
+void RenderViewHostImpl::RenderWidgetDidClose() {
+  // If the renderer is telling us to close, it has already run the unload
+  // events, and we can take the fast path.
+  ClosePageIgnoringUnloadEvents();
+}
+
+void RenderViewHostImpl::RenderWidgetNeedsToRouteCloseEvent() {
+  // Have the delegate route this to the active RenderViewHost.
+  delegate_->RouteCloseEvent(this);
 }
 
 void RenderViewHostImpl::ShutdownAndDestroy() {
@@ -850,12 +862,6 @@ void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
   Send(new ViewMsg_UpdateTargetURL_ACK(GetRoutingID()));
 }
 
-void RenderViewHostImpl::OnClose() {
-  // If the renderer is telling us to close, it has already run the unload
-  // events, and we can take the fast path.
-  ClosePageIgnoringUnloadEvents();
-}
-
 void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
     bool uses_temporary_zoom_level) {
   delegate_->DocumentAvailableInMainFrame(this);
@@ -875,11 +881,6 @@ void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
 void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
     const gfx::Size& new_size) {
   delegate_->UpdatePreferredSize(new_size);
-}
-
-void RenderViewHostImpl::OnRouteCloseEvent() {
-  // Have the delegate route this to the active RenderViewHost.
-  delegate_->RouteCloseEvent(this);
 }
 
 void RenderViewHostImpl::OnTakeFocus(bool reverse) {

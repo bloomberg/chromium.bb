@@ -122,10 +122,10 @@ RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
 }
 
 // static
-bool RenderViewHostTester::TestOnMessageReceived(RenderViewHost* rvh,
-                                                 const IPC::Message& msg) {
-  return static_cast<RenderViewHostImpl*>(rvh)->GetWidget()->OnMessageReceived(
-      msg);
+void RenderViewHostTester::SimulateFirstPaint(RenderViewHost* rvh) {
+  static_cast<RenderViewHostImpl*>(rvh)
+      ->GetWidget()
+      ->OnFirstVisuallyNonEmptyPaint();
 }
 
 // static

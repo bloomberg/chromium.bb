@@ -143,10 +143,7 @@ class RenderViewHostTester {
   // RenderViewHostTestEnabler instance (see below) to do this.
   static RenderViewHostTester* For(RenderViewHost* host);
 
-  // Calls the RenderViewHosts' private OnMessageReceived function with the
-  // given message.
-  static bool TestOnMessageReceived(RenderViewHost* rvh,
-                                    const IPC::Message& msg);
+  static void SimulateFirstPaint(RenderViewHost* rvh);
 
   // Returns whether the underlying web-page has any touch-event handlers.
   static bool HasTouchEventHandler(RenderViewHost* rvh);

@@ -273,10 +273,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_GoToEntryAtOffset,
                     int /* offset (from current) of history item to get */,
                     bool /* has_user_gesture */)
 
-// Sent from an inactive renderer for the browser to route to the active
-// renderer, instructing it to close.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
-
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                     gfx::Size /* pref_size */)

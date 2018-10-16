@@ -44,7 +44,6 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/tab_switching_time_callback.h"
 #include "content/common/text_input_state.h"
-#include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -998,7 +997,7 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // Notify subclasses that we initiated the paint operation.
   DidInitiatePaint();
 
-  Send(new ViewHostMsg_DidCommitAndDrawCompositorFrame(routing_id_));
+  Send(new WidgetHostMsg_DidCommitAndDrawCompositorFrame(routing_id_));
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
@@ -1462,7 +1461,7 @@ void RenderWidget::WillCloseLayerTreeView() {
 
 void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
   if (layout_type == blink::WebMeaningfulLayout::kVisuallyNonEmpty) {
-    QueueMessage(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
+    QueueMessage(new WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
   }
 
   for (auto& observer : render_frames_)
@@ -1577,7 +1576,7 @@ void RenderWidget::CloseWidgetSoon() {
     // This widget is currently swapped out, and the active widget is in a
     // different process.  Have the browser route the close request to the
     // active widget instead, so that the correct unload handlers are run.
-    Send(new ViewHostMsg_RouteCloseEvent(routing_id_));
+    Send(new WidgetHostMsg_RouteCloseEvent(routing_id_));
     return;
   }
 
