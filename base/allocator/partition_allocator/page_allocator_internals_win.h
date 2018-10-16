@@ -69,12 +69,10 @@ bool SetSystemPagesAccessInternal(
     void* address,
     size_t length,
     PageAccessibilityConfiguration accessibility) {
-  if (accessibility == PageInaccessible) {
+  if (accessibility == PageInaccessible)
     return VirtualFree(address, length, MEM_DECOMMIT) != 0;
-  } else {
-    return nullptr != VirtualAlloc(address, length, MEM_COMMIT,
-                                   GetAccessFlags(accessibility));
-  }
+  return nullptr != VirtualAlloc(address, length, MEM_COMMIT,
+                                 GetAccessFlags(accessibility));
 }
 
 void FreePagesInternal(void* address, size_t length) {
