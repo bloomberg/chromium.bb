@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, FocusPreventsClose) {
 
   // Focus is usually gained via a key combination like alt+shift+a. The test
   // simulates this by focusing the bubble and then sending an empty KeyEvent.
-  focus_manager->SetFocusedView(bubble->GetInitiallyFocusedView());
+  focus_manager->SetFocusedView(bubble->reset_button_);
   bubble->OnKeyEvent(nullptr);
   // |auto_close_timer_| should not be running since focus should prevent the
   // bubble from closing.

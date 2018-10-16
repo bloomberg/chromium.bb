@@ -319,10 +319,6 @@ base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
   return zoom_view->GetTextForTooltipAndAccessibleName();
 }
 
-views::View* ZoomBubbleView::GetInitiallyFocusedView() {
-  return reset_button_;
-}
-
 int ZoomBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
