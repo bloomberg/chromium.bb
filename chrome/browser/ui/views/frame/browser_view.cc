@@ -151,7 +151,6 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/event_monitor.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/native_widget.h"
@@ -1862,14 +1861,6 @@ void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
   MaybeShowInvertBubbleView(this);
 }
 
-FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
-  if (!fullscreen_control_host_) {
-    fullscreen_control_host_ = std::make_unique<FullscreenControlHost>(this);
-  }
-
-  return fullscreen_control_host_.get();
-}
-
 int BrowserView::GetBookmarkBarContentVerticalOffset() const {
   if (!bookmark_bar_view_.get()) {
     return 0;
@@ -2067,6 +2058,8 @@ void BrowserView::OnWidgetDestroying(views::Widget* widget) {
   // order that they were present in the tab strip.
   for (auto& content : contents)
     content.reset();
+  // Destroy the fullscreen control host, as it observes the native window.
+  fullscreen_control_host_.reset();
 }
 
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
@@ -2665,16 +2658,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     if (GetLocationBarView()->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
 
-    if (FullscreenControlHost::IsFullscreenExitUIEnabled()) {
-#if defined(USE_AURA)
-      frame_->GetNativeView()->AddPreTargetHandler(
-          GetFullscreenControlHost(), ui::EventTarget::Priority::kSystem);
-#else
-      fullscreen_control_host_event_monitor_ =
-          views::EventMonitor::CreateWindowMonitor(GetFullscreenControlHost(),
-                                                   GetNativeWindow());
-#endif
-    }
+    fullscreen_control_host_ = std::make_unique<FullscreenControlHost>(this);
   } else {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
@@ -2682,13 +2666,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 
     if (fullscreen_control_host_) {
       fullscreen_control_host_->Hide(false);
-#if defined(USE_AURA)
-      auto* native_view = frame_->GetNativeView();
-      if (native_view)
-        native_view->RemovePreTargetHandler(fullscreen_control_host_.get());
-#else
-      fullscreen_control_host_event_monitor_.reset();
-#endif
+      fullscreen_control_host_.reset();
     }
   }
 

@@ -222,22 +222,24 @@ void OffsetX(int x_offset, std::vector<gfx::Rect>* rects) {
     (*rects)[i].set_x((*rects)[i].x() + x_offset);
 }
 
+}  // namespace
+
 // EscapeTracker installs an event monitor and runs a callback when it receives
 // the escape key.
-class EscapeTracker : public ui::EventHandler {
+class EscapeTracker : public ui::EventObserver {
  public:
   EscapeTracker(base::OnceClosure callback, gfx::NativeWindow context)
-      : escape_callback_(std::move(callback)),
-        event_monitor_(
-            views::EventMonitor::CreateApplicationMonitor(this, context)) {}
+      : escape_callback_(std::move(callback)) {
+    event_monitor_ = views::EventMonitor::CreateApplicationMonitor(
+        this, context, {ui::ET_KEY_PRESSED});
+  }
+  ~EscapeTracker() override = default;
 
  private:
-  // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* key) override {
-    if (key->type() == ui::ET_KEY_PRESSED &&
-        key->key_code() == ui::VKEY_ESCAPE && escape_callback_) {
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override {
+    if (event.AsKeyEvent()->key_code() == ui::VKEY_ESCAPE && escape_callback_)
       std::move(escape_callback_).Run();
-    }
   }
 
   base::OnceClosure escape_callback_;
@@ -245,8 +247,6 @@ class EscapeTracker : public ui::EventHandler {
 
   DISALLOW_COPY_AND_ASSIGN(EscapeTracker);
 };
-
-}  // namespace
 
 TabDragController::TabDragData::TabDragData()
     : contents(NULL),

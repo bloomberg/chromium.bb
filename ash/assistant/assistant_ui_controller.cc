@@ -260,8 +260,8 @@ void AssistantUiController::OnUiVisibilityChanged(
       // behaves in a multi-display environment.
       gfx::NativeWindow root_window =
           container_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-      event_monitor_ =
-          views::EventMonitor::CreateWindowMonitor(this, root_window);
+      event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+          this, root_window, {ui::ET_MOUSE_PRESSED, ui::ET_TOUCH_PRESSED});
       break;
   }
 
@@ -407,23 +407,14 @@ void AssistantUiController::OnDisplayMetricsChanged(
   }
 }
 
-void AssistantUiController::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    OnPressedEvent(*event);
-}
-
-void AssistantUiController::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED)
-    OnPressedEvent(*event);
-}
-
-void AssistantUiController::OnPressedEvent(const ui::LocatedEvent& event) {
+void AssistantUiController::OnEvent(const ui::Event& event) {
   DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
          event.type() == ui::ET_TOUCH_PRESSED);
 
+  const ui::LocatedEvent* located_event = event.AsLocatedEvent();
   const gfx::Point screen_location =
-      event.target() ? event.target()->GetScreenLocation(event)
-                     : event.root_location();
+      event.target() ? event.target()->GetScreenLocation(*located_event)
+                     : located_event->root_location();
 
   const gfx::Rect screen_bounds =
       container_view_->GetWidget()->GetWindowBoundsInScreen();
