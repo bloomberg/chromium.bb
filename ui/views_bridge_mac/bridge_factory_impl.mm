@@ -67,7 +67,8 @@ BridgeFactoryImpl* BridgeFactoryImpl::Get() {
 
 void BridgeFactoryImpl::BindRequest(
     mojom::BridgeFactoryAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request),
+                ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 void BridgeFactoryImpl::CreateBridgedNativeWidget(
