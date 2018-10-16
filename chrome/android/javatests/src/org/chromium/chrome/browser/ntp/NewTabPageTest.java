@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
+import org.chromium.chrome.browser.feed.TestNetworkClient;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -145,7 +146,8 @@ public class NewTabPageTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityWithURL("about:blank");
         if (mInterestFeedEnabled) {
-            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(true));
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> FeedNewTabPage.setInTestMode(true, new TestNetworkClient()));
         }
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -170,7 +172,7 @@ public class NewTabPageTest {
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
         if (mInterestFeedEnabled) {
-            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false));
+            ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false, null));
         }
     }
 
