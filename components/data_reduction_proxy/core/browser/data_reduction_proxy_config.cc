@@ -48,7 +48,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -208,8 +207,6 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
 }
 
 void DataReductionProxyConfig::InitializeOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>&
-        basic_url_request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     NetworkPropertiesManager* manager) {
   DCHECK(thread_checker_.CalledOnValidThread());

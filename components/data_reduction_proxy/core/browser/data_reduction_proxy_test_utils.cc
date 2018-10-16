@@ -518,7 +518,6 @@ DataReductionProxyTestContext::Builder::Build() {
           pref_service.get(), task_runner, std::move(config),
           std::move(request_options), std::move(configurator),
           test_network_connection_tracker, true /* enabled */));
-  io_data->SetSimpleURLRequestContextGetter(request_context_getter);
 
   if (use_test_config_client_) {
     test_context_flags |= USE_TEST_CONFIG_CLIENT;

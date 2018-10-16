@@ -37,7 +37,6 @@ class SingleThreadTaskRunner;
 namespace net {
 class ProxyServer;
 class URLRequest;
-class URLRequestContextGetter;
 }  // namespace net
 
 namespace data_reduction_proxy {
@@ -95,13 +94,9 @@ class DataReductionProxyConfig
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
-  // |basic_url_request_context_getter| is the net::URLRequestContextGetter that
-  // disables the use of alternative protocols and proxies.
-  // |url_request_context_getter| is the default net::URLRequestContextGetter
-  // used for making URL requests.
+  // |url_loader_factory| is the network::URLLoaderFactory instance used for
+  // making URL requests. The requests disable the use of proxies.
   void InitializeOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>&
-          basic_url_request_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       NetworkPropertiesManager* manager);
 

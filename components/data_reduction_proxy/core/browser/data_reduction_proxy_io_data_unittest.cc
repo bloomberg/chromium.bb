@@ -110,14 +110,6 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
           false /* enabled */, std::string() /* user_agent */,
           std::string() /* channel */));
 
-  // Check that the SimpleURLRequestContextGetter uses vanilla HTTP.
-  net::URLRequestContext* request_context =
-      io_data->basic_url_request_context_getter_->GetURLRequestContext();
-  const net::HttpNetworkSession::Params* http_params =
-      request_context->GetNetworkSessionParams();
-  EXPECT_FALSE(http_params->enable_http2);
-  EXPECT_FALSE(http_params->enable_quic);
-
   // Check that io_data creates an interceptor. Such an interceptor is
   // thoroughly tested by DataReductionProxyInterceptoTest.
   std::unique_ptr<net::URLRequestInterceptor> interceptor =

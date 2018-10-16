@@ -39,58 +39,6 @@
 
 namespace data_reduction_proxy {
 
-// A |net::URLRequestContextGetter| which uses only vanilla HTTP/HTTPS for
-// performing requests. This is used by the secure proxy check to prevent the
-// use of SPDY and QUIC which may be used by the primary request contexts.
-class BasicHTTPURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  BasicHTTPURLRequestContextGetter(
-      const std::string& user_agent,
-      const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
-
-  // Overridden from net::URLRequestContextGetter:
-  net::URLRequestContext* GetURLRequestContext() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override;
-
- private:
-  ~BasicHTTPURLRequestContextGetter() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  std::unique_ptr<net::HttpUserAgentSettings> user_agent_settings_;
-  std::unique_ptr<net::URLRequestContext> url_request_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasicHTTPURLRequestContextGetter);
-};
-
-BasicHTTPURLRequestContextGetter::BasicHTTPURLRequestContextGetter(
-    const std::string& user_agent,
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
-    : network_task_runner_(network_task_runner),
-      user_agent_settings_(
-          new net::StaticHttpUserAgentSettings(std::string(), user_agent)) {
-}
-
-net::URLRequestContext*
-BasicHTTPURLRequestContextGetter::GetURLRequestContext() {
-  if (!url_request_context_) {
-    net::URLRequestContextBuilder builder;
-    builder.set_proxy_resolution_service(net::ProxyResolutionService::CreateDirect());
-    builder.SetSpdyAndQuicEnabled(false, false);
-    url_request_context_ = builder.Build();
-  }
-
-  return url_request_context_.get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-BasicHTTPURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return network_task_runner_;
-}
-
-BasicHTTPURLRequestContextGetter::~BasicHTTPURLRequestContextGetter() {
-}
-
 DataReductionProxyIOData::DataReductionProxyIOData(
     Client client,
     PrefService* prefs,
@@ -107,8 +55,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       data_use_observer_(nullptr),
       enabled_(enabled),
       url_request_context_getter_(nullptr),
-      basic_url_request_context_getter_(
-          new BasicHTTPURLRequestContextGetter(user_agent, io_task_runner)),
       channel_(channel),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_factory_(this) {
@@ -212,8 +158,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   auto url_loader_factory = network::SharedURLLoaderFactory::Create(
       std::move(url_loader_factory_info_));
 
-  config_->InitializeOnIOThread(basic_url_request_context_getter_.get(),
-                                url_loader_factory,
+  config_->InitializeOnIOThread(url_loader_factory,
                                 network_properties_manager_.get());
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);
