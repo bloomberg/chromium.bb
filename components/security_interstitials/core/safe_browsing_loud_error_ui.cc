@@ -311,7 +311,6 @@ void SafeBrowsingLoudErrorUI::PopulateBillingLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetBoolean("overridable", true);
-  load_time_data->SetBoolean("hide_primary_button", false);
 
   load_time_data->SetString("heading",
                             l10n_util::GetStringUTF16(IDS_BILLING_HEADING));
