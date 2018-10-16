@@ -35,6 +35,10 @@ extern "C" {
 
 #define __GBM__ 1
 
+#ifndef MINIGBM
+#define MINIGBM
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
