@@ -48,6 +48,10 @@
 #include "content/public/browser/download_manager.h"
 #include "extensions/buildflags/buildflags.h"
 
+#if defined(OS_ANDROID)
+#include "components/download/public/common/download_utils.h"
+#endif  // defined(OS_ANDROID)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
@@ -315,6 +319,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
   DCHECK(notifier_.GetManager());
 
   int cancelled_download_cleared_from_history = 0;
+  int interrupted_download_cleared_from_history = 0;
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);
@@ -325,6 +330,15 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     if (history_download_state == download::DownloadItem::CANCELLED) {
       ScheduleRemoveDownload(it->id);
       ++cancelled_download_cleared_from_history;
+      continue;
+    }
+    download::DownloadInterruptReason reason =
+        history::ToContentDownloadInterruptReason(it->interrupt_reason);
+    if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE &&
+        download::GetDownloadResumeMode(reason, false, false) ==
+            download::ResumeMode::INVALID) {
+      ScheduleRemoveDownload(it->id);
+      ++interrupted_download_cleared_from_history;
       continue;
     }
 #endif  // defined(OS_ANDROID)
@@ -365,6 +379,12 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     UMA_HISTOGRAM_COUNTS_1000(
         "MobileDownload.CancelledDownloadRemovedFromHistory",
         cancelled_download_cleared_from_history);
+  }
+
+  if (interrupted_download_cleared_from_history > 0) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "MobileDownload.InterruptedDownloadsRemovedFromHistory",
+        interrupted_download_cleared_from_history);
   }
 
   // Indicate that the history db is initialized.
