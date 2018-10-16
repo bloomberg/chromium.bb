@@ -41,14 +41,14 @@ using FileSupportedCallback =
     base::OnceCallback<void(const GURL& url, bool supported)>;
 
 // Get the MIME type of the file pointed to by the url, based on the file's
-// extension. Must be called on a thread that allows IO.
+// extension. Must be called in a context that allows blocking.
 std::string FindURLMimeType(const GURL& url) {
-  base::AssertBlockingAllowed();
   base::FilePath full_path;
   net::FileURLToFilePath(url, &full_path);
 
   // Get the MIME type based on the filename.
   std::string mime_type;
+  // This call may block on some platforms.
   net::GetMimeTypeFromFile(full_path, &mime_type);
 
   return mime_type;
