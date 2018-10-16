@@ -771,9 +771,17 @@ TabDragController::DragBrowserToNewTabStrip(TabStrip* target_tabstrip,
 
 #if defined(USE_AURA)
   // Only Aura windows are gesture consumers.
+  gfx::NativeView attached_native_view =
+      GetAttachedBrowserWidget()->GetNativeView();
+#if defined(OS_CHROMEOS)
+  // When using WindowService, the touch events for the window move have
+  // happened on the root window, so the transfer should happen from the root of
+  // the currently attached window to the target.
+  if (features::IsUsingWindowService())
+    attached_native_view = attached_native_view->GetRootWindow();
+#endif
   GetAttachedBrowserWidget()->GetGestureRecognizer()->TransferEventsTo(
-      GetAttachedBrowserWidget()->GetNativeView(),
-      target_tabstrip->GetWidget()->GetNativeView(),
+      attached_native_view, target_tabstrip->GetWidget()->GetNativeView(),
       ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
@@ -1249,9 +1257,10 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
 #if defined(USE_AURA)
   // Only Aura windows are gesture consumers.
   views::Widget* attached_widget = attached_tabstrip_->GetWidget();
-  gfx::NativeView attached_native_view = attached_widget->GetNativeView();
+  // Unlike DragBrowserToNewTabStrip, this does not have to special-handle
+  // IsUsingWindowServices(), since DesktopWIndowTreeHostMus takes care of it.
   attached_widget->GetGestureRecognizer()->TransferEventsTo(
-      attached_native_view, dragged_widget->GetNativeView(),
+      attached_widget->GetNativeView(), dragged_widget->GetNativeView(),
       ui::TransferTouchesBehavior::kDontCancel);
 #endif
 
@@ -2044,11 +2053,7 @@ Browser* TabDragController::CreateBrowserForDrag(
 
 gfx::Point TabDragController::GetCursorScreenPoint() {
 #if defined(OS_CHROMEOS)
-  // TODO(erg): Temporarily disable getting location from the gesture
-  // recognizer in mash until the mus side/window manager side RunMoveLoop() is
-  // fixed to understand routing touch events. https://crbug.com/867074
-  if (!features::IsUsingWindowService() &&
-      event_source_ == EVENT_SOURCE_TOUCH && env_->is_touch_down()) {
+  if (event_source_ == EVENT_SOURCE_TOUCH && env_->is_touch_down()) {
     views::Widget* widget = GetAttachedBrowserWidget();
     DCHECK(widget);
     aura::Window* widget_window = widget->GetNativeWindow();

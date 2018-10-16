@@ -184,6 +184,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
     return gesture_recognizer_.get();
   }
 
+  void SetGestureRecognizer(
+      std::unique_ptr<ui::GestureRecognizer> gesture_recognizer);
+
   // See CreateInstance() for description.
   void SetWindowTreeClient(WindowTreeClient* window_tree_client);
   bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
