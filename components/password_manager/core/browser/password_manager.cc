@@ -406,8 +406,10 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
 
 PasswordManager::PasswordManager(PasswordManagerClient* client)
     : client_(client),
-      is_new_form_parsing_for_saving_enabled_(base::FeatureList::IsEnabled(
-          features::kNewPasswordFormParsingForSaving)) {
+      is_new_form_parsing_for_saving_enabled_(
+          base::FeatureList::IsEnabled(
+              features::kNewPasswordFormParsingForSaving) &&
+          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
   DCHECK(client_);
 }
 
