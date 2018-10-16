@@ -254,7 +254,7 @@ void PrefetchDispatcherImpl::AddSuggestions(
   for (auto& suggestion : suggestions) {
     urls.push_back(SuggestionToPrefetchURL(std::move(suggestion)));
   }
-  AddCandidatePrefetchURLs(kNTPSuggestionsNamespace, urls);
+  AddCandidatePrefetchURLs(kSuggestedArticlesNamespace, urls);
 }
 
 void PrefetchDispatcherImpl::StopBackgroundTask() {
