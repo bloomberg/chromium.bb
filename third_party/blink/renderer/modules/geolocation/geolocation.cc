@@ -227,11 +227,9 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
 
   if (!GetDocument()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kGeolocation,
-          ReportOptions::kReportOnFailure)) {
+          ReportOptions::kReportOnFailure, kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kGeolocationDisabledByFeaturePolicy);
-    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kErrorMessageLevel, kFeaturePolicyConsoleWarning));
     notifier->SetFatalError(PositionError::Create(
         PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
     return;

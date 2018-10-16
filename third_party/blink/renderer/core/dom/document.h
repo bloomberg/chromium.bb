@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
@@ -1502,7 +1503,9 @@ class CORE_EXPORT Document : public ContainerNode,
     return agent_cluster_id_;
   }
 
-  void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const override;
+  void ReportFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature,
+      const String& message = g_empty_string) const override;
 
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);

@@ -7682,11 +7682,12 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
   return *lazy_load_image_observer_;
 }
 
-void Document::ReportFeaturePolicyViolation(
-    mojom::FeaturePolicyFeature feature) const {
+void Document::ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature feature,
+                                            const String& message) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
     return;
-  if (!GetFrame())
+  LocalFrame* frame = GetFrame();
+  if (!frame)
     return;
   const String& feature_name = GetNameForFeature(feature);
   FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
@@ -7701,9 +7702,14 @@ void Document::ReportFeaturePolicyViolation(
   column_number = is_null ? 0 : column_number;
 
   // Send the feature policy violation report to the Reporting API.
-  GetFrame()->GetReportingService()->QueueFeaturePolicyViolationReport(
+  frame->GetReportingService()->QueueFeaturePolicyViolationReport(
       Url(), feature_name, "Feature policy violation", body->sourceFile(),
       line_number, column_number);
+  frame->Console().AddMessage(ConsoleMessage::Create(
+      kViolationMessageSource, kErrorMessageLevel,
+      (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
+                            " is not allowed in this document.")
+                         : message)));
 }
 
 void Document::SendViolationReport(

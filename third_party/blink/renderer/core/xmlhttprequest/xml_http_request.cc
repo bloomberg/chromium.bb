@@ -744,10 +744,10 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 
   if (!async_) {
     if (GetExecutionContext()->IsDocument() &&
-        !GetDocument()->IsFeatureEnabled(mojom::FeaturePolicyFeature::kSyncXHR,
-                                         ReportOptions::kReportOnFailure)) {
-      LogConsoleError(GetExecutionContext(),
-                      "Synchronous requests are disabled by Feature Policy.");
+        !GetDocument()->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kSyncXHR,
+            ReportOptions::kReportOnFailure,
+            "Synchronous requests are disabled by Feature Policy.")) {
       HandleNetworkError();
       ThrowForLoadFailureIfNeeded(exception_state, String());
       return false;
