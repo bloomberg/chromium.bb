@@ -204,6 +204,14 @@ class NET_EXPORT HttpUtil {
   // consists of status line and then one line for each header.
   static std::string ConvertHeadersBackToHTTPResponse(const std::string& str);
 
+  // Given a comma separated ordered list of language codes, return an expanded
+  // list by adding the base language from language-region pair if it doesn't
+  // already exist. This increases the chances of language matching in many
+  // cases as explained at this w3c doc:
+  // https://www.w3.org/International/questions/qa-lang-priorities#langtagdetail
+  // Note that we do not support Q values (e.g. ;q=0.9) in |language_prefs|.
+  static std::string ExpandLanguageList(const std::string& language_prefs);
+
   // Given a comma separated ordered list of language codes, return
   // the list with a qvalue appended to each language.
   // The way qvalues are assigned is rather simple. The qvalue

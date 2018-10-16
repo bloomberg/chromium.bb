@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -32,6 +33,46 @@ void TrimLWSImplementation(ConstIterator* begin, ConstIterator* end) {
   // trailing whitespace
   while (*begin < *end && HttpUtil::IsLWS((*end)[-1]))
     --(*end);
+}
+
+// Helper class that builds the list of languages for the Accept-Language
+// headers.
+// The output is a comma-separated list of languages as string.
+// Duplicates are removed.
+class AcceptLanguageBuilder {
+ public:
+  // Adds a language to the string.
+  // Duplicates are ignored.
+  void AddLanguageCode(const std::string& language) {
+    // No Q score supported, only supports ASCII.
+    DCHECK_EQ(std::string::npos, language.find_first_of("; "));
+    DCHECK(base::IsStringASCII(language));
+    if (seen_.find(language) == seen_.end()) {
+      if (str_.empty()) {
+        base::StringAppendF(&str_, "%s", language.c_str());
+      } else {
+        base::StringAppendF(&str_, ",%s", language.c_str());
+      }
+      seen_.insert(language);
+    }
+  }
+
+  // Returns the string constructed up to this point.
+  std::string GetString() const { return str_; }
+
+ private:
+  // The string that contains the list of languages, comma-separated.
+  std::string str_;
+  // Set the remove duplicates.
+  std::unordered_set<std::string> seen_;
+};
+
+// Extract the base language code from a language code.
+// If there is no '-' in the code, the original code is returned.
+std::string GetBaseLanguageCode(const std::string& language_code) {
+  const std::vector<std::string> tokens = base::SplitString(
+      language_code, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  return tokens.empty() ? "" : tokens[0];
 }
 
 }  // namespace
@@ -771,6 +812,34 @@ std::string HttpUtil::ConvertHeadersBackToHTTPResponse(const std::string& str) {
   disassembled_headers.append("\r\n");
 
   return disassembled_headers;
+}
+
+std::string HttpUtil::ExpandLanguageList(const std::string& language_prefs) {
+  const std::vector<std::string> languages = base::SplitString(
+      language_prefs, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  if (languages.empty())
+    return "";
+
+  AcceptLanguageBuilder builder;
+
+  const int size = languages.size();
+  for (int i = 0; i < size; ++i) {
+    const std::string& language = languages[i];
+    builder.AddLanguageCode(language);
+
+    // Extract the base language
+    const std::string& base_language = GetBaseLanguageCode(language);
+
+    // Look ahead and add the base language if the next language is not part
+    // of the same family.
+    const int j = i + 1;
+    if (j >= size || GetBaseLanguageCode(languages[j]) != base_language) {
+      builder.AddLanguageCode(base_language);
+    }
+  }
+
+  return builder.GetString();
 }
 
 // TODO(jungshik): This function assumes that the input is a comma separated

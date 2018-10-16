@@ -805,8 +805,6 @@ jumbo_split_static_library("browser") {
     "native_window_notification_source.h",
     "navigation_predictor/navigation_predictor.cc",
     "navigation_predictor/navigation_predictor.h",
-    "net/chrome_accept_language_settings.cc",
-    "net/chrome_accept_language_settings.h",
     "net/chrome_cookie_notification_details.h",
     "net/chrome_extensions_network_delegate.cc",
     "net/chrome_extensions_network_delegate.h",
