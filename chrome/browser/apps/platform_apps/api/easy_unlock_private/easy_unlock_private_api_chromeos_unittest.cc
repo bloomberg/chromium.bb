@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "components/cryptauth/fake_connection.h"
@@ -62,8 +63,9 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
     ExtensionApiUnittest::SetUp();
 
     EasyUnlockPrivateConnectionResourceManager::GetFactoryInstance()
-        ->SetTestingFactoryAndUse(browser()->profile(),
-                                  ApiResourceManagerTestFactory);
+        ->SetTestingFactoryAndUse(
+            browser()->profile(),
+            base::BindRepeating(&ApiResourceManagerTestFactory));
   }
 };
 
