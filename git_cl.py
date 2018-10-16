@@ -3288,13 +3288,11 @@ def _add_codereview_select_options(parser):
 
 
 def _process_codereview_select_options(parser, options):
-  if options.gerrit and options.rietveld:
-    parser.error('Options --gerrit and --rietveld are mutually exclusive')
+  if options.rietveld:
+    parser.error('--rietveld is no longer supported')
   options.forced_codereview = None
   if options.gerrit:
     options.forced_codereview = 'gerrit'
-  elif options.rietveld:
-    options.forced_codereview = 'rietveld'
 
 
 def _get_bug_line_values(default_project, bugs):

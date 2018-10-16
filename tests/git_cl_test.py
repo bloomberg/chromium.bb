@@ -1893,7 +1893,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stderr', out)
 
     try:
-      self.assertEqual(git_cl.main(['status', '--issue', '1', '--rietveld']), 0)
+      self.assertEqual(git_cl.main(['status', '--issue', '1', '--gerrit']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
       self.assertRegexpMatches(out.getvalue(), r'--field must be specified')
@@ -1907,13 +1907,8 @@ class TestGitCl(TestCase):
       return 'foobar'
 
     self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
-    self.calls = [
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-      ((['git', 'config', 'rietveld.server'],), ''),
-      ((['git', 'config', 'rietveld.server'],), ''),
-    ]
     self.assertEqual(
-      git_cl.main(['status', '--issue', '1', '--rietveld', '--field', 'desc']),
+      git_cl.main(['status', '--issue', '1', '--gerrit', '--field', 'desc']),
       0)
     self.assertEqual(out.getvalue(), 'foobar\n')
 
@@ -1924,13 +1919,8 @@ class TestGitCl(TestCase):
 
     self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
     self.mock(git_cl.Changelist, 'CloseIssue', lambda *_: None)
-    self.calls = [
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-      ((['git', 'config', 'rietveld.server'],), ''),
-      ((['git', 'config', 'rietveld.server'],), ''),
-    ]
     self.assertEqual(
-      git_cl.main(['set-close', '--issue', '1', '--rietveld']), 0)
+      git_cl.main(['set-close', '--issue', '1', '--gerrit']), 0)
 
   def test_description_gerrit(self):
     out = StringIO.StringIO()
@@ -2769,18 +2759,6 @@ class TestGitCl(TestCase):
         sys.stdout.getvalue(),
         'However, your configured .gitcookies file is missing.')
 
-  def test_git_cl_comment_add_rietveld(self):
-    self.mock(git_cl._RietveldChangelistImpl, 'AddComment',
-              lambda _, message, publish: self._mocked_call(
-                  'AddComment', message, publish))
-    self.calls = [
-      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-      ((['git', 'config', 'rietveld.server'],), 'codereview.chromium.org'),
-      (('AddComment', 'msg', None), ''),
-    ]
-    self.assertEqual(0, git_cl.main(['comment', '--rietveld',
-                                     '-i', '10', '-a', 'msg']))
-
   def test_git_cl_comment_add_gerrit(self):
     self.mock(git_cl.gerrit_util, 'SetReview',
               lambda host, change, msg, ready:
@@ -2799,67 +2777,6 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '10',
                                      '-a', 'msg']))
-
-  def test_git_cl_comments_fetch_rietveld(self):
-    self.mock(sys, 'stdout', StringIO.StringIO())
-    self.calls = [
-      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-      ((['git', 'config', 'rietveld.server'],), 'codereview.chromium.org'),
-    ] * 2 + [
-      (('write_json', 'output.json', [
-        {
-          'date': '2000-03-13 20:49:34.515270',
-          'message': 'PTAL',
-          'approval': False,
-          'disapproval': False,
-          'sender': 'owner@example.com'
-        }, {
-          'date': '2017-03-13 20:49:34.515270',
-          'message': 'lgtm',
-          'approval': True,
-          'disapproval': False,
-          'sender': 'r@example.com'
-        }, {
-          'date': '2017-03-13 21:50:34.515270',
-          'message': 'not lgtm',
-          'approval': False,
-          'disapproval': True,
-          'sender': 'r2@example.com'
-        }
-      ]),'')
-    ]
-    self.mock(git_cl._RietveldChangelistImpl, 'GetIssueProperties', lambda _: {
-      'messages': [
-        {'text': 'lgtm', 'date': '2017-03-13 20:49:34.515270',
-         'disapproval': False, 'approval': True, 'sender': 'r@example.com'},
-        {'text': 'not lgtm', 'date': '2017-03-13 21:50:34.515270',
-         'disapproval': True, 'approval': False, 'sender': 'r2@example.com'},
-        # Intentionally wrong order here.
-        {'text': 'PTAL', 'date': '2000-03-13 20:49:34.515270',
-         'disapproval': False, 'approval': False,
-         'sender': 'owner@example.com'},
-      ],
-      'owner_email': 'owner@example.com',
-    })
-    expected_comments_summary = [
-      git_cl._CommentSummary(
-        message='lgtm',
-        date=datetime.datetime(2017, 3, 13, 20, 49, 34, 515270),
-        disapproval=False, approval=True, sender='r@example.com'),
-      git_cl._CommentSummary(
-        message='not lgtm',
-        date=datetime.datetime(2017, 3, 13, 21, 50, 34, 515270),
-        disapproval=True, approval=False, sender='r2@example.com'),
-      # Note: same order as in whatever Rietveld returns.
-      git_cl._CommentSummary(
-        message='PTAL',
-        date=datetime.datetime(2000, 3, 13, 20, 49, 34, 515270),
-        disapproval=False, approval=False, sender='owner@example.com'),
-    ]
-    cl = git_cl.Changelist(codereview='rietveld', issue=1)
-    self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
-    self.assertEqual(0, git_cl.main(['comment', '--rietveld', '-i', '10',
-                                      '-j', 'output.json']))
 
   def test_git_cl_comments_fetch_gerrit(self):
     self.mock(sys, 'stdout', StringIO.StringIO())
