@@ -2402,7 +2402,6 @@
       'chrome_elf_unittests': {},
       'courgette_unittests': {},
       'elevation_service_unittests': {},
-      'gcp_unittests': {},
       'install_static_unittests': {},
       'installer_util_unittests': {
         'swarming': {
