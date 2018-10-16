@@ -326,8 +326,6 @@ TEST_P(QuicSpdyClientSessionTest, OnStreamHeaderListWithStaticStream) {
 TEST_P(QuicSpdyClientSessionTest, OnPromiseHeaderListWithStaticStream) {
   // Test situation where OnPromiseHeaderList is called by stream with static
   // id.
-  FLAGS_quic_reloadable_flag_quic_check_stream_nonstatic_on_promised_headers =
-      true;
   CompleteCryptoHandshake();
 
   QuicHeaderList trailers;

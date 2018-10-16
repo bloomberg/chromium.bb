@@ -1,47 +1,39 @@
-// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_URL_H_
-#define NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_URL_H_
+#ifndef NET_THIRD_PARTY_QUIC_TOOLS_QUIC_URL_H_
+#define NET_THIRD_PARTY_QUIC_TOOLS_QUIC_URL_H_
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/platform/impl/quic_url_impl.h"
+#include "url/gurl.h"
 
 namespace quic {
 
-// QuicUrl stores a representation of a URL.
-class QUIC_EXPORT_PRIVATE QuicUrl {
+// A utility class that wraps GURL.
+class QuicUrl {
  public:
   // Constructs an empty QuicUrl.
   QuicUrl() = default;
 
   // Constructs a QuicUrl from the url string |url|.
+  //
   // NOTE: If |url| doesn't have a scheme, it will have an empty scheme
   // field. If that's not what you want, use the QuicUrlImpl(url,
   // default_scheme) form below.
   explicit QuicUrl(QuicStringPiece url);
 
-  // Constructs a QuicUrl from |url|, assuming that the scheme for the QuicUrl
+  // Constructs a QuicUrlImpl from |url|, assuming that the scheme for the URL
   // is |default_scheme| if there is no scheme specified in |url|.
   QuicUrl(QuicStringPiece url, QuicStringPiece default_scheme);
 
-  QuicUrl(const QuicUrl& url);
-
-  // Returns false if any of these conditions occur:
-  // No scheme specified
-  // Host name too long (the maximum hostname length is platform-dependent)
-  // Invalid characters in host name, path or params
-  // Invalid port number (e.g. greater than 65535)
+  // Returns false if the URL is not valid.
   bool IsValid() const;
 
-  // PLEASE NOTE: ToString(), HostPort(), PathParamsQuery(), scheme(), host(),
-  // path() and port() functions should be only called on a valid QuicUrl.
-  // Return values are platform-dependent if called on a invalid QuicUrl.
-
-  // Returns full text of the QuicUrl.
+  // Returns full text of the QuicUrl if it is valid. Return empty string
+  // otherwise.
   QuicString ToString() const;
 
   // Returns host:port.
@@ -59,12 +51,10 @@ class QUIC_EXPORT_PRIVATE QuicUrl {
   QuicString path() const;
   uint16_t port() const;
 
-  const QuicUrlImpl& impl() const { return impl_; }
-
  private:
-  QuicUrlImpl impl_;
+  GURL url_;
 };
 
 }  // namespace quic
 
-#endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_URL_H_
+#endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_URL_H_

@@ -253,13 +253,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_post_process_after_data,
           true)
 
-// If true, QuicSpdyClientSessionBase::OnPromiseHeaderList() will close the
-// connection if the stream id referenced indicates a static stream.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_check_stream_nonstatic_on_promised_headers,
-    false)
-
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
@@ -270,3 +263,8 @@ QUIC_FLAG(bool, FLAGS_quic_use_common_stream_check, false)
 // When true, don't arm the path degrading alarm on the server side and stop
 // using HasUnackedPackets to decide when to arm it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_path_degrading_alarm, false)
+
+// When true, QUIC server push uses a unidirectional stream.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_unidirectional_server_push_stream,
+          false)

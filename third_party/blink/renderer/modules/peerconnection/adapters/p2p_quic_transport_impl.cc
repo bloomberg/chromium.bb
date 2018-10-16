@@ -232,11 +232,6 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
   return stream;
 }
 
-P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingUnidirectionalStream() {
-  DCHECK(false);
-  return nullptr;
-}
-
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
     quic::QuicStreamId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

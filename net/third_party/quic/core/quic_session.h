@@ -358,16 +358,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Returns nullptr and does error handling if the stream can not be created.
   virtual QuicStream* CreateIncomingStream(QuicStreamId id) = 0;
 
-  // Create a new stream to handle a locally-initiated bidirectional stream.
-  // Caller does not own the returned stream.
-  // Returns nullptr if max streams have already been opened.
-  virtual QuicStream* CreateOutgoingBidirectionalStream() = 0;
-
-  // Create a new stream to handle a locally-initiated write unidirectional
-  // stream. Caller does not own the returned stream. Returns nullptr if max
-  // streams have already been opened.
-  virtual QuicStream* CreateOutgoingUnidirectionalStream() = 0;
-
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetMutableCryptoStream() = 0;
 

@@ -139,8 +139,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // CreateOutgoingUnidirectionalStream() with QuicSpdyStream return type to
   // make sure that all data streams are QuicSpdyStreams.
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override = 0;
-  QuicSpdyStream* CreateOutgoingBidirectionalStream() override = 0;
-  QuicSpdyStream* CreateOutgoingUnidirectionalStream() override = 0;
+  virtual QuicSpdyStream* CreateOutgoingBidirectionalStream() = 0;
+  virtual QuicSpdyStream* CreateOutgoingUnidirectionalStream() = 0;
 
   QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
 
@@ -148,6 +148,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   virtual bool ShouldCreateIncomingStream(QuicStreamId id) = 0;
 
   // If an outgoing stream can be created, return true.
+  // TODO(fayang): In IETF QUIC, there are different stream limits on
+  // unidirectional v.s. bidirectional outgoing streams. Need to split this
+  // method to ShouldCreateOutgoingUnidirectionalStream and
+  // ShouldCreateOutgoingBidirectionalStream.
   virtual bool ShouldCreateOutgoingStream() = 0;
 
   // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
