@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 @JNINamespace("explore_sites")
 public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
+    private static final String TAG = "ESBackgroundTask";
     public static final int DEFAULT_DELAY_HOURS = 25;
     public static final int DEFAULT_FLEX_HOURS = 2;
 

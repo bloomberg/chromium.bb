@@ -38,6 +38,7 @@ import java.util.List;
  * Provides functionality when the user interacts with the explore sites page.
  */
 public class ExploreSitesPage extends BasicNativePage {
+    private static final String TAG = "ExploreSitesPage";
     private static final String CONTEXT_MENU_USER_ACTION_PREFIX = "ExploreSites";
     static final PropertyModel.WritableIntPropertyKey STATUS_KEY =
             new PropertyModel.WritableIntPropertyKey();
