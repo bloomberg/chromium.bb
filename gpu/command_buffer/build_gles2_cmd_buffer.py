@@ -725,7 +725,6 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_QUERY_RESULT_EXT',
       'GL_QUERY_RESULT_AVAILABLE_EXT',
-      'GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT',
     ],
   },
   'QueryParameter': {

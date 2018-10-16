@@ -164,8 +164,4 @@ uint64_t BitmapRasterBufferProvider::SetReadyToDrawCallback(
 
 void BitmapRasterBufferProvider::Shutdown() {}
 
-bool BitmapRasterBufferProvider::CheckRasterFinishedQueries() {
-  return false;
-}
-
 }  // namespace cc

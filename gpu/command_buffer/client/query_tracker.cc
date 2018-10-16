@@ -203,8 +203,8 @@ void QueryTracker::Query::QueryCounter(QueryTrackerClient* client) {
   MarkAsPending(client->cmd_buffer_helper()->InsertToken(), submit_count);
 }
 
-bool QueryTracker::Query::CheckResultsAvailable(CommandBufferHelper* helper,
-                                                bool flush_if_pending) {
+bool QueryTracker::Query::CheckResultsAvailable(
+    CommandBufferHelper* helper) {
   if (Pending()) {
     bool processed_all = base::subtle::Acquire_Load(
                              &info_.sync->process_count) == submit_count();
@@ -236,8 +236,7 @@ bool QueryTracker::Query::CheckResultsAvailable(CommandBufferHelper* helper,
       }
       state_ = kComplete;
     } else {
-      if (flush_if_pending &&
-          (helper->flush_generation() - flush_count_ - 1) >= 0x80000000) {
+      if ((helper->flush_generation() - flush_count_ - 1) >= 0x80000000) {
         helper->Flush();
       } else {
         // Insert no-ops so that eventually the GPU process will see more work.

@@ -690,22 +690,20 @@ bool RasterImplementation::GetQueryObjectValueHelper(const char* function_name,
   }
 
   bool valid_value = false;
-  const bool flush_if_pending =
-      pname != GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT;
   switch (pname) {
     case GL_QUERY_RESULT_EXT:
-      if (!query->CheckResultsAvailable(helper_, flush_if_pending)) {
+      if (!query->CheckResultsAvailable(helper_)) {
         helper_->WaitForToken(query->token());
-        if (!query->CheckResultsAvailable(helper_, flush_if_pending)) {
+        if (!query->CheckResultsAvailable(helper_)) {
           FinishHelper();
-          CHECK(query->CheckResultsAvailable(helper_, flush_if_pending));
+          CHECK(query->CheckResultsAvailable(helper_));
         }
       }
       *params = query->GetResult();
       valid_value = true;
       break;
     case GL_QUERY_RESULT_AVAILABLE_EXT:
-      *params = query->CheckResultsAvailable(helper_, flush_if_pending);
+      *params = query->CheckResultsAvailable(helper_);
       valid_value = true;
       break;
     default:

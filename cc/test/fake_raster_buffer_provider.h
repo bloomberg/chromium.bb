@@ -32,7 +32,6 @@ class FakeRasterBufferProviderImpl : public RasterBufferProvider {
       const base::Callback<void()>& callback,
       uint64_t pending_callback_id) const override;
   void Shutdown() override;
-  bool CheckRasterFinishedQueries() override;
 };
 
 }  // namespace cc
