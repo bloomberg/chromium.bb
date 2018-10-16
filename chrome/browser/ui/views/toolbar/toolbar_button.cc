@@ -88,8 +88,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
     SetEnabledTextColors(*highlight_color_);
   }
 
-  gfx::Insets insets = (layout_insets_ ? layout_insets_.value()
-                                       : GetLayoutInsets(TOOLBAR_BUTTON)) +
+  gfx::Insets insets = GetLayoutInsets(TOOLBAR_BUTTON) + layout_inset_delta_ +
                        gfx::Insets(0, leading_margin_, 0, 0);
   if (highlight_color_)
     insets += gfx::Insets(0, highlight_radius / 2, 0, 0);
@@ -97,8 +96,10 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
   SetBorder(views::CreateEmptyBorder(insets));
 }
 
-void ToolbarButton::SetLayoutInsets(const gfx::Insets& insets) {
-  layout_insets_ = insets;
+void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {
+  if (layout_inset_delta_ == inset_delta)
+    return;
+  layout_inset_delta_ = inset_delta;
   UpdateHighlightBackgroundAndInsets();
 }
 
