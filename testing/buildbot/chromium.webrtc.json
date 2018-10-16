@@ -38,7 +38,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_perf.browser_tests.filter",
+          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
           "--run-manual",
           "--ui-test-action-max-timeout=350000",
           "--test-launcher-jobs=1",
@@ -161,7 +161,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_perf.browser_tests.filter",
+          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
           "--run-manual",
           "--ui-test-action-max-timeout=350000",
           "--test-launcher-jobs=1",
@@ -285,7 +285,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_perf.browser_tests.filter",
+          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
           "--run-manual",
           "--ui-test-action-max-timeout=350000",
           "--test-launcher-jobs=1",
@@ -401,7 +401,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_perf.browser_tests.filter",
+          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
           "--run-manual",
           "--ui-test-action-max-timeout=350000",
           "--test-launcher-jobs=1",
@@ -518,7 +518,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_perf.browser_tests.filter",
+          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
           "--run-manual",
           "--ui-test-action-max-timeout=350000",
           "--test-launcher-jobs=1",
