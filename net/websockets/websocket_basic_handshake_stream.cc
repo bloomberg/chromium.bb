@@ -161,7 +161,7 @@ bool ValidateConnection(const HttpResponseHeaders* headers,
 
 const base::Feature
     WebSocketBasicHandshakeStream::kWebSocketHandshakeReuseConnection{
-        "WebSocketHandshakeReuseConnection", base::FEATURE_DISABLED_BY_DEFAULT};
+        "WebSocketHandshakeReuseConnection", base::FEATURE_ENABLED_BY_DEFAULT};
 
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::unique_ptr<ClientSocketHandle> connection,
