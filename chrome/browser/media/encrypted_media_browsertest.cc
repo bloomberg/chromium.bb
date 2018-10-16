@@ -81,9 +81,13 @@ const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 const char kWebMVorbisAudioVp8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kWebMOpusAudioVp9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVp9VideoOnly[] = "video/webm; codecs=\"vp9\"";
+const char kWebMVp9Profile2VideoOnly[] =
+    "video/webm; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
 const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
+const char kMp4Vp9Profile2VideoOnly[] =
+    "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 #endif
@@ -563,9 +567,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Profile2Video_WebM) {
     return;
   }
 #endif
-  // TODO(crbug.com/707127): Support VP9 Profile2 query and update mime type.
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
-                     kWebMVp9VideoOnly);
+                     kWebMVp9Profile2VideoOnly);
 }
 
 // TODO(xhwang): Test is flaky. https://crbug.com/890124.
@@ -609,9 +612,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
     return;
   }
 #endif
-  // TODO(crbug.com/707127): Support VP9 Profile2 query and update mime type.
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
-                     kMp4Vp9VideoOnly);
+                     kMp4Vp9Profile2VideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {

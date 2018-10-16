@@ -57,15 +57,19 @@ struct NameToCodec {
 };
 
 // Mapping between codec names and enum values.
+// TODO(crbug.com/724362): Convert codecs into enums directly to avoid this map.
 static const NameToCodec kCodecMap[] = {
-    {"opus", EME_CODEC_OPUS},         // Opus.
-    {"vorbis", EME_CODEC_VORBIS},     // Vorbis.
-    {"vp8", EME_CODEC_VP8},           // VP8.
-    {"vp8.0", EME_CODEC_VP8},         // VP8.
-    {"vp9", EME_CODEC_LEGACY_VP9},    // VP9.
-    {"vp9.0", EME_CODEC_LEGACY_VP9},  // VP9.
-    {"vp09", EME_CODEC_VP9},          // New multi-part VP9 for WebM and MP4.
-    {"flac", EME_CODEC_FLAC},         // FLAC.
+    {"opus", EME_CODEC_OPUS},           // Opus
+    {"vorbis", EME_CODEC_VORBIS},       // Vorbis
+    {"vp8", EME_CODEC_VP8},             // VP8
+    {"vp8.0", EME_CODEC_VP8},           // VP8
+    {"vp9", EME_CODEC_VP9_PROFILE0},    // Legacy VP9
+    {"vp9.0", EME_CODEC_VP9_PROFILE0},  // Legacy VP9
+    // "vp09.00.*" is replaced by "vp09-profile0" to avoid ambiguity. See
+    // OverrideVp9Profile0() in key_system_config_selector.cc.
+    {"vp09-profile0", EME_CODEC_VP9_PROFILE0},  // VP9 profile 0
+    {"vp09", EME_CODEC_VP9_PROFILES123},        // VP9 profile 1/2/3
+    {"flac", EME_CODEC_FLAC},                   // FLAC
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {"mp4a", EME_CODEC_AAC},  // AAC.
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
@@ -606,7 +610,7 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   SupportedCodecs mime_type_codec_mask =
       GetCodecMaskForMimeType(container_mime_type);
   if ((key_system_codec_mask & mime_type_codec_mask) == 0) {
-    DVLOG(2) << " Container " << container_mime_type << " not supported by "
+    DVLOG(2) << "Container " << container_mime_type << " not supported by "
              << key_system;
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -619,9 +623,18 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   //       no         |         any            | NOT_SUPPORTED
   EmeConfigRule support = EmeConfigRule::SUPPORTED;
   for (size_t i = 0; i < codecs.size(); i++) {
-    SupportedCodecs codec = GetCodecForString(codecs[i]);
-    if ((codec & key_system_codec_mask & mime_type_codec_mask) == 0) {
-      DVLOG(2) << " Container/codec pair (" << container_mime_type << " / "
+    EmeCodec codec = GetCodecForString(codecs[i]);
+    if (codec == EME_CODEC_NONE) {
+      DVLOG(2) << "Unknown stripped codec string \"" << codecs[i] << "\"";
+      return EmeConfigRule::NOT_SUPPORTED;
+    }
+
+    // Currently all EmeCodecs only have one bit set. In case there could be
+    // codecs with multiple bits set, e.g. to cover multiple profiles, we check
+    // (codec & mask) == codec instead of (codec & mask) != 0 to make sure all
+    // bits are set. Same below.
+    if ((codec & key_system_codec_mask & mime_type_codec_mask) != codec) {
+      DVLOG(2) << "Container/codec pair (" << container_mime_type << " / "
                << codecs[i] << ") not supported by " << key_system;
       return EmeConfigRule::NOT_SUPPORTED;
     }
@@ -634,7 +647,7 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
     // to consider codecs that are only supported in hardware-secure mode. We
     // could do so, and make use of HW_SECURE_CODECS_REQUIRED, if it turns out
     // that hardware-secure-only codecs actually exist and are useful.
-    if ((codec & key_system_hw_secure_codec_mask) == 0)
+    if ((codec & key_system_hw_secure_codec_mask) != codec)
       support = EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
   }
 
