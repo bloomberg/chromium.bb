@@ -68,6 +68,14 @@ public class BrowserServicesMetrics {
     }
 
     /**
+     * Returns a {@link TimingMetric} that records the amount of time spent opening the
+     * {@link ClientAppDataRegister}.
+     */
+    public static TimingMetric getClientAppDataLoadTimingContext() {
+        return new TimingMetric("BrowserServices.ClientAppDataLoad");
+    }
+
+    /**
      * A class to be used with a try-with-resources to record the elapsed time within the try block.
      */
     public static class TimingMetric implements AutoCloseable {
