@@ -195,7 +195,7 @@ void NewUnifiedMessageCenterView::SetNotificationHeightBelowScroll(
 
 void NewUnifiedMessageCenterView::UpdateVisibility() {
   SessionController* session_controller = Shell::Get()->session_controller();
-  SetVisible(message_list_view_->child_count() > 0 &&
+  SetVisible(message_list_view_->GetPreferredSize().height() > 0 &&
              session_controller->ShouldShowNotificationTray() &&
              !session_controller->IsScreenLocked());
   // When notification list went invisible, |position_from_bottom_| should be

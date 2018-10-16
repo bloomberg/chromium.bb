@@ -8,6 +8,7 @@
 #include "ash/system/message_center/notification_swipe_control_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/auto_reset.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/border.h"
@@ -19,6 +20,13 @@ using message_center::MessageCenter;
 using message_center::MessageView;
 
 namespace ash {
+
+namespace {
+
+constexpr base::TimeDelta kClosingAnimationDuration =
+    base::TimeDelta::FromMilliseconds(330);
+
+}  // namespace
 
 // Container view of notification and swipe control.
 // All children of UnifiedMessageListView should be MessageViewContainer.
@@ -78,7 +86,26 @@ class UnifiedMessageListView::MessageViewContainer
     control_view_->UpdateButtonsVisibility();
   }
 
+  gfx::Rect start_bounds() const { return start_bounds_; }
+  gfx::Rect ideal_bounds() const { return ideal_bounds_; }
+
+  void set_start_bounds(const gfx::Rect& start_bounds) {
+    start_bounds_ = start_bounds;
+  }
+
+  void set_ideal_bounds(const gfx::Rect& ideal_bounds) {
+    ideal_bounds_ = ideal_bounds;
+  }
+
  private:
+  // The bounds that the container starts animating from. If not animating, it's
+  // ignored.
+  gfx::Rect start_bounds_;
+
+  // The final bounds of the container. If not animating, it's same as the
+  // actual bounds().
+  gfx::Rect ideal_bounds_;
+
   MessageView* const message_view_;
   NotificationSwipeControlView* const control_view_;
 
@@ -87,11 +114,11 @@ class UnifiedMessageListView::MessageViewContainer
 
 UnifiedMessageListView::UnifiedMessageListView(
     NewUnifiedMessageCenterView* message_center_view)
-    : message_center_view_(message_center_view) {
+    : message_center_view_(message_center_view),
+      animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);
-
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  animation_->SetDuration(kClosingAnimationDuration);
+  animation_->SetCurrentValue(1.0);
 }
 
 UnifiedMessageListView::~UnifiedMessageListView() {
@@ -110,6 +137,7 @@ void UnifiedMessageListView::Init() {
         notification->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
   }
   UpdateBorders();
+  UpdateBounds();
 }
 
 int UnifiedMessageListView::GetLastNotificationHeight() const {
@@ -129,13 +157,27 @@ int UnifiedMessageListView::CountNotificationsAboveY(int y_offset) const {
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
   if (ignore_size_change_)
     return;
-  PreferredSizeChanged();
+  ResetBounds();
 }
 
 void UnifiedMessageListView::PreferredSizeChanged() {
   views::View::PreferredSizeChanged();
   if (message_center_view_)
     message_center_view_->ListPreferredSizeChanged();
+}
+
+void UnifiedMessageListView::Layout() {
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    view->SetBoundsRect(gfx::Tween::RectValueBetween(
+        GetCurrentValue(), view->start_bounds(), view->ideal_bounds()));
+  }
+}
+
+gfx::Size UnifiedMessageListView::CalculatePreferredSize() const {
+  return gfx::Size(kTrayMenuWidth,
+                   gfx::Tween::IntValueBetween(GetCurrentValue(), start_height_,
+                                               ideal_height_));
 }
 
 void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
@@ -151,7 +193,7 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
   view->SetExpanded(view->IsAutoExpandingAllowed());
   AddChildView(new MessageViewContainer(view));
   UpdateBorders();
-  PreferredSizeChanged();
+  ResetBounds();
 }
 
 void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
@@ -165,7 +207,8 @@ void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
   }
 
   UpdateBorders();
-  PreferredSizeChanged();
+  UpdateBounds();
+  animation_->Start();
 }
 
 void UnifiedMessageListView::OnNotificationUpdated(const std::string& id) {
@@ -181,7 +224,7 @@ void UnifiedMessageListView::OnNotificationUpdated(const std::string& id) {
     }
   }
 
-  PreferredSizeChanged();
+  ResetBounds();
 }
 
 void UnifiedMessageListView::OnSlideChanged(
@@ -196,6 +239,22 @@ void UnifiedMessageListView::OnSlideChanged(
   }
 }
 
+void UnifiedMessageListView::AnimationEnded(const gfx::Animation* animation) {
+  // This is also called from AnimationCanceled().
+  animation_->SetCurrentValue(1.0);
+  PreferredSizeChanged();
+}
+
+void UnifiedMessageListView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  PreferredSizeChanged();
+}
+
+void UnifiedMessageListView::AnimationCanceled(
+    const gfx::Animation* animation) {
+  AnimationEnded(animation);
+}
+
 MessageView* UnifiedMessageListView::CreateMessageView(
     const Notification& notification) {
   auto* view = message_center::MessageViewFactory::Create(notification);
@@ -207,7 +266,13 @@ MessageView* UnifiedMessageListView::CreateMessageView(
 
 UnifiedMessageListView::MessageViewContainer*
 UnifiedMessageListView::GetContainer(int index) {
-  return static_cast<MessageViewContainer*>(child_at(index));
+  return const_cast<MessageViewContainer*>(
+      const_cast<const UnifiedMessageListView*>(this)->GetContainer(index));
+}
+
+const UnifiedMessageListView::MessageViewContainer*
+UnifiedMessageListView::GetContainer(int index) const {
+  return static_cast<const MessageViewContainer*>(child_at(index));
 }
 
 void UnifiedMessageListView::CollapseAllNotifications() {
@@ -222,6 +287,33 @@ void UnifiedMessageListView::UpdateBorders() {
     const bool is_bottom = i == child_count() - 1;
     GetContainer(i)->UpdateBorder(is_top, is_bottom);
   }
+}
+
+void UnifiedMessageListView::UpdateBounds() {
+  int y = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    const int height = view->GetHeightForWidth(kTrayMenuWidth);
+    view->set_start_bounds(view->ideal_bounds());
+    view->set_ideal_bounds(gfx::Rect(0, y, kTrayMenuWidth, height));
+    y += height;
+  }
+
+  start_height_ = ideal_height_;
+  ideal_height_ = y;
+}
+
+void UnifiedMessageListView::ResetBounds() {
+  UpdateBounds();
+  if (animation_->is_animating())
+    animation_->End();
+  else
+    PreferredSizeChanged();
+}
+
+double UnifiedMessageListView::GetCurrentValue() const {
+  return gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT,
+                                    animation_->GetCurrentValue());
 }
 
 }  // namespace ash
