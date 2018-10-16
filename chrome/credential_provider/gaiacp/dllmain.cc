@@ -179,6 +179,4 @@ void CALLBACK SetFakesForTesting(
       fakes->scoped_lsa_policy_creator);
   credential_provider::OSUserManager::SetInstanceForTesting(
       fakes->os_manager_for_testing);
-
-  _AtlModule.set_is_testing(true);
 }

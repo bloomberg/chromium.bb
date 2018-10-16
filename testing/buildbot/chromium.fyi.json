@@ -2391,12 +2391,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "gfx_unittests"
       },
       {

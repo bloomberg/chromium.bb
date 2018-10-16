@@ -1150,17 +1150,6 @@
             }
           ]
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
         "test": "gfx_unittests"
       },
       {
@@ -2325,17 +2314,6 @@
             }
           ]
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
         "test": "gfx_unittests"
       },
       {
@@ -3478,17 +3456,6 @@
           ]
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
@@ -14925,12 +14892,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gfx_unittests"
       },
       {
@@ -15591,12 +15552,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
@@ -16267,12 +16222,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gfx_unittests"
       },
       {
@@ -16933,12 +16882,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
@@ -17609,12 +17552,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gfx_unittests"
       },
       {
@@ -18275,12 +18212,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
@@ -18951,12 +18882,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gfx_unittests"
       },
       {
@@ -19617,12 +19542,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
@@ -20293,12 +20212,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "gcp_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gfx_unittests"
       },
       {
@@ -20959,12 +20872,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
@@ -22423,17 +22330,6 @@
           ]
         },
         "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10"
-            }
-          ]
-        },
-        "test": "gcp_unittests"
       },
       {
         "swarming": {
