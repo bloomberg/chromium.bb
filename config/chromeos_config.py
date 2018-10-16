@@ -2243,7 +2243,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           'amd64-generic-incremental',
           site_config.templates.incremental,
           site_config.templates.incremental_affinity,
-          site_config.templates.no_vmtest_builder,
           board_configs['amd64-generic'],
           manifest_version=True,
       )
@@ -2257,8 +2256,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.incremental_affinity,
           boards=['betty'],
           manifest_version=True,
-          vm_tests=getInfoVMTest(),
-          vm_tests_override=getInfoVMTest(),
       )
   )
 
@@ -2281,7 +2278,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.incremental_affinity,
           site_config.templates.lakitu_notification_emails,
           board_configs['lakitu'],
-          site_config.templates.lakitu_test_customizations,
           manifest_version=True,
       )
   )
@@ -2292,7 +2288,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'x32-generic-incremental',
       site_config.templates.incremental,
-      site_config.templates.no_vmtest_builder,
       board_configs['x32-generic'],
   )
 
@@ -2310,7 +2305,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-gpu'],
-      site_config.templates.lakitu_test_customizations,
   )
 
   site_config.Add(
@@ -2319,7 +2313,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-st'],
-      site_config.templates.lakitu_test_customizations,
   )
 
   site_config.Add(
@@ -2328,7 +2321,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu_next'],
-      site_config.templates.lakitu_test_customizations,
   )
 
 

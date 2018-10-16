@@ -603,6 +603,46 @@ def ApplyCustomOverrides(site_config, ge_build_config):
     #                           (config_name, k))
     site_config[config_name].apply(**overrides)
 
+
+def IncrementalBuilders(site_config):
+  """Create all incremental test configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+  """
+
+  # incremental
+  site_config['amd64-generic-incremental'].apply(
+      site_config.templates.no_vmtest_builder,
+  )
+
+  site_config['betty-incremental'].apply(
+      vm_tests=getInfoVMTest(),
+      vm_tests_override=getInfoVMTest(),
+  )
+
+  site_config['lakitu-incremental'].apply(
+      site_config.templates.lakitu_test_customizations,
+  )
+
+  site_config['x32-generic-incremental'].apply(
+      site_config.templates.no_vmtest_builder,
+  )
+
+  site_config['lakitu-gpu-incremental'].apply(
+      site_config.templates.lakitu_test_customizations,
+  )
+
+  site_config['lakitu-st-incremental'].apply(
+      site_config.templates.lakitu_test_customizations,
+  )
+
+  site_config['lakitu_next-incremental'].apply(
+      site_config.templates.lakitu_test_customizations,
+  )
+
+
 def ApplyConfig(site_config, boards_dict, ge_build_config):
   """Apply test specific config to site_config
 
@@ -612,9 +652,12 @@ def ApplyConfig(site_config, boards_dict, ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
     InsertHwTestsOverrideDefaults(build)
+
+  IncrementalBuilders(site_config)
 
   EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
 
