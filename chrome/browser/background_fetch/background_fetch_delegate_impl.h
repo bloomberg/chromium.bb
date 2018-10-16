@@ -123,6 +123,16 @@ class BackgroundFetchDelegateImpl
 
  private:
   struct JobDetails {
+    // If a job is part of the |job_details_map_|, it will have one of these
+    // states.
+    enum class State {
+      kPendingWillStartPaused,
+      kPendingWillStartDownloading,
+      kStartedButPaused,
+      kStartedAndDownloading,
+      kCancelled,
+    };
+
     JobDetails(JobDetails&&);
     JobDetails(
         std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
@@ -131,10 +141,7 @@ class BackgroundFetchDelegateImpl
     ~JobDetails();
 
     void UpdateOfflineItem();
-
-    bool started = false;
-    bool cancelled = false;
-    bool paused = false;
+    void MarkJobAsStarted();
 
     // Set of DownloadService GUIDs that are currently downloading. They are
     // added by DownloadUrl and are removed when the download completes, fails
@@ -142,6 +149,7 @@ class BackgroundFetchDelegateImpl
     base::flat_set<std::string> current_download_guids;
 
     offline_items_collection::OfflineItem offline_item;
+    State job_state;
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description;
 
     base::OnceClosure on_resume;
