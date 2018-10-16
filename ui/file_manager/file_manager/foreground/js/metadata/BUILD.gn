@@ -39,9 +39,7 @@ js_library("closure_compile_externs") {
   sources = []
   externs_list = [
     "../../../../externs/app_window_common.js",
-    "../../../../externs/entry_location.js",
     "../../../../externs/platform.js",
-    "../../../../externs/volume_info.js",
   ]
 }
 
