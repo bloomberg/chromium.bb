@@ -213,6 +213,36 @@ TEST(SyncedBookmarkTrackerTest, ShouldUpdateUponCommitResponseWithNewId) {
   EXPECT_THAT(entity->metadata()->server_version(), Eq(kNewServerVersion));
 }
 
+TEST(SyncedBookmarkTrackerTest, ShouldUpdateId) {
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  const std::string kSyncId = "SYNC_ID";
+  const std::string kNewSyncId = "NEW_SYNC_ID";
+  const int64_t kServerVersion = 1000;
+  const base::Time kModificationTime(base::Time::Now() -
+                                     base::TimeDelta::FromSeconds(1));
+  const sync_pb::UniquePosition unique_position;
+  const sync_pb::EntitySpecifics specifics =
+      GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
+  bookmarks::BookmarkNode node(/*id=*/1, GURL());
+  // Track a sync entity.
+  tracker.Add(kSyncId, &node, kServerVersion, kModificationTime,
+              unique_position, specifics);
+
+  ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
+  // Update the sync id.
+  tracker.UpdateSyncForLocalCreationIfNeeded(kSyncId, kNewSyncId);
+  // Old id shouldn't be there.
+  EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
+
+  const SyncedBookmarkTracker::Entity* entity =
+      tracker.GetEntityForSyncId(kNewSyncId);
+  ASSERT_THAT(entity, NotNull());
+  EXPECT_THAT(entity->metadata()->server_id(), Eq(kNewSyncId));
+  EXPECT_THAT(entity->bookmark_node(), Eq(&node));
+  EXPECT_THAT(entity->metadata()->server_version(), Eq(kServerVersion));
+}
+
 TEST(SyncedBookmarkTrackerTest,
      ShouldMaintainTombstoneOrderBetweenCtorAndBuildBookmarkModelMetadata) {
   // Feed a metadata batch of 5 entries to the constructor of the tracker.

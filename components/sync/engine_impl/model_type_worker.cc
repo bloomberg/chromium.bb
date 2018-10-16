@@ -268,6 +268,11 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
                               syncPositioningScheme);
   }
 
+  // Populate |originator_cache_guid| and |originator_client_item_id|. This is
+  // relevant only for bookmarks.
+  data.originator_cache_guid = update_entity.originator_cache_guid();
+  data.originator_client_item_id = update_entity.originator_client_item_id();
+
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Deleted entities must use the default instance of EntitySpecifics in
