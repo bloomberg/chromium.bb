@@ -105,6 +105,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   bool has_deadline() const { return deadline_ && deadline_->has_deadline(); }
 
+  base::Optional<base::TimeTicks> deadline_for_testing() const {
+    return deadline_->deadline_for_testing();
+  }
+
   // Inherits the same deadline as the one specified by |surface|. A deadline
   // may be set further out in order to avoid doing unnecessary work while a
   // parent surface is blocked on dependencies. A deadline may be shortened
