@@ -4945,9 +4945,25 @@ const TLS13DowngradeMetricsParams kTLS13DowngradeMetricsParams[] = {
      3},
 };
 
+namespace {
+namespace test_default {
+#include "net/http/transport_security_state_static_unittest_default.h"
+}  // namespace test_default
+}  // namespace
+
 class TLS13DowngradeMetricsTest
     : public SSLClientSocketTest,
-      public ::testing::WithParamInterface<TLS13DowngradeMetricsParams> {};
+      public ::testing::WithParamInterface<TLS13DowngradeMetricsParams> {
+ public:
+  TLS13DowngradeMetricsTest() {
+    // Switch the static preload list, so the tests using mail.google.com below
+    // do not trip the usual pins.
+    SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
+  }
+  ~TLS13DowngradeMetricsTest() {
+    SetTransportSecurityStateSourceForTesting(nullptr);
+  }
+};
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         TLS13DowngradeMetricsTest,
