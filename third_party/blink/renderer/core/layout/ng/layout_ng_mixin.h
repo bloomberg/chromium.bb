@@ -83,7 +83,9 @@ class LayoutNGMixin : public Base {
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
 
-  void AddVisualOverflowFromChildren() final;
+  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+
+  void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() final;
 
  private:

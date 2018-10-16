@@ -449,11 +449,11 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  private:
   void AddVisualOverflowFromBlockChildren();
-  void AddVisualOverflowFromTheme();
   void AddLayoutOverflowFromPositionedObjects();
   void AddLayoutOverflowFromBlockChildren();
 
  protected:
+  void AddVisualOverflowFromTheme();
   virtual void ComputeVisualOverflow(
       const LayoutRect& previous_visual_overflow_rect,
       bool recompute_floats);
@@ -461,7 +461,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                                      bool recompute_floats);
 
   virtual void AddLayoutOverflowFromChildren();
-  virtual void AddVisualOverflowFromChildren();
+  void AddVisualOverflowFromChildren();
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,

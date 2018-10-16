@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 
@@ -63,6 +64,21 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
   if (cached_result_)
     return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment().get());
   return nullptr;
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  Base::ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
+  AddVisualOverflowFromChildren();
+
+  if (Base::VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Base::Layer())
+      Base::Layer()->SetNeedsCompositingInputsUpdate();
+    Base::GetFrameView()->SetIntersectionObservationState(
+        LocalFrameView::kDesired);
+  }
 }
 
 template <typename Base>

@@ -70,7 +70,9 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void AddVisualOverflowFromChildren() override;
+  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+
+  void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() override;
 
   void AlignMarkerInBlockDirection();
