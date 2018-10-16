@@ -179,6 +179,10 @@ target(link_target_type, "ffmpeg_internal") {
     "FFMPEG_CONFIGURATION=NULL",
   ]
 
+  if (is_component_ffmpeg) {
+    configs += [ "//build/config/sanitizers:cfi_icall_disable" ]
+  }
+
   # Disable internal ffmpeg logs in the official build; this saves ~158kb.
   if (is_official_build) {
     defines += [ "CHROMIUM_NO_LOGGING" ]
