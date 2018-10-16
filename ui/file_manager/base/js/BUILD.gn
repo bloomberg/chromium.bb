@@ -15,6 +15,7 @@ group("closure_compile") {
 
 js_type_check("closure_compile_module") {
   deps = [
+    ":error_util",
     ":filtered_volume_manager",
   ]
 }
@@ -24,6 +25,9 @@ js_type_check("test_support_type_check") {
     ":mock_chrome",
     ":test_error_reporting",
   ]
+}
+
+js_library("error_util") {
 }
 
 js_library("filtered_volume_manager") {
