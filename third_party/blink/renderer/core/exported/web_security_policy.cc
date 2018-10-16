@@ -69,10 +69,11 @@ void WebSecurityPolicy::AddOriginAccessAllowListEntry(
     const WebURL& source_origin,
     const WebString& destination_protocol,
     const WebString& destination_host,
-    bool allow_destination_subdomains) {
+    bool allow_destination_subdomains,
+    const network::mojom::CORSOriginAccessMatchPriority priority) {
   SecurityPolicy::AddOriginAccessAllowListEntry(
       *SecurityOrigin::Create(source_origin), destination_protocol,
-      destination_host, allow_destination_subdomains);
+      destination_host, allow_destination_subdomains, priority);
 }
 
 void WebSecurityPolicy::ClearOriginAccessAllowListForOrigin(
@@ -85,14 +86,23 @@ void WebSecurityPolicy::ClearOriginAccessAllowList() {
   SecurityPolicy::ClearOriginAccessAllowList();
 }
 
+void WebSecurityPolicy::ClearOriginAccessListForOrigin(
+    const WebURL& source_origin) {
+  scoped_refptr<SecurityOrigin> security_origin =
+      SecurityOrigin::Create(source_origin);
+  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*security_origin);
+  SecurityPolicy::ClearOriginAccessBlockListForOrigin(*security_origin);
+}
+
 void WebSecurityPolicy::AddOriginAccessBlockListEntry(
     const WebURL& source_origin,
     const WebString& destination_protocol,
     const WebString& destination_host,
-    bool allow_destination_subdomains) {
+    bool allow_destination_subdomains,
+    const network::mojom::CORSOriginAccessMatchPriority priority) {
   SecurityPolicy::AddOriginAccessBlockListEntry(
       *SecurityOrigin::Create(source_origin), destination_protocol,
-      destination_host, allow_destination_subdomains);
+      destination_host, allow_destination_subdomains, priority);
 }
 
 void WebSecurityPolicy::AddOriginTrustworthyWhiteList(const WebString& origin) {
