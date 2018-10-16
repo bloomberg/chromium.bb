@@ -258,9 +258,9 @@ void HTMLSelectElement::setValue(const String& value, bool send_events) {
   SetSuggestedOption(nullptr);
   if (is_autofilled_by_preview_)
     SetAutofillState(WebAutofillState::kNotFilled);
-  SelectOptionFlags flags = kDeselectOtherOptions | kMakeOptionDirty;
+  SelectOptionFlags flags = kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag;
   if (send_events)
-    flags |= kDispatchInputAndChangeEvent;
+    flags |= kDispatchInputAndChangeEventFlag;
   SelectOption(option, flags);
 
   if (send_events && previous_selected_option != option && !UsesMenuList())
@@ -826,7 +826,7 @@ void HTMLSelectElement::ResetToDefaultSelection(ResetReason reason) {
     SelectOption(first_enabled_option,
                  reason == kResetReasonSelectedOptionRemoved
                      ? 0
-                     : kDeselectOtherOptions);
+                     : kDeselectOtherOptionsFlag);
     last_selected_option = first_enabled_option;
     did_change = true;
   }
@@ -857,7 +857,7 @@ int HTMLSelectElement::selectedIndex() const {
 }
 
 void HTMLSelectElement::setSelectedIndex(int index) {
-  SelectOption(item(index), kDeselectOtherOptions | kMakeOptionDirty);
+  SelectOption(item(index), kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag);
 }
 
 int HTMLSelectElement::SelectedListIndex() const {
@@ -919,9 +919,9 @@ void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,
                                                     bool option_is_selected) {
   DCHECK_EQ(option->OwnerSelectElement(), this);
   if (option_is_selected)
-    SelectOption(option, IsMultiple() ? 0 : kDeselectOtherOptions);
+    SelectOption(option, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   else if (!UsesMenuList() || IsMultiple())
-    SelectOption(nullptr, IsMultiple() ? 0 : kDeselectOtherOptions);
+    SelectOption(nullptr, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   else
     ResetToDefaultSelection();
 }
@@ -931,7 +931,7 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
   DCHECK_EQ(option.OwnerSelectElement(), this);
   SetRecalcListItems();
   if (option_is_selected) {
-    SelectOption(&option, IsMultiple() ? 0 : kDeselectOtherOptions);
+    SelectOption(&option, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   } else {
     // No need to reset if we already have a selected option.
     if (!last_on_change_option_)
@@ -1009,12 +1009,12 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
     if (!element->Selected())
       should_update_popup = true;
     element->SetSelectedState(true);
-    if (flags & kMakeOptionDirty)
+    if (flags & kMakeOptionDirtyFlag)
       element->SetDirty(true);
   }
 
   // DeselectItemsWithoutValidation() is O(N).
-  if (flags & kDeselectOtherOptions)
+  if (flags & kDeselectOtherOptionsFlag)
     should_update_popup |= DeselectItemsWithoutValidation(element);
 
   // We should update active selection after finishing OPTION state change
@@ -1022,10 +1022,10 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   if (element) {
     // setActiveSelectionAnchor is O(N).
     if (!active_selection_anchor_ || !IsMultiple() ||
-        flags & kDeselectOtherOptions)
+        flags & kDeselectOtherOptionsFlag)
       SetActiveSelectionAnchor(element);
     if (!active_selection_end_ || !IsMultiple() ||
-        flags & kDeselectOtherOptions)
+        flags & kDeselectOtherOptionsFlag)
       SetActiveSelectionEnd(element);
   }
 
@@ -1033,7 +1033,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   // LayoutMenuList::UpdateFromElement.
   bool should_dispatch_events = false;
   if (UsesMenuList()) {
-    should_dispatch_events = (flags & kDispatchInputAndChangeEvent) &&
+    should_dispatch_events = (flags & kDispatchInputAndChangeEventFlag) &&
                              last_on_change_option_ != element;
     last_on_change_option_ = element;
   }
@@ -1163,7 +1163,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   if (items_size == 0)
     return;
 
-  SelectOption(nullptr, kDeselectOtherOptions);
+  SelectOption(nullptr, kDeselectOtherOptionsFlag);
 
   // The saved state should have at least one value and an index.
   DCHECK_GE(state.ValueSize(), 2u);
@@ -1222,7 +1222,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
     // WebKit. However Edge seems to "ask for a reset" simply.  As of 2016
     // March, the HTML specification says nothing about this.
     if (old_selected_option)
-      SelectOption(old_selected_option, kDeselectOtherOptions);
+      SelectOption(old_selected_option, kDeselectOtherOptionsFlag);
     else
       ResetToDefaultSelection();
   }
@@ -1345,8 +1345,8 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
       handled = false;
 
     if (handled && option) {
-      SelectOption(option, kDeselectOtherOptions | kMakeOptionDirty |
-                               kDispatchInputAndChangeEvent);
+      SelectOption(option, kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag |
+                               kDispatchInputAndChangeEventFlag);
     }
 
     if (handled)
@@ -1770,9 +1770,9 @@ void HTMLSelectElement::TypeAheadFind(const KeyboardEvent& event) {
       event, TypeAhead::kMatchPrefix | TypeAhead::kCycleFirstChar);
   if (index < 0)
     return;
-  SelectOption(OptionAtListIndex(index), kDeselectOtherOptions |
-                                             kMakeOptionDirty |
-                                             kDispatchInputAndChangeEvent);
+  SelectOption(OptionAtListIndex(index), kDeselectOtherOptionsFlag |
+                                             kMakeOptionDirtyFlag |
+                                             kDispatchInputAndChangeEventFlag);
   if (!UsesMenuList())
     ListBoxOnChange();
 }
@@ -1787,8 +1787,8 @@ void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
   EventQueueScope scope;
   // If this index is already selected, unselect. otherwise update the
   // selected index.
-  SelectOptionFlags flags =
-      kDispatchInputAndChangeEvent | (IsMultiple() ? 0 : kDeselectOtherOptions);
+  SelectOptionFlags flags = kDispatchInputAndChangeEventFlag |
+                            (IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   if (option->Selected()) {
     if (UsesMenuList())
       SelectOption(nullptr, flags);
@@ -1951,8 +1951,8 @@ void HTMLSelectElement::SelectOptionByPopup(int list_index) {
   // the selected option is not change.
   if (option == SelectedOption())
     return;
-  SelectOption(option, kDeselectOtherOptions | kMakeOptionDirty |
-                           kDispatchInputAndChangeEvent);
+  SelectOption(option, kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag |
+                           kDispatchInputAndChangeEventFlag);
 }
 
 void HTMLSelectElement::PopupDidCancel() {
