@@ -363,8 +363,8 @@ TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
             scheduled_text_edit_command());
 }
 
-// Test that pressing Shift+Up on Mac is not captured and lets selection mode
-// take over. Test for crbug.com/863543.
+// Test that Shift+Up and Shift+Down are not captured and let selection mode
+// take over. Test for crbug.com/863543 and crbug.com/892216.
 TEST_F(OmniboxViewViewsTest, SelectWithShift_863543) {
   const base::string16 text =
       base::ASCIIToUTF16("http://www.example.com/?query=1");
@@ -375,12 +375,23 @@ TEST_F(OmniboxViewViewsTest, SelectWithShift_863543) {
                                 ui::EF_SHIFT_DOWN);
   omnibox_textfield()->OnKeyEvent(&shift_up_pressed);
 
-#if defined(OS_MACOSX)
-  // TODO(ellyjones): find a way to test that the correct text is selected
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(23U, start);
+  EXPECT_EQ(0U, end);
   omnibox_view()->CheckUpdatePopupNotCalled();
-#else
-  omnibox_view()->CheckUpdatePopupCallInfo(1, text, Range(23));
-#endif
+
+  static_cast<OmniboxView*>(omnibox_view())
+      ->SetWindowTextAndCaretPos(text, 18U, false, false);
+
+  ui::KeyEvent shift_down_pressed(ui::ET_KEY_PRESSED, ui::VKEY_DOWN,
+                                  ui::EF_SHIFT_DOWN);
+  omnibox_textfield()->OnKeyEvent(&shift_down_pressed);
+
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(18U, start);
+  EXPECT_EQ(31U, end);
+  omnibox_view()->CheckUpdatePopupNotCalled();
 }
 
 TEST_F(OmniboxViewViewsTest, OnBlur) {
