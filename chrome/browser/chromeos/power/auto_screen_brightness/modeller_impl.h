@@ -44,7 +44,11 @@ class ModellerImpl : public Modeller,
   // If number of recorded training data has reached |kMaxTrainingDataPoints| we
   // start training immediately, without waiting for user to become idle for
   // |kTrainingDelay|.
-  static constexpr int kMaxTrainingDataPoints = 100;
+  static constexpr size_t kMaxTrainingDataPoints = 100;
+
+  // Only train when there are at least |kMinTrainingDataPoints| training data
+  // points.
+  static constexpr size_t kMinTrainingDataPoints = 10;
 
   // TODO(jiameng): we currently use past 10 seconds of ambient values to
   // calculate average. May revise.
@@ -99,10 +103,12 @@ class ModellerImpl : public Modeller,
 
   // Current number of training data points stored, which will be used for next
   // training.
-  int NumberTrainingDataPointsForTesting() const;
+  size_t NumberTrainingDataPointsForTesting() const;
 
   // Calls GetCurvePathFromProfile directly.
   base::FilePath GetCurvePathForTesting(Profile* profile) const;
+
+  MonotoneCubicSpline GetGlobalCurveForTesting() const;
 
  private:
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
@@ -138,12 +144,11 @@ class ModellerImpl : public Modeller,
   // |model_status_| is not |kInitializing|.
   void OnInitializationComplete();
 
-  // Called when there is no saved curve from the disk.
-  void InitWithDefaultCurve();
-
-  // Called after reading from disk is complete. |content| may be empty, in that
-  // case we'll construct a default curve.
-  void OnCurveLoadedFromDisk(const std::string& content);
+  // Called after we've attempted to construct a |curve| from data saved on
+  // disk. |curve| will be assigned to |current_curve_| if |curve| is not
+  // nullopt. Otherwise, |current_curve_| will have the same value as
+  // |global_curve_|.
+  void OnCurveLoadedFromDisk(const base::Optional<MonotoneCubicSpline>& curve);
 
   // Starts |model_timer_| to start training after certain inactivity period.
   void ScheduleTrainerStart();
@@ -153,7 +158,7 @@ class ModellerImpl : public Modeller,
   void StartTraining();
 
   // Called after training is complete with a new curve.
-  void OnTrainingFinished(const BrightnessCurve& curve);
+  void OnTrainingFinished(const MonotoneCubicSpline& curve);
 
   // If |is_testing_| is false, we check curve saving/loading and training jobs
   // are running on non-UI thread.
@@ -182,7 +187,10 @@ class ModellerImpl : public Modeller,
   base::FilePath curve_path_;
 
   // Latest trained curve.
-  BrightnessCurve curve_;
+  base::Optional<MonotoneCubicSpline> current_curve_;
+
+  // Global curve constructed from predefined params.
+  const MonotoneCubicSpline global_curve_;
 
   // Recent |kNumberAmbientValuesToTrack| ambient values.
   base::RingBuffer<AmbientLightSample, kNumberAmbientValuesToTrack>

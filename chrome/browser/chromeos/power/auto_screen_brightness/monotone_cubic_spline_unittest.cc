@@ -77,6 +77,34 @@ TEST(MonotoneCubicSpline, Monotonicity) {
   }
 }
 
+TEST(MonotoneCubicSpline, FromStringCorrectFormat) {
+  const std::string data("1,10\n2,20\n3,30");
+  const base::Optional<MonotoneCubicSpline> spline_from_string =
+      MonotoneCubicSpline::FromString(data);
+  const std::vector<double> xs = {1, 2, 3};
+  const std::vector<double> ys = {10, 20, 30};
+  const MonotoneCubicSpline expected_spline(xs, ys);
+  EXPECT_EQ(expected_spline, spline_from_string);
+}
+
+TEST(MonotoneCubicSpline, FromStringTooFewRows) {
+  const std::string data("1,10");
+  const base::Optional<MonotoneCubicSpline> spline_from_string =
+      MonotoneCubicSpline::FromString(data);
+  EXPECT_FALSE(spline_from_string.has_value());
+}
+
+TEST(MonotoneCubicSpline, ToString) {
+  const std::vector<double> xs = {1, 2, 3};
+  const std::vector<double> ys = {10, 20, 30};
+  const MonotoneCubicSpline spline(xs, ys);
+  const std::string string_from_spline = spline.ToString();
+
+  const std::string expected_string("1,10\n2,20\n3,30");
+
+  EXPECT_EQ(expected_string, string_from_spline);
+}
+
 }  // namespace auto_screen_brightness
 }  // namespace power
 }  // namespace chromeos
