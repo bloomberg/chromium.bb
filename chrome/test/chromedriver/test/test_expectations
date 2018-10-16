@@ -176,6 +176,9 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2601
     'BasicKeyboardInterfaceTest.testSelectionSelectBySymbol',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2611
+    'CorrectEventFiringTest.testClickAnElementThatDisappear',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
