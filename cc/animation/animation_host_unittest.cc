@@ -50,7 +50,8 @@ class AnimationHostTest : public AnimationTimelinesTest {
   }
 
   void SetOutputState(base::TimeDelta local_time) {
-    MutatorOutputState::AnimationState state(worklet_animation_id_, local_time);
+    MutatorOutputState::AnimationState state(worklet_animation_id_);
+    state.local_times.push_back(local_time);
     worklet_animation_impl_->SetOutputState(state);
   }
 

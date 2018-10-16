@@ -155,7 +155,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   Animation::AnimationPlayState last_play_state_;
   // Start time in ms.
   base::Optional<base::TimeDelta> start_time_;
-  base::Optional<base::TimeDelta> local_time_;
+  Vector<base::Optional<base::TimeDelta>> local_times_;
   // We use this to skip updating if current time has not changed since last
   // update.
   base::Optional<base::TimeDelta> last_current_time_;

@@ -94,10 +94,10 @@ class AnimationWorkletMutatorDispatcherImplTest : public ::testing::Test {
 
 std::unique_ptr<AnimationWorkletDispatcherInput> CreateTestMutatorInput() {
   AnimationWorkletInput::AddAndUpdateState state1{
-      {11, 1}, "test1", 5000, nullptr};
+      {11, 1}, "test1", 5000, nullptr, 1};
 
   AnimationWorkletInput::AddAndUpdateState state2{
-      {22, 2}, "test2", 5000, nullptr};
+      {22, 2}, "test2", 5000, nullptr, 1};
 
   auto input = std::make_unique<AnimationWorkletDispatcherInput>();
   input->Add(std::move(state1));
@@ -146,7 +146,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
 
   AnimationWorkletInput::AddAndUpdateState state2{
-      {22, 2}, "test2", 5000, nullptr};
+      {22, 2}, "test2", 5000, nullptr, 1};
 
   auto input = std::make_unique<AnimationWorkletDispatcherInput>();
   input->Add(std::move(state2));

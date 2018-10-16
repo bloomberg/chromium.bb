@@ -19,7 +19,9 @@
 <script id="simple_animate" type="text/worklet">
 registerAnimator("test_animator", class {
   animate(currentTime, effect) {
-    effect.localTime = 1000;
+    let effects = effect.getChildren();
+    effects[0].localTime = 1000;
+    effects[1].localTime = 1000;
   }
 });
 </script>
@@ -52,38 +54,16 @@ runInAnimationWorklet(
       { duration: 2000 }
   );
 
-  const effect3 = new KeyframeEffect(
-      document.getElementById("target"),
-      [
-        { width: '100px' },
-        { width: '200px' }
-      ],
-      { duration: 2000 }
-  );
-
-  const effect4 = new KeyframeEffect(
-      document.getElementById("target2"),
-      [
-        { opacity: 1 },
-        { opacity: 0 }
-      ],
-      { duration: 2000 }
-  );
-
   const animation = new WorkletAnimation('test_animator',
-      [ effect, effect2, effect3, effect4 ]);
+      [ effect, effect2 ]);
   animation.play();
 
   if (window.testRunner) {
     waitTwoAnimationFrames( _ => {
       console.log('background-color for the first target is: ' +
           getComputedStyle(document.getElementById('target')).backgroundColor);
-      console.log('width for the first target is: ' +
-          getComputedStyle(document.getElementById('target')).width);
       console.log('box-shadow for the second target is: ' +
           getComputedStyle(document.getElementById('target2')).boxShadow);
-      console.log('opacity for the second target is: ' +
-          getComputedStyle(document.getElementById('target2')).opacity);
       testRunner.notifyDone();
     });
   }

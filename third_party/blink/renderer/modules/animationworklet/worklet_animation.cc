@@ -291,6 +291,7 @@ WorkletAnimation::WorkletAnimation(
   for (auto& effect : effects_) {
     AnimationEffect* target_effect = effect;
     target_effect->Attach(this);
+    local_times_.push_back(base::nullopt);
   }
 
   if (timeline_->IsScrollTimeline())
@@ -338,7 +339,7 @@ void WorkletAnimation::cancel() {
     DestroyCompositorAnimation();
   }
 
-  local_time_ = base::nullopt;
+  local_times_.Fill(base::nullopt);
   start_time_ = base::nullopt;
   running_on_main_thread_ = false;
   // TODO(yigu): Because this animation has been detached and will not receive
@@ -382,16 +383,18 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   if (!start_time_)
     return;
 
-  // TODO(crbug.com/756539): For now we use 0 as inherited time for compositor
-  // worklet animations. Will need to get the inherited time from worklet
-  // context.
-  double inherited_time_seconds = 0;
+  DCHECK_EQ(effects_.size(), local_times_.size());
+  for (size_t i = 0; i < effects_.size(); ++i) {
+    // TODO(crbug.com/756539): For now we use 0 as inherited time for compositor
+    // worklet animations. Will need to get the inherited time from worklet
+    // context.
+    double inherited_time_seconds = 0;
 
-  if (local_time_)
-    inherited_time_seconds = local_time_->InSecondsF();
+    if (local_times_[i])
+      inherited_time_seconds = local_times_[i]->InSecondsF();
 
-  for (auto& effect : effects_)
-    effect->UpdateInheritedTime(inherited_time_seconds, reason);
+    effects_[i]->UpdateInheritedTime(inherited_time_seconds, reason);
+  }
 }
 
 bool WorkletAnimation::CheckCanStart(String* failure_message) {
@@ -573,7 +576,7 @@ void WorkletAnimation::UpdateInputState(
     input_state->Add(
         {id_,
          std::string(animator_name_.Ascii().data(), animator_name_.length()),
-         current_time, CloneOptions()});
+         current_time, CloneOptions(), effects_.size()});
   } else if (was_active && is_active) {
     // Skip if the input time is not changed.
     if (did_time_change)
@@ -587,7 +590,13 @@ void WorkletAnimation::UpdateInputState(
 void WorkletAnimation::SetOutputState(
     const AnimationWorkletOutput::AnimationState& state) {
   DCHECK(state.worklet_animation_id == id_);
-  local_time_ = state.local_time;
+  // The local times for composited effects, i.e. not running on main, are
+  // peeked and set via the main thread. If an animator is not ready upon
+  // peeking state.local_times will be empty.
+  DCHECK(local_times_.size() == state.local_times.size() ||
+         !running_on_main_thread_);
+  for (size_t i = 0; i < state.local_times.size(); ++i)
+    local_times_[i] = state.local_times[i];
 }
 
 void WorkletAnimation::Dispose() {
