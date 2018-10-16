@@ -804,19 +804,7 @@
       status: "stable",
     },
     {
-      name: "NetInfoDownlinkHeader",
-      status: "stable",
-    },
-    {
       name: "NetInfoDownlinkMax",
-      status: "stable",
-    },
-    {
-      name: "NetInfoEffectiveTypeHeader",
-      status: "stable",
-    },
-    {
-      name: "NetInfoRttHeader",
       status: "stable",
     },
     {
