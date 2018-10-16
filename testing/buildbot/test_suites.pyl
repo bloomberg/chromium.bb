@@ -2358,9 +2358,6 @@
         'args': ['--gtest_filter=UsingRealWebcam*', '--run-manual',
                  '--test-launcher-jobs=1'],
         'test': 'content_browsertests',
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
       },
     },
 

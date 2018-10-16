@@ -21,7 +21,7 @@
         ],
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       }
@@ -108,7 +108,7 @@
         ],
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -231,7 +231,7 @@
         ],
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -355,7 +355,7 @@
         ],
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -471,7 +471,7 @@
         ],
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -588,7 +588,7 @@
         ],
         "name": "content_browsertests_sequential",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
