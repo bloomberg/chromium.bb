@@ -14,23 +14,6 @@
 
 class CompressorStream;
 
-// A name space with custom functions passed to minizip.
-namespace compressor_archive_functions {
-
-uLong CustomArchiveWrite(void* compressor,
-                         void* stream,
-                         const void* buffer,
-                         uLong length);
-
-long CustomArchiveTell(void* compressor, void* stream);
-
-long CustomArchiveSeek(void* compressor,
-                       void* stream,
-                       uLong offset,
-                       int origin);
-
-}  // namespace compressor_archive_functions
-
 class CompressorArchiveMinizip : public CompressorArchive {
  public:
   explicit CompressorArchiveMinizip(CompressorStream* compressor_stream);
@@ -52,37 +35,24 @@ class CompressorArchiveMinizip : public CompressorArchive {
                     base::Time modification_time,
                     bool is_directory) override;
 
-  // A getter function for zip_file_.
-  zipFile zip_file() const { return zip_file_; }
-
-  // Getter and setter for offset_.
-  int64_t offset() const { return offset_; }
-  void set_offset(int64_t value) { offset_ = value; }
-
-  // Getter and setter for length_.
-  int64_t length() const { return length_; }
-  void set_length(int64_t value) { length_ = value; }
-
-  // A getter function for compressor_stream.
-  CompressorStream* compressor_stream() const { return compressor_stream_; }
-
-  // Custom functions need to access private variables of
-  // CompressorArchiveMinizip frequently.
-  friend uLong compressor_archive_functions::CustomArchiveWrite(
-      void* compressor,
-      void* stream,
-      const void* buffer,
-      uLong length);
-
-  friend long compressor_archive_functions::CustomArchiveTell(void* compressor,
-                                                              void* stream);
-
-  friend long compressor_archive_functions::CustomArchiveSeek(void* compressor,
-                                                              void* stream,
-                                                              uLong offset,
-                                                              int origin);
-
  private:
+  // Stream functions used by minizip. In all cases, |compressor| points to
+  // |this|.
+  static uint32_t MinizipWrite(void* compressor,
+                               void* stream,
+                               const void* buffer,
+                               uint32_t length);
+  static long MinizipTell(void* compressor, void* stream);
+  static long MinizipSeek(void* compressor,
+                          void* stream,
+                          uint32_t offset,
+                          int origin);
+
+  // Implementation of stream functions used by minizip.
+  uint32_t StreamWrite(const void* buffer, uint32_t length);
+  long StreamTell();
+  long StreamSeek(uint32_t offset, int origin);
+
   // An instance that takes care of all IO operations.
   CompressorStream* compressor_stream_;
 
