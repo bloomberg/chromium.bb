@@ -90,16 +90,6 @@ void FrameNavigationState::FrameHostDeleted(
   frame_hosts_.erase(frame_host);
 }
 
-void FrameNavigationState::UpdateFrame(content::RenderFrameHost* frame_host,
-                                       const GURL& url) {
-  auto it = frame_host_state_map_.find(frame_host);
-  if (it == frame_host_state_map_.end()) {
-    NOTREACHED();
-    return;
-  }
-  it->second.url = url;
-}
-
 bool FrameNavigationState::IsValidFrame(
     content::RenderFrameHost* frame_host) const {
   return frame_host_state_map_.find(frame_host) != frame_host_state_map_.end();
