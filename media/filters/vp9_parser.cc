@@ -544,7 +544,8 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
       ++index_ptr;
     }
 
-    if (base::checked_cast<off_t>(size) > bytes_left) {
+    if (!base::IsValueInRangeForNumericType<off_t>(size) ||
+        static_cast<off_t>(size) > bytes_left) {
       DVLOG(1) << "Not enough data in the buffer for frame " << i;
       return base::circular_deque<FrameInfo>();
     }
