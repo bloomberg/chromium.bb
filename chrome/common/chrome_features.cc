@@ -216,6 +216,11 @@ const base::Feature kDesktopPWAsLinkCapturing{
 const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables new Desktop PWAs implementation that does not use
+// extensions.
+const base::Feature kDesktopPWAsWithoutExtensions{
+    "DesktopPWAsWithoutExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Disables downloads of unsafe file types over HTTP.
 const base::Feature kDisallowUnsafeHttpDownloads{
     "DisallowUnsafeHttpDownloads", base::FEATURE_DISABLED_BY_DEFAULT};

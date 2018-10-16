@@ -19,6 +19,7 @@ enum class InstallResultCode {
   kAlreadyInstalled,
   // Catch-all failure category. More-specific failure categories are below.
   kFailedUnknownReason,
+  kGetWebApplicationInfoFailed,
   kPreviouslyUninstalled,
 };
 
