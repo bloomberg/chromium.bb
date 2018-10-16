@@ -15,7 +15,7 @@ static_assert(static_cast<int>(ui::mojom::LatencyComponentType::kMaxValue) ==
               "Enum size mismatch");
 
 static_assert(static_cast<int>(ui::mojom::SourceEventType::kMaxValue) ==
-                  static_cast<int>(ui::SOURCE_EVENT_TYPE_LAST),
+                  static_cast<int>(ui::SourceEventType::LAST),
               "Enum size mismatch");
 
 template <>
