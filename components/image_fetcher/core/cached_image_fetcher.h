@@ -36,7 +36,7 @@ struct RequestMetadata;
 class CachedImageFetcher : public ImageFetcher {
  public:
   CachedImageFetcher(std::unique_ptr<ImageFetcher> image_fetcher,
-                     std::unique_ptr<ImageCache> image_cache);
+                     scoped_refptr<ImageCache> image_cache);
   ~CachedImageFetcher() override;
 
   // ImageFetcher:
@@ -89,8 +89,11 @@ class CachedImageFetcher : public ImageFetcher {
   void OnImageDecodedFromNetwork(const GURL& image_url,
                                  const gfx::Image& image);
 
+  // ImageFetcher has some state that's stored, so it's owned by
+  // CachedImageFetcher.
   std::unique_ptr<ImageFetcher> image_fetcher_;
-  std::unique_ptr<ImageCache> image_cache_;
+
+  scoped_refptr<ImageCache> image_cache_;
 
   gfx::Size desired_image_frame_size_;
 
