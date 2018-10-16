@@ -232,6 +232,10 @@ class USBImager(object):
           cmd, debug_level=logging.NOTICE,
           print_cmd=logging.getLogger().getEffectiveLevel() < logging.NOTICE)
 
+    # dd likely didn't put the backup GPT in the last block. cgpt can fix this
+    # up for us, so we have a standards-conforming GPT.
+    cros_build_lib.SudoRunCommand(['cgpt', 'repair', device],
+                                  debug_level=self.debug_level)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
 
   def _GetImagePath(self):
