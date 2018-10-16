@@ -452,10 +452,6 @@ void WebRuntimeFeatures::EnableSecMetadata(bool enable) {
   RuntimeEnabledFeatures::SetSecMetadataEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableServiceWorkerScriptFullCodeCache(bool enable) {
-  RuntimeEnabledFeatures::SetServiceWorkerScriptFullCodeCacheEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {
   RuntimeEnabledFeatures::SetTimerThrottlingForBackgroundTabsEnabled(enable);
 }

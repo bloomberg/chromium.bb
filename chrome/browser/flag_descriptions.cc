@@ -1633,11 +1633,6 @@ const char kServiceWorkerServicificationDescription[] =
     "have direct connection from its clients, so that fetch events can be "
     "dispatched through the connection without hopping to the browser process.";
 
-const char kServiceWorkerScriptFullCodeCacheName[] =
-    "Service worker script full code cache.";
-const char kServiceWorkerScriptFullCodeCacheDescription[] =
-    "Generate V8 full code cache of Service Worker scripts while installing.";
-
 const char kServiceWorkerLongRunningMessageName[] =
     "Service worker long running message dispatch.";
 const char kServiceWorkerLongRunningMessageDescription[] =
