@@ -1114,6 +1114,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="15"
       label="Visible renderer in foreground app allocation failure"/>
   <int value="16" label="All renderer allocation failure"/>
+  <int value="17" label="Utility process foreground OOM"/>
+  <int value="18" label="All utility process crashes"/>
 </enum>
 
 <enum name="AndroidResourceExtractionStatus">
