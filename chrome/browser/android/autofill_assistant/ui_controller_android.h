@@ -51,6 +51,8 @@ class UiControllerAndroid : public UiController, public Client {
 
   // Called by Java.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnClickOverlay(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& jcaller);
   void OnScriptSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
