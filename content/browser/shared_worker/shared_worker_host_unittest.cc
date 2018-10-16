@@ -21,6 +21,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/not_implemented_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -35,49 +36,10 @@ using blink::MessagePortChannel;
 
 namespace content {
 
-namespace {
-
-// A mock URLLoaderFactory which just fails to create a loader. This is
-// sufficient because the tests don't exercise script loading.
-class NotImplementedNetworkURLLoaderFactory final
-    : public network::mojom::URLLoaderFactory {
- public:
-  NotImplementedNetworkURLLoaderFactory() = default;
-
-  // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    network::URLLoaderCompletionStatus status;
-    status.error_code = net::ERR_NOT_IMPLEMENTED;
-    client->OnComplete(status);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotImplementedNetworkURLLoaderFactory);
-};
-
-}  // namespace
-
 class SharedWorkerHostTest : public testing::Test {
  public:
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
-    mock_url_loader_factory_ =
-        std::make_unique<NotImplementedNetworkURLLoaderFactory>();
-    mock_render_process_host_.OverrideURLLoaderFactory(
-        mock_url_loader_factory_.get());
   }
 
   SharedWorkerHostTest()
@@ -179,9 +141,6 @@ class SharedWorkerHostTest : public testing::Test {
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
   TestBrowserContext browser_context_;
-  // This URLLoaderFactory is used in MockRenderProcessHost.
-  std::unique_ptr<NotImplementedNetworkURLLoaderFactory>
-      mock_url_loader_factory_;
   MockRenderProcessHost mock_render_process_host_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 

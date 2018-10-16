@@ -34,6 +34,14 @@
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
+namespace network {
+namespace mojom {
+
+class URLLoaderFactory;
+
+}  // namespace mojom
+}  // namespace network
+
 namespace content {
 
 class MockRenderProcessHostFactory;
@@ -247,6 +255,10 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   // for deleting all MockRenderProcessHosts that have not deleted by a test in
   // the destructor and prevent them from being leaked.
   mutable std::vector<std::unique_ptr<MockRenderProcessHost>> processes_;
+
+  // A mock URLLoaderFactory which just fails to create a loader.
+  std::unique_ptr<network::mojom::URLLoaderFactory>
+      default_mock_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };
