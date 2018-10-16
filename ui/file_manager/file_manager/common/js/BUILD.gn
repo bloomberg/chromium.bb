@@ -19,7 +19,6 @@ group("closure_compile") {
 js_type_check("closure_compile_module") {
   deps = [
     ":async_util",
-    ":error_util",
     ":file_type",
     ":files_app_entry_types",
     ":importer_common",
@@ -49,9 +48,6 @@ js_library("async_util_unittest") {
     ":async_util",
     "//ui/file_manager/base/js:test_error_reporting",
   ]
-}
-
-js_library("error_util") {
 }
 
 js_library("files_app_entry_types") {
