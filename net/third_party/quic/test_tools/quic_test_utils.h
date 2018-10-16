@@ -558,8 +558,6 @@ class MockQuicSession : public QuicSession {
                     const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingStream, QuicStream*(QuicStreamId id));
-  MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicStream*());
-  MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicStream*());
   MOCK_METHOD1(ShouldCreateIncomingStream2, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingStream2, bool());
   MOCK_METHOD5(WritevData,

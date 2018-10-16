@@ -177,11 +177,6 @@ QuartcStream* QuartcSession::CreateOutgoingBidirectionalStream() {
                                              QuicStream::kDefaultPriority));
 }
 
-QuartcStream* QuartcSession::CreateOutgoingUnidirectionalStream() {
-  DCHECK(false);
-  return nullptr;
-}
-
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
   if (event == HANDSHAKE_CONFIRMED) {

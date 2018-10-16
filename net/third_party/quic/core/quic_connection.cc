@@ -450,6 +450,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
       config.HasClientSentConnectionOption(kSTMP, perspective_)) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_send_timestamps);
     framer_.set_process_timestamps(true);
+    received_packet_manager_.set_save_timestamps(true);
   }
 }
 

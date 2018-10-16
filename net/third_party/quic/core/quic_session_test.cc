@@ -144,14 +144,14 @@ class TestSession : public QuicSession {
     return &crypto_stream_;
   }
 
-  TestStream* CreateOutgoingBidirectionalStream() override {
+  TestStream* CreateOutgoingBidirectionalStream() {
     TestStream* stream =
         new TestStream(GetNextOutgoingStreamId(), this, BIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
 
-  TestStream* CreateOutgoingUnidirectionalStream() override {
+  TestStream* CreateOutgoingUnidirectionalStream() {
     TestStream* stream =
         new TestStream(GetNextOutgoingStreamId(), this, WRITE_UNIDIRECTIONAL);
     ActivateStream(QuicWrapUnique(stream));

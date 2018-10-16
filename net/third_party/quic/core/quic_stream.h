@@ -274,6 +274,8 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                                 QuicByteCount data_length,
                                 bool fin) const;
 
+  StreamType type() const { return type_; }
+
  protected:
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume. If FIN is consumed, the write side is
