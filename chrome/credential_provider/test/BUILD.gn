@@ -19,7 +19,6 @@ test("gcp_unittests") {
   ]
 
   deps = [
-    "../eventlog:gcp_eventlog_provider",
     "../gaiacp:common",
     "../gaiacp:gaiacp_lib",
     "../gaiacp:version",
@@ -28,5 +27,11 @@ test("gcp_unittests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+
+  data_deps = [
+    "../eventlog:gcp_eventlog_provider",
+    "../gaiacp:gaia1_0",
+    "../setup:gcp_setup",
   ]
 }

@@ -84,6 +84,10 @@ TEST_F(GcpReauthCredentialTest, FinishAuthentication) {
 }
 
 TEST_F(GcpReauthCredentialTest, OnUserAuthenticated) {
+  // Create a fake credential provider.  This object must outlive the reauth
+  // credential so it should be declared first.
+  FakeGaiaCredentialProvider provider;
+
   // Initialize a reauth credential.
   CComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
@@ -91,7 +95,6 @@ TEST_F(GcpReauthCredentialTest, OnUserAuthenticated) {
   const CComBSTR kSid(W2COLE(L"sid"));
   ASSERT_EQ(S_OK, reauth->SetUserInfo(kSid, CComBSTR(W2COLE(L"email"))));
 
-  FakeGaiaCredentialProvider provider;
   CComPtr<IGaiaCredential> cred;
   ASSERT_EQ(S_OK, reauth->QueryInterface(IID_IGaiaCredential,
                                          reinterpret_cast<void**>(&cred)));
@@ -106,6 +109,8 @@ TEST_F(GcpReauthCredentialTest, OnUserAuthenticated) {
   EXPECT_EQ(kUsername, provider.username());
   EXPECT_EQ(kPassword, provider.password());
   EXPECT_EQ(kSid, provider.sid());
+
+  ASSERT_EQ(S_OK, cred->Terminate());
 }
 
 }  // namespace credential_provider

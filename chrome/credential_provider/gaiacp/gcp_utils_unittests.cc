@@ -100,41 +100,24 @@ TEST_F(GcpProcHelperTest, ScopedStartupInfo_desktop) {
 }
 
 TEST_F(GcpProcHelperTest, ScopedStartupInfo_handles) {
-  base::win::ScopedHandle::Handle hstdin = INVALID_HANDLE_VALUE;
-  base::win::ScopedHandle::Handle hstdout = INVALID_HANDLE_VALUE;
-  base::win::ScopedHandle::Handle hstderr = INVALID_HANDLE_VALUE;
+  ScopedStartupInfo info;
+  base::win::ScopedHandle shstdin;
+  CreateHandle(&shstdin);
+  base::win::ScopedHandle shstdout;
+  CreateHandle(&shstdout);
+  base::win::ScopedHandle shstderr;
+  CreateHandle(&shstderr);
 
-  {
-    ScopedStartupInfo info;
-    base::win::ScopedHandle shstdin;
-    CreateHandle(&shstdin);
-    base::win::ScopedHandle shstdout;
-    CreateHandle(&shstdout);
-    base::win::ScopedHandle shstderr;
-    CreateHandle(&shstderr);
-
-    // Setting handles in the info should take ownership.
-    ASSERT_EQ(S_OK, info.SetStdHandles(&shstdin, &shstdout, &shstderr));
-    ASSERT_FALSE(shstdin.IsValid());
-    ASSERT_FALSE(shstdout.IsValid());
-    ASSERT_FALSE(shstderr.IsValid());
-    ASSERT_EQ(static_cast<DWORD>(STARTF_USESTDHANDLES),
-              info.GetInfo()->dwFlags & STARTF_USESTDHANDLES);
-    ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdInput);
-    ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdOutput);
-    ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdError);
-    hstdin = info.GetInfo()->hStdInput;
-    hstdout = info.GetInfo()->hStdOutput;
-    hstderr = info.GetInfo()->hStdError;
-  }
-
-  // When the info goes out of scope with handles attached, those handle should
-  // be closed.  In this test, it is unlikely that handles will get recycled
-  // and become valid again.
-  DWORD flags;
-  ASSERT_FALSE(GetHandleInformation(hstdin, &flags));
-  ASSERT_FALSE(GetHandleInformation(hstdout, &flags));
-  ASSERT_FALSE(GetHandleInformation(hstderr, &flags));
+  // Setting handles in the info should take ownership.
+  ASSERT_EQ(S_OK, info.SetStdHandles(&shstdin, &shstdout, &shstderr));
+  ASSERT_FALSE(shstdin.IsValid());
+  ASSERT_FALSE(shstdout.IsValid());
+  ASSERT_FALSE(shstderr.IsValid());
+  ASSERT_EQ(static_cast<DWORD>(STARTF_USESTDHANDLES),
+            info.GetInfo()->dwFlags & STARTF_USESTDHANDLES);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdError);
 }
 
 TEST_F(GcpProcHelperTest, CreatePipeForChildProcess_ParentReads) {
