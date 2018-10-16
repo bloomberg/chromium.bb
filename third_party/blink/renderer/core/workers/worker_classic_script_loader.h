@@ -93,7 +93,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   std::unique_ptr<Vector<char>> ReleaseCachedMetadata() {
     return std::move(cached_metadata_);
   }
-  const Vector<char>* CachedMetadata() const { return cached_metadata_.get(); }
 
   ContentSecurityPolicy* GetContentSecurityPolicy() {
     return content_security_policy_.Get();
