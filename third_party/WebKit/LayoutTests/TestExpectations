@@ -5307,11 +5307,6 @@ crbug.com/892772 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pas
 # Flakiness in DTMF
 crbug.com/893112 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Failure ]
 
-# Sheriff 2018-10-08
-crbug.com/893015 virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Failure Pass Crash ]
-crbug.com/893015 http/tests/fetch/chromium/release-handle-crash.html [ Crash Pass ]
-crbug.com/893015 virtual/outofblink-cors-ns/http/tests/fetch/chromium/release-handle-crash.html [ Crash Pass ]
-
 # Sheriff 2018-10-09
 crbug.com/893508 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass ]
 crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
