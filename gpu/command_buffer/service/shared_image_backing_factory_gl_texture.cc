@@ -4,11 +4,9 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
-#include <inttypes.h>
-
 #include "base/feature_list.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
@@ -32,22 +30,22 @@ namespace gpu {
 // as a gles2::Texture. Can be used with the legacy mailbox implementation.
 class SharedImageBackingGLTexture : public SharedImageBacking {
  public:
-  SharedImageBackingGLTexture(viz::ResourceFormat format,
+  SharedImageBackingGLTexture(const Mailbox& mailbox,
+                              viz::ResourceFormat format,
                               const gfx::Size& size,
                               const gfx::ColorSpace& color_space,
                               uint32_t usage,
                               gles2::Texture* texture)
-      : SharedImageBacking(format, size, color_space, usage),
+      : SharedImageBacking(mailbox, format, size, color_space, usage),
         texture_(texture) {
     DCHECK(texture_);
   }
 
   ~SharedImageBackingGLTexture() override { DCHECK(!texture_); }
 
-  bool ProduceLegacyMailbox(const Mailbox& mailbox,
-                            MailboxManager* mailbox_manager) override {
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(texture_);
-    mailbox_manager->ProduceTexture(mailbox, texture_);
+    mailbox_manager->ProduceTexture(mailbox(), texture_);
     return true;
   }
 
@@ -55,6 +53,28 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     DCHECK(texture_);
     texture_->RemoveLightweightRef(have_context);
     texture_ = nullptr;
+  }
+
+  size_t EstimatedSize() const override { return texture_->estimated_size(); }
+
+  void OnMemoryDump(const std::string& dump_name,
+                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t client_tracing_id) override {
+    // Add a |service_guid| which expresses shared ownership between the
+    // various GPU dumps.
+    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
+    auto service_guid =
+        gl::GetGLTextureServiceGUIDForTracing(texture_->service_id());
+    pmd->CreateSharedGlobalAllocatorDump(service_guid);
+    // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
+    int importance = 2;  // This client always owns the ref.
+
+    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
+
+    // Dump all sub-levels held by the texture. They will appear below the
+    // main gl/textures/client_X/mailbox_Y dump.
+    texture_->DumpLevelMemory(pmd, client_tracing_id, dump_name);
   }
 
  private:
@@ -67,12 +87,13 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
  public:
   SharedImageBackingPassthroughGLTexture(
+      const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
       scoped_refptr<gles2::TexturePassthrough> passthrough_texture)
-      : SharedImageBacking(format, size, color_space, usage),
+      : SharedImageBacking(mailbox, format, size, color_space, usage),
         passthrough_texture_(std::move(passthrough_texture)) {
     DCHECK(passthrough_texture_);
   }
@@ -81,10 +102,9 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
     DCHECK(!passthrough_texture_);
   }
 
-  bool ProduceLegacyMailbox(const Mailbox& mailbox,
-                            MailboxManager* mailbox_manager) override {
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(passthrough_texture_);
-    mailbox_manager->ProduceTexture(mailbox, passthrough_texture_.get());
+    mailbox_manager->ProduceTexture(mailbox(), passthrough_texture_.get());
     return true;
   }
 
@@ -200,6 +220,7 @@ SharedImageBackingFactoryGLTexture::~SharedImageBackingFactoryGLTexture() =
 
 std::unique_ptr<SharedImageBacking>
 SharedImageBackingFactoryGLTexture::CreateSharedImage(
+    const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -307,7 +328,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     if (image)
       passthrough_texture->SetLevelImage(target, 0, image.get());
     backing = std::make_unique<SharedImageBackingPassthroughGLTexture>(
-        format, size, color_space, usage, std::move(passthrough_texture));
+        mailbox, format, size, color_space, usage,
+        std::move(passthrough_texture));
   } else {
     gles2::Texture* texture = new gles2::Texture(service_id);
     texture->SetLightweightRef(memory_tracker_.get());
@@ -328,7 +350,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       texture->SetLevelImage(target, 0, image.get(), gles2::Texture::BOUND);
     texture->SetImmutable(true);
     backing = std::make_unique<SharedImageBackingGLTexture>(
-        format, size, color_space, usage, texture);
+        mailbox, format, size, color_space, usage, texture);
   }
 
   api->glBindTextureFn(target, old_texture_binding);

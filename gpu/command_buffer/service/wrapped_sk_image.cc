@@ -6,7 +6,11 @@
 
 #include "base/hash.h"
 #include "base/logging.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -15,6 +19,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/trace_util.h"
 
 namespace gpu {
 namespace raster {
@@ -23,28 +28,48 @@ namespace {
 
 class WrappedSkImageBacking : public SharedImageBacking {
  public:
-  WrappedSkImageBacking(viz::ResourceFormat format,
+  WrappedSkImageBacking(const Mailbox& mailbox,
+                        viz::ResourceFormat format,
                         const gfx::Size& size,
                         const gfx::ColorSpace& color_space,
                         uint32_t usage,
                         std::unique_ptr<WrappedSkImage> wrapped_sk_image)
-      : SharedImageBacking(format, size, color_space, usage),
+      : SharedImageBacking(mailbox, format, size, color_space, usage),
         wrapped_sk_image_(std::move(wrapped_sk_image)) {
     DCHECK(!!wrapped_sk_image_);
   }
 
   ~WrappedSkImageBacking() override { DCHECK(!wrapped_sk_image_); }
 
-  bool ProduceLegacyMailbox(const Mailbox& mailbox,
-                            MailboxManager* mailbox_manager) override {
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(!!wrapped_sk_image_);
-    mailbox_manager->ProduceTexture(mailbox, wrapped_sk_image_.get());
+    mailbox_manager->ProduceTexture(mailbox(), wrapped_sk_image_.get());
     return true;
   }
 
   void Destroy(bool have_context) override {
     DCHECK(!!wrapped_sk_image_);
     wrapped_sk_image_.reset();
+  }
+
+  size_t EstimatedSize() const override {
+    return wrapped_sk_image_->estimated_size();
+  }
+
+  void OnMemoryDump(const std::string& dump_name,
+                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t client_tracing_id) override {
+    // Add a |service_guid| which expresses shared ownership between the
+    // various GPU dumps.
+    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
+    auto service_guid = gl::GetGLTextureServiceGUIDForTracing(
+        wrapped_sk_image_->GetTracingId());
+    pmd->CreateSharedGlobalAllocatorDump(service_guid);
+    // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
+    int importance = 2;  // This client always owns the ref.
+
+    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
   }
 
  private:
@@ -62,6 +87,7 @@ WrappedSkImageFactory::WrappedSkImageFactory(
 WrappedSkImageFactory::~WrappedSkImageFactory() = default;
 
 std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
+    const Mailbox& mailbox,
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -69,8 +95,8 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
   std::unique_ptr<WrappedSkImage> texture(new WrappedSkImage(context_state_));
   if (!texture->Initialize(size, format))
     return nullptr;
-  return std::make_unique<WrappedSkImageBacking>(format, size, color_space,
-                                                 usage, std::move(texture));
+  return std::make_unique<WrappedSkImageBacking>(
+      mailbox, format, size, color_space, usage, std::move(texture));
 }
 
 WrappedSkImage::WrappedSkImage(raster::RasterDecoderContextState* context_state)

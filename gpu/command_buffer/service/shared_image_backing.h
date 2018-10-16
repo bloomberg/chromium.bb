@@ -11,6 +11,13 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+class MemoryAllocatorDump;
+}  // namespace trace_event
+}  // namespace base
+
 namespace gpu {
 class MailboxManager;
 
@@ -20,33 +27,42 @@ class MailboxManager;
 // TODO(ericrk): Add SharedImageRepresentation and Begin/End logic.
 class SharedImageBacking {
  public:
-  SharedImageBacking(viz::ResourceFormat format,
+  SharedImageBacking(const Mailbox& mailbox,
+                     viz::ResourceFormat format,
                      const gfx::Size& size,
                      const gfx::ColorSpace& color_space,
-                     uint32_t usage)
-      : format_(format),
-        size_(size),
-        color_space_(color_space),
-        usage_(usage) {}
+                     uint32_t usage);
 
-  virtual ~SharedImageBacking() {}
+  virtual ~SharedImageBacking();
 
   viz::ResourceFormat format() const { return format_; }
   const gfx::Size& size() const { return size_; }
   const gfx::ColorSpace& color_space() const { return color_space_; }
   uint32_t usage() const { return usage_; }
+  const Mailbox& mailbox() const { return mailbox_; }
+
+  // Memory dump helpers:
+  // Returns the estimated size of the backing. If 0 is returned, the dump will
+  // be omitted.
+  virtual size_t EstimatedSize() const;
+  // Allows the backing to attach additional data to the dump or dump
+  // additional sub paths.
+  virtual void OnMemoryDump(const std::string& dump_name,
+                            base::trace_event::MemoryAllocatorDump* dump,
+                            base::trace_event::ProcessMemoryDump* pmd,
+                            uint64_t client_tracing_id) {}
 
   // Prepares the backing for use with the legacy mailbox system.
   // TODO(ericrk): Remove this once the new codepath is complete.
-  virtual bool ProduceLegacyMailbox(const Mailbox& mailbox,
-                                    MailboxManager* mailbox_manager) = 0;
+  virtual bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) = 0;
   virtual void Destroy(bool have_context) = 0;
 
  private:
-  viz::ResourceFormat format_;
-  gfx::Size size_;
-  gfx::ColorSpace color_space_;
-  uint32_t usage_;
+  const Mailbox mailbox_;
+  const viz::ResourceFormat format_;
+  const gfx::Size size_;
+  const gfx::ColorSpace color_space_;
+  const uint32_t usage_;
 };
 
 }  // namespace gpu
