@@ -3477,60 +3477,59 @@
   {
     'name': 'chromium.webrtc',
     'machines': {
-      'Linux Builder': {
-        'additional_compile_targets': [
-          'browser_tests',
-          'capture_unittests',
-          'content_browsertests',
-          'content_unittests',
-          'frame_analyzer',
-          'jingle_unittests',
-          'remoting_unittests',
-        ],
-      },
-      'Mac Builder': {
-        'additional_compile_targets': [
-          'browser_tests',
-          'capture_unittests',
-          'content_browsertests',
-          'content_unittests',
-          'frame_analyzer',
-          'jingle_unittests',
-          'remoting_unittests',
-        ],
-      },
-      'Win Builder': {
-        'additional_compile_targets': [
-          'browser_tests',
-          'capture_unittests',
-          'content_browsertests',
-          'content_unittests',
-          'frame_analyzer',
-          'jingle_unittests',
-          'remoting_unittests',
-        ],
-      },
-    },
-  },
-  {
-    'name': 'chromium.webrtc.experimental',
-    'machines': {
-      'Linux Builder': {
+      'Android Builder': {},
+      'Android Tester': {
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
-          'gtest_tests': 'webrtc_chromium_baremetal_gtests',
+          'gtest_tests': 'webrtc_android_tests_with_baremetal_tests',
+        },
+      },
+      'Linux Builder': {
+        'additional_compile_targets': [
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Linux Tester': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
       'Mac Builder': {
+        'additional_compile_targets': [
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Mac Tester': {
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
-          'gtest_tests': 'webrtc_chromium_baremetal_gtests',
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
+      'Mac Tester (long-running)': {},
       'Win Builder': {
+        'additional_compile_targets': [
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'Win10 Tester': {
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
-          'gtest_tests': 'webrtc_chromium_baremetal_gtests',
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
+        },
+      },
+      'Win7 Tester': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
+        },
+      },
+      # TODO(crbug.com/877018): delete long-running bots.
+      'Win7 Tester (long-running)': {},
+      'Win8 Tester': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
     },
@@ -3558,7 +3557,7 @@
           'hammerhead',
         ],
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_android_gtests',
+          'gtest_tests': 'webrtc_chromium_simple_gtests',
         },
       },
       'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)': {
@@ -3567,7 +3566,7 @@
           'bullhead',
         ],
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_android_gtests',
+          'gtest_tests': 'webrtc_chromium_simple_gtests',
         },
       },
       'WebRTC Chromium FYI Linux Builder': {
