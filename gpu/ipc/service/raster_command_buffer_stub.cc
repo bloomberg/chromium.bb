@@ -233,7 +233,6 @@ void RasterCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
   NOTREACHED();
 }
 void RasterCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                                  const SyncToken& sync_token,
                                                   bool is_lost) {
   NOTREACHED();
 }

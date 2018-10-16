@@ -140,7 +140,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const SyncToken& sync_token,
                        base::OnceClosure callback) override;
-  void WaitSyncToken(const SyncToken& sync_token) override;
+  void WaitSyncTokenHint(const SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
 
   // CommandBufferServiceClient implementation (called on gpu thread):
@@ -151,6 +151,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
+  bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
@@ -234,8 +235,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Flush up to put_offset. If execution is deferred either by yielding, or due
   // to a sync token wait, HasUnprocessedCommandsOnGpuThread() returns true.
-  void FlushOnGpuThread(int32_t put_offset,
-                        const std::vector<SyncToken>& sync_token_fences);
+  void FlushOnGpuThread(int32_t put_offset);
   bool HasUnprocessedCommandsOnGpuThread();
   void UpdateLastStateOnGpuThread();
 
@@ -287,6 +287,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Callbacks on the gpu thread.
   void PerformDelayedWorkOnGpuThread();
+  void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
 
   // Callback implementations on the client thread.
   void OnContextLost();
@@ -299,6 +300,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
+  bool waiting_for_sync_point_ = false;
   bool use_virtualized_gl_context_ = false;
   raster::GrShaderCache* gr_shader_cache_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
@@ -330,6 +332,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
   uint64_t next_fence_sync_release_ = 1;
+  uint64_t flushed_fence_sync_release_ = 0;
   std::vector<SyncToken> next_flush_sync_token_fences_;
   // Sequence checker for client sequence used for initialization, destruction,
   // callbacks, such as context loss, and methods which provide such callbacks,

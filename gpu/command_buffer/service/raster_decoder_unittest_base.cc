@@ -71,6 +71,9 @@ void RasterDecoderTestBase::OnConsoleMessage(int32_t id,
 void RasterDecoderTestBase::CacheShader(const std::string& key,
                                         const std::string& shader) {}
 void RasterDecoderTestBase::OnFenceSyncRelease(uint64_t release) {}
+bool RasterDecoderTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
+  return false;
+}
 void RasterDecoderTestBase::OnDescheduleUntilFinished() {}
 void RasterDecoderTestBase::OnRescheduleAfterFinished() {}
 void RasterDecoderTestBase::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}

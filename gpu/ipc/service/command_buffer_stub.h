@@ -97,6 +97,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
+  bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void ScheduleGrContextCleanup() override;
@@ -179,9 +180,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id);
   virtual void OnTakeFrontBuffer(const Mailbox& mailbox) = 0;
-  virtual void OnReturnFrontBuffer(const Mailbox& mailbox,
-                                   const SyncToken& sync_token,
-                                   bool is_lost) = 0;
+  virtual void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) = 0;
   void OnGetState(IPC::Message* reply_message);
   void OnWaitForTokenInRange(int32_t start,
                              int32_t end,
@@ -190,9 +189,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
                                  int32_t start,
                                  int32_t end,
                                  IPC::Message* reply_message);
-  void OnAsyncFlush(int32_t put_offset,
-                    uint32_t flush_id,
-                    const std::vector<SyncToken>& sync_token_fences);
+  void OnAsyncFlush(int32_t put_offset, uint32_t flush_id);
   void OnRegisterTransferBuffer(int32_t id,
                                 base::UnsafeSharedMemoryRegion transfer_buffer);
   void OnDestroyTransferBuffer(int32_t id);
@@ -206,6 +203,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void OnCreateGpuFenceFromHandle(uint32_t gpu_fence_id,
                                   const gfx::GpuFenceHandle& handle);
   void OnGetGpuFenceHandle(uint32_t gpu_fence_id);
+
+  void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
 
   void OnCreateImage(GpuCommandBufferMsg_CreateImage_Params params);
   void OnDestroyImage(int32_t id);
@@ -237,6 +236,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   uint32_t last_flush_id_;
 
   base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
+
+  bool waiting_for_sync_point_;
 
   base::TimeTicks process_delayed_work_time_;
   uint32_t previous_processed_num_;

@@ -13519,6 +13519,73 @@ static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_0) == 4,
 static_assert(offsetof(InsertFenceSyncCHROMIUM, release_count_1) == 8,
               "offset of InsertFenceSyncCHROMIUM release_count_1 should be 8");
 
+struct WaitSyncTokenCHROMIUM {
+  typedef WaitSyncTokenCHROMIUM ValueType;
+  static const CommandId kCmdId = kWaitSyncTokenCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _namespace_id,
+            GLuint64 _command_buffer_id,
+            GLuint64 _release_count) {
+    SetHeader();
+    namespace_id = _namespace_id;
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_command_buffer_id),
+                                    &command_buffer_id_0, &command_buffer_id_1);
+    GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_release_count),
+                                    &release_count_0, &release_count_1);
+  }
+
+  void* Set(void* cmd,
+            GLint _namespace_id,
+            GLuint64 _command_buffer_id,
+            GLuint64 _release_count) {
+    static_cast<ValueType*>(cmd)->Init(_namespace_id, _command_buffer_id,
+                                       _release_count);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  GLuint64 command_buffer_id() const volatile {
+    return static_cast<GLuint64>(GLES2Util::MapTwoUint32ToUint64(
+        command_buffer_id_0, command_buffer_id_1));
+  }
+
+  GLuint64 release_count() const volatile {
+    return static_cast<GLuint64>(
+        GLES2Util::MapTwoUint32ToUint64(release_count_0, release_count_1));
+  }
+
+  gpu::CommandHeader header;
+  int32_t namespace_id;
+  uint32_t command_buffer_id_0;
+  uint32_t command_buffer_id_1;
+  uint32_t release_count_0;
+  uint32_t release_count_1;
+};
+
+static_assert(sizeof(WaitSyncTokenCHROMIUM) == 24,
+              "size of WaitSyncTokenCHROMIUM should be 24");
+static_assert(offsetof(WaitSyncTokenCHROMIUM, header) == 0,
+              "offset of WaitSyncTokenCHROMIUM header should be 0");
+static_assert(offsetof(WaitSyncTokenCHROMIUM, namespace_id) == 4,
+              "offset of WaitSyncTokenCHROMIUM namespace_id should be 4");
+static_assert(
+    offsetof(WaitSyncTokenCHROMIUM, command_buffer_id_0) == 8,
+    "offset of WaitSyncTokenCHROMIUM command_buffer_id_0 should be 8");
+static_assert(
+    offsetof(WaitSyncTokenCHROMIUM, command_buffer_id_1) == 12,
+    "offset of WaitSyncTokenCHROMIUM command_buffer_id_1 should be 12");
+static_assert(offsetof(WaitSyncTokenCHROMIUM, release_count_0) == 16,
+              "offset of WaitSyncTokenCHROMIUM release_count_0 should be 16");
+static_assert(offsetof(WaitSyncTokenCHROMIUM, release_count_1) == 20,
+              "offset of WaitSyncTokenCHROMIUM release_count_1 should be 20");
+
 struct UnpremultiplyAndDitherCopyCHROMIUM {
   typedef UnpremultiplyAndDitherCopyCHROMIUM ValueType;
   static const CommandId kCmdId = kUnpremultiplyAndDitherCopyCHROMIUM;

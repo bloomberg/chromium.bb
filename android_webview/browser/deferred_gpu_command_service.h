@@ -49,6 +49,7 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   // gpu::CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;
   bool ShouldCreateMemoryTracker() const override;
+  bool BlockThreadOnWaitSyncToken() const override;
   std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence> CreateSequence()
       override;
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;

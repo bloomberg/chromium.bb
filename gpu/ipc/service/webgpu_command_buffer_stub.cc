@@ -171,7 +171,6 @@ void WebGPUCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
   LOG(ERROR) << "Called WebGPUCommandBufferStub::OnTakeFrontBuffer";
 }
 void WebGPUCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                                  const SyncToken& sync_token,
                                                   bool is_lost) {
   LOG(ERROR) << "Called WebGPUCommandBufferStub::OnReturnFrontBuffer";
 }

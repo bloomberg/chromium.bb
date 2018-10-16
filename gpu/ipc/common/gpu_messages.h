@@ -159,9 +159,8 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_TakeFrontBuffer,
 
 // Returns a front buffer taken with GpuCommandBufferMsg_TakeFrontBuffer. This
 // allows it to be reused.
-IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_ReturnFrontBuffer,
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_ReturnFrontBuffer,
                     gpu::Mailbox /* mailbox */,
-                    gpu::SyncToken /* sync_token */,
                     bool /* is_lost */)
 
 // Wait until the token is in a specific range, inclusive.
@@ -183,10 +182,9 @@ IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_WaitForGetOffsetInRange,
 // TODO(sunnyps): This is an internal implementation detail of the gpu service
 // and is not sent by the client. Remove this once the non-scheduler code path
 // is removed.
-IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_AsyncFlush,
                     int32_t /* put_offset */,
-                    uint32_t /* flush_id */,
-                    std::vector<gpu::SyncToken> /* sync_token_fences */)
+                    uint32_t /* flush_id */)
 
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
@@ -215,6 +213,10 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SwapBuffersCompleted,
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_BufferPresented,
                     uint64_t, /* swap_id */
                     gfx::PresentationFeedback /* feedback */)
+
+// The receiver will stop processing messages until the Synctoken is signaled.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_WaitSyncToken,
+                    gpu::SyncToken /* sync_token */)
 
 // The receiver will asynchronously wait until the SyncToken is signaled, and
 // then return a GpuCommandBufferMsg_SignalAck message.

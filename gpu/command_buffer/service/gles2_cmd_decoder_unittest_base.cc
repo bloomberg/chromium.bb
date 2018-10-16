@@ -141,6 +141,9 @@ void GLES2DecoderTestBase::OnConsoleMessage(int32_t id,
 void GLES2DecoderTestBase::CacheShader(const std::string& key,
                                        const std::string& shader) {}
 void GLES2DecoderTestBase::OnFenceSyncRelease(uint64_t release) {}
+bool GLES2DecoderTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
+  return false;
+}
 void GLES2DecoderTestBase::OnDescheduleUntilFinished() {}
 void GLES2DecoderTestBase::OnRescheduleAfterFinished() {}
 void GLES2DecoderTestBase::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
@@ -2392,6 +2395,9 @@ void GLES2DecoderPassthroughTestBase::OnConsoleMessage(
 void GLES2DecoderPassthroughTestBase::CacheShader(const std::string& key,
                                                   const std::string& shader) {}
 void GLES2DecoderPassthroughTestBase::OnFenceSyncRelease(uint64_t release) {}
+bool GLES2DecoderPassthroughTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
+  return false;
+}
 void GLES2DecoderPassthroughTestBase::OnDescheduleUntilFinished() {}
 void GLES2DecoderPassthroughTestBase::OnRescheduleAfterFinished() {}
 void GLES2DecoderPassthroughTestBase::OnSwapBuffers(uint64_t swap_id,

@@ -807,28 +807,15 @@ bool InProcessCommandBuffer::HasUnprocessedCommandsOnGpuThread() {
   return false;
 }
 
-void InProcessCommandBuffer::FlushOnGpuThread(
-    int32_t put_offset,
-    const std::vector<SyncToken>& sync_token_fences) {
+void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   TRACE_EVENT1("gpu", "InProcessCommandBuffer::FlushOnGpuThread", "put_offset",
                put_offset);
 
   ScopedEvent handle_flush(&flush_event_);
-  // Check if sync token waits are invalid or already complete. Do not use
-  // SyncPointManager::IsSyncTokenReleased() as it can't say if the wait is
-  // invalid.
-  for (const auto& sync_token : sync_token_fences)
-    DCHECK(!sync_point_client_state_->Wait(sync_token, base::DoNothing()));
 
   if (!MakeCurrent())
     return;
-
-  MailboxManager* mailbox_manager = context_group_->mailbox_manager();
-  if (mailbox_manager->UsesSync()) {
-    for (const auto& sync_token : sync_token_fences)
-      mailbox_manager->PullTextureUpdates(sync_token);
-  }
 
   {
     base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
@@ -842,9 +829,10 @@ void InProcessCommandBuffer::FlushOnGpuThread(
   bool has_unprocessed_commands = HasUnprocessedCommandsOnGpuThread();
 
   if (!command_buffer_->scheduled() || has_unprocessed_commands) {
+    DCHECK(!task_executor_->BlockThreadOnWaitSyncToken());
     ContinueGpuTask(base::BindOnce(&InProcessCommandBuffer::FlushOnGpuThread,
                                    gpu_thread_weak_ptr_factory_.GetWeakPtr(),
-                                   put_offset, sync_token_fences));
+                                   put_offset));
   }
 
   // If we've processed all pending commands but still have pending queries,
@@ -891,16 +879,15 @@ void InProcessCommandBuffer::Flush(int32_t put_offset) {
                put_offset);
 
   last_put_offset_ = put_offset;
+  flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
 
   std::vector<SyncToken> sync_token_fences;
   next_flush_sync_token_fences_.swap(sync_token_fences);
 
-  // Don't use std::move() for |sync_token_fences| because evaluation order for
-  // arguments is not defined.
-  ScheduleGpuTask(base::BindOnce(&InProcessCommandBuffer::FlushOnGpuThread,
-                                 gpu_thread_weak_ptr_factory_.GetWeakPtr(),
-                                 put_offset, sync_token_fences),
-                  sync_token_fences);
+  ScheduleGpuTask(
+      base::BindOnce(&InProcessCommandBuffer::FlushOnGpuThread,
+                     gpu_thread_weak_ptr_factory_.GetWeakPtr(), put_offset),
+      std::move(sync_token_fences));
 }
 
 void InProcessCommandBuffer::OrderingBarrier(int32_t put_offset) {
@@ -1027,8 +1014,12 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
   bool requires_sync_point = handle.type == gfx::IO_SURFACE_BUFFER;
 
   uint64_t fence_sync = 0;
-  if (requires_sync_point)
+  if (requires_sync_point) {
     fence_sync = GenerateFenceSyncRelease();
+
+    // Previous fence syncs should be flushed already.
+    DCHECK_EQ(fence_sync - 1, flushed_fence_sync_release_);
+  }
 
   ScheduleGpuTask(base::BindOnce(
       &InProcessCommandBuffer::CreateImageOnGpuThread,
@@ -1039,6 +1030,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
       base::checked_cast<uint32_t>(internalformat), fence_sync));
 
   if (fence_sync) {
+    flushed_fence_sync_release_ = fence_sync;
     SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(), fence_sync);
     sync_token.SetVerifyFlush();
     gpu_memory_buffer_manager_->SetDestructionSyncToken(gpu_memory_buffer,
@@ -1139,13 +1131,58 @@ void InProcessCommandBuffer::OnFenceSyncRelease(uint64_t release) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
 
   SyncToken sync_token(GetNamespaceID(), GetCommandBufferID(), release);
+  context_group_->mailbox_manager()->PushTextureUpdates(sync_token);
+  sync_point_client_state_->ReleaseFenceSync(release);
+}
+
+// TODO(sunnyps): Remove the wait command once all sync tokens are passed as
+// task dependencies.
+bool InProcessCommandBuffer::OnWaitSyncToken(const SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  DCHECK(!waiting_for_sync_point_);
+  TRACE_EVENT0("gpu", "InProcessCommandBuffer::OnWaitSyncToken");
+
+  SyncPointManager* sync_point_manager = task_executor_->sync_point_manager();
+  DCHECK(sync_point_manager);
 
   MailboxManager* mailbox_manager = context_group_->mailbox_manager();
-  if (mailbox_manager->UsesSync())
-    mailbox_manager->PushTextureUpdates(sync_token);
+  DCHECK(mailbox_manager);
 
-  command_buffer_->SetReleaseCount(release);
-  sync_point_client_state_->ReleaseFenceSync(release);
+  if (task_executor_->BlockThreadOnWaitSyncToken()) {
+    // Wait if sync point wait is valid.
+    if (sync_point_client_state_->Wait(
+            sync_token,
+            base::Bind(&base::WaitableEvent::Signal,
+                       base::Unretained(&fence_sync_wait_event_)))) {
+      fence_sync_wait_event_.Wait();
+    }
+
+    mailbox_manager->PullTextureUpdates(sync_token);
+    return false;
+  }
+
+  waiting_for_sync_point_ = sync_point_client_state_->Wait(
+      sync_token,
+      base::Bind(&InProcessCommandBuffer::OnWaitSyncTokenCompleted,
+                 gpu_thread_weak_ptr_factory_.GetWeakPtr(), sync_token));
+  if (!waiting_for_sync_point_) {
+    mailbox_manager->PullTextureUpdates(sync_token);
+    return false;
+  }
+
+  command_buffer_->SetScheduled(false);
+  task_sequence_->SetEnabled(false);
+  return true;
+}
+
+void InProcessCommandBuffer::OnWaitSyncTokenCompleted(
+    const SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  DCHECK(waiting_for_sync_point_);
+  context_group_->mailbox_manager()->PullTextureUpdates(sync_token);
+  waiting_for_sync_point_ = false;
+  command_buffer_->SetScheduled(true);
+  task_sequence_->SetEnabled(true);
 }
 
 void InProcessCommandBuffer::OnDescheduleUntilFinished() {
@@ -1357,7 +1394,7 @@ bool InProcessCommandBuffer::IsFenceSyncReleased(uint64_t release) {
   return release <= GetLastState().release_count;
 }
 
-void InProcessCommandBuffer::WaitSyncToken(const SyncToken& sync_token) {
+void InProcessCommandBuffer::WaitSyncTokenHint(const SyncToken& sync_token) {
   next_flush_sync_token_fences_.push_back(sync_token);
 }
 

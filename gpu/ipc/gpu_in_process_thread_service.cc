@@ -28,6 +28,13 @@ class SchedulerSequence : public CommandBufferTaskExecutor::Sequence {
 
   bool ShouldYield() override { return scheduler_->ShouldYield(sequence_id_); }
 
+  void SetEnabled(bool enabled) override {
+    if (enabled)
+      scheduler_->EnableSequence(sequence_id_);
+    else
+      scheduler_->DisableSequence(sequence_id_);
+  }
+
   void ScheduleTask(base::OnceClosure task,
                     std::vector<SyncToken> sync_token_fences) override {
     scheduler_->ScheduleTask(Scheduler::Task(sequence_id_, std::move(task),
@@ -73,6 +80,10 @@ bool GpuInProcessThreadService::ForceVirtualizedGLContexts() const {
 
 bool GpuInProcessThreadService::ShouldCreateMemoryTracker() const {
   return true;
+}
+
+bool GpuInProcessThreadService::BlockThreadOnWaitSyncToken() const {
+  return false;
 }
 
 std::unique_ptr<CommandBufferTaskExecutor::Sequence>

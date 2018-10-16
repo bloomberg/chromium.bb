@@ -56,6 +56,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
     // Returns true if sequence should yield while running its current task.
     virtual bool ShouldYield() = 0;
 
+    // Enables or disables further execution of tasks in this sequence.
+    virtual void SetEnabled(bool enabled) = 0;
+
     // Schedule a task with provided sync token dependencies. The dependencies
     // are hints for sync token waits within the task, and can be ignored by the
     // implementation.
@@ -78,6 +81,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
 
   // Creates a memory tracker for the context group if this returns true.
   virtual bool ShouldCreateMemoryTracker() const = 0;
+
+  // Block thread when a WaitSyncToken command is encountered instead of calling
+  // OnWaitSyncToken().
+  virtual bool BlockThreadOnWaitSyncToken() const = 0;
 
   // Schedules |task| to run out of order with respect to other sequenced tasks.
   virtual void ScheduleOutOfOrderTask(base::OnceClosure task) = 0;

@@ -736,9 +736,12 @@ TEST_F(RasterImplementationTest, WaitSyncTokenCHROMIUM) {
 
   struct Cmds {
     cmds::InsertFenceSyncCHROMIUM insert_fence_sync;
+    cmds::WaitSyncTokenCHROMIUM wait_sync_token;
   };
   Cmds expected;
   expected.insert_fence_sync.Init(kFenceSync);
+  expected.wait_sync_token.Init(kNamespaceId, kCommandBufferId.GetUnsafeValue(),
+                                kFenceSync);
 
   EXPECT_CALL(*gpu_control_, GetNamespaceID()).WillOnce(Return(kNamespaceId));
   EXPECT_CALL(*gpu_control_, GetCommandBufferID())
@@ -748,7 +751,7 @@ TEST_F(RasterImplementationTest, WaitSyncTokenCHROMIUM) {
   EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
   gl_->GenSyncTokenCHROMIUM(sync_token_data);
 
-  EXPECT_CALL(*gpu_control_, WaitSyncToken(sync_token));
+  EXPECT_CALL(*gpu_control_, WaitSyncTokenHint(sync_token));
   gl_->WaitSyncTokenCHROMIUM(sync_token_data);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
