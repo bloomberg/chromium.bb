@@ -16,6 +16,18 @@ SurfaceDependencyTracker::SurfaceDependencyTracker(
 
 SurfaceDependencyTracker::~SurfaceDependencyTracker() = default;
 
+void SurfaceDependencyTracker::TrackEmbedding(Surface* surface) {
+  // If |surface| is blocking on the arrival of a parent and the parent frame
+  // has not yet arrived then track this |surface|'s SurfaceId by FrameSinkId so
+  // that if a parent refers to it or a more recent surface, then
+  // SurfaceDependencyTracker reports back that a dependency has been added.
+  if (surface->block_activation_on_parent() && !surface->HasDependentFrame()) {
+    surfaces_blocked_on_parent_by_frame_sink_id_[surface->surface_id()
+                                                     .frame_sink_id()]
+        .insert(surface->surface_id());
+  }
+}
+
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
@@ -32,16 +44,6 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
       blocked_surfaces_from_dependency_[surface_id.frame_sink_id()].insert(
           surface->surface_id());
     }
-  }
-
-  // If |surface| is blocking on the arrival of a parent and the parent frame
-  // has not yet arrived then track this |surface|'s SurfaceId by FrameSinkId so
-  // that if a parent refers to it or a more recent surface, then
-  // SurfaceDependencyTracker reports back that a dependency has been added.
-  if (surface->block_activation_on_parent() && !surface->HasDependentFrame()) {
-    surfaces_blocked_on_parent_by_frame_sink_id_[surface->surface_id()
-                                                     .frame_sink_id()]
-        .insert(surface->surface_id());
   }
 
   UpdateSurfaceDeadline(surface);
