@@ -198,8 +198,7 @@ void NativeViewHostMac::ShowWidget(int x,
                                    int h,
                                    int native_w,
                                    int native_h) {
-  if (host_->fast_resize())
-    NOTIMPLEMENTED();
+  // TODO(https://crbug.com/415024): Implement host_->fast_resize().
 
   // Coordinates will be from the top left of the parent Widget. The NativeView
   // is already in the same NSWindow, so just flip to get Cooca coordinates and
