@@ -103,8 +103,7 @@ class SyncBackendHostCore
   void DoStartSyncing(base::Time last_poll_time);
 
   // Called to set the passphrase for encryption.
-  void DoSetEncryptionPassphrase(const std::string& passphrase,
-                                 bool is_explicit);
+  void DoSetEncryptionPassphrase(const std::string& passphrase);
 
   // Called to decrypt the pending keys.
   void DoSetDecryptionPassphrase(const std::string& passphrase);

@@ -370,11 +370,9 @@ void SyncBackendHostCore::DoStartSyncing(base::Time last_poll_time) {
 }
 
 void SyncBackendHostCore::DoSetEncryptionPassphrase(
-    const std::string& passphrase,
-    bool is_explicit) {
+    const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
-                                                                 is_explicit);
+  sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(passphrase);
 }
 
 void SyncBackendHostCore::DoInitialProcessControlTypes() {

@@ -119,15 +119,8 @@ class SyncEngine : public ModelTypeConfigurer {
   // Asynchronously set a new passphrase for encryption. Note that it is an
   // error to call SetEncryptionPassphrase under the following circumstances:
   // - An explicit passphrase has already been set
-  // - |is_explicit| is true and we have pending keys.
-  // When |is_explicit| is false, a couple of things could happen:
-  // - If there are pending keys, we try to decrypt them. If decryption works,
-  //   this acts like a call to SetDecryptionPassphrase. If not, the GAIA
-  //   passphrase passed in is cached so we can re-encrypt with it in future.
-  // - If there are no pending keys, data is encrypted with |passphrase| (this
-  //   is a no-op if data was already encrypted with |passphrase|.)
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       bool is_explicit) = 0;
+  // - We have pending keys.
+  virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
 
   // Use the provided passphrase to asynchronously attempt decryption. If new
   // encrypted keys arrive during the asynchronous call, OnPassphraseRequired

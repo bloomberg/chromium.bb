@@ -36,7 +36,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   bool IsUsingSecondaryPassphrase() const;
   void EnableEncryptEverything();
   bool IsEncryptEverythingEnabled() const;
-  void SetEncryptionPassphrase(const std::string& passphrase, bool is_explicit);
+  void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
 
   // Returns the actual passphrase type being used for encryption.
