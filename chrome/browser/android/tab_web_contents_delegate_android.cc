@@ -30,8 +30,9 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
@@ -350,9 +351,8 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
        params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-      PopupBlockerTabHelper::MaybeBlockPopup(source, base::Optional<GURL>(),
-                                             &nav_params, &params,
-                                             blink::mojom::WindowFeatures())) {
+      MaybeBlockPopup(source, base::Optional<GURL>(), &nav_params, &params,
+                      blink::mojom::WindowFeatures())) {
     return nullptr;
   }
 
@@ -395,7 +395,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
 
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
-  if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
+  if (source && ConsiderForPopupBlocking(disposition))
     PopupTracker::CreateForWebContents(new_contents.get(), source);
 
   TabHelpers::AttachTabHelpers(new_contents.get());

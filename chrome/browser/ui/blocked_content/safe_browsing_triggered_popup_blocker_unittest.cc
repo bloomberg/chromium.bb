@@ -72,8 +72,9 @@ class SafeBrowsingTriggeredPopupBlockerTest
     ChromeSubresourceFilterClient::CreateForWebContents(web_contents());
 
     scoped_feature_list_ = DefaultFeatureList();
+    SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
     popup_blocker_ =
-        SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
+        SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents());
   }
 
   void TearDown() override {
@@ -105,13 +106,11 @@ class SafeBrowsingTriggeredPopupBlockerTest
     return scoped_feature_list_.get();
   }
 
-  SafeBrowsingTriggeredPopupBlocker* popup_blocker() {
-    return popup_blocker_.get();
-  }
+  SafeBrowsingTriggeredPopupBlocker* popup_blocker() { return popup_blocker_; }
 
   void SimulateDeleteContents() {
     DeleteContents();
-    popup_blocker_.reset();
+    popup_blocker_ = nullptr;
   }
 
   void MarkUrlAsAbusiveWithLevel(const GURL& url,
@@ -141,7 +140,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
-  std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> popup_blocker_;
+  SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerTest);
@@ -252,11 +251,9 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, NoMatch_NoBlocking) {
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, FeatureEnabledByDefault) {
   ResetFeatureAndGet();
+  SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
   EXPECT_NE(nullptr,
-            SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents()));
-  ResetFeatureAndGet()->InitAndDisableFeature(kAbusiveExperienceEnforce);
-  EXPECT_EQ(nullptr,
-            SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents()));
+            SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents()));
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, OnlyBlockOnMatchingUrls) {

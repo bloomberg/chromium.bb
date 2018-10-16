@@ -122,7 +122,7 @@
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -2915,9 +2915,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                      disposition, features, user_gesture,
                                      opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
-  if (PopupBlockerTabHelper::MaybeBlockPopup(
-          web_contents, opener_top_level_frame_url, &nav_params,
-          nullptr /*=open_url_params*/, blocked_params.features())) {
+  if (MaybeBlockPopup(web_contents, opener_top_level_frame_url, &nav_params,
+                      nullptr /*=open_url_params*/,
+                      blocked_params.features())) {
     return false;
   }
 
