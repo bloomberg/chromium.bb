@@ -564,6 +564,7 @@ group("headless_tests") {
 
 test("headless_unittests") {
   sources = [
+    "lib/browser/protocol/protocol_unittest.cc",
     "public/domains/types_unittest.cc",
     "public/util/error_reporter_unittest.cc",
   ]
