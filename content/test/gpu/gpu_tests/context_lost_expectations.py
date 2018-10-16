@@ -27,6 +27,10 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('ContextLost_WebGLContextLostFromSelectElement',
               ['win8', 'nvidia'], bug=524808)
 
+    # Flaky on Win10
+    self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
+              ['win10', 'debug'], bug=895765)
+
     # Flakily timing out on Win x64 Debug bot.
     # Unfortunately we can't identify this separately from the 32-bit bots.
     # Also unfortunately, the flaky retry mechanism doesn't work well in
