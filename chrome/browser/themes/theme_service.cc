@@ -663,56 +663,37 @@ bool ThemeService::HasCustomImage(int id) const {
 // static
 SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
                                         SkColor frame_color) {
-  // We use this alpha value for the separator if possible.
-  const SkAlpha kAlpha = 0x40;
+  const float kContrastRatio = 2.f;
 
   // In most cases, if the tab is lighter than the frame, we darken the
   // frame; if the tab is darker than the frame, we lighten the frame.
   // However, if the frame is already very dark or very light, respectively,
   // this won't contrast sufficiently with the frame color, so we'll need to
   // reverse when we're lightening and darkening.
-  const float tab_luminance = color_utils::GetRelativeLuminance(tab_color);
-  const float frame_luminance = color_utils::GetRelativeLuminance(frame_color);
-  const bool lighten = tab_luminance < frame_luminance;
-  SkColor separator_color = lighten ? SK_ColorWHITE : SK_ColorBLACK;
-  float separator_luminance = color_utils::GetRelativeLuminance(
-      color_utils::AlphaBlend(separator_color, frame_color, kAlpha));
-  // The minimum contrast ratio here is just under the ~1.1469 in the default MD
-  // incognito theme.  We want the separator to still darken the frame in that
-  // theme, but that's about as low of contrast as we're willing to accept.
-  const float kMinContrastRatio = 1.1465f;
-  if (color_utils::GetContrastRatio(separator_luminance, frame_luminance) >=
-      kMinContrastRatio)
-    return SkColorSetA(separator_color, kAlpha);
+  const bool lighten = color_utils::GetRelativeLuminance(tab_color) <
+                       color_utils::GetRelativeLuminance(frame_color);
+  SkColor separator_color =
+      lighten ? SK_ColorWHITE : color_utils::GetDarkestColor();
 
-  // We need to reverse whether we're darkening or lightening.  We know the new
-  // separator color will contrast with the frame; check whether it also
-  // contrasts at least as well with the tab.
-  separator_color = color_utils::InvertColor(separator_color);
-  separator_luminance = color_utils::GetRelativeLuminance(
-      color_utils::AlphaBlend(separator_color, frame_color, kAlpha));
-  if (color_utils::GetContrastRatio(separator_luminance, tab_luminance) >=
-      color_utils::GetContrastRatio(separator_luminance, frame_luminance))
-    return SkColorSetA(separator_color, kAlpha);
-
-  // The reversed separator doesn't contrast enough with the tab.  Compute the
-  // resulting luminance from adjusting the tab color, instead of the frame
-  // color, by the separator color.
-  const float target_luminance = color_utils::GetRelativeLuminance(
-      color_utils::AlphaBlend(separator_color, tab_color, kAlpha));
-
-  // Now try to compute an alpha for the separator such that, when blended with
-  // the frame, it results in the above luminance.  Because the luminance
-  // computation is not easily invertible, we use a binary search over the
-  // possible range of alpha values.
-  SkAlpha alpha = 128;
-  for (int delta = lighten ? 64 : -64; delta != 0; delta /= 2) {
-    const float luminance = color_utils::GetRelativeLuminance(
-        color_utils::AlphaBlend(separator_color, frame_color, alpha));
-    if (luminance == target_luminance)
-      break;
-    alpha += (luminance < target_luminance) ? -delta : delta;
+  SkAlpha alpha = color_utils::FindBlendValueForContrastRatio(
+      frame_color, separator_color, frame_color, kContrastRatio, 0);
+  if (color_utils::GetContrastRatio(
+          color_utils::AlphaBlend(separator_color, frame_color, alpha),
+          frame_color) >= kContrastRatio) {
+    return SkColorSetA(separator_color, alpha);
   }
+
+  separator_color =
+      color_utils::BlendTowardOppositeLuma(separator_color, SK_AlphaOPAQUE);
+
+  // If the above call failed to create sufficient contrast, the frame color is
+  // already very dark or very light.  Since separators are only used when the
+  // tab has low contrast against the frame, the tab color is similarly very
+  // dark or very light, just not quite as much so as the frame color.  Blend
+  // towards the opposite separator color, and compute the contrast against the
+  // tab instead of the frame to ensure both contrasts hit the desired minimum.
+  alpha = color_utils::FindBlendValueForContrastRatio(
+      frame_color, separator_color, tab_color, kContrastRatio, 0);
   return SkColorSetA(separator_color, alpha);
 }
 

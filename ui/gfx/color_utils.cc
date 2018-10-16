@@ -443,7 +443,7 @@ void SetDarkestColor(SkColor color) {
   g_color_utils_luma_midpoint = (GetLuma(color) + 255) / 2;
 }
 
-SkColor GetDarkestColorForTesting() {
+SkColor GetDarkestColor() {
   return g_color_utils_darkest;
 }
 
