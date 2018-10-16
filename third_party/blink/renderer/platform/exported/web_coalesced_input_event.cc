@@ -82,6 +82,28 @@ WebCoalescedInputEvent::GetCoalescedEventsPointers() const {
   return events;
 }
 
+void WebCoalescedInputEvent::AddPredictedEvent(
+    const blink::WebInputEvent& event) {
+  predicted_events_.push_back(MakeWebScopedInputEvent(event));
+}
+
+size_t WebCoalescedInputEvent::PredictedEventSize() const {
+  return predicted_events_.size();
+}
+
+const WebInputEvent& WebCoalescedInputEvent::PredictedEvent(
+    size_t index) const {
+  return *predicted_events_[index].get();
+}
+
+std::vector<const WebInputEvent*>
+WebCoalescedInputEvent::GetPredictedEventsPointers() const {
+  std::vector<const WebInputEvent*> events;
+  for (const auto& event : predicted_events_)
+    events.push_back(event.get());
+  return events;
+}
+
 WebCoalescedInputEvent::WebCoalescedInputEvent(const WebInputEvent& event) {
   event_ = MakeWebScopedInputEvent(event);
   coalesced_events_.push_back(MakeWebScopedInputEvent(event));

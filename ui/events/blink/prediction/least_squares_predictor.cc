@@ -75,14 +75,14 @@ gfx::Matrix3F LeastSquaresPredictor::GetXMatrix() const {
   return x;
 }
 
-bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks frame_time,
+bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
                                                InputData* result) const {
-  if (!HasPrediction() || frame_time - time_.back() > kMaxResampleTime)
+  if (!HasPrediction() || predict_time - time_.back() > kMaxResampleTime)
     return false;
 
   gfx::Matrix3F time_matrix = GetXMatrix();
 
-  double dt = (frame_time - time_[0]).InMillisecondsF();
+  double dt = (predict_time - time_[0]).InMillisecondsF();
   if (dt > 0) {
     gfx::Vector3dF b1, b2;
     if (SolveLeastSquares(time_matrix, x_queue_, b1) &&

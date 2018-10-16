@@ -33,6 +33,11 @@ class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
   const WebInputEvent& CoalescedEvent(size_t index) const;
   std::vector<const WebInputEvent*> GetCoalescedEventsPointers() const;
 
+  void AddPredictedEvent(const blink::WebInputEvent&);
+  size_t PredictedEventSize() const;
+  const WebInputEvent& PredictedEvent(size_t index) const;
+  std::vector<const WebInputEvent*> GetPredictedEventsPointers() const;
+
  private:
   // TODO(hans): Remove this once clang-cl knows to not inline dtors that
   // call operator(), https://crbug.com/691714
@@ -47,6 +52,7 @@ class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
 
   WebScopedInputEvent event_;
   std::vector<WebScopedInputEvent> coalesced_events_;
+  std::vector<WebScopedInputEvent> predicted_events_;
 };
 
 using WebScopedCoalescedInputEvent = std::unique_ptr<WebCoalescedInputEvent>;
