@@ -11,6 +11,7 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 
 namespace base {

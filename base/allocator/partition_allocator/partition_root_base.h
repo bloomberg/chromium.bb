@@ -10,6 +10,7 @@
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_page.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 
 namespace base {

@@ -14,6 +14,7 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 
 namespace base {
 

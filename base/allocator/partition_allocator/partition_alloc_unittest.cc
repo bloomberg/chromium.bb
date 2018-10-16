@@ -13,6 +13,7 @@
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"

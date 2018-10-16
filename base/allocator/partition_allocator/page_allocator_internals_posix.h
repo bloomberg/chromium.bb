@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 
+#include "base/logging.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
