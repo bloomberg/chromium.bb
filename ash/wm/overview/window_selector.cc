@@ -348,11 +348,11 @@ void WindowSelector::Init(const WindowList& windows,
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
       window_grid->PrepareForOverview();
 
-      // Check if there is any window that's being dragged in the grid. If so,
-      // do not do the animation when entering overview.
-      aura::Window* dragged_window =
-          GetDraggedWindow(window_grid->root_window(), mru_window_list);
-      if (dragged_window) {
+      // Do not animate if there is any window that is being dragged in the
+      // grid.
+      if (enter_exit_overview_type_ == EnterExitOverviewType::kWindowDragged) {
+        if (!mru_window_list.empty())
+          DCHECK(GetDraggedWindow(window_grid->root_window(), mru_window_list));
         window_grid->PositionWindows(/*animate=*/false);
       } else if (enter_exit_overview_type_ ==
                  EnterExitOverviewType::kWindowsMinimized) {
@@ -361,7 +361,8 @@ void WindowSelector::Init(const WindowList& windows,
       } else {
         // EnterExitOverviewType::kSwipeFromShelf is an exit only type, so it
         // should not appear here.
-        DCHECK_EQ(enter_exit_overview_type_, EnterExitOverviewType::kNormal);
+        DCHECK_NE(enter_exit_overview_type_,
+                  EnterExitOverviewType::kSwipeFromShelf);
         window_grid->CalculateWindowListAnimationStates(
             /*selected_item=*/nullptr, OverviewTransition::kEnter);
         window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
