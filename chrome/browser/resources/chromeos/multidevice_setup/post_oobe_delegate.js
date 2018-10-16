@@ -29,6 +29,11 @@ cr.define('multidevice_setup', function() {
     shouldExitSetupFlowAfterSettingHost() {
       return false;
     }
+
+    /** @override */
+    getStartSetupCancelButtonTextId() {
+      return 'cancel';
+    }
   }
 
   return {
