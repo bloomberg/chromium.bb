@@ -11,12 +11,9 @@ cast_source_set("key_systems") {
     "key_systems_common.h",
   ]
 
-  if (use_playready) {
-    public_configs = [ "//chromecast:playready_config" ]
-  }
-
   deps = [
     "//base",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/public/media",
     "//media",
     "//third_party/widevine/cdm:buildflags",

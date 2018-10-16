@@ -109,7 +109,7 @@ declare_args() {
 
 declare_args() {
   # Use Playready CDMs for internal non-desktop builds.
-  use_playready = !is_cast_desktop_build && chromecast_branding != "public"
+  enable_playready = !is_cast_desktop_build && chromecast_branding != "public"
 }
 
 # This is the release version, which takes the form <major>.<minor>. Internal

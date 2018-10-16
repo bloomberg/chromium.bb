@@ -32,7 +32,7 @@ namespace chromecast {
 namespace media {
 namespace {
 
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
 class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
  public:
   PlayReadyKeySystemProperties(SupportedCodecs supported_non_secure_codecs,
@@ -108,7 +108,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 #endif  // defined(OS_ANDROID)
   const bool persistent_license_support_;
 };
-#endif  // PLAYREADY_CDM_AVAILABLE
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 SupportedCodecs GetCastEmeSupportedCodecs() {
@@ -152,10 +152,10 @@ void AddCmaKeySystems(
   // |codecs| may not be used if Widevine and Playready aren't supported.
   ANALYZER_ALLOW_UNUSED(codecs);
 
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
   key_systems_properties->emplace_back(new PlayReadyKeySystemProperties(
       codecs, codecs, enable_persistent_license_support));
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
@@ -178,7 +178,7 @@ void AddCmaKeySystems(
 #endif                                      // BUILDFLAG(ENABLE_WIDEVINE)
 }
 #elif defined(OS_ANDROID)
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
 void AddCastPlayreadyKeySystemAndroid(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
@@ -193,14 +193,14 @@ void AddCastPlayreadyKeySystemAndroid(
       response.non_secure_codecs, response.secure_codecs,
       false /* persistent_license_support */));
 }
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 void AddCastAndroidKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
   AddCastPlayreadyKeySystemAndroid(key_systems_properties);
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
   cdm::AddAndroidWidevine(key_systems_properties);
