@@ -12282,6 +12282,12 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
                  event.GetType() == blink::WebGestureEvent::kTouchEnd;
         }));
 
+    InputRouterImpl* input_router = static_cast<InputRouterImpl*>(
+        static_cast<RenderWidgetHostImpl*>(rwhv_child->GetRenderWidgetHost())
+            ->input_router());
+    // Clear the touch actions that were set by previous touches.
+    input_router->touch_action_filter_.allowed_touch_action_.reset();
+    input_router->touch_action_filter_.white_listed_touch_action_.reset();
     // Send a touch start event to child to get the TAF filled with child
     // frame's touch action.
     ack_observer.Reset();
@@ -12291,17 +12297,12 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
     ack_observer.Wait();
     effective_touch_action =
-        static_cast<RenderWidgetHostImpl*>(rwhv_child->GetRenderWidgetHost())
-            ->input_router()
-            ->AllowedTouchAction();
+        input_router->touch_action_filter_.allowed_touch_action_;
     // Whitelisted touch action is sent from a separate IPC channel, so it is
     // not guaranteed to have value when the ACK for the touch start arrived
     // because the ACK is from the main thread.
     whitelisted_touch_action =
-        static_cast<InputRouterImpl*>(static_cast<RenderWidgetHostImpl*>(
-                                          rwhv_child->GetRenderWidgetHost())
-                                          ->input_router())
-            ->touch_action_filter_.white_listed_touch_action_;
+        input_router->touch_action_filter_.white_listed_touch_action_;
 
     // Send a touch move and touch end to complete the sequence, this also
     // avoids triggering DCHECKs when sending followup events.
