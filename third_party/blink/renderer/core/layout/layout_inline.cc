@@ -52,11 +52,11 @@ namespace {
 
 // TODO(layout-dev): Once we generate fragment for all inline element, we should
 // use |LayoutObject::EnclosingBlockFlowFragment()|.
-const NGPhysicalBoxFragment* EnclosingBlockFlowFragmentOf(
+const NGPhysicalBoxFragment* ContainingBlockFlowFragmentOf(
     const LayoutInline& node) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return nullptr;
-  return node.EnclosingBlockFlowFragment();
+  return node.ContainingBlockFlowFragment();
 }
 
 }  // anonymous namespace
@@ -679,7 +679,7 @@ void LayoutInline::Paint(const PaintInfo& paint_info) const {
 template <typename GeneratorContext>
 void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
   if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragmentOf(*this)) {
+          ContainingBlockFlowFragmentOf(*this)) {
     const auto& descendants =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     const LayoutBlock* block_for_flipping = nullptr;
@@ -884,7 +884,7 @@ LayoutPoint LayoutInline::FirstLineBoxTopLeft() const {
   // edge, which means that offsetLeft will be wrong when writing-mode is
   // vertical-rl.
   if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragmentOf(*this)) {
+          ContainingBlockFlowFragmentOf(*this)) {
     const auto& fragments =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     if (fragments.IsEmpty())
@@ -936,7 +936,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
                                const HitTestLocation& location_in_container,
                                const LayoutPoint& accumulated_offset,
                                HitTestAction hit_test_action) {
-  if (EnclosingNGBlockFlow()) {
+  if (ContainingNGBlockFlow()) {
     // In LayoutNG, we reach here only when called from
     // PaintLayer::HitTestContents() without going through any ancestor, in
     // which case the element must have self painting layer.
@@ -1004,9 +1004,9 @@ bool LayoutInline::HitTestCulledInline(
   // offset on the rectangles relatively to the block-start. NG is doing the
   // right thing. Legacy is wrong.
   if (container_fragment) {
-    DCHECK(EnclosingNGBlockFlow());
+    DCHECK(ContainingNGBlockFlow());
     DCHECK(container_fragment->IsDescendantOfNotSelf(
-        *EnclosingNGBlockFlow()->PaintFragment()));
+        *ContainingNGBlockFlow()->PaintFragment()));
     const NGPhysicalContainerFragment& traversal_root =
         ToNGPhysicalContainerFragment(container_fragment->PhysicalFragment());
     DCHECK(traversal_root.IsInline() || traversal_root.IsLineBox());
@@ -1020,7 +1020,7 @@ bool LayoutInline::HitTestCulledInline(
       context(rect);
     }
   } else {
-    DCHECK(!EnclosingNGBlockFlow());
+    DCHECK(!ContainingNGBlockFlow());
     GenerateCulledLineBoxRects(context, this);
   }
 
@@ -1048,7 +1048,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(
     continuation = ToLayoutBlockFlow(continuation)->InlineElementContinuation();
   }
 
-  if (const LayoutBlockFlow* ng_block_flow = EnclosingNGBlockFlow())
+  if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
     return ng_block_flow->PositionForPoint(point);
 
   DCHECK(CanUseInlineBox(*this));
@@ -1079,7 +1079,7 @@ class LinesBoundingBoxGeneratorContext {
 
 LayoutRect LayoutInline::LinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragmentOf(*this)) {
+          ContainingBlockFlowFragmentOf(*this)) {
     NGPhysicalOffsetRect bounding_box;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
@@ -1224,7 +1224,7 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 
 LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
-          EnclosingBlockFlowFragmentOf(*this)) {
+          ContainingBlockFlowFragmentOf(*this)) {
     NGPhysicalOffsetRect result;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
