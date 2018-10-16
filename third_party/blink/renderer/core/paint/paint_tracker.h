@@ -30,6 +30,7 @@ class CORE_EXPORT PaintTracker : public GarbageCollected<PaintTracker> {
                             const PaintLayer& painting_layer);
   void NotifyNodeRemoved(const LayoutObject& object);
   void NotifyPrePaintFinished();
+  void DidChangePerformanceTiming();
   void Dispose();
 
   TextPaintTimingDetector& GetTextPaintTimingDetector() {

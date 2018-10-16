@@ -46,6 +46,14 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
         .FindLastPaintCandidate();
   }
 
+  TimeTicks LargestPaintStoredResult() {
+    return GetPaintTracker().GetImagePaintTimingDetector().largest_image_paint_;
+  }
+
+  TimeTicks LastPaintStoredResult() {
+    return GetPaintTracker().GetImagePaintTimingDetector().last_image_paint_;
+  }
+
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {
     GetFrameView().UpdateAllLifecyclePhases();
     if (callback_queue_.size() > 0) {
@@ -214,6 +222,30 @@ TEST_F(ImagePaintTimingDetectorTest,
   EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
 }
 
+TEST_F(ImagePaintTimingDetectorTest,
+       LargestImagePaint_UpdateResultWhenLargestChanged) {
+  TimeTicks time1 = CurrentTimeTicks();
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img id="target1"></img>
+      <img id="target2"></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target1", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  TimeTicks time2 = CurrentTimeTicks();
+  TimeTicks result1 = LargestPaintStoredResult();
+  EXPECT_GE(result1, time1);
+  EXPECT_GE(time2, result1);
+
+  SetImageAndPaint("target2", 10, 10);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  TimeTicks time3 = CurrentTimeTicks();
+  TimeTicks result2 = LargestPaintStoredResult();
+  EXPECT_GE(result2, time2);
+  EXPECT_GE(time3, result2);
+}
+
 TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_NoImage) {
   SetBodyInnerHTML(R"HTML(
     <div></div>
@@ -344,6 +376,32 @@ TEST_F(ImagePaintTimingDetectorTest, LastImagePaint_OneSwapPromiseForOneFrame) {
   EXPECT_EQ(record->first_size, 81);
 #endif
   EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       LastImagePaint_UpdateResultWhenLastChanged) {
+  TimeTicks time1 = CurrentTimeTicks();
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img id="target1"></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target1", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  TimeTicks time2 = CurrentTimeTicks();
+  TimeTicks result1 = LastPaintStoredResult();
+  EXPECT_GE(result1, time1);
+  EXPECT_GE(time2, result1);
+
+  Element* image = GetDocument().CreateRawElement(HTMLNames::imgTag);
+  image->setAttribute(HTMLNames::idAttr, "target2");
+  GetDocument().getElementById("parent")->appendChild(image);
+  SetImageAndPaint("target2", 2, 2);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  TimeTicks time3 = CurrentTimeTicks();
+  TimeTicks result2 = LastPaintStoredResult();
+  EXPECT_GE(result2, time2);
+  EXPECT_GE(time3, result2);
 }
 
 }  // namespace blink

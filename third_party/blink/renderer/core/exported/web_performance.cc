@@ -175,6 +175,14 @@ double WebPerformance::FirstMeaningfulPaintCandidate() const {
       private_->timing()->FirstMeaningfulPaintCandidate());
 }
 
+double WebPerformance::LargestImagePaint() const {
+  return MillisecondsToSeconds(private_->timing()->LargestImagePaint());
+}
+
+double WebPerformance::LastImagePaint() const {
+  return MillisecondsToSeconds(private_->timing()->LastImagePaint());
+}
+
 double WebPerformance::PageInteractive() const {
   return MillisecondsToSeconds(private_->timing()->PageInteractive());
 }

@@ -679,7 +679,7 @@ class CORE_EXPORT LocalFrameView final
 
   void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return *jank_tracker_; }
-  PaintTracker& GetPaintTracker() { return *paint_tracker_; }
+  PaintTracker& GetPaintTracker() const { return *paint_tracker_; }
 
  protected:
   void NotifyFrameRectsChangedIfNeeded();

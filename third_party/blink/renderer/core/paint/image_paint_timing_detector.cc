@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_tracker.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -84,30 +85,49 @@ IntRect ImagePaintTimingDetector::CalculateTransformedRect(
   return invalidated_rect_in_viewport;
 }
 
+void ImagePaintTimingDetector::OnLargestImagePaintDetected(
+    const ImageRecord& largest_image_record) {
+  if (largest_image_record.first_paint_time_after_loaded ==
+      largest_image_paint_)
+    return;
+  largest_image_paint_ = largest_image_record.first_paint_time_after_loaded;
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  PopulateTraceValue(*value, largest_image_record,
+                     ++largest_image_candidate_index_max_);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "loading", "LargestImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
+      largest_image_record.first_paint_time_after_loaded, "data",
+      std::move(value));
+  frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+}
+
+void ImagePaintTimingDetector::OnLastImagePaintDetected(
+    const ImageRecord& last_image_record) {
+  if (last_image_record.first_paint_time_after_loaded == last_image_paint_)
+    return;
+  last_image_paint_ = last_image_record.first_paint_time_after_loaded;
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  PopulateTraceValue(*value, last_image_record,
+                     ++last_image_candidate_index_max_);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      "loading", "LastImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
+      last_image_record.first_paint_time_after_loaded, "data",
+      std::move(value));
+  frame_view_->GetPaintTracker().DidChangePerformanceTiming();
+}
+
 void ImagePaintTimingDetector::Analyze() {
   ImageRecord* largest_image_record = FindLargestPaintCandidate();
   // In cases where largest/last image is still pending for timing, we discard
   // the result and wait for the next analysis.
   if (largest_image_record &&
       !largest_image_record->first_paint_time_after_loaded.is_null()) {
-    std::unique_ptr<TracedValue> value = TracedValue::Create();
-    PopulateTraceValue(*value, *largest_image_record,
-                       ++largest_image_candidate_index_max_);
-    TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-        "loading", "LargestImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-        largest_image_record->first_paint_time_after_loaded, "data",
-        std::move(value));
+    OnLargestImagePaintDetected(*largest_image_record);
   }
   ImageRecord* last_image_record = FindLastPaintCandidate();
   if (last_image_record &&
       !last_image_record->first_paint_time_after_loaded.is_null()) {
-    std::unique_ptr<TracedValue> value = TracedValue::Create();
-    PopulateTraceValue(*value, *last_image_record,
-                       ++last_image_candidate_index_max_);
-    TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-        "loading", "LastImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-        last_image_record->first_paint_time_after_loaded, "data",
-        std::move(value));
+    OnLastImagePaintDetected(*last_image_record);
   }
 }
 
