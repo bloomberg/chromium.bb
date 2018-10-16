@@ -22,7 +22,8 @@ Polymer({
   // TODO(scottchen): instead of dummy, get data from finch/load time data.
   /** @private {NuxOnboardingModules} */
   modules_: {
-    'new-user': ['nux-email', 'nux-google-apps', 'nux-set-as-default'],
+    'new-user':
+        ['nux-email', 'nux-google-apps', 'nux-set-as-default', 'signin-view'],
     'returning-user': ['nux-set-as-default'],
   },
 

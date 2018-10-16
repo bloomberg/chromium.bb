@@ -16,11 +16,19 @@ group("closure_compile") {
 js_type_check("welcome_files") {
   deps = [
     ":landing_view",
+    ":signin_view",
     ":welcome_app",
   ]
 }
 
 js_library("landing_view") {
+  deps = [
+    ":navigation_behavior",
+    ":welcome_browser_proxy",
+  ]
+}
+
+js_library("signin_view") {
   deps = [
     ":navigation_behavior",
     ":welcome_browser_proxy",
