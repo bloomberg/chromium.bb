@@ -189,7 +189,7 @@ camera.views.Camera.prototype = {
  * Prepares the view.
  */
 camera.views.Camera.prototype.prepare = function() {
-  // Monitor the states to avoid retrying camera connection when locked/minimized.
+  // Monitor the states to stop camera when locked/minimized.
   chrome.idle.onStateChanged.addListener(newState => {
     this.locked_ = (newState == 'locked');
     if (this.locked_) {
