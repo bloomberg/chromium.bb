@@ -330,6 +330,7 @@ used when committed.
     install Chromium OS on VMWare.
 *   [User Data Directory](user_data_dir.md) - How the user data and cache
     directories are determined on all platforms.
+*   [Mojo](../mojo/README.md) - IPC mechanism used by services.
 
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
