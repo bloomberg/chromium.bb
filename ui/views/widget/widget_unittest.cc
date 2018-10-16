@@ -1915,10 +1915,12 @@ class ClosingView : public View {
 
   // View:
   void OnEvent(ui::Event* event) override {
-    // Guard against attempting to close the widget twice.
-    if (widget_)
-      widget_->CloseNow();
-    widget_ = nullptr;
+    // Guard against closing twice and writing to freed memory.
+    if (widget_ && event->type() == ui::ET_MOUSE_PRESSED) {
+      Widget* widget = widget_;
+      widget_ = nullptr;
+      widget->CloseNow();
+    }
   }
 
  private:
