@@ -1973,25 +1973,88 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     raise NotImplementedError()
 
   def GetIssueOwner(self):
-    raise NotImplementedError()
+    return (self.GetIssueProperties() or {}).get('owner_email')
 
   def GetReviewers(self):
-    raise NotImplementedError()
+    return (self.GetIssueProperties() or {}).get('reviewers')
 
   def AddComment(self, message, publish=None):
-    raise NotImplementedError()
+    return self.RpcServer().add_comment(self.GetIssue(), message)
 
-  def GetCommentsSummary(self, readable=True):
-    raise NotImplementedError()
+  def GetCommentsSummary(self, _readable=True):
+    summary = []
+    for message in self.GetIssueProperties().get('messages', []):
+      date = datetime.datetime.strptime(message['date'], '%Y-%m-%d %H:%M:%S.%f')
+      summary.append(_CommentSummary(
+        date=date,
+        disapproval=bool(message['disapproval']),
+        approval=bool(message['approval']),
+        sender=message['sender'],
+        message=message['text'],
+      ))
+    return summary
 
   def GetStatus(self):
-    raise NotImplementedError()
+    """Applies a rough heuristic to give a simple summary of an issue's review
+    or CQ status, assuming adherence to a common workflow.
+
+    Returns None if no issue for this branch, or one of the following keywords:
+      * 'error'    - error from review tool (including deleted issues)
+      * 'unsent'   - not sent for review
+      * 'waiting'  - waiting for review
+      * 'reply'    - waiting for owner to reply to review
+      * 'not lgtm' - Code-Review label has been set negatively
+      * 'lgtm'     - LGTM from at least one approved reviewer
+      * 'commit'   - in the commit queue
+      * 'closed'   - closed
+    """
+    if not self.GetIssue():
+      return None
+
+    try:
+      props = self.GetIssueProperties()
+    except urllib2.HTTPError:
+      return 'error'
+
+    if props.get('closed'):
+      # Issue is closed.
+      return 'closed'
+    if props.get('commit') and not props.get('cq_dry_run', False):
+      # Issue is in the commit queue.
+      return 'commit'
+
+    messages = props.get('messages') or []
+    if not messages:
+      # No message was sent.
+      return 'unsent'
+
+    if get_approving_reviewers(props):
+      return 'lgtm'
+    elif get_approving_reviewers(props, disapproval=True):
+      return 'not lgtm'
+
+    # Skip CQ messages that don't require owner's action.
+    while messages and messages[-1]['sender'] == COMMIT_BOT_EMAIL:
+      if 'Dry run:' in messages[-1]['text']:
+        messages.pop()
+      elif 'The CQ bit was unchecked' in messages[-1]['text']:
+        # This message always follows prior messages from CQ,
+        # so skip this too.
+        messages.pop()
+      else:
+        # This is probably a CQ messages warranting user attention.
+        break
+
+    if messages[-1]['sender'] != props.get('owner_email'):
+      # Non-LGTM reply from non-owner and not CQ bot.
+      return 'reply'
+    return 'waiting'
 
   def UpdateDescriptionRemote(self, description, force=False):
-    raise NotImplementedError()
+    self.RpcServer().update_description(self.GetIssue(), description)
 
   def CloseIssue(self):
-    raise NotImplementedError()
+    return self.RpcServer().close_issue(self.GetIssue())
 
   def SetFlag(self, flag, value):
     return self.SetFlags({flag: value})
