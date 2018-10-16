@@ -46,10 +46,12 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -1248,6 +1250,13 @@ public class DownloadNotificationService extends Service {
                 hideSummaryNotificationIfNecessary(ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
                                 ? entry.notificationId
                                 : -1);
+            }
+
+            @Override
+            public boolean startServiceManagerOnly() {
+                return ServiceManagerStartupUtils.canStartServiceManager(
+                               ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD)
+                        && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };
         try {
