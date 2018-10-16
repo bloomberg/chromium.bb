@@ -116,14 +116,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     ACTIVE
   };
 
-  // Used to specify the kind of passphrase with which sync data is encrypted.
-  enum PassphraseType {
-    IMPLICIT,  // The user did not provide a custom passphrase for encryption.
-               // We implicitly use the GAIA password in such cases.
-    EXPLICIT,  // The user selected the "use custom passphrase" radio button
-               // during sync setup and provided a passphrase.
-  };
-
   // Passed as an argument to RequestStop to control whether or not the sync
   // engine should clear its data directory when it shuts down. See
   // RequestStop for more information.
@@ -355,10 +347,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
   // specifies whether the passphrase is a custom passphrase or the GAIA
   // password being reused as a passphrase.
-  // TODO(atwilson): Change this so external callers can only set an EXPLICIT
-  // passphrase with this API.
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       PassphraseType type) = 0;
+  virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
 
   // Asynchronously decrypts pending keys using |passphrase|. Returns false
   // immediately if the passphrase could not be used to decrypt a locally cached

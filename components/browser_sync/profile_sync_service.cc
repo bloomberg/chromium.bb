@@ -1718,12 +1718,13 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
   return std::move(result);
 }
 
-void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
-                                                 PassphraseType type) {
+void ProfileSyncService::SetEncryptionPassphrase(
+    const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_type_manager_);
   DCHECK(data_type_manager_->IsNigoriEnabled());
-  crypto_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
+  // TODO(treib): Remove the |is_explicit| parameter.
+  crypto_->SetEncryptionPassphrase(passphrase, /*is_explicit=*/true);
 }
 
 bool ProfileSyncService::SetDecryptionPassphrase(

@@ -134,8 +134,7 @@ bool FakeSyncService::IsEncryptEverythingEnabled() const {
   return false;
 }
 
-void FakeSyncService::SetEncryptionPassphrase(const std::string& passphrase,
-                                              PassphraseType type) {}
+void FakeSyncService::SetEncryptionPassphrase(const std::string& passphrase) {}
 
 bool FakeSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
   return false;

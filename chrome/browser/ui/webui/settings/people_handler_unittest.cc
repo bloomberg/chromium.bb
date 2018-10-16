@@ -696,9 +696,7 @@ TEST_F(PeopleHandlerTest, SetNewCustomPassphrase) {
   ON_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillByDefault(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_,
-              SetEncryptionPassphrase("custom_passphrase",
-                                      ProfileSyncService::EXPLICIT));
+  EXPECT_CALL(*mock_pss_, SetEncryptionPassphrase("custom_passphrase"));
 
   handler_->HandleSetEncryption(&list_args);
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);

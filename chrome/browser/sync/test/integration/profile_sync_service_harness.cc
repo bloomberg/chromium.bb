@@ -285,9 +285,7 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   }
 
   if (encryption_passphrase.has_value()) {
-    service()->SetEncryptionPassphrase(
-        encryption_passphrase.value(),
-        syncer::SyncService::PassphraseType::EXPLICIT);
+    service()->SetEncryptionPassphrase(encryption_passphrase.value());
   }
 
   // Notify ProfileSyncService that we are done with configuration.
@@ -315,19 +313,11 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
         LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
 
-  if (!skip_passphrase_verification) {
-    // Set an implicit passphrase for encryption if an explicit one hasn't
-    // already been set. If an explicit passphrase has been set, immediately
-    // return false, since a decryption passphrase is required.
-    if (!service()->IsUsingSecondaryPassphrase()) {
-      service()->SetEncryptionPassphrase(password_,
-                                         ProfileSyncService::IMPLICIT);
-    } else {
-      LOG(ERROR)
-          << "A passphrase is required for decryption. Sync cannot proceed"
-             " until SetDecryptionPassphrase is called.";
-      return false;
-    }
+  if (!skip_passphrase_verification &&
+      service()->IsUsingSecondaryPassphrase()) {
+    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
+                  " until SetDecryptionPassphrase is called.";
+    return false;
   }
 
   // Wait for initial sync cycle to be completed.
@@ -361,11 +351,7 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   }
   DVLOG(1) << "Engine Initialized successfully.";
 
-  // This passphrase should be implicit because ClearServerData should be called
-  // prior.
-  if (!service()->IsUsingSecondaryPassphrase()) {
-    service()->SetEncryptionPassphrase(password_, ProfileSyncService::IMPLICIT);
-  } else {
+  if (service()->IsUsingSecondaryPassphrase()) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
                   " until SetDecryptionPassphrase is called.";
     return false;

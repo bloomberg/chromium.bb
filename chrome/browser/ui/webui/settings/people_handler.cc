@@ -637,8 +637,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
       // etc) or the user wants to re-encrypt.
       if (configuration.set_new_passphrase &&
           !service->IsUsingSecondaryPassphrase()) {
-        service->SetEncryptionPassphrase(configuration.passphrase,
-                                         ProfileSyncService::EXPLICIT);
+        service->SetEncryptionPassphrase(configuration.passphrase);
       }
     }
   }
