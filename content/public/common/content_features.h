@@ -24,6 +24,7 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kAudioServiceAudioStreams;
 CONTENT_EXPORT extern const base::Feature kAudioServiceLaunchOnStartup;
 CONTENT_EXPORT extern const base::Feature kAudioServiceOutOfProcess;
+CONTENT_EXPORT extern const base::Feature kAwaitOptimization;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
 CONTENT_EXPORT extern const base::Feature kBloatedRendererDetection;

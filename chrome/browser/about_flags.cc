@@ -1606,6 +1606,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-v8-orinoco", flag_descriptions::kV8OrinocoName,
      flag_descriptions::kV8OrinocoDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kV8Orinoco)},
+    {"harmony-await-optimization", flag_descriptions::kAwaitOptimizationName,
+     flag_descriptions::kAwaitOptimizationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kAwaitOptimization)},
     {"disable-software-rasterizer", flag_descriptions::kSoftwareRasterizerName,
      flag_descriptions::kSoftwareRasterizerDescription,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
