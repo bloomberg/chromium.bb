@@ -21,6 +21,7 @@ fileManager.initializeCore();
  */
 function initializeUI() {
   fileManager.initializeUI(document.body).then(() => {
+    util.testSendMessage('ready');
     metrics.recordInterval('Load.Total');
     fileManager.tracker.send(metrics.Management.WINDOW_CREATED);
   });
