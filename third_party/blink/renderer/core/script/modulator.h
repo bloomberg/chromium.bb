@@ -80,7 +80,11 @@ enum class ModuleScriptCustomFetchType {
   // Perform custom fetch steps for Worklet's addModule() function defined in
   // the Worklet spec:
   // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
-  kWorkletAddModule
+  kWorkletAddModule,
+
+  // Fetch a Service Worker's installed module script from the Service Worker's
+  // script storage.
+  kInstalledServiceWorker
 };
 
 // A Modulator is an interface for "environment settings object" concept for

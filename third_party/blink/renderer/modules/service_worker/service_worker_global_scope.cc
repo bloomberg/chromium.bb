@@ -191,10 +191,18 @@ void ServiceWorkerGlobalScope::ImportModuleScript(
     network::mojom::FetchCredentialsMode credentials_mode) {
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
 
+  ModuleScriptCustomFetchType fetch_type =
+      ModuleScriptCustomFetchType::kWorkerConstructor;
+  InstalledScriptsManager* installed_scripts_manager =
+      GetThread()->GetInstalledScriptsManager();
+  if (installed_scripts_manager &&
+      installed_scripts_manager->IsScriptInstalled(module_url_record)) {
+    fetch_type = ModuleScriptCustomFetchType::kInstalledServiceWorker;
+  }
+
   FetchModuleScript(module_url_record, outside_settings_object,
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    ModuleScriptCustomFetchType::kWorkerConstructor,
-                    new WorkerModuleTreeClient(modulator));
+                    fetch_type, new WorkerModuleTreeClient(modulator));
 }
 
 void ServiceWorkerGlobalScope::Dispose() {
