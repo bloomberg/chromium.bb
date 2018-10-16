@@ -869,14 +869,16 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   return did_paint_content;
 }
 
-void LayerTreeHost::ApplyViewportDeltas(const ScrollAndScaleSet& info) {
+void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   gfx::Vector2dF inner_viewport_scroll_delta;
   if (info.inner_viewport_scroll.element_id)
     inner_viewport_scroll_delta = info.inner_viewport_scroll.scroll_delta;
 
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
-      info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta)
+      info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
+      !info.browser_controls_constraint_changed) {
     return;
+  }
 
   // Preemptively apply the scroll offset and scale delta here before sending
   // it to the client.  If the client comes back and sets it to the same
@@ -893,9 +895,10 @@ void LayerTreeHost::ApplyViewportDeltas(const ScrollAndScaleSet& info) {
                                    info.elastic_overscroll_delta);
   // TODO(ccameron): pass the elastic overscroll here so that input events
   // may be translated appropriately.
-  client_->ApplyViewportChanges(
-      {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
-       info.page_scale_delta, info.top_controls_delta});
+  client_->ApplyViewportChanges({inner_viewport_scroll_delta,
+                                 info.elastic_overscroll_delta,
+                                 info.page_scale_delta, info.top_controls_delta,
+                                 info.browser_controls_constraint});
   SetNeedsUpdateLayers();
 }
 
@@ -940,7 +943,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // This needs to happen after scroll deltas have been sent to prevent top
   // controls from clamping the layout viewport both on the compositor and
   // on the main thread.
-  ApplyViewportDeltas(*info);
+  ApplyViewportChanges(*info);
 
   RecordWheelAndTouchScrollingCount(*info);
 }

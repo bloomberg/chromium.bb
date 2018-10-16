@@ -399,10 +399,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return matches_heuristics_for_gpu_rasterization_;
   }
 
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraint,
-                                  cc::BrowserControlsState current,
-                                  bool animate) override;
-
   BrowserControls& GetBrowserControls();
   // Called anytime browser controls layout height or content offset have
   // changed.
@@ -464,6 +460,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void RefreshPageScaleFactor();
   IntSize ContentsSize() const;
 
+  void UpdateBrowserControlsConstraint(cc::BrowserControlsState constraint);
   void UpdateICBAndResizeViewport();
   void ResizeViewWhileAnchored(float top_controls_height,
                                float bottom_controls_height,
