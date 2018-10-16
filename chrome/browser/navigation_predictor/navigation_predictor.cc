@@ -18,8 +18,14 @@
 #include "url/gurl.h"
 
 struct NavigationPredictor::NavigationScore {
-  NavigationScore(const GURL& url, size_t area_rank, double score)
-      : url(url), area_rank(area_rank), score(score) {}
+  NavigationScore(const GURL& url,
+                  size_t area_rank,
+                  double score,
+                  bool contains_image)
+      : url(url),
+        area_rank(area_rank),
+        score(score),
+        contains_image(contains_image) {}
   // URL of the target link.
   const GURL url;
 
@@ -29,6 +35,11 @@ struct NavigationPredictor::NavigationScore {
 
   // Calculated navigation score, based on |area_rank| and other metrics.
   const double score;
+
+  // Multiple anchor elements may point to the same |url|. |contains_image| is
+  // true if at least one of the anchor elements pointing to |url| contains an
+  // image.
+  const bool contains_image;
 
   // Rank of the |score| in this document. It starts at 0, a lower rank implies
   // a higher |score|.
@@ -184,7 +195,9 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
         (number_of_anchors_same_host_ * 100) / number_of_anchors);
   }
 
-  if (metrics->contains_image) {
+  // Check if the clicked anchor element contains image or if any other anchor
+  // element pointing to the same url contains an image.
+  if (metrics->contains_image || iter->second->contains_image) {
     UMA_HISTOGRAM_PERCENTAGE(
         "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage",
         (number_of_anchors_contains_image_ * 100) / number_of_anchors);
@@ -365,7 +378,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
         metrics.size());
 
     navigation_scores.push_back(std::make_unique<NavigationScore>(
-        metric->target_url, area_rank, score));
+        metric->target_url, area_rank, score, metric->contains_image));
   }
 
   // Sort scores by the calculated navigation score in descending order. This
