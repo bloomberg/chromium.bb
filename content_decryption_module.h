@@ -667,7 +667,7 @@ class CDM_CLASS_API FileIO {
 // still call Close() to destroy the FileIO object.
 class CDM_CLASS_API FileIOClient {
  public:
-  enum Status : uint32_t { kSuccess = 0, kInUse, kError };
+  enum class Status : uint32_t { kSuccess = 0, kInUse, kError };
 
   // Response to a FileIO::Open() call with the open |status|.
   virtual void OnOpenComplete(Status status) = 0;
