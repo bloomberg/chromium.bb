@@ -34,8 +34,6 @@ jumbo_static_library("browser") {
     "actions/select_option_action.h",
     "actions/show_details_action.cc",
     "actions/show_details_action.h",
-    "actions/show_progress_bar_action.cc",
-    "actions/show_progress_bar_action.h",
     "actions/stop_action.cc",
     "actions/stop_action.h",
     "actions/tell_action.cc",

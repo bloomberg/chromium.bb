@@ -42,8 +42,6 @@ class UiControllerAndroid : public UiController, public Client {
       override;
   void HideDetails() override;
   void ShowDetails(const DetailsProto& details) override;
-  void ShowProgressBar(int progress, const std::string& message) override;
-  void HideProgressBar() override;
 
   // Overrides Client:
   std::string GetApiKey() override;
