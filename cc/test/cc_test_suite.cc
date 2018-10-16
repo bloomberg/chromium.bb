@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "cc/base/histograms.h"
 #include "components/viz/test/paths.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
@@ -45,8 +44,6 @@ void CCTestSuite::Initialize() {
   base::ThreadIdNameManager::GetInstance()->SetName("Main");
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-
-  SetClientNameForMetrics("Renderer");
 }
 
 void CCTestSuite::Shutdown() {

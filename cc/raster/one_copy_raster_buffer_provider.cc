@@ -497,8 +497,4 @@ gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {
              : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 }
 
-bool OneCopyRasterBufferProvider::CheckRasterFinishedQueries() {
-  return false;
-}
-
 }  // namespace cc

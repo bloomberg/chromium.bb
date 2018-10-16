@@ -79,9 +79,6 @@ class GPU_GLES2_EXPORT QueryManager {
 
     virtual void Destroy(bool have_context) = 0;
 
-    virtual void BeginProcessingCommands() {}
-    virtual void EndProcessingCommands() {}
-
     void AddCallback(base::OnceClosure callback);
 
    protected:
@@ -204,9 +201,6 @@ class GPU_GLES2_EXPORT QueryManager {
 
   void PauseQueries();
   void ResumeQueries();
-
-  void BeginProcessingCommands();
-  void EndProcessingCommands();
 
   // Processes pending queries. Returns false if any queries are pointing
   // to invalid shared memory. |did_finish| is true if this is called as
