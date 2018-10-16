@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_DETAIL_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_DETAIL_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SETTINGS_DETAIL_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SETTINGS_DETAIL_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-// SettingsDetailItem is a model class that uses SettingsDetailCell.
-@interface SettingsDetailItem : TableViewItem
+// LegacySettingsDetailItem is a model class that uses LegacySettingsDetailCell.
+@interface LegacySettingsDetailItem : CollectionViewItem
 
 // The filename for the leading icon.  If empty, no icon will be shown.
 @property(nonatomic, copy) NSString* iconImageName;
 
-// The background color of the cell.
-@property(nonatomic, strong) UIColor* cellBackgroundColor;
-
 // The accessory type to display on the trailing edge of the cell.
-@property(nonatomic) UITableViewCellAccessoryType accessoryType;
+@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 
 // The main text string.
 @property(nonatomic, copy) NSString* text;
@@ -29,11 +27,11 @@
 
 @end
 
-// SettingsDetailCell implements an UITableViewCell subclass containing an
-// optional leading icon and two text labels: a "main" label and a "detail"
-// label. The two labels are laid out side-by-side and fill the full width of
-// the cell. Labels are truncated as needed to fit in the cell.
-@interface SettingsDetailCell : UITableViewCell
+// LegacySettingsDetailCell implements an MDCCollectionViewCell subclass
+// containing an optional leading icon and two text labels: a "main" label and a
+// "detail" label. The two labels are laid out side-by-side and fill the full
+// width of the cell. Labels are truncated as needed to fit in the cell.
+@interface LegacySettingsDetailCell : MDCCollectionViewCell
 
 // UILabels corresponding to |text| and |detailText| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
@@ -44,10 +42,8 @@
 // the full width of the cell.
 - (void)setIconImage:(UIImage*)image;
 
-// The amount of horizontal space to provide to each of the labels, Exposed for
-// testing. When the preferred ContentSize category chosen by the user isn't one
-// of the accessibility categories, these values are determined with the
-// following logic:
+// The amount of horizontal space to provide to each of the labels. These values
+// are determined with the following logic:
 //
 // - If there is sufficient room (after accounting for margins) for the full
 //   width of each label, use the current width of each label.
@@ -59,12 +55,10 @@
 // - If both labels want more width than their guaranteed minimums (75% and
 //   25%), use the guaranteed minimum amount for each.
 //
-// If the PreferredContentSizeCategory is an Accessibility category, those
-// values aren't used. The content is displayed on two labels, one above the
-// other, without limitation on the number of lines used by the labels.
+// Exposed for testing.
 @property(nonatomic, readonly) CGFloat textLabelTargetWidth;
 @property(nonatomic, readonly) CGFloat detailTextLabelTargetWidth;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SETTINGS_DETAIL_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SETTINGS_DETAIL_ITEM_H_

@@ -63,6 +63,10 @@ source_set("cells") {
     "//ui/base",
   ]
 
+  public_deps = [
+    "//ios/chrome/browser/ui/settings/cells/legacy",
+  ]
+
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
