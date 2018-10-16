@@ -27,6 +27,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/box_layout.h"
@@ -90,8 +91,9 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
 class CardElementViewHolder : public views::NativeViewHost,
                               public views::ViewObserver {
  public:
-  explicit CardElementViewHolder(views::View* card_element_view)
-      : card_element_view_(card_element_view) {
+  explicit CardElementViewHolder(const AssistantCardElement* card_element)
+      : card_element_view_(app_list::AnswerCardContentsRegistry::Get()->GetView(
+            card_element->embed_token().value())) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
 
     params.name = GetClassName();
@@ -107,6 +109,9 @@ class CardElementViewHolder : public views::NativeViewHost,
     contents_view_->AddChildView(card_element_view_);
 
     card_element_view_->AddObserver(this);
+
+    // OverrideDescription() doesn't work. Only names are read automatically.
+    GetViewAccessibility().OverrideName(card_element->fallback());
   }
 
   ~CardElementViewHolder() override {
@@ -398,9 +403,7 @@ void UiElementContainerView::OnCardElementAdded(
   // When the card has been rendered in the same process, its view is
   // available in the AnswerCardContentsRegistry's token-to-view map.
   if (app_list::AnswerCardContentsRegistry::Get()) {
-    CardElementViewHolder* view_holder = new CardElementViewHolder(
-        app_list::AnswerCardContentsRegistry::Get()->GetView(
-            card_element->embed_token().value()));
+    auto* view_holder = new CardElementViewHolder(card_element);
 
     if (is_first_card_) {
       is_first_card_ = false;
@@ -482,9 +485,9 @@ void UiElementContainerView::OnAllUiElementsAdded() {
             CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
   }
 
-  // TODO(luciferleo): Add ChromeVox description for WebView.
-  // Let screen reader read the query result. We don't read when there is TTS to
-  // avoid speaking over the server response.
+  // Let screen reader read the query result. This includes the text response
+  // and the card fallback text, but webview result is not included.
+  // We don't read when there is TTS to avoid speaking over the server response.
   const AssistantResponse* response =
       assistant_controller_->interaction_controller()->model()->response();
   if (!response->has_tts())
