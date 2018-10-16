@@ -656,6 +656,12 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, PolicyCheck) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, RemoveTemporarySession) {
+  if (!IsPlayBackPossible(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - RemoveTemporarySession test requires license "
+                "server.";
+    return;
+  }
+
   // Although this test doesn't play anything, there is no need to run it
   // twice for the same key system.
   if (CurrentSourceType() != SrcType::MSE) {
