@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/image_fetcher/core/storage/image_cache.h"
@@ -18,6 +20,13 @@
 namespace image_fetcher {
 
 namespace {
+
+// Tracks the various forms of timing events.
+enum class LoadTimeType {
+  kLoadFromCache = 0,
+  kLoadFromNetwork = 1,
+  kLoadFromNetworkAfterCacheHit = 2
+};
 
 void DataCallbackIfPresent(ImageDataFetcherCallback data_callback,
                            const std::string& image_data,
@@ -51,7 +60,30 @@ bool EncodeSkBitmapToPNG(const SkBitmap& bitmap,
       std::vector<gfx::PNGCodec::Comment>(), dest);
 }
 
+void ReportLoadTime(LoadTimeType type, base::Time start_time) {
+  base::TimeDelta time_delta = base::Time::Now() - start_time;
+  switch (type) {
+    case LoadTimeType::kLoadFromCache:
+      UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromCacheTime",
+                          time_delta);
+      break;
+    case LoadTimeType::kLoadFromNetwork:
+      UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromNetworkTime",
+                          time_delta);
+      break;
+    case LoadTimeType::kLoadFromNetworkAfterCacheHit:
+      UMA_HISTOGRAM_TIMES(
+          "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit", time_delta);
+      break;
+  }
+}
+
 }  // namespace
+
+// static
+void CachedImageFetcher::ReportEvent(CachedImageFetcherEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("CachedImageFetcher.Events", event);
+}
 
 CachedImageFetcher::CachedImageFetcher(
     std::unique_ptr<ImageFetcher> image_fetcher,
@@ -94,12 +126,15 @@ void CachedImageFetcher::FetchImageAndData(
   image_cache_->LoadImage(
       image_url.spec(),
       base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
-                     weak_ptr_factory_.GetWeakPtr(), id, image_url,
-                     std::move(data_callback), std::move(image_callback),
-                     traffic_annotation));
+                     weak_ptr_factory_.GetWeakPtr(), base::Time::Now(), id,
+                     image_url, std::move(data_callback),
+                     std::move(image_callback), traffic_annotation));
+
+  ReportEvent(CachedImageFetcherEvent::kImageRequest);
 }
 
 void CachedImageFetcher::OnImageFetchedFromCache(
+    base::Time start_time,
     const std::string& id,
     const GURL& image_url,
     ImageDataFetcherCallback data_callback,
@@ -108,21 +143,28 @@ void CachedImageFetcher::OnImageFetchedFromCache(
     std::string image_data) {
   if (image_data.empty()) {
     // Fetching from the DB failed, start a network fetch.
-    FetchImageFromNetwork(id, image_url, std::move(data_callback),
-                          std::move(image_callback), traffic_annotation);
+    FetchImageFromNetwork(/* cache_hit */ false, start_time, id, image_url,
+                          std::move(data_callback), std::move(image_callback),
+                          traffic_annotation);
+
+    ReportEvent(CachedImageFetcherEvent::kCacheMiss);
   } else {
+    DataCallbackIfPresent(std::move(data_callback), image_data,
+                          RequestMetadata());
     // TODO(wylieb): On Android, do this in-process.
     GetImageDecoder()->DecodeImage(
         image_data, desired_image_frame_size_,
         base::BindRepeating(&CachedImageFetcher::OnImageDecodedFromCache,
-                            weak_ptr_factory_.GetWeakPtr(), id, image_url,
-                            base::Passed(std::move(data_callback)),
+                            weak_ptr_factory_.GetWeakPtr(), start_time, id,
+                            image_url, base::Passed(std::move(data_callback)),
                             base::Passed(std::move(image_callback)),
                             traffic_annotation, image_data));
+    ReportEvent(CachedImageFetcherEvent::kCacheHit);
   }
 }
 
 void CachedImageFetcher::OnImageDecodedFromCache(
+    base::Time start_time,
     const std::string& id,
     const GURL& image_url,
     ImageDataFetcherCallback data_callback,
@@ -131,19 +173,22 @@ void CachedImageFetcher::OnImageDecodedFromCache(
     const std::string& image_data,
     const gfx::Image& image) {
   if (image.IsEmpty()) {
-    FetchImageFromNetwork(id, image_url, std::move(data_callback),
-                          std::move(image_callback), traffic_annotation);
-    // Decoding error, delete image from cache.
-    image_cache_->DeleteImage(image_url.spec());
+    // Upon failure, fetch from the network.
+    FetchImageFromNetwork(/* cache_hit */ true, start_time, id, image_url,
+                          std::move(data_callback), std::move(image_callback),
+                          traffic_annotation);
+
+    ReportEvent(CachedImageFetcherEvent::kCacheDecodingError);
   } else {
-    DataCallbackIfPresent(std::move(data_callback), image_data,
-                          RequestMetadata());
     ImageCallbackIfPresent(std::move(image_callback), id, image,
                            RequestMetadata());
+    ReportLoadTime(LoadTimeType::kLoadFromCache, start_time);
   }
 }
 
 void CachedImageFetcher::FetchImageFromNetwork(
+    bool cache_hit,
+    base::Time start_time,
     const std::string& id,
     const GURL& image_url,
     ImageDataFetcherCallback data_callback,
@@ -153,16 +198,20 @@ void CachedImageFetcher::FetchImageFromNetwork(
   // the image cache, and the image will be returned to the caller.
   image_fetcher_->FetchImageAndData(
       id, image_url,
-      base::BindOnce(&CachedImageFetcher::OnImageDataFetchedFromNetwork,
+      base::BindOnce(&CachedImageFetcher::DecodeDataForCaching,
                      weak_ptr_factory_.GetWeakPtr(), std::move(data_callback),
                      image_url),
       base::BindOnce(&CachedImageFetcher::OnImageFetchedFromNetwork,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(image_callback)),
+                     weak_ptr_factory_.GetWeakPtr(), cache_hit, start_time,
+                     std::move(image_callback), image_url),
       traffic_annotation);
 }
 
 void CachedImageFetcher::OnImageFetchedFromNetwork(
+    bool cache_hit,
+    base::Time start_time,
     ImageFetcherCallback image_callback,
+    const GURL& image_url,
     const std::string& id,
     const gfx::Image& image,
     const RequestMetadata& request_metadata) {
@@ -170,9 +219,19 @@ void CachedImageFetcher::OnImageFetchedFromNetwork(
   // caller.
   ImageCallbackIfPresent(std::move(image_callback), id, image,
                          request_metadata);
+
+  // Report failure if the image is empty.
+  if (image.IsEmpty()) {
+    ReportEvent(CachedImageFetcherEvent::kFailure);
+  }
+
+  // Report to different histograms depending upon if there was a cache hit.
+  ReportLoadTime(cache_hit ? LoadTimeType::kLoadFromNetworkAfterCacheHit
+                           : LoadTimeType::kLoadFromNetwork,
+                 start_time);
 }
 
-void CachedImageFetcher::OnImageDataFetchedFromNetwork(
+void CachedImageFetcher::DecodeDataForCaching(
     ImageDataFetcherCallback data_callback,
     const GURL& image_url,
     const std::string& image_data,
@@ -180,14 +239,19 @@ void CachedImageFetcher::OnImageDataFetchedFromNetwork(
   DataCallbackIfPresent(std::move(data_callback), image_data, request_metadata);
   GetImageDecoder()->DecodeImage(
       image_data, /* Decoding for cache shouldn't specify size */ gfx::Size(),
-      base::BindRepeating(&CachedImageFetcher::OnImageDecodedFromNetwork,
+      base::BindRepeating(&CachedImageFetcher::EncodeDataAndCache,
                           weak_ptr_factory_.GetWeakPtr(), image_url));
 }
 
-void CachedImageFetcher::OnImageDecodedFromNetwork(const GURL& image_url,
-                                                   const gfx::Image& image) {
+void CachedImageFetcher::EncodeDataAndCache(const GURL& image_url,
+                                            const gfx::Image& image) {
   std::vector<unsigned char> encoded_data;
-  if (!EncodeSkBitmapToPNG(*image.ToSkBitmap(), &encoded_data)) {
+  // If the image is empty, or there's a problem encoding the image, don't save
+  // it.
+  if (image.IsEmpty() ||
+      !EncodeSkBitmapToPNG(*image.ToSkBitmap(), &encoded_data)) {
+    ReportEvent(CachedImageFetcherEvent::kTranscodingError);
+    image_cache_->DeleteImage(image_url.spec());
     return;
   }
 
