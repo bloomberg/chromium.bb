@@ -89,6 +89,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
 
+  void PrepareCanvasForDrawQuads(
+      const SharedQuadState* shared_quad_state,
+      const gfx::QuadF* draw_region,
+      const gfx::Rect* scissor_rect,
+      base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const PictureDrawQuad* quad);
   void DrawRenderPassQuad(const RenderPassDrawQuad* quad);
@@ -97,7 +102,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad);
   void DrawTextureQuad(const TextureDrawQuad* quad);
-  void DrawTileQuad(const TileDrawQuad* quad);
+  bool MustDrawBatchedTileQuadsBeforeQuad(const DrawQuad* new_quad,
+                                          const gfx::QuadF* draw_region);
+  void AddTileQuadToBatch(const TileDrawQuad* quad,
+                          const gfx::QuadF* draw_region);
+  void DrawBatchedTileQuads();
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
   bool CalculateRPDQParams(sk_sp<SkImage> src_image,
@@ -158,6 +167,18 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool use_swap_with_bounds_ = false;
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;
+
+  // State common to all tile quads in a batch
+  struct BatchedTileState {
+    const SharedQuadState* shared_quad_state;
+    gfx::Rect scissor_rect;
+    gfx::QuadF draw_region;
+    bool is_nearest_neighbor;
+    bool has_scissor_rect;
+    bool has_draw_region;
+  };
+  BatchedTileState batched_tile_state_;
+  std::vector<SkCanvas::ImageSetEntry> batched_tiles_;
 
 // Specific for Vulkan.
 #if BUILDFLAG(ENABLE_VULKAN)

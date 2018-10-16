@@ -501,25 +501,23 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
                               const gfx::QuadF* draw_region) {
   if (!current_canvas_)
     return;
-  base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
-  if (draw_region || is_scissor_enabled_) {
-    auto_canvas_restore.emplace(current_canvas_, true /* do_save */);
-    if (is_scissor_enabled_)
-      current_canvas_->clipRect(gfx::RectToSkRect(scissor_rect_));
-  }
   TRACE_EVENT0("viz", "SkiaRenderer::DoDrawQuad");
-  gfx::Transform contents_device_transform =
-      current_frame()->window_matrix * current_frame()->projection_matrix *
-      quad->shared_quad_state->quad_to_target_transform;
-  contents_device_transform.FlattenTo2d();
-  SkMatrix sk_device_matrix;
-  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
-                                    &sk_device_matrix);
-  current_canvas_->setMatrix(sk_device_matrix);
+  if (MustDrawBatchedTileQuadsBeforeQuad(quad, draw_region))
+    DrawBatchedTileQuads();
+  if (quad->material == DrawQuad::TILED_CONTENT) {
+    AddTileQuadToBatch(TileDrawQuad::MaterialCast(quad), draw_region);
+    return;
+  }
+
+  base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
+  const gfx::Rect* scissor_rect =
+      is_scissor_enabled_ ? &scissor_rect_ : nullptr;
+  PrepareCanvasForDrawQuads(quad->shared_quad_state, draw_region, scissor_rect,
+                            &auto_canvas_restore);
 
   current_paint_.reset();
   if (settings_->force_antialiasing ||
-      !IsScaleAndIntegerTranslate(sk_device_matrix)) {
+      !IsScaleAndIntegerTranslate(current_canvas_->getTotalMatrix())) {
     // TODO(danakj): Until we can enable AA only on exterior edges of the
     // layer, disable AA if any interior edges are present. crbug.com/248175
     bool all_four_edges_are_exterior =
@@ -535,14 +533,6 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   current_paint_.setBlendMode(
       static_cast<SkBlendMode>(quad->shared_quad_state->blend_mode));
 
-  if (draw_region) {
-    SkPath draw_region_clip_path;
-    SkPoint clip_points[4];
-    QuadFToSkPoints(*draw_region, clip_points);
-    draw_region_clip_path.addPoly(clip_points, 4, true);
-
-    current_canvas_->clipPath(draw_region_clip_path);
-  }
 
   switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
@@ -561,7 +551,7 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
       DrawTextureQuad(TextureDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::TILED_CONTENT:
-      DrawTileQuad(TileDrawQuad::MaterialCast(quad));
+      NOTREACHED();
       break;
     case DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
@@ -579,6 +569,64 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 
   current_canvas_->resetMatrix();
+}
+
+bool SkiaRenderer::MustDrawBatchedTileQuadsBeforeQuad(
+    const DrawQuad* new_quad,
+    const gfx::QuadF* draw_region) {
+  if (batched_tiles_.empty())
+    return false;
+
+  bool has_draw_region = draw_region != nullptr;
+  if (batched_tile_state_.shared_quad_state != new_quad->shared_quad_state ||
+      batched_tile_state_.has_scissor_rect != is_scissor_enabled_ ||
+      (is_scissor_enabled_ &&
+       batched_tile_state_.scissor_rect != scissor_rect_) ||
+      batched_tile_state_.has_draw_region != has_draw_region ||
+      (has_draw_region && batched_tile_state_.draw_region != *draw_region))
+    return true;
+
+  switch (new_quad->material) {
+    case DrawQuad::TILED_CONTENT:
+      // TODO(bsalomon): Check whether we can simply assume all tiles with the
+      // same SharedQuadState agree about filtering.
+      return TileDrawQuad::MaterialCast(new_quad)->nearest_neighbor !=
+             batched_tile_state_.is_nearest_neighbor;
+    case DrawQuad::SOLID_COLOR:
+      // Solid tiles from the same layer should not overlap tile quads.
+      return false;
+    default:
+      return true;
+  }
+}
+
+void SkiaRenderer::PrepareCanvasForDrawQuads(
+    const SharedQuadState* shared_quad_state,
+    const gfx::QuadF* draw_region,
+    const gfx::Rect* scissor_rect,
+    base::Optional<SkAutoCanvasRestore>* auto_canvas_restore) {
+  if (draw_region || scissor_rect) {
+    auto_canvas_restore->emplace(current_canvas_, true /* do_save */);
+    if (scissor_rect)
+      current_canvas_->clipRect(gfx::RectToSkRect(*scissor_rect));
+  }
+
+  gfx::Transform contents_device_transform =
+      current_frame()->window_matrix * current_frame()->projection_matrix *
+      shared_quad_state->quad_to_target_transform;
+  contents_device_transform.FlattenTo2d();
+  SkMatrix sk_device_matrix;
+  gfx::TransformToFlattenedSkMatrix(contents_device_transform,
+                                    &sk_device_matrix);
+  current_canvas_->setMatrix(sk_device_matrix);
+
+  if (draw_region) {
+    SkPath draw_region_clip_path;
+    SkPoint clip_points[4];
+    QuadFToSkPoints(*draw_region, clip_points);
+    draw_region_clip_path.addPoly(clip_points, 4, true);
+    current_canvas_->clipPath(draw_region_clip_path);
+  }
 }
 
 void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
@@ -687,7 +735,20 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
   current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, &current_paint_);
 }
 
-void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
+void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
+                                      const gfx::QuadF* draw_region) {
+  DCHECK(!MustDrawBatchedTileQuadsBeforeQuad(quad, draw_region));
+  if (batched_tiles_.empty()) {
+    batched_tile_state_.shared_quad_state = quad->shared_quad_state;
+    batched_tile_state_.scissor_rect = scissor_rect_;
+    if (draw_region) {
+      batched_tile_state_.draw_region = *draw_region;
+    }
+    batched_tile_state_.is_nearest_neighbor = quad->nearest_neighbor;
+    batched_tile_state_.has_scissor_rect = is_scissor_enabled_;
+    batched_tile_state_.has_draw_region = (draw_region != nullptr);
+  }
+
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
@@ -698,12 +759,44 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect),
       gfx::RectF(quad->visible_rect));
-
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
-  current_paint_.setFilterQuality(
-      quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-  current_canvas_->drawImageRect(
-      image, uv_rect, gfx::RectToSkRect(quad->visible_rect), &current_paint_);
+  unsigned aa_flags = SkCanvas::kNone_QuadAAFlags;
+  if (settings_->allow_antialiasing || settings_->force_antialiasing) {
+    if (quad->IsLeftEdge())
+      aa_flags |= SkCanvas::kLeft_QuadAAFlag;
+    if (quad->IsTopEdge())
+      aa_flags |= SkCanvas::kTop_QuadAAFlag;
+    if (quad->IsRightEdge())
+      aa_flags |= SkCanvas::kRight_QuadAAFlag;
+    if (quad->IsBottomEdge())
+      aa_flags |= SkCanvas::kBottom_QuadAAFlag;
+  }
+  batched_tiles_.push_back(
+      SkCanvas::ImageSetEntry{sk_ref_sp(image), uv_rect,
+                              gfx::RectToSkRect(quad->visible_rect), aa_flags});
+}
+
+void SkiaRenderer::DrawBatchedTileQuads() {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawBatchedTileQuads");
+  const gfx::QuadF* draw_region = batched_tile_state_.has_draw_region
+                                      ? &batched_tile_state_.draw_region
+                                      : nullptr;
+  const gfx::Rect* scissor_rect = batched_tile_state_.has_scissor_rect
+                                      ? &batched_tile_state_.scissor_rect
+                                      : nullptr;
+  base::Optional<SkAutoCanvasRestore> auto_canvas_restore;
+  PrepareCanvasForDrawQuads(batched_tile_state_.shared_quad_state, draw_region,
+                            scissor_rect, &auto_canvas_restore);
+
+  SkFilterQuality filter_quality = batched_tile_state_.is_nearest_neighbor
+                                       ? kNone_SkFilterQuality
+                                       : kLow_SkFilterQuality;
+  current_canvas_->experimental_DrawImageSetV0(
+      &batched_tiles_.front(), batched_tiles_.size(),
+      batched_tile_state_.shared_quad_state->opacity, filter_quality,
+      batched_tile_state_.shared_quad_state->blend_mode);
+  current_canvas_->resetMatrix();
+  batched_tiles_.clear();
 }
 
 void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad) {
@@ -1013,6 +1106,8 @@ void SkiaRenderer::DidChangeVisibility() {
 }
 
 void SkiaRenderer::FinishDrawingQuadList() {
+  if (!batched_tiles_.empty())
+    DrawBatchedTileQuads();
   switch (draw_mode_) {
     case DrawMode::DDL: {
       gpu::SyncToken sync_token = skia_output_surface_->SubmitPaint();
