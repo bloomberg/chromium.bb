@@ -2904,7 +2904,7 @@ class TestGitCl(TestCase):
     ]
     cl = git_cl.Changelist(codereview='gerrit', issue=1)
     self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
-    self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '1',
+    self.assertEqual(0, git_cl.main(['comment', '-i', '1',
                                       '-j', 'output.json']))
 
   def test_get_remote_url_with_mirror(self):

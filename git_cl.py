@@ -1944,40 +1944,13 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     pass
 
   def FetchDescription(self, force=False):
-    issue = self.GetIssue()
-    assert issue
-    try:
-      return self.RpcServer().get_description(issue, force=force).strip()
-    except urllib2.HTTPError as e:
-      if e.code == 404:
-        DieWithError(
-            ('\nWhile fetching the description for issue %d, received a '
-             '404 (not found)\n'
-             'error. It is likely that you deleted this '
-             'issue on the server. If this is the\n'
-             'case, please run\n\n'
-             '    git cl issue 0\n\n'
-             'to clear the association with the deleted issue. Then run '
-             'this command again.') % issue)
-      else:
-        DieWithError(
-            '\nFailed to fetch issue description. HTTP error %d' % e.code)
-    except urllib2.URLError as e:
-      print('Warning: Failed to retrieve CL description due to network '
-            'failure.', file=sys.stderr)
-      return ''
+    raise NotImplementedError()
 
   def GetMostRecentPatchset(self):
-    return self.GetIssueProperties()['patchsets'][-1]
+    raise NotImplementedError()
 
   def GetIssueProperties(self):
-    if self._props is None:
-      issue = self.GetIssue()
-      if not issue:
-        self._props = {}
-      else:
-        self._props = self.RpcServer().get_issue_properties(issue, True)
-    return self._props
+    raise NotImplementedError()
 
   def CannotTriggerTryJobReason(self):
     raise NotImplementedError()
@@ -4606,12 +4579,11 @@ def CMDcomments(parser, args):
       issue = int(options.issue)
     except ValueError:
       DieWithError('A review issue id is expected to be a number')
-    if not options.forced_codereview:
-      parser.error('--gerrit or --rietveld is required if --issue is specified')
 
-  cl = Changelist(issue=issue,
-                  codereview=options.forced_codereview,
-                  auth_config=auth_config)
+  cl = Changelist(issue=issue, codereview='gerrit', auth_config=auth_config)
+
+  if not cl.IsGerrit():
+    parser.error('rietveld is not supported')
 
   if options.comment:
     cl.AddComment(options.comment)
