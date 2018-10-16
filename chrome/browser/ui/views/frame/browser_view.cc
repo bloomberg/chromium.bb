@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -1712,14 +1713,19 @@ base::string16 BrowserView::GetWindowTitle() const {
   base::string16 title =
       browser_->GetWindowTitleForCurrentTab(true /* include_app_name */);
 #if defined(OS_MACOSX)
-  TabAlertState state =
-      chrome::GetTabAlertStateForContents(GetActiveWebContents());
-  if (state == TabAlertState::AUDIO_PLAYING)
-    title = l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_PLAYING_MAC, title,
-                                       base::WideToUTF16(L"\U0001F50A"));
-  else if (state == TabAlertState::AUDIO_MUTING)
-    title = l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_MUTING_MAC, title,
-                                       base::WideToUTF16(L"\U0001F507"));
+  content::WebContents* contents = GetActiveWebContents();
+  if (contents) {
+    auto* helper = RecentlyAudibleHelper::FromWebContents(contents);
+    if (helper && helper->WasRecentlyAudible()) {
+      title =
+          contents->IsAudioMuted()
+              ? l10n_util::GetStringFUTF16(IDS_WINDOW_AUDIO_MUTING_MAC, title,
+                                           base::WideToUTF16(L"\U0001F507"))
+              : title = l10n_util::GetStringFUTF16(
+                    IDS_WINDOW_AUDIO_PLAYING_MAC, title,
+                    base::WideToUTF16(L"\U0001F50A"));
+    }
+  }
 #endif
   return title;
 }
