@@ -666,6 +666,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
                                              bool /*is_animated*/) {}
 
+  // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
+  virtual void DidObserveLayoutJank(double jank_fraction) {}
+
   // Script notifications ------------------------------------------------
 
   // Notifies that a new script context has been created for this frame.
