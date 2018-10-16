@@ -14,31 +14,6 @@
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
 
-class VolumeArchiveMinizip;
-
-// A namespace with custom functions passed to minizip.
-namespace volume_archive_functions {
-
-int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unz_size);
-
-uint32_t CustomArchiveRead(void* archive,
-                           void* stream,
-                           void* buf,
-                           uint32_t size);
-
-// Returns the offset from the beginning of the data.
-long CustomArchiveTell(void* archive, void* stream);
-
-// Moves the current offset to the specified position.
-long CustomArchiveSeek(void* archive,
-                       void* stream,
-                       uint32_t offset,
-                       int origin);
-
-}  // namespace volume_archive_functions
-
-class VolumeArchiveMinizip;
-
 // Defines an implementation of VolumeArchive that wraps all minizip
 // operations.
 class VolumeArchiveMinizip : public VolumeArchive {
@@ -70,28 +45,26 @@ class VolumeArchiveMinizip : public VolumeArchive {
   // See volume_archive_interface.h.
   void MaybeDecompressAhead() override;
 
-  int64_t reader_data_size() const { return reader_data_size_; }
-
-  // Custom functions need to access private variables of
-  // CompressorArchiveMinizip frequently.
-  friend int64_t volume_archive_functions::DynamicCache(
-      VolumeArchiveMinizip* va,
-      int64_t unz_size);
-
-  friend uint32_t volume_archive_functions::CustomArchiveRead(void* archive,
-                                                              void* stream,
-                                                              void* buf,
-                                                              uint32_t size);
-
-  friend long volume_archive_functions::CustomArchiveTell(void* archive,
-                                                          void* stream);
-
-  friend long volume_archive_functions::CustomArchiveSeek(void* archive,
-                                                          void* stream,
-                                                          uint32_t offset,
-                                                          int origin);
-
  private:
+  // Stream functions used by minizip. In all cases, |archive| points to |this|.
+  static uint32_t MinizipRead(void* archive,
+                              void* stream,
+                              void* buf,
+                              uint32_t size);
+  static long MinizipTell(void* archive, void* stream);
+  static long MinizipSeek(void* archive,
+                          void* stream,
+                          uint32_t offset,
+                          int origin);
+
+  // Implementation of stream functions used by minizip.
+  uint32_t StreamRead(void* buf, uint32_t size);
+  long StreamTell();
+  long StreamSeek(uint32_t offset, int origin);
+
+  // Read cache.
+  int64_t DynamicCache(int64_t unz_size);
+
   // Decompress length bytes of data starting from offset.
   void DecompressData(int64_t offset, int64_t length);
 

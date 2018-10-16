@@ -32,99 +32,88 @@ uint32_t UnixToDosdate(const base::Time datetime) {
          exploded.minute << 5 | exploded.second >> 1;
 }
 
-};  // namespace
-
-namespace compressor_archive_functions {
-
-// Called when minizip tries to open a zip archive file. We do nothing here
-// because JavaScript takes care of file opening operation.
-void* CustomArchiveOpen(void* compressor,
-                        const char* /*filename*/,
-                        int /*mode*/) {
+void* MinizipOpen(void* compressor, const char* /*filename*/, int /*mode*/) {
   return compressor;
 }
 
-// This function is not called because we don't unpack zip files here.
-uint32_t CustomArchiveRead(void* /*compressor*/,
-                           void* /*stream*/,
-                           void* /*buffur*/,
-                           uint32_t /*size*/) {
-  return 0 /* Success */;
+uint32_t MinizipRead(void* /*compressor*/,
+                     void* /*stream*/,
+                     void* /*buffur*/,
+                     uint32_t /*size*/) {
+  NOTREACHED();
+  return 0;
 }
+
+int MinizipClose(void* /*compressor*/, void* /*stream*/) {
+  return 0;
+}
+
+int MinizipError(void* /*compressor*/, void* /*stream*/) {
+  return 0;
+}
+
+};  // namespace
 
 // Called when data chunk must be written on the archive. It copies data
 // from the given buffer processed by minizip to an array buffer and passes
 // it to compressor_stream.
-uint32_t CustomArchiveWrite(void* compressor,
-                            void* /*stream*/,
-                            const void* zip_buffer,
-                            uint32_t zip_length) {
-  CompressorArchiveMinizip* compressor_minizip =
-      static_cast<CompressorArchiveMinizip*>(compressor);
+uint32_t CompressorArchiveMinizip::MinizipWrite(void* compressor,
+                                                void* /*stream*/,
+                                                const void* zip_buffer,
+                                                uint32_t zip_length) {
+  return static_cast<CompressorArchiveMinizip*>(compressor)
+      ->StreamWrite(zip_buffer, zip_length);
+}
 
-  int64_t written_bytes = compressor_minizip->compressor_stream()->Write(
-      compressor_minizip->offset(), zip_length,
-      static_cast<const char*>(zip_buffer));
+uint32_t CompressorArchiveMinizip::StreamWrite(const void* zip_buffer,
+                                               uint32_t zip_length) {
+  int64_t written_bytes = compressor_stream()->Write(
+      offset_, zip_length, static_cast<const char*>(zip_buffer));
 
   if (written_bytes != zip_length)
     return 0 /* Error */;
 
   // Update offset_ and length_.
-  compressor_minizip->set_offset(compressor_minizip->offset() + written_bytes);
-  if (compressor_minizip->offset() > compressor_minizip->length())
-    compressor_minizip->set_length(compressor_minizip->offset());
-  return static_cast<uLong>(written_bytes);
+  offset_ += written_bytes;
+  if (offset_ > length_)
+    length_ = offset_;
+  return static_cast<uint32_t>(written_bytes);
 }
 
 // Returns the offset from the beginning of the data.
-long CustomArchiveTell(void* compressor, void* /*stream*/) {
-  CompressorArchiveMinizip* compressor_minizip =
-      static_cast<CompressorArchiveMinizip*>(compressor);
-  return static_cast<long>(compressor_minizip->offset_);
+long CompressorArchiveMinizip::MinizipTell(void* compressor, void* /*stream*/) {
+  return static_cast<CompressorArchiveMinizip*>(compressor)->StreamTell();
+}
+
+long CompressorArchiveMinizip::StreamTell() {
+  return static_cast<long>(offset_);
 }
 
 // Moves the current offset to the specified position.
-long CustomArchiveSeek(void* compressor,
-                       void* /*stream*/,
-                       uint32_t offset,
-                       int origin) {
-  CompressorArchiveMinizip* compressor_minizip =
-      static_cast<CompressorArchiveMinizip*>(compressor);
+long CompressorArchiveMinizip::MinizipSeek(void* compressor,
+                                           void* /*stream*/,
+                                           uint32_t offset,
+                                           int origin) {
+  return static_cast<CompressorArchiveMinizip*>(compressor)
+      ->StreamSeek(offset, origin);
+}
 
+long CompressorArchiveMinizip::StreamSeek(uint32_t offset, int origin) {
   if (origin == ZLIB_FILEFUNC_SEEK_CUR) {
-    compressor_minizip->set_offset(
-        std::min(compressor_minizip->offset() + static_cast<int64_t>(offset),
-                 compressor_minizip->length()));
+    offset_ = std::min(offset_ + static_cast<int64_t>(offset), length_);
     return 0 /* Success */;
   }
   if (origin == ZLIB_FILEFUNC_SEEK_END) {
-    compressor_minizip->set_offset(
-        std::max(compressor_minizip->length() - static_cast<int64_t>(offset),
-                 static_cast<int64_t>(0)));
+    offset_ = std::max(length_ - static_cast<int64_t>(offset),
+                       static_cast<int64_t>(0));
     return 0 /* Success */;
   }
   if (origin == ZLIB_FILEFUNC_SEEK_SET) {
-    compressor_minizip->set_offset(
-        std::min(static_cast<int64_t>(offset), compressor_minizip->length()));
+    offset_ = std::min(static_cast<int64_t>(offset), length_);
     return 0 /* Success */;
   }
   return -1 /* Error */;
 }
-
-// Releases all used resources. compressor points to compressor_minizip and
-// it is deleted in the destructor of Compressor, so we don't need to delete
-// it here.
-int CustomArchiveClose(void* /*compressor*/, void* /*stream*/) {
-  return 0 /* Success */;
-}
-
-// Returns the last error that happened when writing data. This function always
-// returns zero, which means there are no errors.
-int CustomArchiveError(void* /*compressor*/, void* /*stream*/) {
-  return 0 /* Success */;
-}
-
-}  // namespace compressor_archive_functions
 
 CompressorArchiveMinizip::CompressorArchiveMinizip(
     CompressorStream* compressor_stream)
@@ -140,13 +129,13 @@ CompressorArchiveMinizip::~CompressorArchiveMinizip() = default;
 bool CompressorArchiveMinizip::CreateArchive() {
   // Set up archive object.
   zlib_filefunc_def zip_funcs;
-  zip_funcs.zopen_file = compressor_archive_functions::CustomArchiveOpen;
-  zip_funcs.zread_file = compressor_archive_functions::CustomArchiveRead;
-  zip_funcs.zwrite_file = compressor_archive_functions::CustomArchiveWrite;
-  zip_funcs.ztell_file = compressor_archive_functions::CustomArchiveTell;
-  zip_funcs.zseek_file = compressor_archive_functions::CustomArchiveSeek;
-  zip_funcs.zclose_file = compressor_archive_functions::CustomArchiveClose;
-  zip_funcs.zerror_file = compressor_archive_functions::CustomArchiveError;
+  zip_funcs.zopen_file = MinizipOpen;
+  zip_funcs.zread_file = MinizipRead;
+  zip_funcs.zwrite_file = MinizipWrite;
+  zip_funcs.ztell_file = MinizipTell;
+  zip_funcs.zseek_file = MinizipSeek;
+  zip_funcs.zclose_file = MinizipClose;
+  zip_funcs.zerror_file = MinizipError;
   zip_funcs.opaque = this;
 
   zip_file_ = zipOpen2(nullptr /* pathname */, APPEND_STATUS_CREATE,

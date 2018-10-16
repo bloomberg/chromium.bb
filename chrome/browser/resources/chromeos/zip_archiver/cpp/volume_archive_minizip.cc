@@ -62,32 +62,96 @@ base::Time::Exploded ExplodeDosdate(uint32_t dos_timedate) {
   return exploded_time;
 }
 
-};  // namespace
-
-namespace volume_archive_functions {
-void* CustomArchiveOpen(void* archive,
-                        const char* /* filename */,
-                        int /* mode */) {
+void* MinizipOpen(void* archive, const char* /* filename */, int /* mode */) {
   return archive;
 }
 
-int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unzip_size) {
-  int64_t offset = archive->reader()->offset();
-  if (archive->reader()->Seek(static_cast<int64_t>(offset),
-                              base::File::FROM_BEGIN) < 0) {
+uint32_t MinizipWrite(void* /*archive*/,
+                      void* /*stream*/,
+                      const void* /*buffer*/,
+                      uint32_t /*length*/) {
+  NOTREACHED();
+  return 0;
+}
+
+int MinizipClose(void* /*archive*/, void* /*stream*/) {
+  return 0;
+}
+
+int MinizipError(void* /*archive*/, void* /*stream*/) {
+  return 0;
+}
+
+};  // namespace
+
+uint32_t VolumeArchiveMinizip::MinizipRead(void* archive,
+                                           void* /* stream */,
+                                           void* buffer,
+                                           uint32_t size) {
+  return static_cast<VolumeArchiveMinizip*>(archive)->StreamRead(buffer, size);
+}
+
+uint32_t VolumeArchiveMinizip::StreamRead(void* buffer, uint32_t size) {
+  int64_t offset = reader()->offset();
+
+  // When minizip requests a chunk in static_cache_.
+  if (offset >= static_cache_offset_) {
+    // Relative offset in the central directory.
+    int64_t offset_in_cache = offset - static_cache_offset_;
+    memcpy(buffer, static_cache_.get() + offset_in_cache, size);
+    if (reader()->Seek(static_cast<int64_t>(size), base::File::FROM_CURRENT) <
+        0) {
+      return -1 /* Error */;
+    }
+    return size;
+  }
+
+  char* unzip_buffer_pointer = static_cast<char*>(buffer);
+  int64_t left_length = static_cast<int64_t>(size);
+
+  do {
+    offset = reader()->offset();
+    // If dynamic_cache_ is empty or it cannot be reused, update the cache so
+    // that it contains the chunk required by minizip.
+    if (dynamic_cache_size_ == 0 || offset < dynamic_cache_offset_ ||
+        dynamic_cache_offset_ + dynamic_cache_size_ < offset + size) {
+      if (DynamicCache(size) < 0)
+        return -1 /* Error */;
+    }
+
+    // Just copy the required data from the cache.
+    int64_t offset_in_cache = offset - dynamic_cache_offset_;
+    int64_t copy_length =
+        std::min(left_length, dynamic_cache_size_ - offset_in_cache);
+    memcpy(unzip_buffer_pointer, dynamic_cache_.get() + offset_in_cache,
+           copy_length);
+    unzip_buffer_pointer += copy_length;
+    left_length -= copy_length;
+    if (reader()->Seek(static_cast<int64_t>(copy_length),
+                       base::File::FROM_CURRENT) < 0) {
+      return -1 /* Error */;
+    }
+  } while (left_length > 0);
+
+  return size;
+}
+
+int64_t VolumeArchiveMinizip::DynamicCache(int64_t unzip_size) {
+  int64_t offset = reader()->offset();
+  if (reader()->Seek(static_cast<int64_t>(offset), base::File::FROM_BEGIN) <
+      0) {
     return -1 /* Error */;
   }
 
-  int64_t bytes_to_read = std::min(kMaximumDataChunkSize,
-                                   archive->reader()->archive_size() - offset);
+  int64_t bytes_to_read =
+      std::min(kMaximumDataChunkSize, reader()->archive_size() - offset);
   DCHECK_GT(bytes_to_read, 0);
   int64_t left_length = bytes_to_read;
-  char* buffer_pointer = archive->dynamic_cache_.get();
+  char* buffer_pointer = dynamic_cache_.get();
   const void* destination_buffer;
 
   do {
-    int64_t read_bytes =
-        archive->reader()->Read(left_length, &destination_buffer);
+    int64_t read_bytes = reader()->Read(left_length, &destination_buffer);
     // End of the zip file.
     if (read_bytes == 0)
       break;
@@ -98,91 +162,33 @@ int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unzip_size) {
     buffer_pointer += read_bytes;
   } while (left_length > 0);
 
-  if (archive->reader()->Seek(static_cast<int64_t>(offset),
-                              base::File::FROM_BEGIN) < 0) {
+  if (reader()->Seek(static_cast<int64_t>(offset), base::File::FROM_BEGIN) <
+      0) {
     return -1 /* Error */;
   }
-  archive->dynamic_cache_size_ = bytes_to_read - left_length;
-  archive->dynamic_cache_offset_ = offset;
+  dynamic_cache_size_ = bytes_to_read - left_length;
+  dynamic_cache_offset_ = offset;
 
   return unzip_size - left_length;
 }
 
-uint32_t CustomArchiveRead(void* archive,
-                           void* /* stream */,
-                           void* buffer,
-                           uint32_t size) {
-  VolumeArchiveMinizip* archive_minizip =
-      static_cast<VolumeArchiveMinizip*>(archive);
-  int64_t offset = archive_minizip->reader()->offset();
-
-  // When minizip requests a chunk in static_cache_.
-  if (offset >= archive_minizip->static_cache_offset_) {
-    // Relative offset in the central directory.
-    int64_t offset_in_cache = offset - archive_minizip->static_cache_offset_;
-    memcpy(buffer, archive_minizip->static_cache_.get() + offset_in_cache,
-           size);
-    if (archive_minizip->reader()->Seek(static_cast<int64_t>(size),
-                                        base::File::FROM_CURRENT) < 0) {
-      return -1 /* Error */;
-    }
-    return size;
-  }
-
-  char* unzip_buffer_pointer = static_cast<char*>(buffer);
-  int64_t left_length = static_cast<int64_t>(size);
-
-  do {
-    offset = archive_minizip->reader()->offset();
-    // If dynamic_cache_ is empty or it cannot be reused, update the cache so
-    // that it contains the chunk required by minizip.
-    if (archive_minizip->dynamic_cache_size_ == 0 ||
-        offset < archive_minizip->dynamic_cache_offset_ ||
-        archive_minizip->dynamic_cache_offset_ +
-                archive_minizip->dynamic_cache_size_ <
-            offset + size) {
-      if (volume_archive_functions::DynamicCache(archive_minizip, size) < 0)
-        return -1 /* Error */;
-    }
-
-    // Just copy the required data from the cache.
-    int64_t offset_in_cache = offset - archive_minizip->dynamic_cache_offset_;
-    int64_t copy_length = std::min(
-        left_length, archive_minizip->dynamic_cache_size_ - offset_in_cache);
-    memcpy(unzip_buffer_pointer,
-           archive_minizip->dynamic_cache_.get() + offset_in_cache,
-           copy_length);
-    unzip_buffer_pointer += copy_length;
-    left_length -= copy_length;
-    if (archive_minizip->reader()->Seek(static_cast<int64_t>(copy_length),
-                                        base::File::FROM_CURRENT) < 0) {
-      return -1 /* Error */;
-    }
-  } while (left_length > 0);
-
-  return size;
+long VolumeArchiveMinizip::MinizipTell(void* archive, void* /*stream*/) {
+  return static_cast<VolumeArchiveMinizip*>(archive)->StreamTell();
 }
 
-uint32_t CustomArchiveWrite(void* /*archive*/,
-                            void* /*stream*/,
-                            const void* /*buffer*/,
-                            uint32_t /*length*/) {
-  return 0 /* Success */;
+long VolumeArchiveMinizip::StreamTell() {
+  return static_cast<long>(reader()->offset());
 }
 
-long CustomArchiveTell(void* archive, void* /*stream*/) {
-  VolumeArchiveMinizip* archive_minizip =
-      static_cast<VolumeArchiveMinizip*>(archive);
-  return static_cast<long>(archive_minizip->reader()->offset());
+long VolumeArchiveMinizip::MinizipSeek(void* archive,
+                                       void* /*stream*/,
+                                       uint32_t offset,
+                                       int origin) {
+  return static_cast<VolumeArchiveMinizip*>(archive)->StreamSeek(offset,
+                                                                 origin);
 }
 
-long CustomArchiveSeek(void* archive,
-                       void* /*stream*/,
-                       uint32_t offset,
-                       int origin) {
-  VolumeArchiveMinizip* archive_minizip =
-      static_cast<VolumeArchiveMinizip*>(archive);
-
+long VolumeArchiveMinizip::StreamSeek(uint32_t offset, int origin) {
   base::File::Whence whence;
   switch (origin) {
     case ZLIB_FILEFUNC_SEEK_SET:
@@ -199,27 +205,12 @@ long CustomArchiveSeek(void* archive,
       return -1;
   }
 
-  long return_value = static_cast<long>(
-      archive_minizip->reader()->Seek(static_cast<int64_t>(offset), whence));
+  long return_value =
+      static_cast<long>(reader()->Seek(static_cast<int64_t>(offset), whence));
   if (return_value >= 0)
     return 0 /* Success */;
   return -1 /* Error */;
 }
-
-int CustomArchiveClose(void* /*opaque*/, void* /*stream*/) {
-  return 0;
-}
-
-int CustomArchiveError(void* /*opaque*/, void* /*stream*/) {
-  return 0;
-}
-
-std::unique_ptr<std::string> GetPassphrase(
-    VolumeArchiveMinizip* archive_minizip) {
-  return archive_minizip->reader()->Passphrase();
-}
-
-}  // namespace volume_archive_functions
 
 VolumeArchiveMinizip::VolumeArchiveMinizip(std::unique_ptr<VolumeReader> reader)
     : VolumeArchive(std::move(reader)),
@@ -251,13 +242,13 @@ VolumeArchiveMinizip::~VolumeArchiveMinizip() {
 bool VolumeArchiveMinizip::Init(const std::string& encoding) {
   // Set up minizip object.
   zlib_filefunc_def zip_funcs;
-  zip_funcs.zopen_file = volume_archive_functions::CustomArchiveOpen;
-  zip_funcs.zread_file = volume_archive_functions::CustomArchiveRead;
-  zip_funcs.zwrite_file = volume_archive_functions::CustomArchiveWrite;
-  zip_funcs.ztell_file = volume_archive_functions::CustomArchiveTell;
-  zip_funcs.zseek_file = volume_archive_functions::CustomArchiveSeek;
-  zip_funcs.zclose_file = volume_archive_functions::CustomArchiveClose;
-  zip_funcs.zerror_file = volume_archive_functions::CustomArchiveError;
+  zip_funcs.zopen_file = MinizipOpen;
+  zip_funcs.zread_file = MinizipRead;
+  zip_funcs.zwrite_file = MinizipWrite;
+  zip_funcs.ztell_file = MinizipTell;
+  zip_funcs.zseek_file = MinizipSeek;
+  zip_funcs.zclose_file = MinizipClose;
+  zip_funcs.zerror_file = MinizipError;
   zip_funcs.opaque = static_cast<void*>(this);
 
   // Load maximum static_cache_size_ bytes from the end of the archive to
@@ -400,7 +391,7 @@ bool VolumeArchiveMinizip::SeekHeader(const std::string& path_name) {
     do {
       if (password_cache_ == nullptr) {
         // Save passphrase for upcoming file requests.
-        password_cache_ = volume_archive_functions::GetPassphrase(this);
+        password_cache_ = reader()->Passphrase();
         // check if |password_cache_| is nullptr in case when user clicks Cancel
         if (password_cache_ == nullptr) {
           return false;
