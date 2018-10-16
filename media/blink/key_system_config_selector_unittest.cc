@@ -247,8 +247,6 @@ class FakeKeySystems : public KeySystems {
 
     for (const std::string& codec : codecs) {
       DCHECK(IsValidCodec(codec)) << "Invalid codec should not be passed in";
-      DCHECK_NE(codec, kExtendedVideoCodec)
-          << "Extended codec should already been stripped";
 
       if (codec == kUnsupportedCodec ||
           !IsCompatibleWithEmeMediaType(media_type, codec)) {

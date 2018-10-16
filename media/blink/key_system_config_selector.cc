@@ -167,16 +167,6 @@ bool IsSupportedMediaType(const std::string& container_mime_type,
   return (support_result == IsSupported);
 }
 
-// Replaces any codec in |codecs| starting with "vp09.00." with "vp09-profile0".
-void OverrideVp9Profile0(std::vector<std::string>* codecs) {
-  for (std::string& codec : *codecs) {
-    if (base::StartsWith(codec, "vp09.00.", base::CompareCase::SENSITIVE)) {
-      DVLOG(3) << "Replace codec " << codec << " with vp09-profile0";
-      codec = "vp09-profile0";
-    }
-  }
-}
-
 }  // namespace
 
 struct KeySystemConfigSelector::SelectionRequest {
@@ -358,20 +348,13 @@ bool KeySystemConfigSelector::IsSupportedContentType(
     return false;
   }
 
-  // Before checking CDM support, split and strip the |codecs| because
-  // |key_systems_| does not handle extended codecs. Note that extended codec
-  // information was checked above.
-  std::vector<std::string> stripped_codec_vector;
-  SplitCodecs(codecs, &stripped_codec_vector);
-  // Since both "vp09.00.*" and "vp09.01.*" will be stripped to "vp09", before
-  // stripping codecs, replace "vp09.00.*" with "vp09-profile0" to avoid
-  // ambiguity.
-  OverrideVp9Profile0(&stripped_codec_vector);
-  StripCodecs(&stripped_codec_vector);
+  // Before checking CDM support, split |codecs| into a vector of codecs.
+  std::vector<std::string> codec_vector;
+  SplitCodecs(codecs, &codec_vector);
 
-  // Check that |container_mime_type| and |codecs| are supported by the CDM.
+  // Check that |container_lower| and |codec_vector| are supported by the CDM.
   EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
-      key_system, media_type, container_lower, stripped_codec_vector);
+      key_system, media_type, container_lower, codec_vector);
   if (!config_state->IsRuleSupported(codecs_rule)) {
     DVLOG(3) << "Container mime type and codecs are not supported by CDM";
     return false;
