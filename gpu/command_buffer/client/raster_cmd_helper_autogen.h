@@ -103,6 +103,16 @@ void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
   }
 }
 
+void WaitSyncTokenCHROMIUM(GLint namespace_id,
+                           GLuint64 command_buffer_id,
+                           GLuint64 release_count) {
+  raster::cmds::WaitSyncTokenCHROMIUM* c =
+      GetCmdSpace<raster::cmds::WaitSyncTokenCHROMIUM>();
+  if (c) {
+    c->Init(namespace_id, command_buffer_id, release_count);
+  }
+}
+
 void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
                                         GLuint dest_id,
                                         GLint x,

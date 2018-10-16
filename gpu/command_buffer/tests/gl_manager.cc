@@ -196,8 +196,9 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 class CommandBufferCheckLostContext : public CommandBufferDirect {
  public:
   CommandBufferCheckLostContext(TransferBufferManager* transfer_buffer_manager,
+                                SyncPointManager* sync_point_manager,
                                 bool context_lost_allowed)
-      : CommandBufferDirect(transfer_buffer_manager),
+      : CommandBufferDirect(transfer_buffer_manager, sync_point_manager),
         context_lost_allowed_(context_lost_allowed) {}
 
   ~CommandBufferCheckLostContext() override = default;
@@ -356,7 +357,8 @@ void GLManager::InitializeWithWorkaroundsImpl(
   }
 
   command_buffer_.reset(new CommandBufferCheckLostContext(
-      context_group->transfer_buffer_manager(), options.context_lost_allowed));
+      context_group->transfer_buffer_manager(), options.sync_point_manager,
+      options.context_lost_allowed));
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
       command_buffer_.get(), command_buffer_->service(), &outputter_,
@@ -463,6 +465,10 @@ void GLManager::PerformIdleWork() {
   decoder_->PerformIdleWork();
 }
 
+void GLManager::SetCommandsPaused(bool paused) {
+  command_buffer_->SetCommandsPaused(paused);
+}
+
 void GLManager::Destroy() {
   if (gles2_implementation_.get()) {
     MakeCurrent();
@@ -557,60 +563,56 @@ void GLManager::DestroyImage(int32_t id) {
 }
 
 void GLManager::SignalQuery(uint32_t query, base::OnceClosure callback) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void GLManager::CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void GLManager::GetGpuFence(
     uint32_t gpu_fence_id,
     base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void GLManager::SetLock(base::Lock*) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void GLManager::EnsureWorkVisible() {
-  NOTREACHED();
+  // This is only relevant for out-of-process command buffers.
 }
 
 gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
-  return CommandBufferNamespace::INVALID;
+  return command_buffer_->GetNamespaceID();
 }
 
 CommandBufferId GLManager::GetCommandBufferID() const {
-  return CommandBufferId();
+  return command_buffer_->GetCommandBufferID();
 }
 
 void GLManager::FlushPendingWork() {
-  NOTREACHED();
+  // This is only relevant for out-of-process command buffers.
 }
 
 uint64_t GLManager::GenerateFenceSyncRelease() {
-  NOTREACHED();
-  return 0;
+  return next_fence_sync_release_++;
 }
 
 bool GLManager::IsFenceSyncReleased(uint64_t release) {
-  NOTREACHED();
-  return false;
+  return release <= command_buffer_->GetLastState().release_count;
 }
 
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
                                 base::OnceClosure callback) {
-  NOTREACHED();
+  command_buffer_->SignalSyncToken(
+      sync_token, base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
-void GLManager::WaitSyncToken(const gpu::SyncToken& sync_token) {
-  NOTREACHED();
-}
+void GLManager::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}
 
 bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
-  NOTREACHED();
   return false;
 }
 

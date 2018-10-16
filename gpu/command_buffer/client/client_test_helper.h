@@ -137,7 +137,7 @@ class MockClientGpuControl : public GpuControl {
     DoSignalSyncToken(sync_token, &callback);
   }
 
-  MOCK_METHOD1(WaitSyncToken, void(const SyncToken&));
+  MOCK_METHOD1(WaitSyncTokenHint, void(const SyncToken&));
   MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken&));
   MOCK_METHOD2(CreateGpuFence,
                void(uint32_t gpu_fence_id, ClientGpuFence source));

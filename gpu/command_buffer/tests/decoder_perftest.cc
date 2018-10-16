@@ -264,61 +264,59 @@ class RecordReplayContext : public GpuControl {
                       size_t width,
                       size_t height,
                       unsigned internalformat) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
     return -1;
   }
 
-  void DestroyImage(int32_t id) override { NOTREACHED(); }
+  void DestroyImage(int32_t id) override { NOTIMPLEMENTED(); }
 
   void SignalQuery(uint32_t query, base::OnceClosure callback) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
   }
 
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
   }
 
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
                        callback) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
   }
 
-  void SetLock(base::Lock*) override { NOTREACHED(); }
+  void SetLock(base::Lock*) override { NOTIMPLEMENTED(); }
 
-  void EnsureWorkVisible() override { NOTREACHED(); }
+  void EnsureWorkVisible() override {}
 
   gpu::CommandBufferNamespace GetNamespaceID() const override {
-    return gpu::CommandBufferNamespace::INVALID;
+    return command_buffer_->GetNamespaceID();
   }
 
   CommandBufferId GetCommandBufferID() const override {
-    return gpu::CommandBufferId();
+    return command_buffer_->GetCommandBufferID();
   }
 
-  void FlushPendingWork() override { NOTREACHED(); }
+  void FlushPendingWork() override {}
 
   uint64_t GenerateFenceSyncRelease() override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
     return 0;
   }
 
   bool IsFenceSyncReleased(uint64_t release) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
     return true;
   }
 
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
   }
 
-  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
-    NOTREACHED();
-  }
+  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override {}
 
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override {
-    NOTREACHED();
+    NOTIMPLEMENTED();
     return true;
   }
 

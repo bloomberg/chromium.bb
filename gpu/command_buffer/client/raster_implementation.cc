@@ -955,7 +955,14 @@ void RasterImplementation::WaitSyncTokenCHROMIUM(
     return;
   }
 
-  gpu_control_->WaitSyncToken(verified_sync_token);
+  helper_->WaitSyncTokenCHROMIUM(
+      static_cast<GLint>(sync_token.namespace_id()),
+      sync_token.command_buffer_id().GetUnsafeValue(),
+      sync_token.release_count());
+
+  // Enqueue sync token in flush after inserting command so that it's not
+  // included in an automatic flush.
+  gpu_control_->WaitSyncTokenHint(verified_sync_token);
 }
 
 namespace {

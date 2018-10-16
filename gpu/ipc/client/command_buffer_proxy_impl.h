@@ -129,7 +129,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override;
-  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
+  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
   void TakeFrontBuffer(const gpu::Mailbox& mailbox);
   void ReturnFrontBuffer(const gpu::Mailbox& mailbox,
@@ -262,6 +262,12 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   // Sync token waits that haven't been flushed yet.
   std::vector<SyncToken> pending_sync_token_fences_;
+
+  // Last flushed fence sync release, same as last item in queue if not empty.
+  uint64_t flushed_fence_sync_release_ = 0;
+
+  // Last verified fence sync.
+  uint64_t verified_fence_sync_release_ = 0;
 
   GpuConsoleMessageCallback console_message_callback_;
 

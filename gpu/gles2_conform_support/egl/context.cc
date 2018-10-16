@@ -175,38 +175,38 @@ int32_t Context::CreateImage(ClientBuffer buffer,
                              size_t width,
                              size_t height,
                              unsigned internalformat) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return -1;
 }
 
 void Context::DestroyImage(int32_t id) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void Context::SignalQuery(uint32_t query, base::OnceClosure callback) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void Context::CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void Context::GetGpuFence(
     uint32_t gpu_fence_id,
     base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void Context::SetLock(base::Lock*) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void Context::EnsureWorkVisible() {
-  NOTREACHED();
+  // This is only relevant for out-of-process command buffers.
 }
 
 gpu::CommandBufferNamespace Context::GetNamespaceID() const {
-  return gpu::CommandBufferNamespace::INVALID;
+  return gpu::CommandBufferNamespace::IN_PROCESS;
 }
 
 gpu::CommandBufferId Context::GetCommandBufferID() const {
@@ -214,27 +214,24 @@ gpu::CommandBufferId Context::GetCommandBufferID() const {
 }
 
 void Context::FlushPendingWork() {
-  NOTREACHED();
+  // This is only relevant for out-of-process command buffers.
 }
 
 uint64_t Context::GenerateFenceSyncRelease() {
-  NOTREACHED();
-  return 0;
+  return display_->GenerateFenceSyncRelease();
 }
 
 bool Context::IsFenceSyncReleased(uint64_t release) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return false;
 }
 
 void Context::SignalSyncToken(const gpu::SyncToken& sync_token,
                               base::OnceClosure callback) {
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
-void Context::WaitSyncToken(const gpu::SyncToken& sync_token) {
-  NOTREACHED();
-}
+void Context::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}
 
 bool Context::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   return false;

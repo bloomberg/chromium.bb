@@ -269,6 +269,10 @@ void CommandBufferProxyImpl::OrderingBarrierHelper(int32_t put_offset) {
   last_put_offset_ = put_offset;
   last_flush_id_ = channel_->OrderingBarrier(
       route_id_, put_offset, std::move(pending_sync_token_fences_));
+
+  pending_sync_token_fences_.clear();
+
+  flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
 }
 
 void CommandBufferProxyImpl::SetUpdateVSyncParametersCallback(
@@ -432,8 +436,12 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
   bool requires_sync_token = handle.type == gfx::IO_SURFACE_BUFFER;
 
   uint64_t image_fence_sync = 0;
-  if (requires_sync_token)
+  if (requires_sync_token) {
     image_fence_sync = GenerateFenceSyncRelease();
+
+    // Make sure fence syncs were flushed before CreateImage() was called.
+    DCHECK_EQ(image_fence_sync, flushed_fence_sync_release_ + 1);
+  }
 
   DCHECK(gpu::IsImageFromGpuMemoryBufferFormatSupported(
       gpu_memory_buffer->GetFormat(), capabilities_));
@@ -543,7 +551,8 @@ void CommandBufferProxyImpl::SignalSyncToken(const gpu::SyncToken& sync_token,
   signal_tasks_.insert(std::make_pair(signal_id, std::move(callback)));
 }
 
-void CommandBufferProxyImpl::WaitSyncToken(const gpu::SyncToken& sync_token) {
+void CommandBufferProxyImpl::WaitSyncTokenHint(
+    const gpu::SyncToken& sync_token) {
   CheckLock();
   base::AutoLock lock(last_state_lock_);
   if (last_state_.error != gpu::error::kNoError)
@@ -650,8 +659,8 @@ void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  Send(new GpuCommandBufferMsg_ReturnFrontBuffer(route_id_, mailbox, sync_token,
-                                                 is_lost));
+  Send(new GpuCommandBufferMsg_WaitSyncToken(route_id_, sync_token));
+  Send(new GpuCommandBufferMsg_ReturnFrontBuffer(route_id_, mailbox, is_lost));
 }
 
 bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
