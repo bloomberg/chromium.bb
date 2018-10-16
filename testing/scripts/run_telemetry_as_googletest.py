@@ -48,6 +48,9 @@ class TelemetryUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
     return ['--total-shards=%d' % total_shards,
             '--shard-index=%d' % shard_index]
 
+  def generate_test_launcher_retry_limit_args(self, retry_limit):
+    return ['--retry-limit=%d' % retry_limit]
+
 
 def main():
   adapter = TelemetryUnittestAdapter()
