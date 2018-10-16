@@ -46,11 +46,10 @@ REPORT_URL_TEMPLATE_VIEW = '{cpu}/{apk}/report_{version2}.ndjson'
 REPORT_URL_TEMPLATE_COMP = '{cpu}/{apk}/report_{version1}_{version2}.ndjson'
 
 DESIRED_CPUS = ['arm', 'arm_64']
-# TODO: Add AndroidWebview.apk
-DESIRED_APKS = ['Monochrome.apk', 'ChromeModern.apk']
+DESIRED_APKS = ['Monochrome.apk', 'ChromeModern.apk', 'AndroidWebview.apk']
 # Versions are manually gathered from
 # https://omahaproxy.appspot.com/history?os=android&channel=stable
-DESIRED_VERSION = [
+DESIRED_VERSIONS = [
   '60.0.3112.116',
   '61.0.3163.98',
   '62.0.3202.84',
@@ -62,7 +61,15 @@ DESIRED_VERSION = [
   '68.0.3440.85',
   '69.0.3497.91',
   '70.0.3538.17',  # Beta
+  '71.0.3574.0',  # Dev
 ]
+
+
+def _GetDesiredVersions(apk):
+  if apk != 'AndroidWebview.apk':
+    return DESIRED_VERSIONS
+  # Webview .size files do not exist before M71.
+  return [v for v in DESIRED_VERSIONS if int(v.split('.')[0]) >= 71]
 
 
 class Report(collections.namedtuple(
@@ -122,10 +129,11 @@ def _SizeInfoFromGsPath(path):
 def _PossibleReportFiles():
   cpu_and_apk_combos = list(itertools.product(DESIRED_CPUS, DESIRED_APKS))
   for cpu, apk in cpu_and_apk_combos:
-    for version2 in DESIRED_VERSION:
+    apk_versions = _GetDesiredVersions(apk)
+    for version2 in apk_versions:
       yield Report(cpu, apk, None, version2)
-    for i, version1 in enumerate(DESIRED_VERSION):
-      for version2 in DESIRED_VERSION[i + 1:]:
+    for i, version1 in enumerate(apk_versions):
+      for version2 in apk_versions[i + 1:]:
         yield Report(cpu, apk, version1, version2)
 
 
@@ -136,7 +144,7 @@ def _SetPushedReports(directory):
       'pushed': {
         'cpu': DESIRED_CPUS,
         'apk': DESIRED_APKS,
-        'version': DESIRED_VERSION,
+        'version': DESIRED_VERSIONS,
       },
     }
     json.dump(pushed_reports_obj, out_file)
@@ -171,7 +179,7 @@ def _BuildReport(paths):
   if before_size_path:
     size_info = diff.Diff(_SizeInfoFromGsPath(before_size_path), size_info)
 
-  html_report.BuildReportFromSizeInfo(outpath, size_info, all_symbols=True)
+  html_report.BuildReportFromSizeInfo(outpath, size_info, all_symbols=False)
   return outpath
 
 
