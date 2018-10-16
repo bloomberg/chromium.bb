@@ -2152,16 +2152,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.tabStripCoordinator start];
   }
 
-  // Create infobar Coordinator.
-  if (!self.infoBarCoordinator) {
-    self.infoBarCoordinator =
-        [[InfobarCoordinator alloc] initWithBaseViewController:self
-                                                  browserState:_browserState
-                                                      tabModel:_model];
-    self.infoBarCoordinator.dispatcher = self.dispatcher;
-    self.infoBarCoordinator.positioner = self;
-    self.infoBarCoordinator.syncPresenter = self;
-  }
+  // Create the Infobar Coordinator.
+  self.infoBarCoordinator =
+      [[InfobarCoordinator alloc] initWithBaseViewController:self
+                                                browserState:_browserState
+                                                    tabModel:_model];
+  self.infoBarCoordinator.dispatcher = self.dispatcher;
+  self.infoBarCoordinator.positioner = self;
+  self.infoBarCoordinator.syncPresenter = self;
+  [self.infoBarCoordinator start];
 }
 
 // Called by NSNotificationCenter when the view's window becomes key to account
@@ -2309,8 +2308,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [self.sideSwipeController addHorizontalGesturesToView:self.view];
 
-  [self.infoBarCoordinator start];
-
   // Create child coordinators.
   _activityServiceCoordinator = [[ActivityServiceLegacyCoordinator alloc]
       initWithBaseViewController:self];
@@ -2407,18 +2404,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                        .viewController];
   }
 
-  // Place the infobar container above the content area.
-  UIView* infoBarContainerView = [self.infoBarCoordinator view];
-  if (initialLayout) {
-    [self.view insertSubview:infoBarContainerView
-                aboveSubview:self.contentArea];
-  }
-
   // Place the toolbar controller above the infobar container and adds the
   // layout guides.
   if (initialLayout) {
     UIView* bottomView =
-        IsIPadIdiom() ? _fakeStatusBarView : infoBarContainerView;
+        IsIPadIdiom() ? _fakeStatusBarView : [self.infoBarCoordinator view];
     [[self view]
         insertSubview:self.primaryToolbarCoordinator.viewController.view
          aboveSubview:bottomView];
@@ -2492,15 +2482,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     contentFrame.origin.y = marginWithHeader;
   }
   self.contentArea.frame = contentFrame;
-
-  if (initialLayout) {
-    // Adjust the infobar container to be either at the bottom of the screen
-    // (iPhone) or on the lower toolbar edge (iPad).
-    CGRect infoBarFrame = contentFrame;
-    infoBarFrame.origin.y = CGRectGetMaxY(contentFrame);
-    infoBarFrame.size.height = 0;
-    [infoBarContainerView setFrame:infoBarFrame];
-  }
 
   // Attach the typing shield to the content area but have it hidden.
   self.typingShield.frame = self.contentArea.frame;

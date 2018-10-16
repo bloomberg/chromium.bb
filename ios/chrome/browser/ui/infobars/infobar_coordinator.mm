@@ -59,6 +59,13 @@
 }
 
 - (void)start {
+  [self.baseViewController.view insertSubview:_infoBarContainer->view()
+                                 aboveSubview:self.positioner.parentView];
+  CGRect infoBarFrame = self.positioner.parentView.frame;
+  infoBarFrame.origin.y = CGRectGetMaxY(infoBarFrame);
+  infoBarFrame.size.height = 0;
+  [_infoBarContainer->view() setFrame:infoBarFrame];
+
   infobars::InfoBarManager* infoBarManager = nullptr;
   if (self.tabModel.currentTab) {
     DCHECK(self.tabModel.currentTab.webState);
