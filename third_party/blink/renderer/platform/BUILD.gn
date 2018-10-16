@@ -1081,6 +1081,7 @@ jumbo_component("platform") {
     "graphics/picture_snapshot.h",
     "graphics/placeholder_image.cc",
     "graphics/placeholder_image.h",
+    "graphics/platform_paint_worklet_input.h",
     "graphics/profiling_canvas.cc",
     "graphics/profiling_canvas.h",
     "graphics/replaying_canvas.cc",
