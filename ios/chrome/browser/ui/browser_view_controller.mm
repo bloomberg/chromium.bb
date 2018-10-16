@@ -202,6 +202,8 @@
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_adaptor.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -351,10 +353,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // TODO(crbug.com/880672): This is a temporary solution.  This logic should be
 // handled by ToolbarContainerViewController.
-@interface ToolbarContainerView : UIView
+@interface LegacyToolbarContainerView : UIView
 @end
 
-@implementation ToolbarContainerView
+@implementation LegacyToolbarContainerView
 
 - (UIView*)hitTest:(CGPoint)point withEvent:(UIEvent*)event {
   // Don't receive events that don't occur within a subview.  This is necessary
@@ -674,6 +676,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // The container view for the secondary toolbar.
 // TODO(crbug.com/880656): Convert to a container coordinator.
 @property(nonatomic, strong) UIView* secondaryToolbarContainerView;
+// Coordinator used to manage the secondary toolbar view.
+@property(nonatomic, strong)
+    ToolbarContainerCoordinator* secondaryToolbarContainerCoordinator;
 // Interface object with the toolbars.
 @property(nonatomic, strong) id<ToolbarCoordinating> toolbarInterface;
 
@@ -883,6 +888,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
 @synthesize secondaryToolbarCoordinator = _secondaryToolbarCoordinator;
 @synthesize secondaryToolbarContainerView = _secondaryToolbarContainerView;
+@synthesize secondaryToolbarContainerCoordinator =
+    _secondaryToolbarContainerCoordinator;
 @synthesize primaryToolbarOffsetConstraint = _primaryToolbarOffsetConstraint;
 @synthesize primaryToolbarHeightConstraint = _primaryToolbarHeightConstraint;
 @synthesize secondaryToolbarHeightConstraint =
@@ -2418,7 +2425,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     if (self.secondaryToolbarCoordinator) {
       // Create the container view for the secondary toolbar and add it to the
       // hierarchy
-      UIView* container = [[ToolbarContainerView alloc] init];
+      UIView* container = [[LegacyToolbarContainerView alloc] init];
       container.translatesAutoresizingMaskIntoConstraints = NO;
       [container
           addSubview:self.secondaryToolbarCoordinator.viewController.view];
