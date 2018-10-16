@@ -19,7 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
@@ -672,7 +672,7 @@ class NET_EXPORT NetworkQualityEstimator
   // corresponding observation has been added on the current network.
   bool cached_estimate_applied_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   NetLogWithSource net_log_;
 
