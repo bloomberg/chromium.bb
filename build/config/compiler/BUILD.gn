@@ -1772,7 +1772,7 @@ config("no_size_t_to_int_warning") {
 # Code that currently generates warnings for this can include this
 # config to disable them.
 config("no_shorten_64_warnings") {
-  if (current_cpu == "x64") {
+  if (current_cpu == "x64" || current_cpu == "arm64") {
     if (is_clang) {
       cflags = [ "-Wno-shorten-64-to-32" ]
     } else {
