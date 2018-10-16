@@ -228,7 +228,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
                                      this,
                                      message_center::MessageCenter::Get())),
       new_message_center_view_(features::IsNewMessageListViewEnabled()
-                                   ? new NewUnifiedMessageCenterView()
+                                   ? new NewUnifiedMessageCenterView(this)
                                    : nullptr),
       focus_search_(std::make_unique<FocusSearch>(this)),
       interacted_by_tap_recorder_(

@@ -20,15 +20,17 @@ namespace ash {
 
 class MessageCenterScrollBar;
 class StackingNotificationCounterView;
+class UnifiedSystemTrayView;
 
 // Manages scrolling of notification list.
 // TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
 class ASH_EXPORT NewUnifiedMessageCenterView
     : public views::View,
       public MessageCenterScrollBar::Observer,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::FocusChangeListener {
  public:
-  NewUnifiedMessageCenterView();
+  explicit NewUnifiedMessageCenterView(UnifiedSystemTrayView* parent);
   ~NewUnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.
@@ -42,6 +44,8 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   void ConfigureMessageView(message_center::MessageView* message_view);
 
   // views::View:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
 
@@ -51,6 +55,14 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* before, views::View* now) override;
+  void OnDidChangeFocus(views::View* before, views::View* now) override;
+
+ protected:
+  // Virtual for testing.
+  virtual void SetNotificationHeightBelowScroll(int height_below_scroll);
+
  private:
   friend class NewUnifiedMessageCenterViewTest;
 
@@ -59,9 +71,14 @@ class ASH_EXPORT NewUnifiedMessageCenterView
   // Scroll the notification list to |position_from_bottom_|.
   void ScrollToPositionFromBottom();
 
+  // Notifies height below scroll to |parent_| so that it can update
+  // TopCornerBorder.
+  void NotifyHeightBelowScroll();
+
   // Count number of notifications that are above visible area.
   int GetStackedNotificationCount() const;
 
+  UnifiedSystemTrayView* const parent_;
   StackingNotificationCounterView* const stacking_counter_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
@@ -69,6 +86,8 @@ class ASH_EXPORT NewUnifiedMessageCenterView
 
   // Position from the bottom of scroll contents in dip.
   int position_from_bottom_;
+
+  views::FocusManager* focus_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NewUnifiedMessageCenterView);
 };
