@@ -67,7 +67,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
         mFullContainer = new FrameLayout(activity);
         mFullContainer.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modal_dialog_scrim_color));
-        mDialog = new AlwaysDismissedDialog(activity, R.style.DialogWhenLarge);
+        mDialog = new AlwaysDismissedDialog(activity, R.style.DimmingDialog);
         mDialog.setOnDismissListener(dismissListener);
         mDialog.addContentView(mFullContainer,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));

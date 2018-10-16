@@ -476,6 +476,9 @@
         <item name="windowActionBar">false</item>
     </style>
     <style name="DialogWhenLarge" parent="DialogWhenLargeBase" />
+    <style name="DimmingDialog" parent="DialogWhenLargeBase">
+        <item name="android:windowLightNavigationBar" tools:targetApi="28">false</item>
+    </style>
 
     <style name="SigninAlertDialogTheme" parent="AlertDialogTheme">
         <item name="buttonBarButtonStyle">@style/SigninDialogButtonStyle</item>
