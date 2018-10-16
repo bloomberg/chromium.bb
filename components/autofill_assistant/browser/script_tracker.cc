@@ -90,11 +90,17 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
-  // Postpone running script until finishing preconditions check.
+  // Postpone running script until finishing the current round of preconditions
+  // check.
   if (!batch_element_checker_ && !must_recheck_) {
     executor_->Run(std::move(run_script_callback));
   } else {
     pending_run_script_callback_ = std::move(run_script_callback);
+    // Do not recheck and retry when there is a script pending to run. Note
+    // that |batch_element_checker_| may take a long time to wait on retrying
+    // unsatisfied preconditions check without stop trying.
+    must_recheck_.Reset();
+    batch_element_checker_->StopTrying();
   }
 }
 
