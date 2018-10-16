@@ -1199,6 +1199,7 @@ class AutofillMetrics {
   class FormEventLogger {
    public:
     FormEventLogger(bool is_for_credit_card,
+                    bool is_in_main_frame,
                     FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
     inline void set_server_record_type_count(size_t server_record_type_count) {
@@ -1254,6 +1255,7 @@ class AutofillMetrics {
     void Log(BankNameDisplayedFormEvent event) const;
 
     bool is_for_credit_card_;
+    bool is_in_main_frame_;
     size_t server_record_type_count_;
     size_t local_record_type_count_;
     bool is_context_secure_;

@@ -76,6 +76,10 @@ bool AutofillDriverIOS::IsIncognito() const {
   return web_state_->GetBrowserState()->IsOffTheRecord();
 }
 
+bool AutofillDriverIOS::IsInMainFrame() const {
+  return web_frame_ ? web_frame_->IsMainFrame() : true;
+}
+
 net::URLRequestContextGetter* AutofillDriverIOS::GetURLRequestContext() {
   return web_state_->GetBrowserState()->GetRequestContext();
 }

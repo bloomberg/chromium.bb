@@ -1640,8 +1640,10 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
 
 AutofillMetrics::FormEventLogger::FormEventLogger(
     bool is_for_credit_card,
+    bool is_in_main_frame,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger)
     : is_for_credit_card_(is_for_credit_card),
+      is_in_main_frame_(is_in_main_frame),
       server_record_type_count_(0),
       local_record_type_count_(0),
       is_context_secure_(false),
@@ -1885,6 +1887,12 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   else
     name += "Address";
   base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+
+  // Log again in a different histogram so that iframes can be analyzed on their
+  // own.
+  base::UmaHistogramEnumeration(
+      name + (is_in_main_frame_ ? ".IsInMainFrame" : ".IsInIFrame"), event,
+      NUM_FORM_EVENTS);
 
   // Log again in a different histogram for credit card forms on nonsecure
   // pages, so that form interactions on nonsecure pages can be analyzed on
