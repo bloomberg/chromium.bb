@@ -79,9 +79,10 @@ LayoutUnit ResolveInlineLength(
   if (type == LengthResolveType::kMinSize && length.IsAuto())
     return border_and_padding.InlineSum();
 
-  // Check if we shouldn't resolve a percentage/calc() if we are in the
-  // intrinsic sizes phase.
-  if (phase == LengthResolvePhase::kIntrinsic && length.IsPercentOrCalc()) {
+  // Check if we shouldn't resolve a percentage/calc()/-webkit-fill-available
+  // if we are in the intrinsic sizes phase.
+  if (phase == LengthResolvePhase::kIntrinsic &&
+      (length.IsPercentOrCalc() || length.GetType() == kFillAvailable)) {
     // min-width/min-height should be "0", i.e. no min limit is applied.
     if (type == LengthResolveType::kMinSize)
       return border_and_padding.InlineSum();
@@ -180,15 +181,20 @@ LayoutUnit ResolveBlockLength(
        style.OverflowY() == EOverflow::kScroll))
     return border_and_padding.BlockSum();
 
-  bool is_percentage_indefinite =
-      constraint_space.PercentageResolutionSize().block_size ==
-      NGSizeIndefinite;
-
-  // Check if we can't/shouldn't resolve a percentage/calc() - because the
-  // percentage resolution size is indefinite or because we are in the
-  // intrinsic sizes phase.
-  if ((phase == LengthResolvePhase::kIntrinsic || is_percentage_indefinite) &&
-      length.IsPercentOrCalc()) {
+  // When the containing block size to resolve against is indefinite, we
+  // cannot resolve percentages / calc() / -webkit-fill-available.
+  bool size_is_unresolvable = false;
+  if (length.IsPercentOrCalc()) {
+    size_is_unresolvable =
+        phase == LengthResolvePhase::kIntrinsic ||
+        constraint_space.PercentageResolutionSize().block_size ==
+            NGSizeIndefinite;
+  } else if (length.GetType() == kFillAvailable) {
+    size_is_unresolvable =
+        phase == LengthResolvePhase::kIntrinsic ||
+        constraint_space.AvailableSize().block_size == NGSizeIndefinite;
+  }
+  if (size_is_unresolvable) {
     // min-width/min-height should be "0", i.e. no min limit is applied.
     if (type == LengthResolveType::kMinSize)
       return border_and_padding.BlockSum();

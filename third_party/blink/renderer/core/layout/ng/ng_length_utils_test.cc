@@ -105,7 +105,7 @@ TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
       ResolveInlineLength(Length(30, kPercent), LengthResolveType::kMaxSize,
                           LengthResolvePhase::kIntrinsic));
   EXPECT_EQ(
-      LayoutUnit(200),
+      LayoutUnit::Max(),
       ResolveInlineLength(Length(kFillAvailable), LengthResolveType::kMaxSize,
                           LengthResolvePhase::kIntrinsic));
   MinMaxSize sizes;
