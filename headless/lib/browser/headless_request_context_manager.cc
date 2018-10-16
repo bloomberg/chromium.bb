@@ -357,6 +357,11 @@ void HeadlessRequestContextManager::InitializeOnIO() {
     builder->SetCreateHttpTransactionFactoryCallback(
         base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
     builder->SetInterceptors(std::move(request_interceptors_));
+    for (auto& protocol_handler : protocol_handlers_) {
+      builder->SetProtocolHandler(protocol_handler.first,
+                                  std::move(protocol_handler.second));
+    }
+    protocol_handlers_.clear();
 
     net::URLRequestContext* url_request_context = nullptr;
     network_context_owner_ =
