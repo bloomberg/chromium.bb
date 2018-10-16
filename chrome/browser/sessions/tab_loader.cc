@@ -464,10 +464,11 @@ void TabLoader::ForceLoadTimerFired() {
   ReentrancyHelper lifetime_helper(this);
 
   // CheckInvariants can't be called directly as the timer is no longer
-  // running at this point. However, the condition under which the timer
+  // running at this point. However, the conditions under which the timer
   // should be running can be checked.
-  DCHECK(is_loading_enabled_ && !tabs_to_load_.empty() &&
-         !tabs_loading_.empty());
+  DCHECK(is_loading_enabled_);
+  DCHECK(!tabs_to_load_.empty());
+  DCHECK(!tabs_loading_.empty());
   DCHECK(!force_load_time_.is_null());
 
   // A timeout is in some sense equivalent to a "load" event, in that it means
