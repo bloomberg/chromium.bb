@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
@@ -411,9 +412,7 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
     const blink::WebString& result_name) {
   // Check if we're waiting to be notified of this source.  If not, then we'll
   // ignore the notification.
-  auto found = std::find(sources_waiting_for_callback_.begin(),
-                         sources_waiting_for_callback_.end(), source);
-  if (found != sources_waiting_for_callback_.end())
+  if (base::ContainsValue(sources_waiting_for_callback_, source))
     OnTrackStarted(source, result, result_name);
 }
 

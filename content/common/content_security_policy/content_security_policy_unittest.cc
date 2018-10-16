@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/navigation_params.h"
@@ -21,8 +22,7 @@ class CSPContextTest : public CSPContext {
   }
 
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override {
-    return std::find(scheme_to_bypass_.begin(), scheme_to_bypass_.end(),
-                     scheme) != scheme_to_bypass_.end();
+    return base::ContainsValue(scheme_to_bypass_, scheme);
   }
 
  private:
