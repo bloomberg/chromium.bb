@@ -67,6 +67,7 @@
 namespace blink {
 
 namespace {
+const int kScopingTimeoutMS = 100;
 constexpr TimeDelta kTextFinderTestTimeout = TimeDelta::FromSeconds(10);
 }
 
@@ -113,9 +114,15 @@ class TextFinder::IdleScopeStringMatchesCallback
         identifier_(identifier),
         search_text_(search_text),
         options_(options.Clone()) {
+    // We need to add deadline because some webpages might have frames
+    // that are always busy, resulting in bad experience in find-in-page
+    // because the scoping tasks are not run.
+    // See crbug.com/893465.
+    IdleRequestOptions request_options;
+    request_options.setTimeout(kScopingTimeoutMS);
     callback_handle_ =
         text_finder->GetFrame()->GetDocument()->RequestIdleCallback(
-            this, IdleRequestOptions());
+            this, request_options);
   }
 
   void invoke(IdleDeadline* deadline) override {
