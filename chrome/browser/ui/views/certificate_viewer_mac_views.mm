@@ -41,15 +41,8 @@
 // Shows the certificate viewer as a Cocoa sheet.
 - (void)showCertificateSheet:(NSWindow*)window;
 
-// Closes the certificate viewer sheet, but doesn't release it.
+// Closes the certificate viewer sheet.
 - (void)closeCertificateSheet;
-
-// Releases the native SFCertificatePanel window sheet created in
-// initWithCertificate:forWebContents:.
-- (void)releaseSheetWindow;
-
-// Returns the certificate panel used as the certificate viewer sheet.
-- (NSWindow*)certificatePanel;
 
 - (void)setOverlayWindow:(views::Widget*)overlayWindow;
 
@@ -102,14 +95,14 @@
   }
   // Add a basic X.509 policy, in order to match the behaviour of
   // SFCertificatePanel when no policies are specified.
-  SecPolicyRef basicPolicy = nil;
-  OSStatus status = net::x509_util::CreateBasicX509Policy(&basicPolicy);
+  base::ScopedCFTypeRef<SecPolicyRef> basicPolicy;
+  OSStatus status =
+      net::x509_util::CreateBasicX509Policy(basicPolicy.InitializeInto());
   if (status != noErr) {
     NOTREACHED();
     return self;
   }
-  CFArrayAppendValue(policies, basicPolicy);
-  CFRelease(basicPolicy);
+  CFArrayAppendValue(policies, basicPolicy.get());
 
   status = net::x509_util::CreateRevocationPolicies(false, policies);
   if (status != noErr) {
@@ -133,25 +126,16 @@
 
 - (void)closeCertificateSheet {
   // Closing the sheet using -[NSApp endSheet:] doesn't work so use the private
-  // method.
-  [panel_ _dismissWithCode:NSFileHandlingPanelCancelButton];
-  certificates_.reset();
-}
-
-- (void)releaseSheetWindow {
-  panel_.reset();
-}
-
-- (NSWindow*)certificatePanel {
-  return panel_;
+  // method. If the sheet is already closed then this is a call on nil and thus
+  // a no-op.
+  [panel_ _dismissWithCode:NSModalResponseCancel];
 }
 
 - (void)sheetDidEnd:(NSWindow*)parent
          returnCode:(NSInteger)returnCode
             context:(void*)context {
-  [self closeCertificateSheet];
   overlayWindow_->Close();  // Asynchronously releases |self|.
-  [self releaseSheetWindow];
+  panel_.reset();
 }
 
 - (void)setOverlayWindow:(views::Widget*)overlayWindow {
@@ -176,6 +160,13 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
                                                                web_contents);
     [certificate_viewer_ showCertificateSheet:overlayWindow->GetNativeWindow()];
     [certificate_viewer_ setOverlayWindow:overlayWindow];
+  }
+
+  ~CertificateAnchorWidgetDelegate() override {
+    // Note that the SFCertificatePanel takes a reference to its delegate in its
+    // -beginSheetForWindow:... method (bad SFCertificatePanel!) so break the
+    // retain cycle by explicitly canceling the dialog.
+    [certificate_viewer_ closeCertificateSheet];
   }
 
   // WidgetDelegate:
