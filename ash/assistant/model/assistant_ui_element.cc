@@ -8,9 +8,11 @@ namespace ash {
 
 // AssistantCardElement --------------------------------------------------------
 
-AssistantCardElement::AssistantCardElement(const std::string& html)
+AssistantCardElement::AssistantCardElement(const std::string& html,
+                                           const std::string& fallback)
     : AssistantUiElement(AssistantUiElementType::kCard),
       html_(html),
+      fallback_(fallback),
       id_token_(base::UnguessableToken::Create()) {}
 
 AssistantCardElement::~AssistantCardElement() = default;

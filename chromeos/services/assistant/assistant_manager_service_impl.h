@@ -102,7 +102,8 @@ class AssistantManagerServiceImpl
 
   // AssistantActionObserver overrides:
   void OnShowContextualQueryFallback() override;
-  void OnShowHtml(const std::string& html) override;
+  void OnShowHtml(const std::string& html,
+                  const std::string& fallback) override;
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
@@ -164,7 +165,8 @@ class AssistantManagerServiceImpl
   void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
-  void OnShowHtmlOnMainThread(const std::string& html);
+  void OnShowHtmlOnMainThread(const std::string& html,
+                              const std::string& fallback);
   void OnShowSuggestionsOnMainThread(
       const std::vector<mojom::AssistantSuggestionPtr>& suggestions);
   void OnShowTextOnMainThread(const std::string& text);
