@@ -2269,24 +2269,17 @@
       },
     },
 
-    'webrtc_chromium_android_gtests': {
-      'content_browsertests': {
-        'args': ['--gtest_filter=WebRtc*'],
-      },
-    },
-
     'webrtc_chromium_baremetal_gtests': {
-      'content_browsertests_sequential': {
-        # These run a few tests that require webcam access. They need to
-        # run sequentially, otherwise tests may interfere with each other.
-        'args': ['--gtest_filter=UsingRealWebcam*', '--run-manual',
-                 '--test-launcher-jobs=1'],
-        'test': 'content_browsertests',
-      },
       # Run capture unittests as well since our bots have real webcams.
       'capture_unittests': {
-          'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
-                   '--test-launcher-print-test-stdio=always'],
+        'args': ['--enable-logging', '--v=1', '--test-launcher-jobs=1',
+                 '--test-launcher-print-test-stdio=always',
+                 # TODO(crbug.com/893494): Remove once real webcams are fixed
+                 # on chromium.webrtc Mac and Win bots.
+                 '--gtest_filter=-*UsingRealWebcam*'],
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
       },
       'browser_tests': {
         'args': [
@@ -2299,12 +2292,13 @@
           '--results-url=https://chromeperf.appspot.com',
           '--perf-dashboard-id=browser_tests',
           '--annotate=graphing',
-          # TODO(phoglund): this means we're uploading to the real dashboard, but
-          # tag on -experimental to the name to make it obvious to perf sheriffs.
-          '--perf-id=${buildername}-experimental',
+          '--perf-id=${buildername}',
           # TODO(phoglund): figure out if we need this and implement webrtc_got_rev in that case.
           # '--perf-config={"a_default_rev": "r_webrtc_git", "r_webrtc_git":${webrtc_got_rev}}',
-          ]
+          ],
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
       },
     },
 
@@ -2347,6 +2341,25 @@
       'jingle_unittests': {},
       'remoting_unittests': {
         'args': ['--gtest_filter=Webrtc*'],
+      },
+    },
+
+    'webrtc_chromium_simple_baremetal_gtests': {
+      'content_browsertests_sequential': {
+        # These run a few tests that require webcam access. They need to
+        # run sequentially, otherwise tests may interfere with each other.
+        'args': ['--gtest_filter=UsingRealWebcam*', '--run-manual',
+                 '--test-launcher-jobs=1'],
+        'test': 'content_browsertests',
+        'swarming': {
+          'can_use_on_swarming_builders': False,
+        },
+      },
+    },
+
+    'webrtc_chromium_simple_gtests': {
+      'content_browsertests': {
+        'args': ['--gtest_filter=WebRtc*'],
       },
     },
 
@@ -2867,6 +2880,18 @@
     'system_webview_and_webview_ui_instrumentation_tests': [
       'system_webview_shell_instrumentation_tests',
       'webview_ui_instrumentation_tests',
+    ],
+
+    'webrtc_android_tests_with_baremetal_tests': [
+      'webrtc_chromium_simple_baremetal_gtests',
+      'webrtc_chromium_simple_gtests',
+    ],
+
+    'webrtc_chromium_tests_with_baremetal_tests': [
+      'webrtc_chromium_baremetal_gtests',
+      'webrtc_chromium_gtests',
+      'webrtc_chromium_simple_gtests',
+      'webrtc_chromium_simple_baremetal_gtests',
     ],
   }
 }
