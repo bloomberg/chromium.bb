@@ -2903,6 +2903,13 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/eventOrder.html 
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-full-size-kana-001.html [ Failure ]
+crbug.com/626703 external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
+crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/postmessage-to-client.https.html [ Timeout ]
@@ -3233,12 +3240,6 @@ crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.
 
 # Grouped frame-policy gunk (flaky copypasta).
 crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
-crbug.com/626703 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/846472 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
-crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
-crbug.com/626703 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Pass Timeout ]
 
 crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ Skip ]
