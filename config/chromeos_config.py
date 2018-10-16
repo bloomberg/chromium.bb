@@ -2587,6 +2587,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_swarming = frozenset([
       'amd64-generic',
       'arm-generic',
+      'bob',
+      'elm',
+      'link',
       'moblab-generic-vm',
       'nyan_blaze',
       'tael',
