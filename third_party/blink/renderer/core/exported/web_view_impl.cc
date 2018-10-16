@@ -2164,7 +2164,8 @@ bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
     // decide not to zoom in if the user won't be able to zoom out. e.g if the
     // textbox is within a touch-action: none container the user can't zoom
     // back out.
-    TouchAction action = TouchActionUtil::ComputeEffectiveTouchAction(element);
+    TouchAction action =
+        touch_action_util::ComputeEffectiveTouchAction(element);
     if (!(action & TouchAction::kTouchActionPinchZoom))
       zoom_into_legible_scale = false;
   }
