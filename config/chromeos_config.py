@@ -2583,7 +2583,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_swarming = frozenset([
+      'amd64-generic',
+      'arm-generic',
+      'moblab-generic-vm',
       'nyan_blaze',
+      'tael',
+      'tatl',
   ])
 
   ### Master paladin (CQ builder).
