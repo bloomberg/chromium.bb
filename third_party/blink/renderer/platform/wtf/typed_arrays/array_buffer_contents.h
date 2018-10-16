@@ -103,7 +103,7 @@ class WTF_EXPORT ArrayBufferContents {
   };
 
   ArrayBufferContents();
-  ArrayBufferContents(unsigned num_elements,
+  ArrayBufferContents(size_t num_elements,
                       unsigned element_byte_size,
                       SharingType is_shared,
                       InitializationPolicy);
