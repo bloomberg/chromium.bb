@@ -6,6 +6,8 @@
 #define UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
 
 #include <shlobj.h>
+
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -27,38 +29,6 @@ class SHELL_DIALOGS_EXPORT BaseShellDialogImpl {
   BaseShellDialogImpl();
   virtual ~BaseShellDialogImpl();
 
- protected:
-  // Represents a run of a dialog.
-  struct SHELL_DIALOGS_EXPORT RunState {
-    RunState();
-    ~RunState();
-
-    RunState(const RunState& run_state);
-
-    // Owning HWND, may be null.
-    HWND owner;
-
-    // Dedicated sequence on which the dialog runs.
-    scoped_refptr<base::SingleThreadTaskRunner> dialog_task_runner;
-  };
-
-  // Called at the beginning of a modal dialog run. Disables the owner window
-  // and tracks it. Returns the dedicated single-threaded sequence that the
-  // dialog will be run on.
-  RunState BeginRun(HWND owner);
-
-  // Cleans up after a dialog run. If the run_state has a valid HWND this makes
-  // sure that the window is enabled. This is essential because BeginRun
-  // aggressively guards against multiple modal dialogs per HWND. Must be called
-  // on the UI thread after the result of the dialog has been determined.
-  //
-  // In addition this deletes the Thread in RunState.
-  void EndRun(RunState run_state);
-
-  // Returns true if a modal shell dialog is currently active for the specified
-  // owner. Must be called on the UI thread.
-  bool IsRunningDialogForOwner(HWND owner) const;
-
   // Disables the window |owner|. Can be run from either the ui or the dialog
   // thread. This function is called on the dialog thread after the modal
   // Windows Common dialog functions return because Windows automatically
@@ -66,13 +36,42 @@ class SHELL_DIALOGS_EXPORT BaseShellDialogImpl {
   // actually want them to be re-enabled until the response of the dialog
   // propagates back to the UI thread, so we disable the owner manually after
   // the Common dialog function returns.
-  void DisableOwner(HWND owner);
+  static void DisableOwner(HWND owner);
+
+ protected:
+  // Represents a run of a dialog.
+  class SHELL_DIALOGS_EXPORT RunState {
+   public:
+    RunState();
+    ~RunState();
+
+    // Owning HWND, may be null.
+    HWND owner;
+
+    // Dedicated sequence on which the dialog runs.
+    scoped_refptr<base::SingleThreadTaskRunner> dialog_task_runner;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(RunState);
+  };
+
+  // Called at the beginning of a modal dialog run. Disables the owner window
+  // and tracks it. Returns the dedicated single-threaded sequence that the
+  // dialog will be run on.
+  std::unique_ptr<RunState> BeginRun(HWND owner);
+
+  // Cleans up after a dialog run. If the run_state has a valid HWND this makes
+  // sure that the window is enabled. This is essential because BeginRun
+  // aggressively guards against multiple modal dialogs per HWND. Must be called
+  // on the UI thread after the result of the dialog has been determined.
+  void EndRun(std::unique_ptr<RunState> run_state);
+
+  // Returns true if a modal shell dialog is currently active for the specified
+  // owner. Must be called on the UI thread.
+  bool IsRunningDialogForOwner(HWND owner) const;
 
  private:
   typedef std::set<HWND> Owners;
-
-  // Enables the window |owner_|. Can only be run from the ui thread.
-  void EnableOwner(HWND owner);
 
   // A list of windows that currently own active shell dialogs for this
   // instance. For example, if the DownloadManager owns an instance of this
