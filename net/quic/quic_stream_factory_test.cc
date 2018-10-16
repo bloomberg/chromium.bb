@@ -39,8 +39,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -240,8 +238,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
                       quic::Perspective::IS_SERVER,
                       false),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
-        channel_id_service_(
-            new ChannelIDService(new DefaultChannelIDStore(nullptr))),
         cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
         scoped_mock_network_change_notifier_(nullptr),
         factory_(nullptr),
@@ -280,8 +276,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     factory_.reset(new QuicStreamFactory(
         net_log_.net_log(), host_resolver_.get(), ssl_config_service_.get(),
         socket_factory_.get(), &http_server_properties_, cert_verifier_.get(),
-        &ct_policy_enforcer_, channel_id_service_.get(),
-        &transport_security_state_, cert_transparency_verifier_.get(),
+        &ct_policy_enforcer_, &transport_security_state_,
+        cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         quic::kDefaultMaxPacketSize, string(),
@@ -300,7 +296,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
         client_headers_include_h2_stream_dependency_, connection_options_,
         client_connection_options_,
-        /*enable_channel_id*/ false,
         /*enable_socket_recv_optimization*/ false));
   }
 
@@ -852,7 +847,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   QuicTestPacketMaker server_maker_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;

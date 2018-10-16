@@ -950,8 +950,6 @@ component("net") {
       "proxy_resolution/proxy_retry_info.h",
       "quic/bidirectional_stream_quic_impl.cc",
       "quic/bidirectional_stream_quic_impl.h",
-      "quic/crypto/channel_id_chromium.cc",
-      "quic/crypto/channel_id_chromium.h",
       "quic/crypto/proof_source_chromium.cc",
       "quic/crypto/proof_source_chromium.h",
       "quic/crypto/proof_verifier_chromium.cc",
