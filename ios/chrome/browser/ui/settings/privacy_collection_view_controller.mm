@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
@@ -87,8 +87,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefChangeRegistrar _prefChangeRegistrarApplicationContext;
 
   // Updatable Items
-  SettingsDetailItem* _handoffDetailItem;
-  SettingsDetailItem* _sendUsageDetailItem;
+  LegacySettingsDetailItem* _handoffDetailItem;
+  LegacySettingsDetailItem* _sendUsageDetailItem;
 }
 
 // Initialization methods for various model items.
@@ -281,11 +281,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return _sendUsageDetailItem;
 }
 
-- (SettingsDetailItem*)detailItemWithType:(NSInteger)type
-                                  titleId:(NSInteger)titleId
-                               detailText:(NSString*)detailText {
-  SettingsDetailItem* detailItem =
-      [[SettingsDetailItem alloc] initWithType:type];
+- (LegacySettingsDetailItem*)detailItemWithType:(NSInteger)type
+                                        titleId:(NSInteger)titleId
+                                     detailText:(NSString*)detailText {
+  LegacySettingsDetailItem* detailItem =
+      [[LegacySettingsDetailItem alloc] initWithType:type];
   detailItem.text = l10n_util::GetNSString(titleId);
   detailItem.detailText = detailText;
   detailItem.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
