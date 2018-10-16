@@ -8,27 +8,18 @@ import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
- * Tests for org.chromium.net.Origin.
+ * Tests for {@link Origin}.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class OriginTest {
-    @Rule
-    public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
-    @Before
-    public void setUp() {
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
-    }
-
     @Test
     @SmallTest
     public void testTransformation() {
@@ -49,6 +40,7 @@ public class OriginTest {
         // We don't perform punycode substitution so the string is unchanged.
 
         check("http://example.com/", "http", "example.com", -1);
+        check("http://sub.example.com/", "http", "sub.example.com", -1);
         check("http://example.com:123/", "http", "example.com", 123);
         check("https://example.com/", "https", "example.com", -1);
         check("https://example.com:123/", "https", "example.com", 123);
