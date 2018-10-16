@@ -749,9 +749,6 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   // 2. SynchronizeVisualProperties -> do nothing as
   //    sync_visual_props_ack_pending_ is true
   // 3. WasHidden
-  // 4. OnResizeOrRepaintACK from (1) processed. Does NOT invoke
-  //    SynchronizeVisualProperties as view is hidden. Now renderer/browser out
-  //    of sync with what they think size is.
   // By invoking SynchronizeVisualProperties the renderer is updated as
   // necessary. SynchronizeVisualProperties does nothing if the sizes are
   // already in sync.
@@ -1045,71 +1042,6 @@ void RenderWidgetHostImpl::ViewDestroyed() {
   // eliminate this function if so.
   SetView(nullptr);
 }
-
-#if defined(OS_MACOSX)
-void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
-  TRACE_EVENT0("browser",
-      "RenderWidgetHostImpl::PauseForPendingResizeOrRepaints");
-
-  // Do not pause if the view is hidden.
-  if (is_hidden())
-    return;
-
-  // Do not pause if there is not a paint or resize already coming.
-  if (!visual_properties_ack_pending_)
-    return;
-
-  // OnResizeOrRepaintACK posts a task to the default TaskRunner in auto-resize,
-  // which is not the one that we pump in this nested loop, causing unexpected
-  // behavior. It very well may be safe to do that post task to the TaskRunner
-  // from ui::WindowResizeHelperMac (which we pump), but don't do that until
-  // it is known to be safe.
-  if (auto_resize_enabled_)
-    return;
-
-  if (!view_)
-    return;
-
-  // How long to (synchronously) wait for the renderer to respond with a
-  // new frame when our current frame doesn't exist or is the wrong size.
-  // This timeout impacts the "choppiness" of our window resize.
-  const int kPaintMsgTimeoutMS = 167;
-
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WaitForSurface");
-
-  // We should not be asked to paint while we are hidden.  If we are hidden,
-  // then it means that our consumer failed to call WasShown.
-  DCHECK(!is_hidden_) << "WaitForSurface called while hidden!";
-
-  // We should never be called recursively; this can theoretically lead to
-  // infinite recursion and almost certainly leads to lower performance.
-  DCHECK(!in_get_backing_store_) << "WaitForSurface called recursively!";
-  base::AutoReset<bool> auto_reset_in_get_backing_store(
-      &in_get_backing_store_, true);
-
-  // We might have a surface that we can use already.
-  if (!view_->ShouldContinueToPauseForFrame())
-    return;
-
-  // Pump a nested run loop until we time out or get a frame of the right
-  // size.
-  TimeTicks start_time = clock_->NowTicks();
-  TimeDelta time_left = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
-  TimeTicks timeout_time = start_time + time_left;
-  while (1) {
-    TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForSingleTaskToRun");
-    if (ui::WindowResizeHelperMac::Get()->WaitForSingleTaskToRun(time_left)) {
-      if (!view_->ShouldContinueToPauseForFrame())
-        break;
-    }
-    time_left = timeout_time - clock_->NowTicks();
-    if (time_left <= TimeDelta::FromSeconds(0)) {
-      TRACE_EVENT0("renderer_host", "WaitForSurface::Timeout");
-      break;
-    }
-  }
-}
-#endif
 
 bool RenderWidgetHostImpl::RequestRepaintForTesting() {
   if (!view_)
