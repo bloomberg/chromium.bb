@@ -13,6 +13,9 @@ js_type_check("closure_compile") {
 js_library("omnibox") {
   deps = [
     "//ui/webui/resources/js:util",
+    ":omnibox_element",
+    ":omnibox_inputs",
+    ":omnibox_output",
   ]
   extra_deps = [ "//chrome/browser/ui/webui/omnibox:mojo_bindings_js" ]
   externs_list = [
@@ -20,3 +23,9 @@ js_library("omnibox") {
     "$externs_path/mojo.js",
   ]
 }
+
+js_library("omnibox_element") {}
+
+js_library("omnibox_inputs") {}
+
+js_library("omnibox_output") {}
