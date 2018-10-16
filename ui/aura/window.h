@@ -577,6 +577,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool registered_frame_sink_id_ = false;
   bool disable_frame_sink_id_registration_ = false;
 
+  bool created_layer_tree_frame_sink_ = false;
+
   // Window owns its corresponding WindowPort, but the ref is held as a raw
   // pointer in |port_| so that it can still be accessed during destruction.
   // This is important as deleting the WindowPort may result in trying to lookup
