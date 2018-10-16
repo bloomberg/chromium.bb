@@ -426,8 +426,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     NetworkPropertiesManager network_properties_manager(
         base::DefaultClock::GetInstance(), test_context_->pref_service(),
         test_context_->task_runner());
-    config.InitializeOnIOThread(test_context_->request_context_getter(),
-                                test_context_->url_loader_factory(),
+    config.InitializeOnIOThread(test_context_->url_loader_factory(),
                                 &network_properties_manager);
     RunUntilIdle();
 

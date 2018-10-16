@@ -247,11 +247,6 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
     proxy_delegate_ = std::move(proxy_delegate);
   }
 
-  void SetSimpleURLRequestContextGetter(
-      const scoped_refptr<net::URLRequestContextGetter> context_getter) {
-    basic_url_request_context_getter_ = context_getter;
-  }
-
   base::WeakPtr<DataReductionProxyIOData> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
