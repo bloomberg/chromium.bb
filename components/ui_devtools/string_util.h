@@ -85,7 +85,7 @@ class Binary {
   const uint8_t* data() const;
   size_t size() const;
   String toBase64() const;
-  static Binary createFromBase64(const String& base64, bool* success);
+  static Binary fromBase64(const String& base64, bool* success);
 };
 }  // namespace protocol
 }  // namespace ui_devtools

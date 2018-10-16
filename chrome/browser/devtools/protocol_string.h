@@ -90,7 +90,7 @@ class Binary {
   const uint8_t* data() const;
   size_t size() const;
   String toBase64() const;
-  static Binary createFromBase64(const String& base64, bool* success);
+  static Binary fromBase64(const String& base64, bool* success);
 };
 
 std::unique_ptr<protocol::Value> toProtocolValue(const base::Value* value,
