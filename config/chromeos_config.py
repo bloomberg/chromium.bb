@@ -3219,32 +3219,6 @@ def PayloadBuilders(site_config, boards_dict):
       )
 
 
-def InsertHwTestsOverrideDefaults(build):
-  """Insert default hw_tests values for a given build.
-
-  Also updates child builds.
-
-  Args:
-    build: BuildConfig instance to modify in place.
-  """
-  for child in build['child_configs']:
-    InsertHwTestsOverrideDefaults(child)
-
-  if build['hw_tests_override'] is not None:
-    # Explicitly set, no need to insert defaults.
-    return
-
-  if build['hw_tests']:
-    # Copy over base tests.
-    build['hw_tests_override'] = [copy.copy(x) for x in build['hw_tests']]
-
-    # Adjust for manual test environment.
-    for hw_config in build['hw_tests_override']:
-      hw_config.pool = constants.HWTEST_TRYBOT_POOL
-      hw_config.file_bugs = False
-      hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
-
-
 def ApplyCustomOverrides(site_config, ge_build_config):
   """Method with to override specific flags for specific builders.
 
@@ -3696,41 +3670,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
-def EnsureVmTestsOnVmTestBoards(site_config, boards_dict, _gs_build_config):
-  """Make sure VMTests are only enabled on boards that support them.
-
-  Args:
-    site_config: config_lib.SiteConfig containing builds to have their
-                 waterfall values updated.
-    boards_dict: A dict mapping board types to board name collections.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  for c in site_config.itervalues():
-    if set(c['boards']).intersection(set(boards_dict['no_vmtest_boards'])):
-      c.apply(site_config.templates.no_vmtest_builder)
-      if c.child_configs:
-        for cc in c.child_configs:
-          cc.apply(site_config.templates.no_vmtest_builder)
-
-
-def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
-  """Make sure VMTests have a builder than can run them.
-
-  Args:
-    site_config: config_lib.SiteConfig containing builds to have their
-                 waterfall values updated.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  for c in site_config.itervalues():
-    # We can run vmtests on GCE because we are whitelisted for GCE L2 VM support
-    # and are migrating from baremetal to GCE.
-    if c.vm_tests or c.moblab_vm_tests:
-      # Special case betty-incremental which we want on gce, crbug.com/795976
-      if c['name'] == 'betty-incremental':
-        continue
-      c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
-
-
 def TryjobMirrors(site_config):
   """Create tryjob specialized variants of every build config.
 
@@ -3923,15 +3862,9 @@ def GetConfig():
 
   FullBuilders(site_config, boards_dict, ge_build_config)
 
-  # Insert default HwTests for tryjobs.
-  for build in site_config.itervalues():
-    InsertHwTestsOverrideDefaults(build)
+  chromeos_test.ApplyConfig(site_config, boards_dict, ge_build_config)
 
   ApplyCustomOverrides(site_config, ge_build_config)
-
-  EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
-
-  EnsureVmTestsOnBaremetal(site_config, ge_build_config)
 
   TryjobMirrors(site_config)
 
