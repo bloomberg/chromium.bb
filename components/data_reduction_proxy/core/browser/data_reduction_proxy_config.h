@@ -38,7 +38,6 @@ namespace net {
 class ProxyServer;
 class URLRequest;
 class URLRequestContextGetter;
-class URLRequestStatus;
 }  // namespace net
 
 namespace data_reduction_proxy {
@@ -267,7 +266,7 @@ class DataReductionProxyConfig
   // Parses the secure proxy check responses and appropriately configures the
   // Data Reduction Proxy rules.
   void HandleSecureProxyCheckResponse(const std::string& response,
-                                      const net::URLRequestStatus& status,
+                                      int net_status,
                                       int http_response_code);
 
   // Adds the default proxy bypass rules for the Data Reduction Proxy.

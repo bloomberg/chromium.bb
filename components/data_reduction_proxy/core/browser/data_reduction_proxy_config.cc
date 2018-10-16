@@ -49,7 +49,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -217,10 +216,9 @@ void DataReductionProxyConfig::InitializeOnIOThread(
   network_properties_manager_ = manager;
   network_properties_manager_->ResetWarmupURLFetchMetrics();
 
-  secure_proxy_checker_.reset(
-      new SecureProxyChecker(basic_url_request_context_getter));
+  secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      std::move(url_loader_factory),
+      url_loader_factory,
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
           base::Unretained(this)),
@@ -576,21 +574,20 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     const std::string& response,
-    const net::URLRequestStatus& status,
+    int net_status,
     int http_response_code) {
   bool success_response =
       base::StartsWith(response, "OK", base::CompareCase::SENSITIVE);
 
-  if (!status.is_success()) {
-    if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
+  if (net_status != net::OK) {
+    if (net_status == net::ERR_INTERNET_DISCONNECTED) {
       RecordSecureProxyCheckFetchResult(INTERNET_DISCONNECTED);
       return;
     }
     // TODO(bengr): Remove once we understand the reasons secure proxy checks
     // are failing. Secure proxy check errors are either due to fetcher-level
     // errors or modified responses. This only tracks the former.
-    base::UmaHistogramSparse(kUMAProxyProbeURLNetError,
-                             std::abs(status.error()));
+    base::UmaHistogramSparse(kUMAProxyProbeURLNetError, std::abs(net_status));
   }
 
   bool secure_proxy_allowed_past =

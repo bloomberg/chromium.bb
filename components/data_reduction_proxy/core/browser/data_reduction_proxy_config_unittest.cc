@@ -130,7 +130,7 @@ class DataReductionProxyConfigTest : public testing::Test {
   class TestResponder {
    public:
     void ExecuteCallback(SecureProxyCheckerCallback callback) {
-      callback.Run(response, status, http_response_code);
+      callback.Run(response, status.error(), http_response_code);
     }
 
     std::string response;
@@ -138,6 +138,7 @@ class DataReductionProxyConfigTest : public testing::Test {
     int http_response_code;
   };
 
+  // TODO(tonikitoo): Get rid of the use of net::URLRequestStatus altogether.
   void CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType connection_type,
       const std::string& response,
