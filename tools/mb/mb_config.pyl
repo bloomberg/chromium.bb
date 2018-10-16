@@ -237,6 +237,7 @@
       'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
       'Mojo Android': 'android_release_bot_minimal_symbols_arm64',
       'Mojo Linux': 'release_trybot',
+      'mac-mojo-rel': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
 
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
