@@ -781,7 +781,11 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
     password_accessory->MaybeGeneratedPasswordChanged(
         password_form.password_value);
 #endif
-  password_manager_.OnPresaveGeneratedPassword(password_form);
+
+  password_manager::PasswordManagerDriver* driver =
+      driver_factory_->GetDriverForFrame(
+          password_manager_driver_bindings_.GetCurrentTargetFrame());
+  password_manager_.OnPresaveGeneratedPassword(driver, password_form);
 }
 
 void ChromePasswordManagerClient::PasswordNoLongerGenerated(
@@ -791,7 +795,12 @@ void ChromePasswordManagerClient::PasswordNoLongerGenerated(
           password_form,
           BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
     return;
-  password_manager_.OnPasswordNoLongerGenerated(password_form);
+
+  password_manager::PasswordManagerDriver* driver =
+      driver_factory_->GetDriverForFrame(
+          password_manager_driver_bindings_.GetCurrentTargetFrame());
+  password_manager_.OnPasswordNoLongerGenerated(driver, password_form);
+
   PasswordGenerationPopupController* controller = popup_controller_.get();
   if (controller &&
       controller->state() ==

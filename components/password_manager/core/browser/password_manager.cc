@@ -426,9 +426,10 @@ void PasswordManager::GenerationAvailableForForm(const PasswordForm& form) {
   }
 }
 
-void PasswordManager::OnPresaveGeneratedPassword(const PasswordForm& form) {
+void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
+                                                 const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
-  PasswordFormManager* form_manager = GetMatchingPendingManager(form);
+  PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
   if (form_manager) {
     form_manager->PresaveGeneratedPassword(form);
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
@@ -439,14 +440,13 @@ void PasswordManager::OnPresaveGeneratedPassword(const PasswordForm& form) {
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager", true);
 }
 
-void PasswordManager::OnPasswordNoLongerGenerated(const PasswordForm& form) {
+void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
+                                                  const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
 
-  PasswordFormManager* form_manager = GetMatchingPendingManager(form);
-  if (form_manager) {
+  PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
+  if (form_manager)
     form_manager->PasswordNoLongerGenerated();
-    return;
-  }
 }
 
 void PasswordManager::SetGenerationElementAndReasonForForm(
@@ -458,7 +458,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
 
   PasswordFormManager* form_manager = GetMatchingPendingManager(form);
   if (form_manager) {
-    form_manager->set_generation_element(generation_element);
+    form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(true, is_manually_triggered);
     return;
   }
@@ -1360,6 +1360,19 @@ PasswordManager::GetMetricRecorderFromNewPasswordFormManager(
       return form_manager->metrics_recorder();
   }
 
+  return nullptr;
+}
+
+PasswordFormManagerInterface* PasswordManager::GetMatchedManager(
+    const PasswordManagerDriver* driver,
+    const autofill::PasswordForm& form) {
+  if (!is_new_form_parsing_for_saving_enabled_)
+    return GetMatchingPendingManager(form);
+
+  for (auto& form_manager : form_managers_) {
+    if (form_manager->DoesManage(form.form_data, driver))
+      return form_manager.get();
+  }
   return nullptr;
 }
 

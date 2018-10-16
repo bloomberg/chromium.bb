@@ -63,6 +63,51 @@ void CheckPendingCredentials(const PasswordForm& expected,
   EXPECT_EQ(expected.form_data, actual.form_data);
 }
 
+struct ExpectedGenerationUKM {
+  base::Optional<int64_t> generation_popup_shown;
+  int64_t has_generated_password;
+  base::Optional<int64_t> generated_password_modified;
+};
+
+// Check that UKM |metric_name| in |entry| is equal to |expected|. |expected| ==
+// null means that no metric recording is expected.
+void CheckMetric(const int64_t* expected,
+                 const ukm::mojom::UkmEntry* entry,
+                 const char* metric_name) {
+  SCOPED_TRACE(testing::Message("Checking UKM metric ") << metric_name);
+
+  const int64_t* actual =
+      ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
+
+  ASSERT_EQ(!!expected, !!actual);
+  if (expected)
+    EXPECT_EQ(*expected, *actual);
+}
+
+// Check that |recorder| records metrics |expected_metrics|.
+void CheckPasswordGenerationUKM(const ukm::TestAutoSetUkmRecorder& recorder,
+                                const ExpectedGenerationUKM& expected_metrics) {
+  auto entries =
+      recorder.GetEntriesByName(ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  const int64_t* expected_popup_shown = nullptr;
+  if (expected_metrics.generation_popup_shown)
+    expected_popup_shown = &expected_metrics.generation_popup_shown.value();
+  CheckMetric(expected_popup_shown, entries[0],
+              ukm::builders::PasswordForm::kGeneration_PopupShownName);
+
+  CheckMetric(&expected_metrics.has_generated_password, entries[0],
+              ukm::builders::PasswordForm::kGeneration_GeneratedPasswordName);
+
+  const int64_t* expected_password_modified = nullptr;
+  if (expected_metrics.generated_password_modified)
+    expected_password_modified =
+        &expected_metrics.generated_password_modified.value();
+  CheckMetric(
+      expected_password_modified, entries[0],
+      ukm::builders::PasswordForm::kGeneration_GeneratedPasswordModifiedName);
+}
+
 class MockFormSaver : public StubFormSaver {
  public:
   MockFormSaver() = default;
@@ -576,6 +621,7 @@ TEST_F(NewPasswordFormManagerTest, IsEqualToSubmittedForm) {
 // successfully submitted, then they are saved correctly.
 TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   fetcher_->SetNonFederated({&saved_match_}, 0u);
 
   FormData submitted_form = observed_form_;
@@ -611,6 +657,15 @@ TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
   base::string16 saved_username = saved_match_.username_value;
   ASSERT_TRUE(best_matches.find(saved_username) != best_matches.end());
   EXPECT_EQ(saved_match_, *best_matches[saved_username]);
+
+  // Check UKM metrics.
+  form_manager_.reset();
+  ExpectedGenerationUKM expected_metrics = {
+      {} /* shown manually */,
+      0 /* password generated */,
+      {} /* generated password is not modified */};
+
+  CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
 }
 
 // Check that if there is saved PSL matched credentials with the same
@@ -960,6 +1015,126 @@ TEST_F(NewPasswordFormManagerTest, RecordReadonlyWhenSaving_ParsingFailed) {
 
   EXPECT_FALSE(ParsingSuccessReported(
       entries[0], ukm::builders::PasswordForm::kReadonlyWhenSavingName));
+}
+
+TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({}, 0u);
+
+  EXPECT_FALSE(form_manager_->HasGeneratedPassword());
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  form_manager_->SetGenerationPopupWasShown(
+      true /* generation_popup_was_shown */, false /* is_manual_generation */);
+
+  // Check that the generated password is presaved.
+  PasswordForm saved_form;
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&saved_form));
+
+  PasswordForm form_with_generated_password;
+  form_with_generated_password.form_data = submitted_form_;
+  FormData& form_data = form_with_generated_password.form_data;
+  form_manager_->PresaveGeneratedPassword(form_with_generated_password);
+
+  EXPECT_TRUE(form_manager_->HasGeneratedPassword());
+  EXPECT_EQ(saved_form.username_value,
+            form_data.fields[kUsernameFieldIndex].value);
+  EXPECT_EQ(saved_form.password_value,
+            form_data.fields[kPasswordFieldIndex].value);
+
+  Mock::VerifyAndClearExpectations(&form_saver);
+
+  // Check that when the generated password is edited, then it's presaved.
+  form_data.fields[kPasswordFieldIndex].value += ASCIIToUTF16("1");
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&saved_form));
+
+  form_manager_->PresaveGeneratedPassword(form_with_generated_password);
+
+  EXPECT_TRUE(form_manager_->HasGeneratedPassword());
+  EXPECT_EQ(saved_form.username_value,
+            form_data.fields[kUsernameFieldIndex].value);
+  EXPECT_EQ(saved_form.password_value,
+            form_data.fields[kPasswordFieldIndex].value);
+
+  Mock::VerifyAndClearExpectations(&form_saver);
+
+  // Check UKM metrics.
+  form_manager_.reset();
+  ExpectedGenerationUKM expected_metrics = {
+      base::make_optional(1u) /* shown automatically */,
+      1 /* password generated */,
+      base::make_optional(1u) /* password modified */};
+
+  CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
+}
+
+TEST_F(NewPasswordFormManagerTest, PasswordNoLongerGenerated) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({}, 0u);
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+  form_manager_->SetGenerationPopupWasShown(
+      true /* generation_popup_was_shown */, true /* is_manual_generation */);
+
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_));
+
+  PasswordForm form;
+  form.form_data = submitted_form_;
+  form_manager_->PresaveGeneratedPassword(form);
+  Mock::VerifyAndClearExpectations(&form_saver);
+
+  EXPECT_TRUE(form_manager_->HasGeneratedPassword());
+
+  // Check when the user removes the generated password on the page, it is
+  // removed from the store.
+  EXPECT_CALL(form_saver, RemovePresavedPassword());
+  form_manager_->PasswordNoLongerGenerated();
+
+  EXPECT_FALSE(form_manager_->HasGeneratedPassword());
+
+  // Check UKM metrics.
+  form_manager_.reset();
+  ExpectedGenerationUKM expected_metrics = {
+      base::make_optional(2u) /* shown manually */,
+      0 /* password generated */,
+      {} /* generated password is not modified */};
+
+  CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
+}
+
+TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordExistingCredential) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  form_manager_->SetGenerationPopupWasShown(
+      true /* generation_popup_was_shown */, false /* is_manual_generation */);
+
+  // Check that the generated password is presaved.
+  PasswordForm saved_form;
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&saved_form));
+
+  PasswordForm form_with_generated_password;
+  form_with_generated_password.form_data = submitted_form_;
+  FormData& form_data = form_with_generated_password.form_data;
+
+  // Check that the generated password is saved with the empty username when
+  // there is already a saved credetial with the same username.
+  form_data.fields[kUsernameFieldIndex].value = saved_match_.username_value;
+  form_manager_->PresaveGeneratedPassword(form_with_generated_password);
+
+  EXPECT_TRUE(form_manager_->HasGeneratedPassword());
+  EXPECT_TRUE(saved_form.username_value.empty());
+  EXPECT_EQ(saved_form.password_value,
+            form_data.fields[kPasswordFieldIndex].value);
 }
 
 }  // namespace
