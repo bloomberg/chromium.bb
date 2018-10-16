@@ -14,6 +14,7 @@ namespace manual_fill {
 
 extern NSString* const PasswordSearchBarAccessibilityIdentifier;
 extern NSString* const PasswordTableViewAccessibilityIdentifier;
+extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
 
 }  // namespace manual_fill
 

@@ -99,6 +99,13 @@ id<GREYMatcher> PasswordSettingsSearchMatcher() {
   return grey_accessibilityID(@"SettingsSearchCellTextField");
 }
 
+// Returns a matcher for the PasswordTableView window.
+id<GREYMatcher> PasswordTableViewWindowMatcher() {
+  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
+  id<GREYMatcher> parentMatcher = grey_descendant(PasswordTableViewMatcher());
+  return grey_allOf(classMatcher, parentMatcher, nil);
+}
+
 // Gets the current password store.
 scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
   // ServiceAccessType governs behaviour in Incognito: only modifications with
@@ -423,7 +430,9 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on a point outside of the popover.
-  [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
+  // The way EarlGrey taps doesn't go through the window hierarchy. Because of
+  // this, the tap needs to be done in the same window as the popover.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewWindowMatcher()]
       performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Verify the password controller table view and the password icon is NOT
@@ -433,4 +442,34 @@ void ClearPasswordStore() {
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
+
+// Tests that the Password View Controller is dismissed when tapping the
+// keyboard.
+- (void)testTappingKeyboardDismissPasswordControllerPopOver {
+  if (!IsIPadIdiom()) {
+    return;
+  }
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      performAction:grey_typeText(@"text")];
+
+  // Verify the password controller table view and the password icon is NOT
+  // visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+}
+
 @end
