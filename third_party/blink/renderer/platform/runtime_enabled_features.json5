@@ -671,6 +671,9 @@
       implied_by: ["LayoutNG"],
     },
     {
+      name: "LayoutViewIsolationNodes",
+    },
+    {
       name: "LazyFrameLoading",
     },
     {
