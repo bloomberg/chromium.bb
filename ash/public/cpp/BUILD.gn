@@ -70,6 +70,7 @@ component("cpp") {
     "frame_utils.h",
     "gesture_action_type.h",
     "immersive/immersive_context.h",
+    "immersive/immersive_focus_watcher.cc",
     "immersive/immersive_focus_watcher.h",
     "immersive/immersive_fullscreen_controller.cc",
     "immersive/immersive_fullscreen_controller.h",
@@ -135,6 +136,7 @@ component("cpp") {
     "//ui/views",
     "//ui/views/mus",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   public_deps = [

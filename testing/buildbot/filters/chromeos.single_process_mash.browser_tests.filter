@@ -224,9 +224,6 @@
 -WindowOpenApiTest.UpdateWindowToLockedFullscreen
 -WindowOpenApiTest.VerifyCommandsInLockedFullscreen
 
-# Value of: immersive_controller->IsRevealed()
--ZoomBubbleBrowserTest.ImmersiveFullscreen
-
 # Flaky tests. crbug.com/833144
 -GetAuthTokenFunctionPublicSessionTest.NonWhitelisted
 

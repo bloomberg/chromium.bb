@@ -327,8 +327,7 @@ void ImmersiveFullscreenController::EnableEventObservers(bool enable) {
 
   aura::Env* env = widget_->GetNativeWindow()->env();
   if (enable) {
-    immersive_focus_watcher_ =
-        ImmersiveHandlerFactory::Get()->CreateFocusWatcher(this);
+    immersive_focus_watcher_ = std::make_unique<ImmersiveFocusWatcher>(this);
     immersive_gesture_handler_ =
         ImmersiveHandlerFactory::Get()->CreateGestureHandler(this);
     std::set<ui::EventType> types = {
