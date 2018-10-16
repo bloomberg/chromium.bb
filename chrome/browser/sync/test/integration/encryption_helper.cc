@@ -9,9 +9,7 @@
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/system_encryptor.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace encryption_helper {
@@ -175,25 +173,4 @@ bool PassphraseRequiredStateChecker::IsExitConditionSatisfied() {
 std::string PassphraseRequiredStateChecker::GetDebugMessage() const {
   return "Waiting until decryption passphrase is " +
          std::string(desired_state_ ? "required" : "not required");
-}
-
-ScopedScryptFeatureToggler::ScopedScryptFeatureToggler(
-    bool force_disabled,
-    bool use_for_new_passphrases) {
-  std::vector<base::Feature> enabled_features;
-  std::vector<base::Feature> disabled_features;
-  if (force_disabled) {
-    enabled_features.push_back(
-        switches::kSyncForceDisableScryptForCustomPassphrase);
-  } else {
-    disabled_features.push_back(
-        switches::kSyncForceDisableScryptForCustomPassphrase);
-  }
-  if (use_for_new_passphrases) {
-    enabled_features.push_back(switches::kSyncUseScryptForNewCustomPassphrases);
-  } else {
-    disabled_features.push_back(
-        switches::kSyncUseScryptForNewCustomPassphrases);
-  }
-  feature_list_.InitWithFeatures(enabled_features, disabled_features);
 }
