@@ -10,7 +10,6 @@ from __future__ import print_function
 import functools
 import json
 import os
-import parallel_emerge
 import re
 import shutil
 import sys
@@ -19,6 +18,7 @@ import tempfile
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.scripts import parallel_emerge
 
 
 class PatchReporter(object):

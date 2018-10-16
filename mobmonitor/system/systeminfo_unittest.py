@@ -14,7 +14,6 @@ import os
 import time
 
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.mobmonitor.system import systeminfo
 

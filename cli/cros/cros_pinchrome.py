@@ -16,7 +16,6 @@ import tempfile
 
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.cbuildbot import repository
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import git
