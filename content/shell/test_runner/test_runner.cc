@@ -1932,8 +1932,8 @@ void TestRunner::SetV8CacheDisabled(bool disabled) {
     return;
   }
   main_view_->GetSettings()->SetV8CacheOptions(
-      disabled ? blink::WebSettings::kV8CacheOptionsNone
-               : blink::WebSettings::kV8CacheOptionsDefault);
+      disabled ? blink::WebSettings::V8CacheOptions::kNone
+               : blink::WebSettings::V8CacheOptions::kDefault);
 }
 
 void TestRunner::NavigateSecondaryWindow(const GURL& url) {
