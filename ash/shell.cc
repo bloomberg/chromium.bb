@@ -695,7 +695,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 
   if (base::FeatureList::IsEnabled(features::kUseBluetoothSystemInAsh)) {
     tray_bluetooth_helper_ =
-        std::make_unique<TrayBluetoothHelperExperimental>();
+        std::make_unique<TrayBluetoothHelperExperimental>(connector_);
   } else {
     tray_bluetooth_helper_ = std::make_unique<TrayBluetoothHelperLegacy>();
   }
