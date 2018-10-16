@@ -95,8 +95,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_JS);
 
     // Add resources shared by the NUX modules.
-    html_source->AddResourcePath("shared/chooser_shared_css.html",
-                                 IDR_NUX_CHOOSER_SHARED_CSS);
+    html_source->AddResourcePath(
+        "shared/chooser_shared_css.html",
+        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_CHOOSER_SHARED_CSS);
     html_source->AddResourcePath(
         "shared/i18n_setup.html",
         IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML);

@@ -5,8 +5,6 @@
 Polymer({
   is: 'landing-view',
 
-  behaviors: [welcome.NavigationBehavior],
-
   /** @private */
   onExistingUserClick_: function() {
     welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
@@ -15,6 +13,6 @@ Polymer({
 
   /** @private */
   onNewUserClick_: function() {
-    this.navigateTo(welcome.Routes.NEW_USER, 1);
+    welcome.navigateTo(welcome.Routes.NEW_USER, 1);
   }
 });

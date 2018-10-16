@@ -57,12 +57,43 @@ cr.define('welcome', function() {
     const route = /** @type {!welcome.Routes} */ (history.state.route);
     const step = history.state.step;
     routeObservers.forEach((observer) => {
-      observer.onRouteChange(route, step);
+      (/** @type {{onRouteChange: Function}} */ (observer))
+          .onRouteChange(route, step);
     });
   }
 
   // Notifies all elements when browser history is popped.
   window.addEventListener('popstate', notifyObservers);
+
+  function navigateToNextStep() {
+    history.pushState(
+        {
+          route: history.state.route,
+          step: history.state.step + 1,
+        },
+        '', `/${history.state.route}`);
+    notifyObservers();
+  }
+
+  /**
+   * @param {!welcome.Routes} route
+   * @param {number} step
+   */
+  function navigateTo(route, step) {
+    assert([
+      Routes.LANDING,
+      Routes.NEW_USER,
+      Routes.RETURNING_USER,
+    ].includes(route));
+
+    history.pushState(
+        {
+          route: route,
+          step: step,
+        },
+        '', '/' + (route === Routes.LANDING ? '' : route));
+    notifyObservers();
+  }
 
   /** @polymerBehavior */
   const NavigationBehavior = {
@@ -85,40 +116,12 @@ cr.define('welcome', function() {
 
     /** Elements can override onRouteChange to handle route changes. */
     onRouteChange: function() {},
-
-    navigateToNextStep: function() {
-      history.pushState(
-          {
-            route: history.state.route,
-            step: history.state.step + 1,
-          },
-          '', `/${history.state.route}`);
-      notifyObservers();
-    },
-
-    /**
-     * @param {!welcome.Routes} route
-     * @param {number} step
-     */
-    navigateTo: function(route, step) {
-      assert([
-        Routes.LANDING,
-        Routes.NEW_USER,
-        Routes.RETURNING_USER,
-      ].includes(route));
-
-      history.pushState(
-          {
-            route: route,
-            step: step,
-          },
-          '', '/' + (route === Routes.LANDING ? '' : route));
-      notifyObservers();
-    },
   };
 
   return {
     NavigationBehavior: NavigationBehavior,
+    navigateTo: navigateTo,
+    navigateToNextStep: navigateToNextStep,
     Routes: Routes,
   };
 });
