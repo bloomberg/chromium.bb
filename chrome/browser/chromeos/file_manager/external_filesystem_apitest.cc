@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
@@ -610,7 +611,6 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         base::Unretained(this));
     service_factory_for_test_ =
         std::make_unique<DriveIntegrationServiceFactory::ScopedFactoryForTest>(
-
             &create_drive_integration_service_);
   }
 
@@ -623,16 +623,45 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
+    // Ignore signin and lock screen apps profile.
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir() ||
+        profile->GetPath() ==
+            chromeos::ProfileHelper::GetLockScreenAppProfilePath()) {
+      return nullptr;
+    }
+
     base::FilePath cache_dir;
     base::CreateTemporaryDirInDir(tmp_dir_.GetPath(),
                                   base::FilePath::StringType(), &cache_dir);
 
+    base::FilePath drivefs_dir;
+    base::CreateTemporaryDirInDir(tmp_dir_.GetPath(),
+                                  base::FilePath::StringType(), &drivefs_dir);
+    auto profile_name_storage = profile->GetPath().BaseName().value();
+    base::StringPiece profile_name = profile_name_storage;
+    if (profile_name.starts_with("u-")) {
+      profile_name = profile_name.substr(2);
+    }
+    drivefs_dir = drivefs_dir.Append(base::StrCat({"drive-", profile_name}));
+    auto test_dir = drivefs_dir.Append("root/test_dir");
+    CHECK(base::CreateDirectory(test_dir));
+    CHECK(google_apis::test_util::WriteStringToFile(
+        test_dir.AppendASCII("test_file.tiff"), kTestFileContent));
+    CHECK(google_apis::test_util::WriteStringToFile(
+        test_dir.AppendASCII("hosted_doc.gdoc"), kTestFileContent));
+
     drive::FakeDriveService* const service = CreateDriveService();
+    const auto& drivefs_helper = fake_drivefs_helpers_[profile] =
+        std::make_unique<drive::FakeDriveFsHelper>(profile, drivefs_dir);
     return new drive::DriveIntegrationService(
-        profile, nullptr, service, std::string(), cache_dir, nullptr);
+        profile, nullptr, service, std::string(), cache_dir, nullptr,
+        drivefs_helper->CreateFakeDriveFsConnectionDelegateFactory());
   }
 
   void AddTestHostedDocuments() {
+    if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
+      return;
+    }
     const char kResourceId[] = "unique-id-for-multiprofile-copy-test";
     drive::FakeDriveService* const main_service =
         static_cast<drive::FakeDriveService*>(
@@ -659,6 +688,8 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   std::unique_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
       service_factory_for_test_;
   Profile* second_profile_ = nullptr;
+  std::unordered_map<Profile*, std::unique_ptr<drive::FakeDriveFsHelper>>
+      fake_drivefs_helpers_;
 };
 
 class LocalAndDriveFileSystemExtensionApiTest
