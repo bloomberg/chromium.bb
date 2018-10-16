@@ -27,15 +27,15 @@ STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
                    WebSettings::kEditingBehaviorAndroid);
 
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
-                   WebSettings::kV8CacheOptionsDefault);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::kV8CacheOptionsNone);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::kV8CacheOptionsCode);
+                   WebSettings::V8CacheOptions::kDefault);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::V8CacheOptions::kNone);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::V8CacheOptions::kCode);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE_WITHOUT_HEAT_CHECK,
-                   WebSettings::kV8CacheOptionsCodeWithoutHeatCheck);
+                   WebSettings::V8CacheOptions::kCodeWithoutHeatCheck);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
-                   WebSettings::kV8CacheOptionsFullCodeWithoutHeatCheck);
+                   WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST,
-                   WebSettings::kV8CacheOptionsFullCodeWithoutHeatCheck);
+                   WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
 
 STATIC_ASSERT_ENUM(SavePreviousDocumentResources::NEVER,
                    WebSettings::SavePreviousDocumentResources::kNever);

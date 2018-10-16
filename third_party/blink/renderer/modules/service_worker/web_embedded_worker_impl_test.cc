@@ -116,7 +116,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
         WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
     start_data_.wait_for_debugger_mode =
         WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-    start_data_.v8_cache_options = WebSettings::kV8CacheOptionsDefault;
+    start_data_.v8_cache_options = WebSettings::V8CacheOptions::kDefault;
   }
 
   void TearDown() override {
