@@ -245,6 +245,19 @@ TEST_F(FeedOfflineHostTest, GetOfflineIdOriginalUrl) {
   EXPECT_EQ(host()->GetOfflineId(kUrl2).value(), 4);
 }
 
+TEST_F(FeedOfflineHostTest, GetOfflineIdRequestUrl) {
+  offline_page_model()->AddOfflinedPage(kUrl2, kUrl1, 4, base::Time());
+
+  std::vector<std::string> actual;
+  host()->GetOfflineStatus({kUrl2}, base::BindOnce(&CopyStatus, &actual));
+  RunUntilIdle();
+
+  EXPECT_EQ(1U, actual.size());
+  EXPECT_EQ(kUrl2, actual[0]);
+  EXPECT_FALSE(host()->GetOfflineId(kUrl1).has_value());
+  EXPECT_EQ(host()->GetOfflineId(kUrl2).value(), 4);
+}
+
 TEST_F(FeedOfflineHostTest, GetOfflineIdNewer) {
   offline_page_model()->AddOfflinedPage(kUrl1, "", 4, base::Time());
   offline_page_model()->AddOfflinedPage(

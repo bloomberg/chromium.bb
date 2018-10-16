@@ -46,15 +46,19 @@ class CallbackAggregator : public base::RefCounted<CallbackAggregator> {
         on_each_result_(std::move(on_each_result)),
         start_time_(base::Time::Now()) {}
 
-  void OnGetPages(const std::vector<OfflinePageItem>& pages) {
+  // We curry |feed_url|, which is the URL the Feed requested with. This is used
+  // instead of the URLs present in the |pages| because offline pages has
+  // non-exact URL matching, and we must communicate with the Feed with exact
+  // matches.
+  void OnGetPages(std::string feed_url,
+                  const std::vector<OfflinePageItem>& pages) {
     if (!pages.empty()) {
       OfflinePageItem newest =
           *std::max_element(pages.begin(), pages.end(), [](auto lhs, auto rhs) {
             return lhs.creation_time < rhs.creation_time;
           });
-      const std::string& url = PreferOriginal(newest).spec();
-      urls_.push_back(url);
-      on_each_result_.Run(url, newest.offline_id);
+      urls_.push_back(feed_url);
+      on_each_result_.Run(std::move(feed_url), newest.offline_id);
     }
   }
 
@@ -172,8 +176,10 @@ void FeedOfflineHost::GetOfflineStatus(
                               weak_factory_.GetWeakPtr()));
 
   for (std::string url : urls) {
+    GURL gurl(url);
     offline_page_model_->GetPagesByURL(
-        GURL(url), base::BindOnce(&CallbackAggregator::OnGetPages, aggregator));
+        gurl, base::BindOnce(&CallbackAggregator::OnGetPages, aggregator,
+                             std::move(url)));
   }
 }
 
