@@ -28,7 +28,7 @@
     [Affects=Nothing] getter DOMString item(unsigned long index);
     DOMString getPropertyValue(DOMString property);
     DOMString getPropertyPriority(DOMString property);
-    [CEReactions, RaisesException, CallWith=ExecutionContext] void setProperty(DOMString property, [TreatNullAs=EmptyString] DOMString value, [TreatNullAs=EmptyString] optional DOMString priority = "");
+    [CEReactions, RaisesException, CallWith=ExecutionContext] void setProperty(DOMString property, [TreatNullAs=EmptyString] DOMString value, optional [TreatNullAs=EmptyString] DOMString priority = "");
     // void setPropertyValue(DOMString property, [TreatNullAs=EmptyString] DOMString value);
     // void setPropertyPriority(DOMString property, [TreatNullAs=EmptyString] DOMString priority);
     [CEReactions, RaisesException] DOMString removeProperty(DOMString property);
