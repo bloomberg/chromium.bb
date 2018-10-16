@@ -572,7 +572,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   attributes->region_ = region;
 
   TouchAction effective_touch_action =
-      TouchActionUtil::ComputeEffectiveTouchAction(*touch_node);
+      touch_action_util::ComputeEffectiveTouchAction(*touch_node);
 
   should_enforce_vertical_scroll_ =
       touch_sequence_document_->IsVerticalScrollEnforced();

@@ -218,6 +218,7 @@ _CONFIG = [
             # Nested namespaces under the blink namespace
             'cssvalue::.+',
             'scheduler::.+',
+            'touch_action_util::.+',
             'xpath::.+',
 
             # Third-party libraries that don't depend on non-Blink Chrome code
