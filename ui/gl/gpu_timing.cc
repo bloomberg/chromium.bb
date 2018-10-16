@@ -524,7 +524,8 @@ void GPUTimer::Reset() {
 }
 
 void GPUTimer::QueryTimeStamp() {
-  DCHECK(gpu_timing_client_->gpu_timing_);
+  CHECK(gpu_timing_client_);
+  CHECK(gpu_timing_client_->gpu_timing_);
   Reset();
   time_stamp_result_ = gpu_timing_client_->gpu_timing_->DoTimeStampQuery();
   timer_state_ = kTimerState_WaitingForResult;
