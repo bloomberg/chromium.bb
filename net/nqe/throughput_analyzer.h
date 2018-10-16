@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
@@ -208,7 +208,7 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
   // network quality. Set to true only for tests.
   bool use_localhost_requests_for_tests_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   NetLogWithSource net_log_;
 
