@@ -392,16 +392,6 @@ void RenderWidgetHostViewGuest::OnAttached() {
   SendSurfaceInfoToEmbedder();
 }
 
-bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
-  if (!platform_view_) {
-    // In theory, we can get here if there's a delay between Destroy()
-    // being called and when our destructor is invoked.
-    return false;
-  }
-
-  return platform_view_->OnMessageReceived(msg);
-}
-
 RenderWidgetHostViewBase* RenderWidgetHostViewGuest::GetRootView() {
   return GetRootView(this);
 }

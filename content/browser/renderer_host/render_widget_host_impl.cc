@@ -659,11 +659,10 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnCommitAndDrawCompositorFrame)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_IntrinsicSizingInfoChanged,
+                        OnIntrinsicSizingInfoChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-
-  if (!handled && view_ && view_->OnMessageReceived(msg))
-    return true;
 
   return handled;
 }
@@ -2531,6 +2530,12 @@ void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
 
   input_router_->OnHasTouchEventHandlers(has_handlers);
   has_touch_handler_ = has_handlers;
+}
+
+void RenderWidgetHostImpl::OnIntrinsicSizingInfoChanged(
+    blink::WebIntrinsicSizingInfo info) {
+  if (view_)
+    view_->UpdateIntrinsicSizingInfo(info);
 }
 
 void RenderWidgetHostImpl::DidOverscroll(

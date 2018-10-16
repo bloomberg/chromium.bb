@@ -102,10 +102,6 @@ MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
   return nullptr;
 }
 
-bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
-  return false;
-}
-
 void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {}
 
@@ -119,6 +115,9 @@ void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
 
 void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {}
+
+void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
+    const blink::WebIntrinsicSizingInfo& sizing_info) {}
 
 gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
