@@ -861,6 +861,18 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmail("public_user@gmail.com"),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  EXPECT_FALSE(IsPlayStoreAvailable());
+}
+
+TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithPlayStore) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv(
+      {"", "--arc-availability=installed", "--show-play-in-demo-mode"});
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail("public_user@gmail.com"),
+                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_TRUE(IsPlayStoreAvailable());
 }
 
