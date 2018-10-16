@@ -60,7 +60,6 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                     uint64_t client_tracing_id);
 
  private:
-  bool use_passthrough_;
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
 

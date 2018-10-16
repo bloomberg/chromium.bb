@@ -58,18 +58,18 @@ class SharedImageBackingFactoryGLTextureTest
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
+  auto mailbox = Mailbox::Generate();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  auto backing =
-      backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                     color_space, usage);
   EXPECT_TRUE(backing);
 
   // TODO(ericrk): Validate via a SharedImageRepresentation. For now use legacy
   // mailbox.
-  auto mailbox = Mailbox::Generate();
-  EXPECT_TRUE(backing->ProduceLegacyMailbox(mailbox, &mailbox_manager_));
+  EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
   TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
   ASSERT_TRUE(texture_base);
   GLenum expected_target = GL_TEXTURE_2D;
@@ -90,18 +90,18 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
+  auto mailbox = Mailbox::Generate();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_SCANOUT;
-  auto backing =
-      backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                     color_space, usage);
   EXPECT_TRUE(backing);
 
   // TODO(ericrk): Validate via a SharedImageRepresentation. For now use legacy
   // mailbox.
-  auto mailbox = Mailbox::Generate();
-  EXPECT_TRUE(backing->ProduceLegacyMailbox(mailbox, &mailbox_manager_));
+  EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
   TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
   ASSERT_TRUE(texture_base);
   GLenum target = texture_base->target();
@@ -121,27 +121,29 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
+  auto mailbox = Mailbox::Generate();
   auto format = viz::ResourceFormat::UYVY_422;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  auto backing =
-      backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                     color_space, usage);
   EXPECT_FALSE(backing);
 }
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidSize) {
+  auto mailbox = Mailbox::Generate();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(0, 0);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  auto backing =
-      backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  auto backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                     color_space, usage);
   EXPECT_FALSE(backing);
 
   size = gfx::Size(INT_MAX, INT_MAX);
-  backing =
-      backing_factory_->CreateSharedImage(format, size, color_space, usage);
+  backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                color_space, usage);
   EXPECT_FALSE(backing);
 }
 

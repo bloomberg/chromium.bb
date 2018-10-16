@@ -25,6 +25,7 @@ class SharedImageBacking;
 class GpuDriverBugWorkarounds;
 struct GpuFeatureInfo;
 struct GpuPreferences;
+struct Mailbox;
 class ImageFactory;
 
 namespace gles2 {
@@ -47,6 +48,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
 
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,

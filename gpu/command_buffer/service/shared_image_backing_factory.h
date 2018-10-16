@@ -16,11 +16,13 @@ class ColorSpace;
 
 namespace gpu {
 class SharedImageBacking;
+struct Mailbox;
 
 class SharedImageBackingFactory {
  public:
   virtual ~SharedImageBackingFactory() = default;
   virtual std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,

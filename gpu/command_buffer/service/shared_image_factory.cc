@@ -34,9 +34,7 @@ SharedImageFactory::SharedImageFactory(
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
     gles2::MemoryTracker* tracker)
-    : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
-                       gles2::PassthroughCommandDecoderSupported()),
-      mailbox_manager_(mailbox_manager),
+    : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       backing_factory_(
           std::make_unique<SharedImageBackingFactoryGLTexture>(gpu_preferences,
@@ -66,11 +64,11 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   std::unique_ptr<SharedImageBacking> backing;
   if (wrapped_sk_image_factory_ &&
       (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION)) {
-    backing = wrapped_sk_image_factory_->CreateSharedImage(format, size,
-                                                           color_space, usage);
+    backing = wrapped_sk_image_factory_->CreateSharedImage(
+        mailbox, format, size, color_space, usage);
   } else {
-    backing =
-        backing_factory_->CreateSharedImage(format, size, color_space, usage);
+    backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                  color_space, usage);
   }
 
   if (!backing) {
@@ -79,14 +77,14 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   // TODO(ericrk): Handle the non-legacy case.
-  if (!backing->ProduceLegacyMailbox(mailbox, mailbox_manager_)) {
+  if (!backing->ProduceLegacyMailbox(mailbox_manager_)) {
     LOG(ERROR)
         << "CreateSharedImage: could not convert backing to legacy mailbox.";
     backing->Destroy(true /* have_context */);
     return false;
   }
 
-  if (!shared_image_manager_->Register(mailbox, std::move(backing))) {
+  if (!shared_image_manager_->Register(std::move(backing))) {
     LOG(ERROR) << "CreateSharedImage: Could not register backing with "
                   "SharedImageManager.";
     backing->Destroy(true /* have_context */);
@@ -120,59 +118,9 @@ bool SharedImageFactory::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
     int client_id,
     uint64_t client_tracing_id) {
-  if (use_passthrough_)
-    return true;
-
-  // TODO(ericrk): Move some of this to SharedImageBacking.
   for (const auto& mailbox : mailboxes_) {
-    uint64_t estimated_size = 0;
-    TextureBase* texture_base = mailbox_manager_->ConsumeTexture(mailbox);
-
-    gles2::Texture* texture = nullptr;
-    switch (texture_base->GetType()) {
-      case TextureBase::Type::kValidated:
-        texture = gles2::Texture::CheckedCast(texture_base);
-        estimated_size = texture->estimated_size();
-        break;
-      case TextureBase::Type::kSkImage:
-        estimated_size =
-            raster::WrappedSkImage::CheckedCast(texture_base)->estimated_size();
-        break;
-      default:
-        NOTREACHED();
-        continue;
-    }
-
-    // Unique name in the process.
-    std::string dump_name =
-        base::StringPrintf("gpu/shared-images/client_0x%" PRIX32 "/mailbox_%s",
-                           client_id, mailbox.ToDebugString().c_str());
-
-    base::trace_event::MemoryAllocatorDump* dump =
-        pmd->CreateAllocatorDump(dump_name);
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    estimated_size);
-    // Add a mailbox guid which expresses shared ownership with the client
-    // process.
-    // This must match the client-side.
-    auto client_guid = GetSharedImageGUIDForTracing(mailbox);
-    pmd->CreateSharedGlobalAllocatorDump(client_guid);
-    pmd->AddOwnershipEdge(dump->guid(), client_guid);
-    // Add a |service_guid| which expresses shared ownership between the
-    // various GPU dumps.
-    auto service_guid =
-        gl::GetGLTextureServiceGUIDForTracing(texture->GetTracingId());
-    pmd->CreateSharedGlobalAllocatorDump(service_guid);
-    // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
-    int importance = 2;  // This client always owns the ref.
-
-    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
-
-    // Dump all sub-levels held by the texture. They will appear below the
-    // main gl/textures/client_X/mailbox_Y dump.
-    if (texture)
-      texture->DumpLevelMemory(pmd, client_tracing_id, dump_name);
+    shared_image_manager_->OnMemoryDump(mailbox, pmd, client_id,
+                                        client_tracing_id);
   }
 
   return true;
