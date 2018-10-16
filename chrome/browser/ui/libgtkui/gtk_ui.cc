@@ -423,6 +423,8 @@ void GtkUi::Initialize() {
                          G_CALLBACK(OnThemeChanged), this);
   g_signal_connect_after(settings, "notify::gtk-icon-theme-name",
                          G_CALLBACK(OnThemeChanged), this);
+  g_signal_connect_after(settings, "notify::gtk-application-prefer-dark-theme",
+                         G_CALLBACK(OnThemeChanged), this);
 
   GdkScreen* screen = gdk_screen_get_default();
   // Listen for DPI changes.
