@@ -344,11 +344,19 @@ typedef NSString* VNBarcodeSymbology NS_STRING_ENUM;
 #if !defined(MAC_OS_X_VERSION_10_14) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
 
+typedef NSString* NSAppearanceName;
+
 @interface NSApplication (ForwardDeclare)
 @property(strong) NSAppearance* appearance;
+@property(readonly, strong) NSAppearance* effectiveAppearance;
 @end
 
-BASE_EXPORT extern NSString* const NSAppearanceNameDarkAqua;
+@interface NSAppearance (ForwardDeclare)
+- (NSAppearanceName)bestMatchFromAppearancesWithNames:
+    (NSArray<NSAppearanceName>*)appearances;
+@end
+
+BASE_EXPORT extern NSAppearanceName const NSAppearanceNameDarkAqua;
 
 #endif
 

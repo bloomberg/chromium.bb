@@ -4814,6 +4814,7 @@ class TestNativeTheme : public ui::NativeTheme {
     return gfx::Rect();
   }
   bool UsesHighContrastColors() const override { return false; }
+  bool SystemDarkModeEnabled() const override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNativeTheme);

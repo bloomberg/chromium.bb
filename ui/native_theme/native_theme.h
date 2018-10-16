@@ -408,6 +408,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // system accessibility settings and the system theme.
   virtual bool UsesHighContrastColors() const = 0;
 
+  // Whether OS-level dark mode (as in macOS Mojave or Windows 10) is enabled.
+  virtual bool SystemDarkModeEnabled() const;
+
  protected:
   NativeTheme();
   virtual ~NativeTheme();
