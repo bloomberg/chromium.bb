@@ -40,10 +40,10 @@
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_network_quality_tracker.h"
-#include "services/network/test/test_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace {
@@ -450,12 +450,10 @@ DataReductionProxyTestContext::Builder::Build() {
         task_runner, std::move(test_request_context));
   }
 
-  if (url_loader_factory_) {
+  // In case no |url_loader_factory_| is specified, an instance will be
+  // created in DataReductionProxyTestContext's ctor.
+  if (url_loader_factory_)
     url_loader_factory = url_loader_factory_;
-  } else {
-    url_loader_factory =
-        base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
-  }
 
   std::unique_ptr<DataReductionProxyConfigurator> configurator(
       new DataReductionProxyConfigurator());
@@ -569,14 +567,24 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       task_runner_(task_runner),
       simple_pref_service_(std::move(simple_pref_service)),
       request_context_getter_(request_context_getter),
-      url_loader_factory_(std::move(url_loader_factory)),
       mock_socket_factory_(mock_socket_factory),
       io_data_(std::move(io_data)),
       settings_(std::move(settings)),
       config_storer_(std::move(config_storer)),
       test_network_quality_tracker_(
           std::make_unique<network::TestNetworkQualityTracker>()),
-      params_(params) {}
+      params_(params) {
+  if (url_loader_factory) {
+    test_shared_url_loader_factory_ = std::move(url_loader_factory);
+    return;
+  }
+
+  // To be used for EnableDataReductionProxyWithSecureProxyCheckSuccess.
+  test_url_loader_factory_ = std::make_unique<network::TestURLLoaderFactory>();
+  test_shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          test_url_loader_factory_.get());
+}
 
 DataReductionProxyTestContext::~DataReductionProxyTestContext() {
   DestroySettings();
@@ -641,12 +649,12 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
     return std::make_unique<MockDataReductionProxyService>(
         settings, test_network_quality_tracker_.get(),
         simple_pref_service_.get(), request_context_getter_.get(),
-        url_loader_factory_, task_runner_);
+        test_shared_url_loader_factory_, task_runner_);
   }
   return std::make_unique<DataReductionProxyService>(
       settings, simple_pref_service_.get(), request_context_getter_.get(),
-      url_loader_factory_, base::WrapUnique(new TestDataStore()), nullptr,
-      test_network_quality_tracker_.get(), task_runner_, task_runner_,
+      test_shared_url_loader_factory_, base::WrapUnique(new TestDataStore()),
+      nullptr, test_network_quality_tracker_.get(), task_runner_, task_runner_,
       task_runner_, base::TimeDelta());
 }
 
@@ -676,16 +684,14 @@ void DataReductionProxyTestContext::
   // check.
   DCHECK(data_reduction_proxy_service());
 
+  // This method should be called in case DataReductionProxyTestContext is
+  // constructed without a valid SharedURLLoaderFactory instance.
+  DCHECK(test_url_loader_factory_);
+
   // Enable the Data Reduction Proxy, simulating a successful secure proxy
   // check.
-  net::MockRead mock_reads[] = {
-      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-      net::MockRead("OK"),
-      net::MockRead(net::SYNCHRONOUS, net::OK),
-  };
-  net::StaticSocketDataProvider socket_data_provider(
-      mock_reads, base::span<net::MockWrite>());
-  mock_socket_factory_->AddSocketDataProvider(&socket_data_provider);
+  test_url_loader_factory_->AddResponse(params::GetSecureProxyCheckURL().spec(),
+                                        "OK");
 
   // Set the pref to cause the secure proxy check to be issued.
   pref_service()->SetBoolean(kDataReductionProxyEnabled, true);
