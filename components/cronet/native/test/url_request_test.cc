@@ -993,17 +993,18 @@ TEST_P(UrlRequestTest, GetStatus) {
   EXPECT_GE(Cronet_UrlRequestStatusListener_Status_READING_RESPONSE,
             GetRequestStatus(request, &test_callback));
 
-  buffer = Cronet_Buffer_Create();
-  Cronet_Buffer_InitWithAlloc(buffer, 100);
-  Cronet_UrlRequest_Read(request, buffer);
-  // Verify that late calls to GetStatus() don't invoke OnStatus() after
-  // final callbacks.
-  GetRequestStatus(request, &test_callback);
-  test_callback.WaitForNextStep();
+  do {
+    buffer = Cronet_Buffer_Create();
+    Cronet_Buffer_InitWithAlloc(buffer, 100);
+    Cronet_UrlRequest_Read(request, buffer);
+    // Verify that late calls to GetStatus() don't invoke OnStatus() after
+    // final callbacks.
+    GetRequestStatus(request, &test_callback);
+    test_callback.WaitForNextStep();
+  } while (!test_callback.IsDone());
+
   EXPECT_EQ(Cronet_UrlRequestStatusListener_Status_INVALID,
             GetRequestStatus(request, &test_callback));
-
-  EXPECT_TRUE(test_callback.IsDone());
   ASSERT_EQ("The quick brown fox jumps over the lazy dog.",
             test_callback.response_as_string_);
 
