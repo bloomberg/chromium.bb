@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
+#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 class GURL;
 
@@ -26,6 +27,7 @@ class WebContents;
 namespace autofill_assistant {
 class ClientMemory;
 class DetailsProto;
+struct PaymentInformation;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -47,6 +49,13 @@ class ActionDelegate {
   // user chose to continue manually.
   virtual void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Asks the user to provide the data used by UseAddressAction and
+  // UseCreditCardAction.
+  virtual void GetPaymentInformation(
+      payments::mojom::PaymentOptionsPtr payment_options,
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
+          callback) = 0;
 
   // Fill the address form given by |selectors| with the given address |guid| in
   // personal data manager.

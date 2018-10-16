@@ -162,16 +162,26 @@ void UiControllerAndroid::OnGetPaymentInformation(
       std::make_unique<PaymentInformation>();
   payment_info->succeed = jsucceed;
   if (payment_info->succeed) {
-    base::android::ConvertJavaStringToUTF8(env, jcard_guid,
-                                           &payment_info->card_guid);
-    base::android::ConvertJavaStringToUTF8(env, jaddress_guid,
-                                           &payment_info->address_guid);
-    base::android::ConvertJavaStringToUTF8(env, jpayer_name,
-                                           &payment_info->payer_name);
-    base::android::ConvertJavaStringToUTF8(env, jpayer_phone,
-                                           &payment_info->payer_phone);
-    base::android::ConvertJavaStringToUTF8(env, jpayer_email,
-                                           &payment_info->payer_email);
+    if (jcard_guid != nullptr) {
+      base::android::ConvertJavaStringToUTF8(env, jcard_guid,
+                                             &payment_info->card_guid);
+    }
+    if (jaddress_guid != nullptr) {
+      base::android::ConvertJavaStringToUTF8(env, jaddress_guid,
+                                             &payment_info->address_guid);
+    }
+    if (jpayer_name != nullptr) {
+      base::android::ConvertJavaStringToUTF8(env, jpayer_name,
+                                             &payment_info->payer_name);
+    }
+    if (jpayer_phone != nullptr) {
+      base::android::ConvertJavaStringToUTF8(env, jpayer_phone,
+                                             &payment_info->payer_phone);
+    }
+    if (jpayer_email != nullptr) {
+      base::android::ConvertJavaStringToUTF8(env, jpayer_email,
+                                             &payment_info->payer_email);
+    }
   }
   std::move(get_payment_information_callback_).Run(std::move(payment_info));
 }

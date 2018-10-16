@@ -10,6 +10,7 @@
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
+#include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/reset_action.h"
@@ -203,6 +204,11 @@ bool ProtocolUtils::ParseActions(
       }
       case ActionProto::ActionInfoCase::kShowDetails: {
         actions->emplace_back(std::make_unique<ShowDetailsAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kGetPaymentInformation: {
+        actions->emplace_back(
+            std::make_unique<GetPaymentInformationAction>(action));
         break;
       }
       default:

@@ -53,6 +53,10 @@ class ScriptExecutor : public ActionDelegate {
   void ShowStatusMessage(const std::string& message) override;
   void ClickElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
+  void GetPaymentInformation(
+      payments::mojom::PaymentOptionsPtr payment_options,
+      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback)
+      override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
   void FillAddressForm(const std::string& guid,

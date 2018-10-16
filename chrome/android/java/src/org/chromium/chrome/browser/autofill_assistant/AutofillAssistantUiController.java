@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
@@ -244,6 +245,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
-            boolean succeed, String cardGuid, String addressGuid, String payerName,
-            String payerPhone, String payerEmail);
+            boolean succeed, @Nullable String cardGuid, @Nullable String addressGuid,
+            @Nullable String payerName, @Nullable String payerPhone, @Nullable String payerEmail);
 }

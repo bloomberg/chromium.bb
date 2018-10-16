@@ -56,6 +56,13 @@ void ScriptExecutor::ClickElement(const std::vector<std::string>& selectors,
   delegate_->GetWebController()->ClickElement(selectors, std::move(callback));
 }
 
+void ScriptExecutor::GetPaymentInformation(
+    payments::mojom::PaymentOptionsPtr payment_options,
+    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback) {
+  delegate_->GetUiController()->GetPaymentInformation(
+      std::move(payment_options), std::move(callback));
+}
+
 void ScriptExecutor::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
   delegate_->GetUiController()->ChooseAddress(std::move(callback));

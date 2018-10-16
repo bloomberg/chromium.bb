@@ -111,14 +111,15 @@ public class AutofillAssistantPaymentRequest implements PaymentRequestUI.Client 
     public void show(Callback<SelectedPaymentInformation> callback) {
         // Do not expect calling show multiple times.
         assert mCallback == null;
-        assert mUI != null;
+        assert mUI == null;
 
         mCallback = callback;
-        buidUI(ChromeActivity.fromWebContents(mWebContents));
+        buildUI(ChromeActivity.fromWebContents(mWebContents));
+
         mUI.show();
     }
 
-    private void buidUI(ChromeActivity activity) {
+    private void buildUI(ChromeActivity activity) {
         assert activity != null;
 
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
