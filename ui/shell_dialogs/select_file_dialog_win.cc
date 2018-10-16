@@ -36,11 +36,11 @@ namespace {
 // for .txt files, "JPEG Image" for .jpg files, etc. If the registry doesn't
 // have an entry for the file type, we return false, true if the description was
 // found. 'file_ext' must be in form ".txt".
-bool GetRegistryDescriptionFromExtension(const std::wstring& file_ext,
-                                         std::wstring* reg_description) {
+bool GetRegistryDescriptionFromExtension(const base::string16& file_ext,
+                                         base::string16* reg_description) {
   DCHECK(reg_description);
   base::win::RegKey reg_ext(HKEY_CLASSES_ROOT, file_ext.c_str(), KEY_READ);
-  std::wstring reg_app;
+  base::string16 reg_app;
   if (reg_ext.ReadValue(NULL, &reg_app) == ERROR_SUCCESS && !reg_app.empty()) {
     base::win::RegKey reg_link(HKEY_CLASSES_ROOT, reg_app.c_str(), KEY_READ);
     if (reg_link.ReadValue(NULL, reg_description) == ERROR_SUCCESS)
@@ -65,12 +65,12 @@ bool GetRegistryDescriptionFromExtension(const std::wstring& file_ext,
 // If a description is not provided for a file extension, it will be retrieved
 // from the registry. If the file extension does not exist in the registry, it
 // will be omitted from the filter, as it is likely a bogus extension.
-std::wstring FormatFilterForExtensions(
-    const std::vector<std::wstring>& file_ext,
-    const std::vector<std::wstring>& ext_desc,
+base::string16 FormatFilterForExtensions(
+    const std::vector<base::string16>& file_ext,
+    const std::vector<base::string16>& ext_desc,
     bool include_all_files) {
-  const std::wstring all_ext = L"*.*";
-  const std::wstring all_desc =
+  const base::string16 all_ext = L"*.*";
+  const base::string16 all_desc =
       l10n_util::GetStringUTF16(IDS_APP_SAVEAS_ALL_FILES);
 
   DCHECK(file_ext.size() >= ext_desc.size());
@@ -78,11 +78,11 @@ std::wstring FormatFilterForExtensions(
   if (file_ext.empty())
     include_all_files = true;
 
-  std::wstring result;
+  base::string16 result;
 
   for (size_t i = 0; i < file_ext.size(); ++i) {
-    std::wstring ext = file_ext[i];
-    std::wstring desc;
+    base::string16 ext = file_ext[i];
+    base::string16 desc;
     if (i < ext_desc.size())
       desc = ext_desc[i];
 
@@ -94,16 +94,16 @@ std::wstring FormatFilterForExtensions(
     }
 
     if (desc.empty()) {
-      DCHECK(ext.find(L'.') != std::wstring::npos);
-      std::wstring first_extension = ext.substr(ext.find(L'.'));
+      DCHECK(ext.find(L'.') != base::string16::npos);
+      base::string16 first_extension = ext.substr(ext.find(L'.'));
       size_t first_separator_index = first_extension.find(L';');
-      if (first_separator_index != std::wstring::npos)
+      if (first_separator_index != base::string16::npos)
         first_extension = first_extension.substr(0, first_separator_index);
 
       // Find the extension name without the preceeding '.' character.
-      std::wstring ext_name = first_extension;
+      base::string16 ext_name = first_extension;
       size_t ext_index = ext_name.find_first_not_of(L'.');
-      if (ext_index != std::wstring::npos)
+      if (ext_index != base::string16::npos)
         ext_name = ext_name.substr(ext_index);
 
       if (!GetRegistryDescriptionFromExtension(first_extension, &desc)) {
