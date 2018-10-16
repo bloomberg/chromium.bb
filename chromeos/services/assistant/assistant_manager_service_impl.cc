@@ -441,6 +441,10 @@ void AssistantManagerServiceImpl::OnShowNotification(
   notification_ptr->opaque_token = notification.opaque_token;
   notification_ptr->grouping_key = notification.grouping_key;
   notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
+  for (const auto& button : notification.buttons) {
+    notification_ptr->buttons.push_back(mojom::AssistantNotificationButton::New(
+        button.label, GURL(button.action_url)));
+  }
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,
