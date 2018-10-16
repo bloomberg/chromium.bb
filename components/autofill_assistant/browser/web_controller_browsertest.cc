@@ -275,6 +275,11 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, IsElementExists) {
   IsElementExists(selectors, true);
   selectors.emplace_back("#whatever");
   IsElementExists(selectors, false);
+
+  // Hidden element.
+  selectors.clear();
+  selectors.emplace_back("#hidden");
+  IsElementExists(selectors, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
