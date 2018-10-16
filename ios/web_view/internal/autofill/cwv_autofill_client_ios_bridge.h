@@ -33,6 +33,9 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 - (void)didReceiveUnmaskVerificationResult:
     (autofill::AutofillClient::PaymentsRpcResult)result;
 
+// Bridge for AutofillClient's method |LoadRiskData|.
+- (void)loadRiskData:(base::OnceCallback<void(const std::string&)>)callback;
+
 @end
 
 #endif  // IOS_WEB_VIEW_INTERNAL_AUTOFILL_CWV_AUTOFILL_CLIENT_IOS_BRIDGE_H_

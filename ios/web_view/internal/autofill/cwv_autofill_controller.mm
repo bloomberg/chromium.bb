@@ -368,6 +368,10 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   [_verifier didReceiveUnmaskVerificationResult:result];
 }
 
+- (void)loadRiskData:(base::OnceCallback<void(const std::string&)>)callback {
+  [_verifier loadRiskData:std::move(callback)];
+}
+
 #pragma mark - AutofillDriverIOSBridge
 
 - (void)onFormDataFilled:(uint16_t)query_id

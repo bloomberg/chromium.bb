@@ -139,7 +139,9 @@ void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
     const base::Closure& callback) {}
 
 void WebViewAutofillClientIOS::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {}
+    base::OnceCallback<void(const std::string&)> callback) {
+  [bridge_ loadRiskData:std::move(callback)];
+}
 
 bool WebViewAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
