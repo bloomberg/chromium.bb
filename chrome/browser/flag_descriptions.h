@@ -1939,6 +1939,9 @@ extern const char kDisableTabletAutohideTitlebarsDescription[];
 extern const char kDisableTabletSplitViewName[];
 extern const char kDisableTabletSplitViewDescription[];
 
+extern const char kDoubleTapToZoomInTabletModeName[];
+extern const char kDoubleTapToZoomInTabletModeDescription[];
+
 extern const char kEnableAppListSearchAutocompleteName[];
 extern const char kEnableAppListSearchAutocompleteDescription[];
 
