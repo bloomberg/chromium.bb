@@ -1272,6 +1272,10 @@ typedef void(GL_APIENTRYP PFNGLUNPREMULTIPLYANDDITHERCOPYCHROMIUMPROC)(
     GLsizei height);
 #endif /* GL_CHROMIUM_unpremultiply_and_dither_copy */
 
+#ifndef GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT
+#define GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT 0x8868
+#endif
+
 #ifdef __cplusplus
 }
 #endif
