@@ -53,10 +53,14 @@ std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties,
-    std::unique_ptr<Window> window)
+    std::unique_ptr<Window> window,
+    const char* trace_environment_name)
     : WindowTreeHost(std::move(window)) {
   bounds_ = properties.bounds;
-  CreateCompositor();
+  CreateCompositor(viz::FrameSinkId(),
+                   /* force_software_compositor */ false,
+                   /* external_begin_frames_enabled */ false,
+                   /* are_events_in_pixels */ true, trace_environment_name);
   CreateAndSetPlatformWindow(std::move(properties));
 }
 

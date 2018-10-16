@@ -208,6 +208,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                      public viz::HostFrameSinkClient,
                                      public ExternalBeginFrameClient {
  public:
+  // |trace_environment_name| is passed to trace events so that tracing
+  // can identify the environment the trace events are from. Examples are,
+  // "ash", and "browser". If no value is supplied, "browser" is used.
   Compositor(const viz::FrameSinkId& frame_sink_id,
              ui::ContextFactory* context_factory,
              ui::ContextFactoryPrivate* context_factory_private,
@@ -215,7 +218,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
              bool enable_surface_synchronization,
              bool enable_pixel_canvas,
              bool external_begin_frames_enabled = false,
-             bool force_software_compositor = false);
+             bool force_software_compositor = false,
+             const char* trace_environment_name = nullptr);
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }
@@ -403,7 +407,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void DidCompletePageScaleAnimation() override {}
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override {}
+      const gfx::PresentationFeedback& feedback) override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
@@ -510,6 +514,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   // Set in DisableSwapUntilResize and reset when a resize happens.
   bool disabled_swap_until_resize_ = false;
+
+  const char* trace_environment_name_;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_;
 
