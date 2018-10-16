@@ -4466,6 +4466,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid, FEATURE_VALUE_TYPE(safe_browsing::kUseLocalBlacklistsV2)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+    {"enable-native-google-assistant",
+     flag_descriptions::kEnableGoogleAssistantName,
+     flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::switches::kAssistantFeature)},
+#endif  // defined(OS_ANDROID)
 };
 
 class FlagsStateSingleton {

@@ -3257,6 +3257,11 @@ const char kEnableFullscreenHandwritingVirtualKeyboardDescription[] =
     "If enabled, the handwriting virtual keyboard will allow user to write "
     "anywhere on the screen";
 
+const char kEnableGoogleAssistantName[] = "Enable Google Assistant";
+const char kEnableGoogleAssistantDescription[] =
+    "Enable an experimental Assistant implementation that will work on all "
+    "Chromebooks.";
+
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";

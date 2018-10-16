@@ -1984,6 +1984,9 @@ extern const char kEnableFloatingVirtualKeyboardDescription[];
 extern const char kEnableFullscreenHandwritingVirtualKeyboardName[];
 extern const char kEnableFullscreenHandwritingVirtualKeyboardDescription[];
 
+extern const char kEnableGoogleAssistantName[];
+extern const char kEnableGoogleAssistantDescription[];
+
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
