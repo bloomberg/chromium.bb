@@ -910,6 +910,21 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
   }
 }
 
+void LayoutTable::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
+}
+
 void LayoutTable::AddVisualOverflowFromChildren() {
   // Add overflow from borders.
   // Technically it's odd that we are incorporating the borders into layout

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/paint/list_item_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -287,6 +288,25 @@ bool LayoutListItem::UpdateMarkerLocation() {
   }
 
   return false;
+}
+
+void LayoutListItem::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
+  if (recompute_floats || CreatesNewFormattingContext() ||
+      HasSelfPaintingLayer())
+    AddVisualOverflowFromFloats();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 void LayoutListItem::AddVisualOverflowFromChildren() {

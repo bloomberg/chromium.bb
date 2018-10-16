@@ -2566,11 +2566,20 @@ void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
 void LayoutBlockFlow::ComputeVisualOverflow(
     const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
-  LayoutBlock::ComputeVisualOverflow(previous_visual_overflow_rect,
-                                     recompute_floats);
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())
     AddVisualOverflowFromFloats();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,

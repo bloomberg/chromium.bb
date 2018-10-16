@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_control_single_line_painter.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
@@ -315,6 +316,25 @@ void LayoutTextControlSingleLine::SetScrollTop(LayoutUnit new_top) {
 
 HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
   return ToHTMLInputElement(GetNode());
+}
+
+void LayoutTextControlSingleLine::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
+  if (recompute_floats || CreatesNewFormattingContext() ||
+      HasSelfPaintingLayer())
+    AddVisualOverflowFromFloats();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 }  // namespace blink
