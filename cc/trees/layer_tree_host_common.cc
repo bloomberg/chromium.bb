@@ -178,6 +178,8 @@ bool LayerTreeHostCommon::ScrollbarsUpdateInfo::operator==(
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f),
       top_controls_delta(0.f),
+      browser_controls_constraint(BrowserControlsState::kBoth),
+      browser_controls_constraint_changed(false),
       has_scrolled_by_wheel(false),
       has_scrolled_by_touch(false) {}
 

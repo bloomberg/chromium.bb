@@ -53,6 +53,9 @@ class CC_EXPORT BrowserControlsOffsetManager {
                                   BrowserControlsState current,
                                   bool animate);
 
+  BrowserControlsState PullConstraintForMainThread(
+      bool* out_changed_since_commit);
+
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& pending_delta);
   void ScrollEnd();
@@ -108,6 +111,10 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float controls_hide_threshold_;
 
   bool pinch_gesture_active_;
+
+  // Used to track whether the constraint has changed and we need up reflect
+  // the changes to Blink.
+  bool constraint_changed_since_commit_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserControlsOffsetManager);
 };
