@@ -10,19 +10,6 @@
 namespace blink {
 namespace {
 
-void CopyPixels(void* dst_addr,
-                size_t dst_row_bytes,
-                const void* src_addr,
-                size_t src_row_bytes,
-                const SkImageInfo& info) {
-  size_t row_bytes = info.bytesPerPixel() * info.width();
-  for (int y = 0; y < info.height(); ++y) {
-    memcpy(dst_addr, src_addr, row_bytes);
-    src_addr = static_cast<const char*>(src_addr) + src_row_bytes;
-    dst_addr = static_cast<char*>(dst_addr) + dst_row_bytes;
-  }
-}
-
 bool CompatibleInfo(const SkImageInfo& src, const SkImageInfo& dst) {
   if (src == dst)
     return true;
@@ -175,10 +162,8 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
          scaled_size_bitmap.getPixels() == pixels_);
 
   *has_alpha = !scaled_size_bitmap.isOpaque();
-  if (!decode_to_external_memory) {
-    CopyPixels(pixels_, row_bytes_, scaled_size_bitmap.getPixels(),
-               scaled_size_bitmap.rowBytes(), info_);
-  }
+  if (!decode_to_external_memory)
+    scaled_size_bitmap.readPixels(info_, pixels_, row_bytes_, 0, 0);
 
   // Free as much memory as possible.  For single-frame images, we can
   // just delete the decoder entirely if they use the external allocator.
