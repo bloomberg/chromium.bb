@@ -51,10 +51,15 @@ public class ClearDataBroadcastReceiver extends BroadcastReceiver {
         int uid = intent.getIntExtra(Intent.EXTRA_UID, -1);
         if (uid == -1) return;
 
-        // TODO(peconn): Add UMA to record time taken.
-        ClientAppDataRegister register = new ClientAppDataRegister();
+        ClientAppDataRegister register;
+        try (BrowserServicesMetrics.TimingMetric unused =
+                     BrowserServicesMetrics.getClientAppDataLoadTimingContext()) {
+            register = new ClientAppDataRegister();
 
-        if (!register.chromeHoldsDataForPackage(uid)) return;
+            // The ClientAppDataRegister (because it uses Preferences) is loaded lazily, so to time
+            // opening the file we must include the first read as well.
+            if (!register.chromeHoldsDataForPackage(uid)) return;
+        }
 
         String appName = register.getAppNameForRegisteredUid(uid);
         Set<String> origins = register.getOriginsForRegisteredUid(uid);
