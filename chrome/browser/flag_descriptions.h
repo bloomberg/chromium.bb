@@ -122,6 +122,9 @@ extern const char kAutoplayPolicyDocumentUserActivation[];
 extern const char kAv1DecoderName[];
 extern const char kAv1DecoderDescription[];
 
+extern const char kAwaitOptimizationName[];
+extern const char kAwaitOptimizationDescription[];
+
 extern const char kBleAdvertisingInExtensionsName[];
 extern const char kBleAdvertisingInExtensionsDescription[];
 
