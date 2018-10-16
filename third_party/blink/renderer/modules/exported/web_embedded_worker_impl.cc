@@ -65,7 +65,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
@@ -443,10 +442,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         std::move(interface_provider_info_));
   }
 
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptFullCodeCacheEnabled()) {
-    global_scope_creation_params->v8_cache_options =
-        kV8CacheOptionsFullCodeWithoutHeatCheck;
-  }
+  // Generate the full code cache in the first execution of the script.
+  global_scope_creation_params->v8_cache_options =
+      kV8CacheOptionsFullCodeWithoutHeatCheck;
 
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),

@@ -3044,96 +3044,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerSitePerProcessTest,
   EXPECT_EQ(kOKTitle2, title_watcher2.WaitAndGetTitle());
 }
 
-class ServiceWorkerVersionBrowserV8CacheTest
-    : public ServiceWorkerVersionBrowserTest,
-      public ServiceWorkerVersion::Observer {
- public:
-  using self = ServiceWorkerVersionBrowserV8CacheTest;
-  ServiceWorkerVersionBrowserV8CacheTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kServiceWorkerScriptFullCodeCache);
-  }
-  ~ServiceWorkerVersionBrowserV8CacheTest() override {
-    if (version_)
-      version_->RemoveObserver(this);
-  }
-  void SetUpRegistrationAndListenerOnIOThread(const std::string& worker_url) {
-    SetUpRegistrationOnIOThread(worker_url);
-    version_->AddObserver(this);
-  }
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kV8CacheOptions, "code");
-  }
-  void StartWorkerAndWaitUntilCachedMetadataUpdated(
-      blink::ServiceWorkerStatusCode status) {
-    DCHECK(!cache_updated_closure_);
-
-    base::RunLoop run_loop;
-    cache_updated_closure_ = run_loop.QuitClosure();
-
-    // Start a worker.
-    StartWorker(status);
-
-    // Wait for the metadata to be stored. This run loop should finish when
-    // OnCachedMetadataUpdated() is called.
-    run_loop.Run();
-  }
-  size_t metadata_size() { return metadata_size_; };
-
- protected:
-  // ServiceWorkerVersion::Observer overrides
-  void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
-                               size_t size) override {
-    DCHECK(cache_updated_closure_);
-
-    metadata_size_ = size;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(cache_updated_closure_));
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  base::OnceClosure cache_updated_closure_;
-  size_t metadata_size_ = 0;
-};
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
-  StartServerAndNavigateToSetup();
-  RunOnIOThread(base::BindOnce(&self::SetUpRegistrationAndListenerOnIOThread,
-                               base::Unretained(this),
-                               "/service_worker/worker.js"));
-
-  StartWorkerAndWaitUntilCachedMetadataUpdated(
-      blink::ServiceWorkerStatusCode::kOk);
-
-  // Time stamp data must be stored to the storage.
-  EXPECT_EQ(kV8CacheTimeStampDataSize, static_cast<int>(metadata_size()));
-
-  // Stop the worker.
-  StopWorker();
-
-  // Restart the worker.
-  StartWorkerAndWaitUntilCachedMetadataUpdated(
-      blink::ServiceWorkerStatusCode::kOk);
-
-  // The V8 code cache should be stored to the storage. It must have size
-  // greater than 16 bytes.
-  EXPECT_GT(static_cast<int>(metadata_size()), kV8CacheTimeStampDataSize);
-
-  // Stop the worker.
-  StopWorker();
-}
-
 class ServiceWorkerVersionBrowserV8FullCodeCacheTest
     : public ServiceWorkerVersionBrowserTest,
       public ServiceWorkerVersion::Observer {
  public:
   using self = ServiceWorkerVersionBrowserV8FullCodeCacheTest;
-  ServiceWorkerVersionBrowserV8FullCodeCacheTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kServiceWorkerScriptFullCodeCache);
-  }
+  ServiceWorkerVersionBrowserV8FullCodeCacheTest() = default;
   ~ServiceWorkerVersionBrowserV8FullCodeCacheTest() override {
     if (version_)
       version_->RemoveObserver(this);
@@ -3169,8 +3085,6 @@ class ServiceWorkerVersionBrowserV8FullCodeCacheTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   base::OnceClosure cache_updated_closure_;
   size_t metadata_size_ = 0;
 };

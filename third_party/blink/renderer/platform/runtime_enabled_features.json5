@@ -1155,9 +1155,6 @@
       status: "experimental",
     },
     {
-      name: "ServiceWorkerScriptFullCodeCache",
-    },
-    {
       name: "SetRootScroller",
       status: "experimental",
     },

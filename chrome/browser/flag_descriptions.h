@@ -990,9 +990,6 @@ extern const char kServiceWorkerImportedScriptUpdateCheckDescription[];
 extern const char kServiceWorkerServicificationName[];
 extern const char kServiceWorkerServicificationDescription[];
 
-extern const char kServiceWorkerScriptFullCodeCacheName[];
-extern const char kServiceWorkerScriptFullCodeCacheDescription[];
-
 extern const char kServiceWorkerLongRunningMessageName[];
 extern const char kServiceWorkerLongRunningMessageDescription[];
 
