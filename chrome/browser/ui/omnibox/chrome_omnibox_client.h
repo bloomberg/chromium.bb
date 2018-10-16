@@ -80,6 +80,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
+  void NewIncognitoWindow() override;
   void PromptPageTranslation() override;
 
  private:

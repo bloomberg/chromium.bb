@@ -577,13 +577,13 @@ void NewWindow(Browser* browser) {
   NewEmptyWindow(browser->profile()->GetOriginalProfile());
 }
 
-void NewIncognitoWindow(Browser* browser) {
+void NewIncognitoWindow(Profile* profile) {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
-      ->GetForProfile(browser->profile())
+      ->GetForProfile(profile)
       ->OnIncognitoWindowOpened();
 #endif
-  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile());
+  NewEmptyWindow(profile->GetOffTheRecordProfile());
 }
 
 void CloseWindow(Browser* browser) {

@@ -342,7 +342,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       NewWindow(browser_);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
-      NewIncognitoWindow(browser_);
+      NewIncognitoWindow(profile());
       break;
     case IDC_CLOSE_WINDOW:
       base::RecordAction(base::UserMetricsAction("CloseWindowByKey"));
