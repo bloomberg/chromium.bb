@@ -15,7 +15,7 @@ group("closure_compile") {
 
 js_type_check("closure_compile_module") {
   deps = [
-    ":error_util",
+    ":error_counter",
     ":filtered_volume_manager",
   ]
 }
@@ -27,7 +27,7 @@ js_type_check("test_support_type_check") {
   ]
 }
 
-js_library("error_util") {
+js_library("error_counter") {
 }
 
 js_library("filtered_volume_manager") {
