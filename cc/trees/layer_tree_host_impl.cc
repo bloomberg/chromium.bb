@@ -1811,8 +1811,6 @@ LayerTreeHostImpl::FrameTokenInfo::~FrameTokenInfo() = default;
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
-  TRACE_EVENT_MARK_WITH_TIMESTAMP0("cc,benchmark", "FramePresented",
-                                   feedback.timestamp);
   std::vector<LayerTreeHost::PresentationTimeCallback> all_callbacks;
   while (!frame_token_infos_.empty()) {
     auto info = frame_token_infos_.begin();

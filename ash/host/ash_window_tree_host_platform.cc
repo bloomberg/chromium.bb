@@ -34,11 +34,20 @@
 #include "ui/platform_window/text_input_state.h"
 
 namespace ash {
+namespace {
+
+// String passed to Compositor to identify who is submitting compositor frames.
+// Used by telemetry.
+const char* kTraceEnvironmentName = "ash";
+
+}  // namespace
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties)
-    : aura::WindowTreeHostPlatform(std::move(properties),
-                                   window_factory::NewWindow()),
+    : aura::WindowTreeHostPlatform(
+          std::move(properties),
+          window_factory::NewWindow(),
+          ::features::IsUsingWindowService() ? kTraceEnvironmentName : nullptr),
       transformer_helper_(this) {
   transformer_helper_.Init();
   InitInputMethodIfNecessary();
@@ -47,7 +56,12 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
     : aura::WindowTreeHostPlatform(window_factory::NewWindow()),
       transformer_helper_(this) {
-  CreateCompositor();
+  CreateCompositor(
+      viz::FrameSinkId(),
+      /* force_software_compositor */ false,
+      /* external_begin_frames_enabled */ false,
+      /* are_events_in_pixels */ true,
+      ::features::IsUsingWindowService() ? kTraceEnvironmentName : nullptr);
   transformer_helper_.Init();
   InitInputMethodIfNecessary();
 }

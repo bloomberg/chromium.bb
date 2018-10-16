@@ -327,7 +327,8 @@ void WindowTreeHost::DestroyDispatcher() {
 void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
                                       bool force_software_compositor,
                                       bool external_begin_frames_enabled,
-                                      bool are_events_in_pixels) {
+                                      bool are_events_in_pixels,
+                                      const char* trace_environment_name) {
   DCHECK(window()->env());
   Env* env = window()->env();
   ui::ContextFactory* context_factory = env->context_factory();
@@ -337,14 +338,14 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
   bool enable_surface_synchronization =
       env->mode() == aura::Env::Mode::MUS ||
       features::IsSurfaceSynchronizationEnabled();
-  compositor_.reset(new ui::Compositor(
+  compositor_ = std::make_unique<ui::Compositor>(
       (!context_factory_private || frame_sink_id.is_valid())
           ? frame_sink_id
           : context_factory_private->AllocateFrameSinkId(),
       context_factory, context_factory_private,
       base::ThreadTaskRunnerHandle::Get(), enable_surface_synchronization,
       ui::IsPixelCanvasRecordingEnabled(), external_begin_frames_enabled,
-      force_software_compositor));
+      force_software_compositor, trace_environment_name);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
 #endif

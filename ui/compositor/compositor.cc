@@ -57,6 +57,11 @@
 #include "ui/gl/gl_switches.h"
 
 namespace ui {
+namespace {
+
+const char* kDefaultTraceEnvironmentName = "browser";
+
+}  // namespace
 
 Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
@@ -65,7 +70,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        bool enable_surface_synchronization,
                        bool enable_pixel_canvas,
                        bool external_begin_frames_enabled,
-                       bool force_software_compositor)
+                       bool force_software_compositor,
+                       const char* trace_environment_name)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
@@ -76,6 +82,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),
       lock_manager_(task_runner),
+      trace_environment_name_(trace_environment_name
+                                  ? trace_environment_name
+                                  : kDefaultTraceEnvironmentName),
       context_creation_weak_ptr_factory_(this) {
   if (context_factory_private) {
     auto* host_frame_sink_manager =
@@ -619,6 +628,14 @@ void Compositor::DidReceiveCompositorFrameAck() {
   ++activated_frame_count_;
   for (auto& observer : observer_list_)
     observer.OnCompositingEnded(this);
+}
+
+void Compositor::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    const gfx::PresentationFeedback& feedback) {
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1("cc,benchmark", "FramePresented",
+                                   feedback.timestamp, "environment",
+                                   trace_environment_name_);
 }
 
 void Compositor::DidSubmitCompositorFrame() {
