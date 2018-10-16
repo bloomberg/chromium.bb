@@ -28,6 +28,7 @@
 
 namespace blink {
 
+// <specdef href="https://html.spec.whatwg.org/#fetch-a-classic-script">
 ClassicPendingScript* ClassicPendingScript::Fetch(
     const KURL& url,
     Document& element_document,
@@ -51,9 +52,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
   pending_script->intervened_ =
       MaybeDisallowFetchForDocWrittenScript(params, element_document);
 
-  // <spec
-  // href="https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script"
-  // step="2">Set request's client to settings object.</spec>
+  // <spec step="2">Set request's client to settings object.</spec>
   //
   // Note: |element_document| corresponds to the settings object.
   ScriptResource::Fetch(params, element_document.Fetcher(), pending_script);
@@ -392,8 +391,9 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr, resource,
                                not_streamed_reason);
   // The base URL for external classic script is
-  // "the URL from which the script was obtained" [spec text]
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  //
+  // <spec href="https://html.spec.whatwg.org/#concept-script-base-url">
+  // ... the URL from which the script was obtained, ...</spec>
   const KURL& base_url = source_code.Url();
   return ClassicScript::Create(source_code, base_url, options_,
                                resource->CalculateAccessControlStatus());
