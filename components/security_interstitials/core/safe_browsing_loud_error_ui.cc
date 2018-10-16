@@ -29,16 +29,9 @@ const char kSbDiagnosticUrl[] =
 const char kReportPhishingErrorUrl[] =
     "https://www.google.com/safebrowsing/report_error/";
 
-void RecordExtendedReportingPrefChanged(bool report, bool is_scout) {
-  if (is_scout) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.SecurityInterstitial",
-        report);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.SecurityInterstitial",
-        report);
-  }
+void RecordExtendedReportingPrefChanged(bool report) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.SecurityInterstitial", report);
 }
 
 }  // namespace
@@ -153,14 +146,14 @@ void SafeBrowsingLoudErrorUI::HandleCommand(
       // User enabled SB Extended Reporting via the checkbox.
       set_extended_reporting(true);
       controller()->SetReportingPreference(true);
-      RecordExtendedReportingPrefChanged(true, is_scout_reporting_enabled());
+      RecordExtendedReportingPrefChanged(true);
       break;
     }
     case CMD_DONT_REPORT: {
       // User disabled SB Extended Reporting via the checkbox.
       set_extended_reporting(false);
       controller()->SetReportingPreference(false);
-      RecordExtendedReportingPrefChanged(false, is_scout_reporting_enabled());
+      RecordExtendedReportingPrefChanged(false);
       break;
     }
     case CMD_SHOW_MORE_SECTION: {
