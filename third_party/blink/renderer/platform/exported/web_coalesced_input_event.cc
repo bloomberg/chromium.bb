@@ -111,24 +111,31 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(const WebInputEvent& event) {
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebInputEvent& event,
-    const std::vector<const WebInputEvent*>& coalesced_events) {
+    const std::vector<const WebInputEvent*>& coalesced_events,
+    const std::vector<const WebInputEvent*>& predicted_events) {
   event_ = MakeWebScopedInputEvent(event);
   for (auto* const coalesced_event : coalesced_events)
     coalesced_events_.push_back(MakeWebScopedInputEvent(*coalesced_event));
+  for (auto* const predicted_event : predicted_events)
+    predicted_events_.push_back(MakeWebScopedInputEvent(*predicted_event));
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebPointerEvent& event,
-    const std::vector<WebPointerEvent>& coalesced_events) {
+    const std::vector<WebPointerEvent>& coalesced_events,
+    const std::vector<WebPointerEvent>& predicted_events) {
   event_ = MakeWebScopedInputEvent(event);
   for (const auto& coalesced_event : coalesced_events)
     coalesced_events_.push_back(MakeWebScopedInputEvent(coalesced_event));
+  for (const auto& predicted_event : predicted_events)
+    predicted_events_.push_back(MakeWebScopedInputEvent(predicted_event));
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebCoalescedInputEvent& event)
     : WebCoalescedInputEvent(event.Event(),
-                             event.GetCoalescedEventsPointers()) {}
+                             event.GetCoalescedEventsPointers(),
+                             event.GetPredictedEventsPointers()) {}
 
 WebCoalescedInputEvent::WebScopedInputEvent
 WebCoalescedInputEvent::MakeWebScopedInputEvent(

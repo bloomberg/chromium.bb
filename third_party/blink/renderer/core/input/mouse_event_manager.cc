@@ -376,9 +376,10 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
                                       last_known_mouse_position_,
                                       last_known_mouse_global_position_, button,
                                       0, modifiers, CurrentTimeTicks());
-  Vector<WebMouseEvent> coalesced_events;
+  Vector<WebMouseEvent> coalesced_events, predicted_events;
   frame_->GetEventHandler().HandleMouseMoveEvent(
-      TransformWebMouseEvent(view, fake_mouse_move_event), coalesced_events);
+      TransformWebMouseEvent(view, fake_mouse_move_event), coalesced_events,
+      predicted_events);
 }
 
 void MouseEventManager::CancelFakeMouseMoveEvent() {
@@ -932,7 +933,7 @@ bool MouseEventManager::HandleDrag(const MouseEventWithHitTestResults& event,
           WebPointerEvent::CreatePointerCausesUaActionEvent(
               WebPointerProperties::PointerType::kMouse,
               event.Event().TimeStamp()),
-          Vector<WebPointerEvent>());
+          Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
     }
     // TODO(crbug.com/708278): If the drag starts with touch the touch cancel
     // should trigger the release of pointer capture.

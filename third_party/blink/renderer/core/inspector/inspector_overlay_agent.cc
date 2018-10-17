@@ -540,11 +540,15 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
       return true;
 
     if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
-      handled = OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
-                    mouse_event, TransformWebMouseEventVector(
-                                     frame_impl_->GetFrameView(),
-                                     std::vector<const WebInputEvent*>())) !=
-                WebInputEventResult::kNotHandled;
+      handled =
+          OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
+              mouse_event,
+              TransformWebMouseEventVector(frame_impl_->GetFrameView(),
+                                           std::vector<const WebInputEvent*>()),
+              TransformWebMouseEventVector(
+                  frame_impl_->GetFrameView(),
+                  std::vector<const WebInputEvent*>())) !=
+          WebInputEventResult::kNotHandled;
     }
     if (mouse_event.GetType() == WebInputEvent::kMouseDown) {
       handled = OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(
@@ -564,7 +568,8 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
     if (handled)
       return true;
     OverlayMainFrame()->GetEventHandler().HandlePointerEvent(
-        transformed_event, Vector<WebPointerEvent>());
+        transformed_event, Vector<WebPointerEvent>(),
+        Vector<WebPointerEvent>());
   }
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
     OverlayMainFrame()->GetEventHandler().KeyEvent(

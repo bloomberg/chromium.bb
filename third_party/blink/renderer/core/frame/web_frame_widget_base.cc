@@ -347,6 +347,9 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
         TransformWebMouseEventVector(
             local_root_->GetFrameView(),
             coalesced_event.GetCoalescedEventsPointers()),
+        TransformWebMouseEventVector(
+            local_root_->GetFrameView(),
+            coalesced_event.GetPredictedEventsPointers()),
         event_type);
   }
 }

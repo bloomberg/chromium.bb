@@ -322,7 +322,7 @@ void MediaControlsImplTest::MouseMoveTo(WebFloatPoint pos) {
                                  WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-      mouse_move_event, {});
+      mouse_move_event, {}, {});
 }
 
 void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {

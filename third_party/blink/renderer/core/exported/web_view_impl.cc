@@ -1826,7 +1826,10 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
         node, transformed_event, event_type,
         TransformWebMouseEventVector(
             MainFrameImpl()->GetFrameView(),
-            coalesced_event.GetCoalescedEventsPointers()));
+            coalesced_event.GetCoalescedEventsPointers()),
+        TransformWebMouseEventVector(
+            MainFrameImpl()->GetFrameView(),
+            coalesced_event.GetPredictedEventsPointers()));
   }
   return WebInputEventResult::kHandledSystem;
 }

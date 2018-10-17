@@ -170,7 +170,8 @@ class InteractiveRenderWidget : public RenderWidget {
   void SendInputEvent(const blink::WebInputEvent& event,
                       HandledEventCallback callback) {
     HandleInputEvent(blink::WebCoalescedInputEvent(
-                         event, std::vector<const blink::WebInputEvent*>()),
+                         event, std::vector<const blink::WebInputEvent*>(),
+                         std::vector<const blink::WebInputEvent*>()),
                      ui::LatencyInfo(), std::move(callback));
   }
 
