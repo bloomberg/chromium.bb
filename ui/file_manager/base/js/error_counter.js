@@ -40,8 +40,16 @@ window.addEventListener('unhandledrejection', (event) => {
 console.error = (() => {
   const orig = console.error;
   return (...args) => {
+    const prefix = '[unhandled-error]: ';
+    if (args.length) {
+      args[0] = prefix + args[0];
+    } else {
+      args.push(prefix);
+    }
+    const stack = new Error('original stack').stack;
+    args.push(stack);
     window.JSErrorCount++;
-    return orig.apply(this, args);
+    return orig.apply(this, [args.join('\n')]);
   };
 })();
 
@@ -55,9 +63,11 @@ console.error = (() => {
 console.assert = (() => {
   const orig = console.assert;
   return (condition, ...args) => {
+    const stack = new Error('original stack').stack;
+    args.push(stack);
     if (!condition)
       window.JSErrorCount++;
-    return orig.apply(this, [condition].concat(args));
+    return orig.apply(this, [condition].concat(args.join('\n')));
   };
 })();
 
