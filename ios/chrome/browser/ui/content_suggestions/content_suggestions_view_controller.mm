@@ -240,6 +240,7 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  self.headerSynchronizer.showing = YES;
   // Reload data to ensure the Most Visited tiles and fakeOmnibox are correctly
   // positionned, in particular during a rotation while a ViewController is
   // presented in front of the NTP.
@@ -252,7 +253,6 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  self.headerSynchronizer.showing = YES;
   // Resize the collection as it might have been rotated while not being
   // presented (e.g. rotation on stack view).
   [self correctMissingSafeArea];
