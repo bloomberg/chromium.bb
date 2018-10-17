@@ -296,8 +296,15 @@ void Controller::OnRunnableScriptsChanged(
   }
   GetUiController()->ShowStatusMessage(prompt);
 
-  // Update the set of scripts.
-  GetUiController()->UpdateScripts(runnable_scripts);
+  // Update the set of scripts. Only scripts that are not marked as autostart
+  // should be shown.
+  std::vector<ScriptHandle> scripts_to_update;
+  for (const auto& script : runnable_scripts) {
+    if (!script.autostart) {
+      scripts_to_update.emplace_back(script);
+    }
+  }
+  GetUiController()->UpdateScripts(scripts_to_update);
 }
 
 void Controller::DocumentAvailableInMainFrame() {
