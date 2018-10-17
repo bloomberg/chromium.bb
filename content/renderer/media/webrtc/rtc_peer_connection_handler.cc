@@ -76,49 +76,6 @@ enum RtcpMux {
   RTCP_MUX_MAX
 };
 
-// Converter functions from libjingle types to WebKit types.
-blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState
-GetWebKitIceGatheringState(
-    webrtc::PeerConnectionInterface::IceGatheringState state) {
-  using blink::WebRTCPeerConnectionHandlerClient;
-  switch (state) {
-    case webrtc::PeerConnectionInterface::kIceGatheringNew:
-      return WebRTCPeerConnectionHandlerClient::kICEGatheringStateNew;
-    case webrtc::PeerConnectionInterface::kIceGatheringGathering:
-      return WebRTCPeerConnectionHandlerClient::kICEGatheringStateGathering;
-    case webrtc::PeerConnectionInterface::kIceGatheringComplete:
-      return WebRTCPeerConnectionHandlerClient::kICEGatheringStateComplete;
-    default:
-      NOTREACHED();
-      return WebRTCPeerConnectionHandlerClient::kICEGatheringStateNew;
-  }
-}
-
-blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState
-GetWebKitIceConnectionState(
-    webrtc::PeerConnectionInterface::IceConnectionState ice_state) {
-  using blink::WebRTCPeerConnectionHandlerClient;
-  switch (ice_state) {
-    case webrtc::PeerConnectionInterface::kIceConnectionNew:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateStarting;
-    case webrtc::PeerConnectionInterface::kIceConnectionChecking:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateChecking;
-    case webrtc::PeerConnectionInterface::kIceConnectionConnected:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateConnected;
-    case webrtc::PeerConnectionInterface::kIceConnectionCompleted:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateCompleted;
-    case webrtc::PeerConnectionInterface::kIceConnectionFailed:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateFailed;
-    case webrtc::PeerConnectionInterface::kIceConnectionDisconnected:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateDisconnected;
-    case webrtc::PeerConnectionInterface::kIceConnectionClosed:
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateClosed;
-    default:
-      NOTREACHED();
-      return WebRTCPeerConnectionHandlerClient::kICEConnectionStateClosed;
-  }
-}
-
 blink::WebRTCSessionDescription CreateWebKitSessionDescription(
     const std::string& sdp, const std::string& type) {
   blink::WebRTCSessionDescription description;
@@ -1980,12 +1937,10 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
   }
 
   track_metrics_.IceConnectionChange(new_state);
-  blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState state =
-      GetWebKitIceConnectionState(new_state);
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackIceConnectionStateChange(this, state);
+    peer_connection_tracker_->TrackIceConnectionStateChange(this, new_state);
   if (!is_closed_)
-    client_->DidChangeICEConnectionState(state);
+    client_->DidChangeIceConnectionState(new_state);
 }
 
 // Called any time the IceGatheringState changes
@@ -2007,12 +1962,10 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
     ResetUMAStats();
   }
 
-  blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState state =
-      GetWebKitIceGatheringState(new_state);
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackIceGatheringStateChange(this, state);
+    peer_connection_tracker_->TrackIceGatheringStateChange(this, new_state);
   if (!is_closed_)
-    client_->DidChangeICEGatheringState(state);
+    client_->DidChangeIceGatheringState(new_state);
 }
 
 void RTCPeerConnectionHandler::OnRenegotiationNeeded() {

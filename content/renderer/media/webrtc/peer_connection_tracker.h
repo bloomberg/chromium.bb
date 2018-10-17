@@ -173,13 +173,13 @@ class CONTENT_EXPORT PeerConnectionTracker
   // of a PeerConnection has changed.
   virtual void TrackIceConnectionStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      blink::WebRTCPeerConnectionHandlerClient::ICEConnectionState state);
+      webrtc::PeerConnectionInterface::IceConnectionState state);
 
   // Sends an update when the Ice gathering state
   // of a PeerConnection has changed.
   virtual void TrackIceGatheringStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState state);
+      webrtc::PeerConnectionInterface::IceGatheringState state);
 
   // Sends an update when the SetSessionDescription or CreateOffer or
   // CreateAnswer callbacks are called.

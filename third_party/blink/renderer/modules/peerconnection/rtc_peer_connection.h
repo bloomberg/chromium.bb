@@ -230,8 +230,10 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) override;
   void DidChangeSignalingState(
       webrtc::PeerConnectionInterface::SignalingState) override;
-  void DidChangeICEGatheringState(ICEGatheringState) override;
-  void DidChangeICEConnectionState(ICEConnectionState) override;
+  void DidChangeIceGatheringState(
+      webrtc::PeerConnectionInterface::IceGatheringState) override;
+  void DidChangeIceConnectionState(
+      webrtc::PeerConnectionInterface::IceConnectionState) override;
   void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
@@ -393,14 +395,13 @@ class MODULES_EXPORT RTCPeerConnection final
   // that are delayed somehow and cause the application to read a "complete"
   // gathering state twice, missing the "gathering" state in the middle.
   void ChangeIceGatheringState(
-      WebRTCPeerConnectionHandlerClient::ICEGatheringState);
-  bool SetIceGatheringState(
-      WebRTCPeerConnectionHandlerClient::ICEGatheringState);
+      webrtc::PeerConnectionInterface::IceGatheringState);
+  bool SetIceGatheringState(webrtc::PeerConnectionInterface::IceGatheringState);
 
   void ChangeIceConnectionState(
-      WebRTCPeerConnectionHandlerClient::ICEConnectionState);
+      webrtc::PeerConnectionInterface::IceConnectionState);
   bool SetIceConnectionState(
-      WebRTCPeerConnectionHandlerClient::ICEConnectionState);
+      webrtc::PeerConnectionInterface::IceConnectionState);
 
   void CloseInternal();
 
@@ -411,8 +412,8 @@ class MODULES_EXPORT RTCPeerConnection final
                                        String* sdp);
 
   webrtc::PeerConnectionInterface::SignalingState signaling_state_;
-  ICEGatheringState ice_gathering_state_;
-  ICEConnectionState ice_connection_state_;
+  webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state_;
+  webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state_;
 
   // A map containing any track that is in use by the peer connection. This
   // includes tracks of |rtp_senders_| and |rtp_receivers_|.

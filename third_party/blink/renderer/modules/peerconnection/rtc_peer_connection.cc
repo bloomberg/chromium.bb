@@ -576,8 +576,8 @@ RTCPeerConnection::RTCPeerConnection(
     : PausableObject(context),
       signaling_state_(
           webrtc::PeerConnectionInterface::SignalingState::kStable),
-      ice_gathering_state_(kICEGatheringStateNew),
-      ice_connection_state_(kICEConnectionStateNew),
+      ice_gathering_state_(webrtc::PeerConnectionInterface::kIceGatheringNew),
+      ice_connection_state_(webrtc::PeerConnectionInterface::kIceConnectionNew),
       // WebRTC spec specifies kNetworking as task source.
       // https://www.w3.org/TR/webrtc/#operation
       dispatch_scheduled_event_runner_(
@@ -1400,38 +1400,39 @@ String RTCPeerConnection::signalingState() const {
 
 String RTCPeerConnection::iceGatheringState() const {
   switch (ice_gathering_state_) {
-    case kICEGatheringStateNew:
+    case webrtc::PeerConnectionInterface::kIceGatheringNew:
       return "new";
-    case kICEGatheringStateGathering:
+    case webrtc::PeerConnectionInterface::kIceGatheringGathering:
       return "gathering";
-    case kICEGatheringStateComplete:
+    case webrtc::PeerConnectionInterface::kIceGatheringComplete:
       return "complete";
+    default:
+      NOTREACHED();
+      return "";
   }
-
-  NOTREACHED();
-  return String();
 }
 
 String RTCPeerConnection::iceConnectionState() const {
   switch (ice_connection_state_) {
-    case kICEConnectionStateNew:
+    case webrtc::PeerConnectionInterface::kIceConnectionNew:
       return "new";
-    case kICEConnectionStateChecking:
+    case webrtc::PeerConnectionInterface::kIceConnectionChecking:
       return "checking";
-    case kICEConnectionStateConnected:
+    case webrtc::PeerConnectionInterface::kIceConnectionConnected:
       return "connected";
-    case kICEConnectionStateCompleted:
+    case webrtc::PeerConnectionInterface::kIceConnectionCompleted:
       return "completed";
-    case kICEConnectionStateFailed:
+    case webrtc::PeerConnectionInterface::kIceConnectionFailed:
       return "failed";
-    case kICEConnectionStateDisconnected:
+    case webrtc::PeerConnectionInterface::kIceConnectionDisconnected:
       return "disconnected";
-    case kICEConnectionStateClosed:
+    case webrtc::PeerConnectionInterface::kIceConnectionClosed:
       return "closed";
+    default:
+      NOTREACHED();
+      return "";
   }
 
-  NOTREACHED();
-  return String();
 }
 
 void RTCPeerConnection::addStream(ScriptState* script_state,
@@ -2147,15 +2148,15 @@ void RTCPeerConnection::DidChangeSignalingState(
   ChangeSignalingState(new_state, true);
 }
 
-void RTCPeerConnection::DidChangeICEGatheringState(
-    ICEGatheringState new_state) {
+void RTCPeerConnection::DidChangeIceGatheringState(
+    webrtc::PeerConnectionInterface::IceGatheringState new_state) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
   ChangeIceGatheringState(new_state);
 }
 
-void RTCPeerConnection::DidChangeICEConnectionState(
-    ICEConnectionState new_state) {
+void RTCPeerConnection::DidChangeIceConnectionState(
+    webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
   ChangeIceConnectionState(new_state);
@@ -2438,7 +2439,7 @@ void RTCPeerConnection::ReleasePeerConnectionHandler() {
     return;
 
   stopped_ = true;
-  ice_connection_state_ = kICEConnectionStateClosed;
+  ice_connection_state_ = webrtc::PeerConnectionInterface::kIceConnectionClosed;
   signaling_state_ = webrtc::PeerConnectionInterface::SignalingState::kClosed;
 
   dispatch_scheduled_event_runner_->Stop();
@@ -2491,13 +2492,15 @@ void RTCPeerConnection::ChangeSignalingState(
 }
 
 void RTCPeerConnection::ChangeIceGatheringState(
-    ICEGatheringState ice_gathering_state) {
-  if (ice_connection_state_ != kICEConnectionStateClosed) {
+    webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state) {
+  if (ice_connection_state_ !=
+      webrtc::PeerConnectionInterface::kIceConnectionClosed) {
     ScheduleDispatchEvent(
         Event::Create(EventTypeNames::icegatheringstatechange),
         WTF::Bind(&RTCPeerConnection::SetIceGatheringState,
                   WrapPersistent(this), ice_gathering_state));
-    if (ice_gathering_state == kICEGatheringStateComplete) {
+    if (ice_gathering_state ==
+        webrtc::PeerConnectionInterface::kIceGatheringComplete) {
       // If ICE gathering is completed, generate a null ICE candidate, to
       // signal end of candidates.
       ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(nullptr));
@@ -2506,8 +2509,9 @@ void RTCPeerConnection::ChangeIceGatheringState(
 }
 
 bool RTCPeerConnection::SetIceGatheringState(
-    ICEGatheringState ice_gathering_state) {
-  if (ice_connection_state_ != kICEConnectionStateClosed &&
+    webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state) {
+  if (ice_connection_state_ !=
+          webrtc::PeerConnectionInterface::kIceConnectionClosed &&
       ice_gathering_state_ != ice_gathering_state) {
     ice_gathering_state_ = ice_gathering_state;
     return true;
@@ -2516,8 +2520,9 @@ bool RTCPeerConnection::SetIceGatheringState(
 }
 
 void RTCPeerConnection::ChangeIceConnectionState(
-    ICEConnectionState ice_connection_state) {
-  if (ice_connection_state_ != kICEConnectionStateClosed) {
+    webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state) {
+  if (ice_connection_state_ !=
+      webrtc::PeerConnectionInterface::kIceConnectionClosed) {
     ScheduleDispatchEvent(
         Event::Create(EventTypeNames::iceconnectionstatechange),
         WTF::Bind(&RTCPeerConnection::SetIceConnectionState,
@@ -2526,11 +2531,13 @@ void RTCPeerConnection::ChangeIceConnectionState(
 }
 
 bool RTCPeerConnection::SetIceConnectionState(
-    ICEConnectionState ice_connection_state) {
-  if (ice_connection_state_ != kICEConnectionStateClosed &&
+    webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state) {
+  if (ice_connection_state_ !=
+          webrtc::PeerConnectionInterface::kIceConnectionClosed &&
       ice_connection_state_ != ice_connection_state) {
     ice_connection_state_ = ice_connection_state;
-    if (ice_connection_state_ == kICEConnectionStateConnected)
+    if (ice_connection_state_ ==
+        webrtc::PeerConnectionInterface::kIceConnectionConnected)
       RecordRapporMetrics();
 
     return true;
@@ -2544,7 +2551,8 @@ void RTCPeerConnection::CloseInternal() {
   peer_handler_->Stop();
   closed_ = true;
 
-  ChangeIceConnectionState(kICEConnectionStateClosed);
+  ChangeIceConnectionState(
+      webrtc::PeerConnectionInterface::kIceConnectionClosed);
   ChangeSignalingState(webrtc::PeerConnectionInterface::SignalingState::kClosed,
                        false);
   for (auto& transceiver : transceivers_) {
