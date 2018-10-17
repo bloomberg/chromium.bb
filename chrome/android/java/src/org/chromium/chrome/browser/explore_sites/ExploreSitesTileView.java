@@ -48,6 +48,7 @@ public class ExploreSitesTileView extends TileWithTextView {
             return new BitmapDrawable(getResources(), mIconGenerator.generateIconForText(text));
         }
         return ViewUtils.createRoundedBitmapDrawable(
-                image, ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
+                Bitmap.createScaledBitmap(image, mIconSizePx, mIconSizePx, false),
+                ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
     }
 }
