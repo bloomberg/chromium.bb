@@ -379,9 +379,15 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
   if (is_split_view_active)
     return is_drop_target_selected;
 
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dragged_window_)
+          .work_area();
   return is_drop_target_selected ||
-         location_in_screen.y() >= kDragPositionToOverviewRatio *
-                                       drop_target->GetTransformedBounds().y();
+         (location_in_screen.y() - work_area_bounds.y()) >=
+             kDragPositionToOverviewRatio *
+                 (drop_target->GetTransformedBounds().y() -
+                  work_area_bounds.y());
 }
 
 bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
