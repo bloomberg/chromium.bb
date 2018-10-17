@@ -118,7 +118,6 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate(
         new AutofillSaveCardInfoBarDelegateMobile(
             is_uploading, credit_card, std::move(legal_message),
-            /*strike_database=*/nullptr,
             /*upload_save_card_callback=*/
             base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
                                UploadSaveCardCallback,
@@ -131,7 +130,6 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           is_uploading, credit_card, std::move(legal_message),
-          /*strike_database=*/nullptr,
           /*upload_save_card_callback=*/
           base::OnceCallback<void(const base::string16&)>(),
           /*local_save_card_callback=*/
