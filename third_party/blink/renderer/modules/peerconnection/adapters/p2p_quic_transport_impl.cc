@@ -140,7 +140,10 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
     std::unique_ptr<quic::QuicConnection> connection,
     const quic::QuicConfig& quic_config,
     quic::QuicClock* clock)
-    : quic::QuicSession(connection.get(), nullptr /* visitor */, quic_config),
+    : quic::QuicSession(connection.get(),
+                        nullptr /* visitor */,
+                        quic_config,
+                        quic::CurrentSupportedVersions()),
       helper_(std::move(helper)),
       connection_(std::move(connection)),
       perspective_(p2p_transport_config.is_server

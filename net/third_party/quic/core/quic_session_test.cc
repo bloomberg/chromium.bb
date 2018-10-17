@@ -125,7 +125,10 @@ class TestStream : public QuicStream {
 class TestSession : public QuicSession {
  public:
   explicit TestSession(QuicConnection* connection)
-      : QuicSession(connection, nullptr, DefaultQuicConfig()),
+      : QuicSession(connection,
+                    nullptr,
+                    DefaultQuicConfig(),
+                    CurrentSupportedVersions()),
         crypto_stream_(this),
         writev_consumes_all_data_(false) {
     Initialize();

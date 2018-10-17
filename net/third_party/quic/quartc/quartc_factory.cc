@@ -118,7 +118,7 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // overhead by omitting the connection id.
   quic_config.SetBytesForConnectionIdToSend(0);
   return QuicMakeUnique<QuartcSession>(
-      std::move(quic_connection), quic_config,
+      std::move(quic_connection), quic_config, CurrentSupportedVersions(),
       quartc_session_config.unique_remote_server_id, perspective,
       this /*QuicConnectionHelperInterface*/, clock_, std::move(writer));
 }

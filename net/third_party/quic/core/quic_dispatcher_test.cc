@@ -59,6 +59,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
                             const QuicCryptoServerConfig* crypto_config,
                             QuicCompressedCertsCache* compressed_certs_cache)
       : QuicServerSessionBase(config,
+                              CurrentSupportedVersions(),
                               connection,
                               nullptr,
                               nullptr,

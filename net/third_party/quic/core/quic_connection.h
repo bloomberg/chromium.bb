@@ -1333,6 +1333,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of quic_reloadable_flag_quic_move_post_process_after_data.
   const bool deprecate_post_process_after_data_;
 
+  // Indicates whether server connection does version negotiation. Server
+  // connection does not support version negotiation if a single version is
+  // provided in constructor.
+  const bool no_version_negotiation_;
+
   // Latched value of quic_reloadable_flag_quic_decrypt_packets_on_key_change.
   const bool decrypt_packets_on_key_change_;
 };

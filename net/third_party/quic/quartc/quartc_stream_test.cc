@@ -31,7 +31,10 @@ class MockQuicSession : public QuicSession {
   MockQuicSession(QuicConnection* connection,
                   const QuicConfig& config,
                   QuicString* write_buffer)
-      : QuicSession(connection, nullptr /*visitor*/, config),
+      : QuicSession(connection,
+                    nullptr /*visitor*/,
+                    config,
+                    CurrentSupportedVersions()),
         write_buffer_(write_buffer) {}
 
   ~MockQuicSession() override {}
@@ -183,7 +186,7 @@ class QuartcStreamTest : public QuicTest, public QuicConnectionHelperInterface {
     connection_ = QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), new DummyPacketWriter(), owns_writer, perspective,
-        CurrentSupportedVersions());
+        ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<MockQuicSession>(connection_.get(), QuicConfig(),
                                                &write_buffer_);

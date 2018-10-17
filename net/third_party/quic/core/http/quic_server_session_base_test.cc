@@ -53,6 +53,7 @@ class TestServerSession : public QuicServerSessionBase {
                     QuicCompressedCertsCache* compressed_certs_cache,
                     QuicSimpleServerBackend* quic_simple_server_backend)
       : QuicServerSessionBase(config,
+                              CurrentSupportedVersions(),
                               connection,
                               visitor,
                               helper,

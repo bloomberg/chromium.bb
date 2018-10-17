@@ -94,6 +94,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
       QuicCompressedCertsCache* compressed_certs_cache,
       QuicSimpleServerBackend* quic_simple_server_backend)
       : QuicSimpleServerSession(DefaultQuicConfig(),
+                                CurrentSupportedVersions(),
                                 connection,
                                 owner,
                                 helper,

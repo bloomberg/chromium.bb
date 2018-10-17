@@ -135,7 +135,10 @@ class TestStream : public QuicSpdyStream {
 class TestSession : public QuicSpdySession {
  public:
   explicit TestSession(QuicConnection* connection)
-      : QuicSpdySession(connection, nullptr, DefaultQuicConfig()),
+      : QuicSpdySession(connection,
+                        nullptr,
+                        DefaultQuicConfig(),
+                        CurrentSupportedVersions()),
         crypto_stream_(this),
         writev_consumes_all_data_(false) {
     Initialize();

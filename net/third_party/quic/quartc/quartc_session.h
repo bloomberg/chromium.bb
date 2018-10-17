@@ -37,6 +37,7 @@ class QUIC_EXPORT_PRIVATE QuartcSession
  public:
   QuartcSession(std::unique_ptr<QuicConnection> connection,
                 const QuicConfig& config,
+                const ParsedQuicVersionVector& supported_versions,
                 const QuicString& unique_remote_server_id,
                 Perspective perspective,
                 QuicConnectionHelperInterface* helper,

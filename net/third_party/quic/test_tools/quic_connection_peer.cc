@@ -326,5 +326,12 @@ void QuicConnectionPeer::SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
       new_value;
 }
 
+// static
+void QuicConnectionPeer::SetNoVersionNegotiation(QuicConnection* connection,
+                                                 bool no_version_negotiation) {
+  *const_cast<bool*>(&connection->no_version_negotiation_) =
+      no_version_negotiation;
+}
+
 }  // namespace test
 }  // namespace quic
