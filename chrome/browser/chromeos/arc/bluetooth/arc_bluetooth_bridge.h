@@ -221,8 +221,6 @@ class ArcBluetoothBridge
   void StopLEScan() override;
   void ConnectLEDevice(mojom::BluetoothAddressPtr remote_addr) override;
   void DisconnectLEDevice(mojom::BluetoothAddressPtr remote_addr) override;
-  void StartLEListen(StartLEListenCallback callback) override;
-  void StopLEListen(StopLEListenCallback callback) override;
   void SearchService(mojom::BluetoothAddressPtr remote_addr) override;
 
   void GetGattDB(mojom::BluetoothAddressPtr remote_addr) override;
@@ -367,17 +365,6 @@ class ArcBluetoothBridge
   void OnGattConnectError(mojom::BluetoothAddressPtr addr,
                           device::BluetoothDevice::ConnectErrorCode error_code);
   void OnGattDisconnected(mojom::BluetoothAddressPtr addr);
-
-  void OnStartLEListenDone(GattStatusCallback callback,
-                           scoped_refptr<device::BluetoothAdvertisement> adv);
-  void OnStartLEListenError(
-      GattStatusCallback callback,
-      device::BluetoothAdvertisement::ErrorCode error_code);
-
-  void OnStopLEListenDone(GattStatusCallback callback);
-  void OnStopLEListenError(
-      GattStatusCallback callback,
-      device::BluetoothAdvertisement::ErrorCode error_code);
 
   void OnGattNotifyStartDone(
       GattStatusCallback callback,
