@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 

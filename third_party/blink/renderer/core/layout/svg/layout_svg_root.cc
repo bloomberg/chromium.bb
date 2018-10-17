@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 

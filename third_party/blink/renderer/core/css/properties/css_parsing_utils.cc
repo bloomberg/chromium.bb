@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
-#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 

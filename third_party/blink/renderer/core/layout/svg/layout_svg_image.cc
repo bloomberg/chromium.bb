@@ -36,8 +36,8 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/svg_image_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

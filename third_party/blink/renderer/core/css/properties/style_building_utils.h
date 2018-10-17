@@ -7,8 +7,8 @@
 
 #include "third_party/blink/renderer/core/style/border_image_length.h"
 #include "third_party/blink/renderer/core/style/border_image_length_box.h"
-#include "third_party/blink/renderer/platform/length.h"
-#include "third_party/blink/renderer/platform/length_box.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/geometry/length_box.h"
 
 namespace blink {
 namespace StyleBuildingUtils {

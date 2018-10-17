@@ -21,13 +21,13 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/length_point.h"
+#include "third_party/blink/renderer/platform/geometry/length_size.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
-#include "third_party/blink/renderer/platform/length_point.h"
-#include "third_party/blink/renderer/platform/length_size.h"
 
 namespace blink {
 

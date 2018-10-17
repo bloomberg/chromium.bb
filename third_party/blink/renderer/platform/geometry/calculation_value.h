@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CALCULATION_VALUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CALCULATION_VALUE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_CALCULATION_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_CALCULATION_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/platform/length.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
@@ -70,4 +70,4 @@ class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CALCULATION_VALUE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_CALCULATION_VALUE_H_

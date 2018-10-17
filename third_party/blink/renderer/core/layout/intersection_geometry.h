@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INTERSECTION_GEOMETRY_H_
 
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
