@@ -122,6 +122,7 @@ class ResourceLoader::CodeCacheRequest {
   // resource_response_time that is used to validate responses from
   // code cache. Might send cached code if available.
   void DidReceiveResponse(const base::Time& resource_response_time,
+                          bool use_isolated_code_cache,
                           ResourceLoader* resource_loader);
 
   // Stores the value of defers that is needed to restore the state
@@ -159,6 +160,7 @@ class ResourceLoader::CodeCacheRequest {
   std::vector<uint8_t> cached_code_;
   base::Time cached_code_response_time_;
   base::Time resource_response_time_;
+  bool use_isolated_code_cache_ = false;
   base::WeakPtrFactory<CodeCacheRequest> weak_ptr_factory_;
 };
 
@@ -204,8 +206,10 @@ bool ResourceLoader::CodeCacheRequest::FetchFromCodeCacheSynchronously(
 // the response_time if the response from code cache is not available yet.
 void ResourceLoader::CodeCacheRequest::DidReceiveResponse(
     const base::Time& resource_response_time,
+    bool use_isolated_code_cache,
     ResourceLoader* resource_loader) {
   resource_response_time_ = resource_response_time;
+  use_isolated_code_cache_ = use_isolated_code_cache;
   MaybeSendCachedCode(cached_code_, resource_loader);
 }
 
@@ -261,7 +265,11 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
     return;
   }
 
-  if (resource_response_time_ != cached_code_response_time_) {
+  // If the resource was fetched for service worker script or was served from
+  // CacheStorage via service worker then they maintain their own code cache.
+  // We should not use the isolated cache.
+  if (!use_isolated_code_cache_ ||
+      resource_response_time_ != cached_code_response_time_) {
     resource_loader->ClearCachedCode();
     return;
   }
@@ -322,7 +330,20 @@ bool ResourceLoader::ShouldFetchCodeCache() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   if (!request.Url().ProtocolIsInHTTPFamily())
     return false;
+  // When loading the service worker scripts, we don't need to check the
+  // GeneratedCodeCache. The code cache corresponding to these scripts is in
+  // the service worker's "installed script storage" and would be fetched along
+  // with the resource from the cache storage.
   if (request.GetRequestContext() == mojom::RequestContextType::SERVICE_WORKER)
+    return false;
+  // These requests are serviced by the service worker. It is possible that the
+  // service worker may not service the request in which case it is serviced
+  // by the network. Assuming those fallback cases are not frequent, we don't
+  // fetch from code cache. We may want to have some actual data, to make an
+  // informed decision.
+  // TODO(crbug.com/895850): Get UMA data to see if this check is necessary.
+  if (ResourceLoader::Context().IsControlledByServiceWorker() ==
+      mojom::ControllerServiceWorkerMode::kControlled)
     return false;
   if (request.DownloadToBlob())
     return false;
@@ -703,7 +724,7 @@ bool ResourceLoader::WillFollowRedirect(
 }
 
 void ResourceLoader::DidReceiveCachedMetadata(const char* data, int length) {
-  DCHECK(!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled());
+  DCHECK(!should_use_isolated_code_cache_);
   resource_->SetSerializedCachedMetadata(data, length);
 }
 
@@ -758,6 +779,14 @@ void ResourceLoader::DidReceiveResponse(
   const ResourceLoaderOptions& options = resource_->Options();
 
   const ResourceResponse& response = web_url_response.ToResourceResponse();
+  // Service worker script has its own code cache. And also, resources which
+  // are served from CacheStorage via service workers have its own code cache.
+  // We should not use cached code from site isolated GeneratedCodeCache in such
+  // cases.
+  should_use_isolated_code_cache_ =
+      RuntimeEnabledFeatures::IsolatedCodeCacheEnabled() &&
+      !(request_context == mojom::RequestContextType::SERVICE_WORKER ||
+        response.WasFetchedViaServiceWorker());
 
   // Perform 'nosniff' checks against the original response instead of the 304
   // response for a successful revalidation.
@@ -852,8 +881,10 @@ void ResourceLoader::DidReceiveResponse(
   // Send the cached code after we notify that the response is received.
   // Resource expects that we receive the response first before the
   // corresponding cached code.
-  if (code_cache_request_)
-    code_cache_request_->DidReceiveResponse(response.ResponseTime(), this);
+  if (code_cache_request_) {
+    code_cache_request_->DidReceiveResponse(
+        response.ResponseTime(), should_use_isolated_code_cache_, this);
+  }
 
   if (!resource_->Loader())
     return;
