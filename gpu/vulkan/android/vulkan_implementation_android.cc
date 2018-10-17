@@ -5,6 +5,7 @@
 #include "gpu/vulkan/android/vulkan_implementation_android.h"
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -39,6 +40,7 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
       reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(vkGetInstanceProcAddr(
           vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
   if (!vkCreateAndroidSurfaceKHR_) {
+    LOG(ERROR) << "vkCreateAndroidSurfaceKHR not found";
     vulkan_instance_.Destroy();
     return false;
   }
