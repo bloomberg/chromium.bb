@@ -35,40 +35,32 @@ void TouchSelectionControllerClientChildFrame::DidStopFlinging() {
   manager_->DidStopFlinging();
 }
 
+void TouchSelectionControllerClientChildFrame::
+    TransformSelectionBoundsAndUpdate() {
+  gfx::SelectionBound transformed_selection_start(selection_start_);
+  gfx::SelectionBound transformed_selection_end(selection_end_);
+
+  // TODO(wjmaclean): Get the transform between the views to lower the
+  // overhead here, instead of calling the transform functions four times.
+  transformed_selection_start.SetEdge(
+      rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_top()),
+      rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_bottom()));
+  transformed_selection_end.SetEdge(
+      rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_top()),
+      rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_bottom()));
+
+  manager_->UpdateClientSelectionBounds(transformed_selection_start,
+                                        transformed_selection_end, this, this);
+}
+
 void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
     const viz::Selection<gfx::SelectionBound>& selection,
     float device_scale_factor) {
-  gfx::PointF start_edge_top = selection.start.edge_top();
-  gfx::PointF start_edge_bottom = selection.start.edge_bottom();
-  gfx::PointF end_edge_top = selection.end.edge_top();
-  gfx::PointF end_edge_bottom = selection.end.edge_bottom();
+  if (selection.start != selection_start_ || selection.end != selection_end_) {
+    selection_start_ = selection.start;
+    selection_end_ = selection.end;
 
-  if (IsUseZoomForDSFEnabled()) {
-    float viewportToDIPScale = 1.0f / device_scale_factor;
-
-    start_edge_top.Scale(viewportToDIPScale);
-    start_edge_bottom.Scale(viewportToDIPScale);
-    end_edge_top.Scale(viewportToDIPScale);
-    end_edge_bottom.Scale(viewportToDIPScale);
-  }
-
-  gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
-  start_edge_top = rwhv_->TransformPointToRootCoordSpaceF(start_edge_top);
-  start_edge_bottom = rwhv_->TransformPointToRootCoordSpaceF(start_edge_bottom);
-  end_edge_top = rwhv_->TransformPointToRootCoordSpaceF(end_edge_top);
-  end_edge_bottom = rwhv_->TransformPointToRootCoordSpaceF(end_edge_bottom);
-
-  viz::Selection<gfx::SelectionBound> transformed_selection(selection);
-  transformed_selection.start.SetEdge(start_edge_top, start_edge_bottom);
-  transformed_selection.end.SetEdge(end_edge_top, end_edge_bottom);
-
-  if (transformed_selection.start != selection_start_ ||
-      transformed_selection.end != selection_end_) {
-    selection_start_ = transformed_selection.start;
-    selection_end_ = transformed_selection.end;
-    view_origin_at_last_update_ = origin;
-    manager_->UpdateClientSelectionBounds(selection_start_, selection_end_,
-                                          this, this);
+    TransformSelectionBoundsAndUpdate();
   }
 }
 
@@ -77,17 +69,7 @@ void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
 // sending a new compositor frame), we must manually recompute the screen
 // position if requested to do so and it has changed.
 void TouchSelectionControllerClientChildFrame::DidScroll() {
-  gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());
-  if (origin != view_origin_at_last_update_) {
-    gfx::Vector2dF delta = origin - view_origin_at_last_update_;
-    selection_start_.SetEdge(selection_start_.edge_top() + delta,
-                             selection_start_.edge_bottom() + delta);
-    selection_end_.SetEdge(selection_end_.edge_top() + delta,
-                           selection_end_.edge_bottom() + delta);
-    view_origin_at_last_update_ = origin;
-    manager_->UpdateClientSelectionBounds(selection_start_, selection_end_,
-                                          this, this);
-  }
+  TransformSelectionBoundsAndUpdate();
 }
 
 gfx::Point TouchSelectionControllerClientChildFrame::ConvertFromRoot(

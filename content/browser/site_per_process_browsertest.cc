@@ -55,6 +55,8 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/input_router.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -62,6 +64,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
@@ -10250,68 +10253,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
 }
 
 // Tests for Android TouchSelectionEditing.
-class TouchSelectionControllerClientAndroidSiteIsolationTest
-    : public SitePerProcessBrowserTest {
- public:
-  TouchSelectionControllerClientAndroidSiteIsolationTest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    IsolateAllSitesForTesting(command_line);
-  }
-
-  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() {
-    return static_cast<RenderWidgetHostViewAndroid*>(
-        shell()->web_contents()->GetRenderWidgetHostView());
-  }
-
-  void SelectWithLongPress(gfx::Point point) {
-    // Get main frame view for event insertion.
-    RenderWidgetHostViewAndroid* main_view = GetRenderWidgetHostViewAndroid();
-
-    SendTouch(main_view, ui::MotionEvent::Action::DOWN, point);
-    // action_timeout() is far longer than needed for a LongPress, so we use
-    // a custom timeout here.
-    DelayBy(base::TimeDelta::FromMilliseconds(2000));
-    SendTouch(main_view, ui::MotionEvent::Action::UP, point);
-  }
-
-  void SimpleTap(gfx::Point point) {
-    // Get main frame view for event insertion.
-    RenderWidgetHostViewAndroid* main_view = GetRenderWidgetHostViewAndroid();
-
-    SendTouch(main_view, ui::MotionEvent::Action::DOWN, point);
-    // tiny_timeout() is way shorter than a reasonable user-created tap gesture,
-    // so we use a custom timeout here.
-    DelayBy(base::TimeDelta::FromMilliseconds(300));
-    SendTouch(main_view, ui::MotionEvent::Action::UP, point);
-  }
-
- protected:
-  void DelayBy(base::TimeDelta delta) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), delta);
-    run_loop.Run();
-  }
-
- private:
-  void SendTouch(RenderWidgetHostViewAndroid* view,
-                 ui::MotionEvent::Action action,
-                 gfx::Point point) {
-    DCHECK(action >= ui::MotionEvent::Action::DOWN &&
-           action < ui::MotionEvent::Action::CANCEL);
-
-    ui::MotionEventAndroid::Pointer p(0, point.x(), point.y(), 10, 0, 0, 0, 0);
-    JNIEnv* env = base::android::AttachCurrentThread();
-    auto time_ms = (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds();
-    ui::MotionEventAndroid touch(
-        env, nullptr, 1.f, 0, 0, 0, time_ms,
-        ui::MotionEventAndroid::GetAndroidAction(action), 1, 0, 0, 0, 0, 0, 0,
-        0, false, &p, nullptr);
-    view->OnTouchEvent(touch);
-  }
-};
-
 class FrameStableObserver {
  public:
   FrameStableObserver(RenderWidgetHostViewBase* view, base::TimeDelta delta)
@@ -10403,120 +10344,257 @@ class TouchSelectionControllerClientTestWrapper
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientTestWrapper);
 };
 
+class TouchSelectionControllerClientAndroidSiteIsolationTest
+    : public SitePerProcessBrowserTest {
+ public:
+  TouchSelectionControllerClientAndroidSiteIsolationTest()
+      : root_rwhv_(nullptr),
+        child_rwhv_(nullptr),
+        child_frame_tree_node_(nullptr),
+        selection_controller_client_(nullptr) {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() {
+    return static_cast<RenderWidgetHostViewAndroid*>(
+        shell()->web_contents()->GetRenderWidgetHostView());
+  }
+
+  void SelectWithLongPress(gfx::Point point) {
+    // Get main frame view for event insertion.
+    RenderWidgetHostViewAndroid* main_view = GetRenderWidgetHostViewAndroid();
+
+    SendTouch(main_view, ui::MotionEvent::Action::DOWN, point);
+    // action_timeout() is far longer than needed for a LongPress, so we use
+    // a custom timeout here.
+    DelayBy(base::TimeDelta::FromMilliseconds(2000));
+    SendTouch(main_view, ui::MotionEvent::Action::UP, point);
+  }
+
+  void SimpleTap(gfx::Point point) {
+    // Get main frame view for event insertion.
+    RenderWidgetHostViewAndroid* main_view = GetRenderWidgetHostViewAndroid();
+
+    SendTouch(main_view, ui::MotionEvent::Action::DOWN, point);
+    // tiny_timeout() is way shorter than a reasonable user-created tap gesture,
+    // so we use a custom timeout here.
+    DelayBy(base::TimeDelta::FromMilliseconds(300));
+    SendTouch(main_view, ui::MotionEvent::Action::UP, point);
+  }
+
+  void SetupTest() {
+    GURL test_url(embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(a)"));
+    EXPECT_TRUE(NavigateToURL(shell(), test_url));
+    frame_observer_ = std::make_unique<RenderFrameSubmissionObserver>(
+        shell()->web_contents());
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    EXPECT_EQ(
+        " Site A\n"
+        "   +--Site A\n"
+        "Where A = http://a.com/",
+        FrameTreeVisualizer().DepictFrameTree(root));
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_EQ(1u, root->child_count());
+    child_frame_tree_node_ = root->child_at(0);
+
+    root_rwhv_ = static_cast<RenderWidgetHostViewAndroid*>(
+        root->current_frame_host()->GetRenderWidgetHost()->GetView());
+    selection_controller_client_ =
+        new TouchSelectionControllerClientTestWrapper(
+            root_rwhv_->GetSelectionControllerClientManagerForTesting());
+    root_rwhv_->SetSelectionControllerClientForTesting(
+        base::WrapUnique(selection_controller_client_));
+
+    // We need to load the desired subframe and then wait until it's stable,
+    // i.e. generates no new compositor frames for some reasonable time period:
+    // a stray frame between touch selection's pre-handling of GestureLongPress
+    // and the expected frame containing the selected region can confuse the
+    // TouchSelectionController, causing it to fail to show selection handles.
+    // Note this is an issue with the TouchSelectionController in general, and
+    // not a property of this test.
+    GURL child_url(
+        embedded_test_server()->GetURL("b.com", "/touch_selection.html"));
+    NavigateFrameToURL(child_frame_tree_node_, child_url);
+    EXPECT_EQ(
+        " Site A ------------ proxies for B\n"
+        "   +--Site B ------- proxies for A\n"
+        "Where A = http://a.com/\n"
+        "      B = http://b.com/",
+        FrameTreeVisualizer().DepictFrameTree(root));
+    // The child will change with the cross-site navigation. It shouldn't change
+    // after this.
+    child_frame_tree_node_ = root->child_at(0);
+    WaitForHitTestDataOrChildSurfaceReady(
+        child_frame_tree_node_->current_frame_host());
+
+    child_rwhv_ = static_cast<RenderWidgetHostViewChildFrame*>(
+        child_frame_tree_node_->current_frame_host()
+            ->GetRenderWidgetHost()
+            ->GetView());
+
+    EXPECT_EQ(child_url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    FrameStableObserver child_frame_stable_observer(
+        child_rwhv_, TestTimeouts::tiny_timeout());
+    child_frame_stable_observer.WaitUntilStable();
+  }
+
+  // This must be called before the main-frame's RenderWidgetHostView is freed,
+  // else we'll have a nullptr dereference on shutdown.
+  void ShutdownTest() {
+    ASSERT_TRUE(frame_observer_);
+    frame_observer_.reset();
+  }
+
+  gfx::PointF GetPointInChild() {
+    gfx::PointF point_f;
+    std::string str;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child_frame_tree_node_->current_frame_host(), "get_point_inside_text()",
+        &str));
+    ConvertJSONToPoint(str, &point_f);
+    point_f = child_rwhv()->TransformPointToRootCoordSpaceF(point_f);
+    return point_f;
+  }
+
+  void VerifyHandlePosition() {
+    // Check that selection handles are close to the selection range.
+    // The test will timeout if this never happens.
+    ui::TouchSelectionController* touch_selection_controller =
+        root_rwhv()->touch_selection_controller();
+
+    bool handles_in_place = false;
+    while (!handles_in_place) {
+      gfx::PointF selection_start =
+          touch_selection_controller->GetStartPosition();
+      gfx::PointF selection_end = touch_selection_controller->GetEndPosition();
+      gfx::RectF handle_start =
+          touch_selection_controller->GetStartHandleRect();
+      gfx::RectF handle_end = touch_selection_controller->GetEndHandleRect();
+
+      // Not all Android bots seem to actually show the handle, so check first.
+      if (handle_start.IsEmpty()) {
+        handles_in_place = true;
+      } else {
+        bool has_end_handle =
+            !touch_selection_controller->GetEndHandleRect().IsEmpty();
+        // handle_start.y() defined the top of the handle's rect, and x() is
+        // left.
+        bool start_near_y =
+            std::abs(selection_start.y() - handle_start.y()) <= 3.f;
+        bool start_in_x_range = selection_start.x() >= handle_start.x() &&
+                                selection_start.x() <= handle_start.right();
+        bool end_near_y = std::abs(selection_end.y() - handle_end.y()) <= 3.f;
+        bool end_in_x_range = selection_end.x() >= handle_end.x() &&
+                              selection_end.x() <= handle_end.right();
+        handles_in_place = start_near_y && start_in_x_range && end_near_y &&
+                           end_in_x_range && has_end_handle;
+      }
+      if (!handles_in_place)
+        DelayBy(base::TimeDelta::FromMilliseconds(100));
+    }
+  }
+
+  RenderWidgetHostViewAndroid* root_rwhv() { return root_rwhv_; }
+
+  RenderWidgetHostViewChildFrame* child_rwhv() { return child_rwhv_; }
+
+  float PageScaleFactor() {
+    return frame_observer_->LastRenderFrameMetadata().page_scale_factor;
+  }
+
+  TouchSelectionControllerClientTestWrapper* selection_controller_client() {
+    return selection_controller_client_;
+  }
+
+  void OnSyntheticGestureSent() {
+    gesture_run_loop_ = std::make_unique<base::RunLoop>();
+    gesture_run_loop_->Run();
+  }
+
+  void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
+    EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+    gesture_run_loop_->Quit();
+  }
+
+ protected:
+  void DelayBy(base::TimeDelta delta) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), delta);
+    run_loop.Run();
+  }
+
+ private:
+  void SendTouch(RenderWidgetHostViewAndroid* view,
+                 ui::MotionEvent::Action action,
+                 gfx::Point point) {
+    DCHECK(action >= ui::MotionEvent::Action::DOWN &&
+           action < ui::MotionEvent::Action::CANCEL);
+
+    ui::MotionEventAndroid::Pointer p(0, point.x(), point.y(), 10, 0, 0, 0, 0);
+    JNIEnv* env = base::android::AttachCurrentThread();
+    auto time_ms = (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds();
+    ui::MotionEventAndroid touch(
+        env, nullptr, 1.f, 0, 0, 0, time_ms,
+        ui::MotionEventAndroid::GetAndroidAction(action), 1, 0, 0, 0, 0, 0, 0,
+        0, false, &p, nullptr);
+    view->OnTouchEvent(touch);
+  }
+
+  RenderWidgetHostViewAndroid* root_rwhv_;
+  RenderWidgetHostViewChildFrame* child_rwhv_;
+  FrameTreeNode* child_frame_tree_node_;
+  std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
+  TouchSelectionControllerClientTestWrapper* selection_controller_client_;
+
+  std::unique_ptr<base::RunLoop> gesture_run_loop_;
+};
+
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
                        BasicSelectionIsolatedIframe) {
-  GURL test_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(a)"));
-  EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  EXPECT_EQ(
-      " Site A\n"
-      "   +--Site A\n"
-      "Where A = http://a.com/",
-      FrameTreeVisualizer().DepictFrameTree(root));
-  TestNavigationObserver observer(shell()->web_contents());
-  EXPECT_EQ(1u, root->child_count());
-  FrameTreeNode* child = root->child_at(0);
-
-  RenderWidgetHostViewAndroid* parent_view =
-      static_cast<RenderWidgetHostViewAndroid*>(
-          root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  TouchSelectionControllerClientTestWrapper* selection_controller_client =
-      new TouchSelectionControllerClientTestWrapper(
-          parent_view->GetSelectionControllerClientManagerForTesting());
-  parent_view->SetSelectionControllerClientForTesting(
-      base::WrapUnique(selection_controller_client));
-
-  // We need to load the desired subframe and then wait until it's stable, i.e.
-  // generates no new compositor frames for some reasonable time period: a stray
-  // frame between touch selection's pre-handling of GestureLongPress and the
-  // expected frame containing the selected region can confuse the
-  // TouchSelectionController, causing it to fail to show selection handles.
-  // Note this is an issue with the TouchSelectionController in general, and
-  // not a property of this test.
-  GURL child_url(
-      embedded_test_server()->GetURL("b.com", "/touch_selection.html"));
-  NavigateFrameToURL(child, child_url);
-  EXPECT_EQ(
-      " Site A ------------ proxies for B\n"
-      "   +--Site B ------- proxies for A\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.com/",
-      FrameTreeVisualizer().DepictFrameTree(root));
-  // The child will change with the cross-site navigation. It shouldn't change
-  // after this.
-  child = root->child_at(0);
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
-
-  RenderWidgetHostViewChildFrame* child_view =
-      static_cast<RenderWidgetHostViewChildFrame*>(
-          child->current_frame_host()->GetRenderWidgetHost()->GetView());
-
-  EXPECT_EQ(child_url, observer.last_navigation_url());
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  FrameStableObserver child_frame_stable_observer(child_view,
-                                                  TestTimeouts::tiny_timeout());
-  child_frame_stable_observer.WaitUntilStable();
+  // Load test URL with cross-process child.
+  SetupTest();
 
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
-            parent_view->touch_selection_controller()->active_status());
+            root_rwhv()->touch_selection_controller()->active_status());
   // Find the location of some text to select.
-  gfx::PointF point_f;
-  std::string str;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(child->current_frame_host(),
-                                            "get_point_inside_text()", &str));
-  ConvertJSONToPoint(str, &point_f);
-  point_f = child_view->TransformPointToRootCoordSpaceF(point_f);
+  gfx::PointF point_f = GetPointInChild();
 
   // Initiate selection with a sequence of events that go through the targeting
   // system.
-  selection_controller_client->InitWaitForSelectionEvent(
+  selection_controller_client()->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_SHOWN);
 
   SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
 
-  selection_controller_client->Wait();
+  selection_controller_client()->Wait();
 
   // Check that selection is active and the quick menu is showing.
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
-            parent_view->touch_selection_controller()->active_status());
+            root_rwhv()->touch_selection_controller()->active_status());
 
-  // Check that selection handles are close to the selection range.
-  ui::TouchSelectionController* touch_selection_controller =
-      parent_view->touch_selection_controller();
-
-  gfx::PointF selection_start = touch_selection_controller->GetStartPosition();
-  gfx::PointF selection_end = touch_selection_controller->GetEndPosition();
-  gfx::RectF handle_start = touch_selection_controller->GetStartHandleRect();
-  gfx::RectF handle_end = touch_selection_controller->GetEndHandleRect();
-
-  // Not all Android bots seem to actually show the handle, so check first.
-  if (!handle_start.IsEmpty()) {
-    EXPECT_FALSE(touch_selection_controller->GetEndHandleRect().IsEmpty());
-    // handle_start.y() defined the top of the handle's rect, and x() is left.
-    EXPECT_NEAR(selection_start.y(), handle_start.y(), 3.f);
-    EXPECT_GE(selection_start.x(), handle_start.x());
-    EXPECT_LE(selection_start.x(), handle_start.right());
-    EXPECT_NEAR(selection_end.y(), handle_end.y(), 3.f);
-    EXPECT_GE(selection_end.x(), handle_end.x());
-    EXPECT_LE(selection_end.x(), handle_end.right());
-  }
+  // Make sure handles are correctly positioned.
+  VerifyHandlePosition();
 
   // Tap inside/outside the iframe and make sure the selection handles go away.
-  selection_controller_client->InitWaitForSelectionEvent(
+  selection_controller_client()->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_CLEARED);
   // Since Android tests may run with page_scale_factor < 1, use an offset a
   // bigger than +/-1 for doing the inside/outside taps to cancel the selection
   // handles.
   gfx::PointF point_inside_iframe =
-      child_view->TransformPointToRootCoordSpaceF(gfx::PointF(+5.f, +5.f));
+      child_rwhv()->TransformPointToRootCoordSpaceF(gfx::PointF(+5.f, +5.f));
   SimpleTap(gfx::Point(point_inside_iframe.x(), point_inside_iframe.y()));
-  selection_controller_client->Wait();
+  selection_controller_client()->Wait();
 
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
-            parent_view->touch_selection_controller()->active_status());
+            root_rwhv()->touch_selection_controller()->active_status());
 
   // Let's wait for the previous events to clear the round-trip to the renders
   // and back.
@@ -10525,32 +10603,98 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   // Initiate selection with a sequence of events that go through the targeting
   // system. Repeat of above but this time we'l cancel the selection by
   // tapping outside of the OOPIF.
-  selection_controller_client->InitWaitForSelectionEvent(
+  selection_controller_client()->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_SHOWN);
 
   SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
 
-  selection_controller_client->Wait();
+  selection_controller_client()->Wait();
 
   // Check that selection is active and the quick menu is showing.
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
-            parent_view->touch_selection_controller()->active_status());
+            root_rwhv()->touch_selection_controller()->active_status());
 
   // Tap inside/outside the iframe and make sure the selection handles go away.
-  selection_controller_client->InitWaitForSelectionEvent(
+  selection_controller_client()->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_CLEARED);
   // Since Android tests may run with page_scale_factor < 1, use an offset a
   // bigger than +/-1 for doing the inside/outside taps to cancel the selection
   // handles.
   gfx::PointF point_outside_iframe =
-      child_view->TransformPointToRootCoordSpaceF(gfx::PointF(-5.f, -5.f));
+      child_rwhv()->TransformPointToRootCoordSpaceF(gfx::PointF(-5.f, -5.f));
   SimpleTap(gfx::Point(point_outside_iframe.x(), point_outside_iframe.y()));
-  selection_controller_client->Wait();
+  selection_controller_client()->Wait();
 
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
-            parent_view->touch_selection_controller()->active_status());
+            root_rwhv()->touch_selection_controller()->active_status());
+
+  // Cleanup before shutting down.
+  ShutdownTest();
 }
 
+// This test verifies that the handles associated with an active touch selection
+// are still correctly positioned after a pinch-zoom operation.
+IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
+                       SelectionThenPinchInOOPIF) {
+  // Load test URL with cross-process child.
+  SetupTest();
+
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            root_rwhv()->touch_selection_controller()->active_status());
+  // Find the location of some text to select.
+  gfx::PointF point_f = GetPointInChild();
+
+  // Initiate selection with a sequence of events that go through the targeting
+  // system.
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_SHOWN);
+
+  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
+
+  selection_controller_client()->Wait();
+
+  // Check that selection is active and the quick menu is showing.
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            root_rwhv()->touch_selection_controller()->active_status());
+
+  // Make sure handles are correctly positioned.
+  VerifyHandlePosition();
+
+  // Generate a pinch sequence, then re-verify handles are in the correct
+  // location.
+  float page_scale_delta = 2.f;
+  float current_page_scale = PageScaleFactor();
+  float target_page_scale = current_page_scale * page_scale_delta;
+
+  SyntheticPinchGestureParams params;
+  // We'll use the selection point for the pinch center to minimize the
+  // likelihood of the selection getting zoomed offscreen.
+  params.anchor = point_f;
+  // Note: the |scale_factor| in |params| is actually treated as a delta, not
+  // absolute, page scale.
+  params.scale_factor = page_scale_delta;
+  auto synthetic_pinch_gesture =
+      std::make_unique<SyntheticTouchscreenPinchGesture>(params);
+
+  auto* host =
+      static_cast<RenderWidgetHostImpl*>(root_rwhv()->GetRenderWidgetHost());
+  InputEventAckWaiter gesture_pinch_end_waiter(
+      host, blink::WebInputEvent::kGesturePinchEnd);
+  host->QueueSyntheticGesture(
+      std::move(synthetic_pinch_gesture),
+      base::BindOnce(&TouchSelectionControllerClientAndroidSiteIsolationTest::
+                         OnSyntheticGestureCompleted,
+                     base::Unretained(this)));
+  OnSyntheticGestureSent();
+  // Make sure the gesture is complete from the renderer's point of view.
+  gesture_pinch_end_waiter.Wait();
+
+  VerifyHandlePosition();
+  EXPECT_NEAR(target_page_scale, PageScaleFactor(), 0.01);
+
+  // Cleanup before shutting down.
+  ShutdownTest();
+}
 #endif  // defined(OS_ANDROID)
 
 // Verify that sandbox flags specified by a CSP header are properly inherited by
