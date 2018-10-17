@@ -1032,6 +1032,18 @@ v8::Local<v8::Value> TestDictionary::ToV8Impl(v8::Local<v8::Object> creationCont
 bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryKeys(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  auto create_property = [dictionary, context, keys, isolate](
+                             size_t key_index, v8::Local<v8::Value> value) {
+    bool added_property;
+    v8::Local<v8::Name> key = keys[key_index].Get(isolate);
+    if (!dictionary->CreateDataProperty(context, key, value)
+             .To(&added_property)) {
+      return false;
+    }
+    return added_property;
+  };
+
   ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
   v8::Local<v8::Value> any_in_record_member_value;
@@ -1041,7 +1053,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     any_in_record_member_has_value_or_default = true;
   }
   if (any_in_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), any_in_record_member_value))) {
+      !create_property(0, any_in_record_member_value)) {
     return false;
   }
 
@@ -1055,7 +1067,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     any_member_has_value_or_default = true;
   }
   if (any_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[1].Get(isolate), any_member_value))) {
+      !create_property(1, any_member_value)) {
     return false;
   }
 
@@ -1066,7 +1078,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     applicable_to_type_long_member_has_value_or_default = true;
   }
   if (applicable_to_type_long_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[2].Get(isolate), applicable_to_type_long_member_value))) {
+      !create_property(2, applicable_to_type_long_member_value)) {
     return false;
   }
 
@@ -1077,7 +1089,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     applicable_to_type_string_member_has_value_or_default = true;
   }
   if (applicable_to_type_string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[3].Get(isolate), applicable_to_type_string_member_value))) {
+      !create_property(3, applicable_to_type_string_member_value)) {
     return false;
   }
 
@@ -1088,7 +1100,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     boolean_member_has_value_or_default = true;
   }
   if (boolean_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[4].Get(isolate), boolean_member_value))) {
+      !create_property(4, boolean_member_value)) {
     return false;
   }
 
@@ -1099,7 +1111,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     byte_string_member_has_value_or_default = true;
   }
   if (byte_string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[5].Get(isolate), byte_string_member_value))) {
+      !create_property(5, byte_string_member_value)) {
     return false;
   }
 
@@ -1110,7 +1122,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     callback_function_member_has_value_or_default = true;
   }
   if (callback_function_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[6].Get(isolate), callback_function_member_value))) {
+      !create_property(6, callback_function_member_value)) {
     return false;
   }
 
@@ -1121,7 +1133,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     create_has_value_or_default = true;
   }
   if (create_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[7].Get(isolate), create_value))) {
+      !create_property(7, create_value)) {
     return false;
   }
 
@@ -1132,7 +1144,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     deprecated_create_member_has_value_or_default = true;
   }
   if (deprecated_create_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[8].Get(isolate), deprecated_create_member_value))) {
+      !create_property(8, deprecated_create_member_value)) {
     return false;
   }
 
@@ -1144,7 +1156,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     dictionary_member_has_value_or_default = true;
   }
   if (dictionary_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[9].Get(isolate), dictionary_member_value))) {
+      !create_property(9, dictionary_member_value)) {
     return false;
   }
 
@@ -1158,7 +1170,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     double_or_null_member_has_value_or_default = true;
   }
   if (double_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[10].Get(isolate), double_or_null_member_value))) {
+      !create_property(10, double_or_null_member_value)) {
     return false;
   }
 
@@ -1169,7 +1181,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     double_or_null_or_double_or_null_sequence_member_has_value_or_default = true;
   }
   if (double_or_null_or_double_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[11].Get(isolate), double_or_null_or_double_or_null_sequence_member_value))) {
+      !create_property(11, double_or_null_or_double_or_null_sequence_member_value)) {
     return false;
   }
 
@@ -1180,7 +1192,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     double_or_null_record_member_has_value_or_default = true;
   }
   if (double_or_null_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[12].Get(isolate), double_or_null_record_member_value))) {
+      !create_property(12, double_or_null_record_member_value)) {
     return false;
   }
 
@@ -1191,7 +1203,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     double_or_null_sequence_member_has_value_or_default = true;
   }
   if (double_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[13].Get(isolate), double_or_null_sequence_member_value))) {
+      !create_property(13, double_or_null_sequence_member_value)) {
     return false;
   }
 
@@ -1205,7 +1217,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     double_or_string_member_has_value_or_default = true;
   }
   if (double_or_string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[14].Get(isolate), double_or_string_member_value))) {
+      !create_property(14, double_or_string_member_value)) {
     return false;
   }
 
@@ -1216,7 +1228,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     double_or_string_sequence_member_has_value_or_default = true;
   }
   if (double_or_string_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[15].Get(isolate), double_or_string_sequence_member_value))) {
+      !create_property(15, double_or_string_sequence_member_value)) {
     return false;
   }
 
@@ -1227,7 +1239,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     element_or_null_member_has_value_or_default = true;
   }
   if (element_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[16].Get(isolate), element_or_null_member_value))) {
+      !create_property(16, element_or_null_member_value)) {
     return false;
   }
 
@@ -1238,7 +1250,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     element_or_null_record_member_has_value_or_default = true;
   }
   if (element_or_null_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[17].Get(isolate), element_or_null_record_member_value))) {
+      !create_property(17, element_or_null_record_member_value)) {
     return false;
   }
 
@@ -1249,7 +1261,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     element_or_null_sequence_member_has_value_or_default = true;
   }
   if (element_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[18].Get(isolate), element_or_null_sequence_member_value))) {
+      !create_property(18, element_or_null_sequence_member_value)) {
     return false;
   }
 
@@ -1263,7 +1275,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     enum_member_has_value_or_default = true;
   }
   if (enum_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[19].Get(isolate), enum_member_value))) {
+      !create_property(19, enum_member_value)) {
     return false;
   }
 
@@ -1277,7 +1289,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     enum_or_null_member_has_value_or_default = true;
   }
   if (enum_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[20].Get(isolate), enum_or_null_member_value))) {
+      !create_property(20, enum_or_null_member_value)) {
     return false;
   }
 
@@ -1288,7 +1300,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     enum_sequence_member_has_value_or_default = true;
   }
   if (enum_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[21].Get(isolate), enum_sequence_member_value))) {
+      !create_property(21, enum_sequence_member_value)) {
     return false;
   }
 
@@ -1299,7 +1311,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     event_target_member_has_value_or_default = true;
   }
   if (event_target_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[22].Get(isolate), event_target_member_value))) {
+      !create_property(22, event_target_member_value)) {
     return false;
   }
 
@@ -1310,7 +1322,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     garbage_collected_record_member_has_value_or_default = true;
   }
   if (garbage_collected_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[23].Get(isolate), garbage_collected_record_member_value))) {
+      !create_property(23, garbage_collected_record_member_value)) {
     return false;
   }
 
@@ -1321,7 +1333,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     internal_dictionary_sequence_member_has_value_or_default = true;
   }
   if (internal_dictionary_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[24].Get(isolate), internal_dictionary_sequence_member_value))) {
+      !create_property(24, internal_dictionary_sequence_member_value)) {
     return false;
   }
 
@@ -1335,7 +1347,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     long_member_has_value_or_default = true;
   }
   if (long_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[25].Get(isolate), long_member_value))) {
+      !create_property(25, long_member_value)) {
     return false;
   }
 
@@ -1349,7 +1361,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     member_with_hyphen_in_name_has_value_or_default = true;
   }
   if (member_with_hyphen_in_name_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[26].Get(isolate), member_with_hyphen_in_name_value))) {
+      !create_property(26, member_with_hyphen_in_name_value)) {
     return false;
   }
 
@@ -1361,7 +1373,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     object_member_has_value_or_default = true;
   }
   if (object_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[27].Get(isolate), object_member_value))) {
+      !create_property(27, object_member_value)) {
     return false;
   }
 
@@ -1376,7 +1388,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     object_or_null_member_has_value_or_default = true;
   }
   if (object_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[28].Get(isolate), object_or_null_member_value))) {
+      !create_property(28, object_or_null_member_value)) {
     return false;
   }
 
@@ -1390,7 +1402,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     other_double_or_string_member_has_value_or_default = true;
   }
   if (other_double_or_string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[31].Get(isolate), other_double_or_string_member_value))) {
+      !create_property(31, other_double_or_string_member_value)) {
     return false;
   }
 
@@ -1401,7 +1413,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     public_has_value_or_default = true;
   }
   if (public_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[32].Get(isolate), public_value))) {
+      !create_property(32, public_value)) {
     return false;
   }
 
@@ -1412,7 +1424,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     record_member_has_value_or_default = true;
   }
   if (record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[33].Get(isolate), record_member_value))) {
+      !create_property(33, record_member_value)) {
     return false;
   }
 
@@ -1425,7 +1437,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     NOTREACHED();
   }
   if (required_callback_function_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[34].Get(isolate), required_callback_function_member_value))) {
+      !create_property(34, required_callback_function_member_value)) {
     return false;
   }
 
@@ -1439,7 +1451,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     restricted_double_member_has_value_or_default = true;
   }
   if (restricted_double_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[35].Get(isolate), restricted_double_member_value))) {
+      !create_property(35, restricted_double_member_value)) {
     return false;
   }
 
@@ -1450,7 +1462,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_member_has_value_or_default = true;
   }
   if (string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[38].Get(isolate), string_member_value))) {
+      !create_property(38, string_member_value)) {
     return false;
   }
 
@@ -1464,7 +1476,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_or_null_member_has_value_or_default = true;
   }
   if (string_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[39].Get(isolate), string_or_null_member_value))) {
+      !create_property(39, string_or_null_member_value)) {
     return false;
   }
 
@@ -1475,7 +1487,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_or_null_record_member_has_value_or_default = true;
   }
   if (string_or_null_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[40].Get(isolate), string_or_null_record_member_value))) {
+      !create_property(40, string_or_null_record_member_value)) {
     return false;
   }
 
@@ -1486,7 +1498,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_or_null_sequence_member_has_value_or_default = true;
   }
   if (string_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[41].Get(isolate), string_or_null_sequence_member_value))) {
+      !create_property(41, string_or_null_sequence_member_value)) {
     return false;
   }
 
@@ -1500,7 +1512,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     string_sequence_member_has_value_or_default = true;
   }
   if (string_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[42].Get(isolate), string_sequence_member_value))) {
+      !create_property(42, string_sequence_member_value)) {
     return false;
   }
 
@@ -1511,7 +1523,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_enum_or_null_or_test_enum_sequence_member_has_value_or_default = true;
   }
   if (test_enum_or_null_or_test_enum_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[43].Get(isolate), test_enum_or_null_or_test_enum_sequence_member_value))) {
+      !create_property(43, test_enum_or_null_or_test_enum_sequence_member_value)) {
     return false;
   }
 
@@ -1522,7 +1534,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_enum_or_test_enum_or_null_sequence_member_has_value_or_default = true;
   }
   if (test_enum_or_test_enum_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[44].Get(isolate), test_enum_or_test_enum_or_null_sequence_member_value))) {
+      !create_property(44, test_enum_or_test_enum_or_null_sequence_member_value)) {
     return false;
   }
 
@@ -1533,7 +1545,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_enum_or_test_enum_sequence_member_has_value_or_default = true;
   }
   if (test_enum_or_test_enum_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[45].Get(isolate), test_enum_or_test_enum_sequence_member_value))) {
+      !create_property(45, test_enum_or_test_enum_sequence_member_value)) {
     return false;
   }
 
@@ -1544,7 +1556,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_2_or_uint8_array_member_has_value_or_default = true;
   }
   if (test_interface_2_or_uint8_array_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[46].Get(isolate), test_interface_2_or_uint8_array_member_value))) {
+      !create_property(46, test_interface_2_or_uint8_array_member_value)) {
     return false;
   }
 
@@ -1555,7 +1567,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_member_has_value_or_default = true;
   }
   if (test_interface_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[47].Get(isolate), test_interface_member_value))) {
+      !create_property(47, test_interface_member_value)) {
     return false;
   }
 
@@ -1566,7 +1578,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_or_null_member_has_value_or_default = true;
   }
   if (test_interface_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[48].Get(isolate), test_interface_or_null_member_value))) {
+      !create_property(48, test_interface_or_null_member_value)) {
     return false;
   }
 
@@ -1580,7 +1592,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_interface_sequence_member_has_value_or_default = true;
   }
   if (test_interface_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[49].Get(isolate), test_interface_sequence_member_value))) {
+      !create_property(49, test_interface_sequence_member_value)) {
     return false;
   }
 
@@ -1591,7 +1603,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     test_object_sequence_member_has_value_or_default = true;
   }
   if (test_object_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[50].Get(isolate), test_object_sequence_member_value))) {
+      !create_property(50, test_object_sequence_member_value)) {
     return false;
   }
 
@@ -1605,7 +1617,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     treat_null_as_string_sequence_member_has_value_or_default = true;
   }
   if (treat_null_as_string_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[51].Get(isolate), treat_null_as_string_sequence_member_value))) {
+      !create_property(51, treat_null_as_string_sequence_member_value)) {
     return false;
   }
 
@@ -1616,7 +1628,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     uint8_array_member_has_value_or_default = true;
   }
   if (uint8_array_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[52].Get(isolate), uint8_array_member_value))) {
+      !create_property(52, uint8_array_member_value)) {
     return false;
   }
 
@@ -1627,7 +1639,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_in_record_member_has_value_or_default = true;
   }
   if (union_in_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[53].Get(isolate), union_in_record_member_value))) {
+      !create_property(53, union_in_record_member_value)) {
     return false;
   }
 
@@ -1641,7 +1653,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_member_with_sequence_default_has_value_or_default = true;
   }
   if (union_member_with_sequence_default_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[54].Get(isolate), union_member_with_sequence_default_value))) {
+      !create_property(54, union_member_with_sequence_default_value)) {
     return false;
   }
 
@@ -1652,7 +1664,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_or_null_record_member_has_value_or_default = true;
   }
   if (union_or_null_record_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[55].Get(isolate), union_or_null_record_member_value))) {
+      !create_property(55, union_or_null_record_member_value)) {
     return false;
   }
 
@@ -1663,7 +1675,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_or_null_sequence_member_has_value_or_default = true;
   }
   if (union_or_null_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[56].Get(isolate), union_or_null_sequence_member_value))) {
+      !create_property(56, union_or_null_sequence_member_value)) {
     return false;
   }
 
@@ -1674,7 +1686,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     union_with_typedefs_has_value_or_default = true;
   }
   if (union_with_typedefs_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[57].Get(isolate), union_with_typedefs_value))) {
+      !create_property(57, union_with_typedefs_value)) {
     return false;
   }
 
@@ -1688,7 +1700,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     unrestricted_double_member_has_value_or_default = true;
   }
   if (unrestricted_double_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[58].Get(isolate), unrestricted_double_member_value))) {
+      !create_property(58, unrestricted_double_member_value)) {
     return false;
   }
 
@@ -1702,7 +1714,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     usv_string_or_null_member_has_value_or_default = true;
   }
   if (usv_string_or_null_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[59].Get(isolate), usv_string_or_null_member_value))) {
+      !create_property(59, usv_string_or_null_member_value)) {
     return false;
   }
 
@@ -1714,7 +1726,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       runtime_member_has_value_or_default = true;
     }
     if (runtime_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[36].Get(isolate), runtime_member_value))) {
+        !create_property(36, runtime_member_value)) {
       return false;
     }
 
@@ -1725,7 +1737,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       runtime_second_member_has_value_or_default = true;
     }
     if (runtime_second_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[37].Get(isolate), runtime_second_member_value))) {
+        !create_property(37, runtime_second_member_value)) {
       return false;
     }
   }
@@ -1738,7 +1750,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       origin_trial_member_has_value_or_default = true;
     }
     if (origin_trial_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[29].Get(isolate), origin_trial_member_value))) {
+        !create_property(29, origin_trial_member_value)) {
       return false;
     }
   }
@@ -1751,7 +1763,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       origin_trial_second_member_has_value_or_default = true;
     }
     if (origin_trial_second_member_has_value_or_default &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[30].Get(isolate), origin_trial_second_member_value))) {
+        !create_property(30, origin_trial_second_member_value)) {
       return false;
     }
   }

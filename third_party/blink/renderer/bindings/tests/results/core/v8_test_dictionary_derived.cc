@@ -119,6 +119,18 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
 
   const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  auto create_property = [dictionary, context, keys, isolate](
+                             size_t key_index, v8::Local<v8::Value> value) {
+    bool added_property;
+    v8::Local<v8::Name> key = keys[key_index].Get(isolate);
+    if (!dictionary->CreateDataProperty(context, key, value)
+             .To(&added_property)) {
+      return false;
+    }
+    return added_property;
+  };
+
   v8::Local<v8::Value> derived_string_member_value;
   bool derived_string_member_has_value_or_default = false;
   if (impl.hasDerivedStringMember()) {
@@ -126,7 +138,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     derived_string_member_has_value_or_default = true;
   }
   if (derived_string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), derived_string_member_value))) {
+      !create_property(0, derived_string_member_value)) {
     return false;
   }
 
@@ -140,7 +152,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     derived_string_member_with_default_has_value_or_default = true;
   }
   if (derived_string_member_with_default_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[1].Get(isolate), derived_string_member_with_default_value))) {
+      !create_property(1, derived_string_member_with_default_value)) {
     return false;
   }
 
@@ -153,7 +165,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     NOTREACHED();
   }
   if (required_long_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[2].Get(isolate), required_long_member_value))) {
+      !create_property(2, required_long_member_value)) {
     return false;
   }
 
@@ -164,7 +176,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     string_or_double_sequence_member_has_value_or_default = true;
   }
   if (string_or_double_sequence_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[3].Get(isolate), string_or_double_sequence_member_value))) {
+      !create_property(3, string_or_double_sequence_member_value)) {
     return false;
   }
 
