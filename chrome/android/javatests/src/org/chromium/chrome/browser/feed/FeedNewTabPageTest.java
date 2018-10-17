@@ -30,7 +30,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -50,11 +49,8 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -65,13 +61,6 @@ import java.util.List;
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 public class FeedNewTabPageTest {
-    private static final String FILEPATH = "chrome/test/data/android/feed/feed_large.gcl.bin";
-    private static final String FIRST_CARD_URL = "http://profootballtalk.nbcsports.com/2017/11/10/"
-            + "jerry-jones-owners-should-approve-of-roger-goodells-decisions/";
-    private static final int SIGNIN_PROMO_POSITION = 1;
-    private static final int ARTICLE_SECTION_HEADER_POSITION = 2;
-    private static final int FIRST_CARD_POSITION = 3;
-
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -84,22 +73,11 @@ public class FeedNewTabPageTest {
     private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
-    private TestNetworkClient mTestNetworkClient;
 
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityWithURL("about:blank");
-        // Ensure we start in an online state.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            if (!NetworkChangeNotifier.isInitialized()) {
-                NetworkChangeNotifier.init();
-            }
-            NetworkChangeNotifier.forceConnectivityState(true);
-        });
-
-        mTestNetworkClient = new TestNetworkClient();
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> FeedNewTabPage.setInTestMode(true, mTestNetworkClient));
+        ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(true));
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mSiteSuggestions = NewTabPageTestUtils.createFakeSiteSuggestions(mTestServer);
@@ -120,7 +98,7 @@ public class FeedNewTabPageTest {
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
-        ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false, null));
+        ThreadUtils.runOnUiThreadBlocking(() -> FeedNewTabPage.setInTestMode(false));
     }
 
     @Test
@@ -136,21 +114,18 @@ public class FeedNewTabPageTest {
         // that sign-in promo is not shown.
         ThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedIn);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
-        onView(instanceOf(RecyclerView.class))
-                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(1));
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
 
         // Simulate sign out, scroll to the position where sign-in promo could be placed, and verify
         // that sign-in promo is shown.
         ThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedOut);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
-        onView(instanceOf(RecyclerView.class))
-                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(1));
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
 
         // Scroll to the article section header in case it is not visible.
-        onView(instanceOf(RecyclerView.class))
-                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
+        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
 
         // Hide articles and verify that the sign-in promo is not shown.
         onView(withId(R.id.header_title)).perform(click());
@@ -279,23 +254,6 @@ public class FeedNewTabPageTest {
         // Reset state.
         ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, pref));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"FeedNewTabPage"})
-    public void testClickSuggestion() throws InterruptedException, IOException {
-        FileInputStream is = new FileInputStream(UrlUtils.getIsolatedTestFilePath(FILEPATH));
-        mTestNetworkClient.setResponseData(is);
-        ThreadUtils.runOnUiThreadBlocking(() -> mNtp.getStream().triggerRefresh());
-
-        ChromeTabUtils.waitForTabPageLoaded(mTab, () -> {
-            onView(instanceOf(RecyclerView.class))
-                    .perform(RecyclerViewActions.scrollToPosition(FIRST_CARD_POSITION),
-                            RecyclerViewActions.actionOnItemAtPosition(
-                                    FIRST_CARD_POSITION, click()));
-        });
-        Assert.assertEquals(FIRST_CARD_URL, mTab.getUrl());
     }
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {

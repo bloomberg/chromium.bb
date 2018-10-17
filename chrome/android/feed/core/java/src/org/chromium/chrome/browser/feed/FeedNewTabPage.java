@@ -425,7 +425,7 @@ public class FeedNewTabPage extends NewTabPage {
      *                   the FeedProcessScope will be reset.
      */
     @VisibleForTesting
-    public static void setInTestMode(boolean inTestMode, TestNetworkClient networkClient) {
+    public static void setInTestMode(boolean inTestMode) {
         if (inTestMode) {
             FeedScheduler feedScheduler = new TestFeedScheduler();
             FeedAppLifecycleListener lifecycleListener =
@@ -433,8 +433,9 @@ public class FeedNewTabPage extends NewTabPage {
             Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
             FeedAppLifecycle feedAppLifecycle = new FeedAppLifecycle(
                     lifecycleListener, new FeedLifecycleBridge(profile), feedScheduler);
-            FeedProcessScopeFactory.createFeedProcessScopeForTesting(feedScheduler, networkClient,
-                    new TestFeedOfflineIndicator(), feedAppLifecycle, lifecycleListener);
+            FeedProcessScopeFactory.createFeedProcessScopeForTesting(feedScheduler,
+                    new TestNetworkClient(), new TestFeedOfflineIndicator(), feedAppLifecycle,
+                    lifecycleListener);
         } else {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
         }

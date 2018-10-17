@@ -59,7 +59,6 @@ public class TestNetworkClient implements NetworkClient {
             mMockServer = MockServer.getDefaultInstance();
         } else {
             mMockServer = MockServer.parseFrom(fs);
-            fs.close();
         }
     }
 

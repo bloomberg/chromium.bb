@@ -33,6 +33,7 @@ public class FeedProcessScopeFactory {
     private static FeedProcessScope sFeedProcessScope;
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
+    private static NetworkClient sTestNetworkClient;
     private static FeedLoggingBridge sFeedLoggingBridge;
 
     /** @return The shared {@link FeedProcessScope} instance. Null if the Feed is disabled. */
@@ -110,16 +111,17 @@ public class FeedProcessScopeFactory {
                 new FeedAppLifecycleListener(new ThreadUtils());
         FeedContentStorage contentStorage = new FeedContentStorage(profile);
         FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
+        NetworkClient networkClient = sTestNetworkClient == null ?
+            new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope =
-                new FeedProcessScope
-                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                new LoggingApiImpl(), new FeedNetworkBridge(profile),
-                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
-                                ContextUtils.getApplicationContext(), applicationInfo)
-                        .setContentStorage(contentStorage)
-                        .setJournalStorage(journalStorage)
-                        .build();
+        sFeedProcessScope = new FeedProcessScope
+                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                            new LoggingApiImpl(), networkClient, schedulerBridge,
+                                            lifecycleListener, DebugBehavior.SILENT,
+                                            ContextUtils.getApplicationContext(), applicationInfo)
+                                    .setContentStorage(contentStorage)
+                                    .setJournalStorage(journalStorage)
+                                    .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
@@ -155,6 +157,19 @@ public class FeedProcessScopeFactory {
                                     .build();
         sFeedOfflineIndicator = feedOfflineIndicator;
         sFeedAppLifecycle = feedAppLifecycle;
+    }
+
+    /** Use supplied NetworkClient instead of real one, for tests. */
+    @VisibleForTesting
+    public static void setTestNetworkClient(NetworkClient client) {
+        if (client == null) {
+            sTestNetworkClient = null;
+        } else if (sFeedProcessScope == null) {
+            sTestNetworkClient = client;
+        } else {
+            throw(new IllegalStateException(
+                    "TestNetworkClient can not be set after FeedProcessScope has initialized."));
+        }
     }
 
     /** Resets the FeedProcessScope after testing is complete. */
