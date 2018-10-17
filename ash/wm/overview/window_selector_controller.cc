@@ -264,6 +264,13 @@ bool WindowSelectorController::CanSelect() {
 
 bool WindowSelectorController::ToggleOverview(
     WindowSelector::EnterExitOverviewType type) {
+  // Hide the virtual keyboard as it obstructs the overview mode.
+  // Don't need to hide if it's the a11y keyboard, as overview mode
+  // can accept text input and it resizes correctly with the a11y keyboard.
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->keyboard_locked())
+    keyboard_controller->HideKeyboardByUser();
+
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
   // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
