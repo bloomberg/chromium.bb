@@ -66,7 +66,6 @@ RasterImplementationGLES::Texture* RasterImplementationGLES::EnsureTextureBound(
 
 RasterImplementationGLES::RasterImplementationGLES(
     gles2::GLES2Interface* gl,
-    CommandBuffer* command_buffer,
     const gpu::Capabilities& caps)
     : gl_(gl),
       caps_(caps),
