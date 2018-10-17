@@ -469,7 +469,6 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   // Stop the worker, and then dispatch an event immediately after that.
   bool has_stopped = false;
   version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-  EXPECT_TRUE(version_->HasNoWork());
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
   EXPECT_TRUE(has_stopped);
 
