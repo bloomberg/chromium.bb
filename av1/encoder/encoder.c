@@ -3491,7 +3491,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
   // to decoder. Any change in the reference frame buffer can be done by
   // switching the virtual indices.
   if (cm->show_existing_frame) {
-    cpi->refresh_last_frame = 0;
+    // If we are not indicating to the decoder that this frame is
+    // a show_existing_frame, which occurs in error_resilient mode,
+    // we still want to refresh the LAST_FRAME.
+    cpi->refresh_last_frame = encode_show_existing_frame(cm) ? 0 : 1;
     cpi->refresh_golden_frame = 0;
     cpi->refresh_bwd_ref_frame = 0;
     cpi->refresh_alt2_ref_frame = 0;
@@ -3680,7 +3683,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     shift_last_ref_frames(cpi);
     cpi->ref_fb_idx[0] = tmp;
 
-    assert(cm->show_existing_frame == 0);
+    assert(encode_show_existing_frame(cm) == 0);
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[0],
            sizeof(cpi->interp_filter_selected[0]));
