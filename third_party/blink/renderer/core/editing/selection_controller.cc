@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -1161,10 +1162,13 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
       inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
   if (pos.IsNull())
     return false;
-  const PositionInFlatTree& marker_position =
-      ToPositionInFlatTree(pos.DeepEquivalent().ParentAnchoredEquivalent());
+  // TODO(xiaochengh): Don't use |ParentAnchoredEquivalent()|.
+  const Position marker_position =
+      pos.DeepEquivalent().ParentAnchoredEquivalent();
+  if (!SpellChecker::IsSpellCheckingEnabledAt(marker_position))
+    return false;
   return SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
-                                    marker_position);
+                                    ToPositionInFlatTree(marker_position));
 }
 
 void SelectionController::SendContextMenuEvent(
