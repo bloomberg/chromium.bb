@@ -11,13 +11,15 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SecondaryToolbarView ()
+@interface SecondaryToolbarView ()<ToolbarCollapsing>
 // Factory used to create the buttons.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 
@@ -70,6 +72,18 @@
 
 - (CGSize)intrinsicContentSize {
   return CGSizeMake(UIViewNoIntrinsicMetric, kAdaptiveToolbarHeight);
+}
+
+- (void)willMoveToWindow:(UIWindow*)newWindow {
+  [super willMoveToWindow:newWindow];
+  [NamedGuide guideWithName:kSecondaryToolbarGuide view:self].constrainedView =
+      nil;
+}
+
+- (void)didMoveToWindow {
+  [super didMoveToWindow];
+  [NamedGuide guideWithName:kSecondaryToolbarGuide view:self].constrainedView =
+      self;
 }
 
 #pragma mark - Setup
@@ -160,6 +174,16 @@
 
 - (MDCProgressView*)progressBar {
   return nil;
+}
+
+#pragma mark - ToolbarCollapsing
+
+- (CGFloat)expandedToolbarHeight {
+  return self.intrinsicContentSize.height;
+}
+
+- (CGFloat)collapsedToolbarHeight {
+  return 0.0;
 }
 
 @end

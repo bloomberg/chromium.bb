@@ -7,7 +7,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_view.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,12 +25,6 @@
 - (void)loadView {
   self.view =
       [[SecondaryToolbarView alloc] initWithButtonFactory:self.buttonFactory];
-}
-
-- (void)didMoveToParentViewController:(UIViewController*)parent {
-  [super didMoveToParentViewController:parent];
-  [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.view]
-      .constrainedView = self.view;
 }
 
 @end

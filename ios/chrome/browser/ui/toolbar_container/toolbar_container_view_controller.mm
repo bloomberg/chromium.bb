@@ -125,11 +125,13 @@
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   _heightConstraint = [self.view.heightAnchor constraintEqualToConstant:0.0];
   _heightConstraint.active = YES;
+  [self setUpToolbarStack];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  [self setUpToolbarStack];
+  if (!self.toolbarHeightConstraints.count)
+    [self setUpToolbarStack];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
