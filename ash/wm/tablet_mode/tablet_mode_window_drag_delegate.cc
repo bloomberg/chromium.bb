@@ -204,11 +204,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 }
 
 void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
-  if (ShouldFlingIntoOverview(event)) {
-    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
-    Shell::Get()->window_selector_controller()->window_selector()->AddItem(
-        dragged_window_, /*reposition=*/true, /*animate=*/false);
-  }
+  StartFling(event);
   EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult::SUCCESS,
                 GetEventLocationInScreen(event));
 }
@@ -393,6 +389,13 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
 bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
     const ui::GestureEvent* event) const {
   if (event->type() != ui::ET_SCROLL_FLING_START)
+    return false;
+
+  // Only fling into overview if overview is currently open. In some case,
+  // overview is not opened when drag starts (if it's tab-dragging and the
+  // dragged window is not the same with the source window), we should not fling
+  // the dragged window into overview in this case.
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
     return false;
 
   const gfx::Point location_in_screen = GetEventLocationInScreen(event);
