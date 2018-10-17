@@ -333,7 +333,6 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3630011985153972676">Giv Chrome tilladelse til at downloade artikler til dig, når Wi-Fi er aktiveret i indstillingerne.</translation>
 <translation id="3632295766818638029">Vis adgangskoden</translation>
 <translation id="363596933471559332">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
-<translation id="3661699943263275414">Tredjepartswebsites kan gemme og læse cookiedata</translation>
 <translation id="3662546969139119822">Der er ingen historik her</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> blev ikke downloadet, da lagerplaceringen ikke er tilgængelig.</translation>
@@ -420,7 +419,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4398088515904522762">Aktivér <ph name="BEGIN_LINK" />Aktivitet og interaktioner<ph name="END_LINK" /> for at bruge denne funktion.</translation>
 <translation id="4404568932422911380">Der er ingen bogmærker</translation>
 <translation id="4409723563706114196">Brug sideforslag</translation>
-<translation id="4412992751769744546">Tillad tredjepartscookies</translation>
 <translation id="4419556793104466535">Styr synkronisering, tilpasning og meget mere</translation>
 <translation id="4432792777822557199">Sider på <ph name="SOURCE_LANGUAGE" /> oversættes fremover til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop op-vinduer og omdirigeringer</translation>
@@ -564,6 +562,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="5466407412363861127">Denne funktion anvender <ph name="BEGIN_LINK" />synkronisering<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Åbn i kortapp</translation>
 <translation id="5487521232677179737">Ryd data</translation>
+<translation id="5487729733663684359">Chrome understøtter ikke længere denne version af Android.</translation>
 <translation id="5494920125229734069">Vælg alle</translation>
 <translation id="550684401320795253">Opdaterer Chrome...</translation>
 <translation id="5512137114520586844">Denne konto administreres af <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="618993374665929060">"Se lignende indhold" er åbnet i fuld højde</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
+<translation id="6196640612572343990">Bloker cookies fra tredjeparter</translation>
 <translation id="6206551242102657620">Forbindelsen er sikker. Websiteoplysninger</translation>
 <translation id="6210748933810148297">Er det ikke <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Valgmuligheder for <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6766622839693428701">Stryg ned for at lukke.</translation>
 <translation id="6768277682697012280">Installerer AR-modulet...</translation>
 <translation id="6776813977906306442">Download videoer, som du vil se senere, ved hjælp af knappen Download</translation>
+<translation id="6782111308708962316">Undgå, at tredjepartswebsites gemmer og læser cookiedata</translation>
 <translation id="6790428901817661496">Afspil</translation>
 <translation id="679325081238418596">Få dine bogmærker, din historik, dine adgangskoder og dine indstillinger på alle dine enheder</translation>
 <translation id="6818926723028410516">Vælg elementer</translation>

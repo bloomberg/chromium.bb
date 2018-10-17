@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">‏در بخش تنظیمات، به Chrome اجازه دهید هنگام اتصال به Wi-Fi برایتان مقاله بارگیری کند.</translation>
 <translation id="3632295766818638029">نمایش گذرواژه</translation>
 <translation id="363596933471559332">با استفاده از اعتبارنامه‌های ذخیره شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. وقتی این قابلیت خاموش است، هر بار قبل از وارد شدن به سیستم وب‌سایت از شما خواسته می‌شود اطلاعات را تأیید کنید.</translation>
-<translation id="3661699943263275414">وب‌سایت‌های طرف ثالث می‌توانند داده‌های کوکی را ذخیره کنند و بخوانند</translation>
 <translation id="3662546969139119822">سابقه‌ای اینجا نیست</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
 <translation id="3692944402865947621">به‌دلیل دردسترس نبودن مکان فضای ذخیره‌سازی، <ph name="FILE_NAME" /> بارگیری نشد.</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">برای استفاده از این ویژگی، <ph name="BEGIN_LINK" />فعالیت و تعاملات<ph name="END_LINK" /> را روشن کنید.</translation>
 <translation id="4404568932422911380">هیچ نشانکی موجود نیست</translation>
 <translation id="4409723563706114196">استفاده از پیش‌بینی صفحه</translation>
-<translation id="4412992751769744546">اجازه به کوکی‌های طرف ثالث</translation>
 <translation id="4419556793104466535">کنترل همگام‌سازی، شخصی‌سازی و موارد دیگر</translation>
 <translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">این ویژگی از <ph name="BEGIN_LINK" />همگام‌سازی<ph name="END_LINK" /> استفاده می‌کند.</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
+<translation id="5487729733663684359">‏به‌روزرسانی‌های Chrome دیگر در این نسخه Android پشتیبانی نمی‌شود.</translation>
 <translation id="5494920125229734069">انتخاب همه</translation>
 <translation id="550684401320795253">‏درحال به‌روزرسانی Chrome...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> این حساب را مدیریت می‌کند.</translation>
@@ -664,6 +663,7 @@
 <translation id="618993374665929060">«موارد دیگر شبیه به این» کاملاً باز شد</translation>
 <translation id="6192333916571137726">فایل بارگیری</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
+<translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6206551242102657620">اتصال امن است. اطلاعات سایت</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ایمیل شما نیست؟</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -742,6 +742,7 @@
 <translation id="6766622839693428701">برای بستن، تند به پایین بکشید.</translation>
 <translation id="6768277682697012280">‏درحال نصب مدول AR...</translation>
 <translation id="6776813977906306442">با استفاده از دکمه «بارگیری»، ویدیوها را برای تماشا در فرصتی دیگر بارگیری کنید</translation>
+<translation id="6782111308708962316">جلوگیری از ذخیره کردن و خواندن داده‌های کوکی توسط وب‌سایت‌های شخص ثالث</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="679325081238418596">نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان را در تمام دستگاه‌های خود دریافت کنید</translation>
 <translation id="6818926723028410516">انتخاب موارد</translation>

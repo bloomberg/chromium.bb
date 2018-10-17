@@ -324,7 +324,6 @@
 <translation id="3630011985153972676">सेटिंग में जाकर जब वाई-फ़ाई पर हों तब Chrome को अपने लिए लेख डाउनलोड करने की अनुमति दें.</translation>
 <translation id="3632295766818638029">पासवर्ड दिखाएं</translation>
 <translation id="363596933471559332">संग्रहित क्रेडेंशियल का उपयोग करके वेबसाइटों में अपने आप साइन इन करें. सुविधा के बंद होने पर, किसी वेबसाइट में साइन इन करने से पहले आपसे हर बार सत्‍यापन के लिए कहा जाएगा.</translation>
-<translation id="3661699943263275414">तृतीय-पक्ष वेबसाइटें कुकी डेटा को सहेज सकती हैं और पढ़ सकती हैं</translation>
 <translation id="3662546969139119822">यहां कोई इतिहास नहीं है</translation>
 <translation id="3672452749423051839">मार्गदर्शक गड़बड़ी सुझाव</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> डाउनलोड नहीं हो सकी क्योंकि स्टोर करने की जगह नहीं मिली.</translation>
@@ -409,7 +408,6 @@
 <translation id="4398088515904522762">इस सुविधा का इस्तेमाल करने के लिए, <ph name="BEGIN_LINK" />गतिविधि और इंटरैक्शन<ph name="END_LINK" /> चालू करें.</translation>
 <translation id="4404568932422911380">कोई बुकमार्क नहीं</translation>
 <translation id="4409723563706114196">पेज पूर्वानुमानों का इस्तेमाल करें</translation>
-<translation id="4412992751769744546">तृतीय-पक्ष कुकी को अनुमति दें</translation>
 <translation id="4419556793104466535">'सिंक करें', 'मनमुताबिक बनाएं' वगैरह नियंत्रित करें</translation>
 <translation id="4432792777822557199">अब से <ph name="SOURCE_LANGUAGE" /> भाषा के पेज का अनुवाद <ph name="TARGET_LANGUAGE" /> भाषा में किया जाएगा</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
@@ -551,6 +549,7 @@
 <translation id="5466407412363861127">यह सुविधा <ph name="BEGIN_LINK" />सिंक<ph name="END_LINK" /> का इस्तेमाल करती है.</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
+<translation id="5487729733663684359">Chrome अपडेट अब Android के इस वर्शन के लिए समर्थित नहीं हैं.</translation>
 <translation id="5494920125229734069">सभी को चुनें</translation>
 <translation id="550684401320795253">Chrome अपडेट किया जा रहा है...</translation>
 <translation id="5512137114520586844">यह खाता <ph name="PARENT_NAME" /> द्वारा प्रबंधित है.</translation>
@@ -651,6 +650,7 @@
 <translation id="618993374665929060">'इसी तरह के और भी' पूरी स्क्रीन पर खुला है</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
+<translation id="6196640612572343990">तृतीय पक्ष कुकी ब्लॉक करें</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित है. साइट की जानकारी</translation>
 <translation id="6210748933810148297">क्या <ph name="EMAIL" /> नहीं हैं?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्प</translation>
@@ -727,6 +727,7 @@
 <translation id="6766622839693428701">बंद करने के लिए नीचे स्वाइप करें.</translation>
 <translation id="6768277682697012280">AR मॉड्यूल इंस्टॉल किया जा रहा है...</translation>
 <translation id="6776813977906306442">डाउनलोड करें बटन का उपयोग करके बाद में देखने के लिए वीडियो डाउनलोड करें</translation>
+<translation id="6782111308708962316">तृतीय पक्ष वेबसाइट को कुकी डेटा सहेजने और पढ़ने से रोकें</translation>
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="679325081238418596">अपने बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग अपने सभी डिवाइस पर प्राप्त करें</translation>
 <translation id="6820607729870073286">आपके पास कोई सहेजी गई वेबसाइट सेटिंग नहीं है.</translation>

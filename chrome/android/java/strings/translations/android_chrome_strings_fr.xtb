@@ -333,7 +333,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3630011985153972676">Autorisez Chrome à télécharger des articles via le Wi-Fi dans les paramètres.</translation>
 <translation id="3632295766818638029">Afficher le mot de passe</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
-<translation id="3661699943263275414">Les sites tiers peuvent enregistrer et lire les données des cookies.</translation>
 <translation id="3662546969139119822">Aucun historique ici</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
 <translation id="3692944402865947621">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage indisponible.</translation>
@@ -420,7 +419,6 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4398088515904522762">Pour utiliser cette fonctionnalité, activez l'option <ph name="BEGIN_LINK" />Activité et interactions<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Aucun favori</translation>
 <translation id="4409723563706114196">Utiliser le service de prédiction</translation>
-<translation id="4412992751769744546">Autoriser les cookies tiers</translation>
 <translation id="4419556793104466535">Contrôler les paramètres de synchronisation et de personnalisation, et bien plus</translation>
 <translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop-ups et redirections</translation>
@@ -564,6 +562,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="5466407412363861127">Cette fonctionnalité utilise la <ph name="BEGIN_LINK" />synchronisation<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Ouvrir dans une application de plans</translation>
 <translation id="5487521232677179737">Effacer les données</translation>
+<translation id="5487729733663684359">Les mises à jour de Chrome ne sont plus disponibles avec cette version d'Android.</translation>
 <translation id="5494920125229734069">Tout sélectionner</translation>
 <translation id="550684401320795253">Mise à jour de Chrome…</translation>
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="618993374665929060">Panneau "Plus de suggestions similaires" ouvert à hauteur maximale</translation>
 <translation id="6192333916571137726">Télécharger le fichier</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6196640612572343990">Bloquer les cookies tiers</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> n'est pas votre adresse e-mail ?</translation>
 <translation id="6216432067784365534">Options pour <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6766622839693428701">Balayez l'écran vers le bas pour fermer la feuille.</translation>
 <translation id="6768277682697012280">Installation du module RA…</translation>
 <translation id="6776813977906306442">Téléchargez des vidéos à regarder plus tard à l'aide du bouton "Télécharger"</translation>
+<translation id="6782111308708962316">Empêcher les sites Web tiers d'enregistrer et de lire les données des cookies</translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="679325081238418596">Accédez à vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="6818926723028410516">Sélectionner des éléments</translation>

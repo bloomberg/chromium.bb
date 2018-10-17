@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">Дозвольте Chrome завантажувати статті через Wi-Fi у налаштуваннях.</translation>
 <translation id="3632295766818638029">Показати пароль</translation>
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу на сайтах.</translation>
-<translation id="3661699943263275414">Сторонні веб-сайти можуть зберігати та розпізнавати дані файлів cookie</translation>
 <translation id="3662546969139119822">Немає історії</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
 <translation id="3692944402865947621">Не вдалося завантажити файл <ph name="FILE_NAME" />. Місце зберігання недоступне.</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">Щоб користуватися цією функцією, увімкніть опцію <ph name="BEGIN_LINK" />Активність і взаємодії<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Немає закладок</translation>
 <translation id="4409723563706114196">Використання передбачень сторінки</translation>
-<translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
 <translation id="4419556793104466535">Керування синхронізацією, персоналізацією тощо</translation>
 <translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Спливаючі вікна й переадресація</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">Ця функція використовує <ph name="BEGIN_LINK" />синхронізацію<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Відкрити в додатку Карти</translation>
 <translation id="5487521232677179737">Видалити дані</translation>
+<translation id="5487729733663684359">Chrome більше не оновлюється в цій версії Android.</translation>
 <translation id="5494920125229734069">Вибрати все</translation>
 <translation id="550684401320795253">Оновлення Chrome…</translation>
 <translation id="5512137114520586844">Цим обліковим записом керує <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">Сторінку "Більше подібного" відкрито на всю висоту</translation>
 <translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6192792657125177640">Винятки</translation>
+<translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
 <translation id="6206551242102657620">З’єднання безпечне. Інформація про сайт</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: опції</translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">Проведіть пальцем униз, щоб закрити.</translation>
 <translation id="6768277682697012280">Встановлюється модуль доповненої реальності…</translation>
 <translation id="6776813977906306442">Завантажити відео за допомогою відповідної кнопки, щоб переглянути їх пізніше</translation>
+<translation id="6782111308708962316">Забороняти стороннім веб-сайтам зберігати та переглядати дані файлів cookie</translation>
 <translation id="6790428901817661496">Відтворити</translation>
 <translation id="679325081238418596">Отримайте доступ до своїх закладок, історії, паролів та інших налаштувань на всіх пристроях</translation>
 <translation id="6818926723028410516">Виберіть елементи</translation>

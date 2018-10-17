@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">允許 Chrome 透過 Wi-Fi 連線為你下載文章 (可自行啟用這項設定)。</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
-<translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="3662546969139119822">這裡沒有任何記錄</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
 <translation id="3692944402865947621">無法連線至儲存位置，因此無法下載 <ph name="FILE_NAME" />。</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">如要使用這項功能，請開啟<ph name="BEGIN_LINK" />活動與互動行為<ph name="END_LINK" />設定。</translation>
 <translation id="4404568932422911380">沒有書籤</translation>
 <translation id="4409723563706114196">使用網頁預測功能</translation>
-<translation id="4412992751769744546">允許第三方 Cookie</translation>
 <translation id="4419556793104466535">管理同步處理、個人化功能等更多設定</translation>
 <translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">彈出式視窗與重新導向</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">這項功能會進行<ph name="BEGIN_LINK" />同步處理<ph name="END_LINK" />。</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
+<translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
 <translation id="5494920125229734069">全選</translation>
 <translation id="550684401320795253">正在更新 Chrome...</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">「更多類似內容」已開啟，顯示於整個畫面</translation>
 <translation id="6192333916571137726">下載檔案</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6206551242102657620">已建立安全連線。網站資訊</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />選項</translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">向下滑動即可關閉。</translation>
 <translation id="6768277682697012280">正在安裝 AR 模組...</translation>
 <translation id="6776813977906306442">使用 [下載] 按鈕可下載影片以供日後觀看</translation>
+<translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">您在任何裝置上都能取得自己的書籤、歷史記錄、密碼和其他設定</translation>
 <translation id="6818926723028410516">選取項目</translation>

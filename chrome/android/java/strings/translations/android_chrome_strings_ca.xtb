@@ -333,7 +333,6 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="3630011985153972676">A la configuració, permet que Chrome et baixi articles quan estiguis connectat a la Wi-Fi.</translation>
 <translation id="3632295766818638029">Mostra la contrasenya</translation>
 <translation id="363596933471559332">Inicia la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se us demana sempre que les verifiqueu per iniciar la sessió en un lloc web.</translation>
-<translation id="3661699943263275414">Els llocs web de tercers poden desar i llegir les dades de les galetes</translation>
 <translation id="3662546969139119822">L'historial és buit</translation>
 <translation id="3672452749423051839">Suggeriments d'errors de navegació</translation>
 <translation id="3692944402865947621">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè no es pot trobar la ubicació d'emmagatzematge.</translation>
@@ -420,7 +419,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4398088515904522762">Per utilitzar aquesta funció, activa l'opció <ph name="BEGIN_LINK" />Activitat i interaccions<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Cap adreça d'interès</translation>
 <translation id="4409723563706114196">Utilitza les prediccions de pàgines</translation>
-<translation id="4412992751769744546">Permet les galetes de tercers</translation>
 <translation id="4419556793104466535">Controla la sincronització i la personalització, entre d'altres</translation>
 <translation id="4432792777822557199">A partir d'ara, les pàgines en <ph name="SOURCE_LANGUAGE" /> es traduiran a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Finest. emergents i redireccions</translation>
@@ -564,6 +562,7 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="5466407412363861127">Aquesta funció utilitza la <ph name="BEGIN_LINK" />sincronització<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Obre en una aplicació de mapes</translation>
 <translation id="5487521232677179737">Esborra les dades</translation>
+<translation id="5487729733663684359">Aquesta versió d'Android ja no admet les actualitzacions de Chrome.</translation>
 <translation id="5494920125229734069">Selecciona-ho tot</translation>
 <translation id="550684401320795253">S'està actualitzant Chrome…</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> gestiona aquest compte.</translation>
@@ -665,6 +664,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="618993374665929060">El full Més contingut com aquest ocupa tota la pantalla</translation>
 <translation id="6192333916571137726">Baixa el fitxer</translation>
 <translation id="6192792657125177640">Excepcions</translation>
+<translation id="6196640612572343990">Bloqueja les galetes de tercers</translation>
 <translation id="6206551242102657620">La connexió és segura. Informació del lloc web</translation>
 <translation id="6210748933810148297">No ets <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opcions per a <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6766622839693428701">Llisca cap avall per tancar el full.</translation>
 <translation id="6768277682697012280">S'està instal·lant el mòdul de realitat augmentada...</translation>
 <translation id="6776813977906306442">Amb el botó Baixa, pots baixar vídeos per mirar-los més tard</translation>
+<translation id="6782111308708962316">Impedeix que els llocs web de tercers desin i llegeixin les dades de les galetes</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="679325081238418596">Accediu a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius</translation>
 <translation id="6818926723028410516">Selecciona elements</translation>

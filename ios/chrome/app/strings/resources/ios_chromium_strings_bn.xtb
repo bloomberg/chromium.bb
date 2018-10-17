@@ -18,6 +18,7 @@
 <translation id="2687023731466035790">Chromium-এ Google স্মার্ট পান</translation>
 <translation id="2730884209570016437">Chromium আপনার ক্যামেরা ব্যবহার করতে পারছে না কারণ এটি অন্য একটি অ্যাপ্লিকেশান দ্বারা ব্যবহার করা হচ্ছে</translation>
 <translation id="2797210818057553964">আপনি যেকোনও সময়ে Chromium সেটিংসে এটি কাস্টমাইজ করতে পারেন</translation>
+<translation id="2915596697727466327">Chromium আপনার পাসওয়ার্ডে অনুমোদিত অ্যাক্সেস নিশ্চিত করতে Face ID ব্যবহার করে।</translation>
 <translation id="3256316712990552818">Chromium-এ প্রতিলিপি করা হয়েছে</translation>
 <translation id="3413120535237193088">সব ডিভাইসে আপনার বুকমার্কগুলি পেতে, Chromium এ প্রবেশ করুন।</translation>
 <translation id="3473048256428424907">Chromium QR স্ক্যানার চালু করুন</translation>
@@ -31,7 +32,6 @@
 <translation id="4787850887676698916">আপনার অন্য ডিভাইসগুলিতে Chromium এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
 <translation id="495292094137889840">Chromium QR স্ক্যানার ব্যবহার করা শুরু করুন</translation>
 <translation id="5231355151045086930">Chromium থেকে প্রস্থান করুন</translation>
-<translation id="5416919929805616771">Chromium ব্যবহার করে ভাল লাগছে? <ph name="BEGIN_LINK" />এই অ্যাপ্লিকেশানটিকে রেট দিন<ph name="END_LINK" /></translation>
 <translation id="5862307444128926510">Chromium-এ স্বাগতম</translation>
 <translation id="5945387852661427312">আপনি <ph name="DOMAIN" /> পরিচালিত একটি অ্যাকাউন্টের মাধ্যমে সাইন ইন করছেন এবং এর প্রশাসককে আপনার Chromium ডেটা নিয়ন্ত্রণ করতে দিচ্ছেন৷ আপনার ডেটা এই অ্যাকাউন্টের সাথে স্থায়ীভাবে আবদ্ধ হবে৷ Chromium থেকে সাইন আউট করলে এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলা হবে, কিন্তু এটি আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
 <translation id="6068866989048414399">Chromium পরিষেবার শর্তাদি</translation>

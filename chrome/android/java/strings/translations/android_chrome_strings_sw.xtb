@@ -333,7 +333,6 @@ Hata hivyo, hautaficha kila kitu. Hatua ya kutumia hali ya faragha haifichi kuvi
 <translation id="3630011985153972676">Ruhusu Chrome ikupakulie makala unapotumia muunganisho wa Wi-Fi kwenye mipangilio.</translation>
 <translation id="3632295766818638029">Onyesha nenosiri</translation>
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
-<translation id="3661699943263275414">Tovuti nyingine zinaweza kuhifadhi na kusoma data ya vidakuzi</translation>
 <translation id="3662546969139119822">Hamna historia hapa</translation>
 <translation id="3672452749423051839">Mapendekezo ya hitilafu ya kuelekea unapotaka</translation>
 <translation id="3692944402865947621">Imeshindwa kupakua <ph name="FILE_NAME" /> kwa sababu haikupata eneo la kuhifadhi.</translation>
@@ -420,7 +419,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili ulichague. Il
 <translation id="4398088515904522762">Ili utumie kipengele hiki, washa <ph name="BEGIN_LINK" />Shughuli na ushirikiano<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Hakuna alamisho</translation>
 <translation id="4409723563706114196">Tumia utabiri wa ukurasa</translation>
-<translation id="4412992751769744546">Ruhusu vidakuzi vingine</translation>
 <translation id="4419556793104466535">Dhibiti usawazishaji, mapendeleo na nyinginezo</translation>
 <translation id="4432792777822557199">Kurasa za <ph name="SOURCE_LANGUAGE" /> zitatafsiriwa katika <ph name="TARGET_LANGUAGE" /> kuanzia sasa</translation>
 <translation id="4434045419905280838">Madirisha ibukizi/kuelekeza kwingine</translation>
@@ -564,6 +562,7 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="5466407412363861127">Kipengele hiki hutumia <ph name="BEGIN_LINK" />usawazishaji<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Fungua katika programu ya ramani</translation>
 <translation id="5487521232677179737">Futa data</translation>
+<translation id="5487729733663684359">Sasisho za Chrome hazitumiki tena kwa toleo hili la Android.</translation>
 <translation id="5494920125229734069">Chagua zote</translation>
 <translation id="550684401320795253">Inasasisha Chrome...</translation>
 <translation id="5512137114520586844">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME" /></translation>
@@ -665,6 +664,7 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="618993374665929060">Mengine kama hili yalifunguliwa kikamilifu</translation>
 <translation id="6192333916571137726">Pakua faili</translation>
 <translation id="6192792657125177640">Vighairi</translation>
+<translation id="6196640612572343990">Zuia vidakuzi vya tovuti nyingine</translation>
 <translation id="6206551242102657620">Muunganisho ni salama. Maelezo ya tovuti</translation>
 <translation id="6210748933810148297">Wewe si <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Chaguo za <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6766622839693428701">Telezesha chini ili ufunge.</translation>
 <translation id="6768277682697012280">Inasakinisha sehemu ya Uhalisia Ulioboreshwa...</translation>
 <translation id="6776813977906306442">Pakua video za kutazama baadaye ukitumia kifute cha Kupakua</translation>
+<translation id="6782111308708962316">Zuia tovuti nyingine kuhifadhi na kusoma data ya vidakuzi</translation>
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="679325081238418596">Pata alamisho zako, historia, manenosiri na mipangilio yako mingine kwenye vifaa vyako vyote.</translation>
 <translation id="6818926723028410516">Chagua vipengee</translation>

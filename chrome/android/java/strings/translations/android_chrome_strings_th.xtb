@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">อนุญาตให้ Chrome ดาวน์โหลดบทความให้คุณเมื่อเชื่อมต่อ Wi-Fi ภายใต้การตั้งค่า</translation>
 <translation id="3632295766818638029">เปิดเผยรหัสผ่าน</translation>
 <translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
-<translation id="3661699943263275414">เว็บไซต์ของบุคคลที่สามสามารถบันทึกและอ่านข้อมูลคุกกี้ได้</translation>
 <translation id="3662546969139119822">ไม่มีประวัติการเข้าชมที่นี่</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
 <translation id="3692944402865947621">ดาวน์โหลด <ph name="FILE_NAME" /> ไม่สำเร็จเนื่องจากเข้าถึงตำแหน่งที่เก็บข้อมูลไม่ได้</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">หากต้องการใช้ฟีเจอร์นี้ ให้เปิด<ph name="BEGIN_LINK" />กิจกรรมและการโต้ตอบ<ph name="END_LINK" /></translation>
 <translation id="4404568932422911380">ไม่มีบุ๊กมาร์ก</translation>
 <translation id="4409723563706114196">ใช้การคาดคะเนหน้า</translation>
-<translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
 <translation id="4419556793104466535">ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และอื่นๆ</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">ป๊อปอัปและการเปลี่ยนเส้นทาง</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">ฟีเจอร์นี้ใช้<ph name="BEGIN_LINK" />การซิงค์<ph name="END_LINK" /></translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
+<translation id="5487729733663684359">ไม่มีการสนับสนุนการอัปเดต Chrome บน Android เวอร์ชันนี้อีกต่อไป</translation>
 <translation id="5494920125229734069">เลือกทั้งหมด</translation>
 <translation id="550684401320795253">กำลังอัปเดต Chrome...</translation>
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME" /></translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">"ดูคำแนะนำแบบนี้อีก" เปิดอยู่ที่ระดับความสูงเต็มหน้าจอ</translation>
 <translation id="6192333916571137726">ดาวน์โหลดไฟล์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
+<translation id="6196640612572343990">บล็อกคุกกี้ของบุคคลที่สาม</translation>
 <translation id="6206551242102657620">การเชื่อมต่อปลอดภัย ข้อมูลเว็บไซต์</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
 <translation id="6216432067784365534">ตัวเลือกสำหรับ<ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">เลื่อนลงเพื่อปิด</translation>
 <translation id="6768277682697012280">กำลังติดตั้งโมดูล AR...</translation>
 <translation id="6776813977906306442">ดาวน์โหลดวิดีโอไว้ดูภายหลังโดยใช้ปุ่ม "ดาวน์โหลด"</translation>
+<translation id="6782111308708962316">ป้องกันไม่ให้เว็บไซต์ของบุคคลที่สามบันทึกและอ่านข้อมูลคุกกี้</translation>
 <translation id="6790428901817661496">เล่น</translation>
 <translation id="679325081238418596">รับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="6818926723028410516">เลือกรายการ</translation>

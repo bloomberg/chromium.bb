@@ -333,7 +333,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3630011985153972676">Stel in dat Chrome artikelen voor je downloadt wanneer je verbinding met wifi hebt.</translation>
 <translation id="3632295766818638029">Maskering van wachtwoord ongedaan maken</translation>
 <translation id="363596933471559332">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, word je elke keer om verificatie gevraagd voordat je wordt ingelogd bij een website.</translation>
-<translation id="3661699943263275414">Websites van derden kunnen cookiegegevens opslaan en lezen</translation>
 <translation id="3662546969139119822">Geen geschiedenis hier</translation>
 <translation id="3672452749423051839">Suggesties bij navigatiefouten</translation>
 <translation id="3692944402865947621">Downloaden van <ph name="FILE_NAME" /> mislukt omdat de opslaglocatie niet bereikbaar is.</translation>
@@ -420,7 +419,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4398088515904522762">Schakel <ph name="BEGIN_LINK" />Activiteit en interacties<ph name="END_LINK" /> in om deze functie te gebruiken.</translation>
 <translation id="4404568932422911380">Geen bladwijzers</translation>
 <translation id="4409723563706114196">Paginavoorspellingen gebruiken</translation>
-<translation id="4412992751769744546">Cookies van derden toestaan</translation>
 <translation id="4419556793104466535">Synchronisatie, personalisatie en meer beheren</translation>
 <translation id="4432792777822557199">Pagina's in het <ph name="SOURCE_LANGUAGE" /> worden vanaf nu vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop-ups en omleidingen</translation>
@@ -564,6 +562,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5466407412363861127">Voor deze functie wordt <ph name="BEGIN_LINK" />synchronisatie<ph name="END_LINK" /> gebruikt.</translation>
 <translation id="548278423535722844">Openen in app voor kaarten</translation>
 <translation id="5487521232677179737">Gegevens wissen</translation>
+<translation id="5487729733663684359">Updates van Chrome worden niet meer ondersteund voor deze versie van Android.</translation>
 <translation id="5494920125229734069">Alles selecteren</translation>
 <translation id="550684401320795253">Chrome updaten...</translation>
 <translation id="5512137114520586844">Dit account wordt beheerd door <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="618993374665929060">'Meer zoals dit' geopend op volledige hoogte</translation>
 <translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
+<translation id="6196640612572343990">Indirecte cookies blokkeren</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
 <translation id="6768277682697012280">AR-module installeren...</translation>
 <translation id="6776813977906306442">Gebruik de knop Downloaden om video's te downloaden zodat je ze later kunt bekijken</translation>
+<translation id="6782111308708962316">Voorkomen dat websites van derden cookiegegevens opslaan en lezen</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="679325081238418596">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen ophalen op al je apparaten</translation>
 <translation id="6818926723028410516">Items selecteren</translation>

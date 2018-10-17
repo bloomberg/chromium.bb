@@ -333,7 +333,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3630011985153972676">W ustawieniach możesz zezwolić Chrome na pobieranie artykułów dla Ciebie, gdy używasz Wi-Fi.</translation>
 <translation id="3632295766818638029">Pokaż hasło</translation>
 <translation id="363596933471559332">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o weryfikację.</translation>
-<translation id="3661699943263275414">Witryny innych firm mogą zapisywać dane w plikach cookie i je odczytywać</translation>
 <translation id="3662546969139119822">Brak historii</translation>
 <translation id="3672452749423051839">Podpowiedzi przy błędach nawigacji</translation>
 <translation id="3692944402865947621">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu niedostępności pamięci.</translation>
@@ -420,7 +419,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4398088515904522762">Aby użyć tej funkcji, włącz <ph name="BEGIN_LINK" />Aktywność i interakcje<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Brak zakładek</translation>
 <translation id="4409723563706114196">Używaj przewidywania stron</translation>
-<translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
 <translation id="4419556793104466535">Konfiguracja synchronizacji, personalizacji i innych opcji</translation>
 <translation id="4432792777822557199">Od teraz strony, których językiem jest <ph name="SOURCE_LANGUAGE" />, będą tłumaczone na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop-upy i przekierowania</translation>
@@ -564,6 +562,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="5466407412363861127">Ta funkcja używa <ph name="BEGIN_LINK" />synchronizacji<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Otwórz w aplikacji z mapami</translation>
 <translation id="5487521232677179737">Wyczyść dane</translation>
+<translation id="5487729733663684359">Aktualizacje Chrome nie są już dostępne w tej wersji Androida.</translation>
 <translation id="5494920125229734069">Wybierz wszystko</translation>
 <translation id="550684401320795253">Aktualizuję Chrome...</translation>
 <translation id="5512137114520586844">Tym kontem zarządza <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="618993374665929060">Karta Więcej podobnych otwarta na całą wysokość</translation>
 <translation id="6192333916571137726">Pobranie pliku</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
+<translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6206551242102657620">Połączenie jest bezpieczne. Informacje o witrynie</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – opcje</translation>
@@ -743,6 +743,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6766622839693428701">Przesuń w dół, by zamknąć.</translation>
 <translation id="6768277682697012280">Instaluję moduł AR…</translation>
 <translation id="6776813977906306442">Kliknij przycisk Pobierz, by pobrać film i obejrzeć go później</translation>
+<translation id="6782111308708962316">Nie pozwalaj witrynom innych firm zapisywać ani odczytywać danych z plików cookie</translation>
 <translation id="6790428901817661496">Odtwórz</translation>
 <translation id="679325081238418596">Korzystaj z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
 <translation id="6818926723028410516">Wybierz elementy</translation>

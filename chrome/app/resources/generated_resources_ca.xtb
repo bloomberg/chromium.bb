@@ -601,6 +601,7 @@
 <translation id="1850508293116537636">Gira en el sentit de les &amp;agulles del rellotge</translation>
 <translation id="1852799913675865625">S'ha produït un error en intentar llegir el fitxer: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Pestanya d'incògnit nova</translation>
+<translation id="1854180393107901205">Atura l'emissió</translation>
 <translation id="1856715684130786728">Afegeix una ubicació...</translation>
 <translation id="1858585891038687145">Confia en aquest certificat per identificar generadors de programari</translation>
 <translation id="1861262398884155592">Aquesta carpeta és buida</translation>
@@ -830,7 +831,7 @@
 <translation id="2214884991347062907">La contrasenya no és correcta. Torna-ho a provar.</translation>
 <translation id="2217501013957346740">Creeu un nom:</translation>
 <translation id="2218019600945559112">Ratolí i ratolí tàctil</translation>
-<translation id="2218320521449013367">S'ha produït un error mentre Chrome suprimia programari perjudicial</translation>
+<translation id="2218320521449013367">S'ha produït un error mentre Chrome suprimia programari maliciós</translation>
 <translation id="2218515861914035131">Enganxa com a text sense format</translation>
 <translation id="221872881068107022">Desplaçament invers</translation>
 <translation id="2220409419896228519">Afegeix adreces d'interès a les teves aplicacions de Google preferides</translation>
@@ -1886,7 +1887,7 @@
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Obre-les totes}=1{&amp;Obre l'adreça d'interès}other{&amp;Obre-les totes (#)}}</translation>
 <translation id="3800806661949714323">Mostra-ho tot (opció recomanada)</translation>
 <translation id="380408572480438692">L'activació de la recollida de dades de rendiment ajudarà Google a millorar el sistema amb el temps. No s'enviarà cap dada fins que no empleneu un informe de comentaris (Alt-Maj-I) i les dades de rendiment. Podeu tornar a aquesta pantalla per desactivar la recopilació en qualsevol moment.</translation>
-<translation id="3806965327722135869">Cerca i suprimeix programari perjudicial</translation>
+<translation id="3806965327722135869">Cerca i suprimeix programari maliciós</translation>
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (amb identificador d'extensió "<ph name="EXTENSION_ID" />") no es permet a les pantalles d'inici de sessió.</translation>
 <translation id="3807747707162121253">&amp;Cancel·la</translation>
 <translation id="3809280248639369696">Extraterrestre</translation>
@@ -4178,7 +4179,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="727441411541283857"><ph name="PERCENTAGE" />% - Temps restant fins que es completi la càrrega: <ph name="TIME" /></translation>
 <translation id="727952162645687754">Error de baixada</translation>
 <translation id="7279701417129455881">Gestiona el bloqueig de galetes...</translation>
-<translation id="7280041992884344566">S'ha produït un error mentre Chrome cercava programari perjudicial</translation>
+<translation id="7280041992884344566">S'ha produït un error mentre Chrome cercava programari maliciós</translation>
 <translation id="7280649757394340890">Configuració de la veu de la síntesi de veu</translation>
 <translation id="7280877790564589615">Permís sol·licitat</translation>
 <translation id="7282992757463864530">Barra d'informació</translation>

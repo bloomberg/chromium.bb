@@ -278,6 +278,7 @@
 <translation id="2788784517760473862">利用可能なクレジット カード</translation>
 <translation id="2794233252405721443">サイトがブロックされています</translation>
 <translation id="2799020568854403057">アクセス先のサイトには有害なアプリがあります</translation>
+<translation id="2799223571221894425">再起動</translation>
 <translation id="2803306138276472711"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出されました<ph name="END_LINK" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。</translation>
 <translation id="2824775600643448204">アドレス検索バー</translation>
 <translation id="2826760142808435982">接続は <ph name="CIPHER" /> を使用して暗号化および認証されており、<ph name="KX" /> が鍵交換メカニズムとして使用されています。</translation>

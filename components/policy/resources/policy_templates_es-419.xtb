@@ -2,6 +2,16 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
+<translation id="1016912092715201525">Configura los controles del navegador predeterminado en <ph name="PRODUCT_NAME" /> y evita que los usuarios los cambien.
+
+      Si se habilita esta opción de configuración, <ph name="PRODUCT_NAME" /> siempre comprobará al iniciarse si es el navegador predeterminado y se registrará automáticamente en caso de ser posible.
+
+      Si se inhabilita, <ph name="PRODUCT_NAME" /> nunca verificará si es el navegador predeterminado y, además, inhabilitará los controles de usuario para poder configurar esta opción.
+
+
+      Si no se establece, <ph name="PRODUCT_NAME" /> permitirá al usuario controlar si es el navegador predeterminado y, cuando no lo es, si deben mostrarse las notificaciones al usuario.
+
+      Nota para los administradores de <ph name="MS_WIN_NAME" />: Esta opción de configuración solo podrá habilitarse en máquinas con Windows 7. A partir de Windows 8, el usuario debe implementar un archivo con "asociaciones de apps predeterminadas" que convierta a <ph name="PRODUCT_NAME" /> en el controlador de los protocolos <ph name="HHTPS_PROTOCOL" /> y <ph name="HTTP_PROTOCOL" /> (y, opcionalmente, del protocolo <ph name="FTP_PROTOCOL" /> y de formatos de archivo como <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, etc.). Para obtener más información, consulta <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de acceso</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
@@ -688,6 +698,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2873651257716068683">Anula el tamaño predeterminado para la página de impresión. Si el tamaño de la página no está disponible, se ignorará esta política.</translation>
 <translation id="2874209944580848064">Nota para dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con apps de Android:</translation>
 <translation id="2877225735001246144">Inhabilitar la búsqueda de CNAME al negociar la autenticación de Kerberos</translation>
+<translation id="2890645751406497668">Otorgar permiso automáticamente a estos sitios para conectarse a dispositivos USB con los ID de producto y proveedor correspondientes</translation>
 <translation id="2892414556511568464">Restringe el modo de impresión doble. Si la política no se configura o se establece con un valor vacío, no se aplicará ninguna restricción.</translation>
 <translation id="2893546967669465276">Enviar registros del sistema al servidor de administración</translation>
 <translation id="2899002520262095963">A través de esta política, las apps de Android pueden usar la configuración de red y los Certificados de CA, pero no tienen acceso a algunas opciones de configuración.</translation>
@@ -881,6 +892,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si esta configuración se establece como desactivada o no se establece ningún valor, <ph name="PRODUCT_NAME" /> no aplica el modo restringido en YouTube. Sin embargo, es posible que las políticas externas, como las de YouTube, apliquen el modo restringido.</translation>
 <translation id="3428247105888806363">Habilitar la predicción de red</translation>
+<translation id="3437924696598384725">Permitir que el usuario administre conexiones VPN</translation>
 <translation id="3449886121729668969">Establece la configuración de proxy para <ph name="PRODUCT_NAME" />. Las apps de ARC también podrán usar estas opciones de configuración de proxy.
 
       Esta política todavía no puede usarse.</translation>
@@ -1530,6 +1542,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
 
           Si se establece esta política como falsa, los usuarios no podrán transmitir contenido al dispositivo. Si se establece como verdadera, los usuarios podrán transmitir contenido. Si no se establece, los usuarios no podrán transmitir contenido a dispositivos con Sistema operativo Chrome, pero sí podrán hacerlo a otros dispositivos.</translation>
+<translation id="5329007337159326804">Advertencia: La política de la versión máxima de TLS se quitará por completo de <ph name="PRODUCT_NAME" /> en la versión 75 aproximadamente (alrededor de junio de 2019).
+
+      Si para ese momento no se configuró la política, <ph name="PRODUCT_NAME" /> usará la versión máxima predeterminada.
+
+      De lo contrario, se podrá establecer como uno de los siguientes valores: "tls1.2" o "tls1.3". De esta manera, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS posteriores a la especificada. Se ignorarán los valores no reconocidos.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los siguientes tipos de contenido</translation>
 <translation id="5365946944967967336">Mostrar el botón "Página principal" en la barra de herramientas</translation>
 <translation id="5366745336748853475">Te permite definir una lista de los patrones URL que especifican sitios para los que se selecciona automáticamente un certificado de cliente en la pantalla de acceso, en el marco que aloja el flujo de SAML, si el sitio lo solicita. Un ejemplo de uso es configurar un certificado en todo el dispositivo para presentarlo en el IdP de SAML.
@@ -1553,6 +1570,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Esta política solo se aplica si están habilitadas las apps de Android.</translation>
 <translation id="5395271912574071439">Habilita el modo de cortina para los hosts de acceso remoto durante una conexión. Si se habilita esta opción, los dispositivos físicos de entrada y salida del host se inhabilitan durante la conexión remota. Si se inhabilita o no se configura esta opción, tanto los usuarios locales como los remotos pueden interactuar con el host cuando se comparte.</translation>
+<translation id="5396049152026347991">Permite que el usuario administre las conexiones VPN.
+
+      Si se establece esta política como falsa, se inhabilitarán todas las interfaces de usuario de <ph name="PRODUCT_NAME" /> que podrían permitir que el usuario desconecte o modifique las conexiones VPN.
+
+      Si no se establece esta política o se establece como verdadera, los usuarios podrán desconectar o modificar las conexiones VPN como lo hacen normalmente.
+
+      Si se crea la conexión VPN mediante una app de VPN, esta política no modificará la IU de la app. Por lo tanto, es posible que el usuario aún pueda usar la app para modificar la conexión VPN.
+
+      Esta política está diseñada para usarse junto con la función "VPN siempre activada", que permite que el administrador decida establecer una conexión VPN en el inicio.</translation>
 <translation id="5405289061476885481">Establece los diseños de teclado compatibles con la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece como una lista de identificadores de método de entrada, estos métodos estarán disponibles en la pantalla de acceso y se preseleccionará el primero de ellos. Cuando se activa un módulo de sesión de usuario en la pantalla de acceso, el último método de entrada que este utilizó estará disponible junto con aquellos que especifica esta política. Si no se establece esta política, los métodos de entrada de la pantalla de acceso se obtendrán a partir de la configuración regional que se muestra en la pantalla de acceso. Se ignorarán los valores que no sean identificadores válidos de métodos de entrada.</translation>
@@ -1632,6 +1658,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta opción se inhabilita o no se configura, los usuarios podrán usar todos los tipos compatibles de almacenamiento externo en su dispositivo.</translation>
 <translation id="5697306356229823047">Informa sobre los usuarios de dispositivos.</translation>
 <translation id="570062449808736508">Cuando esta política se establece con una string no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de la autoridad proporcionado.</translation>
+<translation id="5701714006401683963">Si se establece esta política como falsa, las sesiones de invitado administradas se comportarán como se indica en https://support.google.com/chrome/a/answer/3017014, la "sesión pública" estándar.
+
+      Si se establece como verdadera o no se establece, las sesiones de invitado administradas se comportarán como "sesiones administradas", que no incluyen muchas de las restricciones que se aplican a las "sesiones públicas" estándar.
+
+      Si no se establece, el usuario no podrá cambiarla ni anularla.</translation>
 <translation id="5722934961007828462">Cuando esta opción esté habilitada, <ph name="PRODUCT_NAME" /> siempre comprobará la revocación de los certificados del servidor validados correctamente y firmados por certificados de CA instalados localmente.
 
       Si <ph name="PRODUCT_NAME" /> no puede obtener información del estado de revocación, esos certificados se considerarán revocados ("rechazados").
@@ -2004,6 +2035,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
+<translation id="6816212867679667972">Determina el nombre de host del dispositivo que se usa en solicitudes de DHCP.
+
+      Si se establece esta política como una string no vacía, esa string se usará como el nombre de host del dispositivo para la solicitud de DHCP.
+
+      La string puede contener las variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} o ${MACHINE_NAME}, que se reemplazarán con valores del dispositivo antes de usarse como nombre de host. La sustitución resultante debe ser un nombre de host válido (según RFC 1035, sección 3.1).
+
+      Si no se establece esta política, o si el valor que se obtiene después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud de DHCP. </translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
 <translation id="6838056959556423778">Anula las reglas predeterminadas de selección de impresora de <ph name="PRODUCT_NAME" />.
 
@@ -2284,6 +2322,24 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada, que actualmente es "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la sesión</translation>
+<translation id="7337967786223261174">Configura una lista de impresoras.
+
+      Esta política permite que los administradores proporcionen
+      configuraciones de impresoras para sus usuarios.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente, que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional. Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con uno de los strings que representan una impresora compatible con <ph name="PRODUCT_NAME" />. El string se usará para identificar e instalar el PPD correspondiente para la impresora. Para obtener más información, visita https://support.google.com/chrome?p=noncloudprint.
+
+      La configuración de la impresora se completa cuando se usa por primera vez. Los PPD no se descargan hasta que se usa la impresora. Luego, los PPD que se usan con mayor frecuencia se almacenan en caché.
+
+
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
+
+
+      Para los dispositivos administrados con Active Directory, esta política es compatible con la expansión de <ph name="MACHINE_NAME_VARIABLE" /> al nombre de la máquina de Active Directory o un substring de él. Por ejemplo, si el nombre de la máquina es <ph name="MACHINE_NAME_EXAMPLE" />, entonces <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se reemplazará con los 4 caracteres a partir de la sexta posición, es decir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ten en cuenta que esta posición incluye el cero.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (en minúsculas) deja de estar disponible en M71 y se quitará en M72.
+      </translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="7343497214039883642">Archivo de configuración de las impresoras empresariales para los dispositivos</translation>
 <translation id="7349338075015720646">Especifica una lista de sitios web instalados de manera silenciosa, sin interacción del usuario y que este no puede desinstalar ni inhabilitar.
@@ -2708,6 +2764,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="8359734107661430198">Habilitar la API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
 <translation id="8367209241899435947">Habilitar "Limpiar Chrome" en Windows</translation>
 <translation id="8369602308428138533">Demora de pantalla apagada con alimentación de CA</translation>
+<translation id="8371178326720637170">Habilitar las extensiones administradas para usar la API de de plataforma de hardware empresarial</translation>
 <translation id="8382184662529825177">Habilita el uso de la atestación remota para la protección de contenido del dispositivo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
 <translation id="8390049129576938611">Inhabilita la app interna para ver archivos PDF <ph name="PRODUCT_NAME" />. Los considera archivos de descarga y le permite al usuario abrirlos con la aplicación predeterminada.
@@ -2976,6 +3033,11 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="8970205333161758602">Elimina el mensaje de desactivación de <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8976248126101463034">Permitir autenticación gnubby para hosts de acceso remoto</translation>
 <translation id="8976531594979650914">Usar la impresora predeterminada del sistema como predeterminada</translation>
+<translation id="898520305112996948">Permite establecer una lista de patrones de URL que especifique los sitios que obtendrán permiso automáticamente para acceder a un dispositivo USB con los ID del producto y el proveedor correspondientes. Para que la política sea válida, todos los elementos de la lista deben contener tanto dispositivos como patrones de URL. Cada uno de los elementos en los dispositivos puede incluir un campo de ID del producto y el proveedor. Los ID que se omiten se tratan como comodín, con la siguiente excepción: no se puede especificar un ID del producto sin que se especifique un ID del proveedor. De lo contrario, la política no será válida. Se ignoran los valores no válidos de la política.
+
+        Si no se establece esta política, se usará el valor predeterminado global para todos los sitios ya sea de la política "DefaultWebUsbGuardSetting" (si se establece) o de la configuración personal del usuario.
+
+        Los patrones de URL en esta política no deben contradecirse con los que se configuren a través de WebUsbBlockedForUrls. En caso de que suceda, prevalece esta política por sobre WebUsbBlockedForUrls y WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">No permitir que ningún sitio muestre imágenes.</translation>
 <translation id="9012851181124311976">Configura la lista de las URL de acceso empresariales (solo en esquemas HTTP y HTTPS). Se capturará la huella digital de la contraseña en estas URL y se usará para detectar la reutilización de contraseñas.
       Para que <ph name="PRODUCT_NAME" /> capture las huellas digitales de contraseñas correctamente, asegúrate de que tus páginas de acceso cumplan con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

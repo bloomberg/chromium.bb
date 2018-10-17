@@ -333,7 +333,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="3630011985153972676">Izinkan Chrome mendownload artikel untuk Anda melalui Wi-Fi di bagian setelan.</translation>
 <translation id="3632295766818638029">Tampilkan sandi</translation>
 <translation id="363596933471559332">Otomatis masuk ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan diminta untuk memverifikasi setiap kali hendak masuk ke situs web.</translation>
-<translation id="3661699943263275414">Situs web pihak ketiga dapat menyimpan dan membaca data cookie</translation>
 <translation id="3662546969139119822">Tidak ada histori di sini</translation>
 <translation id="3672452749423051839">Saran untuk kesalahan navigasi</translation>
 <translation id="3692944402865947621">Download <ph name="FILE_NAME" /> gagal karena lokasi penyimpanan tidak dapat dijangkau.</translation>
@@ -420,7 +419,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4398088515904522762">Untuk menggunakan fitur ini, aktifkan <ph name="BEGIN_LINK" />Aktivitas dan interaksi<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Tidak ada bookmark</translation>
 <translation id="4409723563706114196">Gunakan prediksi halaman</translation>
-<translation id="4412992751769744546">Izinkan cookie pihak ketiga</translation>
 <translation id="4419556793104466535">Mengontrol sinkronisasi, personalisasi, dan lainnya</translation>
 <translation id="4432792777822557199">Mulai sekarang, halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Pop-up dan pengalihan</translation>
@@ -564,6 +562,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="5466407412363861127">Fitur ini menggunakan <ph name="BEGIN_LINK" />sinkronisasi<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
 <translation id="5487521232677179737">Hapus data</translation>
+<translation id="5487729733663684359">Pembaruan Chrome tidak lagi didukung untuk versi Android.</translation>
 <translation id="5494920125229734069">Pilih semua</translation>
 <translation id="550684401320795253">Memperbarui Chrome...</translation>
 <translation id="5512137114520586844">Akun ini dikelola oleh <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="618993374665929060">Lainnya, yang seperti ini dibuka dalam layar penuh</translation>
 <translation id="6192333916571137726">Download file</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
+<translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opsi <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6766622839693428701">Geser ke bawah untuk menutup.</translation>
 <translation id="6768277682697012280">Menginstal modul AR...</translation>
 <translation id="6776813977906306442">Download video untuk ditonton nanti menggunakan tombol Download</translation>
+<translation id="6782111308708962316">Cegah situs web pihak ketiga agar tidak menyimpan dan membaca data cookie</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="679325081238418596">Dapatkan bookmark, histori, sandi, dan setelan lainnya di semua perangkat Anda</translation>
 <translation id="6818926723028410516">Pilih item</translation>

@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">설정에 따라 Wi-Fi에 연결되었을 때에 Chrome에서 기사를 다운로드하도록 허용합니다.</translation>
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
-<translation id="3661699943263275414">타사 웹사이트에서 쿠키 데이터를 저장하고 읽을 수 있도록 허용</translation>
 <translation id="3662546969139119822">기록 없음</translation>
 <translation id="3672452749423051839">탐색 오류 시 추천사항 표시</translation>
 <translation id="3692944402865947621">저장 위치에 연결할 수 없어 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">이 기능을 사용하려면 <ph name="BEGIN_LINK" />활동 및 상호작용<ph name="END_LINK" />을 사용 설정하세요.</translation>
 <translation id="4404568932422911380">북마크 없음</translation>
 <translation id="4409723563706114196">페이지 예측 사용</translation>
-<translation id="4412992751769744546">타사 쿠키 허용</translation>
 <translation id="4419556793104466535">동기화, 맞춤설정 등 관리</translation>
 <translation id="4432792777822557199">지금부터 <ph name="SOURCE_LANGUAGE" />로 된 페이지가 <ph name="TARGET_LANGUAGE" />로 번역됩니다.</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">이 기능은 <ph name="BEGIN_LINK" />동기화<ph name="END_LINK" />를 사용합니다.</translation>
 <translation id="548278423535722844">지도 앱에서 열기</translation>
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
+<translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
 <translation id="5494920125229734069">모두 선택</translation>
 <translation id="550684401320795253">Chrome 업데이트 중...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">전체 높이로 '비슷한 항목 더보기'가 열렸습니다.</translation>
 <translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6192792657125177640">예외</translation>
+<translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">닫으려면 아래로 스와이프하세요.</translation>
 <translation id="6768277682697012280">AR 모듈 설치 중...</translation>
 <translation id="6776813977906306442">다운로드 버튼을 사용하여 나중에 볼 동영상 다운로드</translation>
+<translation id="6782111308708962316">타사 웹사이트에서 쿠키 데이터를 저장하거나 읽을 수 없도록 방지합니다.</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="679325081238418596">모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 동기화합니다.</translation>
 <translation id="6818926723028410516">항목 선택</translation>

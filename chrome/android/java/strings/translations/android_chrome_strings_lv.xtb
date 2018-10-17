@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">Iestatījumu sadaļā varat atļaut pārlūkam Chrome lejupielādēt rakstus, kad ir izveidots savienojums ar Wi-Fi tīklu.</translation>
 <translation id="3632295766818638029">Parādīt paroli</translation>
 <translation id="363596933471559332">Automātiski pierakstīties vietnēs, izmantojot saglabātos akreditācijas datus. Ja funkcija ir izslēgta, verifikācija būs jāveic ikreiz, kad pierakstīsieties vietnē.</translation>
-<translation id="3661699943263275414">Trešo pušu vietnes var saglabāt un lasīt sīkfailu datus</translation>
 <translation id="3662546969139119822">Nav vēstures</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
 <translation id="3692944402865947621">Faila <ph name="FILE_NAME" /> lejupielāde neizdevās, jo krātuves vieta nav sasniedzama.</translation>
@@ -420,7 +419,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4398088515904522762">Lai izmantotu šo funkciju, ieslēdziet iestatījumu <ph name="BEGIN_LINK" />Darbības un mijiedarbība<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Nav grāmatzīmju</translation>
 <translation id="4409723563706114196">Lapu ieteikumu izmantošana</translation>
-<translation id="4412992751769744546">Atļaut trešo pušu sīkfailus</translation>
 <translation id="4419556793104466535">Sinhronizāciju, personalizācijas un citu iespēju pārvaldība</translation>
 <translation id="4432792777822557199">Turpmāk lapas šādā valodā: <ph name="SOURCE_LANGUAGE" /> tiks tulkotas šādā valodā: <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="4434045419905280838">Uznirstošie elem. un novirzīšana</translation>
@@ -564,6 +562,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5466407412363861127">Šai funkcijai tiek izmantota <ph name="BEGIN_LINK" />sinhronizācija<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Atvērt karšu lietotnē</translation>
 <translation id="5487521232677179737">Notīrīt datus</translation>
+<translation id="5487729733663684359">Chrome atjauninājumi vairs netiek atbalstīti šajā Android versijā.</translation>
 <translation id="5494920125229734069">Atlasīt visu</translation>
 <translation id="550684401320795253">Notiek Chrome atjaunināšana...</translation>
 <translation id="5512137114520586844">Šo kontu pārvalda <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="618993374665929060">Līdzīgi vienumi atvērti pilnā augstumā</translation>
 <translation id="6192333916571137726">Lejupielāde fails</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
+<translation id="6196640612572343990">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="6206551242102657620">Savienojums ir drošs. Vietnes informācija</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> nav mana e-pasta adrese</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: iespējas</translation>
@@ -743,6 +743,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
 <translation id="6768277682697012280">Tiek instalēts PR modulis...</translation>
 <translation id="6776813977906306442">Nospiediet pogu Lejupielādēt, lai lejupielādētu videoklipus un tos skatītos vēlāk.</translation>
+<translation id="6782111308708962316">Neļaut trešo pušu vietnēm saglabāt un nolasīt sīkfailu datus</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="679325081238418596">Iegūstiet savas grāmatzīmes, vēsturi, paroles un citus iestatījumus visās savās ierīcēs</translation>
 <translation id="6818926723028410516">Vienumu atlase</translation>

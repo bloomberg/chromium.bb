@@ -601,6 +601,7 @@
 <translation id="1850508293116537636">Rechtsom &amp;draaien</translation>
 <translation id="1852799913675865625">Er is een fout opgetreden bij het lezen van het bestand: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
+<translation id="1854180393107901205">Casten stoppen</translation>
 <translation id="1856715684130786728">Locatie toevoegen...</translation>
 <translation id="1858585891038687145">Dit certificaat vertrouwen voor het identificeren van softwareontwikkelaars</translation>
 <translation id="1861262398884155592">Deze map is leeg</translation>
@@ -1451,7 +1452,7 @@
 <translation id="3151562827395986343">Geschiedenis, cookies, cache en meer wissen</translation>
 <translation id="3151786313568798007">Stand</translation>
 <translation id="3153862085237805241">Kaart opslaan</translation>
-<translation id="3154351730702813399">De apparaatbeheerder kan je browse-activiteit controleren.</translation>
+<translation id="3154351730702813399">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="3154429428035006212">Langer dan een maand offline</translation>
 <translation id="3156531245809797194">Log in om Chrome te gebruiken</translation>
 <translation id="3157931365184549694">Herstellen</translation>
@@ -2538,7 +2539,7 @@
 <translation id="4863769717153320198">Ziet eruit als <ph name="WIDTH" /> x <ph name="HEIGHT" /> (standaardresolutie)</translation>
 <translation id="4864369630010738180">Inloggen...</translation>
 <translation id="486635084936119914">Bepaalde bestandstypen na downloaden automatisch openen</translation>
-<translation id="4869142322204669043">Google kan content op sites die je bezoekt en je browseractiviteit en interacties gebruiken om <ph name="IDS_SHORT_PRODUCT_NAME" /> en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren. Je kunt deze functies op elk gewenst moment aanpassen in Instellingen.</translation>
+<translation id="4869142322204669043">Google kan content op sites die je bezoekt en je browseactiviteit en interacties gebruiken om <ph name="IDS_SHORT_PRODUCT_NAME" /> en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren. Je kunt deze functies op elk gewenst moment aanpassen in Instellingen.</translation>
 <translation id="48704129375571883">Aanvullende functies toevoegen</translation>
 <translation id="4870758487381879312">Geef het wachtwoord op dat je van de beheerder hebt gekregen om configuratie-informatie te ontvangen</translation>
 <translation id="4870903493621965035">Geen gekoppelde apparaten</translation>
@@ -4381,7 +4382,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nooit vertalen</translation>
 <translation id="760197030861754408">Ga naar <ph name="LANDING_PAGE" /> om verbinding te maken.</translation>
 <translation id="7602079150116086782">Geen van andere apparaten</translation>
-<translation id="7604942372593434070">Toegang krijgen tot je browse-activiteit</translation>
+<translation id="7604942372593434070">Toegang krijgen tot je browseactiviteit</translation>
 <translation id="7605594153474022051">Synchronisatie werkt niet</translation>
 <translation id="7606992457248886637">Certificeringsinstanties</translation>
 <translation id="7607002721634913082">Onderbroken</translation>

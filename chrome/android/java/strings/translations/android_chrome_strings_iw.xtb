@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">‏Chrome יכול להוריד בשבילך מאמרים כשקיים חיבור ל-Wi-Fi. האפשרות הזאת זמינה דרך ההגדרות.</translation>
 <translation id="3632295766818638029">חשוף סיסמה</translation>
 <translation id="363596933471559332">היכנס באופן אוטומטי לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, תתבקש לבצע אימות לפני כל כניסה לאתר.</translation>
-<translation id="3661699943263275414">‏אתרים של צד שלישי יוכלו לשמור ולקרוא נתונים של קובצי Cookie</translation>
 <translation id="3662546969139119822">ההיסטוריה ריקה</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
 <translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">כדי להשתמש בתכונה צריך להפעיל את <ph name="BEGIN_LINK" />פעילות ואינטראקציות<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">ללא סימניות</translation>
 <translation id="4409723563706114196">שימוש בחיזויי דפים</translation>
-<translation id="4412992751769744546">‏התר קובצי Cookie של צד שלישי</translation>
 <translation id="4419556793104466535">שליטה בסינכרון, התאמה אישית ועוד</translation>
 <translation id="4432792777822557199">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו ל<ph name="TARGET_LANGUAGE" /> מעכשיו והלאה</translation>
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">התכונה הזו משתמשת ב<ph name="BEGIN_LINK" />סנכרון<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">נקה נתונים</translation>
+<translation id="5487729733663684359">‏עדכוני Chrome אינם נתמכים עוד בגרסה הזו של Android.</translation>
 <translation id="5494920125229734069">בחר הכל</translation>
 <translation id="550684401320795253">‏מעדכן את Chrome...</translation>
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">'עוד דברים כאלה' נפתח בגובה מלא</translation>
 <translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
+<translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
 <translation id="6210748933810148297">אינך <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">אפשרויות בשביל <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">החלקה מטה סוגרת.</translation>
 <translation id="6768277682697012280">‏מתקין מודול AR...</translation>
 <translation id="6776813977906306442">אפשר ללחוץ על לחצן ההורדה כדי להוריד סרטונים ולצפות בהם מאוחר יותר</translation>
+<translation id="6782111308708962316">‏מנע מאתרים של צד שלישי לשמור ולקרוא נתונים של קובצי cookie</translation>
 <translation id="6790428901817661496">הפעל</translation>
 <translation id="679325081238418596">קבל את הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים</translation>
 <translation id="6818926723028410516">בחירת פריטים</translation>
