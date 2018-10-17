@@ -100,10 +100,15 @@ class ArcInputMethodManagerService
   void OnArcImeActivated();
   void OnArcImeDeactivated();
 
+  bool IsVirtualKeyboardShown() const;
+  void SendShowVirtualKeyboard();
+  void SendHideVirtualKeyboard();
+
   Profile* const profile_;
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;
   std::set<std::string> active_arc_ime_ids_;
+  bool is_virtual_keyboard_shown_;
 
   // ArcInputMethodManager installs a proxy IME to redirect IME related events
   // from/to ARC IMEs in the container. The below two variables are for the
