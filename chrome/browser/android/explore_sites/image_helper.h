@@ -15,9 +15,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace explore_sites {
-namespace {
-const int kFaviconsPerCategoryImage = 4;
-}  // namespace
 
 enum class ImageJobType { kSiteIcon, kCategoryImage };
 
