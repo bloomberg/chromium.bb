@@ -1903,9 +1903,9 @@ TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   std::unique_ptr<ash::WindowResizer> resizer(ash::CreateWindowResizer(
       window, gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
-  resizer->Drag(gfx::Point(10, 0), 0);
-  EXPECT_EQ(gfx::Rect(10, 0, 256, 256), window->layer()->GetTargetBounds());
-  EXPECT_EQ(gfx::Rect(10, 0, 256, 256), window->layer()->bounds());
+  resizer->Drag(gfx::Point(10, 10), 0);
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->bounds());
   resizer->CompleteDrag();
 }
 

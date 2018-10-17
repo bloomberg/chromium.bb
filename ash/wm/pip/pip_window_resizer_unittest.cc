@@ -9,11 +9,17 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/command_line.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 namespace wm {
@@ -60,19 +66,30 @@ class PipWindowResizerTest : public AshTestBase {
   ~PipWindowResizerTest() override = default;
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
+    keyboard::SetTouchKeyboardEnabled(true);
+    Shell::Get()->EnableKeyboard();
 
-    window_ = CreateTestWindowInShellWithBounds(gfx::Rect(200, 200, 100, 100));
-    wm::WindowState* window_state = wm::GetWindowState(window_);
+    window_.reset(
+        CreateTestWindowInShellWithBounds(gfx::Rect(200, 200, 100, 100)));
+    wm::WindowState* window_state = wm::GetWindowState(window_.get());
     test_state_ = new FakeWindowState(mojom::WindowStateType::PIP);
     window_state->SetStateObject(
         std::unique_ptr<wm::WindowState::State>(test_state_));
+    window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
   }
 
-  void TearDown() override { AshTestBase::TearDown(); }
+  void TearDown() override {
+    window_.reset();
+
+    keyboard::SetTouchKeyboardEnabled(false);
+    AshTestBase::TearDown();
+  }
 
  protected:
-  aura::Window* window() { return window_; }
+  aura::Window* window() { return window_.get(); }
   FakeWindowState* test_state() { return test_state_; }
 
   PipWindowResizer* CreateResizerForTest(int window_component) {
@@ -98,7 +115,7 @@ class PipWindowResizerTest : public AshTestBase {
   }
 
  private:
-  aura::Window* window_;
+  std::unique_ptr<aura::Window> window_;
   FakeWindowState* test_state_;
 
   DISALLOW_COPY_AND_ASSIGN(PipWindowResizerTest);
@@ -129,19 +146,41 @@ TEST_F(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
 
   // Drag to the right.
   resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
-  EXPECT_EQ("300,200 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ("292,200 100x100", test_state()->last_bounds().ToString());
 
   // Drag down.
   resizer->Drag(CalculateDragPoint(*resizer, 0, 800), 0);
-  EXPECT_EQ("200,300 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ("200,292 100x100", test_state()->last_bounds().ToString());
 
   // Drag to the left.
   resizer->Drag(CalculateDragPoint(*resizer, -800, 0), 0);
-  EXPECT_EQ("0,200 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ("8,200 100x100", test_state()->last_bounds().ToString());
 
   // Drag up.
   resizer->Drag(CalculateDragPoint(*resizer, 0, -800), 0);
-  EXPECT_EQ("200,0 100x100", test_state()->last_bounds().ToString());
+  EXPECT_EQ("200,8 100x100", test_state()->last_bounds().ToString());
+}
+
+TEST_F(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  UpdateWorkArea("400x800");
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+  ASSERT_TRUE(resizer.get());
+
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
+  EXPECT_EQ("200,210 100x100", test_state()->last_bounds().ToString());
+}
+
+TEST_F(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  UpdateWorkArea("400x800");
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
+  ASSERT_TRUE(resizer.get());
+
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
+  EXPECT_EQ("200,200 100x110", test_state()->last_bounds().ToString());
 }
 
 }  // namespace wm

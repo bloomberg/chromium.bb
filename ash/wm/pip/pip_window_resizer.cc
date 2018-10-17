@@ -4,12 +4,20 @@
 
 #include "ash/wm/pip/pip_window_resizer.h"
 
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
+
+namespace {
+// TODO(edcourtney): Consider varying the animation duration based on how far
+// the pip window has to move.
+const int kPipSnapToEdgeAnimationDurationMs = 50;
+}  // namespace
 
 PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
     : WindowResizer(window_state) {
@@ -24,10 +32,11 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_in_screen_);
 
   gfx::Rect bounds = CalculateBoundsForDrag(location_in_parent);
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(GetTarget());
-  gfx::Rect work_area = display.work_area();
-  bounds.AdjustToFit(work_area);
+  display::Display display = window_state()->GetDisplay();
+
+  ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds);
+  bounds = PipPositioner::GetBoundsForDrag(display, bounds);
+  ::wm::ConvertRectFromScreen(GetTarget()->parent(), &bounds);
 
   if (bounds != GetTarget()->bounds()) {
     moved_or_resized_ = true;
@@ -40,6 +49,22 @@ void PipWindowResizer::CompleteDrag() {
   window_state()->DeleteDragDetails();
   window_state()->ClearRestoreBounds();
   window_state()->set_bounds_changed_by_user(moved_or_resized_);
+
+  // Animate the PIP window to its resting position.
+  gfx::Rect bounds = PipPositioner::GetRestingPosition(
+      window_state()->GetDisplay(), GetTarget()->GetBoundsInScreen());
+  base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
+  wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, bounds, /*animate=*/true,
+                           duration);
+  window_state()->OnWMEvent(&event);
+
+  // If the pip work area changes (e.g. message center, virtual keyboard),
+  // we want to restore to the last explicitly set position.
+  // TODO(edcourtney): This may not be the best place for this. Consider
+  // doing this a different way or saving these bounds at a later point when
+  // the work area changes.
+  window_state()->SaveCurrentBoundsForRestore();
 }
 
 void PipWindowResizer::RevertDrag() {
