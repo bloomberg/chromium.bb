@@ -433,9 +433,10 @@ public class FeedNewTabPage extends NewTabPage {
             Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
             FeedAppLifecycle feedAppLifecycle = new FeedAppLifecycle(
                     lifecycleListener, new FeedLifecycleBridge(profile), feedScheduler);
+            FeedLoggingBridge loggingBridge = new FeedLoggingBridge(profile);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(feedScheduler,
                     new TestNetworkClient(), new TestFeedOfflineIndicator(), feedAppLifecycle,
-                    lifecycleListener);
+                    lifecycleListener, loggingBridge);
         } else {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
         }
