@@ -321,9 +321,12 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   for (auto& effect : effects_) {
     Element* target = effect->target();
     DCHECK(target);
+    // TODO(yigu): Currently we have to keep a set of worklet animations in
+    // ElementAnimations so that the compositor knows that there are active
+    // worklet animations running. Ideally, this should be done via the regular
+    // Animation path, i.e., unify the logic between the two Animations.
+    // https://crbug.com/896249.
     target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
-    // TODO(majidvp): This should be removed once worklet animation correctly
-    // updates its effect timing. https://crbug.com/814851.
     target->SetNeedsAnimationStyleRecalc();
   }
 }
@@ -355,9 +358,12 @@ void WorkletAnimation::cancel() {
   for (auto& effect : effects_) {
     Element* target = effect->target();
     DCHECK(target);
+    // TODO(yigu): Currently we have to keep a set of worklet animations in
+    // ElementAnimations so that the compositor knows that there are active
+    // worklet animations running. Ideally, this should be done via the regular
+    // Animation path, i.e., unify the logic between the two Animations.
+    // https://crbug.com/896249.
     target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
-    // TODO(majidvp): This should be removed once worklet animation correctly
-    // updates its effect timing. https://crbug.com/814851.
     target->SetNeedsAnimationStyleRecalc();
   }
 }
