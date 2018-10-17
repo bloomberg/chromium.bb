@@ -684,4 +684,21 @@ TEST_F(NetworkCertLoaderTest,
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
   EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
 }
+
+TEST_F(NetworkCertLoaderTest, NoUpdateWhenShuttingDown) {
+  StartCertLoaderWithPrimaryDB();
+
+  FakePolicyCertificateProvider device_policy_certs_provider;
+
+  // Setting the cert provider triggers an update.
+  cert_loader_->AddPolicyCertificateProvider(&device_policy_certs_provider);
+  ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+
+  // Removing the cert provider does not trigger an update if the shutdown
+  // procedure has started.
+  cert_loader_->set_is_shutting_down();
+  cert_loader_->RemovePolicyCertificateProvider(&device_policy_certs_provider);
+  ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
+}
+
 }  // namespace chromeos
