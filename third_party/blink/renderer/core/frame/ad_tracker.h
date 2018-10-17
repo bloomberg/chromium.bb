@@ -85,6 +85,7 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
   // an ad script. Each time the script or function finishes, it pops the stack.
   Vector<bool> stack_frame_is_ad_;
 
+  // The set of ad scripts detected outside of ad-frame contexts.
   HeapHashMap<WeakMember<ExecutionContext>, HashSet<String>> known_ad_scripts_;
 
   DISALLOW_COPY_AND_ASSIGN(AdTracker);
