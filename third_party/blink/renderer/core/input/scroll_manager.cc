@@ -820,7 +820,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
       if (gesture_dom_event_result != DispatchEventResult::kNotCanceled) {
         DCHECK(gesture_dom_event_result !=
                DispatchEventResult::kCanceledByEventHandler);
-        return EventHandlingUtil::ToWebInputEventResult(
+        return event_handling_util::ToWebInputEventResult(
             gesture_dom_event_result);
       }
     }

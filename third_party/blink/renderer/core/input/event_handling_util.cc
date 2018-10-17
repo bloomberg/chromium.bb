@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 namespace blink {
-namespace EventHandlingUtil {
+namespace event_handling_util {
 
 HitTestResult HitTestResultInFrame(
     LocalFrame* frame,
@@ -154,5 +154,5 @@ LocalFrame* SubframeForHitTestResult(
   return SubframeForTargetNode(hit_test_result.InnerNode());
 }
 
-}  // namespace EventHandlingUtil
+}  // namespace event_handling_util
 }  // namespace blink

@@ -70,7 +70,7 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
   }
 
   LocalFrame* subframe =
-      EventHandlingUtil::SubframeForTargetNode(wheel_target_.Get());
+      event_handling_util::SubframeForTargetNode(wheel_target_.Get());
   if (subframe) {
     WebInputEventResult result =
         subframe->GetEventHandler().HandleWheelEvent(event);
@@ -100,7 +100,7 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
       // blocked by disabled frames.
       return (should_enforce_vertical_scroll && is_vertical)
                  ? WebInputEventResult::kNotHandled
-                 : EventHandlingUtil::ToWebInputEventResult(dom_event_result);
+                 : event_handling_util::ToWebInputEventResult(dom_event_result);
     }
   }
 

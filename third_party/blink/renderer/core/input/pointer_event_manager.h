@@ -167,14 +167,14 @@ class CORE_EXPORT PointerEventManager
   void HandlePointerInterruption(const WebPointerEvent&);
 
   // Returns PointerEventTarget for a WebTouchPoint, hit-testing as necessary.
-  EventHandlingUtil::PointerEventTarget ComputePointerEventTarget(
+  event_handling_util::PointerEventTarget ComputePointerEventTarget(
       const WebPointerEvent&);
 
   WebInputEventResult DispatchTouchPointerEvent(
       const WebPointerEvent&,
       const Vector<WebPointerEvent>& coalesced_events,
       const Vector<WebPointerEvent>& predicted_events,
-      const EventHandlingUtil::PointerEventTarget&);
+      const event_handling_util::PointerEventTarget&);
 
   // Returns whether the event is consumed or not.
   WebInputEventResult SendTouchPointerEvent(EventTarget*,
