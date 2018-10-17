@@ -876,11 +876,11 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
         Cookies
       </message>
-      <message name="IDS_ALLOW_THIRD_PARTY_COOKIES_TITLE" desc="Title for Allow Third Party Cookies preference">
-        Allow third-party cookies
+      <message name="IDS_BLOCK_THIRD_PARTY_COOKIES_TITLE" desc="Title for Block Third Party Cookies preference">
+        Block third-party cookies
       </message>
-      <message name="IDS_ALLOW_THIRD_PARTY_COOKIES_SUMMARY" desc="Summary text for Allow Third Party Cookies preference">
-        Third-party websites can save and read cookie data
+      <message name="IDS_BLOCK_THIRD_PARTY_COOKIES_SUMMARY" desc="Summary text for Block Third Party Cookies preference">
+        Prevent third-party websites from saving and reading cookie data
       </message>
       <message name="IDS_JAVASCRIPT_PERMISSION_TITLE" desc="Title of the permission to run javascript [CHAR-LIMIT=32]">
         JavaScript
