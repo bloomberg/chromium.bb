@@ -393,7 +393,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
       input_handler_proxy_->compositor_event_queue_ =
           std::make_unique<CompositorThreadEventQueue>();
     input_handler_proxy_->scroll_predictor_ =
-        std::make_unique<ScrollPredictor>();
+        std::make_unique<ScrollPredictor>(true /* enable_resampling */);
   }
 
   void HandleGestureEvent(WebInputEvent::Type type,

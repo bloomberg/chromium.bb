@@ -8,7 +8,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -18,8 +17,6 @@ using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebPointerProperties;
 using blink::WebTouchEvent;
-
-namespace {}  // namespace
 
 namespace content {
 
@@ -60,7 +57,8 @@ class InputEventPredictionTest : public testing::Test {
                                    WebInputEvent::GetStaticTimeStampForTests());
   }
 
-  void ConfigureFieldTrial(const std::string& predictor_type) {
+  void ConfigureFieldTrial(const base::Feature& feature,
+                           const std::string& predictor_type) {
     const std::string kTrialName = "TestTrial";
     const std::string kGroupName = "TestGroup";
 
@@ -77,14 +75,12 @@ class InputEventPredictionTest : public testing::Test {
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->RegisterFieldTrialOverride(
-        features::kResamplingInputEvents.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+        feature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     base::FeatureList::ClearInstanceForTesting();
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     EXPECT_EQ(params["predictor"],
-              GetFieldTrialParamValueByFeature(features::kResamplingInputEvents,
-                                               "predictor"));
+              GetFieldTrialParamValueByFeature(feature, "predictor"));
   }
 
  protected:
@@ -97,24 +93,32 @@ class InputEventPredictionTest : public testing::Test {
 };
 
 TEST_F(InputEventPredictionTest, PredictorType) {
+  // resampling is default to true for InputEventPredictionTest.
   EXPECT_TRUE(event_predictor_->enable_resampling_);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             InputEventPrediction::PredictorType::kEmpty);
 
-  ConfigureFieldTrial("empty");
+  ConfigureFieldTrial(features::kResamplingInputEvents, "empty");
   event_predictor_->SetUpPredictorType();
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             InputEventPrediction::PredictorType::kEmpty);
 
-  ConfigureFieldTrial("kalman");
+  ConfigureFieldTrial(features::kResamplingInputEvents, "kalman");
   event_predictor_->SetUpPredictorType();
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             InputEventPrediction::PredictorType::kKalman);
 
-  ConfigureFieldTrial("lsq");
+  ConfigureFieldTrial(features::kResamplingInputEvents, "lsq");
   event_predictor_->SetUpPredictorType();
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             InputEventPrediction::PredictorType::kLsq);
+
+  // When enable_resampling_ is true, kInputPredictorTypeChoice flag have no
+  // effect.
+  ConfigureFieldTrial(features::kInputPredictorTypeChoice, "lsq");
+  event_predictor_->SetUpPredictorType();
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            InputEventPrediction::PredictorType::kEmpty);
 }
 
 TEST_F(InputEventPredictionTest, MouseEvent) {
@@ -268,18 +272,12 @@ TEST_F(InputEventPredictionTest, TouchScrollStartedRemoveAllTouchPoints) {
   EXPECT_EQ(GetPredictorMapSize(), 0);
 }
 
-class PredictedEventTest : public InputEventPredictionTest {
- public:
-  PredictedEventTest() {
-    event_predictor_ =
-        std::make_unique<InputEventPrediction>(false /* enable_resampling */);
-  }
-};
-
-TEST_F(PredictedEventTest, ResamplingDisabled) {
-  // When resampling is disable, use kalman filter predictor to generate
-  // predicted event.
-  EXPECT_FALSE(event_predictor_->enable_resampling_);
+TEST_F(InputEventPredictionTest, ResamplingDisabled) {
+  // When resampling is disabled, set predictor type by
+  // kInputPredictorTypeChoice.
+  event_predictor_->enable_resampling_ = false;
+  ConfigureFieldTrial(features::kInputPredictorTypeChoice, "kalman");
+  event_predictor_->SetUpPredictorType();
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             InputEventPrediction::PredictorType::kKalman);
 

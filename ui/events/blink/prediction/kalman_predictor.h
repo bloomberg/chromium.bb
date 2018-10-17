@@ -22,6 +22,8 @@ class KalmanPredictor : public InputPredictor {
   explicit KalmanPredictor();
   ~KalmanPredictor() override;
 
+  const char* GetName() const override;
+
   // Reset the predictor to initial state.
   void Reset() override;
 

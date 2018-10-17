@@ -169,10 +169,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)
           ? std::make_unique<CompositorThreadEventQueue>()
           : nullptr;
-  scroll_predictor_ =
-      base::FeatureList::IsEnabled(features::kResamplingScrollEvents)
-          ? std::make_unique<ScrollPredictor>()
-          : nullptr;
+  scroll_predictor_ = std::make_unique<ScrollPredictor>(
+      base::FeatureList::IsEnabled(features::kResamplingScrollEvents));
 }
 
 InputHandlerProxy::~InputHandlerProxy() {}

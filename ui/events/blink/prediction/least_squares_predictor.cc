@@ -40,6 +40,10 @@ LeastSquaresPredictor::LeastSquaresPredictor() {}
 
 LeastSquaresPredictor::~LeastSquaresPredictor() {}
 
+const char* LeastSquaresPredictor::GetName() const {
+  return "LSQ";
+}
+
 void LeastSquaresPredictor::Reset() {
   x_queue_.clear();
   y_queue_.clear();
