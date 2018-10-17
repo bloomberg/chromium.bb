@@ -786,9 +786,13 @@ void DriveIntegrationService::RemoveObserver(
 }
 
 void DriveIntegrationService::OnNotificationReceived(
-    const std::set<std::string>& ids) {
+    const std::map<std::string, int64_t>& invalidations) {
   logger_->Log(logging::LOG_INFO,
                "Received Drive update notification. Will check for update.");
+  std::set<std::string> ids;
+  for (auto& invalidation : invalidations) {
+    ids.insert(invalidation.first);
+  }
   file_system_->CheckForUpdates(ids);
 }
 

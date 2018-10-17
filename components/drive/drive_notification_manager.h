@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 #define COMPONENTS_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_
 
+#include <stdint.h>
+
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -77,7 +80,7 @@ class DriveNotificationManager : public KeyedService,
   // Notifies the observers that it's time to check for updates.
   // |source| indicates where the notification comes from.
   void NotifyObserversToUpdate(NotificationSource source,
-                               std::set<std::string> ids);
+                               std::map<std::string, int64_t> invalidations);
 
   // Registers for Google Drive invalidation notifications through XMPP.
   void RegisterDriveNotifications();
@@ -115,7 +118,7 @@ class DriveNotificationManager : public KeyedService,
 
   // The batch of invalidation id's that we've seen from the invaliation
   // service, will be reset when when send the invalidations to the observers.
-  std::set<std::string> invalidated_change_ids_;
+  std::map<std::string, int64_t> invalidated_change_ids_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
