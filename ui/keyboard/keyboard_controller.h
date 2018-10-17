@@ -156,7 +156,15 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Hide the keyboard because the user has chosen to specifically hide the
   // keyboard, such as pressing the dismiss button.
+  // TODO(https://crbug.com/845780): Rename this to
+  // HideKeyboardExplicitlyByUser.
+  // TODO(https://crbug.com/845780): Audit and switch callers to
+  // HideKeyboardImplicitlyByUser where appropriate.
   void HideKeyboardByUser();
+
+  // Hide the keyboard as a secondary effect of a user action, such as tapping
+  // the shelf. The keyboard should not hide if it's locked.
+  void HideKeyboardImplicitlyByUser();
 
   // Hide the keyboard due to some internally generated change to change the
   // state of the keyboard. For example, moving from the docked keyboard to the
@@ -273,9 +281,14 @@ class KEYBOARD_EXPORT KeyboardController
     // floating)
     HIDE_REASON_SYSTEM_TEMPORARY,
 
-    // User initiated.
+    // User explicitly hiding the keyboard via the close button. Also hides
+    // locked keyboards.
     HIDE_REASON_USER_EXPLICIT,
 
+    // Keyboard is hidden as an indirect consequence of some user action.
+    // Examples include opening the window overview mode, or tapping on the
+    // shelf status area. Does not hide locked keyboards.
+    HIDE_REASON_USER_IMPLICIT,
   };
 
   // aura::WindowObserver overrides

@@ -453,6 +453,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
           LogKeyboardControlEvent(KEYBOARD_CONTROL_HIDE_AUTO);
           break;
         case HIDE_REASON_USER_EXPLICIT:
+        case HIDE_REASON_USER_IMPLICIT:
           LogKeyboardControlEvent(KEYBOARD_CONTROL_HIDE_USER);
           break;
       }
@@ -467,6 +468,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
         case HIDE_REASON_SYSTEM_TEMPORARY:
         case HIDE_REASON_SYSTEM_EXPLICIT:
         case HIDE_REASON_USER_EXPLICIT:
+        case HIDE_REASON_USER_IMPLICIT:
           time_of_last_blur_ = base::Time::UnixEpoch();
           break;
       }
@@ -506,6 +508,11 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
 void KeyboardController::HideKeyboardByUser() {
   HideKeyboard(HIDE_REASON_USER_EXPLICIT);
+}
+
+void KeyboardController::HideKeyboardImplicitlyByUser() {
+  if (!keyboard_locked())
+    HideKeyboard(HIDE_REASON_USER_IMPLICIT);
 }
 
 void KeyboardController::HideKeyboardTemporarilyForTransition() {
