@@ -123,13 +123,13 @@ void WriteMetaDataToDiskCache(
   ServiceWorkerResponseMetadataWriter* writer_rawptr = writer.get();
   writer_rawptr->WriteMetadata(
       meta_data_buffer.get(), meta_data.size(),
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<ServiceWorkerResponseMetadataWriter> /* unused */,
              base::OnceClosure callback, int expected, int result) {
             EXPECT_EQ(expected, result);
             std::move(callback).Run();
           },
-          base::Passed(&writer), base::Passed(&callback), meta_data.size()));
+          std::move(writer), std::move(callback), meta_data.size()));
 }
 
 }  // namespace

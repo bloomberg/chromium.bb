@@ -133,7 +133,7 @@ void LookupAndLogNameAndIdOfFirstCamera() {
           [](MediaStreamManager* media_stream_manager,
              base::Closure quit_closure) {
             media_stream_manager->video_capture_manager()->EnumerateDevices(
-                base::Bind(
+                base::BindOnce(
                     [](base::Closure quit_closure,
                        const media::VideoCaptureDeviceDescriptors&
                            descriptors) {

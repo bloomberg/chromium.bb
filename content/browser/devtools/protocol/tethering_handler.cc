@@ -82,7 +82,7 @@ class SocketPump {
 
     int result = server_socket_->Accept(
         &accepted_socket_,
-        base::Bind(&SocketPump::OnAccepted, base::Unretained(this)));
+        base::BindOnce(&SocketPump::OnAccepted, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       OnAccepted(result);
     return channel_name;
@@ -223,7 +223,7 @@ class BoundSocket {
     while (true) {
       int result = socket_->Accept(
           &accept_socket_,
-          base::Bind(&BoundSocket::OnAccepted, base::Unretained(this)));
+          base::BindOnce(&BoundSocket::OnAccepted, base::Unretained(this)));
       if (result == net::ERR_IO_PENDING)
         break;
       else

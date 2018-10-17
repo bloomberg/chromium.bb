@@ -809,7 +809,7 @@ PepperUDPSocketMessageFilter::CreateCompletionCallback(
   base::ScopedClosureRunner closure_runner(
       base::BindOnce(&PepperUDPSocketMessageFilter::ReturnResult<ReturnMessage>,
                      base::Unretained(this), context->MakeReplyMessageContext(),
-                     base::Passed(std::move(result))));
+                     std::move(result)));
   return base::BindOnce(
       [](base::ScopedClosureRunner closure_runner, int* result_ptr,
          int net_result) { *result_ptr = net_result; },

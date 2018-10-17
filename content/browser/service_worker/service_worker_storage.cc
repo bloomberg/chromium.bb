@@ -1656,8 +1656,8 @@ void ServiceWorkerStorage::InitializeDiskCache() {
       GetDiskCachePath(), kMaxServiceWorkerStorageDiskCacheSize, false,
       base::BindOnce(&ServiceWorkerStorage::DiskCacheImplDoneWithDisk,
                      weak_factory_.GetWeakPtr()),
-      base::Bind(&ServiceWorkerStorage::OnDiskCacheInitialized,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerStorage::OnDiskCacheInitialized,
+                     weak_factory_.GetWeakPtr()));
   if (rv != net::ERR_IO_PENDING)
     OnDiskCacheInitialized(rv);
 }
@@ -1711,8 +1711,8 @@ void ServiceWorkerStorage::ContinuePurgingResources() {
 void ServiceWorkerStorage::PurgeResource(int64_t id) {
   DCHECK(is_purge_pending_);
   int rv = disk_cache()->DoomEntry(
-      id, base::Bind(&ServiceWorkerStorage::OnResourcePurged,
-                     weak_factory_.GetWeakPtr(), id));
+      id, base::BindOnce(&ServiceWorkerStorage::OnResourcePurged,
+                         weak_factory_.GetWeakPtr(), id));
   if (rv != net::ERR_IO_PENDING)
     OnResourcePurged(id, rv);
 }

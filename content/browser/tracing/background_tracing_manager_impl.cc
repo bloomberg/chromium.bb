@@ -506,8 +506,8 @@ void BackgroundTracingManagerImpl::StartTracing(
     config.EnableArgumentFilter();
 
   is_tracing_ = TracingControllerImpl::GetInstance()->StartTracing(
-      config, base::Bind(&BackgroundTracingManagerImpl::OnStartTracingDone,
-                         base::Unretained(this), preset));
+      config, base::BindOnce(&BackgroundTracingManagerImpl::OnStartTracingDone,
+                             base::Unretained(this), preset));
   RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }
 

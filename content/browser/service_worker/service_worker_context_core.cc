@@ -883,10 +883,10 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
   }
 
   if (!registration->active_version() && !registration->waiting_version()) {
-    registration->RegisterRegistrationFinishedCallback(base::Bind(
-        &ServiceWorkerContextCore::
-            OnRegistrationFinishedForCheckHasServiceWorker,
-        AsWeakPtr(), base::Passed(std::move(callback)), registration));
+    registration->RegisterRegistrationFinishedCallback(
+        base::BindOnce(&ServiceWorkerContextCore::
+                           OnRegistrationFinishedForCheckHasServiceWorker,
+                       AsWeakPtr(), std::move(callback), registration));
     return;
   }
 

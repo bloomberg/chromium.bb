@@ -211,7 +211,7 @@ void AppCacheInternalsUI::Proxy::DeleteAppCache(
   if (appcache_service_) {
     appcache_service_->DeleteAppCacheGroup(
         GURL(manifest_url),
-        base::Bind(&Proxy::OnAppCacheInfoDeleted, this, manifest_url));
+        base::BindOnce(&Proxy::OnAppCacheInfoDeleted, this, manifest_url));
   }
 }
 
