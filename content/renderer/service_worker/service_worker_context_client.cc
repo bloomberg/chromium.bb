@@ -43,7 +43,6 @@
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
@@ -1510,9 +1509,8 @@ void ServiceWorkerContextClient::InitializeGlobalScope(
             blink::mojom::kInvalidServiceWorkerRegistrationId);
   DCHECK(registration_info->host_ptr_info.is_valid());
   DCHECK(registration_info->request.is_pending());
-  proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
-      WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
-          std::move(registration_info))));
+  proxy_->SetRegistration(
+      registration_info.To<blink::WebServiceWorkerRegistrationObjectInfo>());
 
   proxy_->ReadyToEvaluateScript();
 }

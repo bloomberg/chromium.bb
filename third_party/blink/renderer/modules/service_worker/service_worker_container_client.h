@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -34,6 +35,12 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
                                std::unique_ptr<WebServiceWorkerProvider>);
   virtual ~ServiceWorkerContainerClient();
 
+  // Returns the ServiceWorkerRegistration object described by the object info
+  // in current execution context. Creates a new object if needed, or else
+  // returns the existing one.
+  ServiceWorkerRegistration* GetOrCreateServiceWorkerRegistration(
+      WebServiceWorkerRegistrationObjectInfo);
+
   // Returns the ServiceWorker object described by the object info in current
   // execution context. Creates a new object if needed, or else returns the
   // existing one.
@@ -51,6 +58,13 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
 
  private:
   std::unique_ptr<WebServiceWorkerProvider> provider_;
+  // Map from service worker registration id to JavaScript
+  // ServiceWorkerRegistration object in current execution context.
+  HeapHashMap<int64_t,
+              WeakMember<ServiceWorkerRegistration>,
+              WTF::IntHash<int64_t>,
+              WTF::UnsignedWithZeroKeyHashTraits<int64_t>>
+      service_worker_registration_objects_;
   // Map from service worker version id to JavaScript ServiceWorker object in
   // current execution context.
   HeapHashMap<int64_t,

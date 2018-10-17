@@ -78,8 +78,7 @@ class ServiceWorkerGlobalScopeProxy final
   // WebServiceWorkerContextProxy overrides:
   void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) override;
-  void SetRegistration(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle>) override;
+  void SetRegistration(WebServiceWorkerRegistrationObjectInfo info) override;
   // Must be called after the above BindServiceWorkerHost() and
   // SetRegistration() got called.
   void ReadyToEvaluateScript() override;

@@ -575,8 +575,6 @@ target(link_target_type, "renderer") {
     "service_worker/service_worker_type_util.h",
     "service_worker/web_service_worker_provider_impl.cc",
     "service_worker/web_service_worker_provider_impl.h",
-    "service_worker/web_service_worker_registration_impl.cc",
-    "service_worker/web_service_worker_registration_impl.h",
     "shared_worker/embedded_shared_worker_stub.cc",
     "shared_worker/embedded_shared_worker_stub.h",
     "shared_worker/shared_worker_client_impl.cc",

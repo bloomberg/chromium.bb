@@ -55,6 +55,10 @@ class MODULES_EXPORT ServiceWorker final
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 
  public:
+  static ServiceWorker* From(ExecutionContext*,
+                             mojom::blink::ServiceWorkerObjectInfoPtr);
+  // TODO(crbug.com/879019): Eventually we'll remove WebServiceWorkerObjectInfo
+  // and use the above From() everywhere instead of this one.
   static ServiceWorker* From(ExecutionContext*, WebServiceWorkerObjectInfo);
 
   ServiceWorker(ExecutionContext*, WebServiceWorkerObjectInfo);

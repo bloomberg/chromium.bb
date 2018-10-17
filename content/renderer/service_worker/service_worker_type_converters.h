@@ -10,9 +10,11 @@
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/payments/web_can_make_payment_event_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration_object_info.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 
 namespace mojo {
@@ -63,6 +65,13 @@ struct TypeConverter<blink::WebServiceWorkerObjectInfo,
                      blink::mojom::ServiceWorkerObjectInfoPtr> {
   static blink::WebServiceWorkerObjectInfo Convert(
       const blink::mojom::ServiceWorkerObjectInfoPtr& input);
+};
+
+template <>
+struct TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
+                     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr> {
+  static blink::WebServiceWorkerRegistrationObjectInfo Convert(
+      const blink::mojom::ServiceWorkerRegistrationObjectInfoPtr& input);
 };
 
 }  // namespace

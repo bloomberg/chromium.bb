@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_clients.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
@@ -303,11 +304,11 @@ void ServiceWorkerGlobalScope::BindServiceWorkerHost(
 }
 
 void ServiceWorkerGlobalScope::SetRegistration(
-    std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
+    WebServiceWorkerRegistrationObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  registration_ = ServiceWorkerRegistration::GetOrCreate(
-      GetExecutionContext(), base::WrapUnique(handle.release()));
+  registration_ =
+      new ServiceWorkerRegistration(GetExecutionContext(), std::move(info));
 }
 
 ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
