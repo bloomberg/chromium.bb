@@ -170,6 +170,13 @@ class FileSystemDispatcher
   void DidTruncate(int operation_id,
                    StatusCallback callback,
                    base::File::Error error_code);
+  void DidWrite(const WriteCallback& callback,
+                int operation_id,
+                int64_t bytes,
+                bool complete);
+  void WriteErrorCallback(StatusCallback callback,
+                          int operation_id,
+                          base::File::Error error);
   void DidCancel(StatusCallback callback,
                  int cancelled_operation_id,
                  base::File::Error error_code);
