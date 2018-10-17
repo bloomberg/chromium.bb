@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/chromeos_features.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_notification_manager.h"
@@ -292,6 +293,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     }
   }
 
+  // Hide or show a section of the page.
+  void SetSectionEnabled(const std::string& section, bool enable) {
+    MaybeCallJavascript("setSectionEnabled", base::Value(section),
+                        base::Value(enable));
+  }
+
   // WebUIMessageHandler override.
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
@@ -373,28 +380,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   //
   // Updates respective sections.
   //
-  void UpdateDriveRelatedPreferencesSection() {
-    const char* kDriveRelatedPreferences[] = {
-        drive::prefs::kDisableDrive, drive::prefs::kDisableDriveOverCellular,
-        drive::prefs::kDisableDriveHostedFiles,
-    };
-
-    PrefService* pref_service = profile()->GetPrefs();
-
-    base::ListValue preferences;
-    for (size_t i = 0; i < arraysize(kDriveRelatedPreferences); ++i) {
-      const std::string key = kDriveRelatedPreferences[i];
-      // As of now, all preferences are boolean.
-      const std::string value =
-          (pref_service->GetBoolean(key.c_str()) ? "true" : "false");
-      AppendKeyValue(&preferences, key, value);
-    }
-
-    MaybeCallJavascript("updateDriveRelatedPreferences",
-                        std::move(preferences));
-  }
-
   void UpdateConnectionStatusSection() {
+    SetSectionEnabled("connection-status-section", true);
+
     std::string status;
     switch (drive::util::GetDriveConnectionStatus(profile())) {
       case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
@@ -428,6 +416,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateAboutResourceSection() {
+    if (IsDriveFsEnabled()) {
+      // TODO(crbug.com/896123): Maybe worth implementing.
+      SetSectionEnabled("account-information-section", false);
+      return;
+    }
+
+    SetSectionEnabled("account-information-section", true);
     auto* drive_service = GetDriveService();
     if (drive_service) {
       drive_service->GetAboutResource(
@@ -460,6 +455,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateDeltaUpdateStatusSection() {
+    if (IsDriveFsEnabled()) {
+      // TODO(crbug.com/896123): Maybe worth implementing.
+      SetSectionEnabled("delta-update-status-section", false);
+      return;
+    }
+
+    SetSectionEnabled("delta-update-status-section", true);
     auto* debug_info_collector = GetDebugInfoCollector();
     if (debug_info_collector) {
       debug_info_collector->GetMetadata(base::Bind(
@@ -526,6 +528,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateInFlightOperationsSection() {
+    if (IsDriveFsEnabled()) {
+      // TODO(crbug.com/896123): Maybe worth implementing.
+      SetSectionEnabled("in-flight-operations-section", false);
+      return;
+    }
+
+    SetSectionEnabled("in-flight-operations-section", true);
     auto* integration_service = GetIntegrationService();
     if (!integration_service)
       return;
@@ -552,25 +561,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                         std::move(in_flight_operations));
   }
 
-  void UpdateGCacheContentsSection() {
-    const base::FilePath root_path =
-        drive::util::GetCacheRootPath(profile()).DirName();
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&GetGCacheContents, root_path),
-        base::BindOnce(&DriveInternalsWebUIHandler::OnGetGCacheContents,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // Called when GetGCacheContents() is complete.
-  void OnGetGCacheContents(
-      std::pair<base::ListValue, base::DictionaryValue> response) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    MaybeCallJavascript("updateGCacheContents", std::move(response.first),
-                        std::move(response.second));
-  }
-
   void UpdateFileSystemContentsSection() {
+    if (IsDriveFsEnabled()) {
+      SetSectionEnabled("file-system-contents-section", false);
+      return;
+    }
+
+    SetSectionEnabled("file-system-contents-section", true);
     drive::DebugInfoCollector* debug_info_collector = GetDebugInfoCollector();
     if (!debug_info_collector)
       return;
@@ -637,7 +634,35 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     }
   }
 
+  void UpdatePathConfigurationsSection() {
+    SetSectionEnabled("path-configurations-section", true);
+
+    base::ListValue paths;
+    AppendKeyValue(&paths, "Downloads",
+                   file_manager::util::GetDownloadsFolderForProfile(profile())
+                       .AsUTF8Unsafe());
+    const auto* integration_service = GetIntegrationService();
+    if (integration_service) {
+      AppendKeyValue(&paths, "Drive",
+                     integration_service->GetMountPointPath().AsUTF8Unsafe());
+    }
+
+    const char* kPathPreferences[] = {
+        prefs::kSelectFileLastDirectory, prefs::kSaveFileDefaultDirectory,
+        prefs::kDownloadDefaultDirectory,
+    };
+    for (size_t i = 0; i < base::size(kPathPreferences); ++i) {
+      const char* const key = kPathPreferences[i];
+      AppendKeyValue(&paths, key,
+                     profile()->GetPrefs()->GetFilePath(key).AsUTF8Unsafe());
+    }
+
+    MaybeCallJavascript("updatePathConfigurations", std::move(paths));
+  }
+
   void UpdateLocalStorageUsageSection() {
+    SetSectionEnabled("local-metadata-section", true);
+
     // Propagate the amount of local free space in bytes.
     base::FilePath home_path;
     if (base::PathService::Get(base::DIR_HOME, &home_path)) {
@@ -660,33 +685,37 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                         std::move(local_storage_summary));
   }
 
-  void UpdateCacheContentsSection() {
-    auto* debug_info_collector = GetDebugInfoCollector();
-    if (debug_info_collector) {
-      debug_info_collector->IterateFileCache(
-          base::Bind(&DriveInternalsWebUIHandler::OnUpdateCacheEntry,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::DoNothing());
+  void UpdateDriveRelatedPreferencesSection() {
+    SetSectionEnabled("drive-related-preferences-section", true);
+
+    const char* kDriveRelatedPreferences[] = {
+        drive::prefs::kDisableDrive,
+        drive::prefs::kDisableDriveOverCellular,
+        drive::prefs::kDisableDriveHostedFiles,
+        drive::prefs::kDriveFsWasLaunchedAtLeastOnce,
+        drive::prefs::kDriveFsPinnedMigrated,
+    };
+
+    PrefService* pref_service = profile()->GetPrefs();
+
+    base::ListValue preferences;
+    AppendKeyValue(&preferences, "DriveFS",
+                   IsDriveFsEnabled() ? "true" : "false");
+    for (size_t i = 0; i < base::size(kDriveRelatedPreferences); ++i) {
+      const std::string key = kDriveRelatedPreferences[i];
+      // As of now, all preferences are boolean.
+      const std::string value =
+          (pref_service->GetBoolean(key.c_str()) ? "true" : "false");
+      AppendKeyValue(&preferences, key, value);
     }
-  }
 
-  // Called as the iterator for DebugInfoCollector::IterateFileCache().
-  void OnUpdateCacheEntry(const std::string& local_id,
-                          const drive::FileCacheEntry& cache_entry) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // Convert |cache_entry| into a dictionary.
-    base::DictionaryValue value;
-    value.SetString("local_id", local_id);
-    value.SetString("md5", cache_entry.md5());
-    value.SetBoolean("is_present", cache_entry.is_present());
-    value.SetBoolean("is_pinned", cache_entry.is_pinned());
-    value.SetBoolean("is_dirty", cache_entry.is_dirty());
-
-    MaybeCallJavascript("updateCacheContents", std::move(value));
+    MaybeCallJavascript("updateDriveRelatedPreferences",
+                        std::move(preferences));
   }
 
   void UpdateEventLogSection() {
+    SetSectionEnabled("event-log-section", true);
+
     drive::DriveIntegrationService* integration_service =
         GetIntegrationService();
     if (!integration_service)
@@ -715,6 +744,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   }
 
   void UpdateServiceLogSection() {
+    if (!IsDriveFsEnabled()) {
+      SetSectionEnabled("service-log-section", false);
+      return;
+    }
+    SetSectionEnabled("service-log-section", true);
+
     if (service_log_file_is_processing_)
       return;
     service_log_file_is_processing_ = true;
@@ -748,29 +783,57 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     service_log_file_is_processing_ = false;
   }
 
-  void UpdatePathConfigurationsSection() {
-    base::ListValue paths;
-
-    AppendKeyValue(&paths, "Downloads",
-                   file_manager::util::GetDownloadsFolderForProfile(profile())
-                       .AsUTF8Unsafe());
-    const auto* integration_service = GetIntegrationService();
-    if (integration_service) {
-      AppendKeyValue(&paths, "Drive",
-                     integration_service->GetMountPointPath().AsUTF8Unsafe());
+  void UpdateCacheContentsSection() {
+    if (IsDriveFsEnabled()) {
+      // TODO(crbug.com/896123): Maybe worth implementing.
+      SetSectionEnabled("cache-contents-section", false);
+      return;
     }
+    SetSectionEnabled("cache-contents-section", true);
 
-    const char* kPathPreferences[] = {
-        prefs::kSelectFileLastDirectory, prefs::kSaveFileDefaultDirectory,
-        prefs::kDownloadDefaultDirectory,
-    };
-    for (size_t i = 0; i < base::size(kPathPreferences); ++i) {
-      const char* const key = kPathPreferences[i];
-      AppendKeyValue(&paths, key,
-                     profile()->GetPrefs()->GetFilePath(key).AsUTF8Unsafe());
+    auto* debug_info_collector = GetDebugInfoCollector();
+    if (debug_info_collector) {
+      debug_info_collector->IterateFileCache(
+          base::Bind(&DriveInternalsWebUIHandler::OnUpdateCacheEntry,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::DoNothing());
     }
+  }
 
-    MaybeCallJavascript("updatePathConfigurations", std::move(paths));
+  // Called as the iterator for DebugInfoCollector::IterateFileCache().
+  void OnUpdateCacheEntry(const std::string& local_id,
+                          const drive::FileCacheEntry& cache_entry) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    // Convert |cache_entry| into a dictionary.
+    base::DictionaryValue value;
+    value.SetString("local_id", local_id);
+    value.SetString("md5", cache_entry.md5());
+    value.SetBoolean("is_present", cache_entry.is_present());
+    value.SetBoolean("is_pinned", cache_entry.is_pinned());
+    value.SetBoolean("is_dirty", cache_entry.is_dirty());
+
+    MaybeCallJavascript("updateCacheContents", std::move(value));
+  }
+
+  void UpdateGCacheContentsSection() {
+    SetSectionEnabled("gcache-contents-section", true);
+
+    const base::FilePath root_path =
+        drive::util::GetCacheRootPath(profile()).DirName();
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&GetGCacheContents, root_path),
+        base::BindOnce(&DriveInternalsWebUIHandler::OnGetGCacheContents,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // Called when GetGCacheContents() is complete.
+  void OnGetGCacheContents(
+      std::pair<base::ListValue, base::DictionaryValue> response) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    MaybeCallJavascript("updateGCacheContents", std::move(response.first),
+                        std::move(response.second));
   }
 
   // Called when the corresponding button on the page is pressed.
@@ -840,6 +903,11 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     drive::DriveIntegrationService* service = GetIntegrationService();
     return service ? service->debug_info_collector() : NULL;
+  }
+
+  // Whether DriveFS is enabled.
+  bool IsDriveFsEnabled() {
+    return base::FeatureList::IsEnabled(chromeos::features::kDriveFs);
   }
 
   // The last event sent to the JavaScript side.
