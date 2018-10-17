@@ -121,6 +121,11 @@ $fidl_Decoder.prototype.claimHandle = function() {
 
 
 // Type tables and encoding helpers for generated Proxy code.
+const _kTT_bool = {
+  enc: function(e, o, v) { e.data.setInt8(o, v ? 1 : 0); },
+  dec: function(d, o) { return d.data.getInt8(o) != 0; },
+};
+
 const _kTT_int8 = {
   enc: function(e, o, v) { e.data.setInt8(o, v); },
   dec: function(d, o) { return d.data.getInt8(o); },
