@@ -149,7 +149,7 @@ void SymbolMap::Populate() {
 
   std::sort(
       &entries_[0], &entries_[count_ - 1],
-      [](const Entry& a, const Entry& b) -> bool { return a.addr >= b.addr; });
+      [](const Entry& a, const Entry& b) -> bool { return a.addr > b.addr; });
 
   valid_ = true;
 }
