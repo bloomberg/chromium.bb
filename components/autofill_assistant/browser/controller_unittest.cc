@@ -317,33 +317,17 @@ TEST_F(ControllerTest, Autostart) {
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
-TEST_F(ControllerTest, AutostartFallsBackToUpdateScriptAfterTap) {
+TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable")
       ->mutable_presentation()
       ->set_autostart(true);
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
+  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0)));
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _)).Times(0);
 
   SimulateUserInteraction(blink::WebInputEvent::kTouchStart);
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-}
-
-TEST_F(ControllerTest, AutostartFallsBackToUpdateScriptAfterExecution) {
-  SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "runnable")
-      ->mutable_presentation()
-      ->set_autostart(true);
-  SetNextScriptResponse(script_response);
-
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _, _));
-  GetUiDelegate()->OnScriptSelected("script1");
-
-  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
-  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _, _)).Times(0);
-
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
