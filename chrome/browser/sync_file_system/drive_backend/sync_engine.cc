@@ -645,7 +645,8 @@ void SyncEngine::ApplyLocalChange(const FileChange& local_change,
                      local_path, local_metadata, url, relayed_callback));
 }
 
-void SyncEngine::OnNotificationReceived(const std::set<std::string>& ids) {
+void SyncEngine::OnNotificationReceived(
+    const std::map<std::string, int64_t>& invalidations) {
   OnNotificationTimerFired();
 }
 
