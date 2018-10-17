@@ -562,22 +562,6 @@ TEST_F(BitmapImageTest, GIFRepetitionCount) {
   EXPECT_EQ(paint_image.FrameCount(), 3u);
 }
 
-TEST_F(BitmapImageTest, DecoderAndCacheMipLevels) {
-  // Tests that the supported sizes from the decoder match the mip level sizes
-  // in cc.
-  LoadImage("/images/resources/cat.jpg");
-  auto paint_image = image_->PaintImageForCurrentFrame();
-  // Jpeg decoder supports upto 1/8 downscales, or mip level 3.
-  for (int mip_level = 0; mip_level < 4; ++mip_level) {
-    SCOPED_TRACE(mip_level);
-    SkISize scaled_size = gfx::SizeToSkISize(cc::MipMapUtil::GetSizeForLevel(
-        gfx::Size(paint_image.width(), paint_image.height()), mip_level));
-    SkISize supported_size = paint_image.GetSupportedDecodeSize(scaled_size);
-    EXPECT_EQ(gfx::SkISizeToSize(supported_size),
-              gfx::SkISizeToSize(scaled_size));
-  }
-}
-
 class BitmapImageTestWithMockDecoder : public BitmapImageTest,
                                        public MockImageDecoderClient {
  public:
