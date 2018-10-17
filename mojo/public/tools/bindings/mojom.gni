@@ -444,7 +444,7 @@ template("mojom") {
     if (!defined(invoker.skip_deps_check) || !invoker.skip_deps_check) {
       verify_deps_target_name = "${target_name}__verify_deps"
       verify_deps_target_names += [ ":$verify_deps_target_name" ]
-      source_file_name = target_name
+      mojom_target_name = target_name
 
       action(verify_deps_target_name) {
         script = mojom_generator_script
@@ -468,7 +468,7 @@ template("mojom") {
           "verify",
           "--filelist={{response_file_name}}",
           "-f",
-          rebase_path("$target_gen_dir/$source_file_name.deps_sources_list",
+          rebase_path("$target_gen_dir/$mojom_target_name.deps_sources_list",
                       root_build_dir),
           "--gen_dir",
           rebase_path(root_gen_dir, root_build_dir),
