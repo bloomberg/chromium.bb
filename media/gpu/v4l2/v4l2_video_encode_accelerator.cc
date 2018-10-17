@@ -742,8 +742,10 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
 
     int32_t bitstream_buffer_id = output_record.buffer_ref->id;
     size_t output_data_size = CopyIntoOutputBuffer(
-        static_cast<uint8_t*>(output_record.address),
-        base::checked_cast<size_t>(dqbuf.m.planes[0].bytesused),
+        static_cast<uint8_t*>(output_record.address) +
+            dqbuf.m.planes[0].data_offset,
+        base::checked_cast<size_t>(dqbuf.m.planes[0].bytesused -
+                                   dqbuf.m.planes[0].data_offset),
         std::move(output_record.buffer_ref));
 
     DVLOGF(4) << "returning "
