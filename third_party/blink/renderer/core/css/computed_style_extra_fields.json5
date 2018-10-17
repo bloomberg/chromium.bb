@@ -227,7 +227,7 @@
       name: "VerticalAlignLength",
       field_template: "external",
       default_value: "Length()",
-      include_paths: ["third_party/blink/renderer/platform/length.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
       field_group: "box",
       getter: "GetVerticalAlignLength",

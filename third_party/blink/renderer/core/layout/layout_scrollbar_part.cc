@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/layout_scrollbar_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 
