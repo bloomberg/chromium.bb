@@ -8,6 +8,10 @@
   line-height: 18px;
 }
 
+oobe-dialog {
+  outline: unset;
+}
+
 .update-subtitle {
   color: #333;
 }
