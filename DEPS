@@ -92,11 +92,8 @@ vars = {
   # as an expression.
   'cros_download_vm': '"{cros_board}" == "amd64-generic"',
 
-  # ANGLE's deps are relative to the angle_root variable, except for what's
-  # shared with chromium, such as build/, testing/, etc which are relative to
-  # src_root.
+  # ANGLE's deps are relative to the angle_root variable.
   'angle_root': 'src/third_party/angle',
-  'src_root': 'src',
 
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
