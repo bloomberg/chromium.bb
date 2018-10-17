@@ -23,67 +23,12 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 
-#if defined(OS_CHROMEOS)
-#include <fcntl.h>
-
-#include "base/files/file_enumerator.h"
-#include "base/files/scoped_file.h"
-#include "base/threading/thread_restrictions.h"
-#include "ui/base/touch/touch_device.h"
-#include "ui/events/devices/device_data_manager.h"
-#include "ui/events/ozone/evdev/event_device_info.h"  // nogncheck
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "ui/base/win/hidden_window.h"
 #endif
 
 namespace ui {
-namespace {
-
-#if defined(OS_CHROMEOS)
-
-// Whether to use touchable UI.
-// http://crbug.com/875122 - Disabled by default on ChromeOS except on tablets.
-const base::Feature kTouchOptimizedUi = {"TouchOptimizedUi",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-MaterialDesignController::Mode GetDefaultTouchDeviceMode() {
-  bool touch_optimized_ui_enabled =
-      base::FeatureList::IsEnabled(kTouchOptimizedUi);
-  return touch_optimized_ui_enabled
-             ? MaterialDesignController::MATERIAL_TOUCH_REFRESH
-             : MaterialDesignController::MATERIAL_REFRESH;
-}
-
-bool HasTouchscreen() {
-  // If a scan of available devices has already completed, use that.
-  if (DeviceDataManager::HasInstance() &&
-      DeviceDataManager::GetInstance()->AreDeviceListsComplete())
-    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED;
-
-  // Otherwise perform our own scan to determine the presence of a touchscreen.
-  // Note this is a one-time call that occurs during device startup or restart.
-  base::FileEnumerator file_enum(
-      base::FilePath(FILE_PATH_LITERAL("/dev/input")), false,
-      base::FileEnumerator::FILES, FILE_PATH_LITERAL("event*[0-9]"));
-  for (base::FilePath path = file_enum.Next(); !path.empty();
-       path = file_enum.Next()) {
-    EventDeviceInfo devinfo;
-    base::ScopedFD fd(
-        open(path.value().c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC));
-    if (fd.is_valid() && devinfo.Initialize(fd.get(), path) &&
-        devinfo.HasTouchscreen())
-      return true;
-  }
-
-  return false;
-}
-
-#endif  // OS_CHROMEOS
-
-}  // namespace
 
 bool MaterialDesignController::is_mode_initialized_ = false;
 
@@ -101,12 +46,6 @@ void MaterialDesignController::Initialize() {
   const std::string switch_value =
       command_line->GetSwitchValueASCII(switches::kTopChromeMD);
 
-  bool force_material_refresh = false;
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  force_material_refresh =
-      base::FeatureList::IsEnabled(features::kExperimentalUi);
-#endif
-
   if (switch_value == switches::kTopChromeMDMaterialRefresh) {
     SetMode(MATERIAL_REFRESH);
   } else if (switch_value ==
@@ -117,12 +56,6 @@ void MaterialDesignController::Initialize() {
 
     // TabletModeClient's default state is in non-tablet mode.
     SetMode(MATERIAL_REFRESH);
-  } else if (force_material_refresh) {
-    bool has_touchscreen = false;
-#if defined(OS_CHROMEOS)
-    has_touchscreen = HasTouchscreen();
-#endif
-    SetMode(has_touchscreen ? MATERIAL_TOUCH_REFRESH : MATERIAL_REFRESH);
   } else if (switch_value == switches::kTopChromeMDMaterial) {
     SetMode(MATERIAL_NORMAL);
   } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
@@ -136,7 +69,7 @@ void MaterialDesignController::Initialize() {
     if (base::win::IsTabletDevice(nullptr, ui::GetHiddenWindow()))
       SetMode(MATERIAL_HYBRID);
 #endif
-    SetMode(DefaultMode());
+    SetMode(MATERIAL_REFRESH);
   } else {
     if (!switch_value.empty()) {
       LOG(ERROR) << "Invalid value='" << switch_value
@@ -145,10 +78,8 @@ void MaterialDesignController::Initialize() {
     }
 #if defined(OS_CHROMEOS)
     is_refresh_dynamic_ui_ = true;
-    SetMode(MATERIAL_REFRESH);
-#else
-    SetMode(DefaultMode());
 #endif
+    SetMode(MATERIAL_REFRESH);
   }
 
   // Ideally, there would be a more general, "initialize random stuff here"
@@ -185,25 +116,6 @@ bool MaterialDesignController::IsNewerMaterialUi() {
 // static
 bool MaterialDesignController::IsRefreshUi() {
   return GetMode() == MATERIAL_REFRESH || GetMode() == MATERIAL_TOUCH_REFRESH;
-}
-
-// static
-MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
-#if defined(OS_CHROMEOS)
-  // This is called (once) early in device startup to initialize core UI, so
-  // the UI thread should be blocked to perform the device query.
-  base::ScopedAllowBlocking allow_io;
-  if (HasTouchscreen())
-    return GetDefaultTouchDeviceMode();
-
-  return MATERIAL_REFRESH;
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-  return MATERIAL_REFRESH;
-#else
-  return MATERIAL_NORMAL;
-#endif
 }
 
 // static

@@ -55,9 +55,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Returns true if any Material Refresh mode is enabled.
   static bool IsRefreshUi();
 
-  // Returns the per-platform default material design variant.
-  static Mode DefaultMode();
-
   // Exposed for TabletModeClient on ChromeOS + ash.
   static void OnTabletModeToggled(bool enabled);
 
