@@ -69,7 +69,7 @@ class GFX_EXPORT Canvas {
 
     // Specifies if words can be split by new lines.
     // This only works with MULTI_LINE.
-    CHARACTER_BREAK = 1 << 8,
+    CHARACTER_BREAKABLE = 1 << 8,
 
     // Instructs DrawStringRect() to not use subpixel rendering.  This is useful
     // when rendering text onto a fully- or partially-transparent background
