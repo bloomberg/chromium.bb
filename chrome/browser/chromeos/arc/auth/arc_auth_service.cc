@@ -357,6 +357,10 @@ void ArcAuthService::FetchPrimaryAccountInfo(
     // For robot accounts, which are used in kiosk and public session mode
     // (which includes online demo sessions), use Robot auth code fetching.
     auth_code_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
+    if (url_loader_factory_for_testing_set_) {
+      static_cast<ArcRobotAuthCodeFetcher*>(auth_code_fetcher.get())
+          ->SetURLLoaderFactoryForTesting(url_loader_factory_);
+    }
   } else {
     // Optionally retrieve auth code in silent mode.
     const SigninManagerBase* const signin_manager =
@@ -486,6 +490,7 @@ void ArcAuthService::DeletePendingTokenRequest(ArcFetcherBase* fetcher) {
 void ArcAuthService::SetURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   url_loader_factory_ = std::move(url_loader_factory);
+  url_loader_factory_for_testing_set_ = true;
 }
 
 void ArcAuthService::OnDataRemovalAccepted(bool accepted) {

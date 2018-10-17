@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
@@ -64,7 +64,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_test_job.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -380,25 +379,16 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
 
   void SetUpOnMainThread() override {
     ArcAuthServiceTest::SetUpOnMainThread();
-    interceptor_ = std::make_unique<policy::TestRequestInterceptor>(
-        "localhost", base::CreateSingleThreadTaskRunnerWithTraits(
-                         {content::BrowserThread::IO}));
     SetUpPolicyClient();
   }
 
   void TearDownOnMainThread() override {
     ArcAuthServiceTest::TearDownOnMainThread();
-
-    // Verify that all the expected requests were handled.
-    EXPECT_EQ(0u, interceptor_->GetPendingSize());
-    interceptor_.reset();
   }
 
  protected:
-  // JobCallback for the interceptor.
-  static net::URLRequestJob* ResponseJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) {
+  void ResponseJob(const network::ResourceRequest& request,
+                   network::TestURLLoaderFactory& factory) {
     enterprise_management::DeviceManagementResponse response;
     response.mutable_service_api_access_response()->set_auth_code(
         kFakeAuthCode);
@@ -406,12 +396,8 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
     std::string response_data;
     EXPECT_TRUE(response.SerializeToString(&response_data));
 
-    return new net::URLRequestTestJob(request, network_delegate,
-                                      net::URLRequestTestJob::test_headers(),
-                                      response_data, true);
+    factory.AddResponse(request.url.spec(), response_data);
   }
-
-  policy::TestRequestInterceptor* interceptor() { return interceptor_.get(); }
 
  private:
   void SetUpPolicyClient() {
@@ -431,8 +417,6 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
     cloud_policy_client->client_id_ = "client-id";
   }
 
-  std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
-
   DISALLOW_COPY_AND_ASSIGN(ArcRobotAccountAuthServiceTest);
 };
 
@@ -447,8 +431,10 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  interceptor()->PushJobCallback(
-      base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
+  test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        ResponseJob(request, test_url_loader_factory());
+      }));
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
@@ -473,8 +459,10 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  interceptor()->PushJobCallback(
-      base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
+  test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        ResponseJob(request, test_url_loader_factory());
+      }));
 
   base::RunLoop run_loop;
   auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
@@ -539,8 +527,11 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  interceptor()->PushJobCallback(
-      policy::TestRequestInterceptor::HttpErrorJob("404 Not Found"));
+  test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        test_url_loader_factory().AddResponse(request.url.spec(), std::string(),
+                                              net::HTTP_NOT_FOUND);
+      }));
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
@@ -563,8 +554,11 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  interceptor()->PushJobCallback(
-      policy::TestRequestInterceptor::HttpErrorJob("404 Not Found"));
+  test_url_loader_factory().SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        test_url_loader_factory().AddResponse(request.url.spec(), std::string(),
+                                              net::HTTP_NOT_FOUND);
+      }));
 
   base::RunLoop run_loop;
   auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());

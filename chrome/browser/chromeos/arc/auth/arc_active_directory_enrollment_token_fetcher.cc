@@ -89,11 +89,13 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::DoFetchEnrollmentToken() {
   VLOG(1) << "Fetching enrollment token";
 
   policy::DeviceManagementService* service = GetDeviceManagementService();
-  fetch_request_job_.reset(
-      service->CreateJob(policy::DeviceManagementRequestJob::
-                             TYPE_ACTIVE_DIRECTORY_ENROLL_PLAY_USER,
-                         g_browser_process->system_network_context_manager()
-                             ->GetSharedURLLoaderFactory()));
+  fetch_request_job_.reset(service->CreateJob(
+      policy::DeviceManagementRequestJob::
+          TYPE_ACTIVE_DIRECTORY_ENROLL_PLAY_USER,
+      url_loader_factory_for_testing()
+          ? url_loader_factory_for_testing()
+          : g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory()));
 
   fetch_request_job_->SetAuthData(policy::DMAuth::FromDMToken(dm_token_));
   fetch_request_job_->SetClientID(GetClientId());
