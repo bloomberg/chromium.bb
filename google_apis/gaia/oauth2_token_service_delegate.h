@@ -64,6 +64,11 @@ class OAuth2TokenServiceDelegate {
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const;
 
+  // Returns refresh token if the platform allows it (on Desktop) and if it is
+  // available. Otherwise returns empty string (for iOS and Android).
+  virtual std::string GetTokenForMultilogin(
+      const std::string& account_id) const;
+
   bool ValidateAccountId(const std::string& account_id) const;
 
   // Add or remove observers of this token service.

@@ -408,6 +408,32 @@ void OAuth2TokenService::RemoveDiagnosticsObserver(
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 
+std::unique_ptr<OAuth2TokenService::Request>
+OAuth2TokenService::StartRequestForMultilogin(
+    const std::string& account_id,
+    const OAuth2TokenService::ScopeSet& scopes,
+    OAuth2TokenService::Consumer* consumer) {
+  const std::string refresh_token =
+      delegate_->GetTokenForMultilogin(account_id);
+  if (refresh_token.empty()) {
+    // If we can't get refresh token from the delegate, start request for access
+    // token.
+    return StartRequest(account_id, scopes, consumer);
+  }
+  std::unique_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
+  // Create token response from token. Expiration time and id token do not
+  // matter and should not be accessed.
+  OAuth2AccessTokenConsumer::TokenResponse token_response(
+      refresh_token, base::Time(), std::string());
+  // If we can get refresh token from the delegate, inform cosumer right away.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&RequestImpl::InformConsumer, request.get()->AsWeakPtr(),
+                 GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+                 token_response));
+  return std::move(request);
+}
+
 std::unique_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
