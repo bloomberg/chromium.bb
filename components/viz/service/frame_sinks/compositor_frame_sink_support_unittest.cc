@@ -541,7 +541,7 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
         surface_manager->GarbageCollectSurfaces();
       }))
       .WillRepeatedly(testing::Return());
-  support->EvictLastActivatedSurface();
+  support->EvictSurface(local_surface_id);
   ExpireAllTemporaryReferences();
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
@@ -689,7 +689,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictLastActivatedSurface) {
   EXPECT_TRUE(GetSurfaceForId(id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
       .Times(1);
-  support->EvictLastActivatedSurface();
+  support->EvictSurface(local_surface_id);
   ExpireAllTemporaryReferences();
   manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(id));
@@ -697,9 +697,8 @@ TEST_F(CompositorFrameSinkSupportTest, EvictLastActivatedSurface) {
 }
 
 // This test checks the case where a client submits a CompositorFrame for a
-// SurfaceId that has been evicted. The CompositorFrame resurrects the evicted
-// Surface and notifies the browser which immediately evicts the Surface again
-// because it's not needed.
+// SurfaceId that has been evicted. The CompositorFrame must be immediately
+// evicted.
 TEST_F(CompositorFrameSinkSupportTest, ResurectAndImmediatelyEvict) {
   LocalSurfaceId local_surface_id(1, kArbitraryToken);
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
@@ -716,15 +715,6 @@ TEST_F(CompositorFrameSinkSupportTest, ResurectAndImmediatelyEvict) {
 
   // We don't garbage collect the evicted surface yet because either garbage
   // collection hasn't run or something still has a reference to it.
-
-  // Call FrameSinkManagerImpl::EvictSurfaces() for |surface_id| in the same
-  // callstack as OnFirstSurfaceActivation() as that's what DelegatedFrameHost
-  // will do.
-  EXPECT_CALL(frame_sink_manager_client_,
-              OnFirstSurfaceActivation(SurfaceInfoWithId(surface_id)))
-      .WillOnce(Invoke([this](const SurfaceInfo& surface_info) {
-        manager_.EvictSurfaces({surface_info.id()});
-      }));
 
   // Submit the late CompositorFrame which will resurrect the Surface and
   // trigger another eviction.
@@ -753,7 +743,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithTemporaryReference) {
 
   // Verify the temporary reference has prevented the surface from getting
   // destroyed.
-  support_->EvictLastActivatedSurface();
+  support_->EvictSurface(local_surface_id);
   EXPECT_TRUE(GetSurfaceForId(surface_id));
 
   // Verify the temporary reference is removed when expired.
@@ -815,7 +805,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
   EXPECT_FALSE(called3);
 
-  support_->EvictLastActivatedSurface();
+  support_->EvictSurface(local_surface_id_);
   ExpireAllTemporaryReferences();
   local_surface_id_ = LocalSurfaceId();
   manager_.surface_manager()->GarbageCollectSurfaces();

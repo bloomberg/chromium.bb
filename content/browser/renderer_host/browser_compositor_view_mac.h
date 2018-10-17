@@ -138,6 +138,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   void OnBeginFrame(base::TimeTicks frame_time) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
   float GetDeviceScaleFactor() const override;
+  void WasEvicted() override;
 
   base::WeakPtr<BrowserCompositorMac> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

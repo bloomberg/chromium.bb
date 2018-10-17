@@ -289,11 +289,10 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
         recyclable_compositor_->compositor());
     delegated_frame_host_->WasShown(GetRendererLocalSurfaceId(), dfh_size_dip_,
                                     false /* record_presentation_time */);
-
     // If there exists a saved frame ready to display, unsuspend the compositor
     // now (if one is not ready, the compositor will unsuspend on first surface
     // activation).
-    if (delegated_frame_host_->HasSavedFrame())
+    if (delegated_frame_host_->HasActiveSurface())
       recyclable_compositor_->Unsuspend();
 
     state_ = HasAttachedCompositor;
@@ -403,6 +402,10 @@ void BrowserCompositorMac::OnFrameTokenChanged(uint32_t frame_token) {
 
 float BrowserCompositorMac::GetDeviceScaleFactor() const {
   return dfh_display_.device_scale_factor();
+}
+
+void BrowserCompositorMac::WasEvicted() {
+  dfh_local_surface_id_allocator_.GenerateId();
 }
 
 void BrowserCompositorMac::DidNavigate() {

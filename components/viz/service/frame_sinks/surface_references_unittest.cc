@@ -57,7 +57,7 @@ class SurfaceReferencesTest : public testing::Test {
   // Destroy Surface with |surface_id|.
   void DestroySurface(const SurfaceId& surface_id) {
     GetCompositorFrameSinkSupport(surface_id.frame_sink_id())
-        .EvictLastActivatedSurface();
+        .EvictSurface(surface_id.local_surface_id());
   }
 
   CompositorFrameSinkSupport& GetCompositorFrameSinkSupport(

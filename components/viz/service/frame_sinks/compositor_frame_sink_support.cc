@@ -56,7 +56,8 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
     surface_manager_->RemoveSurfaceReferences({reference});
   }
 
-  EvictLastActivatedSurface();
+  if (last_activated_surface_id_.is_valid())
+    EvictLastActiveSurface();
   if (last_created_surface_id_.is_valid())
     surface_manager_->DestroySurface(last_created_surface_id_);
   frame_sink_manager_->UnregisterCompositorFrameSinkSupport(frame_sink_id_);
@@ -135,6 +136,8 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
                        last_activated_surface_id_.local_surface_id())) {
     UpdateDisplayRootReference(surface);
   }
+
+  MaybeEvictSurfaces();
 }
 
 void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
@@ -219,10 +222,27 @@ CompositorFrameSinkSupport::TakeCopyOutputRequests(
   return results;
 }
 
-void CompositorFrameSinkSupport::EvictLastActivatedSurface() {
-  if (!last_activated_surface_id_.is_valid())
-    return;
+void CompositorFrameSinkSupport::EvictSurface(const LocalSurfaceId& id) {
+  DCHECK_GE(id.parent_sequence_number(), last_evicted_parent_sequence_number_);
+  last_evicted_parent_sequence_number_ = id.parent_sequence_number();
+  MaybeEvictSurfaces();
+}
 
+void CompositorFrameSinkSupport::MaybeEvictSurfaces() {
+  if (last_activated_surface_id_.is_valid() &&
+      last_activated_surface_id_.local_surface_id().parent_sequence_number() <=
+          last_evicted_parent_sequence_number_) {
+    EvictLastActiveSurface();
+  }
+  if (last_created_surface_id_.is_valid() &&
+      last_created_surface_id_.local_surface_id().parent_sequence_number() <=
+          last_evicted_parent_sequence_number_) {
+    surface_manager_->DestroySurface(last_created_surface_id_);
+    last_created_surface_id_ = SurfaceId();
+  }
+}
+
+void CompositorFrameSinkSupport::EvictLastActiveSurface() {
   SurfaceId to_destroy_surface_id = last_activated_surface_id_;
   if (last_created_surface_id_ == last_activated_surface_id_)
     last_created_surface_id_ = SurfaceId();
@@ -433,6 +453,13 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
 
     current_surface = CreateSurface(surface_info, block_activation_on_parent);
     last_created_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
+    MaybeEvictSurfaces();
+    // If the surface was immediately evicted, don't accept the CompositorFrame.
+    if (!last_created_surface_id_.is_valid()) {
+      TRACE_EVENT_INSTANT0("viz", "Submit rejected to evicted surface",
+                           TRACE_EVENT_SCOPE_THREAD);
+      return SubmitResult::ACCEPTED;
+    }
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }

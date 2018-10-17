@@ -205,7 +205,7 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   if (!HasSavedFrame())
     return;
   std::vector<viz::SurfaceId> surface_ids = {
-      viz::SurfaceId(frame_sink_id_, active_local_surface_id_)};
+      viz::SurfaceId(frame_sink_id_, pending_local_surface_id_)};
   // Reset information about the active surface because it will get destroyed.
   active_local_surface_id_ = viz::LocalSurfaceId();
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
@@ -309,8 +309,18 @@ void DelegatedFrameHostAndroid::EmbedSurface(
   if (!enable_surface_synchronization_)
     return;
 
+  bool id_changed = pending_local_surface_id_ != new_pending_local_surface_id;
+
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_size_in_pixels_ = new_pending_size_in_pixels;
+
+  if (id_changed) {
+    // TODO(fsamuel): "SwappedFrame" is a bad name. Also, this method doesn't
+    // really need to take in visibility. FrameEvictor already has the latest
+    // visibility state.
+    frame_evictor_->SwappedFrame(frame_evictor_->visible());
+    // Note: the frame may have been evicted immediately.
+  }
 
   viz::SurfaceId current_primary_surface_id =
       content_layer_->primary_surface_id();
@@ -417,12 +427,6 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
     return;
 
   active_local_surface_id_ = surface_info.id().local_surface_id();
-
-  // TODO(fsamuel): "SwappedFrame" is a bad name. Also, this method doesn't
-  // really need to take in visiblity. FrameEvictor already has the latest
-  // visibility state.
-  frame_evictor_->SwappedFrame(frame_evictor_->visible());
-  // Note: the frame may have been evicted immediately.
 }
 
 void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {

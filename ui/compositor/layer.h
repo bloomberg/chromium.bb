@@ -514,6 +514,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   void OnMirrorDestroyed(LayerMirror* mirror);
 
+  void CreateSurfaceLayerIfNecessary();
+
   const LayerType type_;
 
   Compositor* compositor_;
