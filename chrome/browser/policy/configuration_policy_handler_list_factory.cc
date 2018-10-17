@@ -1252,6 +1252,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::move(screen_lock_legacy_policies),
       base::WrapUnique(new ScreenLockDelayPolicyHandler(chrome_schema))));
   handlers->AddHandler(
+      std::make_unique<ScreenBrightnessPercentPolicyHandler>(chrome_schema));
+  handlers->AddHandler(
       std::make_unique<ExternalDataPolicyHandler>(key::kUserAvatarImage));
   handlers->AddHandler(
       std::make_unique<ExternalDataPolicyHandler>(key::kDeviceWallpaperImage));

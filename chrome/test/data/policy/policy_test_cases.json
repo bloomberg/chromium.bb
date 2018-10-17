@@ -3402,6 +3402,19 @@
       { "pref": "network_file_shares.preconfigured_shares" }
     ]
   },
+  "ScreenBrightnessPercent": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "ScreenBrightnessPercent": {
+        "BrightnessAC": 100,
+        "BrightnessBattery": 90
+      }
+    },
+    "pref_mappings": [
+      { "pref": "power.ac_screen_brightness_percent" },
+      { "pref": "power.battery_screen_brightness_percent" }
+    ]
+  },
 
   "----- Chrome OS device policies ---------------------------------------": {},
 

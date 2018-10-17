@@ -70,11 +70,13 @@ ASH_PUBLIC_EXPORT extern const char kNightLightCustomEndTime[];
 
 ASH_PUBLIC_EXPORT extern const char kAllowScreenLock[];
 ASH_PUBLIC_EXPORT extern const char kEnableAutoScreenLock[];
+ASH_PUBLIC_EXPORT extern const char kPowerAcScreenBrightnessPercent[];
 ASH_PUBLIC_EXPORT extern const char kPowerAcScreenDimDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kPowerAcScreenOffDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kPowerAcScreenLockDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kPowerAcIdleWarningDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kPowerAcIdleDelayMs[];
+ASH_PUBLIC_EXPORT extern const char kPowerBatteryScreenBrightnessPercent[];
 ASH_PUBLIC_EXPORT extern const char kPowerBatteryScreenDimDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kPowerBatteryScreenOffDelayMs[];
 ASH_PUBLIC_EXPORT extern const char kPowerBatteryScreenLockDelayMs[];
