@@ -3400,6 +3400,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          toolbar::features::kHideSteadyStateUrlTrivialSubdomains)},
 
+    {"omnibox-ui-hide-steady-state-url-path-query-and-ref",
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefName,
+     flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(toolbar::features::kHideSteadyStateUrlPathQueryAndRef)},
+
     {"omnibox-ui-jog-textfield-on-popup",
      flag_descriptions::kOmniboxUIJogTextfieldOnPopupName,
      flag_descriptions::kOmniboxUIJogTextfieldOnPopupDescription, kOsDesktop,

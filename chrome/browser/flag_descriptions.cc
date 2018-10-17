@@ -1303,15 +1303,19 @@ const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
     "In the omnibox, hide the scheme from steady state displayed URLs. It is "
-    "restored during editing. For Mac, this flag will have no effect unless "
-    "MacViews is enabled.";
+    "restored during editing.";
 
 const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName[] =
     "Omnibox UI Hide Steady-State URL Trivial Subdomains";
 const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[] =
     "In the omnibox, hide trivial subdomains from steady state displayed URLs. "
-    "Hidden portions are restored during editing. For Mac, this flag will have "
-    "no effect unless MacViews is enabled.";
+    "Hidden portions are restored during editing.";
+
+const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefName[] =
+    "Omnibox UI Hide Steady-State URL Path, Query, and Ref";
+const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[] =
+    "In the omnibox, hide the path, query and ref from steady state displayed "
+    "URLs. Hidden portions are restored during editing.";
 
 const char kOmniboxUIJogTextfieldOnPopupName[] =
     "Omnibox UI Jog Textfield on Popup";
