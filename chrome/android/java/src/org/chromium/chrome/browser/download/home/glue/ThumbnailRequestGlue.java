@@ -74,8 +74,19 @@ public class ThumbnailRequestGlue implements ThumbnailRequest {
             if (visuals == null || visuals.icon == null) {
                 callback.onResult(null);
             } else {
-                callback.onResult(Bitmap.createScaledBitmap(
-                        visuals.icon, mIconWidthPx, mIconHeightPx, false));
+                Bitmap bitmap = visuals.icon;
+
+                int minDimension = Math.min(bitmap.getWidth(), bitmap.getHeight());
+                // Note that we have to use width here because the ThumbnailProviderImpl only keys
+                // off of width as well.
+                if (minDimension > mIconWidthPx) {
+                    int newWidth = (int) (((long) bitmap.getWidth()) * mIconWidthPx / minDimension);
+                    int newHeight =
+                            (int) (((long) bitmap.getHeight()) * mIconWidthPx / minDimension);
+                    bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
+                }
+
+                callback.onResult(bitmap);
             }
         });
     }
