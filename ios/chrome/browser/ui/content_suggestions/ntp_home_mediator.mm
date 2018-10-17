@@ -58,9 +58,6 @@ namespace {
 // URL for the page displaying help for the NTP.
 const char kNTPHelpURL[] =
     "https://support.google.com/chrome/?p=ios_new_tab&ios=1";
-
-// The What's New promo command that shows the Bookmarks Manager.
-const char kBookmarkCommand[] = "bookmark";
 }  // namespace
 
 @interface NTPHomeMediator ()<CRWWebStateObserver,
@@ -353,12 +350,10 @@ const char kBookmarkCommand[] = "bookmark";
   }
 
   if (notificationPromo->IsChromeCommandPromo()) {
-    std::string command = notificationPromo->command();
-    if (command == kBookmarkCommand) {
-      [self.dispatcher showBookmarksManager];
-    } else {
-      NOTREACHED() << "Promo command is not valid.";
-    }
+    // "What's New" promo that runs a command can be added here by calling
+    // self.dispatcher.
+    DCHECK_EQ(kTestWhatsNewCommand, notificationPromo->command())
+        << "Promo command is not valid.";
     return;
   }
   NOTREACHED() << "Promo type is neither URL or command.";
