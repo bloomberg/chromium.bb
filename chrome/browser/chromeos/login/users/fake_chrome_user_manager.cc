@@ -474,7 +474,10 @@ void FakeChromeUserManager::SaveUserOAuthStatus(
 
 void FakeChromeUserManager::SaveForceOnlineSignin(const AccountId& account_id,
                                                   bool force_online_signin) {
-  NOTREACHED();
+  if (!active_user_ || active_user_->GetAccountId() != account_id)
+    NOTREACHED() << account_id;
+
+  active_user_->set_force_online_signin(force_online_signin);
 }
 
 void FakeChromeUserManager::SaveUserDisplayName(
