@@ -689,6 +689,7 @@
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
       'win-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
+      'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
       'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86_minimal_symbols',
@@ -1431,6 +1432,9 @@
     # libFuzzer build configs but it does not work on Windows.
     'libfuzzer_windows_asan_release_bot': [
       'libfuzzer', 'asan', 'release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
+    ],
+    'libfuzzer_windows_asan_release_trybot': [
+      'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
     ],
 
     'libfuzzer_msan_release_bot': [
