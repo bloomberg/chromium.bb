@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -35,6 +36,8 @@ class DateOrderedListView {
     private final int mImagePaddingPx;
     private final int mPrefetchVerticalPaddingPx;
     private final int mPrefetchHorizontalPaddingPx;
+    private final int mMaxWidthImageItemPx;
+    private final int mWideScreenThreshold;
 
     private final RecyclerView mView;
 
@@ -52,8 +55,23 @@ class DateOrderedListView {
                 R.dimen.download_manager_prefetch_horizontal_margin);
         mPrefetchVerticalPaddingPx = context.getResources().getDimensionPixelSize(
                 R.dimen.download_manager_prefetch_vertical_margin);
+        mMaxWidthImageItemPx = context.getResources().getDimensionPixelSize(
+                R.dimen.download_manager_max_image_item_width_wide_screen);
+        mWideScreenThreshold = context.getResources().getDimensionPixelSize(
+                R.dimen.download_manager_wide_screen_threshold);
 
-        mView = new RecyclerView(context);
+        mView = new RecyclerView(context) {
+            private int mScreenOrientation = Configuration.ORIENTATION_UNDEFINED;
+
+            @Override
+            protected void onConfigurationChanged(Configuration newConfig) {
+                super.onConfigurationChanged(newConfig);
+                if (newConfig.orientation == mScreenOrientation) return;
+
+                mScreenOrientation = newConfig.orientation;
+                mView.invalidateItemDecorations();
+            }
+        };
         mView.setHasFixedSize(true);
         ((DefaultItemAnimator) mView.getItemAnimator()).setSupportsChangeAnimations(false);
         mView.getItemAnimator().setMoveDuration(0);
@@ -126,6 +144,8 @@ class DateOrderedListView {
             int position = parent.getChildAdapterPosition(view);
             if (position < 0 || position >= mModel.size()) return;
 
+            ListItem item = mModel.get(position);
+            boolean isFullWidthMedia = false;
             switch (ListUtils.getViewTypeForItem(mModel.get(position), mConfig)) {
                 case ListUtils.ViewType.IMAGE:
                 case ListUtils.ViewType.IN_PROGRESS_IMAGE:
@@ -133,6 +153,7 @@ class DateOrderedListView {
                     outRect.right = mImagePaddingPx;
                     outRect.top = mImagePaddingPx;
                     outRect.bottom = mImagePaddingPx;
+                    isFullWidthMedia = ((ListItem.OfflineItemListItem) item).spanFullWidth;
                     break;
                 case ListUtils.ViewType.VIDEO: // Intentional fallthrough.
                 case ListUtils.ViewType.IN_PROGRESS_VIDEO:
@@ -140,6 +161,7 @@ class DateOrderedListView {
                     outRect.right = mPrefetchHorizontalPaddingPx;
                     outRect.top = mPrefetchVerticalPaddingPx / 2;
                     outRect.bottom = mPrefetchVerticalPaddingPx / 2;
+                    isFullWidthMedia = true;
                     break;
                 case ListUtils.ViewType.PREFETCH:
                     outRect.left = mPrefetchHorizontalPaddingPx;
@@ -147,6 +169,10 @@ class DateOrderedListView {
                     outRect.top = mPrefetchVerticalPaddingPx / 2;
                     outRect.bottom = mPrefetchVerticalPaddingPx / 2;
                     break;
+            }
+
+            if (isFullWidthMedia) {
+                outRect.right += Math.max(mView.getWidth() - mMaxWidthImageItemPx, 0);
             }
         }
     }
