@@ -148,6 +148,16 @@
     Translate this page
   </message>
 
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT" desc="The button text contents to suggest pedal action, update chrome.">
+    Relaunch to Update
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, update chrome.">
+    Relaunch
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, update chrome.">
+    Relaunch
+  </message>
+
   <!-- Accessibility labels for autocomplete match types.
        These are parameterized on the text being completed into the omnibox.
   -->

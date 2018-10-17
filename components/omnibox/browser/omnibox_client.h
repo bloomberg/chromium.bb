@@ -175,6 +175,9 @@ class OmniboxClient {
 
   // Presents translation prompt for current tab web contents.
   virtual void PromptPageTranslation() {}
+
+  // Presents prompt to update Chrome.
+  virtual void OpenUpdateChromeDialog() {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_

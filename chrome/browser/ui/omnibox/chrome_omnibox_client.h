@@ -82,6 +82,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   void DiscardNonCommittedNavigations() override;
   void NewIncognitoWindow() override;
   void PromptPageTranslation() override;
+  void OpenUpdateChromeDialog() override;
 
  private:
   // Performs prerendering for |match|.

@@ -192,6 +192,28 @@ class OmniboxPedalTranslate : public OmniboxPedalCommon {
 
 // =============================================================================
 
+class OmniboxPedalUpdateChrome : public OmniboxPedalCommon {
+ public:
+  OmniboxPedalUpdateChrome()
+      : OmniboxPedalCommon(
+            LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
+            GURL(),
+            {
+                "how to update google chrome", "how to update chrome",
+                "how do i update google chrome", "how to update chrome browser",
+                "update google chrome", "update chrome",
+                "update chrome browser",
+            }) {}
+
+  void Execute(ExecutionContext& context) const override {
+    context.client_.OpenUpdateChromeDialog();
+  }
+};
+
+// =============================================================================
+
 std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   std::vector<std::unique_ptr<OmniboxPedal>> pedals;
   const auto add = [&](OmniboxPedal* pedal) {
@@ -204,5 +226,6 @@ std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   add(new OmniboxPedalUpdateCreditCard());
   add(new OmniboxPedalLaunchIncognito());
   add(new OmniboxPedalTranslate());
+  add(new OmniboxPedalUpdateChrome());
   return pedals;
 }
