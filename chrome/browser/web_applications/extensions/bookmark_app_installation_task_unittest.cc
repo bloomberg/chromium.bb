@@ -40,7 +40,6 @@
 namespace extensions {
 
 using Result = BookmarkAppInstallationTask::Result;
-using ResultCode = BookmarkAppInstallationTask::ResultCode;
 
 namespace {
 
@@ -128,7 +127,8 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   }
 
   bool app_installed() {
-    bool app_installed = app_installation_result_->code == ResultCode::kSuccess;
+    bool app_installed =
+        app_installation_result_->code == web_app::InstallResultCode::kSuccess;
     EXPECT_EQ(app_installed, app_installation_result_->app_id.has_value());
     return app_installed;
   }
@@ -209,9 +209,8 @@ TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoWebAppInfo) {
   run_loop.Run();
 
   EXPECT_FALSE(app_installed());
-  EXPECT_EQ(
-      BookmarkAppInstallationTask::ResultCode::kGetWebApplicationInfoFailed,
-      app_installation_result().code);
+  EXPECT_EQ(web_app::InstallResultCode::kGetWebApplicationInfoFailed,
+            app_installation_result().code);
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ShortcutFromContents_NoManifest) {
@@ -262,7 +261,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
   run_loop.Run();
 
   EXPECT_FALSE(app_installed());
-  EXPECT_EQ(BookmarkAppInstallationTask::ResultCode::kInstallationFailed,
+  EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
             app_installation_result().code);
 }
 

@@ -24,6 +24,7 @@ class WebContents;
 
 namespace web_app {
 class WebAppDataRetriever;
+enum class InstallResultCode;
 }
 
 namespace extensions {
@@ -36,19 +37,12 @@ class Extension;
 // or WebApplicationInfo. Can only be called from the UI thread.
 class BookmarkAppInstallationTask {
  public:
-  // TODO(nigeltao): fold this into web_app::InstallResultCode.
-  enum class ResultCode {
-    kSuccess,
-    kGetWebApplicationInfoFailed,
-    kInstallationFailed,
-  };
-
   struct Result {
-    Result(ResultCode code, base::Optional<std::string> app_id);
+    Result(web_app::InstallResultCode code, base::Optional<std::string> app_id);
     Result(Result&&);
     ~Result();
 
-    const ResultCode code;
+    const web_app::InstallResultCode code;
     const base::Optional<std::string> app_id;
 
     DISALLOW_COPY_AND_ASSIGN(Result);
