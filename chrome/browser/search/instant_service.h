@@ -203,8 +203,9 @@ class InstantService : public KeyedService,
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
 
-  // Returns UrlValidityCheckerFactory::GetInstance() or
-  // |url_checker_for_testing_| if not null.
+  // Returns the owned instance of UrlValidityChecker or
+  // |url_checker_for_testing_| if not null. Should only be called from the UI
+  // thread.
   UrlValidityChecker* GetUrlValidityChecker();
 
   Profile* const profile_;
