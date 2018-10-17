@@ -86,8 +86,8 @@ public class FeedAppLifecycle
             mFeedScheduler.onForegrounded();
         }
 
-        SigninManager.get().addSignInStateObserver(this);
         ApplicationStatus.registerStateListenerForAllActivities(this);
+        SigninManager.get().addSignInStateObserver(this);
     }
 
     /**
