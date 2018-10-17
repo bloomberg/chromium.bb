@@ -1576,6 +1576,10 @@ public class AwContents implements SmartClipProvider {
     public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
         if (TRACE) Log.i(TAG, "%s loadUrl(extra headers)=%s", this, url);
         if (isDestroyedOrNoOperation(WARN)) return;
+        // Early out to match old WebView implementation
+        if (url == null) {
+            return;
+        }
         // TODO: We may actually want to do some sanity checks here (like filter about://chrome).
 
         // For backwards compatibility, apps targeting less than K will have JS URLs evaluated
@@ -1583,8 +1587,7 @@ public class AwContents implements SmartClipProvider {
         // Matching Chrome behavior more closely; apps targetting >= K that load a JS URL will
         // have the result of that URL replace the content of the current page.
         final String javaScriptScheme = "javascript:";
-        if (mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT && url != null
-                && url.startsWith(javaScriptScheme)) {
+        if (mAppTargetSdkVersion < Build.VERSION_CODES.KITKAT && url.startsWith(javaScriptScheme)) {
             evaluateJavaScript(url.substring(javaScriptScheme.length()), null);
             return;
         }
@@ -1595,7 +1598,7 @@ public class AwContents implements SmartClipProvider {
         }
 
         final String dataScheme = "data:";
-        if (url != null && url.startsWith(dataScheme) && url.contains("#")) {
+        if (url.startsWith(dataScheme) && url.contains("#")) {
             RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
         }
 
