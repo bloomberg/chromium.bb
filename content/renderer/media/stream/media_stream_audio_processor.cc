@@ -600,14 +600,17 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   // Create and configure the webrtc::AudioProcessing.
+  base::Optional<std::string> audio_processing_platform_config_json;
+  if (GetContentClient() && GetContentClient()->renderer()) {
+    audio_processing_platform_config_json =
+        GetContentClient()
+            ->renderer()
+            ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+  }
   webrtc::AudioProcessingBuilder ap_builder;
   if (properties.echo_cancellation_type ==
       EchoCancellationType::kEchoCancellationAec3) {
     webrtc::EchoCanceller3Config aec3_config;
-    base::Optional<std::string> audio_processing_platform_config_json =
-        GetContentClient()
-            ->renderer()
-            ->WebRTCPlatformSpecificAudioProcessingConfiguration();
     if (audio_processing_platform_config_json) {
       aec3_config = webrtc::Aec3ConfigFromJsonString(
           *audio_processing_platform_config_json);
@@ -655,8 +658,18 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableTypingDetection(audio_processing_.get(), typing_detector_.get());
   }
 
-  if (properties.goog_auto_gain_control)
-    EnableAutomaticGainControl(audio_processing_.get());
+  // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
+  // webrtc::AudioProcessing::Config, crbug.com/895814.
+  base::Optional<double> pre_amplifier_fixed_gain_factor,
+      gain_control_compression_gain_db;
+  GetExtraGainConfig(audio_processing_platform_config_json,
+                     &pre_amplifier_fixed_gain_factor,
+                     &gain_control_compression_gain_db);
+
+  if (properties.goog_auto_gain_control) {
+    EnableAutomaticGainControl(audio_processing_.get(),
+                               gain_control_compression_gain_db);
+  }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
   apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
@@ -666,6 +679,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
     apm_config.gain_controller2.fixed_gain_db = 0.f;
   }
+  ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
