@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 
 #include <inttypes.h>
 
@@ -46,19 +47,56 @@ bool SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing) {
   return true;
 }
 
-void SharedImageManager::Unregister(const Mailbox& mailbox, bool have_context) {
+void SharedImageManager::Unregister(const Mailbox& mailbox) {
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::Unregister: Trying to unregister a "
-                  "not-registered mailbox.";
+                  "non existent mailbox.";
     return;
   }
 
   found->ref_count--;
   if (found->ref_count == 0) {
-    found->backing->Destroy(have_context);
+    found->backing->Destroy();
     images_.erase(found);
   }
+}
+
+void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::OnContextLost: Trying to mark constext "
+                  "lost on a non existent mailbox.";
+    return;
+  }
+
+  found->backing->OnContextLost();
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexture>
+SharedImageManager::ProduceGLTexture(const Mailbox& mailbox) {
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to Produce a "
+                  "GL texture representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = found->backing->ProduceGLTexture(this);
+  if (!representation) {
+    LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
+                  "GL texture representation from an incompatible mailbox.";
+    return nullptr;
+  }
+
+  // Take a ref. This is released when we destroy the generated representation.
+  found->ref_count++;
+  return representation;
+}
+
+void SharedImageManager::OnRepresentationDestroyed(const Mailbox& mailbox) {
+  // Just call Unregister, which releases a ref on our backing.
+  Unregister(mailbox);
 }
 
 void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,

@@ -1961,6 +1961,21 @@ _FUNCTION_INFO = {
     'internal': True,
     'type': 'PUT',
     'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'impl_func': False,
+    'unit_test': False,
+    'trace_level': 2,
+  },
+  'CreateAndTexStorage2DSharedImageCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_shared_image",
+    'trace_level': 2,
+  },
+  'CreateAndTexStorage2DSharedImageINTERNAL': {
+    'decoder_func': 'DoCreateAndTexStorage2DSharedImageINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'impl_func': False,
     'unit_test': False,
     'trace_level': 2,
   },

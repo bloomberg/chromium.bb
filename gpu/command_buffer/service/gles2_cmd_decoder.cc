@@ -72,6 +72,7 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transform_feedback_manager.h"
 #include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
@@ -1119,6 +1120,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
+  void DoCreateAndTexStorage2DSharedImageINTERNAL(GLuint client_id,
+                                                  GLenum internal_format,
+                                                  const volatile GLbyte* data);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
 
   void BindImage(uint32_t client_texture_id,
@@ -17613,6 +17617,50 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
   }
 
   texture_ref = texture_manager()->Consume(client_id, texture);
+}
+
+void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
+    GLuint client_id,
+    GLenum internal_format,
+    const volatile GLbyte* data) {
+  TRACE_EVENT2("gpu",
+               "GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageCHROMIUM",
+               "context", logger_.GetLogPrefix(), "mailbox[0]",
+               static_cast<unsigned char>(data[0]));
+  Mailbox mailbox =
+      Mailbox::FromVolatile(*reinterpret_cast<const volatile Mailbox*>(data));
+  DLOG_IF(ERROR, !mailbox.Verify())
+      << "DoCreateAndTexStorage2DSharedImageCHROMIUM was passed an invalid "
+         "mailbox.";
+  if (!client_id) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "DoCreateAndTexStorage2DSharedImageINTERNAL",
+                       "invalid client id");
+    return;
+  }
+
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "DoCreateAndTexStorage2DSharedImageINTERNAL",
+                       "client id already in use");
+    return;
+  }
+
+  std::unique_ptr<SharedImageRepresentationGLTexture> shared_image =
+      group_->shared_image_manager()->ProduceGLTexture(mailbox);
+  if (!shared_image) {
+    // Mailbox missing, generate a texture.
+    bool result = GenTexturesHelper(1, &client_id);
+    DCHECK(result);
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "DoCreateAndTexStorage2DSharedImageINTERNAL",
+                       "invalid mailbox name");
+    return;
+  }
+
+  texture_ref =
+      texture_manager()->ConsumeSharedImage(client_id, std::move(shared_image));
 }
 
 void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {

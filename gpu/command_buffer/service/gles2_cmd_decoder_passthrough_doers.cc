@@ -4071,6 +4071,16 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
+    GLuint client_id,
+    GLenum internal_format,
+    const volatile GLbyte* mailbox) {
+  // TODO(ericrk): Implement this.
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoBindUniformLocationCHROMIUM(
     GLuint program,
     GLint location,

@@ -969,6 +969,11 @@ GLuint GLES2InterfaceStub::CreateAndConsumeTextureCHROMIUM(
     const GLbyte* /* mailbox */) {
   return 0;
 }
+GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum /* internalFormat */,
+    const GLbyte* /* mailbox */) {
+  return 0;
+}
 void GLES2InterfaceStub::BindUniformLocationCHROMIUM(GLuint /* program */,
                                                      GLint /* location */,
                                                      const char* /* name */) {}

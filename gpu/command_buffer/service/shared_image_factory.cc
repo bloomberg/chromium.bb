@@ -80,14 +80,14 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   if (!backing->ProduceLegacyMailbox(mailbox_manager_)) {
     LOG(ERROR)
         << "CreateSharedImage: could not convert backing to legacy mailbox.";
-    backing->Destroy(true /* have_context */);
+    backing->Destroy();
     return false;
   }
 
   if (!shared_image_manager_->Register(std::move(backing))) {
     LOG(ERROR) << "CreateSharedImage: Could not register backing with "
                   "SharedImageManager.";
-    backing->Destroy(true /* have_context */);
+    backing->Destroy();
     return false;
   }
 
@@ -101,14 +101,16 @@ bool SharedImageFactory::DestroySharedImage(const Mailbox& mailbox) {
     LOG(ERROR) << "Could not find shared image mailbox";
     return false;
   }
-  shared_image_manager_->Unregister(mailbox, true /* have_context */);
+  shared_image_manager_->Unregister(mailbox);
   mailboxes_.erase(it);
   return true;
 }
 
 void SharedImageFactory::DestroyAllSharedImages(bool have_context) {
   for (const auto& mailbox : mailboxes_) {
-    shared_image_manager_->Unregister(mailbox, have_context);
+    if (!have_context)
+      shared_image_manager_->OnContextLost(mailbox);
+    shared_image_manager_->Unregister(mailbox);
   }
   mailboxes_.clear();
 }

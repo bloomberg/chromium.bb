@@ -827,6 +827,10 @@ error::Error DoProduceTextureDirectCHROMIUM(GLuint texture_client_id,
                                             const volatile GLbyte* mailbox);
 error::Error DoCreateAndConsumeTextureINTERNAL(GLuint texture_client_id,
                                                const volatile GLbyte* mailbox);
+error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
+    GLuint client_id,
+    GLenum internal_format,
+    const volatile GLbyte* mailbox);
 error::Error DoBindUniformLocationCHROMIUM(GLuint program,
                                            GLint location,
                                            const char* name);
