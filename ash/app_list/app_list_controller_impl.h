@@ -146,6 +146,12 @@ class ASH_EXPORT AppListControllerImpl
     return home_launcher_gesture_handler_.get();
   }
 
+  // Called when a window starts/ends dragging. If we're in tablet mode and home
+  // launcher is enabled, we should hide the home launcher during dragging a
+  // window and reshow it when the drag ends.
+  void OnWindowDragStarted();
+  void OnWindowDragEnded();
+
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
   app_list::SearchModel* GetSearchModel() override;
@@ -270,6 +276,9 @@ class ASH_EXPORT AppListControllerImpl
   // Whether the wallpaper is being previewed. The home launcher (if enabled)
   // should be hidden during wallpaper preview.
   bool in_wallpaper_preview_ = false;
+
+  // Whether we're currently in a window dragging process.
+  bool in_window_dragging_ = false;
 
   mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
