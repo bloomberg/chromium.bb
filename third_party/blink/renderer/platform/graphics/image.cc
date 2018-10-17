@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -388,8 +387,11 @@ void Image::DrawPattern(GraphicsContext& context,
 
   context.DrawRect(dest_rect, flags);
 
-  if (CurrentFrameIsLazyDecoded())
-    PlatformInstrumentation::DidDrawLazyPixelRef(image_id);
+  if (CurrentFrameIsLazyDecoded()) {
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                         "Draw LazyPixelRef", TRACE_EVENT_SCOPE_THREAD,
+                         "LazyPixelRef", image_id);
+  }
 }
 
 scoped_refptr<Image> Image::ImageForDefaultFrame() {
