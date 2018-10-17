@@ -887,10 +887,6 @@ void WizardController::ShowMultiDeviceSetupScreen() {
 }
 
 void WizardController::ShowDiscoverScreen() {
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnDiscoverScreenFinished();
-    return;
-  }
   VLOG(1) << "Showing Discover screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DISCOVER);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DISCOVER));
