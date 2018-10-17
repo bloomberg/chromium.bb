@@ -20,8 +20,8 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   DISALLOW_NEW();
 
  public:
-  NGUnpositionedFloat(NGBlockNode node, const NGBlockBreakToken* token);
-  ~NGUnpositionedFloat();
+  NGUnpositionedFloat(NGBlockNode node, const NGBlockBreakToken* token)
+      : node(node), token(token) {}
 
   NGUnpositionedFloat(NGUnpositionedFloat&&) noexcept = default;
   NGUnpositionedFloat(const NGUnpositionedFloat&) noexcept = default;
