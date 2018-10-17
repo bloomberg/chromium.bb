@@ -3354,7 +3354,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6025215716629925253">Dėklo pėdsakas</translation>
 <translation id="6026047032548434446">Įdiegti programą?</translation>
 <translation id="6026819612896463875">„<ph name="WINDOW_TITLE" />“ – USB įrenginys prijungtas</translation>
-<translation id="6028117231645531007">Pridėti piršto antspaudą</translation>
 <translation id="6029027682598229313">„Linux“ įdiegta.</translation>
 <translation id="6029292188939175871">ištrinti [<ph name="FINGERPRINT_NAME" />], mygtukas</translation>
 <translation id="6029587122245504742">Lėčiausias</translation>
@@ -4157,7 +4156,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7229570126336867161">Reikia EVDO</translation>
 <translation id="7230787553283372882">Tinkinkite teksto dydį</translation>
 <translation id="7232750842195536390">Nepavyko pervardyti</translation>
-<translation id="7234406375359457793">Klaida įdedant bendrinamą objektą. Nurodytas bendrinamas objektas nepalaikomas.</translation>
 <translation id="7238585580608191973">SHA-256 piršto antspaudas</translation>
 <translation id="7240120331469437312">Alternatyvus sertifikato subjekto vardas</translation>
 <translation id="7240339475467890413">Prisijungti prie naujo viešosios interneto prieigos taško?</translation>

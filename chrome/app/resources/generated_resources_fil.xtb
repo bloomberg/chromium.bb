@@ -3353,7 +3353,6 @@
 <translation id="6025215716629925253">Stack Trace</translation>
 <translation id="6026047032548434446">I-install ang App?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - May nakakonektang USB device</translation>
-<translation id="6028117231645531007">Magdagdag ng fingerprint</translation>
 <translation id="6029027682598229313">Tapos nang i-install ang Linux.</translation>
 <translation id="6029292188939175871">i-delete ang [<ph name="FINGERPRINT_NAME" />], button</translation>
 <translation id="6029587122245504742">Pinakamabagal</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7229570126336867161">Kailangan ng EVDO</translation>
 <translation id="7230787553283372882">I-customize ang laki ng iyong text</translation>
 <translation id="7232750842195536390">Hindi napalitan ang pangalan</translation>
-<translation id="7234406375359457793">Nagka-error sa pag-mount ng share. Hindi sinusuportahan ang isinaad na share.</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Kahaliling Pangalan ng Paksa ng Certificate</translation>
 <translation id="7240339475467890413">Kumonekta sa bagong hotspot?</translation>

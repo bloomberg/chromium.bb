@@ -3353,7 +3353,6 @@
 <translation id="6025215716629925253">Запис стека</translation>
 <translation id="6026047032548434446">Установити додаток?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – пристрій USB підключено</translation>
-<translation id="6028117231645531007">Додати відбиток пальця</translation>
 <translation id="6029027682598229313">Встановлення Linux завершено.</translation>
 <translation id="6029292188939175871">видалити [<ph name="FINGERPRINT_NAME" />], кнопка</translation>
 <translation id="6029587122245504742">найповільніше</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7229570126336867161">Потрібна мережа EVDO</translation>
 <translation id="7230787553283372882">Налаштувати розмір тексту</translation>
 <translation id="7232750842195536390">Не вдалося перейменувати</translation>
-<translation id="7234406375359457793">Помилка підключення спільного доступу. Указаний пристрій не підтримується.</translation>
 <translation id="7238585580608191973">Відбиток SHA-256</translation>
 <translation id="7240120331469437312">Альтернативне ім'я суб'єкта сертифіката</translation>
 <translation id="7240339475467890413">Під’єднатися до нової точки доступу?</translation>

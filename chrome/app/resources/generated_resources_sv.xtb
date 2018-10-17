@@ -3352,7 +3352,6 @@
 <translation id="6025215716629925253">Stack trace</translation>
 <translation id="6026047032548434446">Vill du installera appen?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – ansluten till USB-enhet</translation>
-<translation id="6028117231645531007">Lägg till fingeravtryck</translation>
 <translation id="6029027682598229313">Linux-installationen är klar.</translation>
 <translation id="6029292188939175871">radera [<ph name="FINGERPRINT_NAME" />], knapp</translation>
 <translation id="6029587122245504742">Långsammast</translation>
@@ -4155,7 +4154,6 @@
 <translation id="7229570126336867161">Behöver EVDO</translation>
 <translation id="7230787553283372882">Anpassa textstorleken</translation>
 <translation id="7232750842195536390">Det gick inte att byta namn</translation>
-<translation id="7234406375359457793">Det gick inte att montera den delade resursen. Den angivna resursen stöds inte.</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtryck</translation>
 <translation id="7240120331469437312">Certifikatämnets andra namn</translation>
 <translation id="7240339475467890413">Vill du ansluta till en ny surfzon?</translation>

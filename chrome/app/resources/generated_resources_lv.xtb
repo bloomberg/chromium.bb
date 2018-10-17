@@ -3353,7 +3353,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6025215716629925253">Steka izsekošana</translation>
 <translation id="6026047032548434446">Vai instalēt lietotni?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> — pievienota USB ierīce</translation>
-<translation id="6028117231645531007">Pievienot pirksta nospiedumu</translation>
 <translation id="6029027682598229313">Linux instalēšana ir pabeigta.</translation>
 <translation id="6029292188939175871">dzēst [<ph name="FINGERPRINT_NAME" />], poga</translation>
 <translation id="6029587122245504742">Lēnākais</translation>
@@ -4156,7 +4155,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7229570126336867161">Nepieciešams EVDO</translation>
 <translation id="7230787553283372882">Pielāgojiet teksta lielumu.</translation>
 <translation id="7232750842195536390">Pārdēvēšana neizdevās</translation>
-<translation id="7234406375359457793">Iekļaujot kopīgošanu, radās kļūda. Norādītais kopīgošanas vienums netiek atbalstīts.</translation>
 <translation id="7238585580608191973">SHA-256 pirkstu nospiedums</translation>
 <translation id="7240120331469437312">Sertifikāta subjekta cits nosaukums</translation>
 <translation id="7240339475467890413">Vai izveidot savienojumu ar jaunu tīklāju?</translation>

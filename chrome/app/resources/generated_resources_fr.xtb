@@ -3354,7 +3354,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6025215716629925253">Trace de la pile</translation>
 <translation id="6026047032548434446">Installer l'application ?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> –  Appareil USB connecté</translation>
-<translation id="6028117231645531007">Ajouter une empreinte digitale</translation>
 <translation id="6029027682598229313">L'installation de Linux est terminée.</translation>
 <translation id="6029292188939175871">supprimer [<ph name="FINGERPRINT_NAME" />], bouton</translation>
 <translation id="6029587122245504742">La plus lente</translation>
@@ -4157,7 +4156,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7229570126336867161">Technologie EvDo requise</translation>
 <translation id="7230787553283372882">Personnaliser la taille du texte</translation>
 <translation id="7232750842195536390">Échec du changement de nom</translation>
-<translation id="7234406375359457793">Erreur lors de l'installation du partage. Le partage indiqué n'est pas accepté.</translation>
 <translation id="7238585580608191973">Empreinte SHA-256</translation>
 <translation id="7240120331469437312">Autre nom de l'objet du certificat</translation>
 <translation id="7240339475467890413">Se connecter au nouveau point d'accès ?</translation>

@@ -10,6 +10,7 @@
 <translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1068672505746868501">No traducir nunca las páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Vas a salir de una cuenta gestionada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
+<translation id="1099080783256647258">Cuando la extensión Ahorro de Datos está activada, Chrome usa los servidores de Google para acelerar y comprimir la carga de las páginas. En el caso de las páginas especialmente lentas, Ahorro de Datos vuelve a cargar la página para mostrar solo el contenido básico. Esta extensión no optimiza las páginas que se cargan en modo de incógnito.</translation>
 <translation id="1105960400813249514">Captura de pantalla</translation>
 <translation id="1111673857033749125">Aquí aparecen los marcadores que hayas guardado en otros dispositivos.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
@@ -70,7 +71,9 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome se esté actualizando. Vuelve a intentarlo dentro de unos minutos. Si el problema persiste, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
 <translation id="145097072038377568">Ajustes de Android desactivados</translation>
+<translation id="1469898724493126466">Estamos buscando lo mejor de la Web.</translation>
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
+<translation id="1501480321619201731">Eliminar grupo</translation>
 <translation id="1506061864768559482">Buscador</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
 <translation id="1513858653616922153">Eliminar contraseña</translation>
@@ -107,6 +110,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="1779089405699405702">Decodificador de imágenes</translation>
 <translation id="1782483593938241562">Fecha de finalización: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Cambia la ubicación predeterminada de las descargas en cualquier momento</translation>
+<translation id="1796971354271036388">Instalando módulo de realidad virtual...</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1821253160463689938">Usa cookies para recordar tus preferencias aunque no visites esas páginas</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
@@ -143,6 +147,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2021896219286479412">Controles de pantalla completa</translation>
 <translation id="2038563949887743358">Activar opción para ver como ordenador</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de otras aplicaciones</translation>
+<translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -190,6 +195,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2414672073755873541">No hay contenido</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2416359993254398973">Chrome necesita permiso para acceder a la cámara en este sitio web.</translation>
+<translation id="24241740415720680">Página básica ofrecida por Google</translation>
 <translation id="2426805022920575512">Elegir otra cuenta</translation>
 <translation id="2433507940547922241">Aspecto</translation>
 <translation id="2434158240863470628">Descarga completa <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -222,6 +228,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2647434099613338025">Añadir idioma</translation>
 <translation id="2650751991977523696">¿Quieres descargar el archivo de nuevo?</translation>
 <translation id="2653659639078652383">Enviar</translation>
+<translation id="2671423594960767771">Compartir grupo</translation>
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Actualizar página</translation>
@@ -231,6 +238,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2744248271121720757">Toca una palabra para buscarla de forma instantánea o ver acciones relacionadas</translation>
 <translation id="2762000892062317888">ahora mismo</translation>
 <translation id="2777555524387840389">Quedan <ph name="SECONDS" /> segundos</translation>
+<translation id="2779651927720337254">ha fallado</translation>
 <translation id="2781151931089541271">Queda 1 segundo</translation>
 <translation id="2803478378562657435">Mostrando contraseñas guardadas y opciones de contraseña</translation>
 <translation id="2810645512293415242">Esta página se ha simplificado para ahorrar datos y poder cargarla más rápido.</translation>
@@ -315,6 +323,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3557336313807607643">Añadir a contactos</translation>
 <translation id="3568688522516854065">Inicia sesión y activa la sincronización para ver las pestañas de tus otros dispositivos</translation>
 <translation id="3587482841069643663">Todo</translation>
+<translation id="358794129225322306">Permitir que un sitio web descargue varios archivos automáticamente.</translation>
 <translation id="3590487821116122040">Almacenamiento del sitio web que Chrome no considera importante (p. ej., los sitios web sin configuración guardada o aquellos que no visitas a menudo)</translation>
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que hayas iniciado sesión. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios web que reproducen sonidos</translation>
@@ -345,6 +354,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
+<translation id="3860879523841717702">Página básica ofrecida por Google. Toca para cargar la original.</translation>
 <translation id="3868004864571585162">Cookies, licencias de contenido multimedia y datos de sitios web</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="3895926599014793903">Forzar zoom</translation>
@@ -402,6 +412,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
+<translation id="429312253194641664">Un sitio web está reproduciendo elementos multimedia</translation>
 <translation id="4307992518367153382">Configuración básica</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
 <translation id="4378154925671717803">Teléfono</translation>
@@ -468,6 +479,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando la ventana emergente de generación de contraseña</translation>
 <translation id="4850886885716139402">Ver</translation>
+<translation id="4857347795080810417">Se ha instalado el módulo de realidad virtual</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4874967477260347223">Licencias de contenido multimedia</translation>
 <translation id="4875775213178255010">Sugerencias de contenido</translation>
@@ -482,6 +494,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4913169188695071480">Dejar de actualizar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /> mientras se buscan dispositivos…</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
+<translation id="4956867391417827202">Bloquea anuncios invasivos o engañosos de los sitios web que los muestran</translation>
 <translation id="4958708863221495346">Estás compartiendo tu pantalla a través de <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4961334780091921942">Tus contraseñas, tu historial y mucho más en todos tus dispositivos</translation>
 <translation id="4961700429721424617">Estás cerrando sesión en una cuenta gestionada por <ph name="MANAGED_DOMAIN" />. Tus datos de Chrome se eliminarán de este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
@@ -606,6 +619,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo de in
 <translation id="5833397272224757657">Utiliza el contenido de los sitios web que visitas, así como las interacciones y la actividad del navegador, para ofrecer una experiencia personalizada</translation>
 <translation id="5833984609253377421">Compartir enlace</translation>
 <translation id="584427517463557805">Pestaña privada seleccionada</translation>
+<translation id="5853623416121554550">en pausa</translation>
 <translation id="5854790677617711513">Más de 30 días</translation>
 <translation id="5858741533101922242">Chrome no ha podido activar el adaptador Bluetooth</translation>
 <translation id="5860033963881614850">No</translation>
@@ -696,6 +710,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6545017243486555795">Borrar todos los datos</translation>
 <translation id="6560414384669816528">Realizar búsquedas con Sogou</translation>
 <translation id="6566259936974865419">Chrome te ha permitido ahorrar <ph name="GIGABYTES" /> GB</translation>
+<translation id="6567212464587185774">Usa hasta un 60 % menos de datos y acelera la navegación web.</translation>
 <translation id="6573096386450695060">Permitir siempre</translation>
 <translation id="6573431926118603307">Aquí aparecen las pestañas que hayas abierto en Chrome en otros dispositivos.</translation>
 <translation id="6575643671698722332">Error al restablecer. Comprueba la conexión y vuelve a intentarlo.</translation>
@@ -719,6 +734,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6697492270171225480">Mostrar sugerencias de páginas similares cuando no se encuentre una página</translation>
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
+<translation id="6699370405921460408">Los servidores de Google optimizan las páginas web que visitas.</translation>
 <translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Descubre sugerencias similares de Google con el botón Sugerencias similares</translation>
@@ -729,6 +745,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6776813977906306442">Descarga vídeos para verlos más tarde con el botón Descargar</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="679325081238418596">Accede a tus marcadores, a tu historial, a tus contraseñas y a otros ajustes desde todos tus dispositivos</translation>
+<translation id="6818926723028410516">Seleccionar elementos</translation>
 <translation id="6820607729870073286">No tienes ajustes del sitio web guardados.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -797,6 +814,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>
+<translation id="7335671571918306053">Página básica ofrecida por Google. Si quieres ver la original, toca el botón para cargarla.</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceso a métodos de pago</translation>
@@ -905,6 +923,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8084114998886531721">Contraseña guardada</translation>
 <translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
+<translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
 <translation id="8109613176066109935">Activa la sincronización para ver tus marcadores en todos tus dispositivos</translation>
 <translation id="8116925261070264013">Silenciados</translation>
@@ -931,6 +950,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8349013245300336738">Ordenar por cantidad de datos usados</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
+<translation id="8380167699614421159">El sitio web muestra anuncios invasivos o engañosos</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8428213095426709021">Configuración</translation>
@@ -939,6 +959,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8445448999790540984">No se pueden exportar las contraseñas</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="8477071352266846533">Sincronización con <ph name="SYNC_ACCOUNT_USER_NAME" /> desactivada</translation>
+<translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8489271220582375723">Abre la página Historial</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
@@ -953,6 +974,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>
 <translation id="8523928698583292556">Eliminar contraseña guardada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
+<translation id="8555322348396635979">¡Vaya! Se ha producido un error. Comprueba tu conexión.</translation>
 <translation id="8558485628462305855">Actualiza ARCore para visualizar contenido de realidad aumentada</translation>
 <translation id="8559990750235505898">Ofrecer la traducción de páginas en otros idiomas</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
@@ -992,6 +1014,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8901170036886848654">No se han encontrado marcadores</translation>
+<translation id="8905378131945614900">No se ha podido instalar el módulo de realidad virtual</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando detalles de los padres.</translation>
@@ -1000,6 +1023,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8951232171465285730">Chrome te ha permitido ahorrar <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>
+<translation id="8965591936373831584">pendiente</translation>
 <translation id="8972098258593396643">¿Quieres descargarlo en la carpeta predeterminada?</translation>
 <translation id="8979405271719829084">Descarga vídeos para verlos más tarde</translation>
 <translation id="8981454092730389528">Gestión de tu actividad en Google</translation>
@@ -1026,6 +1050,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios web envíen notificaciones (recomendado)</translation>
+<translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>
@@ -1039,6 +1064,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="951339005376969845">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome puede utilizar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para hacer búsquedas en China. Puedes cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
+<translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (opción recomendada)</translation>
 <translation id="970715775301869095">Quedan <ph name="MINUTES" /> minutos</translation>
 <translation id="974555521953189084">Introduce la frase de contraseña para iniciar la sincronización</translation>
 <translation id="981121421437150478">Sin conexión</translation>

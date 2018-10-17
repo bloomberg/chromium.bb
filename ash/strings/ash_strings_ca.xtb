@@ -154,6 +154,7 @@
 <translation id="3454224730401036106">La connexió ha canviat a una xarxa més segura</translation>
 <translation id="3477079411857374384">Control+Maj+espai</translation>
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
+<translation id="3510503721818156981">Chromebook s'ha connectat a un telèfon nou</translation>
 <translation id="3513798432020909783">Compte gestionat per <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
@@ -197,6 +198,7 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">L'Assistent s'està carregant...</translation>
+<translation id="435527878592612277">Selecciona la teva foto</translation>
 <translation id="4378551569595875038">S'està connectant...</translation>
 <translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>

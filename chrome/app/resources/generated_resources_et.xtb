@@ -3353,7 +3353,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6025215716629925253">Virna jälg</translation>
 <translation id="6026047032548434446">Kas soovite rakenduse installida?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB-seade on ühendatud</translation>
-<translation id="6028117231645531007">Lisa sõrmejälg</translation>
 <translation id="6029027682598229313">Linuxi installimine lõpetati.</translation>
 <translation id="6029292188939175871">kustuta [<ph name="FINGERPRINT_NAME" />], nupp</translation>
 <translation id="6029587122245504742">Kõige aeglasem</translation>
@@ -4156,7 +4155,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7229570126336867161">Vajalik EVDO</translation>
 <translation id="7230787553283372882">Teksti suuruse kohandamine</translation>
 <translation id="7232750842195536390">Ümbernimetamine ebaõnnestus</translation>
-<translation id="7234406375359457793">Viga jagatava üksuse ühendamisel. Määratud jagatavat üksust ei toetata.</translation>
 <translation id="7238585580608191973">SHA-256 sõrmejälg</translation>
 <translation id="7240120331469437312">Sertifikaadi subjekti alternatiivne nimi</translation>
 <translation id="7240339475467890413">Kas luua ühendus uue levialaga?</translation>

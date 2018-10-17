@@ -3352,7 +3352,6 @@
 <translation id="6025215716629925253">Stack Trace</translation>
 <translation id="6026047032548434446">Install App?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB device connected</translation>
-<translation id="6028117231645531007">Add fingerprint</translation>
 <translation id="6029027682598229313">Linux installation is complete.</translation>
 <translation id="6029292188939175871">delete [<ph name="FINGERPRINT_NAME" />], button</translation>
 <translation id="6029587122245504742">Slowest</translation>
@@ -4155,7 +4154,6 @@
 <translation id="7229570126336867161">Need EVDO</translation>
 <translation id="7230787553283372882">Customise your text size</translation>
 <translation id="7232750842195536390">Renaming failed</translation>
-<translation id="7234406375359457793">Error mounting share. The specified share is not supported.</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Certificate Subject Alternative Name</translation>
 <translation id="7240339475467890413">Connect to new hotspot?</translation>

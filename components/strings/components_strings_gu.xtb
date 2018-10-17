@@ -161,6 +161,7 @@
 <translation id="1973335181906896915">અનુક્રમાંકન ભૂલ</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
 <translation id="1978555033938440688">ફર્મવેયર સંસ્કરણ</translation>
+<translation id="1981206234434200693">Chromeના બ્રાઉઝિંગ ઇતિહાસનો ડેટા સાફ કરો</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{અને 1 વધુ}one{અને # વધુ}other{અને # વધુ}}</translation>
 <translation id="2003709556000175978">તમારો પાસવર્ડ હમણાં જ રીસેટ કરો</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
@@ -228,6 +229,7 @@
 <translation id="2473195200299095979">આ પૃષ્ઠનો અનુવાદ કરો</translation>
 <translation id="2479410451996844060">અમાન્ય શોધ URL.</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
+<translation id="248348093745724435">મશીન નીતિઓ</translation>
 <translation id="2491120439723279231">સર્વરના પ્રમાણપત્રમાં ભૂલો છે.</translation>
 <translation id="2495083838625180221">JSON વિશ્લેશક</translation>
 <translation id="2495093607237746763">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chromium આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહિત કરશે.</translation>
@@ -298,6 +300,7 @@
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, વર્તમાનમાં પસંદ કરેલ. <ph name="ROW_CONTENT" /></translation>
 <translation id="298138621710431427">આને સુધારવામાં મારી સહાય કરો</translation>
+<translation id="2982481275546140226">ડેટા સાફ કરો</translation>
 <translation id="2985306909656435243">જો સક્ષમ કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chromium આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહિત કરશે.</translation>
 <translation id="2985398929374701810">એક માન્ય સરનામું દાખલ કરો</translation>
 <translation id="2986368408720340940">આ પિકઅપ પદ્ધતિ ઉપલબ્ધ નથી. કોઈ ભિન્ન પદ્ધતિ અજમાવો.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">તમને આ પૃષ્ઠને જોવાની અધિકૃતિ નથી.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />કનેક્ટિવિટી ડાયગ્નોસ્ટિક્સ ચલાવવાનો પ્રયાસ કરો<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{કોઈ નહીં}=1{1 એકાઉન્ટ માટેનો સાઇન-ઇન ડેટા}one{# એકાઉન્ટ માટેનો સાઇન-ઇન ડેટા}other{# એકાઉન્ટ માટેનો સાઇન-ઇન ડેટા}}</translation>
 <translation id="3145945101586104090">પ્રતિક્રિયા ડિકોડ કરવી નિષ્ફળ થઇ</translation>
 <translation id="3150653042067488994">અસ્થાયી સર્વર ભૂલ</translation>
 <translation id="3154506275960390542">આ પૃષ્ઠમાં એક ફૉર્મ છે, જે કદાચ સુરક્ષિત રીતે સબમિટ નહીં થાય. જે ડેટા તમે મોકલો તેને પરિવહન દરમિયાન અન્ય લોકો જોઈ શકશે અથવા સર્વર જે મેળવે, તે બદલવા માટે હુમલાખોર ફેરફાર કરી શકશે.</translation>
@@ -400,6 +404,7 @@
 <translation id="3650584904733503804">માન્યતા સફળ</translation>
 <translation id="3655670868607891010">જો તમે આ વારંવાર જોઈ રહ્યાં છો, તો આ <ph name="HELP_LINK" /> અજમાવી જુઓ.</translation>
 <translation id="3658742229777143148">પુનરાવર્તન</translation>
+<translation id="3676592649209844519">ડિવાઇસ ID:</translation>
 <translation id="3678029195006412963">વિનંતી પર સહી કરી શક્યાં નથી</translation>
 <translation id="3678529606614285348">એક નવી છુપી વિંડોમાં પેજ ખોલો (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> એ ક્રેશ રિપોર્ટ કૅપ્ચર કરી અને <ph name="UPLOAD_TIME" /> એ અપલોડ કર્યો હતો</translation>
@@ -581,10 +586,10 @@
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4958444002117714549">સૂચિ વિસ્તૃત કરો</translation>
 <translation id="4974590756084640048">ચેતવણીઓ ફરીથી સક્ષમ કરો</translation>
-<translation id="4988217478422488391">વસ્તુઓની ઑનલાઇન ચુકવણી કરવાનું ઝડપી બનાવે છે</translation>
 <translation id="4989163558385430922">બધા જુઓ</translation>
 <translation id="4989809363548539747">આ પ્લગ-ઇન સમર્થિત નથી</translation>
 <translation id="5002932099480077015">જો સક્ષમ કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
+<translation id="5015510746216210676">મશીનનું નામ:</translation>
 <translation id="5018422839182700155">આ પૃષ્ઠ ખોલી શકતાં નથી</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
 <translation id="5023310440958281426">તમારા વ્યવસ્થાપકની નીતિઓ તપાસો</translation>
@@ -724,6 +729,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (સમન્વયિત)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ઉપયોગમાં છે}one{# ઉપયોગમાં છે}other{# ઉપયોગમાં છે}}</translation>
 <translation id="5922853866070715753">લગભગ થઈ ગયું</translation>
+<translation id="5932224571077948991">સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવે છે</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5951495562196540101">ઉપભોક્તા એકાઉન્ટ સાથે નોંધણી કરાવી શકાતી નથી (પૅકેજમાં લાઇસન્સ ઉપલબ્ધ છે).</translation>
 <translation id="5966151627327109289">મોટા ભાગની સાઇટ પરથી તમને સાઇન આઉટ કરે છે. <ph name="SITE" /> અને અન્ય કેટલીક સાઇટના સંરક્ષિત કન્ટેન્ટનો ઍક્સેસ તમે ગુમાવો તેમ બને.</translation>
@@ -761,6 +767,7 @@
 <translation id="6203231073485539293">તમારું ઇન્ટરનેટ કનેક્શન તપાસો</translation>
 <translation id="6218753634732582820">Chromium માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="6221345481584921695">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />મૉલવેર મળ્યું<ph name="END_LINK" />. વેબસાઇટ કે જે સામાન્ય રીતે સુરક્ષિત છે તે ક્યારેક મૉલવેરથી દૂષિત હોય છે. દુર્ભાવનાપૂરું કન્ટેન્ટ એક જ્ઞાત મૉલવેર વિક્રેતા એવા, <ph name="SUBRESOURCE_HOST" /> થી આવે છે.</translation>
+<translation id="6240447795304464094">Google Payનો લોગો</translation>
 <translation id="6251924700383757765">ગોપનીયતા નીતિ</translation>
 <translation id="6254436959401408446">આ પૃષ્ઠ ખોલવા માટે પૂરતી મેમરી નથી</translation>
 <translation id="625755898061068298">તમે આ સાઇટ માટે સુરક્ષા ચેતવણીઓ અક્ષમ કરવાનું પસંદ કર્યું છે.</translation>
@@ -779,6 +786,7 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> કરતાં ઓછી જગ્યા ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટ વધુ ધીમે લોડ થઈ શકે છે.</translation>
 <translation id="6337534724793800597">નામ દ્વારા નીતિઓને ફિલ્ટર કરો</translation>
 <translation id="6358450015545214790">આનો અર્થ શું છે?</translation>
+<translation id="6383221683286411806">આગળ ઉપર શુલ્ક લાગવાની શક્યતા.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 અન્ય સૂચન}one{# અન્ય સૂચન}other{# અન્ય સૂચન}}</translation>
 <translation id="6387754724289022810">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ અને બિલિંગ સરનામાંને તમારા Google એકાઉન્ટ અને આ ડિવાઇસ પર સાચવો.</translation>
 <translation id="6397451950548600259">તમારા કમ્પ્યુટરમાંનું સૉફ્ટવેર Chromeને સુરક્ષિત રીતે વેબ સાથે કનેક્ટ થવાથી રોકી રહ્યું છે</translation>
@@ -816,6 +824,7 @@
 <translation id="6685834062052613830">સાઇન આઉટ કરો અને સેટઅપ પૂર્ણ કરો</translation>
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="6710594484020273272">&lt;શોધ શબ્દ લખો&gt;</translation>
+<translation id="671076103358959139">નોંધણી ટોકન:</translation>
 <translation id="6711464428925977395">પ્રોક્સી સર્વરમાં કંઈક ખોટું થયું છે અથવા તો સરનામું ખોટું છે.</translation>
 <translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6744009308914054259">કનેક્શન માટે રાહ જોતી વખતે, ઑફલાઇન લેખ વાંચવા માટે તમે ડાઉનલોડની મુલાકાત લઈ શકો.</translation>
@@ -881,6 +890,7 @@
 <translation id="721197778055552897">આ સમસ્યા વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">કનેક્શન <ph name="SSL_VERSION" /> નો ઉપયોગ કરે છે.</translation>
 <translation id="7220786058474068424">પ્રક્રિયા કરી રહ્યું છે</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">સાઇટ આગળ મૉલવેર ધરાવે છે</translation>
 <translation id="724975217298816891">તમારા કાર્ડની વિગતોને અપડેટ કરવા <ph name="CREDIT_CARD" /> માટે સમાપ્તિ તારીખ અને CVC દાખલ કરો. એકવાર તમે ખાતરી કરી લો, તે પછી આ સાઇટ સાથે તમારા કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="7251437084390964440">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. કદાચ ગોઠવણીના ભાગોને આયાત કરાશે નહીં.
@@ -1061,6 +1071,7 @@
 <translation id="8364627913115013041">સેટ નથી.</translation>
 <translation id="8368476060205742148">Google Play સેવાઓ</translation>
 <translation id="8380941800586852976">જોખમી</translation>
+<translation id="8381674639488873545">આ શુલ્ક એક વખત લાગે અથવા પુનરાવર્તિત હોઈ શકે અને તેનો સ્પષ્ટ ખ્યાલ ન આવે તેમ પણ બને. <ph name="BEGIN_LINK" />તો પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">તમારા તાજેતરમાં મુલાકાત લીધેલ બુકમાર્ક્સ અહીં દેખાય છે</translation>
 <translation id="8398259832188219207"><ph name="UPLOAD_TIME" /> એ ક્રેશ રિપોર્ટ અપલોડ કર્યો હતો</translation>
 <translation id="8412145213513410671">ક્રેશેસ (<ph name="CRASH_COUNT" />)</translation>

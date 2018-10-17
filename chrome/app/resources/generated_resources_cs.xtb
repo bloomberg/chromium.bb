@@ -3349,7 +3349,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6025215716629925253">Trasování zásobníku</translation>
 <translation id="6026047032548434446">Nainstalovat aplikaci?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – připojeno k zařízení USB</translation>
-<translation id="6028117231645531007">Přidat otisk prstu</translation>
 <translation id="6029027682598229313">Instalace systému Linux je dokončena.</translation>
 <translation id="6029292188939175871">smazat [<ph name="FINGERPRINT_NAME" />], tlačítko</translation>
 <translation id="6029587122245504742">Nejpomalejší</translation>
@@ -4152,7 +4151,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7229570126336867161">Je zapotřebí technologie EVDO.</translation>
 <translation id="7230787553283372882">Přizpůsobení velikosti textu</translation>
 <translation id="7232750842195536390">Přejmenování se nezdařilo</translation>
-<translation id="7234406375359457793">Při připojování sdílené složky došlo k chybě. Zadaná sdílená složka není podporována.</translation>
 <translation id="7238585580608191973">Digitální otisk SHA-256</translation>
 <translation id="7240120331469437312">Alternativní název subjektu certifikátu</translation>
 <translation id="7240339475467890413">Připojit k novému hotspotu?</translation>

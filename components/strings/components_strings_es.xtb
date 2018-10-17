@@ -161,6 +161,7 @@
 <translation id="1973335181906896915">Error de serialización</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1978555033938440688">Versión de firmware</translation>
+<translation id="1981206234434200693">Borrar los datos del historial de navegación de Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{y una más}other{y # más}}</translation>
 <translation id="2003709556000175978">Cambia tu contraseña ahora</translation>
 <translation id="2025186561304664664">Se ha establecido que el proxy se configure automáticamente.</translation>
@@ -228,6 +229,7 @@
 <translation id="2473195200299095979">Traducir esta página</translation>
 <translation id="2479410451996844060">La URL de búsqueda no es válida.</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
+<translation id="248348093745724435">Políticas del equipo</translation>
 <translation id="2491120439723279231">El certificado del servidor contiene errores.</translation>
 <translation id="2495083838625180221">Analizador de archivos JSON</translation>
 <translation id="2495093607237746763">Si se activa esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
@@ -298,6 +300,7 @@
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, opción seleccionada actualmente. <ph name="ROW_CONTENT" /></translation>
 <translation id="298138621710431427">Ayuda para solucionarlo</translation>
+<translation id="2982481275546140226">Borrar datos</translation>
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="2985398929374701810">Introduce una dirección válida</translation>
 <translation id="2986368408720340940">Este método de recogida no está disponible. Selecciona otro.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">No tienes autorización para ver esta página.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnóstico de conectividad<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{Ninguno}=1{datos de inicio de sesión para 1 cuenta}other{datos de inicio de sesión para # cuentas}}</translation>
 <translation id="3145945101586104090">Error al decodificar respuesta</translation>
 <translation id="3150653042067488994">Error de servidor temporal</translation>
 <translation id="3154506275960390542">Es posible que un formulario de esta página no se envíe de forma segura. Otros usuarios pueden ver los datos que envías mientras estén en circulación y un atacante podría modificar lo que recibe el servidor.</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">Validación correcta</translation>
 <translation id="3655670868607891010">Si este mensaje aparece con frecuencia, prueba a solucionarlo con estas <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisión</translation>
+<translation id="3676592649209844519">ID del dispositivo:</translation>
 <translation id="3678029195006412963">No se ha podido firmar la solicitud</translation>
 <translation id="3678529606614285348">Abre una página en una nueva ventana de incógnito (Ctrl + Mayús + N).</translation>
 <translation id="3679803492151881375">Informe sobre fallos registrado el <ph name="CRASH_TIME" /> y subido el <ph name="UPLOAD_TIME" /></translation>
@@ -582,10 +587,10 @@
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4974590756084640048">Volver a habilitar advertencias</translation>
-<translation id="4988217478422488391">Te permite pagar online más rápido</translation>
 <translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome guardará una copia de tu tarjeta en este dispositivo para rellenar la información más rápido.</translation>
+<translation id="5015510746216210676">Nombre del equipo:</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">El almacén secundario está en mal estado.</translation>
 <translation id="5023310440958281426">Consulta las políticas del administrador</translation>
@@ -725,6 +730,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en uso}other{# en uso}}</translation>
 <translation id="5922853866070715753">Casi hemos acabado</translation>
+<translation id="5932224571077948991">El sitio web muestra anuncios invasivos o engañosos</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (hay una licencia asociada disponible).</translation>
 <translation id="5966151627327109289">Se cerrará la sesión de la mayoría de los sitios web. Es posible que dejes de tener acceso al contenido protegido de <ph name="SITE" /> y otros sitios web.</translation>
@@ -762,6 +768,7 @@
 <translation id="6203231073485539293">Comprueba tu conexión a Internet</translation>
 <translation id="6218753634732582820">¿Quitar dirección de Chromium?</translation>
 <translation id="6221345481584921695">Recientemente, la función de Navegación Segura de Google <ph name="BEGIN_LINK" />ha detectado software malicioso<ph name="END_LINK" /> en <ph name="SITE" />. En ocasiones, los sitios web que normalmente son seguros contienen software malicioso. Este contenido malintencionado procede de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de software malicioso.</translation>
+<translation id="6240447795304464094">Logotipo de Google Pay</translation>
 <translation id="6251924700383757765">Política de Privacidad</translation>
 <translation id="6254436959401408446">No hay suficiente memoria para abrir esta página</translation>
 <translation id="625755898061068298">Has elegido inhabilitar las advertencias de seguridad de este sitio web.</translation>
@@ -780,6 +787,7 @@
 <translation id="6337133576188860026">Libera menos de <ph name="SIZE" />. Algunos sitios web pueden tardar más en cargarse la próxima vez que accedas a ellos.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
 <translation id="6358450015545214790">¿Necesitas ayuda?</translation>
+<translation id="6383221683286411806">Es posible que se cobren cargos en el futuro.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Una sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387754724289022810">Para pagar más rápido la próxima vez, guarda tu tarjeta y tu dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
 <translation id="6397451950548600259">Hay software en tu ordenador que impide que Chrome se conecte a la Web de forma segura</translation>
@@ -817,6 +825,7 @@
 <translation id="6685834062052613830">Cierra sesión y completa la configuración</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6710594484020273272">&lt;Introducir término de búsqueda&gt;</translation>
+<translation id="671076103358959139">Token de registro:</translation>
 <translation id="6711464428925977395">Se ha producido un error con el servidor proxy o la dirección es incorrecta.</translation>
 <translation id="674375294223700098">Error de certificado de servidor desconocido</translation>
 <translation id="6744009308914054259">Mientras esperas a que haya conexión, puedes ir a Descargas para leer artículos sin conexión.</translation>
@@ -882,6 +891,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7219179957768738017">La conexión utiliza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Procesando pago</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">El sitio web al que vas a acceder contiene software malicioso</translation>
 <translation id="724975217298816891">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus detalles. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="7251437084390964440">La configuración de red no cumple el estándar ONC. Es posible que no se importen algunas partes de la configuración.
@@ -1062,6 +1072,7 @@ Más información:
 <translation id="8364627913115013041">No establecida</translation>
 <translation id="8368476060205742148">Servicios de Google Play</translation>
 <translation id="8380941800586852976">Peligroso</translation>
+<translation id="8381674639488873545">Estos cargos pueden ser únicos o periódicos, y es posible que no se indiquen de una forma evidente. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Los marcadores a los que hayas accedido recientemente aparecen aquí</translation>
 <translation id="8398259832188219207">Informe sobre fallos subido el <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Fallos (<ph name="CRASH_COUNT" />)</translation>

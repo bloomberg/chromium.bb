@@ -3318,7 +3318,6 @@
 <translation id="6025215716629925253">Stabelsporing</translation>
 <translation id="6026047032548434446">Vil du installere appen?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – en USB-enhet er koblet til</translation>
-<translation id="6028117231645531007">Legg til fingeravtrykk</translation>
 <translation id="6029027682598229313">Linux er ferdig installert.</translation>
 <translation id="6029292188939175871">slett [<ph name="FINGERPRINT_NAME" />], knapp</translation>
 <translation id="6029587122245504742">Langsomst</translation>
@@ -4115,7 +4114,6 @@
 <translation id="7229570126336867161">Krever EVDO</translation>
 <translation id="7230787553283372882">Tilpass tekststørrelsen</translation>
 <translation id="7232750842195536390">Navneendringen mislyktes</translation>
-<translation id="7234406375359457793">Feil ved aktivering av deling. Den spesifiserte delingen støttes ikke.</translation>
 <translation id="7238585580608191973">SHA-256-fingeravtrykk</translation>
 <translation id="7240120331469437312">Alternativt navn på sertifikatemne</translation>
 <translation id="7240339475467890413">Vil du koble til den nye Wi-Fi-sonen?</translation>

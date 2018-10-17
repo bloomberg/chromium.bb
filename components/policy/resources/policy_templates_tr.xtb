@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="101438888985615157">Ekranı 180 derece döndür</translation>
+<translation id="1016912092715201525"><ph name="PRODUCT_NAME" /> içindeki varsayılan tarayıcı denetimlerini yapılandırır ve kullanıcıların bunları değiştirmelerini önler.
+
+      Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> her zaman başlangıçta varsayılan tarayıcı olup olmadığını denetler ve mümkünse kendini otomatik olarak kaydeder.
+
+      Bu ayar devre dışı bırakılırsa, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını hiçbir zaman denetlemez ve bu seçeneği ayarlamaya yönelik kullanıcı denetimlerini devre dışı bırakır.
+
+      Bu ayar belirtilmezse, <ph name="PRODUCT_NAME" /> varsayılan tarayıcı olup olmadığını ve varsayılan tarayıcı değilse kullanıcı bildirimlerinin gösterilip gösterilmeyeceğini kullanıcının denetlemesine izin verir.
+
+      <ph name="MS_WIN_NAME" /> yöneticilerine not: Bu ayar, yalnızca Windows 7 çalıştıran makinelerde etkinleştirilebilir. Windows 8 ve sonraki Windows sürümlerinde <ph name="PRODUCT_NAME" /> tarayıcısını <ph name="HHTPS_PROTOCOL" /> ve <ph name="HTTP_PROTOCOL" /> protokollerinin (ve isteğe bağlı olarak <ph name="FTP_PROTOCOL" /> protokolünün ve <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> gibi dosya biçimlerinin) işleyicisi haline getiren bir "varsayılan uygulama ilişkilendirmeleri" dosyası dağıtmanız gerekir. Daha fazla bilgi için <ph name="SUPPORT_URL" /> adresine bakabilirsiniz.</translation>
 <translation id="1017967144265860778">Giriş ekranında güç yönetimi</translation>
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
@@ -52,6 +61,9 @@
       Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
 
       Bu politika ayarlanmadan bırakılırsa varsayılan önbellek dizini kullanılır ve kullanıcı, "--disk-cache-dir" komut satırı bayrağıyla bunu geçersiz kılabilir.</translation>
+<translation id="113521240853905588"><ph name="PRODUCT_OS_NAME" /> tarafından tercih edilen diller olarak kullanılabilen dilleri yapılandırır.
+
+      Bu politika ayarlanırsa, kullanıcı bu politikada listelenen dillerden yalnızca birini tercih edilen diller listesine ekleyebilir. Bu politika ayarlanmazsa veya boş bir liste olarak ayarlanırsa kullanıcı herhangi bir dili tercih edilen dil olarak belirtebilir. Bu politika, geçersiz değerler içeren bir listeye ayarlanırsa, tüm geçersiz değerler yoksayılır. Kullanıcı daha önce tercih edilen diller listesine bu politikanın izin vermediği diller eklediyse bunlar kaldırılır. Kullanıcı daha önce <ph name="PRODUCT_OS_NAME" /> işletim sistemini bu politikanın izin vermediği dillerden birinde görüntülenecek şekilde yapılandırdıysa, görüntüleme dili, kullanıcı tekrar oturum açtığında izin verilen kullanıcı arayüzü dillerinden birine değiştirilir. Aksi halde <ph name="PRODUCT_OS_NAME" />, bu politikada belirtilen ilk geçerli değere ya da politika yalnızca geçersiz girişler içeriyorsa yedek yerel ayara (şu anda en-US'tir) geçiş yapar.</translation>
 <translation id="1135264353752122851"><ph name="PRODUCT_OS_NAME" /> kullanıcı oturumları için izin verilecek klavye düzenlerini yapılandırır.
 
       Bu politika ayarlanırsa, kullanıcı yalnızca bu politika tarafından belirlenen giriş yöntemlerinden birini kullanabilir. Bu politika yapılandırılmaz veya liste boş olarak ayarlanırsa, kullanıcı desteklenen tüm giriş yöntemlerini seçebilir. Geçerli giriş yöntemine bu politikada izin verilmiyorsa, giriş yöntemi donanım klavye düzenine (izin veriliyorsa) veya bu listedeki ilk geçerli girişe ayarlanır. Bu listedeki geçersiz veya desteklenmeyen giriş yöntemleri yoksayılır.</translation>
@@ -699,6 +711,7 @@
 <translation id="2873651257716068683">Varsayılan yazdırma sayfası boyutunu geçersiz kılar. Sayfa boyutu mevcut değilse bu politika yoksayılır.</translation>
 <translation id="2874209944580848064">Android uygulamalarını destekleyen <ph name="PRODUCT_OS_NAME" /> cihazlarına ilişkin not:</translation>
 <translation id="2877225735001246144">Kerberos kimlik doğrulaması anlaşmasını yaparken CNAME aramasını devre dışı bırak</translation>
+<translation id="2890645751406497668">Bu sitelere, sağlanan tedarikçi ve ürün kimlikleriyle otomatik olarak USB cihazlarına bağlanma izni verir.</translation>
 <translation id="2892414556511568464">Dupleks yazdırma modunu kısıtlar. Ayarlanmayan veya boş bırakılan politika kısıtlama yokmuş gibi işlenir.</translation>
 <translation id="2893546967669465276">Yönetim sunucusuna sistem günlükleri gönder</translation>
 <translation id="2899002520262095963">Android uygulamaları, bu politika aracılığıyla ayarlanan CA sertifikalarını ve ağ yapılandırmalarını kullanabilir, ancak bazı yapılandırma seçeneklerine erişemez.</translation>
@@ -896,6 +909,7 @@ Bu ayar için Orta Düzey değeri seçilirse kullanıcı, YouTube'da yalnızca O
 
 Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph name="PRODUCT_NAME" /> tarafından YouTube'da Kısıtlı Mod zorunlu kılınmaz. Bununla birlikte, YouTube politikaları gibi harici politikalar Kısıtlı Mod'u zorunlu kılmaya devam edebilir.</translation>
 <translation id="3428247105888806363">Ağ tahminini etkinleştir</translation>
+<translation id="3437924696598384725">Kullanıcının VPN bağlantılarını yönetmesine izin verme</translation>
 <translation id="3449886121729668969"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları için proxy ayarlarını yapılandırır. Bu proxy ayarları, ARC uygulamaları için de kullanılabilir.
 
       Bu politika henüz kullanıma hazır değildir, lütfen kullanmayın.</translation>
@@ -1056,6 +1070,7 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
           Google'ın öneri URL'si şu şekilde belirtilebilir: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />
 
           Bu politikaya yalnızca "DefaultSearchProviderEnabled" politikası etkinleştirildiğinde uyulur.</translation>
+<translation id="3864129983143201415">Kullanıcı oturumunda izin verilen dilleri yapılandır</translation>
 <translation id="3866249974567520381">Açıklama</translation>
 <translation id="3868347814555911633">Bu politika yalnızca perakende modunda etkindir.
 
@@ -1573,6 +1588,11 @@ politikayı geçersiz kılamaz.
 <translation id="5323128137188992869"><ph name="PRODUCT_NAME" /> kullanarak içeriğin cihaza yayınlanmasına izin verin.
 
           Bu politika False (Yanlış) değerine ayarlanırsa kullanıcılar içeriği cihazlarına yayınlayamaz. Bu politika True (Doğru) değerine ayarlanırsa kullanıcıların içerik yayınlamasına izin verilir. Bu politika ayarlanmazsa kullanıcıların kayıtlı Chrome OS cihazlarına içerik yayınlamasına izin verilmez, ancak kayıtlı olmayan cihazlara içerik yayınlamasına izin verilir.</translation>
+<translation id="5329007337159326804">Uyarı: Maks. TLS sürümü politikası, yaklaşık olarak sürüm 75 düzeyinde (Haziran 2019 civarında) <ph name="PRODUCT_NAME" /> ürününden tamamıyla kaldırılacaktır.
+
+      Bu politika yapılandırılmazsa <ph name="PRODUCT_NAME" />, varsayılan maksimum sürümü kullanır.
+
+      Aksi halde, şu değerlerin birine ayarlanabilir: "tls1.2" veya "tls1.3". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden yüksek olan SSL/TLS sürümlerini kullanmaz. Tanınmayan değerler yoksayılır.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
 <translation id="5366745336748853475">URL kalıpları listesi belirtmenize olanak tanır. Bu liste, site sertifika isteğinde bulunursa, SAML akışını barındıran çerçevedeki oturum açma ekranında bir istemci sertifikasının otomatik olarak seçileceği sitelerin belirtildiği bir listedir. SAML IdP'ye sunulması amacıyla cihaz genelinde bir sertifikanın yapılandırılması buna örnek olarak gösterilebilir.
@@ -1601,6 +1621,15 @@ politikayı geçersiz kılamaz.
           Bu ayar etkinleştirilirse, uzak bağlantı devam ettiği sürece ana makinelerin fiziksel giriş ve çıkış cihazları devre dışı bırakılır.
 
           Bu ayar devre dışı bırakılırsa veya belirlenmezse, ana makine paylaşıldığı sırada hem yerel, hem de uzak kullanıcılar etkileşimde bulunabilir.</translation>
+<translation id="5396049152026347991">Kullanıcının VPN bağlantılarını yönetmesine izin verir.
+
+      Bu politika yanlış (false) değerine ayarlanırsa, kullanıcının VPN bağlantılarını kesmesini veya değiştirmesini sağlayacak tüm <ph name="PRODUCT_NAME" /> kullanıcı arayüzleri devre dışı bırakılır.
+
+      Bu politika ayarlanmazsa veya doğru (true) değerine ayarlanırsa, kullanıcılar VPN bağlantılarını normal olarak kesebilir veya değiştirebilir.
+
+      VPN bağlantısı VPN uygulaması ile oluşturulduysa, uygulamanın içindeki kullanıcı arayüzü bu politikadan etkilenmez. Dolayısıyla kullanıcı, VPN bağlantısını değiştirmek için uygulamayı kullanmaya devam edebilir.
+
+      Bu politika, yöneticinin başlangıçta VPN bağlantısı kurmaya karar vermesini sağlayan "Her zaman açık VPN" özelliğiyle birlikte kullanılmak üzere tasarlanmıştır.</translation>
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> oturum açma ekranında hangi klavye düzenlerine izin verileceğini yapılandırır.
 
       Bu politika bir giriş yöntemi tanımlayıcıları listesine ayarlanırsa belirtilen giriş yöntemleri oturum açma ekranında kullanılabilir. Belirtilen ilk giriş yöntemi önceden seçilir. Oturum açma ekranında bir kullanıcı simgesine odaklanılmışken, kullanıcının kullandığı son giriş yöntemi de bu politikada belirtilen giriş yöntemlerine ek olarak gösterilir. Bu politika ayarlanmazsa oturum açma ekranındaki giriş yöntemleri, oturum açma ekranının görüntülendiği yerel ayardan türetilir. Geçerli giriş yöntemi tanımlayıcıları olmayan değerler yok sayılır.</translation>
@@ -1686,6 +1715,11 @@ politikayı geçersiz kılamaz.
       Bu ayar devre dışı bırakılır veya yapılandırılmazsa kullanıcılar cihazlarında desteklenen tüm harici depolama birimi türlerini kullanabilir.</translation>
 <translation id="5697306356229823047">Cihaz kullanıcılarını raporla</translation>
 <translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa WebView, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
+<translation id="5701714006401683963">Bu politika yanlış (false) değerine ayarlanırsa, yönetilen misafir oturumu https://support.google.com/chrome/a/answer/3017014, standart "Herkese Açık Oturum"da belirtildiği şekilde davranır.
+
+      Politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa, yönetilen misafir oturumu, normal "Herkese Açık Oturumlar" için geçerli olan kısıtlamaları kaldıran "Yönetilen Oturum" davranışını devralır.
+
+      Bu politika ayarlanırsa kullanıcı değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="5722934961007828462">Bu ayar etkinleştirildiğinde, <ph name="PRODUCT_NAME" /> başarıyla doğrulanan ve yerel olarak yüklü CA sertifikaları ile imzalanmış sunucu sertifikaları için her zaman iptal kontrolü yapar.
 
       <ph name="PRODUCT_NAME" />, iptal durumu bilgilerini alamazsa bu tür sertifikalar iptal edilmiş sayılır ("kesin hata").
@@ -2067,6 +2101,13 @@ politikayı geçersiz kılamaz.
 <translation id="6786967369487349613">Dolaşım profili dizinini ayarlayın</translation>
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
+<translation id="6816212867679667972">DHCP isteklerinde kullanılan cihazın ana makine adını belirler.
+
+      Bu politika boş olmayan bir dizeye ayarlanırsa, o dize, DHCP isteği sırasında cihazın ana makine adı olarak kullanılır.
+
+      Dize; ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} değişkenlerini içerebilir. Ana makine adı olarak kullanılmadan önce cihazda bu değişkenlerin yerine değerler getirilir. Bu işlemin sonucunda ortaya çıkan değişikliğin geçerli bir ana makine adı olması gerekir (RFC 1035, bölüm 3.1 uyarınca).
+
+      Bu politika ayarlanmazsa veya değişiklikten sonraki değer, geçerli bir ana makine adı değilse, DHCP isteğinde ana makine adı ayarlanmaz. </translation>
 <translation id="6835883744948188639">Kullanıcıya yeniden başlatmanın önerildiğini belirten yinelenen bir istem gösterme</translation>
 <translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
 
@@ -2361,6 +2402,22 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika ayarlanmazsa, otomatik temizleme varsayılan yerleşik stratejiyi kullanır. Şu an bu "RemoveLRUIfDormant" stratejisidir.</translation>
 <translation id="7336878834592315572">Oturum süresince çerezleri tutma</translation>
+<translation id="7337967786223261174">Yazıcı listesi yapılandırır.
+
+      Bu politika, yöneticilerin kendi kullanıcılarına yazıcı yapılandırmaları sağlamalarına
+      olanak tanır.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ve <ph name="PRINTER_DESCRIPTION" />, yazıcı seçimini kolaylaştıracak şekilde özelleştirilebilen serbest biçimli dizelerdir. <ph name="PRINTER_MANUFACTURER" /> ve <ph name="PRINTER_MODEL" />, son kullanıcıların yazıcıyı tanımasını kolaylaştırmayı amaçlar. Bu ibareler yazıcının üreticisini ve modelini temsil eder. <ph name="PRINTER_URI" />;  <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ve <ph name="URI_QUEUE" /> bilgilerini içeren bir istemci bilgisayardan ulaşılabilen bir adres olmalıdır. <ph name="PRINTER_UUID" /> isteğe bağlıdır. Sağlandığı takdirde, <ph name="ZEROCONF_DISCOVERY" /> yazıcıların tekilleştirilmesine yardımcı olmak için kullanılabilir.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" />, <ph name="PRODUCT_NAME" /> tarafından desteklenen bir yazıcıyı temsil eden dizelerden biriyle eşleşmelidir. Dize, yazıcıya uygun PPD'yi tanımlamak ve yüklemek için kullanılır. Daha fazla bilgiye https://support.google.com/chrome?p=noncloudprint adresinden ulaşabilirsiniz.
+
+      Yazıcı ilk kez kullanıldığında kurulum tamamlanmış olur. Yazıcı kullanılana kadar PPD'ler indirilmez. Bundan sonra sık kullanılan PPD'ler önbelleğe alınır.
+
+      Bu politika, kullanıcıların yazıcıları ayrı ayrı cihazlarda yapılandırıp yapılandıramayacakları konusunu etkilemez. Ayrı ayrı kullanıcılar tarafından yazıcıların yapılandırılması konusunda tamamlayıcı olacak şekilde tasarlanmıştır.
+
+      Active Directory tarafından yönetilen cihazlarda bu politika, <ph name="MACHINE_NAME_VARIABLE" /> değişkeninin Active Directory makine adına veya bunun bir alt dizesine genişletilmesini destekler. Örneğin, makine adı <ph name="MACHINE_NAME_EXAMPLE" /> ise <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />, 6. konumdan sonra başlayan 4 karakterle değiştirilir (<ph name="MACHINE_NAME_PART_EXAMPLE" /> gibi). Konumun sıfır tabanlı olduğuna dikkat edin.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (küçük harfli) M71 sürümünde kullanımdan kaldırılmış olup M72 sürümünde üründen çıkarılacaktır.
+      </translation>
 <translation id="7340034977315324840">Cihaz etkinlik zamanlarını rapor et</translation>
 <translation id="7343497214039883642">Cihazlar için kurumsal yazıcı yapılandırma dosyası</translation>
 <translation id="7349338075015720646">Kullanıcı etkileşimi olmadan, sessizce yüklenen ve kullanıcı tarafından yüklemesi kaldırılamayan veya devre dışı bırakılamayan web sitelerinin bir listesini belirtir.
@@ -2781,6 +2838,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8359734107661430198">ExampleDeprecatedFeature API'sını 02.09.2008'e kadar etkinleştirin</translation>
 <translation id="8367209241899435947">Windows'da Chrome Temizleme Aracı'nı etkinleştir</translation>
 <translation id="8369602308428138533">AC güçle çalışırken ekran kapatma gecikmesi</translation>
+<translation id="8371178326720637170">Yönetilen uzantıların Kurumsal Donanım Platformu API'sini kullanmasını sağlar</translation>
 <translation id="8382184662529825177">Cihazda içerik koruma için uzak onay kullanımını etkinleştir</translation>
 <translation id="838870586332499308">Veri dolaşımını etkinleştir</translation>
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" /> içindeki dahili PDF görüntüleyiciyi devre dışı bırakır. Bunun yerine, dosyayı indirilecek dosya olarak ele alır ve kullanıcının PDF dosyalarını varsayılan uygulamayla açmasına olanak tanır.
@@ -3024,6 +3082,11 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> reddetme sorusunu engelle</translation>
 <translation id="8976248126101463034">Uzak erişim ana makineleri için gnubby kimlik doğrulamasına izin ver</translation>
 <translation id="8976531594979650914">Varsayılan Olarak Sistem Varsayılan Yazıcısını Kullan</translation>
+<translation id="898520305112996948">Hangi sitelerin sağlanan tedarikçi ve ürün kimlikleriyle USB cihazlarına erişmesine otomatik olarak izin verileceğini belirten bir url kalıpları listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de url kalıplarını içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz. Geçersiz politika değerleri yoksayılır.
+
+        Bu politika ayarlanmadan bırakılırsa küresel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
+
+        Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Çakışma olması halinde bu politikanın WebUsbBlockedForUrls ve WebUsbAskForUrls politikaları üzerinde önceliği olur.</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
 <translation id="9012851181124311976">Kurumsal giriş URL'lerinin listesini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Bu URL'lerde şifrelerin dijital parmak izleri yakalanır ve şifrenin tekrar kullanımını algılamak için bu dijital parmak izlerinden yararlanılır.
       <ph name="PRODUCT_NAME" /> uygulamasının şifrelerin dijital parmak izlerini doğru bir şekilde yakalaması için giriş sayfalarınızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde bulunan kurallara uyduğundan emin olun.

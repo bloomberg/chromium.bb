@@ -3353,7 +3353,6 @@
 <translation id="6025215716629925253">Проследяване на стека</translation>
 <translation id="6026047032548434446">Да се инсталира ли приложението?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – установена е връзка с USB устройство</translation>
-<translation id="6028117231645531007">Добавяне на отпечатъка</translation>
 <translation id="6029027682598229313">Инсталирането на Linux завърши.</translation>
 <translation id="6029292188939175871">изтриване на [<ph name="FINGERPRINT_NAME" />], бутон</translation>
 <translation id="6029587122245504742">Най-бавна</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7229570126336867161">Необходим е EVDO</translation>
 <translation id="7230787553283372882">Персонализирайте размера на текста</translation>
 <translation id="7232750842195536390">Преименуването не бе успешно</translation>
-<translation id="7234406375359457793">Възникна грешка при свързването на посочения дял. Той не се поддържа.</translation>
 <translation id="7238585580608191973">Пръстов отпечатък SHA-256</translation>
 <translation id="7240120331469437312">Алтернативно име на субекта на сертификата</translation>
 <translation id="7240339475467890413">Да се установи ли връзка с новата точка за достъп?</translation>

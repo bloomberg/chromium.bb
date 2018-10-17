@@ -3351,7 +3351,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6025215716629925253">Pinon jälki</translation>
 <translation id="6026047032548434446">Asennetaanko sovellus?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB-laite yhdistetty</translation>
-<translation id="6028117231645531007">Lisää sormenjälki</translation>
 <translation id="6029027682598229313">Linuxin asennus on valmis.</translation>
 <translation id="6029292188939175871">poista [<ph name="FINGERPRINT_NAME" />], painike</translation>
 <translation id="6029587122245504742">Hitain</translation>
@@ -4156,7 +4155,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7229570126336867161">EVDO tarvitaan</translation>
 <translation id="7230787553283372882">Muokkaa tekstin kokoa</translation>
 <translation id="7232750842195536390">Uudelleennimeäminen epäonnistui</translation>
-<translation id="7234406375359457793">Virhe jaon käyttöönotossa. Kyseistä jakoa ei tueta.</translation>
 <translation id="7238585580608191973">SHA-256-tunnistetiedosto</translation>
 <translation id="7240120331469437312">Varmenteen kohteen vaihtoehtoinen nimi</translation>
 <translation id="7240339475467890413">Yhdistetäänkö uuteen hotspotiin?</translation>

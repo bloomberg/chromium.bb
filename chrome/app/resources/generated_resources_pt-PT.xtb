@@ -3355,7 +3355,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6025215716629925253">Rastreio de pilha</translation>
 <translation id="6026047032548434446">Pretende instalar a aplicação?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – dispositivo USB ligado</translation>
-<translation id="6028117231645531007">Adicionar impressão digital</translation>
 <translation id="6029027682598229313">A instalação do Linux está concluída.</translation>
 <translation id="6029292188939175871">eliminar [<ph name="FINGERPRINT_NAME" />], botão</translation>
 <translation id="6029587122245504742">A mais lenta</translation>
@@ -4158,7 +4157,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7229570126336867161">Requer EVDO</translation>
 <translation id="7230787553283372882">Personalizar o tamanho do texto</translation>
 <translation id="7232750842195536390">Falha ao mudar o nome</translation>
-<translation id="7234406375359457793">Erro ao montar a partilha. A partilha especificada não é suportada.</translation>
 <translation id="7238585580608191973">Impressão digital SHA-256</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
 <translation id="7240339475467890413">Pretende ligar à nova zona Wi-Fi?</translation>

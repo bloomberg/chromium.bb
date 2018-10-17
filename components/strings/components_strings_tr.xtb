@@ -161,6 +161,7 @@
 <translation id="1973335181906896915">Serileştirme hatası</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
 <translation id="1978555033938440688">Donanım Yazılımı Sürümü</translation>
+<translation id="1981206234434200693">Chrome'un tarama geçmişi verilerini temizleyin</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{ve 1 uygulama daha}other{ve # uygulama daha}}</translation>
 <translation id="2003709556000175978">Şifrenizi şimdi sıfırlayın</translation>
 <translation id="2025186561304664664">Proxy, otomatik yapılandırıldı değerine ayarlandı.</translation>
@@ -228,6 +229,7 @@
 <translation id="2473195200299095979">Bu sayfayı çevir</translation>
 <translation id="2479410451996844060">Geçersiz arama URL'si.</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
+<translation id="248348093745724435">Makine politikaları</translation>
 <translation id="2491120439723279231">Sunucu sertifikası hatalar içeriyor.</translation>
 <translation id="2495083838625180221">JSON Ayrıştırıcı</translation>
 <translation id="2495093607237746763">İşaretlenirse Chromium, formları daha hızlı doldurma amacıyla kartınızın bir kopyasını bu cihazda depolar.</translation>
@@ -298,6 +300,7 @@
 <translation id="2972581237482394796">&amp;Yinele</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, şu anda seçili. <ph name="ROW_CONTENT" /></translation>
 <translation id="298138621710431427">Bunu Düzeltmeme Yardım Et</translation>
+<translation id="2982481275546140226">Verileri Temizle</translation>
 <translation id="2985306909656435243">Bu seçenek etkinleştirildiğinde Chromium, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
 <translation id="2985398929374701810">Geçerli bir adres girin</translation>
 <translation id="2986368408720340940">Bu alım yöntemi kullanılamıyor. Farklı bir yöntem deneyin.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">Bu sayfayı görüntüleme yetkiniz yok.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Bağlantı Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{Yok}=1{1 hesaba ait oturum açma verileri}other{# hesaba ait oturum açma verileri}}</translation>
 <translation id="3145945101586104090">Yanıtın kodu çözülemedi</translation>
 <translation id="3150653042067488994">Geçici sunucu hatası</translation>
 <translation id="3154506275960390542">Bu sayfada güvenli şekilde gönderilemeyecek bir form bulunmaktadır. Gönderdiğiniz veriler, aktarım sırasında başkaları tarafından görüntülenebilir veya bir saldırgan tarafından sunucunun alacağı verileri değiştirmek amacıyla kullanılabilir.</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">Doğrulama başarılı</translation>
 <translation id="3655670868607891010">Bunu çok sık görüyorsanız, şunları deneyin: <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Düzeltme</translation>
+<translation id="3676592649209844519">Cihaz kimliği:</translation>
 <translation id="3678029195006412963">İstek imzalanamadı</translation>
 <translation id="3678529606614285348">Sayfayı yeni Gizli pencerede açın (Ctrl-Üst Karakter-N)</translation>
 <translation id="3679803492151881375">Kilitlenme raporunun oluşturulma zamanı: <ph name="CRASH_TIME" />, raporun yüklenme zamanı: <ph name="UPLOAD_TIME" /></translation>
@@ -582,10 +587,10 @@
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4958444002117714549">Listeyi genişlet</translation>
 <translation id="4974590756084640048">Uyarıları yeniden etkinleştir</translation>
-<translation id="4988217478422488391">Online öğeler için ödeme yapmayı hızlandırır</translation>
 <translation id="4989163558385430922">Tümünü göster</translation>
 <translation id="4989809363548539747">Bu eklenti desteklenmiyor</translation>
 <translation id="5002932099480077015">Bu seçenek etkinleştirildiğinde Chrome, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
+<translation id="5015510746216210676">Makine Adı:</translation>
 <translation id="5018422839182700155">Bu sayfa açılamıyor</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
 <translation id="5023310440958281426">Yöneticinizin politikalarını inceleyin.</translation>
@@ -725,6 +730,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (senkronize edildi)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 çerez kullanımda}other{# çerez kullanımda}}</translation>
 <translation id="5922853866070715753">Tamamlanmak üzere</translation>
+<translation id="5932224571077948991">Site, araya giren veya yanıltıcı reklamlar gösteriyor</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5951495562196540101">Tüketici hesabına kaydedilemiyor (paket lisans mevcut).</translation>
 <translation id="5966151627327109289">Çoğu sitedeki oturumunuzu kapatır. <ph name="SITE" /> ve diğer bazı sitelerden alınan korunan içeriğe erişiminizi kaybedebilirsiniz.</translation>
@@ -762,6 +768,7 @@
 <translation id="6203231073485539293">İnternet bağlantınızı kontrol edin</translation>
 <translation id="6218753634732582820">Adres Chromium'dan kaldırılsın mı?</translation>
 <translation id="6221345481584921695">Google Güvenli Tarama yakın bir zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />kötü amaçlı yazılım tespit etti<ph name="END_LINK" />. Normalde güvenli olan web sitelerine bazen kötü amaçlı yazılımlar bulaşır. Kötü amaçlı içerik, kötü amaçlı yazılım dağıtımcısı olduğu bilinen <ph name="SUBRESOURCE_HOST" /> kaynağından gelmektedir.</translation>
+<translation id="6240447795304464094">Google Pay logosu</translation>
 <translation id="6251924700383757765">Gizlilik politikası</translation>
 <translation id="6254436959401408446">Bu sayfayı açmaya yetecek kadar bellek yok</translation>
 <translation id="625755898061068298">Bu site için güvenlik uyarılarını devre dışı bırakmayı seçtiniz.</translation>
@@ -780,6 +787,7 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> boyutundan daha az yer açar. Bir sonraki ziyaretinizde bazı siteler daha yavaş yüklenebilir.</translation>
 <translation id="6337534724793800597">Politikalara ada göre filtre uygula</translation>
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
+<translation id="6383221683286411806">Devam etmeniz halinde ödeme yapmanız gerekebilir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
 <translation id="6387754724289022810">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
 <translation id="6397451950548600259">Bilgisayarınızdaki yazılım, Chrome'un web'e güvenli bir şekilde bağlanmasını engelliyor</translation>
@@ -817,6 +825,7 @@
 <translation id="6685834062052613830">Çıkış yapın ve kurulumu tamamlayın</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6710594484020273272">&lt;Arama terimini yazın&gt;</translation>
+<translation id="671076103358959139">Kayıt Jetonu:</translation>
 <translation id="6711464428925977395">Proxy sunucusunda bir sorun var veya adres yanlış.</translation>
 <translation id="674375294223700098">Bilinmeyen sunucu sertifikası hatası.</translation>
 <translation id="6744009308914054259">Bağlantı kurulmasını beklerken çevrimdışı makaleleri okumak için İndirilenler bölümünü ziyaret edebilirsiniz.</translation>
@@ -882,6 +891,7 @@
 <translation id="721197778055552897">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinin.</translation>
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> kullanıyor.</translation>
 <translation id="7220786058474068424">İşleme koyuluyor</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Gideceğiniz site kötü amaçlı yazılım içeriyor</translation>
 <translation id="724975217298816891">Kart ayrıntılarınızı güncellemek için <ph name="CREDIT_CARD" /> numaralı karta ilişkin son kullanma tarihini ve CVC kodunu girin. Onayladığınızda kart ayrıntılarınız bu siteyle paylaşılacaktır.</translation>
 <translation id="7251437084390964440">Ağ yapılandırması ONC standardına uymuyor. Yapılandırmanın bazı bölümleri içe aktarılamaz.
@@ -1062,6 +1072,7 @@ Ek ayrıntılar:
 <translation id="8364627913115013041">Henüz ayarlanmadı.</translation>
 <translation id="8368476060205742148">Google Play hizmetleri</translation>
 <translation id="8380941800586852976">Tehlikeli</translation>
+<translation id="8381674639488873545">Bu ödemeler bir defalık alınabileceği gibi yinelenen ödemeler de olabilir ve bu durum açıkça belli olmayabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Son ziyaret ettiğiniz yer işaretleri burada görünür</translation>
 <translation id="8398259832188219207">Kilitlenme raporunun yüklenme zamanı: <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Kilitlenme Sayısı (<ph name="CRASH_COUNT" />)</translation>

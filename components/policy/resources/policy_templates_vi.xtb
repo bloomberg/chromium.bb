@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="101438888985615157">Xoay màn hình 180 độ</translation>
+<translation id="1016912092715201525">Định cấu hình các lần kiểm tra trình duyệt mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi những cấu hình này.
+
+      Nếu bạn bật tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn kiểm tra khi khởi động để xem đó có phải là trình duyệt mặc định không và tự động đăng ký chính nó nếu có thể.
+
+      Nếu bạn tắt tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ không bao giờ kiểm tra xem đó có phải là trình duyệt mặc định không và vô hiệu hóa kiểm soát của người dùng để đặt tùy chọn này.
+
+      Nếu bạn chưa đặt tùy chọn cài đặt này, <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng kiểm soát xem đó có phải là trình duyệt mặc định không và có nên hiển thị thông báo cho người dùng hay không khi đó không phải là trình duyệt mặc định.
+
+      Lưu ý dành cho quản trị viên <ph name="MS_WIN_NAME" />: Việc bật tùy chọn cài đặt này sẽ chỉ có hiệu lực với các máy đang chạy Windows 7. Đối với các phiên bản Windows bắt đầu từ Windows 8, bạn phải triển khai tệp "liên kết ứng dụng mặc định" giúp biến <ph name="PRODUCT_NAME" /> thành trình xử lý cho các giao thức <ph name="HHTPS_PROTOCOL" /> và <ph name="HTTP_PROTOCOL" /> (và có thể là giao thức <ph name="FTP_PROTOCOL" /> cùng các định dạng tệp như <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, v.v.). Hãy truy cập vào <ph name="SUPPORT_URL" /> để biết thêm thông tin.</translation>
 <translation id="1017967144265860778">Quản lý nguồn trên màn hình đăng nhập</translation>
 <translation id="1019101089073227242">Thiết lập thư mục dữ liệu người dùng</translation>
 <translation id="1022361784792428773">Các ID tiện ích mà bạn nên ngăn người dùng cài đặt (hoặc * cho tất cả)</translation>
@@ -64,6 +73,9 @@
       Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được đặt thì thư mục bộ nhớ đệm mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--disk-cache-dir'.</translation>
+<translation id="113521240853905588">Định cấu hình các ngôn ngữ có thể được dùng làm ngôn ngữ ưa thích của <ph name="PRODUCT_OS_NAME" />.
+
+      Nếu đã đặt chính sách này, người dùng chỉ có thể thêm một trong các ngôn ngữ được liệt kê trong chính sách này vào danh sách ngôn ngữ ưa thích. Nếu chưa đặt chính sách này hoặc đặt thành danh sách trống, thì người dùng có thể chỉ định ngôn ngữ bất kỳ làm ngôn ngữ ưa thích. Nếu đặt chính sách này thành danh sách có các giá trị không hợp lệ, thì tất cả các giá trị không hợp lệ sẽ bị bỏ qua. Nếu người dùng trước đó đã thêm một số ngôn ngữ không được chính sách này cho phép vào danh sách các ngôn ngữ ưu thích, thì các ngôn ngữ đó sẽ bị xóa. Nếu người dùng trước đó đã định cấu hình <ph name="PRODUCT_OS_NAME" /> hiển thị bằng một trong các ngôn ngữ không được chính sách này cho phép, thì ngôn ngữ hiển thị sẽ được chuyển sang ngôn ngữ giao diện người dùng được phép vào lần tiếp theo khi người dùng đăng nhập. Nếu không, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang giá trị hợp lệ đầu tiên do chính sách này chỉ định hoặc sang một ngôn ngữ dự phòng (hiện là en-US), nếu chính sách này chỉ chứa các mục nhập không hợp lệ.</translation>
 <translation id="1135264353752122851">Định cấu hình bố cục bàn phím được phép trong các phiên người dùng <ph name="PRODUCT_OS_NAME" />.
 
       Nếu đặt chính sách này, thì người dùng chỉ có thể chọn một trong số các phương thức nhập do chính sách này chỉ định. Nếu chưa đặt chính sách này hoặc đặt thành danh sách trống, người dùng có thể chọn tất cả các phương thức nhập được hỗ trợ. Nếu chính sách này không cho phép phương thức nhập hiện tại, phương thức nhập đó sẽ chuyển sang bố cục bàn phím phần cứng (nếu được phép) hoặc mục nhập hợp lệ đầu tiên trong danh sách này. Bỏ qua tất cả các phương thức nhập không hợp lệ hoặc chưa được hỗ trợ trong danh sách này.</translation>
@@ -715,6 +727,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
+<translation id="2890645751406497668">Tự động cấp quyền cho những trang web này để kết nối thiết bị USB với ID sản phẩm và nhà cung cấp cụ thể.</translation>
 <translation id="2892414556511568464">Hạn chế chế độ in hai mặt. Nếu bạn không đặt hoặc để trống chính sách, thì hệ thống sẽ coi là không có hạn chế.</translation>
 <translation id="2893546967669465276">Gửi nhật ký hệ thống đến máy chủ quản lý</translation>
 <translation id="2899002520262095963">Các ứng dụng Android có thể sử dụng cấu hình mạng và chứng chỉ CA được đặt qua chính sách này nhưng không có quyền truy cập vào một số tùy chọn cấu hình.</translation>
@@ -914,6 +927,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu cài đặt này được đặt thành Tắt hoặc không có giá trị nào được đặt, Chế độ hạn chế trên Youtube sẽ không bị <ph name="PRODUCT_NAME" /> bắt buộc sử dụng. Mặc dù vậy, các chính sách bên ngoài như chính sách của YouTube có thể vẫn buộc sử dụng Chế độ hạn chế.</translation>
 <translation id="3428247105888806363">Bật dự đoán mạng</translation>
+<translation id="3437924696598384725">Cho phép người dùng quản lý các tùy chọn kết nối VPN</translation>
 <translation id="3449886121729668969">Định cấu hình cài đặt proxy cho <ph name="PRODUCT_NAME" />. Những cài đặt proxy này cũng sẽ khả dụng cho ứng dụng ARC.
 
       Chính sách chưa sẵn sàng để sử dụng, vui lòng không sử dụng chính sách này.</translation>
@@ -1077,6 +1091,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Có thể chỉ định URL đề xuất của Google dưới dạng: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="3864129983143201415">Định cấu hình ngôn ngữ được phép trong phiên người dùng</translation>
 <translation id="3866249974567520381">Mô tả</translation>
 <translation id="3868347814555911633">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
@@ -1595,6 +1610,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5323128137188992869">Cho phép truyền nội dung đến thiết bị này bằng cách sử dụng <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành False, người dùng sẽ không thể truyền nội dung đến thiết bị của họ. Nếu bạn đặt chính sách này thành True, người dùng sẽ được phép truyền nội dung. Nếu bạn không đặt chính sách này, người dùng sẽ không được phép truyền nội dung đến thiết bị Chrome OS đã đăng ký, nhưng có thể truyền đến các thiết bị không được đăng ký.</translation>
+<translation id="5329007337159326804">Cảnh báo: Chúng tôi sẽ xóa hoàn toàn chính sách phiên bản TLS tối đa khỏi <ph name="PRODUCT_NAME" /> từ khoảng phiên bản 75 (vào khoảng tháng 6 năm 2019).
+
+      Nếu bạn không định cấu hình chính sách này thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối đa mặc định.
+
+      Nếu không, bạn có thể đặt chính sách thành một trong các giá trị sau: "tls1.2" hoặc "tls1.3". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS cao hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
 <translation id="5330684698007383292">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
 <translation id="5366745336748853475">Cho phép bạn chỉ định danh sách mẫu url. Những mẫu url này chỉ định các trang web có chứng chỉ ứng dụng được chọn tự động trên màn hình đăng nhập trong khung lưu trữ luồng SAML nếu trang web yêu cầu chứng chỉ. Việc sử dụng mẫu là để định cấu hình chứng chỉ sẽ được hiển thị cho SAML IdP cho toàn bộ thiết bị.
@@ -1624,6 +1644,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn bật cài đặt này thì các thiết bị đầu vào và đầu ra vật lý của máy chủ sẽ bị tắt khi đang thực hiện kết nối từ xa.
 
           Nếu bạn tắt hoặc chưa đặt cài đặt này thì cả người dùng cục bộ và người dùng từ xa đều có thể tương tác với máy chủ khi máy chủ đang được chia sẻ.</translation>
+<translation id="5396049152026347991">Cho phép người dùng quản lý các tùy chọn kết nối VPN.
+
+      Nếu bạn đặt chính sách này thành false, tất cả giao diện người dùng <ph name="PRODUCT_NAME" /> cho phép người dùng ngắt kết nối hoặc sửa đổi các tùy chọn kết nối VPN đều sẽ bị tắt.
+
+      Nếu bạn chưa đặt hoặc đặt chính sách này thành true, thì người dùng có thể ngắt kết nối hoặc sửa đổi các tùy chọn kết nối VPN như bình thường.
+
+      Nếu bạn tạo tùy chọn kết nối VPN qua ứng dụng VPN, thì chính sách này sẽ không làm ảnh hưởng đến giao diện người dùng bên trong ứng dụng. Do đó, người dùng vẫn có thể sử dụng ứng dụng để sửa đổi tùy chọn kết nối VPN.
+
+      Chính sách này nhằm sử dụng cùng với tính năng "VPN luôn bật", cho phép quản trị viên quyết định thiết lập tùy chọn kết nối VPN khi khởi động.</translation>
 <translation id="5405289061476885481">Định cấu hình bố cục bàn phím được cho phép trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành danh sách số nhận dạng phương thức nhập, phương thức nhập được cung cấp sẽ có sẵn trên màn hình đăng nhập. Phương thức nhập được cung cấp đầu tiên sẽ được chọn sẵn. Mặc dù nhóm người dùng được lấy tiêu điểm trên màn hình đăng nhập, phương thức nhập được sử dụng gần đây nhất của người dùng sẽ có sẵn ngoài phương thức nhập được cung cấp bởi chính sách này. Nếu chính sách này chưa được đặt, các phương thức nhập trên màn hình đăng nhập sẽ được lấy từ ngôn ngữ mà màn hình đăng nhập hiển thị. Các giá trị không phải số nhận dạng phương thức nhập hợp lệ sẽ bị bỏ qua.</translation>
@@ -1709,6 +1738,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng có thể sử dụng tất cả các loại bộ nhớ ngoài được hỗ trợ trên thiết bị của họ.</translation>
 <translation id="5697306356229823047">Báo cáo người dùng thiết bị</translation>
 <translation id="570062449808736508">Khi chính sách này được đặt thành chuỗi không trống, WebView sẽ đọc hạn chế URL từ nhà cung cấp nội dung có tên tổ chức cho trước.</translation>
+<translation id="5701714006401683963">Nếu bạn đặt chính sách này thành false, thì phiên khách được quản lý sẽ hoạt động như được nêu tại https://support.google.com/chrome/a/answer/3017014 - "Phiên công khai" tiêu chuẩn.
+
+      Nếu bạn đặt chính sách này thành true hoặc chưa đặt, thì phiên khách được quản lý sẽ hoạt động như "Phiên được quản lý", trong đó nhiều nội dung hạn chế áp dụng cho "Phiên công khai" thông thường sẽ được gỡ bỏ.
+
+      Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè chính sách này.</translation>
 <translation id="5722934961007828462">Khi bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn thực hiện quá trình kiểm tra thu hồi cho chứng chỉ máy chủ đã xác thực thành công và ký theo chứng chỉ CA được cài đặt cục bộ.
 
       Nếu <ph name="PRODUCT_NAME" /> không thể nhận được thông tin trạng thái thu hồi thì những chứng chỉ đó sẽ được coi là bị thu hồi ('lỗi cứng').
@@ -2090,6 +2124,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
+<translation id="6816212867679667972">Xác định tên máy chủ của thiết bị dùng trong yêu cầu DHCP.
+
+      Nếu bạn đặt chính sách này thành chuỗi có nội dung thì chuỗi đó sẽ được sử dụng làm tên máy chủ của thiết bị trong quá trình yêu cầu DHCP.
+
+      Chuỗi có thể chứa các biến ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} sẽ được thay thế bằng các giá trị trên thiết bị trước khi sử dụng làm tên máy chủ. Biến thay thế thu được sẽ là tên máy chủ hợp lệ (theo RFC 1035, mục 3.1).
+
+      Nếu bạn không đặt chính sách này hoặc giá trị sau biến thay thế không phải là tên máy chủ hợp lệ thì tên máy chủ sẽ không được đặt trong yêu cầu DHCP. </translation>
 <translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
 <translation id="6838056959556423778">Ghi đè các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
 
@@ -2384,6 +2425,22 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này không được đặt, tính năng dọn sạch tự động sẽ sử dụng chiến lược tích hợp sẵn mặc định. Hiện tại đó là chiến lược 'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
+<translation id="7337967786223261174">Định cấu hình danh sách máy in.
+
+      Chính sách này cho phép các quản trị viên cung cấp cấu hình máy in cho
+      người dùng của mình.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> và <ph name="PRINTER_DESCRIPTION" /> là các chuỗi dạng tự do có thể tùy chỉnh để dễ chọn máy in. <ph name="PRINTER_MANUFACTURER" /> và <ph name="PRINTER_MODEL" /> giúp người dùng cuối dễ dàng nhận diện máy in. Những chỉ số này cho biết nhà sản xuất và kiểu máy in. <ph name="PRINTER_URI" /> phải là địa chỉ có thể truy cập từ một máy khách bao gồm <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> và <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> là tùy chọn. Nếu được cung cấp, tùy chọn này sẽ được dùng để giúp loại bỏ trùng lặp máy in <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> phải khớp với một trong các chuỗi đại diện cho một máy in được hỗ trợ <ph name="PRODUCT_NAME" />. Chuỗi này sẽ được dùng để nhận diện và cài đặt PPD phù hợp cho máy in. Bạn có thể tìm thêm thông tin tại https://support.google.com/chrome?p=noncloudprint.
+
+      Thiết lập máy in được hoàn tất trong lần đầu tiên sử dụng máy in.  PPD sẽ không được tải xuống cho đến khi máy in được dùng.  Sau lần đó, các PPD sử dụng thường xuyên sẽ được lưu vào bộ nhớ đệm.
+
+      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên các thiết bị cá nhân hay không. Chính sách này nhằm bổ sung cho quá trình định cấu hình máy in của người dùng cá nhân.
+
+      Đối với các thiết bị được quản lý bằng Active Directory, chính sách này hỗ trợ mở rộng <ph name="MACHINE_NAME_VARIABLE" /> thành tên máy Active Directory hoặc chuỗi con của tên máy đó. Ví dụ: nếu tên máy là <ph name="MACHINE_NAME_EXAMPLE" />, thì <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> sẽ được thay thế bằng 4 ký tự bắt đầu sau vị trí thứ 6, tức là <ph name="MACHINE_NAME_PART_EXAMPLE" />. Lưu ý rằng vị trí này dựa trên giá trị 0.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (chữ thường) không được dùng trong M71 và sẽ bị xóa trong M72.
+      </translation>
 <translation id="7340034977315324840">Báo cáo thời gian hoạt động của thiết bị</translation>
 <translation id="7343497214039883642">Tệp cấu hình máy dành cho in doanh nghiệp cho các thiết bị</translation>
 <translation id="7349338075015720646">Xác định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt cũng như tắt.
@@ -2800,6 +2857,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8359734107661430198">Bật API ExampleDeprecatedFeature đến ngày 2 tháng 9 năm 2008</translation>
 <translation id="8367209241899435947">Bật tính năng Làm sạch Chrome trên Windows</translation>
 <translation id="8369602308428138533">Độ trễ tắt màn hình khi chạy trên nguồn AC</translation>
+<translation id="8371178326720637170">Bật tiện ích được quản lý để sử dụng Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">Cho phép sử dụng chứng thực từ xa để bảo vệ nội dung cho thiết bị</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
 <translation id="8390049129576938611">Tắt trình xem PDF nội bộ trong <ph name="PRODUCT_NAME" />. Thay vào đó, thiết bị sẽ coi các tệp PDF là nội dung tải xuống và cho phép người dùng mở các tệp PDF này bằng ứng dụng mặc định.
@@ -3074,6 +3132,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8970205333161758602">Loại bỏ lời nhắc từ chối <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Cho phép xác thực gnubby cho máy chủ truy cập từ xa</translation>
 <translation id="8976531594979650914">Sử dụng máy in có sẵn trong hệ thống làm máy in mặc định</translation>
+<translation id="898520305112996948">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web sẽ tự động được cấp quyền để truy cập vào thiết bị USB với ID sản phẩm và nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả mẫu thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường ID sản phẩm và ID nhà cung cấp. Bất kỳ ID nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định ID sản phẩm nếu không chỉ định được ID nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực. Các giá trị chính sách không hợp lệ bị bỏ qua.
+
+        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ được sử dụng cho cấu hình cá nhân của người dùng.
+
+        Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
 <translation id="9012851181124311976">Định cấu hình danh sách các URL đăng nhập của doanh nghiệp (chỉ dành cho các lược đồ HTTP và HTTPS). Dấu vân tay của mật khẩu sẽ quét trên những URL này và dùng để phát hiện trường hợp sử dụng lại mật khẩu.
       Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu, hãy đảm bảo các trang đăng nhập của bạn tuân thủ những nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

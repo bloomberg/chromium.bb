@@ -3353,7 +3353,6 @@
 <translation id="6025215716629925253">Stack Trace</translation>
 <translation id="6026047032548434446">ติดตั้งแอปไหม</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - เชื่อมต่ออุปกรณ์ USB อยู่</translation>
-<translation id="6028117231645531007">เพิ่มลายนิ้วมือ</translation>
 <translation id="6029027682598229313">ติดตั้ง Linux เสร็จสมบูรณ์แล้ว</translation>
 <translation id="6029292188939175871">ลบ [<ph name="FINGERPRINT_NAME" />], ปุ่ม</translation>
 <translation id="6029587122245504742">ช้าที่สุด</translation>
@@ -4156,7 +4155,6 @@
 <translation id="7229570126336867161">ต้องใช้ EVDO</translation>
 <translation id="7230787553283372882">กำหนดขนาดข้อความของคุณ</translation>
 <translation id="7232750842195536390">การเปลี่ยนชื่อล้มเหลว</translation>
-<translation id="7234406375359457793">เกิดข้อผิดพลาดขณะต่อเชื่อมพื้นที่แชร์ ไม่รองรับพื้นที่แชร์ที่ระบุ</translation>
 <translation id="7238585580608191973">ลายนิ้วมือ SHA-256</translation>
 <translation id="7240120331469437312">ชื่อสำรองของหัวเรื่องใบรับรอง</translation>
 <translation id="7240339475467890413">เชื่อมต่อกับฮอตสปอตใหม่ใช่ไหม</translation>

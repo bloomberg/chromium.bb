@@ -3322,7 +3322,6 @@
 <translation id="6025215716629925253">Seguimiento de la pila</translation>
 <translation id="6026047032548434446">¿Deseas instalar la app?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: Se conectó el dispositivo USB</translation>
-<translation id="6028117231645531007">Agregar huella digital</translation>
 <translation id="6029027682598229313">Se completó la instalación de Linux.</translation>
 <translation id="6029292188939175871">borrar [<ph name="FINGERPRINT_NAME" />], botón</translation>
 <translation id="6029587122245504742">Más lento</translation>
@@ -4119,7 +4118,6 @@
 <translation id="7229570126336867161">Se necesita EVDO</translation>
 <translation id="7230787553283372882">Personaliza el tamaño del texto</translation>
 <translation id="7232750842195536390">No se pudo cambiar el nombre</translation>
-<translation id="7234406375359457793">Se produjo un error al activar el recurso compartido porque no es compatible.</translation>
 <translation id="7238585580608191973">Huella digital SHA-256</translation>
 <translation id="7240120331469437312">Nombre alternativo del sujeto del certificado</translation>
 <translation id="7240339475467890413">¿Deseas conectarte a un nuevo hotspot?</translation>

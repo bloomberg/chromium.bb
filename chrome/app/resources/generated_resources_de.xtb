@@ -3321,7 +3321,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6025215716629925253">Stacktrace</translation>
 <translation id="6026047032548434446">App installieren?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB-Gerät verbunden</translation>
-<translation id="6028117231645531007">Fingerabdruck hinzufügen</translation>
 <translation id="6029027682598229313">Die Linux-Installation ist abgeschlossen.</translation>
 <translation id="6029292188939175871">[<ph name="FINGERPRINT_NAME" />] löschen, Schaltfläche</translation>
 <translation id="6029587122245504742">Langsamste</translation>
@@ -4118,7 +4117,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7229570126336867161">EVDO erforderlich</translation>
 <translation id="7230787553283372882">Textgröße anpassen</translation>
 <translation id="7232750842195536390">Fehler beim Umbenennen</translation>
-<translation id="7234406375359457793">Fehler beim Bereitstellen der Freigabe. Die angegebene Freigabe wird nicht unterstützt.</translation>
 <translation id="7238585580608191973">SHA-256-Fingerabdruck</translation>
 <translation id="7240120331469437312">Alternativer Name für den Zertifikatsinhaber</translation>
 <translation id="7240339475467890413">Mit neuem Hotspot verbinden?</translation>
