@@ -71,16 +71,6 @@ class CryptoSyncPrefs {
 // SyncPrefs is a helper class that manages getting, setting, and
 // persisting global sync preferences.  It is not thread-safe, and
 // lives on the UI thread.
-//
-// TODO(akalin): Some classes still read the prefs directly.  Consider
-// passing down a pointer to SyncPrefs to them.  A list of files:
-//
-//   profile_sync_service_startup_unittest.cc
-//   profile_sync_service.cc
-//   sync_setup_flow.cc
-//   sync_setup_wizard.cc
-//   sync_setup_wizard_unittest.cc
-//   two_client_preferences_sync_test.cc
 class SyncPrefs : public CryptoSyncPrefs,
                   public base::SupportsWeakPtr<SyncPrefs> {
  public:
