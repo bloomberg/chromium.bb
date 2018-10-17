@@ -162,6 +162,7 @@
 <translation id="1973335181906896915">ধারাবাহিকতাতে ত্রুটি</translation>
 <translation id="1974060860693918893">উন্নত</translation>
 <translation id="1978555033938440688">ফার্মওয়ের সংস্করণ</translation>
+<translation id="1981206234434200693">Chrome-এর ব্রাউজিং ইতিহাসের ডেটা মুছুন</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{এবং আরও ১টি}one{এবং আরও #টি}other{এবং আরও #টি}}</translation>
 <translation id="2003709556000175978">আপনার পাসওয়ার্ড রিসেট করুন</translation>
 <translation id="2025186561304664664">স্বতঃ কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
@@ -229,6 +230,7 @@
 <translation id="2473195200299095979">এই পৃষ্ঠাটি অনুবাদ করুন</translation>
 <translation id="2479410451996844060">অবৈধ সার্চের URL৷</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
+<translation id="248348093745724435">মেশিনের নীতি</translation>
 <translation id="2491120439723279231">সার্ভারের শংসাপত্রে ত্রুটি আছে৷</translation>
 <translation id="2495083838625180221">JSON বিশ্লেষক</translation>
 <translation id="2495093607237746763">টিক চিহ্ণ দেওয়া থাকলে, ফর্ম পূরনের কাজ দ্রুত করতে Chromium এই ডিভাইসে আপনার কার্ডের একটি প্রতিলিপি সঞ্চয় করবে।</translation>
@@ -299,6 +301,7 @@
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
 <translation id="2977665033722899841">এখন <ph name="ROW_NAME" /> বেছে নিয়েছেন। <ph name="ROW_CONTENT" /></translation>
 <translation id="298138621710431427">এটি ঠিক করতে আমাকে সহায়তা করুন</translation>
+<translation id="2982481275546140226">ডেটা মুছুন</translation>
 <translation id="2985306909656435243">সক্ষম করা হলে, ফর্ম পূরনের কাজ দ্রুত করতে Chromium এই ডিভাইসে আপনার কার্ডের একটি প্রতিলিপি সংরক্ষণ করবে।</translation>
 <translation id="2985398929374701810">একটি সঠিক ঠিকানা লিখুন</translation>
 <translation id="2986368408720340940">এই পদ্ধতিতে পিক-আপ করা যাবে না। অন্য পদ্ধতি ব্যবহার করুন।</translation>
@@ -318,6 +321,7 @@
 <translation id="3109728660330352905">আপনার এই পৃষ্ঠাটি দেখার জন্য অনুমোদন নেই।</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />সংযোগের ডায়গনিস্টিক্স চালিয়ে দেখুন<ph name="END_LINK" />।</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{কোনও ডেটা নেই}=1{১টি অ্যাকাউন্টের জন্য সাইন-ইন ডেটা}one{#টি অ্যাকাউন্টের জন্য সাইন-ইন ডেটা}other{#টি অ্যাকাউন্টের জন্য সাইন-ইন ডেটা}}</translation>
 <translation id="3145945101586104090">প্রতিক্রিয়া ডিকোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="3150653042067488994">সাময়িক সার্ভার ত্রুটি</translation>
 <translation id="3154506275960390542">এই পৃষ্ঠাতে একটি ফর্ম আছে যেটি জমা দেওয়া নিরাপদ নাও হতে পারে। আপনার পাঠানো ডেটা সার্ভারে পৌঁছানোর আগে অন্যরা সেটি দেখতে পেতে পারেন, অথবা কেউ সেটি পরিবর্তন করে দিতে পারেন যাতে আপনার ডেটা সঠিকভাবে সার্ভারে না পৌঁছায়।</translation>
@@ -402,6 +406,7 @@
 <translation id="3650584904733503804">বৈধতা যাচাইকরণ সফল হয়েছে</translation>
 <translation id="3655670868607891010">আপনি যদি এটি প্রায়শই দেখতে পান, তাহলে <ph name="HELP_LINK" /> চেষ্টা করে দেখুন৷</translation>
 <translation id="3658742229777143148">পুনর্বিবেচনা</translation>
+<translation id="3676592649209844519">ডিভাইস আইডি:</translation>
 <translation id="3678029195006412963">অনুরোধটি স্বাক্ষরিত করা যায়নি</translation>
 <translation id="3678529606614285348">নতুন ছদ্মবেশী উইন্ডোতে (Ctrl-Shift-N) করে একটি পৃষ্ঠা খুলুন</translation>
 <translation id="3679803492151881375">ক্র্যাশ প্রতিবেদন <ph name="CRASH_TIME" /> এ ক্যাপচার করা হয়েছে, <ph name="UPLOAD_TIME" /> এ আপলোড করা হয়েছে</translation>
@@ -586,6 +591,7 @@
 <translation id="4989163558385430922">সবগুলি দেখুন</translation>
 <translation id="4989809363548539747">এই প্লাগ ইন সমর্থিত নয়</translation>
 <translation id="5002932099480077015">সক্রিয় করা হলে, ফর্ম পূরনের কাজ দ্রুত করতে Chrome এই ডিভাইসে আপনার কার্ডের একটি প্রতিলিপি সংরক্ষণ করবে।</translation>
+<translation id="5015510746216210676">মেশিনের নাম:</translation>
 <translation id="5018422839182700155">এই পৃষ্ঠাটি খোলা যাচ্ছে না</translation>
 <translation id="5019198164206649151">ব্যাকিং স্টোরটি ত্রুটিপূর্ণ অবস্থায় আছে</translation>
 <translation id="5023310440958281426">আপনার প্রশাসকের নীতিগুলি দেখুন</translation>
@@ -725,6 +731,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (সিঙ্ক হয়েছে)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{১টি ব্যবহৃত হচ্ছে}one{#টি ব্যবহৃত হচ্ছে}other{#টি ব্যবহৃত হচ্ছে}}</translation>
 <translation id="5922853866070715753">প্রায় শেষ</translation>
+<translation id="5932224571077948991">সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5951495562196540101">ক্রেতার অ্যাকাউন্টের মাধ্যমে এনরোল করা যাচ্ছে না (প্যাকেজ লাইসেন্স পাওয়া যাবে)৷</translation>
 <translation id="5966151627327109289">আপনাকে অধিকাংশ সাইট থেকে সাইন-আউট করে দেয়। আপনি <ph name="SITE" />-এর এবং অন্যান্য কিছু সাইটের সুরক্ষিত কন্টেন্টে অ্যাক্সেস হারাতে পারেন।</translation>
@@ -761,6 +768,7 @@
 <translation id="6203231073485539293">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন</translation>
 <translation id="6218753634732582820">Chromium থেকে ঠিকানা সরাবেন?</translation>
 <translation id="6221345481584921695">Google নিরাপদ ব্রাউজিং সাম্প্রতিক <ph name="SITE" /> এ <ph name="BEGIN_LINK" />ম্যালওয়্যার শনাক্ত করেছে<ph name="END_LINK" />। যেসব ওয়েবসাইট সাধারণত নিরাপদ থাকে, সেগুলি কখনও কখনও ম্যালওয়্যার দ্বারা আক্রান্ত হয়। <ph name="SUBRESOURCE_HOST" />, একটি পরিচিত ম্যালওয়্যার বিতরণকারী, থেকে ক্ষতিকারক সামগ্রী আসে। কয়েক ঘণ্টা পরে আপনার ফিরে আসা উচিত।</translation>
+<translation id="6240447795304464094">Google Pay লোগো</translation>
 <translation id="6251924700383757765">গোপনীয়তা নীতি</translation>
 <translation id="6254436959401408446">এই পৃষ্ঠাটি খোলার জন্য পর্যাপ্ত মেমরি নেই</translation>
 <translation id="625755898061068298">আপনি এই সাইটের জন্য নিরাপত্তা সতর্কবার্তা অক্ষম করতে চয়ন করেছেন।</translation>
@@ -779,6 +787,7 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> জায়গা খালি করে। পরের বার যখন দেখবেন তখন কিছু সাইট লোড হতে দেরি হতে পারে।</translation>
 <translation id="6337534724793800597">নাম অনুসারে ফিল্টারগুলি বাছাই করুন</translation>
 <translation id="6358450015545214790">এর অর্থ কী?</translation>
+<translation id="6383221683286411806">চালিয়ে গেলে চার্জ দিতে হতে পারে।</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{আরও ১টি প্রস্তাব}one{অন্যান্য #টি প্রস্তাব}other{অন্যান্য #টি প্রস্তাব}}</translation>
 <translation id="6387754724289022810">পরের বার আরও দ্রুত পেমেন্ট করা জন্য আপনার এই কার্ড এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে এবং এই ডিভাইসে সেভ করে রাখুন।</translation>
 <translation id="6397451950548600259">আপনার কম্পিউটারে সফ্টওয়্যারটি নিরাপদে ওয়েব সংযোগের করতে Chrome কে বাধা দিচ্ছে</translation>
@@ -816,6 +825,7 @@
 <translation id="6685834062052613830">প্রস্থান করুন করে সেটআপ সম্পূর্ণ করুন</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6710594484020273272">&lt;সার্চের পদ লিখুন&gt;</translation>
+<translation id="671076103358959139">নথিভুক্ত করার জন্য টোকেন:</translation>
 <translation id="6711464428925977395">প্রক্সী সার্ভারের কোনো সমস্যা হয়েছে, অথবা ঠিকানাটি ভুল।</translation>
 <translation id="674375294223700098">অজানা সার্ভার শংসাপত্র ত্রুটি৷</translation>
 <translation id="6744009308914054259">কানেকশনের জন্য অপেক্ষা করার সময়, আপনি ডাউনলোডে গিয়ে অফলাইন নিবন্ধগুলি পড়তে পারেন।</translation>
@@ -881,6 +891,7 @@
 <translation id="721197778055552897">এই সমস্যাটি সম্পর্কে <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" />৷</translation>
 <translation id="7219179957768738017">এই সংযোগটি <ph name="SSL_VERSION" />টি ব্যবহার করে</translation>
 <translation id="7220786058474068424">প্রক্রিয়ায় রয়েছে</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
 <translation id="724975217298816891">আপনার কার্ডের বিবরণ আপডেট করার জন্য মেয়াদ শেষের তারিখ এবং <ph name="CREDIT_CARD" /> এর CVC  লিখুন। আপনি নিশ্চিত করলে, আপনার কার্ডের বিবরণ এই সাইটের সাথে শেয়ার করা হবে।</translation>
 <translation id="7251437084390964440">নেটওয়ার্ক কনফিগারেশন ONC মানদণ্ড মেনে চলছে না। কনফিগারেশনের কিছু অংশ ইমপোর্ট করা নাও হতে পারে৷
@@ -1061,6 +1072,7 @@
 <translation id="8364627913115013041">সেট করা নেই৷</translation>
 <translation id="8368476060205742148">Google Play পরিষেবাদি</translation>
 <translation id="8380941800586852976">বিপজ্জনক</translation>
+<translation id="8381674639488873545">এই চার্জ এককালীন হতে পারে বা তার পুনরাবৃত্তি হতে পারে এবং তা স্পষ্ট করে বোঝা নাও যেতে পারে। <ph name="BEGIN_LINK" />তবুও দেখান<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">আপনার সম্প্রতি ঘুরে দেখা বুকমার্কগুলি এখানে দেখা যাবে</translation>
 <translation id="8398259832188219207">ক্র্যাশ প্রতিবেদন <ph name="UPLOAD_TIME" /> এ আপলোড করা হয়েছে</translation>
 <translation id="8412145213513410671">ক্র্যাশ (<ph name="CRASH_COUNT" />টি)</translation>

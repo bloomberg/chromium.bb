@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="101438888985615157">Girar la pantalla 180 grados</translation>
-<translation id="1016912092715201525">Permite configurar la comprobación del navegador predeterminado en <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen esta configuración.
+<translation id="1016912092715201525">Permite configurar la comprobación del navegador predeterminado en <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen este ajuste.
 
       Si habilitas esta opción, <ph name="PRODUCT_NAME" /> siempre comprobará si es el navegador predeterminado al iniciarse y, si es posible, se registrará automáticamente.
 
-      Si inhabilitas esta opción, <ph name="PRODUCT_NAME" /> nunca comprobará si es el navegador predeterminado e inhabilitará el control de los usuarios sobre la configuración de esta opción.
+      Si inhabilitas esta opción, <ph name="PRODUCT_NAME" /> nunca comprobará si es el navegador predeterminado e inhabilitará que los usuarios puedan configurar este ajuste.
 
       Si no configuras esta opción, <ph name="PRODUCT_NAME" /> permitirá a los usuarios decidir si es el navegador predeterminado y si deben aparecer notificaciones cuando no lo sea.
 
@@ -1649,7 +1649,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si se inhabilita esta opción o no se configura, tanto los usuarios locales como los remotos pueden interactuar con el host cuando se comparte.</translation>
 <translation id="5396049152026347991">Permite al usuario gestionar conexiones VPN.
 
-      Si se asigna el valor "False" a esta política, todas las interfaces de usuario de <ph name="PRODUCT_NAME" /> que permiten al usuario desconectar o modificar conexiones VPN están inhabilitadas.
+      Si se asigna el valor "False" a esta política, todas las interfaces de usuario de <ph name="PRODUCT_NAME" /> que permiten al usuario desconectar o modificar conexiones VPN estarán inhabilitadas.
 
       Si no se configura esta política o se le asigna el valor "True", los usuarios pueden desconectar o modificar conexiones VPN de la forma habitual.
 
@@ -2133,7 +2133,7 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 
       Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre de host del dispositivo durante las solicitudes DHCP.
 
-      La cadena puede incluir variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} y ${MACHINE_NAME} que se sustituirían por valores del dispositivo antes de que se utilice como nombre de host. El valor que resulte de la sustitución debe ser un nombre de host válido (de acuerdo con la sección 3.1 de la RFC 1035).
+      La cadena puede incluir las variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} y ${MACHINE_NAME}, que se sustituirían por valores del dispositivo antes de que se utilice como nombre de host. El valor que resulte de la sustitución debe ser un nombre de host válido (de acuerdo con la sección 3.1 de la RFC 1035).
 
       Si no se asigna ningún valor a esta política o el valor que resulta después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="6835883744948188639">Mostrar un mensaje periódico al usuario indicando que se recomienda reiniciar el navegador</translation>

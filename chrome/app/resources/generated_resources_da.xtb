@@ -1077,7 +1077,7 @@
     Brugeren er kun administreret på denne enhed.</translation>
 <translation id="258932246702879617">Vælg <ph name="BEGIN_BOLD" />Fastgør til proceslinje<ph name="END_BOLD" /></translation>
 <translation id="259421303766146093">Ophæv forstørrelse</translation>
-<translation id="2594999711683503743">Søg på Google, eller indtast webadressen</translation>
+<translation id="2594999711683503743">Søg på Google, eller angiv webadressen</translation>
 <translation id="2597852038534460976">Chrome kan ikke få adgang til baggrunde. Opret forbindelse til et netværk.</translation>
 <translation id="2600115369439982409">Filer og programmer</translation>
 <translation id="2603115962224169880">Ryd op på computeren</translation>
@@ -2751,7 +2751,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> blev blokeret, da det er forældet</translation>
 <translation id="5170477580121653719">Ledig plads på Google Drev: <ph name="SPACE_AVAILABLE" />.</translation>
 <translation id="5170568018924773124">Vis i mappe</translation>
-<translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
+<translation id="5171045022955879922">Søg, eller angiv webadresse</translation>
 <translation id="5171343362375269016">Ombyttet hukommelse</translation>
 <translation id="5175379009094579629">Enhedsnavnet er ugyldigt. Angiv et gyldigt enhedsnavn for at prøve igen.</translation>
 <translation id="5177479852722101802">Fortsæt blokering af adgang til kamera og mikrofon</translation>
@@ -3461,7 +3461,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6169040057125497443">Tjek din mikrofon.</translation>
 <translation id="6169666352732958425">Skrivebordet kunne ikke castes.</translation>
 <translation id="6171948306033499786">Sæt udskrivning på pause</translation>
-<translation id="6173623053897475761">Indtast din pinkode igen</translation>
+<translation id="6173623053897475761">Angiv din pinkode igen</translation>
 <translation id="6175314957787328458">Microsoft-domæne-GUID</translation>
 <translation id="6176043333338857209">Bluetooth aktiveres midlertidigt, så der kan kommunikeres med din sikkerhedsnøgle</translation>
 <translation id="6178664161104547336">Vælg et certifikat</translation>
@@ -4762,7 +4762,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES" />K</translation>
 <translation id="8137331602592933310">"<ph name="FILENAME" />" er blevet delt med dig. Du kan ikke slette filen, fordi du ikke ejer den.</translation>
 <translation id="8137559199583651773">Administrer udvidelser</translation>
-<translation id="8138082791834443598">Valgfrit – indtast nye oplysninger, eller opdater de eksisterende oplysninger, der skal tilknyttes denne enhed.</translation>
+<translation id="8138082791834443598">Valgfrit – angiv nye oplysninger, eller opdater de eksisterende oplysninger, der skal tilknyttes denne enhed.</translation>
 <translation id="813913629614996137">Initialiserer...</translation>
 <translation id="8140778357236808512">Importér en eksisterende administreret bruger</translation>
 <translation id="8141725884565838206">Administrer dine adgangskoder</translation>

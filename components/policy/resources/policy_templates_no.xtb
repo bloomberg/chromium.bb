@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="101438888985615157">Rotér skjermen 180 grader</translation>
+<translation id="1016912092715201525">Konfigurerer standard nettleserkontroller i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre dem.
+
+      Hvis du aktiverer denne innstillingen, sjekker <ph name="PRODUCT_NAME" /> alltid ved oppstart om den er standardnettleser, og registrerer seg selv automatisk om mulig.
+
+      Hvis denne innstillingen er deaktivert, sjekker <ph name="PRODUCT_NAME" /> aldri om den er standardnettleser, og brukerstyrt kontroll av dette alternativet er deaktivert.
+
+      Hvis denne innstillingen ikke er angitt, lar <ph name="PRODUCT_NAME" /> brukeren kontrollere om den er standardnettleser, og hvorvidt brukervarslinger skal vises når den ikke er det.
+
+      Merknad for administratorer av <ph name="MS_WIN_NAME" />: Det er kun mulig å slå på denne innstillingen for maskiner som har Windows 7. For Windows-versjoner fra og med Windows 8 må du implementere en «standardprogramtilknytninger»-fil som gjør <ph name="PRODUCT_NAME" /> til behandler for <ph name="HHTPS_PROTOCOL" />- og <ph name="HTTP_PROTOCOL" />-protokollene (og eventuelt <ph name="FTP_PROTOCOL" />-protokollen og filformater som <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> osv.). Se <ph name="SUPPORT_URL" /> for mer informasjon.</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
@@ -53,6 +62,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.
 
       Hvis denne regelen ikke blir angitt, brukes bufferkatalogen, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
+<translation id="113521240853905588">Konfigurerer hvilke språk som kan brukes av <ph name="PRODUCT_OS_NAME" /> som foretrukket språk.
+
+      Hvis denne regelen er angitt, kan brukeren kun legge til ett av språkene oppført i denne regelen i listen over foretrukne språk. Hvis regelen ikke er angitt, eller er angitt for en tom liste, kan brukeren bruke hvilket som helst språk. Hvis regelen er angitt for en liste med ugyldige verdier, ignoreres alle ugyldige verdier. Hvis en bruker har lagt til språk regelen ikke tillater, i listen over foretrukne språk, fjernes disse språkene. Hvis brukeren har konfigurert <ph name="PRODUCT_OS_NAME" /> til å vises på ett av språkene som regelen ikke tillater, byttes språket til et språk som er tillatt, neste gang brukeren logger på. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien i regelen, eller til et reservespråk (for øyeblikket amerikansk engelsk) hvis denne regelen bare har ugyldige oppføringer.</translation>
 <translation id="1135264353752122851">Konfigurerer hvilke tastaturoppsett som er tillatt for <ph name="PRODUCT_OS_NAME" />-brukerøkter.
 
       Hvis denne regelen er angitt, kan brukeren kun velge én av inndatametodene som regelen spesifiserer. Hvis denne regelen ikke er angitt, eller hvis den er angitt med en tom liste, kan brukeren velge alle kompatible inndatametoder. Hvis denne regelen ikke tillater den gjeldende inndatametoden, byttes inndatametoden til oppsettet for det fysiske tastaturet (hvis det er tillatt) eller den første gyldige oppføringen i denne listen. Alle inndatametoder i denne listen som er ugyldige eller ikke støttes, ignoreres.</translation>
@@ -695,6 +707,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2873651257716068683">Overstyrer standard sidestørrelse for utskrift. Hvis sidestørrelsen ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
+<translation id="2890645751406497668">Gi disse nettstedene automatisk tillatelse til å koble til USB-enheter med de oppgitte leverandør- og produkt-ID-ene.</translation>
 <translation id="2892414556511568464">Begrenser bruk av utskrift på begge sider. Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
 <translation id="2899002520262095963">Android-apper kan bruke nettverkskonfigurasjoner og CA-sertifikater som angis via denne regelen, men de har ikke tilgang til alle konfigurasjonsalternativene.</translation>
@@ -887,6 +900,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis denne innstillingen er angitt som av (Off), eller hvis ingen verdi er angitt, fremtvinger ikke <ph name="PRODUCT_NAME" /> bruk av Begrenset innhold-modusen. Eksterne regler, for eksempel YouTube-regler, kan imidlertid fortsatt fremtvinge bruk av Begrenset innhold-modusen.</translation>
 <translation id="3428247105888806363">Slå på nettverksforutsigelse</translation>
+<translation id="3437924696598384725">La brukeren administrere VPN-tilkoblinger</translation>
 <translation id="3449886121729668969">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" />. Disse er også tilgjengelige for ARC-apper.
 
       Denne regelen er ikke klar til bruk ennå, så ikke bruk den.</translation>
@@ -1052,6 +1066,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Googles forslagsnettadresse kan spesifiseres slik: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Denne regelen gjelder bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
+<translation id="3864129983143201415">Konfigurer tillatte språk i brukerøkter</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
 
@@ -1565,6 +1580,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5323128137188992869">Tillat at innhold castes til enheten med <ph name="PRODUCT_NAME" />.
 
           Hvis denne innstillingen er satt til False (usann), kan ikke brukere caste innhold til enheten. Hvis denne innstillingen er satt til True (sann), har brukere tillatelse til å caste innhold. Hvis denne innstillingen ikke er spesifisert, har ikke brukere tillatelse til å caste innhold til registrerte Chrome OS-enheter, men kan caste til enheter som ikke er registrert.</translation>
+<translation id="5329007337159326804">Advarsel: Regelen for høyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 75 (rundt juni 2019).
+
+      Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> standarden for maksimumsversjon.
+
+      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> høyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de følgende innholdstypene</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
 <translation id="5366745336748853475">Gjør det mulig å spesifisere en liste over nettadressemønstre som angir hvilke nettsteder det automatisk skal velges et klientsertifikat for. Dette skjer på påloggingsskjermen i rammen som er vert for SAML-flyten, hvis nettstedet krever et sertifikat. Et eksempel på bruk er å konfigurere et enhetsgjeldende sertifikat som skal presenteres til SAML IdP.
@@ -1594,6 +1614,15 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Hvis denne innstillingen er aktivert, deaktiveres vertenes fysiske enheter for inn- og utdata mens en fjerntilkobling er aktiv.
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, kan både lokale og eksterne brukere samhandle med verten når den deles.</translation>
+<translation id="5396049152026347991">La brukeren administrere VPN-tilkoblinger.
+
+      Hvis denne regelen er angitt som «false» (usann), deaktiveres alle brukergrensesnitt for <ph name="PRODUCT_NAME" /> der en bruker kan koble fra eller endre VPN-tilkoblinger.
+
+      Hvis denne regelen ikke er angitt, eller er angitt som «true» (sann), kan brukere koble fra eller endre VPN-tilkoblinger som normalt.
+
+      Hvis VPN-tilkoblingen opprettes i en VPN-app, påvirkes ikke grensesnittet i appen av denne regelen. Derfor kan brukeren muligens fortsatt bruke appen til å endre VPN-tilkoblingen.
+
+      Denne regelen er ment for å brukes med «Alltid på-VPN»-funksjonen, som lar administratoren etablere en VPN-tilkobling ved oppstart.</translation>
 <translation id="5405289061476885481">Konfigurerer hvilke tastaturoppsett som tillates på påloggingsskjermen i <ph name="PRODUCT_OS_NAME" />.
 
       Hvis denne regelen er angitt til en liste med identifikatorer for inndatametoder, er de angitte inndatametodene tilgjengelige på påloggingsskjermen. Den første angitte inndatametoden blir forhåndsvalgt. Når en brukerkapsel er fokusert på påloggingsskjermen, blir den inndatametoden det er lengst siden brukeren brukte, tilgjengelig – i tillegg til inndatametodene som spesifiseres av denne regelen. Hvis denne regelen ikke er spesifisert, blir inndatametodene på påloggingsskjermen avledet fra lokaliteten påloggingsskjermen vises med. Verdier som ikke er gyldige identifikatorer for inndatametoder, blir ignorert.</translation>
@@ -1679,6 +1708,11 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis denne innstillingen er slått av eller ikke er konfigurert, kan brukerne anvende alle typer ekstern lagring som støttes, på enhetene sine.</translation>
 <translation id="5697306356229823047">Rapportering av enhetsbrukere</translation>
 <translation id="570062449808736508">Når denne regelen er satt til en streng som ikke er tom, leser WebView nettadressebegrensningene fra innholdsleverandøren med det angitte autoritetsnavnet.</translation>
+<translation id="5701714006401683963">Hvis denne regelen er angitt som «false» (usann), fungerer administrerte gjesteøkter som dokumentert i https://support.google.com/chrome/a/answer/3017014 – som vanlige «offentlige økter».
+
+      Hvis denne regelen er angitt som «true» (sann), eller ikke er angitt, fungerer administrerte gjesteøkter som «administrerte økter», noe som fjerner mange av begrensningene som gjelder for vanlige «offentlige økter».
+
+      Hvis denne regelen er angitt, kan ikke brukeren endre eller overstyre den.</translation>
 <translation id="5722934961007828462">Når denne regelen er på, utfører alltid <ph name="PRODUCT_NAME" /> opphevelsessjekker for tjenersertifikater som blir godkjent og er signert av CA-sertifikater som er installert lokalt.
 
       Hvis <ph name="PRODUCT_NAME" /> ikke finner informasjon om opphevelsesstatusen, blir disse sertifikatene behandlet som opphevede («hard-fail»).
@@ -2062,6 +2096,13 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6786967369487349613">Angir katalogen for roamingprofiler</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
+<translation id="6816212867679667972">Bestem vertsnavnet for enheten som brukes i DHCP-forespørsler.
+
+      Hvis denne regelen er angitt for en streng som ikke er tom, blir den strengen brukt som vertsnavnet for enheten ved DHCP-forespørsler.
+
+      Strengen kan inneholde variablene ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} og ${MACHINE_NAME}. Disse blir erstattet med verdier på enheten før strengen blir tatt i bruk som vertsnavn. Den resulterende strengen må være et gyldig vertsnavn (per RFC 1035, del 3.1).
+
+      Hvis denne regelen ikke er angitt, eller hvis den endelige verdien ikke er et gyldig vertsnavn, blir ikke noe vertsnavn angitt i DHCP-forespørsler. </translation>
 <translation id="6835883744948188639">Vis brukeren en gjentakende melding om at omstart anbefales</translation>
 <translation id="6838056959556423778">Overstyrer reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />.
 
@@ -2347,6 +2388,21 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
+<translation id="7337967786223261174">Konfigurerer en liste over skrivere.
+
+      Denne regelen gjør det mulig for administratorer å gi ut skriverkonfigurasjoner til brukerne sine.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger i et fritt format som kan tilpasses for å gjøre det enklere å velge skriver. <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> brukes til å gjøre det lettere for brukerne å identifisere skrivere. De representerer skrivermodellen og -produsenten. <ph name="PRINTER_URI" /> skal være en adresse som kan nås fra en klientdatamaskin, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den oppgis, brukes den til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en <ph name="PRODUCT_NAME" />-støttet skriver. Strengen blir brukt til å identifisere og installere den riktige PPD-en for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
+
+      Skriverkonfigureringen fullføres når en skriver brukes for første gang. PPD-er lastes ikke ned før skriveren brukes. Etter det blir PPD-er som brukes ofte, bufret.
+
+      Denne regelen har ingen effekt på hvorvidt brukere kan konfigurere skrivere på individuelle enheter. Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
+
+      For Active Directory-administrerte enheter støtter denne regelen utvidelse av <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av det. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de 4 tegnene etter 6. posisjon, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Merk at posisjonen er null-basert.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (små bokstaver) er avviklet i M71 og fjernes i M72.
+      </translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
 <translation id="7343497214039883642">Konfigurasjonsfil for enheter på bedriftsskriver</translation>
 <translation id="7349338075015720646">Spesifiserer en liste over nettsteder som er installert gjennom bakgrunnsinstallasjon (uten brukerinteraksjon), og som brukere ikke kan avinstallere eller slå av.
@@ -2772,6 +2828,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8359734107661430198">Slå på ExampleDeprecatedFeature API frem til og med 2008/09/02</translation>
 <translation id="8367209241899435947">Aktiver Opprydning for Chrome på Windows</translation>
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
+<translation id="8371178326720637170">Lar administrerte utvidelser bruke Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer i <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.
@@ -3026,6 +3083,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="8970205333161758602">Ignorer avslagsforespørsel for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
 <translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
+<translation id="898520305112996948">Lar deg angi en liste over nettadressemønstre som bestemmer hvilke nettsteder som automatisk får tilgang til en USB-enhet med de oppgitte leverandør- og produkt-ID-ene. Hvert element på listen må ha både enheter og nettadressemønstre for at regelen skal være gyldig. Hvert element i enhetene kan ha et felt for leverandør-ID og et felt for produkt-ID. En ID som utelates, behandles som et jokertegn, med ett unntak. Det unntaket er at en produkt-ID ikke kan bestemmes hvis ikke en leverandør-ID også bestemmes. Ellers er ikke regelen gyldig. Ugyldige verdier i regelen ignoreres.
+
+        Hvis regelen las stå uten å angis som noe, brukes den globale standardverdien for alle nettsteder, enten fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller så brukes brukerens personlige oppsett.
+
+        Nettadressemønstre i denne regelen må ikke kollidere med mønstrene som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen forrang over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="9012851181124311976">Konfigurer listen over påloggingsadresser for bedrifter (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å oppdage gjenbruk av passord.
       For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykk for passord riktig, må du påse at påloggingssidene følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

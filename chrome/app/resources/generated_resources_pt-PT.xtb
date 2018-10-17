@@ -418,7 +418,7 @@
 <translation id="1598233202702788831">As atualizações estão desativadas pelo seu gestor.</translation>
 <translation id="1600857548979126453">Aceder ao back-end do depurador da página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
-<translation id="1603300902586586390">Permita que as aplicações do Linux abram ficheiros $1.</translation>
+<translation id="1603300902586586390">Permita que as aplicações do Linux abram $1 ficheiros.</translation>
 <translation id="1603914832182249871">(Navegação anónima)</translation>
 <translation id="1607139524282324606">Limpar entrada</translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
@@ -1470,7 +1470,7 @@ Pretende pará-lo?</translation>
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfis</translation>
 <translation id="3184560914950696195">Não é possível guardar em $1. As imagens editadas serão guardadas na pasta Transferências.</translation>
-<translation id="3186202398303525187">Permita que as aplicações do Linux abram $1.</translation>
+<translation id="3186202398303525187">Permita que as aplicações do Linux abram $1 ficheiro.</translation>
 <translation id="3188257591659621405">Os meus ficheiros</translation>
 <translation id="3188465121994729530">Média de movimentações</translation>
 <translation id="3190558889382726167">Palavra-passe guardada</translation>
@@ -3721,7 +3721,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="656293578423618167">O caminho ou nome do ficheiro é demasiado longo. Guarde com um nome mais curto ou noutra localização.</translation>
 <translation id="656398493051028875">A eliminar "<ph name="FILENAME" />"...</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
-<translation id="6571979863037191371">Desassocie o seu telemóvel do Chromebook. Deixarão de se associar automaticamente.</translation>
+<translation id="6571979863037191371">Desassocie o seu telemóvel do Chromebook. Deixarão de se ligar um ao outro automaticamente.</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
 <translation id="6577284282025554716">Transferência cancelada: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Encriptar as palavras-passe sincronizadas com o seu nome de utilizador e palavra-passe Google</translation>

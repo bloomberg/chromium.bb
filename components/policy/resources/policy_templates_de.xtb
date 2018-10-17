@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="101438888985615157">Bildschirm um 180 Grad drehen</translation>
+<translation id="1016912092715201525">Konfiguriert den Standardbrowser, führt in <ph name="PRODUCT_NAME" /> eine Überprüfung durch und verhindert, dass Nutzer die Einstellung ändern.
+
+      Wenn Sie diese Einstellung aktivieren, prüft <ph name="PRODUCT_NAME" /> beim Start immer, ob es der Standardbrowser ist. Nach Möglichkeit registriert sich die Anwendung dann automatisch.
+
+      Wenn diese Einstellung deaktiviert ist, prüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert.
+
+      Wenn diese Einstellung nicht festgelegt ist, erlaubt <ph name="PRODUCT_NAME" /> dem Nutzer die Festlegung, ob es als Standardbrowser verwendet werden soll und ob andernfalls entsprechende Benachrichtigungsmeldungen angezeigt werden sollen.
+
+      Hinweis für <ph name="MS_WIN_NAME" />-Administratoren: Diese Einstellung funktioniert nur auf Computern mit Windows 7. Bei Versionen ab Windows 8 müssen Sie eine Datei mit "Standardanwendungsverknüpfungen" angeben, die <ph name="PRODUCT_NAME" /> zum Handler für das <ph name="HHTPS_PROTOCOL" />- und <ph name="HTTP_PROTOCOL" />-Protokoll sowie optional für das <ph name="FTP_PROTOCOL" />-Protokoll und Dateiformate wie <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> usw. macht. Weitere Informationen finden Sie unter <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Energieverwaltung auf dem Anmeldebildschirm</translation>
 <translation id="1019101089073227242">Verzeichnis für Nutzerdaten festlegen</translation>
 <translation id="1022361784792428773">Erweiterungs-IDs, die der Nutzer nicht installieren darf ("*" für alle)</translation>
@@ -64,6 +73,9 @@ Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das be
 Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit Variablen, die verwendet werden können.
 
 Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cache-Verzeichnis verwendet und der Nutzer kann sie mit der Befehlszeilenmarkierung "--disk-cache-dir" außer Kraft setzen.</translation>
+<translation id="113521240853905588">Konfiguriert die Sprachen, die von <ph name="PRODUCT_OS_NAME" /> als bevorzugte Sprachen verwendet werden können.
+
+      Wenn diese Richtlinie festgelegt ist, kann der Nutzer nur eine der in dieser Richtlinie angegebenen Sprachen zur Liste der bevorzugten Sprachen hinzufügen. Falls die Richtlinie nicht konfiguriert oder auf eine leere Liste festgelegt ist, kann der Nutzer Sprachen nach Belieben angeben. Sollte diese Richtlinie auf eine Liste mit ungültigen Werten verweisen, werden alle ungültigen Werte ignoriert. Hat ein Nutzer zuvor Sprachen, die aufgrund der Richtlinie nicht erlaubt werden, zur Liste bevorzugter Sprachen hinzugefügt, dann werden diese entfernt. Wenn der Nutzer zuvor <ph name="PRODUCT_OS_NAME" /> für die Anzeige in einer nicht erlaubten Sprache konfiguriert hat, wird die Anzeigesprache auf eine zulässige Sprache umgestellt, wenn sich der Nutzer das nächste Mal anmeldet. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
 <translation id="1135264353752122851">Mit dieser Richtlinie wird festgelegt, welche Tastaturlayouts in <ph name="PRODUCT_OS_NAME" />-Nutzersitzungen zulässig sind.
 
       Wenn die Richtlinie festgelegt ist, kann der Nutzer nur eine der in der Richtlinie vorgegebenen Eingabemethoden auswählen. Falls die Richtlinie nicht konfiguriert oder auf eine leere Liste festgelegt ist, kann der Nutzer aus allen unterstützten Eingabemethoden wählen. Sollte die aktuelle Eingabemethode durch die Richtlinie nicht zulässig sein, wird die Eingabemethode nach Möglichkeit auf das Hardware-Tastaturlayout oder den ersten gültigen Eintrag in dieser Liste eingestellt. Alle ungültigen oder nicht unterstützten Eingabemethoden in der Liste werden ignoriert.</translation>
@@ -686,6 +698,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
 <translation id="2877225735001246144">CNAME-Suche bei der Aushandlung der Kerberos-Authentifizierung deaktivieren</translation>
+<translation id="2890645751406497668">Websites automatisch die Berechtigung erteilen, eine Verbindung zu USB-Geräten mit den angegebenen Hersteller- und Produkt-IDs herzustellen.</translation>
 <translation id="2892414556511568464">Dadurch wird der Duplexdruck eingeschränkt. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="2893546967669465276">Systemprotokolle an den Verwaltungsserver senden</translation>
 <translation id="2899002520262095963">Android-Apps können die über diese Richtlinie festgelegten Netzwerkkonfigurationen und CA-Zertifikate verwenden, haben jedoch keinen Zugriff auf bestimmte Konfigurationsoptionen.</translation>
@@ -876,6 +889,7 @@ Wird diese Einstellung auf "Moderat" festgelegt, kann der Nutzer auf YouTube nur
 
 Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der eingeschränkte Modus auf YouTube nicht durch <ph name="PRODUCT_NAME" /> erzwungen. Der eingeschränkte Modus wird jedoch möglicherweise trotzdem durch externe Richtlinien wie YouTube-Richtlinien erzwungen.</translation>
 <translation id="3428247105888806363">Netzwerkvorhersage aktivieren</translation>
+<translation id="3437924696598384725">Zulassen, dass der Nutzer VPN-Verbindungen verwaltet</translation>
 <translation id="3449886121729668969">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxy-Einstellungen können auch von ARC-Apps verwendet werden.
 
       Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
@@ -1034,6 +1048,7 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
           Die Vorschlags-URL von Google kann wie folgt angegeben werden: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
           Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
+<translation id="3864129983143201415">In einer Nutzersitzung zulässige Sprachen konfigurieren</translation>
 <translation id="3866249974567520381">Beschreibung</translation>
 <translation id="3868347814555911633">Diese Richtlinie ist nur im Händlermodus aktiv.
 
@@ -1529,6 +1544,11 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5323128137188992869">Hiermit wird das Streamen von Inhalten an das Gerät über <ph name="PRODUCT_NAME" /> erlaubt.
 
           Wird diese Richtlinie auf "false" gesetzt, ist es Nutzern nicht möglich, Inhalte auf ihr Gerät zu streamen. Wird diese Richtlinie auf "true" gesetzt, können Nutzer Inhalte streamen. Ist diese Richtlinie nicht definiert, so können Nutzer zwar keine Inhalte an angemeldete Chrome OS-Geräte streamen, aber an andere Geräte.</translation>
+<translation id="5329007337159326804">Achtung: Die Richtlinie zur TLS-Höchstversion wird voraussichtlich in Version 75 (etwa im Juni 2019) vollständig aus <ph name="PRODUCT_NAME" /> entfernt.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> die standardmäßige Höchstversion.
+
+      Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1.2" oder "tls1.3". Wenn festgelegt, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die neuer als die festgelegte Version sind. Ein unbekannter Wert wird ignoriert.</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="5366745336748853475">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die auf dem Anmeldebildschirm im Frame, der den SAML-Flow hostet, automatisch ein Clientzertifikat ausgewählt wird, wenn die Website ein Zertifikat anfordert. Zum Beispiel kann damit ein geräteübergreifendes Zertifikat konfiguriert werden, das dem SAML IdP präsentiert wird.
@@ -1556,6 +1576,15 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wenn diese Einstellung aktiviert ist, werden die physischen Ein- und Ausgabegeräte des Hosts bei bestehender Remote-Verbindung deaktiviert.
 
           Wenn diese Einstellung deaktiviert oder nicht festgelegt ist, können lokale und Remote-Nutzer mit dem Host interagieren, sofern dieser freigegeben ist.</translation>
+<translation id="5396049152026347991">Zulassen, dass der Nutzer VPN-Verbindungen verwaltet.
+
+      Wenn diese Richtlinie auf "false" festgelegt ist, werden alle <ph name="PRODUCT_NAME" />-Benutzeroberflächen deaktiviert, über die der Nutzer die VPN-Verbindungen trennen oder modifizieren könnte.
+
+      Wenn diese Richtlinie nicht oder auf "true" festgelegt ist, kann der Nutzer VPN-Verbindungen wie gewöhnlich trennen oder modifizieren.
+
+      Wenn die VPN-Verbindung innerhalb einer VPN-App erstellt wird, hat diese Richtlinie keine Auswirkungen auf die Benutzeroberfläche der App. So könnte der Nutzer die App auch weiterhin zum Modifizieren der VPN-Verbindung zu verwenden.
+
+      Diese Richtlinie soll gemeinsam mit der Funktion "Durchgehend aktives VPN" verwendet werden, mit der der Administrator festlegen kann, ob beim Start eine VPN-Verbindung dargestellt werden soll.</translation>
 <translation id="5405289061476885481">Konfiguriert, welche Tastaturlayouts auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erlaubt sind.
 
       Ist für diese Richtlinie eine Liste mit IDs für Eingabemethoden festgelegt, werden die entsprechenden Eingabemethoden auf der Anmeldeseite bereitgestellt. Das oberste Listenelement ist vorab ausgewählt. Während bestimmte Nutzerdaten auf der Anmeldeseite markiert sind, wird zusätzlich zu den von dieser Richtlinie bereitgestellten Eingabemethoden auch die vom Nutzer zuletzt verwendete angeboten. Ist diese Richtlinie nicht konfiguriert, werden die Eingabemethoden auf der Anmeldeseite von der Sprache der Anmeldeseite abgeleitet. Werte, die keine gültigen IDs für Eingabemethoden sind, werden ignoriert.</translation>
@@ -1636,6 +1665,11 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Ist diese Einstellung deaktiviert oder nicht konfiguriert, können die Nutzer alle unterstützten externen Speichermedien auf ihrem Gerät verwenden.</translation>
 <translation id="5697306356229823047">Gerätenutzer aufzeichnen</translation>
 <translation id="570062449808736508">Wenn für diese Richtlinie kein leerer String angegeben ist, wird WebView URL-Einschränkungen des Contentanbieters des angegebenen Befugnisnamens erkennen.</translation>
+<translation id="5701714006401683963">Wenn diese Richtlinie auf "false" gesetzt ist, verhalten sich verwaltete Gastsitzungen wie unter https://support.google.com/chrome/a/answer/3017014 beschrieben. Dieses Verhalten entspricht einer standardmäßigen öffentlichen Sitzung.
+
+      Ist die Richtlinie auf "true" gesetzt oder nicht festgelegt, verhält sich die verwaltete Gastsitzung wie eine verwaltete Sitzung, bei der viele der Einschränkungen aufgehoben sind, die bei regulären öffentlichen Sitzungen gelten.
+
+      Ist die Richtlinie festgelegt, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
 <translation id="5722934961007828462">Bei Aktivierung dieser Einstellung führt <ph name="PRODUCT_NAME" /> immer eine Widerrufsprüfung für Serverzertifikate durch, die erfolgreich bestätigt und von lokal installierten CA-Zertifikaten signiert wurden.
 
       Wenn <ph name="PRODUCT_NAME" /> keine Informationen zum Widerrufsstatus abrufen kann, werden solche Zertifikate als widerrufen behandelt ("hard-fail").
@@ -2007,6 +2041,13 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
 <translation id="6810445994095397827">JavaScript auf diesen Websites blockieren</translation>
 <translation id="681446116407619279">Unterstützte Authentifizierungsschemas</translation>
+<translation id="6816212867679667972">Legen Sie den Hostnamen des in DHCP-Anfragen verwendeten Geräts fest.
+
+      Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser String während der DHCP-Anfrage als Geräte-Hostname verwendet.
+
+      Der String kann die Variablen ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname verwendet werden. Das Ergebnis sollte ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
+
+      Wird diese Richtlinie nicht definiert oder ist der Wert nach dem Ersetzen kein gültiger Hostname, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="6835883744948188639">Dem Nutzer eine wiederkehrende Aufforderung anzeigen, dass ein Neustart empfohlen wird</translation>
 <translation id="6838056959556423778">Überschreibt die Regeln von <ph name="PRODUCT_NAME" /> zur Auswahl des Standarddruckers.
 
@@ -2286,6 +2327,23 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       Ist die Richtlinie nicht konfiguriert, erfolgt die automatische Bereinigung auf Grundlage der integrierten Standardstrategie. Zurzeit handelt es sich dabei um die "RemoveLRUIfDormant"-Strategie.</translation>
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
+<translation id="7337967786223261174">Eine Liste der Drucker wird konfiguriert.
+
+      Mit dieser Richtlinie können Administratoren den Nutzern
+      Druckerkonfigurationen bereitstellen.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> und <ph name="PRINTER_DESCRIPTION" /> sind unformatierte Strings, die zur einfachen Druckerauswahl angepasst werden können. <ph name="PRINTER_MANUFACTURER" /> und <ph name="PRINTER_MODEL" /> dienen der vereinfachten Druckererkennung durch die Nutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei <ph name="PRINTER_URI" /> sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" />, handeln, auf die über einen Client-Computer zugegriffen werden kann. <ph name="PRINTER_UUID" /> ist optional . Wenn sie angegeben ist, wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Mithilfe des Strings wird die passende PPD-Datei für den Drucker gesucht und installiert. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
+
+      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen. PPDs werden erst dann heruntergeladen, wenn der Drucker genutzt wird. Anschließend werden häufig verwendete PPDs im Cache gespeichert.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer Drucker auf ihren individuellen Geräten konfigurieren können. Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von <ph name="MACHINE_NAME_VARIABLE" /> auf den Active Directory-Computernamen oder einen Teilstring davon. Lautet der Computername etwa <ph name="MACHINE_NAME_EXAMPLE" />, wird <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Beachten Sie, dass die Zählung der Position bei null beginnt.
+
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (in Kleinbuchstaben) wird in M71 als veraltet betrachtet und in M72 entfernt.
+      </translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
 <translation id="7349338075015720646">Hierdurch wird eine Liste von Websites festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die nicht wieder vom Nutzer deinstalliert werden können.
@@ -2690,6 +2748,7 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 <translation id="8359734107661430198">ExampleDeprecatedFeature API bis zum 02.09.2008 aktivieren</translation>
 <translation id="8367209241899435947">Chrome Cleanup Tool unter Windows aktivieren</translation>
 <translation id="8369602308428138533">Verzögerung für die Bildschirmabschaltung im Netzbetrieb</translation>
+<translation id="8371178326720637170">Aktiviert die Verwendung der Enterprise Hardware Platform API durch verwaltete Erweiterungen</translation>
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
 <translation id="8390049129576938611">Deaktiviert den internen PDF-Viewer in <ph name="PRODUCT_NAME" />. Stattdessen werden PDF-Dateien als Download behandelt und der Nutzer kann sie mit der Standard-Anwendung öffnen.
@@ -2948,6 +3007,11 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
 <translation id="8970205333161758602">Hinweis auf Einstellung von <ph name="PRODUCT_FRAME_NAME" /> unterdrücken</translation>
 <translation id="8976248126101463034">Gnubby-Authentifizierung für Remotezugriff-Hosts zulassen</translation>
 <translation id="8976531594979650914">Standarddrucker des Betriebssystems als Standardeinstellung verwenden</translation>
+<translation id="898520305112996948">Hiermit können Sie eine Liste mit URL-Mustern festlegen, die angeben, welchen Websites automatisch die Berechtigung zum Zugriff auf ein USB-Gerät mit den angegebenen Anbieter- und Produkt-IDs gewährt wird. Jedes Element in der Liste muss sowohl Geräte als auch URL-Muster enthalten, damit die Richtlinie gültig ist. Jedes Geräteelement kann je ein Feld für eine Anbieter- und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann, da die Richtlinie ansonsten ungültig ist. Ungültige Richtlinienwerte werden ignoriert.
+
+        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.
+
+        URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den in WebUsbBlockedForUrls konfigurierten URLs stehen. Im Falle einer Diskrepanz hat diese Richtlinie Vorrang vor "WebUsbBlockedForUrls" und "WebUsbAskForUrls".</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
 <translation id="9012851181124311976">Mit dieser Richtlinie wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Fingerabdruck für die Autorisierung wird unter diesen URLs registriert und für die Prüfung der Wiederverwendung des Passworts genutzt.
       Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
