@@ -496,7 +496,8 @@ void GLES2Implementation::DeleteProgram(GLuint program) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteProgram(" << program
                      << ")");
-  GPU_CLIENT_DCHECK(program != 0);
+  if (program == 0)
+    return;
   DeleteProgramHelper(program);
   CheckGLError();
 }
@@ -549,7 +550,8 @@ void GLES2Implementation::DeleteSamplers(GLsizei n, const GLuint* samplers) {
 void GLES2Implementation::DeleteSync(GLsync sync) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteSync(" << sync << ")");
-  GPU_CLIENT_DCHECK(sync != 0);
+  if (sync == 0)
+    return;
   DeleteSyncHelper(sync);
   CheckGLError();
 }
@@ -557,7 +559,8 @@ void GLES2Implementation::DeleteSync(GLsync sync) {
 void GLES2Implementation::DeleteShader(GLuint shader) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteShader(" << shader << ")");
-  GPU_CLIENT_DCHECK(shader != 0);
+  if (shader == 0)
+    return;
   DeleteShaderHelper(shader);
   CheckGLError();
 }
