@@ -5,6 +5,7 @@
 #include "ui/gfx/skia_vector_animation.h"
 
 #include "base/trace_event/trace_event.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -13,7 +14,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/skia_vector_animation_observer.h"
-#include "ui/gfx/skottie_wrapper.h"
 
 namespace gfx {
 
@@ -69,7 +69,8 @@ double SkiaVectorAnimation::TimerControl::GetNormalizedEndOffset() const {
   return end_offset_.InMillisecondsF() * progress_per_millisecond_;
 }
 
-SkiaVectorAnimation::SkiaVectorAnimation(scoped_refptr<SkottieWrapper> skottie)
+SkiaVectorAnimation::SkiaVectorAnimation(
+    scoped_refptr<cc::SkottieWrapper> skottie)
     : skottie_(skottie) {}
 
 SkiaVectorAnimation::~SkiaVectorAnimation() {}
@@ -216,7 +217,8 @@ void SkiaVectorAnimation::PaintFrame(gfx::Canvas* canvas,
   SkCanvas skcanvas(bitmap);
   skcanvas.clear(SK_ColorTRANSPARENT);
 
-  skottie_->Draw(&skcanvas, t, pixel_size);
+  skottie_->Draw(&skcanvas, t,
+                 SkRect::MakeWH(pixel_size.width(), pixel_size.height()));
 
   canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), 0, 0);
 }

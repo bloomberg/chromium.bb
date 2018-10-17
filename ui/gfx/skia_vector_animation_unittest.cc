@@ -10,12 +10,12 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_vector_animation_observer.h"
-#include "ui/gfx/skottie_wrapper.h"
 
 namespace gfx {
 namespace {
@@ -102,7 +102,7 @@ class SkiaVectorAnimationTest : public testing::Test {
   void SetUp() override {
     canvas_.reset(new gfx::Canvas(gfx::Size(kAnimationWidth, kAnimationHeight),
                                   1.f, false));
-    skottie_ = base::MakeRefCounted<SkottieWrapper>(
+    skottie_ = base::MakeRefCounted<cc::SkottieWrapper>(
         std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
     animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   }
@@ -190,7 +190,7 @@ class SkiaVectorAnimationTest : public testing::Test {
 
  protected:
   std::unique_ptr<SkiaVectorAnimation> animation_;
-  scoped_refptr<SkottieWrapper> skottie_;
+  scoped_refptr<cc::SkottieWrapper> skottie_;
 
  private:
   std::unique_ptr<gfx::Canvas> canvas_;
@@ -202,7 +202,7 @@ class SkiaVectorAnimationTest : public testing::Test {
 TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
   auto bytes = base::MakeRefCounted<base::RefCountedBytes>(
       std::vector<unsigned char>(kData, kData + std::strlen(kData)));
-  skottie_ = base::MakeRefCounted<SkottieWrapper>(bytes.get());
+  skottie_ = base::MakeRefCounted<cc::SkottieWrapper>(bytes.get());
   animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);
@@ -210,7 +210,7 @@ TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
                   kAnimationDuration);
   EXPECT_TRUE(IsStopped());
 
-  skottie_ = base::MakeRefCounted<SkottieWrapper>(
+  skottie_ = base::MakeRefCounted<cc::SkottieWrapper>(
       std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
   animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
