@@ -109,8 +109,8 @@ js_unittest("gallery_data_model_unittest") {
 
 js_library("gallery_item") {
   deps = [
+    ":gallery_metrics",
     ":gallery_util",
-    "../../file_manager/common/js:metrics",
     "../../file_manager/common/js:util",
     "../../file_manager/foreground/js/metadata:metadata_model",
     "../../file_manager/foreground/js/metadata:thumbnail_model",
@@ -125,6 +125,12 @@ js_unittest("gallery_item_unittest") {
     ":gallery_item",
     ":mock_gallery_item",
     "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
+js_library("gallery_metrics") {
+  deps = [
+    "../../file_manager/common/js:metrics_base",
   ]
 }
 
@@ -181,8 +187,8 @@ js_library("slide_mode") {
     ":gallery_constants",
     ":gallery_data_model",
     ":gallery_item",
+    ":gallery_metrics",
     ":ribbon",
-    "../../file_manager/common/js:metrics",
     "../../file_manager/common/js:util",
     "../../file_manager/foreground/elements:files_toggle_ripple",
     "image_editor:image_adjust",

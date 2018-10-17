@@ -3,7 +3,7 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsU2jLo1oiASjXO+/+qYfgojW4Y5TCIBNFzcAdxaF78BRteygWkJqbUVyGZxtSk/RDe3NdNyQCxsyU1YfYXZQvGRNDwKw5tzGyE4dcedveipaJW174VGd3GViS0WWist3HRxfYRZvRP5E8l/4NxXB0+crfq2WolO8La25js1QkCsggQ1lC8g24NRrPnTAWZxvSD6L64R0UoVoe68HdC4mRISe9/OqjyiAfb4Ajgooq8dyzkV8AJTKRjFTmYPlcc5Ba21rXzRt22TnDh2U38m/OEvTu69cyTIxAkBjUa/2gu7N588k9XzaMhTjiolSWxBDQuLZRp8fNjO0R27jouo3FwIDAQAB",
   "manifest_version": 2,
   "name": "Audio Player",
-  "version": "1.0",
+  "version": "1.2",
   "description": "Audio Player",
   "display_in_launcher": false,
   "incognito" : "split",
@@ -44,7 +44,6 @@
   "app": {
     "background": {
       "scripts": [
-        "chrome://resources/js/analytics.js",
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",
         "chrome://resources/js/cr/ui.js",

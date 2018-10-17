@@ -110,8 +110,6 @@ js_library("request") {
     ":load_image_request",
     ":piex_loader",
     "../file_manager/common/js:file_type",
-    "../file_manager/common/js:metrics",
-    "../file_manager/common/js:metrics_events",
   ]
   externs_list = [ "../externs/platform.js" ]
 }

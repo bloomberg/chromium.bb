@@ -124,21 +124,25 @@ js_unittest("lru_cache_unittest") {
 }
 
 js_library("metrics") {
+  # |metrics| and |metrics_events| are for analytics. Don't leak this dependency
+  # outside of the core files app.
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     ":metrics_base",
     "../../../externs:file_manager_private",
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [
-    "$externs_path/metrics_private.js",
-    "//third_party/analytics/externs.js",
-  ]
+  externs_list = [ "//third_party/analytics/externs.js" ]
 }
 
 js_library("metrics_base") {
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("metrics_events") {
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     ":metrics_base",
   ]
