@@ -22,8 +22,6 @@ GPU_EXPORT extern const base::Feature kDefaultEnableOopRasterization;
 
 GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
-GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
-
 #if defined(OS_ANDROID)
 GPU_EXPORT extern const base::Feature kAImageReaderMediaPlayer;
 GPU_EXPORT extern const base::Feature kAndroidSurfaceControl;

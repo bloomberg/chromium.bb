@@ -90,6 +90,7 @@ struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
 using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
+#if defined(OS_WIN)
 // Common overlay formats that we're interested in. Must match the OverlayFormat
 // enum in //tools/metrics/histograms/enums.xml. Mapped to corresponding DXGI
 // formats in DirectCompositionSurfaceWin.
@@ -119,6 +120,7 @@ struct GPU_EXPORT Dx12VulkanVersionInfo {
   // The support Vulkan API version in the gpu driver;
   uint32_t vulkan_version = 0;
 };
+#endif
 
 struct GPU_EXPORT GPUInfo {
   struct GPU_EXPORT GPUDevice {
@@ -250,11 +252,8 @@ struct GPU_EXPORT GPUInfo {
   bool can_support_threaded_texture_mailbox = false;
 
 #if defined(OS_WIN)
-  // True if we use direct composition surfaces on Windows.
-  bool direct_composition = false;
-
-  // True if the current set of outputs supports overlays.
-  bool supports_overlays = false;
+  // True if we use direct composition surface overlays on Windows.
+  bool direct_composition_overlays = false;
 
   OverlayCapabilities overlay_capabilities;
 

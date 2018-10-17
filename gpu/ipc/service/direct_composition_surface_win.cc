@@ -140,37 +140,58 @@ void InitializeHardwareOverlaySupport() {
 
   g_overlay_support_initialized = true;
 
-  if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
-    return;
-
   // Before Windows 10 Anniversary Update (Redstone 1), overlay planes wouldn't
   // be assigned to non-UWP apps.
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
 
+  // Blacklist direct composition if MCTU.dll or MCTUX.dll are injected. These
+  // are user mode drivers for display adapters from Magic Control Technology
+  // Corporation.
+  if (GetModuleHandle(TEXT("MCTU.dll")) || GetModuleHandle(TEXT("MCTUX.dll"))) {
+    DLOG(ERROR) << "Blacklisted due to third party modules";
+    return;
+  }
+
+  // Flexible surface compatibility is required to be able to MakeCurrent with
+  // the default pbuffer surface.
+  if (!gl::GLSurfaceEGL::IsEGLFlexibleSurfaceCompatibilitySupported()) {
+    DLOG(ERROR) << "EGL_ANGLE_flexible_surface_compatibility not supported";
+    return;
+  }
+
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device) {
-    DLOG(ERROR) << "Not using overlays because failed to retrieve D3D11 device "
-                   "from ANGLE";
+    DLOG(ERROR) << "Failed to retrieve D3D11 device";
+    return;
+  }
+
+  Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device =
+      gl::QueryDirectCompositionDevice(d3d11_device);
+  if (!dcomp_device) {
+    DLOG(ERROR) << "Failed to retrieve direct composition device";
     return;
   }
 
   // This can fail if the D3D device is "Microsoft Basic Display Adapter".
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
   if (FAILED(d3d11_device.CopyTo(video_device.GetAddressOf()))) {
-    DLOG(ERROR) << "Not using overlays because failed to retrieve video device "
-                   "from D3D11 device";
+    DLOG(ERROR) << "Failed to retrieve video device";
     return;
   }
-  DCHECK(video_device);
 
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device.CopyTo(dxgi_device.GetAddressOf());
-  DCHECK(dxgi_device);
+  if (FAILED(d3d11_device.CopyTo(dxgi_device.GetAddressOf()))) {
+    DLOG(ERROR) << "Failed to retrieve DXGI device";
+    return;
+  }
+
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
-  dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
-  DCHECK(dxgi_adapter);
+  if (FAILED(dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf()))) {
+    DLOG(ERROR) << "Failed to retrieve DXGI adapter";
+    return;
+  }
 
   bool supports_nv12_rec709 = false;
   unsigned int i = 0;
@@ -1463,8 +1484,7 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
     return true;
 
-  return base::FeatureList::IsEnabled(features::kDirectCompositionOverlays) &&
-         g_supports_overlays;
+  return g_supports_overlays;
 }
 
 // static
@@ -1684,8 +1704,10 @@ void DirectCompositionSurfaceWin::Destroy() {
     }
     default_surface_ = nullptr;
   }
-  if (root_surface_)
+  if (root_surface_) {
     root_surface_->Destroy();
+    root_surface_ = nullptr;
+  }
 }
 
 gfx::Size DirectCompositionSurfaceWin::GetSize() {
@@ -1809,13 +1831,9 @@ bool DirectCompositionSurfaceWin::UseOverlaysForVideo() const {
 }
 
 bool DirectCompositionSurfaceWin::SupportsProtectedVideo() const {
-  if (!AreOverlaysSupported())
-    return false;
-
-  // TODO: Check the gpu driver date (or a function) which we know this new
-  // support is enabled.
-
-  return true;
+  // TODO(magchen): Check the gpu driver date (or a function) which we know this
+  // new support is enabled.
+  return AreOverlaysSupported();
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
