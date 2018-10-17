@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "headless/lib/browser/protocol/protocol_string.h"
 #include "headless/public/util/error_reporter.h"
 
 namespace headless {
@@ -70,6 +71,11 @@ std::unique_ptr<base::Value> ToValue(const std::vector<T>& vector_of_values) {
   for (const T& value : vector_of_values)
     result->Append(ToValue(value));
   return std::move(result);
+}
+
+template <>
+inline std::unique_ptr<base::Value> ToValue(const protocol::Binary& value) {
+  return ToValue(value.toBase64());
 }
 
 // FromValue specializations for basic types.
@@ -143,6 +149,23 @@ struct FromValue<std::unique_ptr<T>> {
   static std::unique_ptr<T> Parse(const base::Value& value,
                                   ErrorReporter* errors) {
     return FromValue<T>::Parse(value, errors);
+  }
+};
+
+template <>
+struct FromValue<protocol::Binary> {
+  static protocol::Binary Parse(const base::Value& value,
+                                ErrorReporter* errors) {
+    if (!value.is_string()) {
+      errors->AddError("string value expected");
+      return protocol::Binary();
+    }
+    bool success = false;
+    protocol::Binary out =
+        protocol::Binary::fromBase64(value.GetString(), &success);
+    if (!success)
+      errors->AddError("base64 decoding error");
+    return out;
   }
 };
 
