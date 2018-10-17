@@ -88,10 +88,8 @@ void AudioMirroringManager::StartMirroring(MirroringDestination* destination) {
   if (!candidates.empty()) {
     destination->QueryForMatches(
         candidates,
-        base::Bind(&AudioMirroringManager::UpdateRoutesToDestination,
-                   base::Unretained(this),
-                   destination,
-                   false));
+        base::BindOnce(&AudioMirroringManager::UpdateRoutesToDestination,
+                       base::Unretained(this), destination, false));
   }
 }
 
@@ -166,8 +164,8 @@ void AudioMirroringManager::InitiateQueriesToFindNewDestination(
 
     (*it)->QueryForMatches(
         candidates,
-        base::Bind(&AudioMirroringManager::UpdateRoutesToDestination,
-                   base::Unretained(this), *it, true));
+        base::BindOnce(&AudioMirroringManager::UpdateRoutesToDestination,
+                       base::Unretained(this), *it, true));
   }
 }
 

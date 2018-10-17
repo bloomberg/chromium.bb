@@ -260,8 +260,8 @@ class RemoveLocalStorageTester {
 
   void GetLocalStorageUsage() {
     dom_storage_context_->GetLocalStorageUsage(
-        base::Bind(&RemoveLocalStorageTester::OnGotLocalStorageUsage,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoveLocalStorageTester::OnGotLocalStorageUsage,
+                       base::Unretained(this)));
   }
 
   void OnGotLocalStorageUsage(

@@ -1785,8 +1785,8 @@ void AppCacheStorageImpl::DeleteOneResponse() {
   // TODO(michaeln): add group_id to DoomEntry args
   int64_t id = deletable_response_ids_.front();
   int rv = disk_cache()->DoomEntry(
-      id, base::Bind(&AppCacheStorageImpl::OnDeletedOneResponse,
-                     base::Unretained(this)));
+      id, base::BindOnce(&AppCacheStorageImpl::OnDeletedOneResponse,
+                         base::Unretained(this)));
   if (rv != net::ERR_IO_PENDING)
     OnDeletedOneResponse(rv);
 }
@@ -1870,8 +1870,8 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     if (is_incognito_) {
       rv = disk_cache_->InitWithMemBackend(
           kMaxAppCacheMemDiskCacheSize,
-          base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
-                     base::Unretained(this)));
+          base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,
+                         base::Unretained(this)));
     } else {
       expecting_cleanup_complete_on_disable_ = true;
       rv = disk_cache_->InitWithDiskBackend(
@@ -1879,8 +1879,8 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
           kMaxAppCacheDiskCacheSize, false,
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheCleanupComplete,
                          weak_factory_.GetWeakPtr()),
-          base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
-                     base::Unretained(this)));
+          base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,
+                         base::Unretained(this)));
     }
 
     if (rv != net::ERR_IO_PENDING)

@@ -128,8 +128,8 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     ASSERT_TRUE(video_capture_manager_);
     video_capture_manager_->RegisterListener(&mock_stream_provider_listener_);
     video_capture_manager_->EnumerateDevices(
-        base::Bind(&VideoCaptureBrowserTest::OnDeviceDescriptorsReceived,
-                   base::Unretained(this), std::move(continuation)));
+        base::BindOnce(&VideoCaptureBrowserTest::OnDeviceDescriptorsReceived,
+                       base::Unretained(this), std::move(continuation)));
   }
 
   void TearDownCaptureDeviceOnIOThread(base::Closure continuation,

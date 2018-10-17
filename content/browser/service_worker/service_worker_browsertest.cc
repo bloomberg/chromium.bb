@@ -2991,7 +2991,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   {
     blink::ServiceWorkerStatusCode status =
         blink::ServiceWorkerStatusCode::kErrorFailed;
-    RunOnIOThread(base::Bind(
+    RunOnIOThread(base::BindOnce(
         &ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO,
         base::Unretained(this),
         embedded_test_server()->GetURL("/service_worker/empty.html"), &status));
@@ -3142,7 +3142,7 @@ class CacheStorageSideDataSizeChecker
 
   int GetSizeImpl() {
     int result = 0;
-    RunOnIOThread(base::Bind(&self::OpenCacheOnIOThread, this, &result));
+    RunOnIOThread(base::BindOnce(&self::OpenCacheOnIOThread, this, &result));
     return result;
   }
 

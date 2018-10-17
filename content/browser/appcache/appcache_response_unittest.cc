@@ -214,8 +214,8 @@ class AppCacheResponseTest : public testing::Test {
     expected_write_result_ = buf_len;
     metadata_writer_->WriteMetadata(
         write_buffer_.get(), buf_len,
-        base::Bind(&AppCacheResponseTest::OnMetadataWriteComplete,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheResponseTest::OnMetadataWriteComplete,
+                       base::Unretained(this)));
   }
 
   void ReadResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {

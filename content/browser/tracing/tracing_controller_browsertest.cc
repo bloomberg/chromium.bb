@@ -206,9 +206,8 @@ class TracingControllerTest : public ContentBrowserTest {
     {
       base::RunLoop run_loop;
       TracingController::StartTracingDoneCallback callback =
-          base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
-                     base::Unretained(this),
-                     run_loop.QuitClosure());
+          base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
+                         base::Unretained(this), run_loop.QuitClosure());
       bool result =
           controller->StartTracing(TraceConfig(), std::move(callback));
       ASSERT_TRUE(result);
@@ -246,9 +245,8 @@ class TracingControllerTest : public ContentBrowserTest {
     {
       base::RunLoop run_loop;
       TracingController::StartTracingDoneCallback callback =
-          base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
-                     base::Unretained(this),
-                     run_loop.QuitClosure());
+          base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
+                         base::Unretained(this), run_loop.QuitClosure());
 
       TraceConfig config = TraceConfig();
       config.EnableArgumentFilter();
@@ -289,8 +287,8 @@ class TracingControllerTest : public ContentBrowserTest {
     {
       base::RunLoop run_loop;
       TracingController::StartTracingDoneCallback callback =
-          base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
-                     base::Unretained(this), run_loop.QuitClosure());
+          base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
+                         base::Unretained(this), run_loop.QuitClosure());
       bool result =
           controller->StartTracing(TraceConfig(), std::move(callback));
       ASSERT_TRUE(result);
@@ -324,9 +322,8 @@ class TracingControllerTest : public ContentBrowserTest {
     {
       base::RunLoop run_loop;
       TracingController::StartTracingDoneCallback callback =
-          base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
-                     base::Unretained(this),
-                     run_loop.QuitClosure());
+          base::BindOnce(&TracingControllerTest::StartTracingDoneCallbackTest,
+                         base::Unretained(this), run_loop.QuitClosure());
       bool result =
           controller->StartTracing(TraceConfig(), std::move(callback));
       ASSERT_TRUE(result);
@@ -373,9 +370,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_GetCategories) {
 
   base::RunLoop run_loop;
   TracingController::GetCategoriesDoneCallback callback =
-      base::Bind(&TracingControllerTest::GetCategoriesDoneCallbackTest,
-                 base::Unretained(this),
-                 run_loop.QuitClosure());
+      base::BindOnce(&TracingControllerTest::GetCategoriesDoneCallbackTest,
+                     base::Unretained(this), run_loop.QuitClosure());
   ASSERT_TRUE(controller->GetCategories(std::move(callback)));
   run_loop.Run();
   EXPECT_EQ(get_categories_done_callback_count(), 1);
