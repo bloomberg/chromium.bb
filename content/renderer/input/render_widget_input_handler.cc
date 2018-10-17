@@ -156,7 +156,8 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
 
 blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     const WebPointerEvent& pointer_event,
-    std::vector<const WebInputEvent*> coalesced_events) {
+    std::vector<const WebInputEvent*> coalesced_events,
+    std::vector<const WebInputEvent*> predicted_events) {
   std::vector<WebPointerEvent> related_pointer_events;
   for (const WebInputEvent* event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
@@ -170,7 +171,22 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
       }
     }
   }
-  return blink::WebCoalescedInputEvent(pointer_event, related_pointer_events);
+  std::vector<WebPointerEvent> predicted_pointer_events;
+  for (const WebInputEvent* event : predicted_events) {
+    DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
+    const WebTouchEvent& touch_event =
+        static_cast<const WebTouchEvent&>(*event);
+    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+      if (touch_event.touches[i].id == pointer_event.id &&
+          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
+        predicted_pointer_events.push_back(
+            WebPointerEvent(touch_event, touch_event.touches[i]));
+      }
+    }
+  }
+
+  return blink::WebCoalescedInputEvent(pointer_event, related_pointer_events,
+                                       predicted_pointer_events);
 }
 
 viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
@@ -263,7 +279,8 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
           WebPointerEvent(touch_event, touch_point);
       const blink::WebCoalescedInputEvent& coalesced_pointer_event =
           GetCoalescedWebPointerEventForTouch(
-              pointer_event, coalesced_event.GetCoalescedEventsPointers());
+              pointer_event, coalesced_event.GetCoalescedEventsPointers(),
+              coalesced_event.GetPredictedEventsPointers());
       widget_->GetWebWidget()->HandleInputEvent(coalesced_pointer_event);
     }
   }

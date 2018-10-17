@@ -11292,7 +11292,8 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       CurrentTimeTicks());
   mouse_move_over_link_event.SetFrameScale(1);
   document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-      mouse_move_over_link_event, Vector<WebMouseEvent>());
+      mouse_move_over_link_event, Vector<WebMouseEvent>(),
+      Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       document->HoverElement(),
@@ -11311,7 +11312,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       CurrentTimeTicks());
   mouse_move_event.SetFrameScale(1);
   document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-      mouse_move_event, Vector<WebMouseEvent>());
+      mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
   EXPECT_EQ(
       document->HoverElement(),

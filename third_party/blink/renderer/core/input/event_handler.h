@@ -147,12 +147,14 @@ class CORE_EXPORT EventHandler final
 
   WebInputEventResult HandleMouseMoveEvent(
       const WebMouseEvent&,
-      const Vector<WebMouseEvent>& coalesced_events);
+      const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events);
   void HandleMouseLeaveEvent(const WebMouseEvent&);
 
   WebInputEventResult HandlePointerEvent(
       const WebPointerEvent&,
-      const Vector<WebPointerEvent>& coalesced_events);
+      const Vector<WebPointerEvent>& coalesced_events,
+      const Vector<WebPointerEvent>& predicted_events);
 
   WebInputEventResult DispatchBufferedTouchEvents();
 
@@ -165,6 +167,7 @@ class CORE_EXPORT EventHandler final
       const WebMouseEvent&,
       const AtomicString& event_type,
       const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events,
       const String& canvas_node_id = String());
 
   // Called on the local root frame exactly once per gesture event.
@@ -304,7 +307,8 @@ class CORE_EXPORT EventHandler final
 
   WebInputEventResult HandleMouseMoveOrLeaveEvent(
       const WebMouseEvent&,
-      const Vector<WebMouseEvent>&,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events,
       HitTestResult* hovered_node = nullptr,
       HitTestLocation* hit_test_location = nullptr,
       bool only_update_scrollbars = false,
@@ -355,14 +359,16 @@ class CORE_EXPORT EventHandler final
       Node* target,
       const String& canvas_region_id,
       const WebMouseEvent&,
-      const Vector<WebMouseEvent>& coalesced_events);
+      const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events);
 
   WebInputEventResult PassMousePressEventToSubframe(
       MouseEventWithHitTestResults&,
       LocalFrame* subframe);
   WebInputEventResult PassMouseMoveEventToSubframe(
       MouseEventWithHitTestResults&,
-      const Vector<WebMouseEvent>&,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events,
       LocalFrame* subframe,
       HitTestResult* hovered_node = nullptr,
       HitTestLocation* hit_test_location = nullptr);

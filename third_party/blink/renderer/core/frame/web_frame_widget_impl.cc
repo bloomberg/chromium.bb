@@ -505,7 +505,10 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
           node, transformed_event, event_type,
           TransformWebMouseEventVector(
               LocalRootImpl()->GetFrameView(),
-              coalesced_event.GetCoalescedEventsPointers()));
+              coalesced_event.GetCoalescedEventsPointers()),
+          TransformWebMouseEventVector(
+              LocalRootImpl()->GetFrameView(),
+              coalesced_event.GetPredictedEventsPointers()));
     }
     return WebInputEventResult::kHandledSystem;
   }
