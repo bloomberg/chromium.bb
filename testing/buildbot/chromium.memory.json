@@ -4647,7 +4647,8 @@
         ],
         "name": "single_process_mash_interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 3
         },
         "test": "interactive_ui_tests"
       },
@@ -5983,7 +5984,8 @@
               "cpu": "x86-64",
               "os": "Ubuntu-14.04"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "interactive_ui_tests"
       },
