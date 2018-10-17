@@ -278,6 +278,9 @@ class TestMenuItemViewShown : public MenuItemView {
   void SetActualMenuPosition(MenuItemView::MenuPosition position) {
     set_actual_menu_position(position);
   }
+  MenuItemView::MenuPosition ActualMenuPosition() {
+    return actual_menu_position();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewShown);
@@ -1602,6 +1605,37 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsMonitorFitTest) {
       options.anchor_bounds.x(), options.anchor_bounds.bottom(),
       options.monitor_bounds.width(), options.monitor_bounds.height());
   EXPECT_EQ(expected, CalculateMenuBounds(options));
+}
+
+// Test that a menu that was originally drawn below the anchor does not get
+// squished or move above the anchor when it grows vertically and horizontally
+// beyond the monitor bounds.
+TEST_F(MenuControllerTest, GrowingMenuMovesLaterallyNotVertically) {
+  MenuBoundsOptions options;
+  options.monitor_bounds = gfx::Rect(0, 0, 100, 100);
+  // The anchor should be near the bottom right side of the screen.
+  options.anchor_bounds = gfx::Rect(80, 70, 15, 10);
+  // The menu should fit the available space, below the anchor.
+  options.menu_size = gfx::Size(20, 20);
+
+  // Ensure the menu is initially drawn below the bounds, and the MenuPosition
+  // is set to POSITION_BELOW_BOUNDS;
+  const gfx::Rect first_drawn_expected(80, 80, 20, 20);
+  EXPECT_EQ(first_drawn_expected, CalculateMenuBounds(options));
+  EXPECT_EQ(MenuItemView::MenuPosition::POSITION_BELOW_BOUNDS,
+            menu_item()->ActualMenuPosition());
+
+  options.menu_position = MenuItemView::MenuPosition::POSITION_BELOW_BOUNDS;
+
+  // The menu bounds are larger than the remaining space on the monitor. This
+  // simulates the case where the menu has been grown vertically and
+  // horizontally to where it would no longer fit on the screen.
+  options.menu_size = gfx::Size(50, 50);
+
+  // The menu bounds should move left to show the wider menu, and grow to fill
+  // the remaining vertical space without moving upwards.
+  const gfx::Rect final_expected(50, 80, 50, 20);
+  EXPECT_EQ(final_expected, CalculateMenuBounds(options));
 }
 
 #if defined(USE_AURA)

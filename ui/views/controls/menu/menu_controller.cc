@@ -2138,7 +2138,14 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         item->actual_menu_position() == MenuItemView::POSITION_ABOVE_BOUNDS) {
       // Menu has been drawn below/above the anchor bounds, make sure it fits
       // on the screen in its current location.
+      const int drawn_width = menu_bounds.width();
       menu_bounds.Intersect(monitor_bounds);
+
+      // Do not allow the menu to get narrower. This handles the case where the
+      // menu would have drawn off-screen, but the effective anchor was shifted
+      // at the end of this function. Preserve the width, so it is shifted
+      // again.
+      menu_bounds.set_width(drawn_width);
     } else if (menu_bounds.bottom() <= monitor_bounds.bottom()) {
       // Menu fits below anchor bounds.
       item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
@@ -2167,6 +2174,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     }
   }
 
+  // Ensure the menu is not displayed off screen.
   menu_bounds.set_x(
       base::ClampToRange(menu_bounds.x(), monitor_bounds.x(),
                          monitor_bounds.right() - menu_bounds.width()));
