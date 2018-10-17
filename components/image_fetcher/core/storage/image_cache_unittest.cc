@@ -28,6 +28,7 @@ namespace image_fetcher {
 namespace {
 
 constexpr char kImageUrl[] = "http://gstatic.img.com/foo.jpg";
+constexpr char kImageUrlHashed[] = "3H7UODDH3WKDWK6FQ3IZT3LQMVBPYJ4M";
 constexpr char kImageData[] = "data";
 
 }  // namespace
@@ -60,15 +61,18 @@ class ImageCacheTest : public testing::Test {
   void InitializeImageCache() {
     image_cache_->MaybeStartInitialization();
     db()->InitCallback(true);
-
     RunUntilIdle();
+    ASSERT_TRUE(metadata_store()->IsInitialized());
   }
 
   void PrepareImageCache() {
     CreateImageCache();
     InitializeImageCache();
+
     image_cache()->SaveImage(kImageUrl, kImageData);
     RunUntilIdle();
+
+    ASSERT_TRUE(IsMetadataPresent(kImageUrlHashed));
   }
 
   bool IsCacheInitialized() {
@@ -88,6 +92,24 @@ class ImageCacheTest : public testing::Test {
 
   bool IsMetadataPresent(const std::string& key) {
     return db_store_.find(key) != db_store_.end();
+  }
+
+  CachedImageMetadataProto GetMetadata(const std::string& key) {
+    if (!IsMetadataPresent(key)) {
+      return CachedImageMetadataProto();
+    }
+
+    return CachedImageMetadataProto(db_store_[key]);
+  }
+
+  bool IsMetadataEqual(const CachedImageMetadataProto lhs,
+                       const CachedImageMetadataProto rhs) {
+    std::string lhs_str;
+    lhs.SerializeToString(&lhs_str);
+    std::string rhs_str;
+    rhs.SerializeToString(&rhs_str);
+
+    return lhs_str == rhs_str;
   }
 
   void RunReconciliation() {
@@ -143,7 +165,7 @@ TEST_F(ImageCacheTest, SanityTest) {
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 
@@ -152,7 +174,7 @@ TEST_F(ImageCacheTest, SanityTest) {
 
   EXPECT_CALL(*this, DataCallback(std::string()));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
@@ -177,19 +199,42 @@ TEST_F(ImageCacheTest, Save) {
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
 
 TEST_F(ImageCacheTest, Load) {
   PrepareImageCache();
+  auto metadata_before = GetMetadata(kImageUrlHashed);
 
+  clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(1));
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
+  db()->LoadCallback(true);
+  db()->UpdateCallback(true);
+  RunUntilIdle();
+
+  auto metadata_after = GetMetadata(kImageUrlHashed);
+  ASSERT_FALSE(IsMetadataEqual(metadata_before, metadata_after));
+}
+
+TEST_F(ImageCacheTest, LoadReadOnly) {
+  PrepareImageCache();
+  auto metadata_before = GetMetadata(kImageUrlHashed);
+
+  clock()->SetNow(clock()->Now() + base::TimeDelta::FromHours(1));
+  EXPECT_CALL(*this, DataCallback(kImageData));
+  image_cache()->LoadImage(
+      true, kImageUrl,
+      base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
+  RunUntilIdle();
+
+  auto metadata_after = GetMetadata(kImageUrlHashed);
+  ASSERT_TRUE(IsMetadataEqual(metadata_before, metadata_after));
 }
 
 TEST_F(ImageCacheTest, Delete) {
@@ -197,7 +242,7 @@ TEST_F(ImageCacheTest, Delete) {
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 
@@ -206,7 +251,7 @@ TEST_F(ImageCacheTest, Delete) {
 
   EXPECT_CALL(*this, DataCallback(std::string()));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
@@ -219,7 +264,7 @@ TEST_F(ImageCacheTest, Eviction) {
 
   EXPECT_CALL(*this, DataCallback(std::string()));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
@@ -232,7 +277,7 @@ TEST_F(ImageCacheTest, EvictionTooSoon) {
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
@@ -246,7 +291,7 @@ TEST_F(ImageCacheTest, EvictionWhenEvictionAlreadyPerformed) {
 
   EXPECT_CALL(*this, DataCallback(kImageData));
   image_cache()->LoadImage(
-      kImageUrl,
+      false, kImageUrl,
       base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
@@ -262,8 +307,9 @@ TEST_F(ImageCacheTest, Reconciliation) {
 
   // Data should be gone.
   EXPECT_CALL(*this, DataCallback(std::string()));
-  image_cache()->LoadImage("foo", base::BindOnce(&ImageCacheTest::DataCallback,
-                                                 base::Unretained(this)));
+  image_cache()->LoadImage(
+      false, "foo",
+      base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 
   // Metadata should be gone.
@@ -282,8 +328,9 @@ TEST_F(ImageCacheTest, ReconciliationMismatchData) {
 
   // Data should be gone.
   EXPECT_CALL(*this, DataCallback(std::string()));
-  image_cache()->LoadImage("bar", base::BindOnce(&ImageCacheTest::DataCallback,
-                                                 base::Unretained(this)));
+  image_cache()->LoadImage(
+      false, "bar",
+      base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
   RunUntilIdle();
 }
 
