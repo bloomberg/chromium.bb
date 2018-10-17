@@ -174,9 +174,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These are only for developer convenience and not on any bots.
   'telemetry_gpu_integration_test_scripts_only',
-
-  # These are defined by an android internal gn_isolate_map.pyl file.
-  'chrome_apk',
 }
 
 
