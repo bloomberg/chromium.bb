@@ -47,10 +47,7 @@ class SaveCardBubbleViewsBrowserTestBase
     REQUESTED_UPLOAD_SAVE,
     RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
     SENT_UPLOAD_CARD_REQUEST,
-    RECEIVED_UPLOAD_CARD_RESPONSE,
-    STRIKE_CHANGE_COMPLETE,
-    BUBBLE_SHOWN,
-    BUBBLE_CLOSED
+    BUBBLE_SHOWN
   };
 
  protected:
@@ -69,13 +66,9 @@ class SaveCardBubbleViewsBrowserTestBase
   void OnDecideToRequestUploadSave() override;
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
-  void OnReceivedUploadCardResponse() override;
-  void OnCCSMStrikeChangeComplete() override;
 
   // SaveCardBubbleControllerImpl::ObserverForTest:
   void OnBubbleShown() override;
-  void OnBubbleClosed() override;
-  void OnSCBCStrikeChangeComplete() override;
 
   // BrowserTestBase:
   void SetUpInProcessBrowserTestFixture() override;
@@ -102,7 +95,6 @@ class SaveCardBubbleViewsBrowserTestBase
   void SetUploadDetailsRpcPaymentsAccepts();
   void SetUploadDetailsRpcPaymentsDeclines();
   void SetUploadDetailsRpcServerError();
-  void SetUploadCardRpcPaymentsFails();
 
   // Clicks on the given views::View*.
   void ClickOnView(views::View* view);
@@ -146,8 +138,6 @@ class SaveCardBubbleViewsBrowserTestBase
   void ResetEventWaiterForSequence(std::list<DialogEvent> event_sequence);
   // Wait for the event(s) passed to ResetEventWaiter*() to occur.
   void WaitForObservedEvent();
-
-  void ReturnToInitialPage();
 
   network::TestURLLoaderFactory* test_url_loader_factory();
 
