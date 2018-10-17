@@ -36,6 +36,10 @@ namespace {
 // threshold.
 constexpr float kSourceWindowScale = 0.85;
 
+// Threshold of the fling velocity to keep the dragged window as a new separate
+// window after drag ends and do not try to merge it back into source window.
+constexpr float kFlingToStayAsNewWindowThreshold = 2000.f;
+
 // The class to observe the source window's bounds change animation. It's used
 // to prevent the dragged window to merge back into the source window during
 // dragging. Only when the source window restores to its maximized window size,
@@ -281,6 +285,22 @@ void TabletModeBrowserWindowDragDelegate::EndedWindowDrag(
   MergeBackToSourceWindowIfApplicable(location_in_screen);
 }
 
+void TabletModeBrowserWindowDragDelegate::StartFling(
+    const ui::GestureEvent* event) {
+  if (ShouldFlingIntoOverview(event)) {
+    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+    Shell::Get()->window_selector_controller()->window_selector()->AddItem(
+        dragged_window_, /*reposition=*/true, /*animate=*/false);
+  } else {
+    aura::Window* source_window =
+        dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+    if (source_window &&
+        event->details().velocity_y() > kFlingToStayAsNewWindowThreshold) {
+      can_merge_back_to_source_window_ = false;
+    }
+  }
+}
+
 bool TabletModeBrowserWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
   DCHECK(dragged_window_);
   aura::Window* source_window =
@@ -360,6 +380,12 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
       dragged_window_->GetProperty(ash::kIsShowingInOverviewKey)) {
     return;
   }
+
+  // Do not merge back if the dragged window is not capable of merging back.
+  // This may happen if the drag ends because of a fling event and the fling
+  // velocity has exceeded kFlingToStayAsNewWindowThreshold.
+  if (!can_merge_back_to_source_window_)
+    return;
 
   // Do not merge back if the window has dragged farther than half of the screen
   // height.
