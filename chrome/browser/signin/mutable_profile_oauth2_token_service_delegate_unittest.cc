@@ -856,6 +856,25 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
             oauth2_service_delegate_->GetAuthError("account_id"));
 }
 
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetTokenForMultilogin) {
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  const std::string account_id1 = "account_id1";
+  const std::string account_id2 = "account_id2";
+
+  oauth2_service_delegate_->UpdateCredentials(account_id1, "refresh_token1");
+  oauth2_service_delegate_->UpdateCredentials(account_id2, "refresh_token2");
+  oauth2_service_delegate_->UpdateAuthError(
+      account_id2,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  EXPECT_EQ(oauth2_service_delegate_->GetTokenForMultilogin(account_id1),
+            "refresh_token1");
+  EXPECT_EQ(oauth2_service_delegate_->GetTokenForMultilogin(account_id2),
+            std::string());
+  EXPECT_EQ(oauth2_service_delegate_->GetTokenForMultilogin("unknown account"),
+            std::string());
+}
+
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceNotifications) {
   CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
   oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");

@@ -330,6 +330,8 @@ class GaiaCookieManagerService : public KeyedService,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
+  // Called when either refresh or access token becomes available.
+  void OnTokenFetched(const std::string& account_id, const std::string& token);
 
   // Overridden from GaiaAuthConsumer.
   void OnMergeSessionSuccess(const std::string& data) override;
@@ -356,12 +358,13 @@ class GaiaCookieManagerService : public KeyedService,
 
   // Helper function to trigger fetching retry in case of failure for only
   // failed account id. Virtual for testing purposes.
-  virtual void StartFetchingAccessToken(const std::string& account_id);
+  virtual void StartFetchingAccessTokenForMultilogin(
+      const std::string& account_id);
 
   // Starts the process of fetching the access token with OauthLogin scope and
   // performing SetAccountsInCookie on success.  Virtual so that it can be
   // overridden in tests.
-  virtual void StartFetchingAccessTokens();
+  virtual void StartFetchingAccessTokensForMultilogin();
 
   // Starts the proess of fetching the uber token and performing a merge session
   // for the next account.  Virtual so that it can be overriden in tests.

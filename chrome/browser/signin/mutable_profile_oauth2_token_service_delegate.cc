@@ -441,6 +441,19 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateAuthError(
   }
 }
 
+std::string MutableProfileOAuth2TokenServiceDelegate::GetTokenForMultilogin(
+    const std::string& account_id) const {
+  auto iter = refresh_tokens_.find(account_id);
+  if (iter == refresh_tokens_.end() ||
+      iter->second->GetAuthStatus() !=
+          GoogleServiceAuthError::AuthErrorNone()) {
+    return std::string();
+  }
+  const std::string& refresh_token = iter->second->refresh_token();
+  DCHECK(!refresh_token.empty());
+  return refresh_token;
+}
+
 bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   VLOG(1) << "MutablePO2TS::RefreshTokenIsAvailable";

@@ -170,6 +170,14 @@ class OAuth2TokenService {
                                                 const ScopeSet& scopes,
                                                 Consumer* consumer);
 
+  // Try to get refresh token from delegate. If it is accessible (i.e. not
+  // empty), return it directly, otherwise start request to get access token.
+  // Used for getting tokens to send to Gaia Multilogin endpoint.
+  std::unique_ptr<OAuth2TokenService::Request> StartRequestForMultilogin(
+      const std::string& account_id,
+      const OAuth2TokenService::ScopeSet& scopes,
+      OAuth2TokenService::Consumer* consumer);
+
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.

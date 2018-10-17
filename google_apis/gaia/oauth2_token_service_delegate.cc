@@ -97,6 +97,11 @@ void OAuth2TokenServiceDelegate::FireAuthErrorChanged(
     observer.OnAuthErrorChanged(account_id, error);
 }
 
+std::string OAuth2TokenServiceDelegate::GetTokenForMultilogin(
+    const std::string& account_id) const {
+  return std::string();
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 OAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return nullptr;

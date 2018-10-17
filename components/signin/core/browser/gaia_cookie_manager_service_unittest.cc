@@ -105,7 +105,8 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
   MOCK_METHOD0(StartFetchingListAccounts, void());
   MOCK_METHOD0(StartFetchingLogOut, void());
   MOCK_METHOD0(StartFetchingMergeSession, void());
-  MOCK_METHOD1(StartFetchingAccessToken, void(const std::string& account_id));
+  MOCK_METHOD1(StartFetchingAccessTokenForMultilogin,
+               void(const std::string& account_id));
   MOCK_METHOD0(SetAccountsInCookieWithTokens, void());
   MOCK_METHOD1(OnSetAccountsFinished,
                void(const GoogleServiceAuthError& error));
@@ -361,9 +362,12 @@ TEST_F(GaiaCookieManagerServiceTest, AccessTokenSuccess) {
   const std::string account_id2 = "23456";
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens());
 
   const std::vector<std::string> account_ids = {account_id1, account_id2};
@@ -401,9 +405,11 @@ TEST_F(GaiaCookieManagerServiceTest,
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1))
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
       .Times(signin::kMaxFetcherRetries - 1);
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(0);
@@ -439,8 +445,10 @@ TEST_F(GaiaCookieManagerServiceTest, AccessTokenFailurePersistentError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(0);
 
@@ -495,10 +503,12 @@ TEST_F(GaiaCookieManagerServiceTest, FetcherRetriesZeroedBetweenCalls) {
             GoogleServiceAuthError::State::NONE);
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
   // retry call
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1))
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
       .Times(signin::kMaxFetcherRetries - 1);
   // retry call
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(1);
@@ -596,8 +606,10 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginSuccessAndCookiesSet) {
             GoogleServiceAuthError::State::NONE);
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens()).Times(1);
   EXPECT_CALL(helper,
               OnSetAccountsFinished(GoogleServiceAuthError::AuthErrorNone()))
@@ -633,8 +645,10 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailurePersistentError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
   EXPECT_CALL(helper, OnSetAccountsFinished(error)).Times(1);
 
   // Needed to insert request in the queue.
@@ -665,8 +679,10 @@ TEST_F(GaiaCookieManagerServiceTest, MultiloginFailureMaxRetriesReached) {
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 
   testing::InSequence mock_sequence;
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id1)).Times(1);
-  EXPECT_CALL(helper, StartFetchingAccessToken(account_id2)).Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id1))
+      .Times(1);
+  EXPECT_CALL(helper, StartFetchingAccessTokenForMultilogin(account_id2))
+      .Times(1);
   // This is the retry call, the first call is skipped as we call
   // StartFetchingMultiLogim explicitly instead.
   EXPECT_CALL(helper, SetAccountsInCookieWithTokens())

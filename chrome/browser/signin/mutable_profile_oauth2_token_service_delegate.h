@@ -55,6 +55,8 @@ class MutableProfileOAuth2TokenServiceDelegate
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
 
+  std::string GetTokenForMultilogin(
+      const std::string& account_id) const override;
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
   GoogleServiceAuthError GetAuthError(
       const std::string& account_id) const override;
