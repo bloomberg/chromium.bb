@@ -61,14 +61,14 @@ def stack(out_dir):
           ' third_party/android_platform/development/scripts/stack')
 
 
-def use_goma:
+def use_goma():
   home_goma = os.path.expanduser("~/goma")
   if os.path.exists(home_goma) or os.environ.get("GOMA_DIR") or \
      os.environ.get("GOMADIR"):
     return 'use_goma=true '
   return ''
 
-def gn_args(target_os, is_release):
+def gn_args_default(target_os, is_release):
   gn_args = 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
       'disable_brotli_filter=false ' + \
@@ -82,7 +82,7 @@ def gn_args(target_os, is_release):
 
 
 def gn_args_mac(is_release):
-  return gn_args('mac', is_release) + \
+  return gn_args_default('mac', is_release) + \
       'disable_histogram_support=true ' + \
       'use_platform_icu_alternatives=false ' + \
       'enable_dsyms=true '
@@ -153,7 +153,7 @@ def main():
       gn_args += 'is_asan=true is_clang=true is_debug=false '
       out_dir_suffix += '-asan'
 
-  gn_args += gn_args(target_os, options.release) + \
+  gn_args += gn_args_default(target_os, options.release) + \
       'use_platform_icu_alternatives=true '
 
   extra_options = ' '.join(extra_options_list)
