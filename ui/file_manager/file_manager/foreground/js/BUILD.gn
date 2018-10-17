@@ -576,7 +576,7 @@ js_library("thumbnail_loader") {
   ]
 }
 
-js_library("thumbnail_loader_unittest") {
+js_unittest("thumbnail_loader_unittest") {
   deps = [
     ":thumbnail_loader",
     "../../common/js:mock_entry",
@@ -614,6 +614,7 @@ js_unit_tests("unit_tests") {
 }
 
 group("closure_compile") {
+  testonly = true
   visibility += [ "*" ]
   deps = [
     ":closure_compile_module",
