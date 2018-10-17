@@ -63,6 +63,7 @@ const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = true;
 const bool PlatformStyle::kShouldElideBookmarksInBookmarksBar = false;
 const bool PlatformStyle::kPreferFocusRings = false;
+const bool PlatformStyle::kInactiveWidgetControlsAppearDisabled = false;
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
