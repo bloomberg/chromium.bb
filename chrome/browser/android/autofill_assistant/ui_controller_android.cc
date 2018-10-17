@@ -239,6 +239,20 @@ void UiControllerAndroid::ShowDetails(const DetailsProto& details) {
       month, day, hour, minute, second);
 }
 
+void UiControllerAndroid::ShowProgressBar(int progress,
+                                          const std::string& message) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onShowProgressBar(
+      env, java_autofill_assistant_ui_controller_, progress,
+      base::android::ConvertUTF8ToJavaString(env, message));
+}
+
+void UiControllerAndroid::HideProgressBar() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onHideProgressBar(
+      env, java_autofill_assistant_ui_controller_);
+}
+
 std::string UiControllerAndroid::GetApiKey() {
   std::string api_key;
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {

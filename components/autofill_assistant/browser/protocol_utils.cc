@@ -17,6 +17,7 @@
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
+#include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/unsupported_action.h"
@@ -215,6 +216,10 @@ bool ProtocolUtils::ParseActions(
       case ActionProto::ActionInfoCase::kSetFormValue: {
         actions->emplace_back(
             std::make_unique<SetFormFieldValueAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kShowProgressBar: {
+        actions->emplace_back(std::make_unique<ShowProgressBarAction>(action));
         break;
       }
       default:

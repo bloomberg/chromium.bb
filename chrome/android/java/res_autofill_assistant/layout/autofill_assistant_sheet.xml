@@ -76,10 +76,19 @@
                 android:contentDescription="@string/close" />
         </LinearLayout>
 
+        <org.chromium.chrome.browser.widget.MaterialProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            app:colorBackground="@color/modern_grey_300"
+            app:colorProgress="@color/modern_blue_600"
+            android:visibility="invisible" />
+
         <RelativeLayout
             android:id="@+id/details"
             android:layout_width="match_parent"
             android:layout_height="@dimen/autofill_assistant_details_image_size"
+            android:layout_marginTop="8dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="8dp"
