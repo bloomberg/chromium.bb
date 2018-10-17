@@ -218,7 +218,7 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
-    const gfx::Point& point,
+    const gfx::PointF& point,
     gfx::PointF* local_point) {
   gfx::PointF point_in_pixel(point);
   if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
@@ -226,7 +226,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
   blink::WebHitTestResult result = widget_->GetWebWidget()->HitTestResultAt(
-      blink::WebPoint(point_in_pixel.x(), point_in_pixel.y()));
+      blink::WebPoint(ToRoundedPoint(point_in_pixel)));
 
   blink::WebNode result_node = result.GetNode();
   *local_point = gfx::PointF(point);

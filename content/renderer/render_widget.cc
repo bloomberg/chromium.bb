@@ -842,7 +842,7 @@ void RenderWidget::DidPresentForceDrawFrame(
   Send(new WidgetHostMsg_ForceRedrawComplete(routing_id(), snapshot_id));
 }
 
-viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::Point& point,
+viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                                      gfx::PointF* local_point) {
   return input_handler_->GetFrameSinkIdAtPoint(point, local_point);
 }

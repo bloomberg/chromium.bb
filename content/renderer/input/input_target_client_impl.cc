@@ -23,7 +23,7 @@ void InputTargetClientImpl::BindToRequest(
                                         blink::TaskType::kInternalDefault));
 }
 
-void InputTargetClientImpl::FrameSinkIdAt(const gfx::Point& point,
+void InputTargetClientImpl::FrameSinkIdAt(const gfx::PointF& point,
                                           const uint64_t trace_id,
                                           FrameSinkIdAtCallback callback) {
   TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Event.Pipeline",

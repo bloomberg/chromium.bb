@@ -244,7 +244,7 @@ void RenderWidgetTargeter::QueryClientInternal(
       "QueryClient", "event", blink::WebInputEvent::GetName(event.GetType()));
 
   target_client->FrameSinkIdAt(
-      gfx::ToCeiledPoint(target_location), trace_id_,
+      target_location, trace_id_,
       base::BindOnce(
           &RenderWidgetTargeter::FoundFrameSinkId,
           weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
