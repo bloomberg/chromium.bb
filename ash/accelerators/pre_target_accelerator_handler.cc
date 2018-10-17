@@ -6,8 +6,10 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
@@ -34,6 +36,10 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
     case ui::VKEY_VOLUME_UP:
     case ui::VKEY_POWER:
       return true;
+    case ui::VKEY_MEDIA_NEXT_TRACK:
+    case ui::VKEY_MEDIA_PLAY_PAUSE:
+    case ui::VKEY_MEDIA_PREV_TRACK:
+      return base::FeatureList::IsEnabled(features::kMediaSessionAccelerators);
     default:
       return false;
   }

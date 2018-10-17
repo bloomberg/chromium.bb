@@ -8,6 +8,7 @@
 
 #include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -57,6 +58,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/wm/core/accelerator_filter.h"
 
 namespace ash {
 
@@ -1499,6 +1501,74 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   EXPECT_TRUE(ContainsDockedMagnifierNotification());
 
   RemoveAllNotifications();
+}
+
+// MediaSessionAcceleratorTest tests media key handling with media session
+// service integration. The parameter is a boolean as to whether the feature is
+// enabled or disabled.
+class MediaSessionAcceleratorTest : public AcceleratorControllerTest,
+                                    public testing::WithParamInterface<bool> {
+ public:
+  MediaSessionAcceleratorTest() = default;
+  ~MediaSessionAcceleratorTest() override = default;
+
+  // AcceleratorControllerTest:
+  void SetUp() override {
+    if (service_enabled()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kMediaSessionAccelerators);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kMediaSessionAccelerators);
+    }
+
+    AcceleratorControllerTest::SetUp();
+  }
+
+  bool service_enabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaSessionAcceleratorTest);
+};
+
+INSTANTIATE_TEST_CASE_P(, MediaSessionAcceleratorTest, testing::Bool());
+
+TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
+  const ui::KeyboardCode media_keys[] = {ui::VKEY_MEDIA_NEXT_TRACK,
+                                         ui::VKEY_MEDIA_PLAY_PAUSE,
+                                         ui::VKEY_MEDIA_PREV_TRACK};
+
+  std::unique_ptr<ui::AcceleratorHistory> accelerator_history(
+      std::make_unique<ui::AcceleratorHistory>());
+  ::wm::AcceleratorFilter filter(
+      std::make_unique<PreTargetAcceleratorHandler>(),
+      accelerator_history.get());
+
+  for (ui::KeyboardCode key : media_keys) {
+    // If the media session service integration is enabled then media keys will
+    // be handled in ash.
+    std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
+    {
+      ui::KeyEvent press_key(ui::ET_KEY_PRESSED, key, ui::EF_NONE);
+      ui::Event::DispatcherApi dispatch_helper(&press_key);
+      dispatch_helper.set_target(window.get());
+      filter.OnKeyEvent(&press_key);
+      EXPECT_EQ(service_enabled(), press_key.stopped_propagation());
+    }
+
+    // Setting a window property on the target allows media keys to pass
+    // through.
+    wm::GetWindowState(window.get())->SetCanConsumeSystemKeys(true);
+    {
+      ui::KeyEvent press_key(ui::ET_KEY_PRESSED, key, ui::EF_NONE);
+      ui::Event::DispatcherApi dispatch_helper(&press_key);
+      dispatch_helper.set_target(window.get());
+      filter.OnKeyEvent(&press_key);
+      EXPECT_FALSE(press_key.stopped_propagation());
+    }
+  }
 }
 
 }  // namespace ash

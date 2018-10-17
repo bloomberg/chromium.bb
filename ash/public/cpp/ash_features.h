@@ -48,6 +48,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
 
+// Enables media session service integration. If this is enabled, accelerators
+// that are associated with media playback will be handled by the media
+// session service.
+// TODO(beccahughes): Remove after launch. (https://crbug.com/894255)
+ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionAccelerators;
+
 // Enables new message list view. https://crbug.com/769219
 ASH_PUBLIC_EXPORT extern const base::Feature kNewMessageListView;
 
