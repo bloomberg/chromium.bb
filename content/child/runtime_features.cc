@@ -255,8 +255,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       "BlinkGenPropertyTrees",
       command_line.HasSwitch(switches::kEnableBlinkGenPropertyTrees));
 
-  if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
-    WebRuntimeFeatures::EnableSlimmingPaintV2(true);
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "SlimmingPaintV2",
+      command_line.HasSwitch(switches::kEnableSlimmingPaintV2));
 
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
