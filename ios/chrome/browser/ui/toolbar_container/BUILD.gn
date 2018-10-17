@@ -31,11 +31,16 @@ source_set("feature_flags") {
   ]
 }
 
+source_set("toolbar_collapsing") {
+  sources = [
+    "toolbar_collapsing.h",
+  ]
+}
+
 source_set("ui") {
   sources = [
     "collapsing_toolbar_height_constraint.h",
     "collapsing_toolbar_height_constraint.mm",
-    "toolbar_collapsing.h",
     "toolbar_container_view.h",
     "toolbar_container_view.mm",
     "toolbar_container_view_controller.h",
@@ -45,6 +50,7 @@ source_set("ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":toolbar_collapsing",
     "//base",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/fullscreen:ui",
@@ -62,6 +68,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":toolbar_collapsing",
     ":ui",
     "//base/test:test_support",
     "//ios/chrome/browser/ui:ui_util",

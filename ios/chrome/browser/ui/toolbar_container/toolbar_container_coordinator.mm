@@ -60,6 +60,13 @@
     [self startToolbarCoordinators];
 }
 
+#pragma mark - Public
+
+- (CGFloat)toolbarStackHeightForFullscreenProgress:(CGFloat)progress {
+  return [self.containerViewController
+      toolbarStackHeightForFullscreenProgress:progress];
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {

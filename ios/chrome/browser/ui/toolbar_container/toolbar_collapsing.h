@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CONTAINER_TOOLBAR_COLLAPSING_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_CONTAINER_TOOLBAR_COLLAPSING_H_
 
+#import <UIKit/UIKit.h>
+
 // Protocol for UI that displays collapsible toolbars.
 @protocol ToolbarCollapsing<NSObject>
 

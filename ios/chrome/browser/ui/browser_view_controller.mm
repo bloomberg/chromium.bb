@@ -1564,6 +1564,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.tabStripCoordinator = nil;
   [self.primaryToolbarCoordinator stop];
   self.primaryToolbarCoordinator = nil;
+  [self.secondaryToolbarContainerCoordinator stop];
+  self.secondaryToolbarContainerCoordinator = nil;
   [self.secondaryToolbarCoordinator stop];
   self.secondaryToolbarCoordinator = nil;
   [_downloadManagerCoordinator stop];
@@ -1788,6 +1790,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
     self.primaryToolbarCoordinator = nil;
+    self.secondaryToolbarContainerCoordinator = nil;
     self.secondaryToolbarCoordinator = nil;
     self.toolbarInterface = nil;
     [_toolbarUIUpdater stopUpdating];
@@ -2110,7 +2113,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   bottomToolbarCoordinator.webStateList = [_model webStateList];
   bottomToolbarCoordinator.dispatcher = self.dispatcher;
   bottomToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
-  [bottomToolbarCoordinator start];
+
+  if (base::FeatureList::IsEnabled(
+          toolbar_container::kToolbarContainerEnabled)) {
+    self.secondaryToolbarContainerCoordinator =
+        [[ToolbarContainerCoordinator alloc]
+            initWithBrowserState:self.browserState
+                            type:ToolbarContainerType::kSecondary];
+    self.secondaryToolbarContainerCoordinator.toolbarCoordinators =
+        @[ bottomToolbarCoordinator ];
+    [self.secondaryToolbarContainerCoordinator start];
+  } else {
+    [bottomToolbarCoordinator start];
+  }
 
   [_toolbarCoordinatorAdaptor addToolbarCoordinator:topToolbarCoordinator];
   [_toolbarCoordinatorAdaptor addToolbarCoordinator:bottomToolbarCoordinator];
@@ -2283,9 +2298,35 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+// Adds constraints to the secondary toolbar container anchoring it to the
+// bottom of the browser view.
+- (void)addConstraintsToSecondaryToolbarContainer {
+  if (!self.secondaryToolbarContainerCoordinator)
+    return;
+
+  // Constrain the container to the bottom of the view.
+  UIView* containerView =
+      self.secondaryToolbarContainerCoordinator.viewController.view;
+  AddSameConstraintsToSides(
+      self.view, containerView,
+      LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
+
+  NamedGuide* guide =
+      [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreenGuide];
+  [self.view addLayoutGuide:guide];
+  guide.constrainedView = containerView;
+}
+
+// Adds constraints to the primary and secondary toolbars, anchoring them to the
+// top and bottom of the browser view.
 - (void)addConstraintsToToolbar {
   [self addConstraintsToPrimaryToolbar];
-  [self addConstraintsToSecondaryToolbar];
+  if (base::FeatureList::IsEnabled(
+          toolbar_container::kToolbarContainerEnabled)) {
+    [self addConstraintsToSecondaryToolbarContainer];
+  } else {
+    [self addConstraintsToSecondaryToolbar];
+  }
   [[self view] layoutIfNeeded];
 }
 
@@ -2390,9 +2431,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // directly under the tabstrip.
   if (initialLayout) {
     [self addChildViewController:self.primaryToolbarCoordinator.viewController];
-    if (self.secondaryToolbarCoordinator)
-      [self addChildViewController:self.secondaryToolbarCoordinator
-                                       .viewController];
+    if (self.secondaryToolbarCoordinator) {
+      if (base::FeatureList::IsEnabled(
+              toolbar_container::kToolbarContainerEnabled)) {
+        [self addChildViewController:self.secondaryToolbarContainerCoordinator
+                                         .viewController];
+      } else {
+        [self addChildViewController:self.secondaryToolbarCoordinator
+                                         .viewController];
+      }
+    }
   }
 
   // Place the toolbar controller above the infobar container and adds the
@@ -2404,16 +2452,26 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         insertSubview:self.primaryToolbarCoordinator.viewController.view
          aboveSubview:bottomView];
     if (self.secondaryToolbarCoordinator) {
-      // Create the container view for the secondary toolbar and add it to the
-      // hierarchy
-      UIView* container = [[LegacyToolbarContainerView alloc] init];
-      container.translatesAutoresizingMaskIntoConstraints = NO;
-      [container
-          addSubview:self.secondaryToolbarCoordinator.viewController.view];
-      [self.view
-          insertSubview:container
-           aboveSubview:self.primaryToolbarCoordinator.viewController.view];
-      self.secondaryToolbarContainerView = container;
+      if (base::FeatureList::IsEnabled(
+              toolbar_container::kToolbarContainerEnabled)) {
+        // Add the container view to the hierarchy.
+        UIView* containerView =
+            self.secondaryToolbarContainerCoordinator.viewController.view;
+        [self.view
+            insertSubview:containerView
+             aboveSubview:self.primaryToolbarCoordinator.viewController.view];
+      } else {
+        // Create the container view for the secondary toolbar and add it to the
+        // hierarchy
+        UIView* container = [[LegacyToolbarContainerView alloc] init];
+        container.translatesAutoresizingMaskIntoConstraints = NO;
+        [container
+            addSubview:self.secondaryToolbarCoordinator.viewController.view];
+        [self.view
+            insertSubview:container
+             aboveSubview:self.primaryToolbarCoordinator.viewController.view];
+        self.secondaryToolbarContainerView = container;
+      }
     }
     NSArray<GuideName*>* guideNames = @[
       kContentAreaGuide,
@@ -2459,8 +2517,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.primaryToolbarCoordinator.viewController
         didMoveToParentViewController:self];
     if (self.secondaryToolbarCoordinator) {
-      [self.secondaryToolbarCoordinator.viewController
-          didMoveToParentViewController:self];
+      if (base::FeatureList::IsEnabled(
+              toolbar_container::kToolbarContainerEnabled)) {
+        [self.secondaryToolbarContainerCoordinator.viewController
+            didMoveToParentViewController:self];
+      } else {
+        [self.secondaryToolbarCoordinator.viewController
+            didMoveToParentViewController:self];
+      }
     }
   }
 
@@ -3928,12 +3992,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)updateFootersForFullscreenProgress:(CGFloat)progress {
   self.footerFullscreenProgress = progress;
 
-  // Update the height constraint and force a layout on the container view so
-  // that the update is animatable.
-  self.secondaryToolbarHeightConstraint.constant =
-      [self secondaryToolbarHeightWithInset] * progress;
-  [self.secondaryToolbarContainerView setNeedsLayout];
-  [self.secondaryToolbarContainerView layoutIfNeeded];
+  CGFloat height = 0.0;
+  if (base::FeatureList::IsEnabled(
+          toolbar_container::kToolbarContainerEnabled)) {
+    height = [self.secondaryToolbarContainerCoordinator
+        toolbarStackHeightForFullscreenProgress:progress];
+  } else {
+    // Update the height constraint and force a layout on the container view
+    // so that the update is animatable.
+    height = [self secondaryToolbarHeightWithInset] * progress;
+    self.secondaryToolbarHeightConstraint.constant = height;
+    [self.secondaryToolbarContainerView setNeedsLayout];
+    [self.secondaryToolbarContainerView layoutIfNeeded];
+  }
 
   // Resize the infobars to take into account the changes in the toolbar.
   [self.infoBarCoordinator updateInfobarContainer];
@@ -3943,7 +4014,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]) {
     id<NewTabPageOwning> newTabPageController = nativeController;
     UIEdgeInsets contentInset = newTabPageController.contentInset;
-    contentInset.bottom = self.secondaryToolbarHeightConstraint.constant;
+    contentInset.bottom = height;
     newTabPageController.contentInset = contentInset;
   }
 }

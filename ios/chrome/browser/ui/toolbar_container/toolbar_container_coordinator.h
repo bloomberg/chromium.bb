@@ -32,6 +32,9 @@ enum class ToolbarContainerType { kPrimary, kSecondary };
 // The toolbar coordinators being managed by this container.
 @property(nonatomic, strong) NSArray<ChromeCoordinator*>* toolbarCoordinators;
 
+// Returns the height of the toolbars managed by this container at |progress|.
+- (CGFloat)toolbarStackHeightForFullscreenProgress:(CGFloat)progress;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CONTAINER_TOOLBAR_CONTAINER_COORDINATOR_H_
