@@ -118,7 +118,7 @@ TEST_F(
 TEST_F(
     MaterialDesignControllerTestDefault,
     DisabledCommandLineValueMapsToNonMaterialModeWhenCompileTimeFlagEnabled) {
-  EXPECT_EQ(MaterialDesignController::DefaultMode(),
+  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
             MaterialDesignController::GetMode());
 }
 
@@ -128,13 +128,13 @@ TEST_F(MaterialDesignControllerTest,
        NoCommandLineValueMapsToNonMaterialModeWhenCompileTimeFlagEnabled) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTopChromeMD));
-  EXPECT_EQ(MaterialDesignController::DefaultMode(),
+  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
             MaterialDesignController::GetMode());
 }
 
 // Verify an invalid command line value uses the default mode.
 TEST_F(MaterialDesignControllerTestInvalid, InvalidCommandLineValue) {
-  EXPECT_EQ(MaterialDesignController::DefaultMode(),
+  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_REFRESH,
             MaterialDesignController::GetMode());
 }
 
