@@ -114,8 +114,12 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
   if (!request.IsAdResource() && IsAdScriptInStack())
     request.SetIsAdResource();
 
-  // If it is a script marked as an ad, append it to the known ad scripts set.
-  if (resource_type == ResourceType::kScript && request.IsAdResource()) {
+  // If it is a script marked as an ad and it's not in an ad context, append it
+  // to the known ad script set. We don't need to keep track of ad scripts in ad
+  // contexts, because any script executed inside an ad context is considered an
+  // ad script by IsKnownAdScript.
+  if (resource_type == ResourceType::kScript && request.IsAdResource() &&
+      !IsKnownAdExecutionContext(execution_context)) {
     AppendToKnownAdScripts(*execution_context, request.Url().GetString());
   }
 }
@@ -151,9 +155,6 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
   if (!execution_context)
     return false;
 
-  // TODO(jkarlin): Minor memory optimization, stop tracking known ad scripts in
-  // ad contexts. This will reduce the size of known_ad_scripts_. Note that
-  // this is a minor win, as the strings are already ref-counted.
   if (IsKnownAdExecutionContext(execution_context))
     return true;
 
