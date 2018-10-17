@@ -94,10 +94,10 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
 }
 
 void NGFragmentBuilder::RemoveChildren() {
-  child_break_tokens_.clear();
-  inline_break_tokens_.clear();
-  children_.clear();
-  offsets_.clear();
+  child_break_tokens_.resize(0);
+  inline_break_tokens_.resize(0);
+  children_.resize(0);
+  offsets_.resize(0);
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(

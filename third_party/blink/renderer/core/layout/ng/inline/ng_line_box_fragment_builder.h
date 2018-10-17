@@ -130,7 +130,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void ReserveInitialCapacity(unsigned capacity) {
       children_.ReserveInitialCapacity(capacity);
     }
-    void clear() { children_.clear(); }
+    void clear() { children_.resize(0); }
     void resize(wtf_size_t size) { children_.resize(size); }
 
     using iterator = Vector<Child, 16>::iterator;

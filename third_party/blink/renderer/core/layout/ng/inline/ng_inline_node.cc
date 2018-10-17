@@ -733,7 +733,7 @@ static LayoutUnit ComputeContentSize(
       nullptr /* container_builder */, &empty_exclusion_space, 0u,
       line_opportunity, nullptr /* break_token */);
   do {
-    unpositioned_floats.clear();
+    unpositioned_floats.resize(0);
 
     NGLineInfo line_info;
     line_breaker.NextLine(&line_info);

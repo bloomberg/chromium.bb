@@ -206,7 +206,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                                          NGExclusionSpace* exclusion_space) {
   // Needs MutableResults to move ShapeResult out of the NGLineInfo.
   NGInlineItemResults* line_items = line_info->MutableResults();
-  line_box_.clear();
+  line_box_.resize(0);
 
   // Apply justification before placing items, because it affects size/position
   // of items, which are needed to compute inline static positions.
@@ -725,8 +725,8 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 #endif
 
     // Reset any state that may have been modified in a previous pass.
-    positioned_floats.clear();
-    unpositioned_floats_.clear();
+    positioned_floats.resize(0);
+    unpositioned_floats_.resize(0);
     container_builder_.Reset();
     exclusion_space = initial_exclusion_space;
 
@@ -876,7 +876,7 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
       << "The floats BFC block offset should be known here";
 
   if (BreakToken() && BreakToken()->IgnoreFloats()) {
-    unpositioned_floats_.clear();
+    unpositioned_floats_.resize(0);
     return;
   }
 
@@ -896,7 +896,7 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
                  ConstraintSpace(), exclusion_space, &positioned_floats);
 
   positioned_floats_.AppendVector(positioned_floats);
-  unpositioned_floats_.clear();
+  unpositioned_floats_.resize(0);
 }
 
 void NGInlineLayoutAlgorithm::BidiReorder() {

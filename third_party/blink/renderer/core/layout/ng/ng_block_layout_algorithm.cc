@@ -2089,7 +2089,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
 
   AddPositionedFloats(positioned_floats);
 
-  unpositioned_floats_.clear();
+  unpositioned_floats_.resize(0);
 }
 
 template <class Vec>
