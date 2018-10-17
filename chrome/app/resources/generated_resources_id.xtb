@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Jumlah file total</translation>
 <translation id="175196451752279553">Buka k&amp;embali tab yang tertutup</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
-<translation id="1754582516739637364">Status Memori</translation>
 <translation id="1756681705074952506">Metode masukan</translation>
 <translation id="175772926354468439">Aktifkan tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">Pilih file kunci pribadi.</translation>
 <translation id="5363109466694494651">Powerwash dan Kembalikan</translation>
 <translation id="5367091008316207019">Membaca file..</translation>
-<translation id="5367116720986018215">Tersendat</translation>
 <translation id="5368720394188453070">Ponsel terkunci. Buka kunci untuk masuk.</translation>
 <translation id="5368779022775404937">Login ke <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Muat ulang</translation>
@@ -3465,7 +3463,6 @@
 <translation id="6178664161104547336">Pilih sertifikat</translation>
 <translation id="6181431612547969857">Download diblokir</translation>
 <translation id="6185132558746749656">Lokasi Perangkat</translation>
-<translation id="6185617499004995178">Validator IPP CUPS</translation>
 <translation id="6185696379715117369">Page up</translation>
 <translation id="6189412234224385711">Buka dengan <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
@@ -4730,7 +4727,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8071432093239591881">Cetak sebagai gambar</translation>
 <translation id="8072988827236813198">Sematkan Tab</translation>
 <translation id="8074127646604999664">Izinkan situs yang baru ditutup untuk menyelesaikan pengiriman dan penerimaan data</translation>
-<translation id="8075191520954018715">Status memori</translation>
 <translation id="8076492880354921740">Tab</translation>
 <translation id="8076835018653442223">Akses ke file lokal di perangkat Anda dinonaktifkan oleh administrator</translation>
 <translation id="8079530767338315840">Ulangi</translation>

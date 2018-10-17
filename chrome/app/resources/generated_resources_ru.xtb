@@ -528,7 +528,6 @@
 <translation id="174937106936716857">Общее количество файлов</translation>
 <translation id="175196451752279553">От&amp;крыть закрытую вкладку</translation>
 <translation id="1753905327828125965">Наиболее посещаемые</translation>
-<translation id="1754582516739637364">Состояние памяти</translation>
 <translation id="1756681705074952506">Способ ввода</translation>
 <translation id="175772926354468439">Включить тему</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2894,7 +2893,6 @@
 <translation id="5362741141255528695">Выберите файл закрытого ключа.</translation>
 <translation id="5363109466694494651">Powerwash и откат</translation>
 <translation id="5367091008316207019">Чтение файла…</translation>
-<translation id="5367116720986018215">Приостановлен</translation>
 <translation id="5368720394188453070">Для входа разблокируйте телефон.</translation>
 <translation id="5368779022775404937">Вход в <ph name="REALM" /></translation>
 <translation id="5370819323174483825">Пере&amp;загрузить</translation>
@@ -3466,7 +3464,6 @@
 <translation id="6178664161104547336">Выбор сертификата</translation>
 <translation id="6181431612547969857">Скачивание запрещено</translation>
 <translation id="6185132558746749656">Местоположение устройства</translation>
-<translation id="6185617499004995178">Валидатор CUPS IPP</translation>
 <translation id="6185696379715117369">На страницу вверх</translation>
 <translation id="6189412234224385711">Открыть с помощью расширения "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
@@ -4731,7 +4728,6 @@
 <translation id="8071432093239591881">Печатать как изображение</translation>
 <translation id="8072988827236813198">Закрепить вкладки</translation>
 <translation id="8074127646604999664">Разрешать недавно закрытым сайтам завершать отправку и получение данных</translation>
-<translation id="8075191520954018715">Состояние памяти</translation>
 <translation id="8076492880354921740">Вкладки</translation>
 <translation id="8076835018653442223">Доступ к локальным файлам на вашем устройстве отключен администратором.</translation>
 <translation id="8079530767338315840">Повторить</translation>

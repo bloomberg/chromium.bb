@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Kabuuang bilang ng file</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
-<translation id="1754582516739637364">Katayuan ng Memory</translation>
 <translation id="1756681705074952506">Pamamaraan ng pag-input</translation>
 <translation id="175772926354468439">Paganahin ang tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">Piliin ang file ng private na key.</translation>
 <translation id="5363109466694494651">I-Powerwash at I-revert</translation>
 <translation id="5367091008316207019">Binabasa ang file..</translation>
-<translation id="5367116720986018215">Throttled</translation>
 <translation id="5368720394188453070">Naka-lock ang iyong telepono. I-unlock ito upang makapasok.</translation>
 <translation id="5368779022775404937">Mag-sign in sa <ph name="REALM" /></translation>
 <translation id="5370819323174483825">I-&amp;reload</translation>
@@ -3465,7 +3463,6 @@
 <translation id="6178664161104547336">Pumili ng certificate</translation>
 <translation id="6181431612547969857">Na-block ang pagda-download</translation>
 <translation id="6185132558746749656">Lokasyon ng Device</translation>
-<translation id="6185617499004995178">CUPS IPP Validator</translation>
 <translation id="6185696379715117369">Pataas sa pahina</translation>
 <translation id="6189412234224385711">Buksan gamit ang <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">I-block ang mga third-party na cookie</translation>
@@ -4730,7 +4727,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8071432093239591881">I-print bilang larawan</translation>
 <translation id="8072988827236813198">I-pin ang Mga Tab</translation>
 <translation id="8074127646604999664">Payagan ang mga kamakailang isinarang site na tapusin ang pagpapadala at pagtanggap ng data</translation>
-<translation id="8075191520954018715">Katayuan ng memory</translation>
 <translation id="8076492880354921740">Mga Tab</translation>
 <translation id="8076835018653442223">Na-disable ng iyong administrator ang access sa mga lokal na file sa iyong device</translation>
 <translation id="8079530767338315840">Ulitin</translation>

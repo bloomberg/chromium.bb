@@ -526,7 +526,6 @@
 <translation id="174937106936716857">تعداد کل فایل‌ها</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="1753905327828125965">بیشترین موارد بازدید شده</translation>
-<translation id="1754582516739637364">وضعیت حافظه</translation>
 <translation id="1756681705074952506">روش ورودی</translation>
 <translation id="175772926354468439">فعال کردن طرح زمینه</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2889,7 +2888,6 @@
 <translation id="5362741141255528695">فایل کلید خصوصی را انتخاب کنید.</translation>
 <translation id="5363109466694494651">‏Powerwash و برگرداندن</translation>
 <translation id="5367091008316207019">درحال خواندن فایل ...</translation>
-<translation id="5367116720986018215">محدودشده</translation>
 <translation id="5368720394188453070">تلفنتان قفل است. برای وارد شدن قفل آن را باز کنید.</translation>
 <translation id="5368779022775404937">به سیستم <ph name="REALM" /> وارد شوید</translation>
 <translation id="5370819323174483825">&amp;تازه‌سازی</translation>
@@ -3461,7 +3459,6 @@
 <translation id="6178664161104547336">انتخاب گواهی</translation>
 <translation id="6181431612547969857">بارگیری مسدود شد</translation>
 <translation id="6185132558746749656">مکان دستگاه</translation>
-<translation id="6185617499004995178">‏تأییدکننده CUPS IPP</translation>
 <translation id="6185696379715117369">صفحه بالا</translation>
 <translation id="6189412234224385711">بازکردن با <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
@@ -4726,7 +4723,6 @@
 <translation id="8071432093239591881">چاپ کردن به‌‌عنوان تصویر</translation>
 <translation id="8072988827236813198">پین کردن برگه‌ها</translation>
 <translation id="8074127646604999664">اجازه به سایت‌های اخیراً بسته‌شده برای تکمیل ارسال و دریافت</translation>
-<translation id="8075191520954018715">وضعیت حافظه</translation>
 <translation id="8076492880354921740">برگه‌ها</translation>
 <translation id="8076835018653442223">سرپرستتان دسترسی به فایل‌های محلی موجود در دستگاهتان را غیرفعال کرده است</translation>
 <translation id="8079530767338315840">تکرار</translation>

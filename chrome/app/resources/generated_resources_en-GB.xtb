@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Total file count</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
-<translation id="1754582516739637364">Memory state</translation>
 <translation id="1756681705074952506">Input method</translation>
 <translation id="175772926354468439">Enable theme</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2892,7 +2891,6 @@
 <translation id="5362741141255528695">Select private key file.</translation>
 <translation id="5363109466694494651">Powerwash and Revert</translation>
 <translation id="5367091008316207019">Reading file..</translation>
-<translation id="5367116720986018215">Throttled</translation>
 <translation id="5368720394188453070">Your phone is locked. Unlock it to enter.</translation>
 <translation id="5368779022775404937">Sign in to <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Reload</translation>
@@ -3464,7 +3462,6 @@
 <translation id="6178664161104547336">Select a certificate</translation>
 <translation id="6181431612547969857">Download blocked</translation>
 <translation id="6185132558746749656">Device Location</translation>
-<translation id="6185617499004995178">CUPS IPP Validator</translation>
 <translation id="6185696379715117369">Page up</translation>
 <translation id="6189412234224385711">Open with <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
@@ -4729,7 +4726,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8071432093239591881">Print as image</translation>
 <translation id="8072988827236813198">Pin Tabs</translation>
 <translation id="8074127646604999664">Allow recently closed sites to finish sending and receiving data</translation>
-<translation id="8075191520954018715">Memory state</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8076835018653442223">Access to local files on your device is disabled by your administrator</translation>
 <translation id="8079530767338315840">Repeat</translation>

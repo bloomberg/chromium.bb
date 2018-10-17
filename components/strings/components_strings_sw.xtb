@@ -167,7 +167,7 @@
 <translation id="2003709556000175978">Badilisha nenosiri lako sasa</translation>
 <translation id="2025186561304664664">Proksi imewekwa katika usanidi otomatiki.</translation>
 <translation id="2030481566774242610">Je, ulimaanisha <ph name="LINK" />?</translation>
-<translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kuangalia seva mbadala na kinga-mtandao<ph name="END_LINK" /></translation>
+<translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kuangalia seva mbadala na kinga mtandao<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Msimbo wa eneo</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{Pendekezo 1}other{Mapendekezo #}}</translation>
 <translation id="2079545284768500474">Tendua</translation>
@@ -416,8 +416,8 @@
 <translation id="3712624925041724820">Leseni zimekwisha</translation>
 <translation id="3714780639079136834">Kuwasha data ya simu au Wi-Fi</translation>
 <translation id="3715597595485130451">Unganisha kwenye Wi-Fi</translation>
-<translation id="3717027428350673159"><ph name="BEGIN_LINK" />Kuangalia seva mbadala, kinga-mtandao na mipangilio ya DNS<ph name="END_LINK" /></translation>
-<translation id="372429172604983730">Programu zinazoweza kusababisha hitilafu hii ni pamoja na kinga virusi, kinga-mtandao, kichujio cha wavuti au programu ya seva mbadala.</translation>
+<translation id="3717027428350673159"><ph name="BEGIN_LINK" />Kuangalia seva mbadala, kingamtandao na mipangilio ya DNS<ph name="END_LINK" /></translation>
+<translation id="372429172604983730">Programu zinazoweza kusababisha hitilafu hii ni pamoja na kingavirusi, kinga mtandao, kichujio cha wavuti au programu ya seva mbadala.</translation>
 <translation id="3736520371357197498">Ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, unaweza <ph name="BEGIN_LINK" />kutembelea tovuti hii isiyo salama<ph name="END_LINK" /> kabla programu hatari hazijaondolewa.</translation>
 <translation id="3739623965217189342">Kiungo ulichonakili</translation>
 <translation id="3744899669254331632">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu tovuti ilituma kitambulisho kilichoharibika ambacho Chromium haiwezi kuchakata. Hitilafu na uvamizi wa mtandao kwa kawaida huwa vya muda, kwa hivyo ukurasa huu huenda utafanya kazi baadaye.</translation>
@@ -476,7 +476,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Kipengee kingine <ph name="ITEM_COUNT" />}other{Vipengee vingine <ph name="ITEM_COUNT" />}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">Rudia hatua</translation>
-<translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kuangalia mipangilio ya kinga-mtandao na kinga-virusi<ph name="END_LINK" /></translation>
+<translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kuangalia mipangilio ya kinga mtandao na kingavirusi<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Mivurugo</translation>
 <translation id="422022731706691852">Wavamizi kwenye <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> huenda wakajaribu kukuhadaa kusakinisha programu inayoathiri hali yako ya kuvinjari (kwa mfano, kwa kubadilisha ukurasa wako wa kwanza au kuonyesha matangazo ya ziada kwenye tovuti unazotembelea). <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4221630205957821124">&lt;h4&gt;Hatua ya 1: Ingia katika akaunti ya tovuti&lt;/h4&gt;
@@ -586,7 +586,7 @@
 <translation id="4958444002117714549">Panua orodha</translation>
 <translation id="4974590756084640048">Onyesha maonyo tena</translation>
 <translation id="4989163558385430922">Angalia vyote</translation>
-<translation id="4989809363548539747">Programu-jalizi hii haitumiki</translation>
+<translation id="4989809363548539747">Programu jalizi hii haitumiki</translation>
 <translation id="5002932099480077015">Ikiwashwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
 <translation id="5015510746216210676">Jina la Mashine:</translation>
 <translation id="5018422839182700155">Ukurasa huu haufunguki</translation>
@@ -979,7 +979,7 @@
 <translation id="774634243536837715">Maudhui hatari yamezuiwa.</translation>
 <translation id="7752995774971033316">Haidhibitiwi</translation>
 <translation id="7755287808199759310">Mzazi wako anaweza kukuondolea kizuizi</translation>
-<translation id="7758069387465995638">Huenda programu ya kinga-mtandao au kinga-virusi zimezuia muunganisho huu.</translation>
+<translation id="7758069387465995638">Huenda muunganisho huu umezuiwa na kinga mtandao au kingavirusi.</translation>
 <translation id="7759163816903619567">Onyesha kikoa:</translation>
 <translation id="7761701407923456692">Cheti cha seva hakilingani na URL.</translation>
 <translation id="7763386264682878361">Kichanganuzi cha Faili za Maelezo ya Malipo</translation>

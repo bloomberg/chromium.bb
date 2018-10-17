@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Numero totale di file</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
 <translation id="1753905327828125965">Più visitati</translation>
-<translation id="1754582516739637364">Stato memoria</translation>
 <translation id="1756681705074952506">Metodo di immissione</translation>
 <translation id="175772926354468439">Attiva tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2889,7 +2888,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5362741141255528695">Seleziona il file della chiave privata.</translation>
 <translation id="5363109466694494651">Esegui Powerwash e ripristina</translation>
 <translation id="5367091008316207019">Lettura del file in corso...</translation>
-<translation id="5367116720986018215">Limitata</translation>
 <translation id="5368720394188453070">Il telefono è stato bloccato. Sbloccalo per accedere.</translation>
 <translation id="5368779022775404937">Accedi a <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Ricarica</translation>
@@ -3461,7 +3459,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6178664161104547336">Seleziona un certificato</translation>
 <translation id="6181431612547969857">Download bloccato</translation>
 <translation id="6185132558746749656">Posizione del dispositivo</translation>
-<translation id="6185617499004995178">Validatore IPP CUPS</translation>
 <translation id="6185696379715117369">Pagina su</translation>
 <translation id="6189412234224385711">Apri con l'estensione <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
@@ -4724,7 +4721,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8071432093239591881">Stampa come immagine</translation>
 <translation id="8072988827236813198">Blocca le schede</translation>
 <translation id="8074127646604999664">Consenti ai siti chiusi di recente di terminare l'invio e la ricezione di dati</translation>
-<translation id="8075191520954018715">Stato memoria</translation>
 <translation id="8076492880354921740">Schede</translation>
 <translation id="8076835018653442223">L'accesso ai file locali sul dispositivo è stato disattivato dall'amministratore</translation>
 <translation id="8079530767338315840">Ripeti</translation>

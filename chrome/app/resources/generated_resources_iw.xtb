@@ -526,7 +526,6 @@
 <translation id="174937106936716857">מספר הקבצים הכולל</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
 <translation id="1753905327828125965">עם המבקרים הרבים ביותר</translation>
-<translation id="1754582516739637364">מצב זיכרון</translation>
 <translation id="1756681705074952506">שיטת קלט</translation>
 <translation id="175772926354468439">הפעל עיצוב</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2891,7 +2890,6 @@
 <translation id="5362741141255528695">בחר קובץ מפתח פרטי.</translation>
 <translation id="5363109466694494651">‏בצע Powerwash וחזור לגרסה הקודמת</translation>
 <translation id="5367091008316207019">קורא את הקובץ..</translation>
-<translation id="5367116720986018215">הוגבל</translation>
 <translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
 <translation id="5368779022775404937">כניסה אל <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;טען מחדש</translation>
@@ -3463,7 +3461,6 @@
 <translation id="6178664161104547336">בחר אישור</translation>
 <translation id="6181431612547969857">ההורדה נחסמה</translation>
 <translation id="6185132558746749656">מיקום מכשיר</translation>
-<translation id="6185617499004995178">‏מאמת CUPS IPP</translation>
 <translation id="6185696379715117369">Page up</translation>
 <translation id="6189412234224385711">פתח באמצעות <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
@@ -4725,7 +4722,6 @@
 <translation id="8071432093239591881">הדפסה כתמונה</translation>
 <translation id="8072988827236813198">הצמד כרטיסיות</translation>
 <translation id="8074127646604999664">התר לאתרים שנסגרו לאחרונה לסיים שליחה וקבלה של נתונים</translation>
-<translation id="8075191520954018715">מצב זיכרון</translation>
 <translation id="8076492880354921740">כרטיסיות</translation>
 <translation id="8076835018653442223">מנהל המערכת ביטל את הגישה לקבצים מקומיים במכשיר שלך</translation>
 <translation id="8079530767338315840">חזרה</translation>

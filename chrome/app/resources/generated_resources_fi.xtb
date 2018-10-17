@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Tiedostoja yhteensä</translation>
 <translation id="175196451752279553">A&amp;vaa suljettu välilehti uudelleen</translation>
 <translation id="1753905327828125965">Käydyimmät</translation>
-<translation id="1754582516739637364">Muistin tila</translation>
 <translation id="1756681705074952506">Syöttötapa</translation>
 <translation id="175772926354468439">Ota teema käyttöön</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2891,7 +2890,6 @@
 <translation id="5362741141255528695">Valitse yksityinen avaintiedosto.</translation>
 <translation id="5363109466694494651">Suorita Powerwash ja palauta</translation>
 <translation id="5367091008316207019">Luetaan tiedostoa...</translation>
-<translation id="5367116720986018215">Rajoitettu</translation>
 <translation id="5368720394188453070">Puhelimesi on lukittu. Avaa lukitus käyttääksesi sitä.</translation>
 <translation id="5368779022775404937">Kirjaudu sisään kohteeseen <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Lataa uudelleen</translation>
@@ -3465,7 +3463,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6178664161104547336">Valitse varmenne</translation>
 <translation id="6181431612547969857">Lataus estettiin</translation>
 <translation id="6185132558746749656">Laitteen sijainti</translation>
-<translation id="6185617499004995178">CUPS IPP ‑vahvistus</translation>
 <translation id="6185696379715117369">Sivu ylös</translation>
 <translation id="6189412234224385711">Avaa laajennuksella <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Estä kolmannen osapuolen evästeet</translation>
@@ -4729,7 +4726,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8071432093239591881">Tulosta kuvana</translation>
 <translation id="8072988827236813198">Kiinnitä välilehdet</translation>
 <translation id="8074127646604999664">Salli äskettäin suljettujen sivustojen suorittaa tietojen lähettäminen ja vastaanottaminen loppuun</translation>
-<translation id="8075191520954018715">Muistin tila</translation>
 <translation id="8076492880354921740">Välilehdet</translation>
 <translation id="8076835018653442223">Järjestelmänvalvojasi on estänyt sinua käyttämästä laitteellesi tallennettuja tiedostoja.</translation>
 <translation id="8079530767338315840">Toista</translation>

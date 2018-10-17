@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Bendras failų skaičius</translation>
 <translation id="175196451752279553">I&amp;š naujo atidaryti uždarytą skirtuką</translation>
 <translation id="1753905327828125965">Dažniausiai lankomi</translation>
-<translation id="1754582516739637364">Atminties būsena</translation>
 <translation id="1756681705074952506">Įvesties metodas</translation>
 <translation id="175772926354468439">Įgalinti temą</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5362741141255528695">Pasirinkti asmeninio rakto failą.</translation>
 <translation id="5363109466694494651">Įvykdyti „Powerwash“ ir versijos grąžinimo funkcijas</translation>
 <translation id="5367091008316207019">Skaitomas failas...</translation>
-<translation id="5367116720986018215">Apribota</translation>
 <translation id="5368720394188453070">Telefonas užrakintas. Norėdami įeiti, atrakinkite jį.</translation>
 <translation id="5368779022775404937">Prisijunkite prie <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Įkelti iš naujo</translation>
@@ -3466,7 +3464,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6178664161104547336">Pasirinkite sertifikatą</translation>
 <translation id="6181431612547969857">Atsisiuntimas užblokuotas</translation>
 <translation id="6185132558746749656">Įrenginio vietovė</translation>
-<translation id="6185617499004995178">CUPS IPP patvirtinimo priemonė</translation>
 <translation id="6185696379715117369">Puslapiu aukštyn</translation>
 <translation id="6189412234224385711">Atidaryti naudojant „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="6196640612572343990">Blokuoti trečiosios šalies slapukus</translation>
@@ -4731,7 +4728,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8071432093239591881">Spausdinti kaip vaizdą</translation>
 <translation id="8072988827236813198">Prisegti skirtukus</translation>
 <translation id="8074127646604999664">Leisti pastaruoju metu uždarytoms svetainėms baigti duomenų siuntimą ir gavimą</translation>
-<translation id="8075191520954018715">Atminties būsena</translation>
 <translation id="8076492880354921740">Skirtukai</translation>
 <translation id="8076835018653442223">Administratorius išjungė prieigą prie vietinių failų įrenginyje</translation>
 <translation id="8079530767338315840">Kartoti</translation>

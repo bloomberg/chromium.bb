@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Fájlok száma összesen</translation>
 <translation id="175196451752279553">Bezárt lap m&amp;egnyitása</translation>
 <translation id="1753905327828125965">Leggyakrabban látogatott</translation>
-<translation id="1754582516739637364">A memória állapota</translation>
 <translation id="1756681705074952506">Beviteli mód</translation>
 <translation id="175772926354468439">Téma engedélyezése</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2894,7 +2893,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5362741141255528695">Válasszon ki privátkulcs-fájlt.</translation>
 <translation id="5363109466694494651">Powerwash művelet és visszaállítás</translation>
 <translation id="5367091008316207019">Fájl olvasása..</translation>
-<translation id="5367116720986018215">Korlátozott</translation>
 <translation id="5368720394188453070">A telefon zárolva van. Oldja fel a belépéshez.</translation>
 <translation id="5368779022775404937">Bejelentkezés itt: <ph name="REALM" /></translation>
 <translation id="5370819323174483825">Új&amp;ratöltés</translation>
@@ -3467,7 +3465,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6178664161104547336">Tanúsítvány kiválasztása</translation>
 <translation id="6181431612547969857">Letöltés letiltva</translation>
 <translation id="6185132558746749656">Eszközhely</translation>
-<translation id="6185617499004995178">CUPS IPP-érvényesítő</translation>
 <translation id="6185696379715117369">Lapozás felfelé</translation>
 <translation id="6189412234224385711">Megnyitás a következővel: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Harmadik féltől származó cookie-k letiltása</translation>
@@ -4732,7 +4729,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8071432093239591881">Nyomtatás képként</translation>
 <translation id="8072988827236813198">Lapok rögzítése</translation>
 <translation id="8074127646604999664">Annak engedélyezése, hogy a nemrégiben bezárt webhelyek befejezhessék az adatok küldését és fogadását</translation>
-<translation id="8075191520954018715">A memória állapota</translation>
 <translation id="8076492880354921740">Lapok</translation>
 <translation id="8076835018653442223">A rendszergazda letiltotta a helyi fájlok elérését az eszközön</translation>
 <translation id="8079530767338315840">Ismétlés</translation>

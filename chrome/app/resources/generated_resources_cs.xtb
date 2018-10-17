@@ -529,7 +529,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="174937106936716857">Celkový počet souborů</translation>
 <translation id="175196451752279553">Znovu ot&amp;evřít zavřenou kartu</translation>
 <translation id="1753905327828125965">Nejnavštěvovanější</translation>
-<translation id="1754582516739637364">Stav paměti</translation>
 <translation id="1756681705074952506">Metoda zadávání dat</translation>
 <translation id="175772926354468439">Aktivovat motiv</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2889,7 +2888,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5362741141255528695">Vyberte soubor soukromého klíče.</translation>
 <translation id="5363109466694494651">Obnovit pomocí funkce Powerwash a vrátit předchozí verzi</translation>
 <translation id="5367091008316207019">Čtení souboru..</translation>
-<translation id="5367116720986018215">Zahlceno</translation>
 <translation id="5368720394188453070">Telefon je uzamčen. Chcete-li pokračovat, odemkněte jej.</translation>
 <translation id="5368779022775404937">Přihlaste se do domény <ph name="REALM" /></translation>
 <translation id="5370819323174483825">Načíst &amp;znovu</translation>
@@ -3461,7 +3459,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6178664161104547336">Vyberte certifikát</translation>
 <translation id="6181431612547969857">Stahování zablokováno</translation>
 <translation id="6185132558746749656">Poloha zařízení</translation>
-<translation id="6185617499004995178">Validátor CUPS IPP</translation>
 <translation id="6185696379715117369">O stránku nahoru</translation>
 <translation id="6189412234224385711">Otevřít pomocí rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokovat soubory cookie třetích stran</translation>
@@ -4724,7 +4721,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8071432093239591881">Vytisknout jako obrázek</translation>
 <translation id="8072988827236813198">Připnout karty</translation>
 <translation id="8074127646604999664">Povolit nedávno zavřeným webům dokončit odeslání a příjem dat</translation>
-<translation id="8075191520954018715">Stav paměti</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8076835018653442223">Správce přístup k místním souborům v tomto zařízení zakázal</translation>
 <translation id="8079530767338315840">Opakovat</translation>

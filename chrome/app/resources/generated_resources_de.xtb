@@ -521,7 +521,6 @@
 <translation id="174937106936716857">Gesamtanzahl der Dateien</translation>
 <translation id="175196451752279553">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
-<translation id="1754582516739637364">Speicherstatus</translation>
 <translation id="1756681705074952506">Eingabemethode</translation>
 <translation id="175772926354468439">Design aktivieren</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2864,7 +2863,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5362741141255528695">Private Schlüsseldatei auswählen</translation>
 <translation id="5363109466694494651">Powerwash durchführen und zurücksetzen</translation>
 <translation id="5367091008316207019">Datei wird gelesen...</translation>
-<translation id="5367116720986018215">Gedrosselt</translation>
 <translation id="5368720394188453070">Ihr Telefon ist gesperrt. Entsperren Sie es, um fortzufahren.</translation>
 <translation id="5368779022775404937">Anmelden bei <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Neu laden</translation>
@@ -3431,7 +3429,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6178664161104547336">Zertifikat auswählen</translation>
 <translation id="6181431612547969857">Download blockiert</translation>
 <translation id="6185132558746749656">Gerätestandort</translation>
-<translation id="6185617499004995178">CUPS-IPP-Validierung</translation>
 <translation id="6185696379715117369">Bildlauf nach oben</translation>
 <translation id="6189412234224385711">Öffnen mit <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
@@ -4689,7 +4686,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8071432093239591881">Als Bild drucken</translation>
 <translation id="8072988827236813198">Tabs anheften</translation>
 <translation id="8074127646604999664">Fertigstellen des Datenversands und -empfangs von kürzlich geschlossen Websites erlauben</translation>
-<translation id="8075191520954018715">Speicherstatus</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8076835018653442223">Der Zugriff auf lokale Dateien auf Ihrem Gerät wurde von Ihrem Administrator deaktiviert</translation>
 <translation id="8079530767338315840">Wiederholen</translation>

@@ -523,7 +523,6 @@
 <translation id="174937106936716857">মোট ফাইল সংখ্যা</translation>
 <translation id="175196451752279553">বন্ধ ট্যাবটি পু&amp;নঃরায় খুলুন</translation>
 <translation id="1753905327828125965">সর্বাধিক দেখা</translation>
-<translation id="1754582516739637364">মেমরি স্থিতি</translation>
 <translation id="1756681705074952506">ইনপুট পদ্ধতি</translation>
 <translation id="175772926354468439">থিম সক্ষম করুন</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2864,7 +2863,6 @@
 <translation id="5362741141255528695">ব্যক্তিগত কী ফাইল নির্বাচন করুন৷</translation>
 <translation id="5363109466694494651">পাওয়ারওয়াশ এবং প্রত্যাবর্তন করুন</translation>
 <translation id="5367091008316207019">ফাইল পড়া হচ্ছে..</translation>
-<translation id="5367116720986018215">আটকানো রয়েছে</translation>
 <translation id="5368720394188453070">আপনার ফোন লক করা আছে৷ লিখতে আনলক করুন৷</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> এ প্রবেশ করুন</translation>
 <translation id="5370819323174483825">&amp;পুনরায় লোড করুন</translation>
@@ -3433,7 +3431,6 @@
 <translation id="6178664161104547336">একটি শংসাপত্র বেছে নিন</translation>
 <translation id="6181431612547969857">ডাউনলোড অবরুদ্ধ রয়েছে</translation>
 <translation id="6185132558746749656">ডিভাইসের লোকেশন</translation>
-<translation id="6185617499004995178">CUPS IPP যাচাইকারী</translation>
 <translation id="6185696379715117369">পৃষ্ঠায় উপরের দিকে যান</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> এর মাধ্যমে খুলুন</translation>
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
@@ -4690,7 +4687,6 @@
 <translation id="8071432093239591881">ছবি হিসেবে প্রিন্ট করুন</translation>
 <translation id="8072988827236813198">ট্যাবগুলি পিন করুন</translation>
 <translation id="8074127646604999664">সম্প্রতি বন্ধ করা সাইটগুলিকে ডেটা পাঠানো ও গ্রহণ শেষ করতে অনুমতি দিন</translation>
-<translation id="8075191520954018715">মেমরি স্থিতি</translation>
 <translation id="8076492880354921740">ট্যাবগুলি</translation>
 <translation id="8076835018653442223">আপনার প্রশাসকের দ্বারা আপনার ডিভাইসে স্থানীয় ফাইলের অ্যাক্সেস বন্ধ করা আছে</translation>
 <translation id="8079530767338315840">পুনরাবৃত্তি করুন</translation>

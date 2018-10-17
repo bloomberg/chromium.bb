@@ -528,7 +528,6 @@
 <translation id="174937106936716857">Totalt antal filer</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
-<translation id="1754582516739637364">Minnesstatus</translation>
 <translation id="1756681705074952506">Inmatningsmetod</translation>
 <translation id="175772926354468439">Aktivera tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2892,7 +2891,6 @@
 <translation id="5362741141255528695">Välj privat nyckelfil.</translation>
 <translation id="5363109466694494651">Använd Powerwash och återställ</translation>
 <translation id="5367091008316207019">Läser fil ...</translation>
-<translation id="5367116720986018215">Begränsas</translation>
 <translation id="5368720394188453070">Din mobil är låst. Lås upp den.</translation>
 <translation id="5368779022775404937">Logga in på <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Läs in igen</translation>
@@ -3464,7 +3462,6 @@
 <translation id="6178664161104547336">Välj ett certifikat</translation>
 <translation id="6181431612547969857">Nedladdningen blockerades</translation>
 <translation id="6185132558746749656">Enhetsplats</translation>
-<translation id="6185617499004995178">CUPS IPP-validerare</translation>
 <translation id="6185696379715117369">Uppåt en sida</translation>
 <translation id="6189412234224385711">Öppna med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blockera cookies från tredje part</translation>
@@ -4729,7 +4726,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8071432093239591881">Skriv ut som bild</translation>
 <translation id="8072988827236813198">Fäst flikar</translation>
 <translation id="8074127646604999664">Tillåt webbplatser som nyligen har stängts att slutföra överföringen av data</translation>
-<translation id="8075191520954018715">Minnesstatus</translation>
 <translation id="8076492880354921740">Flikar</translation>
 <translation id="8076835018653442223">Administratören har inaktiverat åtkomsten till lokala filer på enheten</translation>
 <translation id="8079530767338315840">Upprepa</translation>

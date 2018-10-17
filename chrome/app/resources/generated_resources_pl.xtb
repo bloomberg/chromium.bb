@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Łączna liczba plików</translation>
 <translation id="175196451752279553">Prz&amp;ywróć zamkniętą kartę</translation>
 <translation id="1753905327828125965">Najczęstsze</translation>
-<translation id="1754582516739637364">Stan pamięci</translation>
 <translation id="1756681705074952506">Sposób wprowadzania tekstu</translation>
 <translation id="175772926354468439">Włącz motyw</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">Wybierz plik kluczy prywatnych.</translation>
 <translation id="5363109466694494651">Wykonaj Powerwash i przywróć</translation>
 <translation id="5367091008316207019">Odczytuję plik..</translation>
-<translation id="5367116720986018215">Regulacja szybkości</translation>
 <translation id="5368720394188453070">Twój telefon jest zablokowany. Aby uzyskać do niego dostęp, odblokuj go.</translation>
 <translation id="5368779022775404937">Zaloguj się na <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Odśwież</translation>
@@ -3465,7 +3463,6 @@
 <translation id="6178664161104547336">Wybór certyfikatu</translation>
 <translation id="6181431612547969857">Pobieranie zostało zablokowane</translation>
 <translation id="6185132558746749656">Lokalizacja urządzenia</translation>
-<translation id="6185617499004995178">Walidator CUPS IPP</translation>
 <translation id="6185696379715117369">Strona do góry</translation>
 <translation id="6189412234224385711">Otwórz w rozszerzeniu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
@@ -4730,7 +4727,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8071432093239591881">Drukuj jako grafikę</translation>
 <translation id="8072988827236813198">Przypinanie kart</translation>
 <translation id="8074127646604999664">Zezwól niedawno zamkniętym stronom na dokończenie wysyłania i odbierania danych</translation>
-<translation id="8075191520954018715">Stan pamięci</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8076835018653442223">Dostęp do plików lokalnych na tym urządzeniu został wyłączony przez administratora</translation>
 <translation id="8079530767338315840">Powtórz</translation>
