@@ -710,16 +710,3 @@ test.util.sync.isFileManagerLoaded = function(contentWindow) {
 
   return false;
 };
-
-/**
- * Reports to the given |callback| the number of volumes available in
- * VolumeManager in the background page.
- *
- * @param {function(number)} callback Callback function to be called with the
- *   number of volumes.
- */
-test.util.async.getVolumesCount = function(callback) {
-  return volumeManagerFactory.getInstance().then((volumeManager) => {
-    callback(volumeManager.volumeInfoList.length);
-  });
-};

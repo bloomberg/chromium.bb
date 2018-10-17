@@ -92,9 +92,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
       break;
   }
 
-  console.debug(
-      'Requesting file system: ' + volumeMetadata.volumeType + ' ' +
-      volumeMetadata.volumeId);
+  console.debug('Requesting file system.');
   return util.timeoutPromise(
       new Promise(function(resolve, reject) {
         chrome.fileSystem.requestFileSystem(
@@ -153,8 +151,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
           fileSystem.root.createReader().readEntries(
               function() { /* do nothing */ },
               function(error) {
-                console.warn(
-                    'Triggering full feed fetch has failed: ' +
+                console.error(
+                    'Triggering full feed fetch is failed: ' +
                     error.name);
               });
         }
@@ -176,7 +174,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
        * @param {*} error
        */
       function(error) {
-        console.warn('Failed to mount a file system: ' +
+        console.error('Failed to mount a file system: ' +
             volumeMetadata.volumeId + ' because of: ' +
             (error.stack || error));
 
