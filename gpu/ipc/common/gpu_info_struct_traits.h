@@ -141,7 +141,6 @@ struct StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
   }
 };
 
-#if defined(OS_WIN)
 template <>
 struct EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat> {
   static gpu::mojom::OverlayFormat ToMojom(gpu::OverlayFormat format);
@@ -186,7 +185,6 @@ struct StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
     return input.vulkan_version;
   }
 };
-#endif
 
 template <>
 struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
@@ -286,8 +284,12 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   }
 
 #if defined(OS_WIN)
-  static bool direct_composition_overlays(const gpu::GPUInfo& input) {
-    return input.direct_composition_overlays;
+  static bool direct_composition(const gpu::GPUInfo& input) {
+    return input.direct_composition;
+  }
+
+  static bool supports_overlays(const gpu::GPUInfo& input) {
+    return input.supports_overlays;
   }
 
   static const gpu::OverlayCapabilities& overlay_capabilities(
