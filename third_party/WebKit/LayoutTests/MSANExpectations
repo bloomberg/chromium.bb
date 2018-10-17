@@ -194,3 +194,7 @@ crbug.com/873045 [ Linux ] external/wpt/picture-in-picture/idlharness.window.htm
 # Also flaking according to crbug.com/873045 but mentioned in existing entries above:
 # external/wpt/notifications/idlharness.https.any.worker.html
 # external/wpt/xhr/idlharness.any.worker.html
+
+# Disabled by sheriff due to test crash
+crbug.com/896068 [ Linux ] webaudio/AudioBuffer/huge-buffer.html [ Crash ]
+crbug.com/896068 [ Linux ] webaudio/dom-exceptions.html [ Pass Crash ]
