@@ -493,7 +493,7 @@ void LabelButton::UpdateStyleToIndicateDefaultStatus() {
 }
 
 void LabelButton::UpdateImage() {
-  image_->SetImage(GetImage(state()));
+  image_->SetImage(GetImage(GetVisualState()));
   ResetCachedPreferredSize();
 }
 

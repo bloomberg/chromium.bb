@@ -83,6 +83,9 @@ class VIEWS_EXPORT PlatformStyle {
   // hover state on focus.
   static const bool kPreferFocusRings;
 
+  // Whether controls in inactive widgets appear disabled.
+  static const bool kInactiveWidgetControlsAppearDisabled;
+
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 

@@ -44,6 +44,30 @@ const int kHoverFadeDurationMs = 150;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// WidgetObserverButtonBridge:
+Button::WidgetObserverButtonBridge::WidgetObserverButtonBridge(Button* button)
+    : owner_(button) {
+  DCHECK(button->GetWidget());
+  button->GetWidget()->AddObserver(this);
+}
+
+Button::WidgetObserverButtonBridge::~WidgetObserverButtonBridge() {
+  if (owner_)
+    owner_->GetWidget()->RemoveObserver(this);
+}
+
+void Button::WidgetObserverButtonBridge::OnWidgetActivationChanged(
+    Widget* widget,
+    bool active) {
+  owner_->WidgetActivationChanged(widget, active);
+}
+
+void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
+  widget->RemoveObserver(this);
+  owner_ = nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Button, static public:
 
 // static
@@ -127,6 +151,14 @@ void Button::SetState(ButtonState state) {
   state_ = state;
   StateChanged(old_state);
   SchedulePaint();
+}
+
+Button::ButtonState Button::GetVisualState() const {
+  if (PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
+      !GetWidget()->IsActive()) {
+    return STATE_DISABLED;
+  }
+  return state();
 }
 
 void Button::StartThrobbing(int cycles_til_stop) {
@@ -456,6 +488,15 @@ void Button::OnBlur() {
     SchedulePaint();
 }
 
+void Button::AddedToWidget() {
+  if (PlatformStyle::kInactiveWidgetControlsAppearDisabled)
+    widget_observer_ = std::make_unique<WidgetObserverButtonBridge>(this);
+}
+
+void Button::RemovedFromWidget() {
+  widget_observer_.reset();
+}
+
 std::unique_ptr<InkDrop> Button::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnFocus(!focus_ring_);
@@ -566,6 +607,10 @@ bool Button::ShouldEnterHoveredState() {
 #endif
 
   return check_mouse_position && IsMouseHovered();
+}
+
+void Button::WidgetActivationChanged(Widget* widget, bool active) {
+  StateChanged(state());
 }
 
 }  // namespace views
