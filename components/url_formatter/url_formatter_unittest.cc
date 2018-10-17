@@ -956,6 +956,10 @@ const IDNTestCase idn_cases[] = {
     {"xn--kx8a.com", L"\xa661.com", false},
     // Cyrillic Ext C: ᲂ.com (Narrow o)
     {"xn--43f.com", L"\x1c82.com", false},
+
+    // The skeleton of Extended Arabic-Indic Digit Zero (۰) is a dot. Check that
+    // this is handled correctly (crbug/877045).
+    {"xn--dmb", L"\x06f0", true},
 };
 
 struct AdjustOffsetCase {
