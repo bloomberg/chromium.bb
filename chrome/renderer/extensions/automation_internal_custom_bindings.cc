@@ -1471,7 +1471,7 @@ bool AutomationInternalCustomBindings::GetRootOfChildTree(
   AutomationAXTreeWrapper* child_tree_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(
           ui::AXTreeID::FromString(child_tree_id_str));
-  if (!child_tree_wrapper)
+  if (!child_tree_wrapper || !child_tree_wrapper->tree()->root())
     return false;
 
   *in_out_tree_wrapper = child_tree_wrapper;
