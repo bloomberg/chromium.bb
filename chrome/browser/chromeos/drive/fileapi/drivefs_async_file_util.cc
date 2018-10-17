@@ -12,13 +12,18 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/local_file_util.h"
+#include "storage/common/fileapi/file_system_util.h"
 
 namespace drive {
 namespace internal {
 namespace {
+
+constexpr char kTrashDirectoryName[] = ".Trash";
 
 class CopyOperation {
  public:
@@ -142,6 +147,26 @@ void DriveFsAsyncFileUtil::CopyFileLocal(
               std::move(progress_callback), std::move(callback),
               base::SequencedTaskRunnerHandle::Get(),
               weak_factory_.GetWeakPtr()))));
+}
+
+void DriveFsAsyncFileUtil::DeleteDirectory(
+    std::unique_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
+    StatusCallback callback) {
+  DeleteRecursively(std::move(context), url, std::move(callback));
+}
+
+void DriveFsAsyncFileUtil::DeleteRecursively(
+    std::unique_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
+    StatusCallback callback) {
+  auto dest_url = context->file_system_context()->CreateCrackedFileSystemURL(
+      url.origin(), url.mount_type(),
+      base::FilePath(url.filesystem_id())
+          .Append(kTrashDirectoryName)
+          .Append(url.virtual_path().BaseName()));
+  MoveFileLocal(std::move(context), url, dest_url,
+                storage::FileSystemOperation::OPTION_NONE, std::move(callback));
 }
 
 }  // namespace internal
