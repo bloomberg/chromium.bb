@@ -450,6 +450,29 @@ TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
   ASSERT_FALSE(host_->IsMounted());
 }
 
+TEST_F(DriveFsHostTest, OnMountFailed_UnmountInObserver) {
+  ASSERT_FALSE(host_->IsMounted());
+
+  auto token = StartMount();
+
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(*host_delegate_, OnMountFailed(_))
+      .WillOnce(testing::InvokeWithoutArgs([&]() {
+        std::move(quit_closure).Run();
+        host_->Unmount();
+      }));
+  DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
+                     chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS,
+                     {base::StrCat({"drivefs://", token}),
+                      "/media/drivefsroot/salt-g-ID",
+                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                      {}});
+  run_loop.Run();
+
+  ASSERT_FALSE(host_->IsMounted());
+}
+
 TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
   MockDriveFsHostObserver observer;
   ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);

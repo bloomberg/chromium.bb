@@ -296,8 +296,11 @@ class DriveFsHost::MountState
       return;
     }
     if (error_code != chromeos::MOUNT_ERROR_NONE) {
-      host_->mount_observer_->OnMountFailed({});
+      auto* observer = host_->mount_observer_;
+
+      // Deletes |this|.
       host_->Unmount();
+      observer->OnMountFailed({});
       return;
     }
     DCHECK(!mount_info.mount_path.empty());
