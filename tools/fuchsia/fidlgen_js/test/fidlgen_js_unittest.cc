@@ -156,7 +156,10 @@ TEST_F(FidlGenJsTest, CreateChannelPair) {
 
 class TestolaImpl : public fidljstest::Testola {
  public:
-  TestolaImpl() = default;
+  TestolaImpl() {
+    // Don't want the default values from the C++ side.
+    memset(&basic_struct_, -1, sizeof(basic_struct_));
+  }
   ~TestolaImpl() override {}
 
   void DoSomething() override { was_do_something_called_ = true; }
@@ -182,6 +185,10 @@ class TestolaImpl : public fidljstest::Testola {
     sum(a + b);
   }
 
+  void SendAStruct(fidljstest::BasicStruct basic_struct) override {
+    basic_struct_ = basic_struct;
+  }
+
   bool was_do_something_called() const { return was_do_something_called_; }
   int32_t received_int() const { return received_int_; }
   const std::string& received_msg() const { return received_msg_; }
@@ -190,6 +197,8 @@ class TestolaImpl : public fidljstest::Testola {
   const std::string& various_msg() const { return various_msg_; }
   const std::vector<uint32_t>& various_stuff() const { return various_stuff_; }
 
+  fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
+
  private:
   bool was_do_something_called_ = false;
   int32_t received_int_ = -1;
@@ -197,6 +206,7 @@ class TestolaImpl : public fidljstest::Testola {
   fidljstest::Blorp various_blorp_;
   std::string various_msg_;
   std::vector<uint32_t> various_stuff_;
+  fidljstest::BasicStruct basic_struct_;
 
   DISALLOW_COPY_AND_ASSIGN(TestolaImpl);
 };
@@ -408,6 +418,42 @@ TEST_F(FidlGenJsTest, NoResponseBeforeTearDown) {
   EXPECT_FALSE(helper.Get<bool>("resolved"));
   EXPECT_TRUE(helper.Get<bool>("rejected"));
   EXPECT_FALSE(helper.Get<bool>("excepted"));
+}
+
+TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
+  base::AsyncDispatcher dispatcher;
+
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()), &dispatcher);
+
+  // Send the data from the JS side into the channel.
+  std::string source = R"(
+    var proxy = new TestolaProxy();
+    proxy.$bind(testHandle);
+    var basicStruct = new BasicStruct(
+        true, -30, undefined, -789, 200, 65000, 0);
+    proxy.SendAStruct(basicStruct);
+  )";
+  helper.runner().Run(source, "test.js");
+
+  // Run the dispatcher to read and dispatch the response.
+  ASSERT_EQ(dispatcher.DispatchOrWaitUntil(zx_deadline_after(
+                ZX_MSEC(TestTimeouts::action_timeout().InMilliseconds()))),
+            ZX_OK);
+
+  fidljstest::BasicStruct received_struct = testola_impl.GetReceivedStruct();
+  EXPECT_EQ(received_struct.b, true);
+  EXPECT_EQ(received_struct.i8, -30);
+  EXPECT_EQ(received_struct.i16, 18);  // From defaults.
+  EXPECT_EQ(received_struct.i32, -789);
+  EXPECT_EQ(received_struct.u8, 200);
+  EXPECT_EQ(received_struct.u16, 65000);
+  // Make sure this didn't get defaulted, even though it has a false-ish value.
+  EXPECT_EQ(received_struct.u32, 0u);
 }
 
 int main(int argc, char** argv) {

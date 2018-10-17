@@ -113,8 +113,8 @@ class Compiler(object):
       self._CompileEnum(e)
     if self.fidl.union_declarations:
       raise NotImplementedError()
-    if self.fidl.struct_declarations:
-      raise NotImplementedError()
+    for s in self.fidl.struct_declarations:
+      self._CompileStruct(s)
     for i in self.fidl.interface_declarations:
       self._CompileInterface(i)
 
@@ -149,6 +149,64 @@ const %(name)s = {
           (member.name, _CompileConstant(member.value)))
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
+
+  def _CompileStruct(self, struct):
+    compound = _ParseCompoundIdentifier(struct.name)
+    name = _CompileCompoundIdentifier(compound)
+    param_names = [_ChangeIfReserved(x.name) for x in struct.members]
+    # TODO(crbug.com/883496): @param and types.
+    self.f.write('''/**
+ * @constructor
+ * @struct
+ */
+function %(name)s(%(param_names)s) {
+''' % { 'name': name,
+        'param_names': ', '.join(param_names) })
+    for member in struct.members:
+      member_name = _ChangeIfReserved(member.name)
+      value = '%(member_name)s'
+      if member.maybe_default_value:
+        value = ('(%(member_name)s !== undefined) ? %(member_name)s : ' +
+                 _CompileConstant(member.maybe_default_value))
+      self.f.write(('  this.%(member_name)s = ' + value + ';\n') %
+                   { 'member_name': member_name })
+    self.f.write('}\n\n')
+
+    self.f.write(
+'''const _kTT_%(name)s = {
+  enc: function(e, o, v) {
+''' % { 'name': name })
+
+    for member in struct.members:
+      element_ttname = self._CompileType(member.type)
+      self.f.write(
+          '    _kTT_%(element_ttname)s.enc('
+          'e, o + %(offset)s, v.%(member_name)s);\n' % {
+            'element_ttname': element_ttname,
+            'offset': member.offset,
+            'member_name': _ChangeIfReserved(member.name)
+          })
+
+    self.f.write(
+'''  },
+  dec: function(d, o) {
+''')
+
+    for member in struct.members:
+      element_ttname = self._CompileType(member.type)
+      self.f.write(
+          '    var $temp_%(member_name)s = _kTT_%(element_ttname)s.dec('
+          'e, o + %(offset)s);\n' % {
+            'element_ttname': element_ttname,
+            'offset': member.offset,
+            'member_name': _ChangeIfReserved(member.name)
+          })
+    self.f.write('''    return %(name)s(%(temp_names)s);
+  }
+};
+
+''' % { 'name': name,
+        'temp_names': ', '.join(['$temp_' + x for x in param_names]) })
 
 
   def _CompileType(self, t):
