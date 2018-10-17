@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 
+#include "base/bind.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -34,10 +35,12 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
  public:
   AdvancedProtectionStatusManagerTest() {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerForTesting);
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     testing_profile_.reset(builder.Build().release());
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(testing_profile_.get()));

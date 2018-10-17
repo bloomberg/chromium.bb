@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -94,9 +95,10 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     // Replace the signin manager and account fetcher service with fakes.
     SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, &BuildFakeSigninManagerForTesting);
+        context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
     AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
-        context, &FakeAccountFetcherServiceBuilder::BuildForTests);
+        context,
+        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
   }
 
   // Makes user signed-in as |email| with |hosted_domain|.

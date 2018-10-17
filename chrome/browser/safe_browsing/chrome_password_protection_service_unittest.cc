@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -78,9 +79,12 @@ const char kTestGmail[] = "foo@gmail.com";
 const char kBasicResponseHeaders[] = "HTTP/1.1 200 OK";
 const char kRedirectURL[] = "http://redirect.com";
 
-std::unique_ptr<KeyedService> BuildFakeUserEventService(
-    content::BrowserContext* context) {
-  return std::make_unique<syncer::FakeUserEventService>();
+BrowserContextKeyedServiceFactory::TestingFactory
+GetFakeUserEventServiceFactory() {
+  return base::BindRepeating(
+      [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
+        return std::make_unique<syncer::FakeUserEventService>();
+      });
 }
 
 constexpr struct {
@@ -163,12 +167,13 @@ class ChromePasswordProtectionServiceTest
     fake_user_event_service_ = static_cast<syncer::FakeUserEventService*>(
         browser_sync::UserEventServiceFactory::GetInstance()
             ->SetTestingFactoryAndUse(browser_context(),
-                                      &BuildFakeUserEventService));
+                                      GetFakeUserEventServiceFactory()));
     test_event_router_ =
         extensions::CreateAndUseTestEventRouter(browser_context());
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
-        ->SetTestingFactory(browser_context(),
-                            BuildSafeBrowsingPrivateEventRouter);
+        ->SetTestingFactory(
+            browser_context(),
+            base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
   }
 
   void TearDown() override {
@@ -196,14 +201,18 @@ class ChromePasswordProtectionServiceTest
 
   content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
-                              signin::BuildTestSigninClient);
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerForTesting);
-    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherServiceBuilder::BuildForTests);
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+    builder.AddTestingFactory(
+        ChromeSigninClientFactory::GetInstance(),
+        base::BindRepeating(&signin::BuildTestSigninClient));
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
+    builder.AddTestingFactory(
+        AccountFetcherServiceFactory::GetInstance(),
+        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
     return builder.Build().release();
   }
 
