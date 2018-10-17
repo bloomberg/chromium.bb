@@ -64,7 +64,6 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -1840,7 +1839,7 @@ public class ToolbarPhone extends ToolbarLayout
             view.setVisibility(browsingViewsVisibility);
         }
         if (mShowMenuBadge) {
-            setMenuButtonContentDescription();
+            setMenuButtonContentDescription(mTabSwitcherState == STATIC_TAB);
         }
 
         updateProgressBarVisibility();
@@ -2908,17 +2907,13 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void setTabSwitcherAnimationMenuBadgeDrawable() {
-        Drawable darkDrawable =
-                UpdateMenuItemHelper.getInstance().getDarkBadgeDrawable(this.getResources());
-        Drawable lightDrawable =
-                UpdateMenuItemHelper.getInstance().getLightBadgeDrawable(this.getResources());
-        if (darkDrawable == null || lightDrawable == null) return;
-
-        mTabSwitcherAnimationMenuBadgeDarkDrawable = darkDrawable;
+        mTabSwitcherAnimationMenuBadgeDarkDrawable = ApiCompatibilityUtils.getDrawable(
+                getResources(), R.drawable.badge_update_dark);
         mTabSwitcherAnimationMenuBadgeDarkDrawable.mutate();
         ((BitmapDrawable) mTabSwitcherAnimationMenuBadgeDarkDrawable).setGravity(Gravity.CENTER);
 
-        mTabSwitcherAnimationMenuBadgeLightDrawable = lightDrawable;
+        mTabSwitcherAnimationMenuBadgeLightDrawable = ApiCompatibilityUtils.getDrawable(
+                getResources(), R.drawable.badge_update_light);
         mTabSwitcherAnimationMenuBadgeLightDrawable.mutate();
         ((BitmapDrawable) mTabSwitcherAnimationMenuBadgeLightDrawable).setGravity(Gravity.CENTER);
     }
