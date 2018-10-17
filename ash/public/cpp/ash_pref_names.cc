@@ -173,6 +173,11 @@ const char kAllowScreenLock[] = "allow_screen_lock";
 // A boolean pref that turns on automatic screen locking.
 const char kEnableAutoScreenLock[] = "settings.enable_screen_lock";
 
+// Screen brightness percent values to be used when running on AC power.
+// Specified by the policy.
+const char kPowerAcScreenBrightnessPercent[] =
+    "power.ac_screen_brightness_percent";
+
 // Inactivity time in milliseconds while the system is on AC power before
 // the screen should be dimmed, turned off, or locked, before an
 // IdleActionImminent D-Bus signal should be sent, or before
@@ -182,6 +187,11 @@ const char kPowerAcScreenDimDelayMs[] = "power.ac_screen_dim_delay_ms";
 const char kPowerAcScreenOffDelayMs[] = "power.ac_screen_off_delay_ms";
 const char kPowerAcScreenLockDelayMs[] = "power.ac_screen_lock_delay_ms";
 const char kPowerAcIdleWarningDelayMs[] = "power.ac_idle_warning_delay_ms";
+
+// Screen brightness percent values to be used when running on battery power.
+// Specified by the policy.
+const char kPowerBatteryScreenBrightnessPercent[] =
+    "power.battery_screen_brightness_percent";
 
 // Similar delays while the system is on battery power.
 const char kPowerBatteryScreenDimDelayMs[] =
