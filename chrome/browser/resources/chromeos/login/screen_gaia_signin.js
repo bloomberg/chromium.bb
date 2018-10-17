@@ -1101,16 +1101,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send(
             'completeOfflineAuthentication',
             [credentials.email, credentials.password]);
-      } else if (credentials.authCode) {
+      } else {
         chrome.send('completeAuthentication', [
           credentials.gaiaId, credentials.email, credentials.password,
-          credentials.authCode, credentials.usingSAML, credentials.gapsCookie,
-          credentials.services
-        ]);
-      } else {
-        chrome.send('completeLogin', [
-          credentials.gaiaId, credentials.email, credentials.password,
-          credentials.usingSAML
+          credentials.usingSAML, credentials.services
         ]);
       }
 

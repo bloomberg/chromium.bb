@@ -20,6 +20,10 @@
 
 class AccountId;
 
+namespace net {
+class CanonicalCookie;
+}
+
 namespace policy {
 class TempCertsCacheNSS;
 }
@@ -108,10 +112,15 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleCompleteAuthentication(const std::string& gaia_id,
                                     const std::string& email,
                                     const std::string& password,
-                                    const std::string& auth_code,
                                     bool using_saml,
-                                    const std::string& gaps_cookie,
                                     const ::login::StringList& services);
+  void OnGetCookiesForCompleteAuthentication(
+      const std::string& gaia_id,
+      const std::string& email,
+      const std::string& password,
+      bool using_saml,
+      const ::login::StringList& services,
+      const std::vector<net::CanonicalCookie>& cookies);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,
