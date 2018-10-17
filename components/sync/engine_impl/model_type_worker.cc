@@ -160,6 +160,17 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
     StatusController* status) {
+  return ProcessGetUpdatesResponse(progress_marker, mutated_context,
+                                   applicable_updates,
+                                   /*from_uss_migrator=*/false, status);
+}
+
+SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
+    const sync_pb::DataTypeProgressMarker& progress_marker,
+    const sync_pb::DataTypeContext& mutated_context,
+    const SyncEntityList& applicable_updates,
+    bool from_uss_migrator,
+    StatusController* status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(rlarocque): Handle data type context conflicts.
@@ -167,7 +178,10 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   *model_type_state_.mutable_progress_marker() = progress_marker;
 
   UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
-  counters->num_updates_received += applicable_updates.size();
+
+  if (!from_uss_migrator) {
+    counters->num_updates_received += applicable_updates.size();
+  }
 
   std::vector<std::string> client_tag_hashes;
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
