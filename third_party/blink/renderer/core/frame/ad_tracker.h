@@ -81,18 +81,10 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
 
   Member<LocalFrame> local_root_;
 
-  // Since the script URLs should be external strings in v8 (allocated in Blink)
-  // getting it as String should end up with the same StringImpl. Thus storing a
-  // vector of Strings here should not be expensive.
-  // TODO(jkarlin): We don't need this struct. A Vector<bool> would suffice.
-  struct ExecutingScript {
-    String url;
-    bool is_ad;
-    ExecutingScript(String script_url, bool is_ad_script)
-        : url(script_url), is_ad(is_ad_script) {}
-  };
+  // Each time v8 is started to run a script or function, this records if it was
+  // an ad script. Each time the script or function finishes, it pops the stack.
+  Vector<bool> stack_frame_is_ad_;
 
-  Vector<ExecutingScript> executing_scripts_;
   HeapHashMap<WeakMember<ExecutionContext>, HashSet<String>> known_ad_scripts_;
 
   DISALLOW_COPY_AND_ASSIGN(AdTracker);

@@ -66,12 +66,11 @@ void AdTracker::WillExecuteScript(ExecutionContext* execution_context,
   bool is_ad = script_url.IsEmpty()
                    ? false
                    : IsKnownAdScript(execution_context, script_url);
-  ExecutingScript script(script_url, is_ad);
-  executing_scripts_.push_back(script);
+  stack_frame_is_ad_.push_back(is_ad);
 }
 
 void AdTracker::DidExecuteScript() {
-  executing_scripts_.pop_back();
+  stack_frame_is_ad_.pop_back();
 }
 
 void AdTracker::Will(const probe::ExecuteScript& probe) {
@@ -140,8 +139,8 @@ bool AdTracker::IsAdScriptInStack() {
     return true;
 
   // Scan the pseudo-stack for ad scripts.
-  for (const auto& executing_script : executing_scripts_) {
-    if (executing_script.is_ad)
+  for (bool is_ad : stack_frame_is_ad_) {
+    if (is_ad)
       return true;
   }
   return false;
@@ -153,7 +152,7 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
     return false;
 
   // TODO(jkarlin): Minor memory optimization, stop tracking known ad scripts in
-  // ad contexts. This will reduce the size of executing_scripts_. Note that
+  // ad contexts. This will reduce the size of known_ad_scripts_. Note that
   // this is a minor win, as the strings are already ref-counted.
   if (IsKnownAdExecutionContext(execution_context))
     return true;
