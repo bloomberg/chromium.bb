@@ -521,7 +521,6 @@
 <translation id="174937106936716857">Cantidad total de archivos</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="1753905327828125965">Más visitados</translation>
-<translation id="1754582516739637364">Estado de la memoria</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
 <translation id="175772926354468439">Habilitar tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2865,7 +2864,6 @@
 <translation id="5362741141255528695">Seleccionar archivo de clave privada.</translation>
 <translation id="5363109466694494651">Utilizar la función Powerwash y revertir</translation>
 <translation id="5367091008316207019">Leyendo el archivo...</translation>
-<translation id="5367116720986018215">Limitada</translation>
 <translation id="5368720394188453070">El teléfono está bloqueado. Desbloquéalo para ingresar.</translation>
 <translation id="5368779022775404937">Acceder a <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Volver a cargar</translation>
@@ -3432,7 +3430,6 @@
 <translation id="6178664161104547336">Seleccionar un certificado</translation>
 <translation id="6181431612547969857">Descarga bloqueada</translation>
 <translation id="6185132558746749656">Ubicación del dispositivo</translation>
-<translation id="6185617499004995178">Validador del IPP mediante CUPS</translation>
 <translation id="6185696379715117369">Retroceder página</translation>
 <translation id="6189412234224385711">Abrir con <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquear cookies de terceros</translation>
@@ -4690,7 +4687,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8071432093239591881">Imprimir como imagen</translation>
 <translation id="8072988827236813198">Marcar pestañas</translation>
 <translation id="8074127646604999664">Permitir que los sitios cerrados recientemente terminen de enviar y recibir datos</translation>
-<translation id="8075191520954018715">Estado de la memoria</translation>
 <translation id="8076492880354921740">Pestañas</translation>
 <translation id="8076835018653442223">El administrador inhabilitó el acceso a los archivos locales de tu dispositivo</translation>
 <translation id="8079530767338315840">Repetir</translation>

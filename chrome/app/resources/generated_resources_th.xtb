@@ -529,7 +529,6 @@
 <translation id="174937106936716857">จำนวนไฟล์ทั้งหมด</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="1753905327828125965">เข้าชมบ่อยสุด</translation>
-<translation id="1754582516739637364">สถานะหน่วยความจำ</translation>
 <translation id="1756681705074952506">วิธีการป้อนข้อมูล</translation>
 <translation id="175772926354468439">เปิดใช้งานธีม</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">เลือกไฟล์กุญแจส่วนตัว</translation>
 <translation id="5363109466694494651">Powerwash และเปลี่ยนกลับ</translation>
 <translation id="5367091008316207019">กำลังอ่านไฟล์..</translation>
-<translation id="5367116720986018215">ถูกปิดกั้น</translation>
 <translation id="5368720394188453070">โทรศัพท์ล็อกอยู่ โปรดปลดล็อกเพื่อเข้าใช้งาน</translation>
 <translation id="5368779022775404937">ลงชื่อเข้าใช้ <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;โหลดซ้ำ</translation>
@@ -3465,7 +3463,6 @@
 <translation id="6178664161104547336">เลือกใบรับรอง</translation>
 <translation id="6181431612547969857">การดาวน์โหลดถูกบล็อก</translation>
 <translation id="6185132558746749656">ตำแหน่งของอุปกรณ์</translation>
-<translation id="6185617499004995178">โปรแกรมตรวจสอบ CUPS IPP</translation>
 <translation id="6185696379715117369">เลื่อนหน้าขึ้น</translation>
 <translation id="6189412234224385711">เปิดด้วย <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">บล็อกคุกกี้ของบุคคลที่สาม</translation>
@@ -4730,7 +4727,6 @@
 <translation id="8071432093239591881">พิมพ์เป็นรูปภาพ</translation>
 <translation id="8072988827236813198">ตรึงแท็บ</translation>
 <translation id="8074127646604999664">อนุญาตให้เว็บไซต์ที่ปิดล่าสุดดำเนินการส่งและรับข้อมูลต่อจนเสร็จ</translation>
-<translation id="8075191520954018715">สถานะหน่วยความจำ</translation>
 <translation id="8076492880354921740">แท็บ</translation>
 <translation id="8076835018653442223">ผู้ดูแลระบบปิดการเข้าถึงไฟล์ในอุปกรณ์ของคุณ</translation>
 <translation id="8079530767338315840">เล่นซ้ำ</translation>

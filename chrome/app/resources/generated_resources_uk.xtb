@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Усього файлів</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
 <translation id="1753905327828125965">Часто відвідувані</translation>
-<translation id="1754582516739637364">Стан пам’яті</translation>
 <translation id="1756681705074952506">Метод введення</translation>
 <translation id="175772926354468439">Увімкнути тему</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">Виберіть файл секретного ключа.</translation>
 <translation id="5363109466694494651">Виконати Powerwash і повернутися до попередньої версії</translation>
 <translation id="5367091008316207019">Читання файлу...</translation>
-<translation id="5367116720986018215">Не вдається надіслати</translation>
 <translation id="5368720394188453070">Ваш телефон заблоковано. Щоб увійти, розблокуйте його.</translation>
 <translation id="5368779022775404937">Увійти на сторінці <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Оновити</translation>
@@ -3465,7 +3463,6 @@
 <translation id="6178664161104547336">Вибір сертифіката</translation>
 <translation id="6181431612547969857">Завантаження заблоковано</translation>
 <translation id="6185132558746749656">Місцезнаходження пристрою</translation>
-<translation id="6185617499004995178">Засіб перевірки CUPS IPP</translation>
 <translation id="6185696379715117369">Сторінка вгору</translation>
 <translation id="6189412234224385711">Відкрити за допомогою розширення "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
@@ -4730,7 +4727,6 @@
 <translation id="8071432093239591881">Друкувати як зображення</translation>
 <translation id="8072988827236813198">Закріпити вкладки</translation>
 <translation id="8074127646604999664">Дозволити нещодавно закритим сайтам завершувати надсилання й отримання даних</translation>
-<translation id="8075191520954018715">Стан пам’яті</translation>
 <translation id="8076492880354921740">Вкладки</translation>
 <translation id="8076835018653442223">Адміністратор вимкнув доступ до локальних файлів на вашому пристрої</translation>
 <translation id="8079530767338315840">Повторити</translation>

@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Contagem total de ficheiros</translation>
 <translation id="175196451752279553">Voltar a abrir o s&amp;eparador fechado</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
-<translation id="1754582516739637364">Estado da memória</translation>
 <translation id="1756681705074952506">Método de introdução</translation>
 <translation id="175772926354468439">Ativar tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2894,7 +2893,6 @@ Pretende pará-lo?</translation>
 <translation id="5362741141255528695">Selecionar ficheiro de chave privada.</translation>
 <translation id="5363109466694494651">Powerwash e reverter</translation>
 <translation id="5367091008316207019">A ler ficheiro...</translation>
-<translation id="5367116720986018215">Agrupado</translation>
 <translation id="5368720394188453070">O seu telemóvel está bloqueado. Desbloqueie-o para introduzir.</translation>
 <translation id="5368779022775404937">Iniciar sessão em <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Recarregar</translation>
@@ -3467,7 +3465,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6178664161104547336">Selecionar um certificado</translation>
 <translation id="6181431612547969857">Transferência bloqueada</translation>
 <translation id="6185132558746749656">Localização do dispositivo</translation>
-<translation id="6185617499004995178">Verificador de IPP do CUPS</translation>
 <translation id="6185696379715117369">Página para cima</translation>
 <translation id="6189412234224385711">Abrir com <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
@@ -4732,7 +4729,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8072988827236813198">Fixar Separadores</translation>
 <translation id="8074127646604999664">Permitir que os sites fechados recentemente concluam o envio e a receção de dados</translation>
-<translation id="8075191520954018715">Estado da memória</translation>
 <translation id="8076492880354921740">Separadores</translation>
 <translation id="8076835018653442223">O acesso a ficheiros locais no seu dispositivo foi desativado pelo seu administrador.</translation>
 <translation id="8079530767338315840">Repetir</translation>

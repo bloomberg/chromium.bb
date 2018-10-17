@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Celkový počet súborov</translation>
 <translation id="175196451752279553">Znovu o&amp;tvoriť zatvorenú kartu</translation>
 <translation id="1753905327828125965">Najviac navšt.</translation>
-<translation id="1754582516739637364">Stav pamäte</translation>
 <translation id="1756681705074952506">Metóda vstupu</translation>
 <translation id="175772926354468439">Povoliť motív</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5362741141255528695">Vybrať súbor súkromného kľúča.</translation>
 <translation id="5363109466694494651">Úplne obnoviť (Powerwash) a vrátiť späť</translation>
 <translation id="5367091008316207019">Prebieha čítanie súboru..</translation>
-<translation id="5367116720986018215">Zahltené</translation>
 <translation id="5368720394188453070">Telefón je uzamknutý. Ak chcete pokračovať, odomknite ho.</translation>
 <translation id="5368779022775404937">Prihláste sa do domény <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Obnoviť</translation>
@@ -3465,7 +3463,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6178664161104547336">Vybrať certifikát</translation>
 <translation id="6181431612547969857">Stiahnutie bolo zablokované</translation>
 <translation id="6185132558746749656">Poloha zariadenia</translation>
-<translation id="6185617499004995178">Nástroj na overenie CUPS IPP</translation>
 <translation id="6185696379715117369">Posunúť o stránku nahor</translation>
 <translation id="6189412234224385711">Otvoriť pomocou rozšírenia <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokovať súbory cookie tretích strán</translation>
@@ -4730,7 +4727,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8071432093239591881">Vytlačiť ako obrázok</translation>
 <translation id="8072988827236813198">Pripnúť karty</translation>
 <translation id="8074127646604999664">Povoliť nedávno zatvoreným webom dokončiť posielanie a prijímanie údajov</translation>
-<translation id="8075191520954018715">Stav pamäte</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8076835018653442223">Prístup k miestnym súborom vo vašom zariadení zakázal správca</translation>
 <translation id="8079530767338315840">Opakovať</translation>

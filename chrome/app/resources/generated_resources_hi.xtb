@@ -524,7 +524,6 @@
 <translation id="174937106936716857">फ़ाइलों की कुल संख्या</translation>
 <translation id="175196451752279553">बंद किए गए टैब पु&amp;न: खोलें</translation>
 <translation id="1753905327828125965">सबसे अधिक देखे गए</translation>
-<translation id="1754582516739637364">मेमोरी की स्थिति</translation>
 <translation id="1756681705074952506">इनपुट का तरीका</translation>
 <translation id="175772926354468439">थीम सक्षम करें</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2867,7 +2866,6 @@
 <translation id="5362741141255528695">निजी कुंजी फ़ाइल को चुनें.</translation>
 <translation id="5363109466694494651">पावरवॉश करें और वापस लाएं</translation>
 <translation id="5367091008316207019">फ़ाइल पढ़ी जा रही है..</translation>
-<translation id="5367116720986018215">थ्रॉटल्ड</translation>
 <translation id="5368720394188453070">आपका फ़ोन लॉक हो गया है. प्रवेश करने के लिए उसे अनलॉक करें.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> में साइन इन करें</translation>
 <translation id="5370819323174483825">&amp;पुन: लोड करें</translation>
@@ -3434,7 +3432,6 @@
 <translation id="6178664161104547336">किसी प्रमाणपत्र को चुनें</translation>
 <translation id="6181431612547969857">डाउनलोड अवरोधित किया गया</translation>
 <translation id="6185132558746749656">डिवाइस स्थान</translation>
-<translation id="6185617499004995178">CUPS IPP वैलिडेटर</translation>
 <translation id="6185696379715117369">Page up</translation>
 <translation id="6189412234224385711"><ph name="EXTENSION_NAME" /> से खोलें</translation>
 <translation id="6196640612572343990">तृतीय पक्ष कुकी ब्लॉक करें</translation>
@@ -4692,7 +4689,6 @@
 <translation id="8071432093239591881">चित्र के रूप में प्रिंट करें</translation>
 <translation id="8072988827236813198">टैब छोटा करें</translation>
 <translation id="8074127646604999664">हाल ही में बंद की गई साइटों को डेटा भेजने और प्राप्त करने की प्रकिया पूरी करने दें</translation>
-<translation id="8075191520954018715">मेमोरी की स्थिति</translation>
 <translation id="8076492880354921740">टैब</translation>
 <translation id="8076835018653442223">आपके एडमिन ने आपके डिवाइस की स्थानीय फ़ाइलों की एक्सेस बंद कर दी है</translation>
 <translation id="8079530767338315840">दोहराएं</translation>

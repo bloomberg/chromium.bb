@@ -526,7 +526,6 @@
 <translation id="174937106936716857">Общ брой файлове</translation>
 <translation id="175196451752279553">По&amp;вторно отваряне на затворения раздел</translation>
 <translation id="1753905327828125965">Ползвани</translation>
-<translation id="1754582516739637364">Състояние на паметта</translation>
 <translation id="1756681705074952506">Метод за въвеждане</translation>
 <translation id="175772926354468439">Активиране на темата</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2892,7 +2891,6 @@
 <translation id="5362741141255528695">Изберете файла с личен ключ.</translation>
 <translation id="5363109466694494651">Powerwash и възстановяване</translation>
 <translation id="5367091008316207019">Файлът се чете...</translation>
-<translation id="5367116720986018215">Ограничено</translation>
 <translation id="5368720394188453070">Телефонът ви е заключен. Отключете го, за да влезете.</translation>
 <translation id="5368779022775404937">Влизане в домейна <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Презареждане</translation>
@@ -3465,7 +3463,6 @@
 <translation id="6178664161104547336">Избор на сертификат</translation>
 <translation id="6181431612547969857">Изтеглянето е блокирано</translation>
 <translation id="6185132558746749656">Местоположение на устройството</translation>
-<translation id="6185617499004995178">Инструмент за проверка на IPP заявки за CUPS</translation>
 <translation id="6185696379715117369">Страница нагоре</translation>
 <translation id="6189412234224385711">Отваряне с/ъс <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Блокиране на „бисквитките“ на трети страни</translation>
@@ -4730,7 +4727,6 @@
 <translation id="8071432093239591881">Отпечатване като изображение</translation>
 <translation id="8072988827236813198">Фиксиране на разделите</translation>
 <translation id="8074127646604999664">Разрешаване на наскоро затворените сайтове да завършват изпращането и получаването на данни</translation>
-<translation id="8075191520954018715">Състояние на паметта</translation>
 <translation id="8076492880354921740">Раздели</translation>
 <translation id="8076835018653442223">Достъпът до локални файлове на устройството ви е деактивиран от администратора ви</translation>
 <translation id="8079530767338315840">Повтаряне</translation>

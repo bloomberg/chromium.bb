@@ -526,7 +526,6 @@
 <translation id="174937106936716857">Укупан број датотека</translation>
 <translation id="175196451752279553">П&amp;оново отвори затворену картицу</translation>
 <translation id="1753905327828125965">Најпосећеније</translation>
-<translation id="1754582516739637364">Статус меморије</translation>
 <translation id="1756681705074952506">Метод уноса</translation>
 <translation id="175772926354468439">Омогући тему</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2889,7 +2888,6 @@
 <translation id="5362741141255528695">Изаберите датотеку приватног кључа.</translation>
 <translation id="5363109466694494651">Обави Powerwash и врати</translation>
 <translation id="5367091008316207019">Читање датотеке..</translation>
-<translation id="5367116720986018215">Пригушен</translation>
 <translation id="5368720394188453070">Телефон је закључан. Откључајте га да бисте приступили.</translation>
 <translation id="5368779022775404937">Пријавите се на <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Учитај поново</translation>
@@ -3463,7 +3461,6 @@
 <translation id="6178664161104547336">Избор сертификата</translation>
 <translation id="6181431612547969857">Преузимање је блокирано</translation>
 <translation id="6185132558746749656">Локација уређаја</translation>
-<translation id="6185617499004995178">CUPS IPP валидатор</translation>
 <translation id="6185696379715117369">Страница нагоре</translation>
 <translation id="6189412234224385711">Отвори помоћу додатка <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Блокирај колачиће треће стране</translation>
@@ -4728,7 +4725,6 @@
 <translation id="8071432093239591881">Одштампај као слику</translation>
 <translation id="8072988827236813198">Закачи картице</translation>
 <translation id="8074127646604999664">Дозволи да недавно затворени сајтови заврше слање и пријем података</translation>
-<translation id="8075191520954018715">Статус меморије</translation>
 <translation id="8076492880354921740">Картице</translation>
 <translation id="8076835018653442223">Администратор је онемогућио приступ локалним датотекама на уређају</translation>
 <translation id="8079530767338315840">Пусти поново</translation>

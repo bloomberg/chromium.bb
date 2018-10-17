@@ -2,6 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="101438888985615157">将屏幕旋转 180 度</translation>
+<translation id="1016912092715201525">在 <ph name="PRODUCT_NAME" /> 中配置默认浏览器检查，并禁止用户更改此设置。
+
+      如果您启用了此设置，则 <ph name="PRODUCT_NAME" /> 始终都会在启动时检查自己是否为默认浏览器，并会自动注册（如果可能的话）。
+
+      如果此设置已停用，则 <ph name="PRODUCT_NAME" /> 永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。
+
+      如果此设置未配置，则 <ph name="PRODUCT_NAME" /> 会让用户控制是否将它设为默认浏览器以及是否在它不是默认浏览器的情况下向用户显示通知。
+
+      <ph name="MS_WIN_NAME" /> 管理员需要注意：只能在运行 Windows 7 的设备中启用此设置。在运行 Windows 8 或更高版本的设备中，必须部署一个“默认的应用程序关联”文件，使 <ph name="PRODUCT_NAME" /> 成为 <ph name="HHTPS_PROTOCOL" /> 和 <ph name="HTTP_PROTOCOL" /> 协议（或者 <ph name="FTP_PROTOCOL" /> 协议以及 <ph name="HTML_EXTENSION" />、<ph name="HTM_EXTENSION" />、<ph name="PDF_EXTENSION" />、<ph name="SVG_EXTENSION" />、<ph name="WEBP_EXTENSION" /> 等文件格式）的处理程序。如需了解详情，请参阅 <ph name="SUPPORT_URL" />。</translation>
 <translation id="1017967144265860778">登录屏幕的电源管理设置</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
@@ -661,6 +670,7 @@
 <translation id="2873651257716068683">替换默认打印页面大小。如果这种页面大小不适用，则忽略此政策。</translation>
 <translation id="2874209944580848064">针对支持 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备的注意事项：</translation>
 <translation id="2877225735001246144">在协商 Kerberos 身份验证时停用 CNAME 查找</translation>
+<translation id="2890645751406497668">自动授权这些网站通过给定的供应商 ID 和产品 ID 连接到 USB 设备。</translation>
 <translation id="2892414556511568464">限制双面打印模式。如果未设置此政策或将其留空，则会被视为无限制。</translation>
 <translation id="2893546967669465276">将系统日志发送到管理服务器</translation>
 <translation id="2899002520262095963">Android 应用可以使用通过此政策设置的网络配置和 CA 证书，但无法访问某些配置选项。</translation>
@@ -849,6 +859,7 @@
 
       如果此设置设为“关闭”或未设置值，则 <ph name="PRODUCT_NAME" /> 不会强制启用 YouTube 受限模式。但是，外部政策（例如 YouTube 政策）仍有可能会强制启用受限模式。</translation>
 <translation id="3428247105888806363">启用网络预测功能</translation>
+<translation id="3437924696598384725">允许用户管理 VPN 连接</translation>
 <translation id="3449886121729668969">配置 <ph name="PRODUCT_NAME" /> 的代理设置。ARC 应用也将可以使用这些代理设置。
 
       此政策尚无法使用，因此请勿使用此政策。</translation>
@@ -1489,6 +1500,11 @@
 <translation id="5323128137188992869">允许使用 <ph name="PRODUCT_NAME" /> 向设备投射内容。
 
           如果此政策设为 False，用户将无法向其设备投射内容。如果此政策设为 True，用户将能够投射内容。如果此政策未设置，用户将被禁止向已注册的 Chrome 操作系统设备投射内容，但可将内容投射到未注册的设备。</translation>
+<translation id="5329007337159326804">警告：大概从 75 版（将于 2019 年 6 月左右推出）开始，<ph name="PRODUCT_NAME" /> 中将会彻底移除用于指定最高 TLS 版本的政策。
+
+      如果您不配置此政策，<ph name="PRODUCT_NAME" /> 便会使用默认的最高版本。
+
+      如果您想配置此政策，则可将其设为“tls1.2”或“tls1.3”。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用任何高于指定版本的 SSL/TLS 版本。无法识别的值会被忽略。</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME" />处理以下内容类型</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="5366745336748853475">可让您指定一系列网址格式，从而指定要在 SAML 流程托管框架的登录屏幕上自动为哪些网站选择客户端证书（如果相应网站要求提供证书）。例如，配置一个要向 SAML IdP 出示的设备级证书。
@@ -1515,6 +1531,15 @@
           如果启用了此设置，那么在进行远程连接时，就会禁用主机的物理输入和输出设备。
 
           如果停用或未设定此设置，那么当主机处于共享状态时，本地和远程用户都可以与主机互动。</translation>
+<translation id="5396049152026347991">允许用户管理 VPN 连接。
+
+      如果此政策设为 false，所有允许用户断开/修改 VPN 连接的 <ph name="PRODUCT_NAME" /> 界面都会被停用。
+
+      如果此政策设为 true 或未设置，用户可照常断开/修改 VPN 连接。
+
+      如果 VPN 连接是通过 VPN 应用创建的，则相应应用内的界面不会受到此政策的影响。因此，用户或许仍能使用相应应用修改 VPN 连接。
+
+      此政策旨在与“始终开启的 VPN”功能结合使用，以便管理员决定是否要在启动时建立 VPN 连接。</translation>
 <translation id="5405289061476885481">配置允许在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用哪些键盘布局。
 
       如果此政策设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当登录屏幕上显示已激活的用户操作大图标时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供相应用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
@@ -1595,6 +1620,11 @@
       如果此设置已停用或未配置，用户则可使用自己设备所支持的所有类型的外部存储设备。</translation>
 <translation id="5697306356229823047">报告设备用户</translation>
 <translation id="570062449808736508">此政策设为非空字符串时，WebView 将读取具有指定机构名称的内容提供方的网址限制条件。</translation>
+<translation id="5701714006401683963">如果此政策设为 false，受管理访客自助服务终端的行为将会与 https://support.google.com/chrome/a/answer/3017014 页面中所述的标准“公用自助服务终端”的行为一样。
+
+      如果此政策设为 true 或未设置，受管理访客自助服务终端的行为将会与“受管理自助服务终端”的行为相同，而不会像常规“公用自助服务终端”的行为那样有那么多限制。
+
+      如果此政策已设置，用户将无法更改或替换它。</translation>
 <translation id="5722934961007828462">此设置处于启用状态时，对于已成功通过验证并由本地安装的 CA 证书签发的服务器证书，<ph name="PRODUCT_NAME" /> 会一律执行撤消检查。
 
       如果 <ph name="PRODUCT_NAME" /> 无法获取撤消状态信息，此类证书将被视为已撤消（“硬性失败”）。
@@ -1965,6 +1995,13 @@
 <translation id="6786967369487349613">设置漫游个人资料目录</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
+<translation id="6816212867679667972">确定要在 DHCP 请求中使用的设备主机名。
+
+      如果此政策设为一个非空字符串，该字符串将会用作 DHCP 请求中的设备主机名。
+
+      该字符串可以包含变量 ${ASSET_ID}、${SERIAL_NUM}、${MAC_ADDR}、${MACHINE_NAME}。系统会先将这些变量替换为设备上的相应值，然后再将该字符串用作主机名。替换后的字符串应是有效的主机名（符合 RFC 1035 第 3.1 节中的规定）。
+
+      如果此政策未设置，或替换后的值不是有效的主机名，系统将不会在 DHCP 请求中设置任何主机名。 </translation>
 <translation id="6835883744948188639">显示建议用户重新启动浏览器的周期性提示</translation>
 <translation id="6838056959556423778">替换 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
       此政策用于确定：当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统会遵循什么样的规则来选择默认打印机。
@@ -2240,6 +2277,21 @@
 
       如果此政策未设置，自动清理将使用默认的内置策略（目前为“RemoveLRUIfDormant”策略）。</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
+<translation id="7337967786223261174">配置打印机列表。
+
+      通过此政策，管理员可为他们的用户提供打印机配置。
+
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均是自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可帮助最终用户轻松地识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户端计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
+
+      “<ph name="PRINTER_EFFECTIVE_MODEL" />”必须与代表 <ph name="PRODUCT_NAME" /> 所支持打印机的某个字符串匹配。该字符串将会被用来识别和为打印机安装相应的 PPD。如需了解详情，请访问 https://support.google.com/chrome?p=noncloudprint。
+
+      打印机设置在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统则会缓存经常使用的 PPD。
+
+      此政策对用户能否在各部设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
+
+      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 设备名称或其子字符串。例如，如果设备名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，则“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”将被替换为第 6 个位置后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
+      我们在 M71 中弃用了 <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" />（小写），并将在 M72 中将其移除。
+      </translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="7343497214039883642">设备的企业打印机配置文件</translation>
 <translation id="7349338075015720646">以列表形式指定在无需用户干预的情况下静默安装的网站，用户无法卸载或停用这些网站。
@@ -2640,6 +2692,7 @@
 <translation id="8359734107661430198">从 2008 年 9 月 2 日开始启用 ExampleDeprecatedFeature API</translation>
 <translation id="8367209241899435947">在 Windows 系统上启用 Chrome 清理功能</translation>
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
+<translation id="8371178326720637170">允许托管扩展程序使用 Enterprise Hardware Platform API</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
 <translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。改为将此 PDF 查看器视为下载项，并允许用户使用此默认应用打开 PDF 文件。
@@ -2881,6 +2934,11 @@
 <translation id="8970205333161758602">阻止显示 <ph name="PRODUCT_FRAME_NAME" />停止支持的提示</translation>
 <translation id="8976248126101463034">允许针对远程访问主机进行 gnubby 身份验证</translation>
 <translation id="8976531594979650914">使用系统默认打印机作为默认选项</translation>
+<translation id="898520305112996948">让您能够设置一系列网址格式，以指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址格式这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，该政策将会无效。无效的政策值会被忽略。
+
+        如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
+
+        此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突。如果存在冲突，则此政策的优先级高于 WebUsbBlockedForUrls 和 WebUsbAskForUrls。</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="9012851181124311976">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。系统会在这些网址上捕获密码指纹，并使用指纹进行密码重用检测。
       为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获密码指纹，请务必确保您的登录页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。

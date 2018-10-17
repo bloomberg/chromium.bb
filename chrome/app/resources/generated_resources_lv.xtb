@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Failu kopskaits</translation>
 <translation id="175196451752279553">Vēlr&amp;eiz atvērt aizvērto cilni</translation>
 <translation id="1753905327828125965">Visapmeklētākais</translation>
-<translation id="1754582516739637364">Atmiņas stāvoklis</translation>
 <translation id="1756681705074952506">Ievades metode</translation>
 <translation id="175772926354468439">Iespējot motīvu</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5362741141255528695">Atlasiet privātās atslēgas failu.</translation>
 <translation id="5363109466694494651">Powerwash un atjaunošana</translation>
 <translation id="5367091008316207019">Notiek faila lasīšana...</translation>
-<translation id="5367116720986018215">Palēnināts</translation>
 <translation id="5368720394188453070">Jūsu tālrunis ir bloķēts. Lai tajā ieietu, atbloķējiet to.</translation>
 <translation id="5368779022775404937">Pierakstieties vietnē <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Atkārtoti ielādēt</translation>
@@ -3465,7 +3463,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6178664161104547336">Sertifikāta atlasīšana</translation>
 <translation id="6181431612547969857">Lejupielāde ir bloķēta.</translation>
 <translation id="6185132558746749656">Ierīces atrašanās vieta</translation>
-<translation id="6185617499004995178">CUPS IPP validators</translation>
 <translation id="6185696379715117369">Augšup</translation>
 <translation id="6189412234224385711">Atvērt ar paplašinājumu <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloķēt trešo pušu sīkfailus</translation>
@@ -4729,7 +4726,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8071432093239591881">Drukāt kā attēlu</translation>
 <translation id="8072988827236813198">Saistītas cilnes</translation>
 <translation id="8074127646604999664">Atļaut nesen aizvērtajām vietnēm pabeigt datu sūtīšanu un saņemšanu</translation>
-<translation id="8075191520954018715">Atmiņas stāvoklis</translation>
 <translation id="8076492880354921740">Cilnes</translation>
 <translation id="8076835018653442223">Administrators ir atspējojis piekļuvi lokālajiem failiem jūsu ierīcē.</translation>
 <translation id="8079530767338315840">Atkārtot</translation>

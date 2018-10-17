@@ -521,7 +521,6 @@
 <translation id="174937106936716857">Totalt antall filer</translation>
 <translation id="175196451752279553">Gj&amp;enåpne den lukkede fanen</translation>
 <translation id="1753905327828125965">Mest besøkt</translation>
-<translation id="1754582516739637364">Minnetilstand</translation>
 <translation id="1756681705074952506">Inndatametode</translation>
 <translation id="175772926354468439">Aktiver temaet</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2861,7 +2860,6 @@
 <translation id="5362741141255528695">Velg privat nøkkelfil.</translation>
 <translation id="5363109466694494651">Powerwash og tilbakestill</translation>
 <translation id="5367091008316207019">Leser filen …</translation>
-<translation id="5367116720986018215">Minnebegrensning</translation>
 <translation id="5368720394188453070">Telefonen er låst. Lås den opp for å få tilgang.</translation>
 <translation id="5368779022775404937">Logg på <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Last inn på nytt</translation>
@@ -3428,7 +3426,6 @@
 <translation id="6178664161104547336">Velg et sertifikat</translation>
 <translation id="6181431612547969857">Nedlastingen ble blokkert</translation>
 <translation id="6185132558746749656">Enhetsposisjon</translation>
-<translation id="6185617499004995178">CUPS IPP-validator</translation>
 <translation id="6185696379715117369">Opp én side</translation>
 <translation id="6189412234224385711">Åpne med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
@@ -4684,7 +4681,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8071432093239591881">Skriv ut som bilde</translation>
 <translation id="8072988827236813198">Fest faner</translation>
 <translation id="8074127646604999664">Tillat at nylig lukkede nettsteder fullfører sending og mottak av data</translation>
-<translation id="8075191520954018715">Minnetilstand</translation>
 <translation id="8076492880354921740">Faner</translation>
 <translation id="8076835018653442223">Administratoren din har deaktivert tilgang til lokale filer på enheten din</translation>
 <translation id="8079530767338315840">Gjenta</translation>

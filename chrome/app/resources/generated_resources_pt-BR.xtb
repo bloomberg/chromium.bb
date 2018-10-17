@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Contagem total de arquivos</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
-<translation id="1754582516739637364">Estado da memória</translation>
 <translation id="1756681705074952506">Método de entrada</translation>
 <translation id="175772926354468439">Ativar tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">Selecionar arquivo de chave privada.</translation>
 <translation id="5363109466694494651">Realizar Powerwash e reverter</translation>
 <translation id="5367091008316207019">Lendo arquivo...</translation>
-<translation id="5367116720986018215">Limitado</translation>
 <translation id="5368720394188453070">Seu smartphone está bloqueado. Desbloqueie-o para entrar.</translation>
 <translation id="5368779022775404937">Fazer login em <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Recarregar</translation>
@@ -3467,7 +3465,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6178664161104547336">Selecione um certificado</translation>
 <translation id="6181431612547969857">Download bloqueado</translation>
 <translation id="6185132558746749656">Localização do dispositivo</translation>
-<translation id="6185617499004995178">Validador de CUPS IPP</translation>
 <translation id="6185696379715117369">Página para cima</translation>
 <translation id="6189412234224385711">Abrir com <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
@@ -4732,7 +4729,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8072988827236813198">Fixar guias</translation>
 <translation id="8074127646604999664">Permitir que sites fechados recentemente concluam o envio e o recebimento de dados</translation>
-<translation id="8075191520954018715">Estado da memória</translation>
 <translation id="8076492880354921740">Guias</translation>
 <translation id="8076835018653442223">O acesso aos arquivos locais do seu dispositivo foi desativado pelo administrador</translation>
 <translation id="8079530767338315840">Repetir</translation>

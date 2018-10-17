@@ -162,6 +162,7 @@
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1978555033938440688">Phiên bản chương trình cơ sở</translation>
+<translation id="1981206234434200693">Xóa dữ liệu lịch sử duyệt web của Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{và 1 ứng dụng khác}other{và # ứng dụng khác}}</translation>
 <translation id="2003709556000175978">Đặt lại mật khẩu của bạn ngay bây giờ</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
@@ -229,6 +230,7 @@
 <translation id="2473195200299095979">Dịch trang này</translation>
 <translation id="2479410451996844060">URL tìm kiếm hợp lệ.</translation>
 <translation id="2482878487686419369">Thông báo</translation>
+<translation id="248348093745724435">Chính sách về máy</translation>
 <translation id="2491120439723279231">Chứng chỉ của máy chủ có lỗi.</translation>
 <translation id="2495083838625180221">Trình phân tích cú pháp JSON</translation>
 <translation id="2495093607237746763">Nếu được chọn, Chromium sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
@@ -298,6 +300,7 @@
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, hiện đã chọn. <ph name="ROW_CONTENT" /></translation>
+<translation id="2982481275546140226">Xóa dữ liệu</translation>
 <translation id="2985306909656435243">Nếu được bật, Chromium sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
 <translation id="2985398929374701810">Nhập địa chỉ hợp lệ</translation>
 <translation id="2986368408720340940">Phương thức nhận hàng này không có sẵn. Hãy thử một phương thức khác.</translation>
@@ -317,6 +320,7 @@
 <translation id="3109728660330352905">Bạn không có quyền xem trang này.</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán kết nối<ph name="END_LINK" />.</translation>
+<translation id="3137507986424712703">{COUNT,plural, =0{Không}=1{dữ liệu đăng nhập cho 1 tài khoản}other{dữ liệu đăng nhập cho # tài khoản}}</translation>
 <translation id="3145945101586104090">Không thể giải mã phản hồi</translation>
 <translation id="3150653042067488994">Lỗi máy chủ tạm thời</translation>
 <translation id="3154506275960390542">Trang này bao gồm biểu mẫu có thể được gửi không an toàn. Dữ liệu bạn gửi có thể bị người khác xem trong khi chuyển tuyến hoặc có thể bị kẻ tấn công sửa đổi nhằm thay đổi thông tin mà máy chủ nhận được.</translation>
@@ -401,6 +405,7 @@
 <translation id="3650584904733503804">Xác thực thành công</translation>
 <translation id="3655670868607891010">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="HELP_LINK" /> sau.</translation>
 <translation id="3658742229777143148">Bản sửa đổi</translation>
+<translation id="3676592649209844519">ID thiết bị:</translation>
 <translation id="3678029195006412963">Không thể ký yêu cầu</translation>
 <translation id="3678529606614285348">Mở trang trong cửa sổ Ẩn danh mới (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" />, được tải lên vào <ph name="UPLOAD_TIME" /></translation>
@@ -583,6 +588,7 @@
 <translation id="4989163558385430922">Xem tất cả</translation>
 <translation id="4989809363548539747">Plugin này không được hỗ trợ</translation>
 <translation id="5002932099480077015">Nếu được bật, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
+<translation id="5015510746216210676">Tên máy:</translation>
 <translation id="5018422839182700155">Không thể mở trang này</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
@@ -722,6 +728,7 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (được đồng bộ hóa)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Đang sử dụng 1 cookie}other{Đang sử dụng # cookie}}</translation>
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
+<translation id="5932224571077948991">Trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
 <translation id="5966151627327109289">Bạn sẽ bị đăng xuất khỏi hầu hết các trang web và có thể mất quyền truy cập vào nội dung được bảo vệ trên <ph name="SITE" /> và một số trang web khác.</translation>
@@ -759,6 +766,7 @@
 <translation id="6203231073485539293">Kiểm tra kết nối Internet của bạn</translation>
 <translation id="6218753634732582820">Bạn muốn xóa địa chỉ khỏi Chromium?</translation>
 <translation id="6221345481584921695">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại. Nội dung độc hại xuất phát từ <ph name="SUBRESOURCE_HOST" />, một nguồn phát tán phần mềm độc hại đã xác định.</translation>
+<translation id="6240447795304464094">Biểu trưng của Google Pay</translation>
 <translation id="6251924700383757765">Chính sách bảo mật</translation>
 <translation id="6254436959401408446">Không đủ bộ nhớ để mở trang này</translation>
 <translation id="625755898061068298">Bạn đã chọn tắt cảnh báo bảo mật cho trang web này.</translation>
@@ -777,6 +785,7 @@
 <translation id="6337133576188860026">Bộ nhớ đệm còn chưa đầy <ph name="SIZE" />. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="6337534724793800597">Lọc chính sách theo tên</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
+<translation id="6383221683286411806">Có thể phát sinh chi phí.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
 <translation id="6387754724289022810">Để thanh toán nhanh hơn vào lần tiếp theo, hãy lưu địa chỉ thanh toán và thẻ vào Tài khoản Google của bạn và thiết bị này.</translation>
 <translation id="6397451950548600259">Phần mềm trên máy tính của bạn đang ngăn Chrome kết nối an toàn với web</translation>
@@ -814,6 +823,7 @@
 <translation id="6685834062052613830">Đăng xuất và hoàn thành quá trình thiết lập</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6710594484020273272">&lt;Nhập cụm từ tìm kiếm&gt;</translation>
+<translation id="671076103358959139">Mã thông báo đăng ký:</translation>
 <translation id="6711464428925977395">Đã xảy ra sự cố với máy chủ proxy hoặc địa chỉ không chính xác.</translation>
 <translation id="674375294223700098">Lỗi chứng chỉ máy chủ không xác định.</translation>
 <translation id="6744009308914054259">Trong khi chờ kết nối, bạn có thể chuyển đến phần Tài nguyên đã tải xuống để đọc các bài viết ngoại tuyến.</translation>
@@ -879,6 +889,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
 <translation id="7219179957768738017">Kết nối sử dụng <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Đang xử lý</translation>
+<translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Trang web bạn sắp truy cập chứa phần mềm độc hại</translation>
 <translation id="724975217298816891">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật chi tiết thẻ của bạn. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="7251437084390964440">Cấu hình mạng này không tuân thủ tiêu chuẩn ONC. Một số phần của cấu hình có thể không nhập được.
@@ -1059,6 +1070,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8364627913115013041">Chưa được đặt.</translation>
 <translation id="8368476060205742148">Dịch vụ của Google Play</translation>
 <translation id="8380941800586852976">Nguy hiểm</translation>
+<translation id="8381674639488873545">Những khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Dấu trang bạn truy cập gần đây sẽ xuất hiện ở đây</translation>
 <translation id="8398259832188219207">Báo cáo sự cố được tải lên vào <ph name="UPLOAD_TIME" /></translation>
 <translation id="8412145213513410671">Sự cố (<ph name="CRASH_COUNT" />)</translation>

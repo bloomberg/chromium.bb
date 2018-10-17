@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Skupno število datotek</translation>
 <translation id="175196451752279553">&amp;Znova odpri zaprt zavihek</translation>
 <translation id="1753905327828125965">Najpogosteje obiskane</translation>
-<translation id="1754582516739637364">Stanje pomnilnika</translation>
 <translation id="1756681705074952506">Način vnosa</translation>
 <translation id="175772926354468439">Omogoči temo</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@
 <translation id="5362741141255528695">Izberite datoteko z zasebnim ključem.</translation>
 <translation id="5363109466694494651">Izvedi Powerwash in povrni</translation>
 <translation id="5367091008316207019">Branje datoteke ...</translation>
-<translation id="5367116720986018215">Upočasnjeno</translation>
 <translation id="5368720394188453070">Telefon je zaklenjen. Za dostop ga odklenite.</translation>
 <translation id="5368779022775404937">Prijavite se v domeno <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Znova naloži</translation>
@@ -3466,7 +3464,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6178664161104547336">Izberite potrdilo</translation>
 <translation id="6181431612547969857">Prenos je bil blokiran</translation>
 <translation id="6185132558746749656">Lokacija naprave</translation>
-<translation id="6185617499004995178">Orodje CUPS IPP Validator</translation>
 <translation id="6185696379715117369">Stran gor</translation>
 <translation id="6189412234224385711">Odpiranje z: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
@@ -4731,7 +4728,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8071432093239591881">Natisni kot sliko</translation>
 <translation id="8072988827236813198">Pripni zavihke</translation>
 <translation id="8074127646604999664">Nedavno zaprtim spletnim mestom dovoli dokončanje pošiljanja in prejemanja podatkov</translation>
-<translation id="8075191520954018715">Stanje pomnilnika</translation>
 <translation id="8076492880354921740">Zavihki</translation>
 <translation id="8076835018653442223">Skrbnik je onemogočil dostop do lokalnih datotek v vaši napravi</translation>
 <translation id="8079530767338315840">Ponavljanje</translation>

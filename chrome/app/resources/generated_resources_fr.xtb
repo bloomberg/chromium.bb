@@ -529,7 +529,6 @@
 <translation id="174937106936716857">Nombre total de fichiers</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="1753905327828125965">Les + visités</translation>
-<translation id="1754582516739637364">État de la mémoire</translation>
 <translation id="1756681705074952506">Mode de saisie</translation>
 <translation id="175772926354468439">Activer le thème</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2893,7 +2892,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5362741141255528695">Sélectionnez le fichier de clé privée.</translation>
 <translation id="5363109466694494651">Powerwash et rétablir</translation>
 <translation id="5367091008316207019">Lecture du fichier en cours…</translation>
-<translation id="5367116720986018215">Ralenti</translation>
 <translation id="5368720394188453070">Votre téléphone est verrouillé. Déverrouillez-le pour y accéder.</translation>
 <translation id="5368779022775404937">Se connecter à <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Actualiser</translation>
@@ -3466,7 +3464,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6178664161104547336">Sélectionner un certificat</translation>
 <translation id="6181431612547969857">Téléchargement bloqué</translation>
 <translation id="6185132558746749656">Position de l'appareil</translation>
-<translation id="6185617499004995178">Outil de validation IPP CUPS</translation>
 <translation id="6185696379715117369">Accéder à la page précédente</translation>
 <translation id="6189412234224385711">Ouvrir avec <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloquer les cookies tiers</translation>
@@ -4731,7 +4728,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8071432093239591881">Imprimer en tant qu'image</translation>
 <translation id="8072988827236813198">Épingler les onglets</translation>
 <translation id="8074127646604999664">Autoriser les sites fermés récemment à terminer l'envoi et la réception de données</translation>
-<translation id="8075191520954018715">État de la mémoire</translation>
 <translation id="8076492880354921740">Onglets</translation>
 <translation id="8076835018653442223">Votre administrateur a désactivé l'accès aux fichiers locaux sur votre appareil</translation>
 <translation id="8079530767338315840">Répéter</translation>

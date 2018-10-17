@@ -529,7 +529,6 @@
 <translation id="174937106936716857">إجمالي عدد الملفات</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="1753905327828125965">الأكثر زيارة</translation>
-<translation id="1754582516739637364">حالة الذاكرة</translation>
 <translation id="1756681705074952506">أسلوب الإدخال</translation>
 <translation id="175772926354468439">تفعيل المظهر</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2888,7 +2887,6 @@
 <translation id="5362741141255528695">حدد ملف المفتاح الخاص.</translation>
 <translation id="5363109466694494651">إجراء المحو الكامل والعودة</translation>
 <translation id="5367091008316207019">جارٍ قراءة الملف..</translation>
-<translation id="5367116720986018215">مقيَّدة</translation>
 <translation id="5368720394188453070">هاتفك مغلق. ألغ قفله للدخول.</translation>
 <translation id="5368779022775404937">تسجيل الدخول إلى <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;إعادة تحميل</translation>
@@ -3461,7 +3459,6 @@
 <translation id="6178664161104547336">تحديد شهادة</translation>
 <translation id="6181431612547969857">تم حظر التنزيل</translation>
 <translation id="6185132558746749656">موقع الجهاز</translation>
-<translation id="6185617499004995178">‏مدقق CUPS IPP</translation>
 <translation id="6185696379715117369">صفحة لأعلى</translation>
 <translation id="6189412234224385711">فتح باستخدام <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
@@ -4727,7 +4724,6 @@
 <translation id="8071432093239591881">الطباعة كصورة</translation>
 <translation id="8072988827236813198">تثبيت علامات التبويب</translation>
 <translation id="8074127646604999664">السماح للمواقع الإلكترونية التي تم إغلاقها مؤخرًا بإنهاء إرسال البيانات واستلامها</translation>
-<translation id="8075191520954018715">حالة الذاكرة</translation>
 <translation id="8076492880354921740">علامات التبويب</translation>
 <translation id="8076835018653442223">أوقف المشرف إمكانية الوصول إلى الملفات المحلية على جهازك.</translation>
 <translation id="8079530767338315840">تكرار</translation>

@@ -526,7 +526,6 @@
 <translation id="174937106936716857">Samlet antal filer</translation>
 <translation id="175196451752279553">G&amp;enåbn lukket fane</translation>
 <translation id="1753905327828125965">Mest besøgte</translation>
-<translation id="1754582516739637364">Hukommelsestilstand</translation>
 <translation id="1756681705074952506">Indtastningsmetode</translation>
 <translation id="175772926354468439">Aktivér tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
@@ -2891,7 +2890,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5362741141255528695">Vælg privat nøglefil.</translation>
 <translation id="5363109466694494651">Powerwash, og vend tilbage</translation>
 <translation id="5367091008316207019">Læser fil...</translation>
-<translation id="5367116720986018215">Forsinket</translation>
 <translation id="5368720394188453070">Din telefon er låst. Lås den op for at få adgang.</translation>
 <translation id="5368779022775404937">Log ind på <ph name="REALM" /></translation>
 <translation id="5370819323174483825">&amp;Opdater</translation>
@@ -3464,7 +3462,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6178664161104547336">Vælg et certifikat</translation>
 <translation id="6181431612547969857">Downloaden blev blokeret</translation>
 <translation id="6185132558746749656">Enhedsplacering</translation>
-<translation id="6185617499004995178">CUPS IPP-validering</translation>
 <translation id="6185696379715117369">Gå en side op</translation>
 <translation id="6189412234224385711">Åbn med <ph name="EXTENSION_NAME" /></translation>
 <translation id="6196640612572343990">Bloker cookies fra tredjeparter</translation>
@@ -4728,7 +4725,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8071432093239591881">Udskriv i billedformat</translation>
 <translation id="8072988827236813198">Fastgør faner</translation>
 <translation id="8074127646604999664">Tillad, at nyligt lukkede websites kan sende og modtage data</translation>
-<translation id="8075191520954018715">Hukommelsestilstand</translation>
 <translation id="8076492880354921740">Faner</translation>
 <translation id="8076835018653442223">Din administrator har deaktiveret adgangen til lokale filer på din enhed</translation>
 <translation id="8079530767338315840">Gentag</translation>
