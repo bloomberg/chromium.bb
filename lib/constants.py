@@ -1163,7 +1163,7 @@ GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 CHROME_GARDENER = 'chrome'
 
 # URLs to retrieve sheriff names from the waterfall.
-CHROME_GARDENER_URL = '%s/sheriff_cr_cros_gardeners.js' % (BUILD_DASHBOARD)
+CHROME_GARDENER_URL = 'https://go/legoland-chrome-pfq'
 
 SHERIFF_TYPE_TO_URL = {
     CHROME_GARDENER: (CHROME_GARDENER_URL,)
@@ -1221,13 +1221,11 @@ CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
 # Buildbucket buckets
 CHROMEOS_RELEASE_BUILDBUCKET_BUCKET = 'master.chromeos_release'
 CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
-CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'
 INTERNAL_SWARMING_BUILDBUCKET_BUCKET = 'luci.chromeos.general'
 
 ACTIVE_BUCKETS = [
     CHROMEOS_RELEASE_BUILDBUCKET_BUCKET,
     CHROMEOS_BUILDBUCKET_BUCKET,
-    CHROMIUMOS_BUILDBUCKET_BUCKET,
     INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
 ]
 

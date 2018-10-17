@@ -6,7 +6,6 @@
 """Constants related to waterfall names and behaviors."""
 
 WATERFALL_INTERNAL = 'chromeos'
-WATERFALL_EXTERNAL = 'chromiumos'
 WATERFALL_INFRA = 'chromeos.infra'
 WATERFALL_RELEASE = 'chromeos_release'
 WATERFALL_BRANCH = 'chromeos.branch'
@@ -16,14 +15,12 @@ WATERFALL_SWARMING = 'go/legoland'
 # These waterfalls should send email reports regardless of cidb connection.
 EMAIL_WATERFALLS = (
     WATERFALL_INTERNAL,
-    WATERFALL_EXTERNAL,
     WATERFALL_RELEASE,
     WATERFALL_BRANCH,
     WATERFALL_SWARMING,
 )
 
 # URLs to the various waterfalls.
-BUILD_DASHBOARD = 'https://build.chromium.org/p/chromiumos'
 BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'
 BRANCH_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.branch'
@@ -32,7 +29,6 @@ SWARMING_DASHBOARD = 'http://go/legoland'
 # Waterfall to dashboard URL mapping.
 WATERFALL_TO_DASHBOARD = {
     WATERFALL_INTERNAL: BUILD_INT_DASHBOARD,
-    WATERFALL_EXTERNAL: BUILD_DASHBOARD,
     WATERFALL_RELEASE: RELEASE_DASHBOARD,
     WATERFALL_BRANCH: BRANCH_DASHBOARD,
     WATERFALL_SWARMING: SWARMING_DASHBOARD,

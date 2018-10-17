@@ -276,7 +276,7 @@ class BuilderStageTest(AbstractStageTestCase):
   """Tests for BuilderStage class."""
 
   def setUp(self):
-    self._Prepare(wfall=waterfall.WATERFALL_EXTERNAL)
+    self._Prepare(wfall=waterfall.WATERFALL_INTERNAL)
     self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     # Many tests modify the global results_lib.Results instance.
@@ -335,7 +335,7 @@ class BuilderStageTest(AbstractStageTestCase):
     """Basic test for the ConstructDashboardURL() function."""
     stage = self.ConstructStage()
 
-    exp_url = ('https://luci-milo.appspot.com/buildbot/chromiumos/'
+    exp_url = ('https://luci-milo.appspot.com/buildbot/chromeos/'
                'amd64-generic-paladin/%s' % DEFAULT_BUILD_NUMBER)
     self.assertEqual(stage.ConstructDashboardURL(), exp_url)
 
@@ -492,7 +492,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   """Test GetBuildFailureMessage in BuilderStage."""
 
   def setUp(self):
-    self._Prepare(wfall=waterfall.WATERFALL_EXTERNAL)
+    self._Prepare(wfall=waterfall.WATERFALL_SWARMING)
     # Many tests modify the global results_lib.Results instance.
     results_lib.Results.Clear()
 
@@ -588,7 +588,7 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
   BOT_ID = 'master-paladin'
 
   def setUp(self):
-    self._Prepare(wfall=waterfall.WATERFALL_EXTERNAL)
+    self._Prepare(wfall=waterfall.WATERFALL_SWARMING)
     self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     results_lib.Results.Clear()
