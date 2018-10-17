@@ -68,9 +68,15 @@ const char* const kHighlightElementScript =
 const char* const kGetValueAttributeScript =
     "function () { return this.value; }";
 
-// Javascript code to set the 'value' attribute of a node.
+// Javascript code to set the 'value' attribute of a node and then fire a
+// "change" event to trigger any listeners.
 const char* const kSetValueAttributeScript =
-    "function (value) { this.value = value; }";
+    R"(function (value) {
+         this.value = value;
+         const e = document.createEvent('HTMLEvents');
+         e.initEvent('change', true, true);
+         this.dispatchEvent(e);
+       })";
 
 // Javascript code to get the outerHTML of a node.
 // TODO(crbug.com/806868): Investigate if using DOM.GetOuterHtml would be a
