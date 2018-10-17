@@ -97,12 +97,11 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType custom_fetch_type) override {
     auto* execution_context = ExecutionContext::From(script_state_);
-    if (execution_context->IsWorkletGlobalScope()) {
+    if (auto* scope = DynamicTo<WorkletGlobalScope>(execution_context)) {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
-      auto* global_scope = ToWorkletGlobalScope(execution_context);
-      return new WorkletModuleScriptFetcher(
-          Fetcher(), global_scope->GetModuleResponsesMap());
+      return new WorkletModuleScriptFetcher(Fetcher(),
+                                            scope->GetModuleResponsesMap());
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
     return new DocumentModuleScriptFetcher(Fetcher());

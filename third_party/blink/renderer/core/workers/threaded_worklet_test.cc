@@ -83,7 +83,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   }
 
   void TestSecurityOrigin() {
-    WorkletGlobalScope* global_scope = ToWorkletGlobalScope(GlobalScope());
+    WorkletGlobalScope* global_scope = To<WorkletGlobalScope>(GlobalScope());
     // The SecurityOrigin for a worklet should be a unique opaque origin, while
     // the owner Document's SecurityOrigin shouldn't.
     EXPECT_TRUE(global_scope->GetSecurityOrigin()->IsOpaque());
