@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -180,11 +181,12 @@ class CORE_EXPORT WorkletGlobalScope
   WorkerThread* worker_thread_;
 };
 
-DEFINE_TYPE_CASTS(WorkletGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsWorkletGlobalScope(),
-                  context.IsWorkletGlobalScope());
+template <>
+struct DowncastTraits<WorkletGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsWorkletGlobalScope();
+  }
+};
 
 }  // namespace blink
 
