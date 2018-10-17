@@ -43,6 +43,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/blink/texttrack_impl.h"
+#include "media/blink/url_index.h"
 #include "media/blink/video_decode_stats_reporter.h"
 #include "media/blink/watch_time_reporter.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
@@ -631,10 +632,14 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   if (load_type == kLoadTypeMediaSource) {
     StartPipeline();
   } else {
+    auto url_data =
+        url_index_->GetByUrl(url, static_cast<UrlData::CORSMode>(cors_mode));
+    // Notify |this| of bytes received by the network.
+    url_data->AddBytesReceivedCallback(BindToCurrentLoop(base::BindRepeating(
+        &WebMediaPlayerImpl::OnBytesReceived, AsWeakPtr())));
     data_source_.reset(new MultibufferDataSource(
-        main_task_runner_,
-        url_index_->GetByUrl(url, static_cast<UrlData::CORSMode>(cors_mode)),
-        media_log_.get(), &buffered_data_source_host_,
+        main_task_runner_, std::move(url_data), media_log_.get(),
+        &buffered_data_source_host_,
         base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
     data_source_->SetPreload(preload_);
     data_source_->SetIsClientAudioElement(client_->IsAudioElement());
@@ -2199,6 +2204,10 @@ void WebMediaPlayerImpl::OnPictureInPictureControlClicked(
   }
 }
 
+void WebMediaPlayerImpl::OnBytesReceived(uint64_t data_length) {
+  media_metrics_provider_->AddBytesReceived(data_length);
+}
+
 void WebMediaPlayerImpl::ScheduleRestart() {
   // TODO(watk): All restart logic should be moved into PipelineController.
   if (pipeline_controller_.IsPipelineRunning() &&
@@ -2517,6 +2526,10 @@ void WebMediaPlayerImpl::StartPipeline() {
         BindToCurrentLoop(
             base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr())),
         encrypted_media_init_data_cb, media_log_.get());
+    // Notify |this| of bytes that are received via MSE.
+    chunk_demuxer_->AddBytesReceivedCallback(
+        BindToCurrentLoop(base::BindRepeating(
+            &WebMediaPlayerImpl::OnBytesReceived, AsWeakPtr())));
     demuxer_.reset(chunk_demuxer_);
 
     if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {

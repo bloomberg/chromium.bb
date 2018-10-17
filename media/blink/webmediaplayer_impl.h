@@ -244,6 +244,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnPictureInPictureModeEnded() override;
   void OnPictureInPictureControlClicked(const std::string& control_id) override;
 
+  // Callback for when bytes are received by |chunk_demuxer_| or the UrlData
+  // being loaded.
+  void OnBytesReceived(uint64_t data_length);
+
   void RequestRemotePlaybackDisabled(bool disabled) override;
 #if defined(OS_ANDROID)  // WMPI_CAST
   // TODO(https://crbug.com/839651): Rename Flinging[Started/Stopped] to

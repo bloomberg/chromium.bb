@@ -244,6 +244,7 @@ class WatchTimeReporterTest
     void SetTimeToPlayReady(base::TimeDelta elapsed) override {}
     void SetContainerName(
         container_names::MediaContainerName container_name) override {}
+    void AddBytesReceived(uint64_t bytes_received) override {}
 
    private:
     WatchTimeReporterTest* parent_;
