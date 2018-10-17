@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -1053,11 +1054,12 @@ static std::unique_ptr<DragImage> DragImageForImage(
     image = svg_image.get();
   }
 
-  InterpolationQuality interpolation_quality =
-      element->EnsureComputedStyle()->ImageRendering() ==
-              EImageRendering::kPixelated
-          ? kInterpolationNone
-          : kInterpolationDefault;
+  InterpolationQuality interpolation_quality = kInterpolationDefault;
+  if (const ComputedStyle* style = element->GetComputedStyle()) {
+    if (style->ImageRendering() == EImageRendering::kPixelated)
+      interpolation_quality = kInterpolationNone;
+  }
+
   RespectImageOrientationEnum should_respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(element->GetLayoutObject());
   ImageOrientation orientation;
