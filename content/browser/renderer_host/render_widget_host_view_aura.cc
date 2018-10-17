@@ -665,13 +665,6 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
 
-  // If the primary surface was evicted, we should create a new primary.
-  if (delegated_frame_host_ &&
-      delegated_frame_host_->IsPrimarySurfaceEvicted()) {
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                base::nullopt);
-  }
-
   const bool renderer_should_record_presentation_time = !has_saved_frame;
   host()->WasShown(renderer_should_record_presentation_time);
 
@@ -2586,6 +2579,10 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
         view_aura->delegated_frame_host_.get());
   }
   host()->GetContentRenderingTimeoutFrom(view_aura->host());
+}
+
+void RenderWidgetHostViewAura::WasEvicted() {
+  window_->UpdateLocalSurfaceIdFromEmbeddedClient(base::nullopt);
 }
 
 }  // namespace content

@@ -997,14 +997,14 @@ TEST_F(HitTestAggregatorTest, DiscardedSurfaces) {
       local_surface_id_lookup_delegate(), c_surface_id.frame_sink_id()));
 
   // Discard Surface and ensure active count goes down.
-  support2->EvictLastActivatedSurface();
+  support2->EvictSurface(c_surface_id.local_surface_id());
   ExpireAllTemporaryReferencesAndGarbageCollect();
   EXPECT_TRUE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), e_surface_id.frame_sink_id()));
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), c_surface_id.frame_sink_id()));
 
-  support()->EvictLastActivatedSurface();
+  support()->EvictSurface(e_surface_id.local_surface_id());
   ExpireAllTemporaryReferencesAndGarbageCollect();
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(
       local_surface_id_lookup_delegate(), e_surface_id.frame_sink_id()));

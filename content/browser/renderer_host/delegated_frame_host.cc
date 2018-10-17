@@ -208,8 +208,15 @@ void DelegatedFrameHost::EmbedSurface(
   const viz::SurfaceId* primary_surface_id =
       client_->DelegatedFrameHostGetLayer()->GetPrimarySurfaceId();
 
+  bool id_changed = pending_local_surface_id_ != new_pending_local_surface_id;
+
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_dip_size_ = new_pending_dip_size;
+
+  if (id_changed) {
+    frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
+    // Note: the frame may have been evicted immediately.
+  }
 
   viz::SurfaceId new_primary_surface_id(frame_sink_id_,
                                         pending_local_surface_id_);
@@ -219,8 +226,7 @@ void DelegatedFrameHost::EmbedSurface(
     // time user switches back to it the page is blank. This is preferred to
     // showing contents of old size. Don't call EvictDelegatedFrame to avoid
     // races when dragging tabs across displays. See https://crbug.com/813157.
-    if (pending_surface_dip_size_ != current_frame_size_in_dip_ &&
-        HasPrimarySurface()) {
+    if (pending_surface_dip_size_ != current_frame_size_in_dip_) {
       client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
           new_primary_surface_id);
     }
@@ -317,9 +323,6 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
 
   // This is used by macOS' unique resize path.
   client_->OnFirstSurfaceActivation(surface_info);
-
-  frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
-  // Note: the frame may have been evicted immediately.
 }
 
 void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
@@ -333,9 +336,6 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
-  if (!HasPrimarySurface())
-    return;
-
   const viz::SurfaceId* fallback_surface_id =
       client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId();
 
@@ -362,10 +362,14 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
 
   if (!HasSavedFrame())
     return;
-  std::vector<viz::SurfaceId> surface_ids = {GetCurrentSurfaceId()};
+
+  std::vector<viz::SurfaceId> surface_ids = {
+      viz::SurfaceId(frame_sink_id_, pending_local_surface_id_)};
   DCHECK(host_frame_sink_manager_);
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
   frame_evictor_->DiscardedFrame();
+  active_local_surface_id_ = viz::LocalSurfaceId();
+  client_->WasEvicted();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -459,11 +463,6 @@ void DelegatedFrameHost::DidNavigate() {
   first_local_surface_id_after_navigation_ = pending_local_surface_id_;
 }
 
-bool DelegatedFrameHost::IsPrimarySurfaceEvicted() const {
-  return active_local_surface_id_ == pending_local_surface_id_ &&
-         !HasSavedFrame();
-}
-
 void DelegatedFrameHost::WindowTitleChanged(const std::string& title) {
   if (host_frame_sink_manager_)
     host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_, title);
@@ -509,6 +508,10 @@ void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
   }
 
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(desired_fallback);
+}
+
+bool DelegatedFrameHost::HasActiveSurface() const {
+  return active_local_surface_id_.is_valid();
 }
 
 }  // namespace content

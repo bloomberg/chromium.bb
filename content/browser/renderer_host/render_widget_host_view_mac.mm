@@ -439,10 +439,6 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
   bool has_saved_frame =
       delegated_frame_host ? delegated_frame_host->HasSavedFrame() : false;
 
-  // If the primary surface was evicted, we should create a new primary.
-  if (delegated_frame_host && delegated_frame_host->IsPrimarySurfaceEvicted())
-    SynchronizeVisualProperties(base::nullopt);
-
   const bool renderer_should_record_presentation_time = !has_saved_frame;
   host()->WasShown(renderer_should_record_presentation_time);
 

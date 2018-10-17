@@ -1133,9 +1133,9 @@ TEST_F(SurfaceSynchronizationTest, ReturnResourcesWithAck) {
                                          MakeDefaultCompositorFrame());
 }
 
-// Verifies that if a surface is marked destroyed and a new frame arrives for
-// it, it will be recovered.
-TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
+// Verifies that arrival of a new CompositorFrame doesn't change the fact that a
+// surface is marked for destruction.
+TEST_F(SurfaceSynchronizationTest, SubmitToDestroyedSurface) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
 
@@ -1159,7 +1159,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
 
   // Attempt to destroy the child surface. The surface must still exist since
   // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictLastActivatedSurface();
+  child_support1().EvictSurface(child_id.local_surface_id());
   surface = GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
   EXPECT_TRUE(IsMarkedForDestruction(child_id));
@@ -1178,12 +1178,15 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
     testing::Mock::VerifyAndClearExpectations(&support_client_);
   }
 
-  // Verify that the surface that was marked destroyed is recovered and is being
-  // used again.
+  // Verify that the surface that was marked destroyed is still marked as
+  // destroyed.
   Surface* surface2 = GetSurfaceForId(child_id);
   EXPECT_EQ(surface, surface2);
-  EXPECT_FALSE(IsMarkedForDestruction(child_id));
-  EXPECT_EQ(child_id, surface_observer().last_created_surface_id());
+  EXPECT_TRUE(IsMarkedForDestruction(child_id));
+
+  // We shouldn't observe an OnFirstSurfaceActivation because we reject the
+  // CompositorFrame to the evicted surface.
+  EXPECT_EQ(SurfaceId(), surface_observer().last_created_surface_id());
 }
 
 // Verifies that if a surface is marked destroyed and a new frame arrives after
@@ -1209,7 +1212,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrectionAfterDestruction) {
 
   // Attempt to destroy the child surface. The surface must still exist since
   // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictLastActivatedSurface();
+  child_support1().EvictSurface(child_id.local_surface_id());
   surface = GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
   EXPECT_TRUE(IsMarkedForDestruction(child_id));
@@ -1252,7 +1255,7 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
                                          MakeDefaultCompositorFrame());
 
   // Destroy the surface.
-  child_support1().EvictLastActivatedSurface();
+  child_support1().EvictSurface(child_id.local_surface_id());
   frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
 
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
@@ -1571,7 +1574,7 @@ TEST_F(SurfaceSynchronizationTest, MissingActiveFrameWithLateDependencies) {
   EXPECT_FALSE(display_surface()->HasPendingFrame());
   EXPECT_TRUE(display_surface()->HasActiveFrame());
 
-  display_support().EvictLastActivatedSurface();
+  display_support().EvictSurface(display_id.local_surface_id());
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),
       MakeCompositorFrame({parent_id2}, empty_surface_ranges(),
@@ -2639,7 +2642,8 @@ TEST_F(SurfaceSynchronizationTest, SetPreviousFrameSurfaceDoesntCrash) {
 
   // Evict the activated surface in the parent_support.
   EXPECT_TRUE(parent_support().last_activated_surface_id().is_valid());
-  parent_support().EvictLastActivatedSurface();
+  parent_support().EvictSurface(
+      parent_support().last_activated_surface_id().local_surface_id());
   EXPECT_FALSE(parent_support().last_activated_surface_id().is_valid());
 
   // The CompositorFrame in the evicted |parent_id| activates here because it
@@ -2648,8 +2652,9 @@ TEST_F(SurfaceSynchronizationTest, SetPreviousFrameSurfaceDoesntCrash) {
                                          MakeDefaultCompositorFrame());
 
   // parent_support will be informed of the activation of a CompositorFrame
-  // associated with |parent_id|.
-  EXPECT_TRUE(parent_support().last_activated_surface_id().is_valid());
+  // associated with |parent_id|, but we clear |last_active_surface_id_| because
+  // it was evicted before.
+  EXPECT_FALSE(parent_support().last_activated_surface_id().is_valid());
 
   // Perform a garbage collection. |parent_id| should no longer exist.
   EXPECT_NE(nullptr, GetSurfaceForId(parent_id));
@@ -3027,6 +3032,35 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(child_surface2->HasPendingFrame());
   EXPECT_TRUE(child_surface2->HasActiveFrame());
   EXPECT_TRUE(IsMarkedForDestruction(child_id2));
+}
+
+TEST_F(SurfaceSynchronizationTest, EvictSurface) {
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  // Child-initiated synchronization event:
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+  // Parent-initiated synchronizaton event:
+  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 2, 2);
+
+  // Evict |child_id1|.
+  child_support1().EvictSurface(child_id1.local_surface_id());
+
+  // Submit a CompositorFrame to |child_id1|. It should get marked for
+  // destruction immediately.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  EXPECT_TRUE(IsMarkedForDestruction(child_id1));
+
+  // Submit a CompositorFrame to |child_id2|. It should also get marked for
+  // destruction because it has the same parent sequence number as |child_id1|.
+  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  EXPECT_TRUE(IsMarkedForDestruction(child_id2));
+
+  // Submit a CompositorFrame to |child_id3|. It should not be marked for
+  // destruction.
+  child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  EXPECT_FALSE(IsMarkedForDestruction(child_id3));
 }
 
 }  // namespace viz

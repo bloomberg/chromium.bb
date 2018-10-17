@@ -776,12 +776,7 @@ void Layer::SetShowPrimarySurface(const viz::SurfaceId& surface_id,
                                   bool stretch_content_to_fill_bounds) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
-  if (!surface_layer_) {
-    scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
-    new_layer->SetSurfaceHitTestable(true);
-    SwitchToLayer(new_layer);
-    surface_layer_ = new_layer;
-  }
+  CreateSurfaceLayerIfNecessary();
 
   surface_layer_->SetPrimarySurfaceId(surface_id, deadline_policy);
   surface_layer_->SetBackgroundColor(default_background_color);
@@ -799,7 +794,8 @@ void Layer::SetShowPrimarySurface(const viz::SurfaceId& surface_id,
 
 void Layer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
-  DCHECK(surface_layer_);
+
+  CreateSurfaceLayerIfNecessary();
 
   surface_layer_->SetFallbackSurfaceId(surface_id);
 
@@ -1324,6 +1320,15 @@ void Layer::OnMirrorDestroyed(LayerMirror* mirror) {
 
   DCHECK(it != mirrors_.end());
   mirrors_.erase(it);
+}
+
+void Layer::CreateSurfaceLayerIfNecessary() {
+  if (surface_layer_)
+    return;
+  scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
+  new_layer->SetSurfaceHitTestable(true);
+  SwitchToLayer(new_layer);
+  surface_layer_ = new_layer;
 }
 
 }  // namespace ui

@@ -58,4 +58,8 @@ float DelegatedFrameHostClientAura::GetDeviceScaleFactor() const {
   return render_widget_host_view_->device_scale_factor_;
 }
 
+void DelegatedFrameHostClientAura::WasEvicted() {
+  render_widget_host_view_->WasEvicted();
+}
+
 }  // namespace content

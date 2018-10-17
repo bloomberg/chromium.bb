@@ -3404,35 +3404,6 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 }
 
-// This test verifies that if a fallback surface activates on a hidden view
-// then the fallback is dropped.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       DropFallbackWhenHidden) {
-  // Early out because DelegatedFrameHost is not used in mash.
-  if (features::IsMultiProcessMash())
-    return;
-
-  view_->InitAsChild(nullptr);
-  aura::client::ParentWindowWithContext(
-      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-      gfx::Rect());
-
-  view_->window_->layer()->SetShowSolidColorContent();
-  EXPECT_FALSE(view_->HasPrimarySurface());
-  ASSERT_TRUE(view_->delegated_frame_host_);
-
-  view_->Hide();
-  view_->SetSize(gfx::Size(300, 300));
-  EXPECT_FALSE(view_->HasPrimarySurface());
-
-  // Submitting a CompositorFrame should not update the fallback SurfaceId
-  viz::SurfaceId surface_id(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId);
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id, 1.f, gfx::Size(400, 400)));
-  EXPECT_FALSE(view_->HasPrimarySurface());
-  EXPECT_FALSE(view_->HasFallbackSurface());
-}
-
 // This test verifies that the primary SurfaceId is populated on resize.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   // Early out because DelegatedFrameHost is not used in mash.
@@ -3526,14 +3497,15 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   if (features::IsMultiProcessMash())
     return;
 
-  view_->InitAsChild(nullptr);
+  // Make sure |parent_view_| is evicted to avoid interfering with the code
+  // below.
+  parent_view_->delegated_frame_host_->EvictDelegatedFrame();
 
   size_t max_renderer_frames =
       FrameEvictionManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
-  gfx::Size frame_size = view_rect.size();
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3558,19 +3530,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
         views[i]->GetNativeView(),
         parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
     views[i]->SetSize(view_rect.size());
-    ASSERT_TRUE(views[i]->HasPrimarySurface());
-    ASSERT_FALSE(views[i]->HasSavedFrame());
+    EXPECT_HAS_FRAME(views[i]);
   }
 
   // Make each renderer visible, and swap a frame on it, then make it invisible.
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
-    ASSERT_TRUE(views[i]->HasPrimarySurface());
-    ASSERT_FALSE(views[i]->HasSavedFrame());
-    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
-                              views[i]->GetLocalSurfaceId());
-    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
-        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_HAS_FRAME(views[i]);
     views[i]->Hide();
   }
@@ -3581,17 +3546,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   for (size_t i = 1; i < renderer_count; ++i)
     EXPECT_HAS_FRAME(views[i]);
 
-  // LRU renderer is [0], make it visible, it shouldn't evict anything yet.
+  // LRU renderer is [0], make it visible, it should evict the next LRU [1].
   views[0]->Show();
-  EXPECT_TRUE(views[0]->HasPrimarySurface());
-  EXPECT_FALSE(views[0]->HasSavedFrame());
-  EXPECT_HAS_FRAME(views[1]);
-
-  // Swap a frame on it, it should evict the next LRU [1].
-  viz::SurfaceId surface_id0(views[0]->GetFrameSinkId(),
-                             views[0]->GetLocalSurfaceId());
-  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   EXPECT_HAS_FRAME(views[0]);
   EXPECT_EVICTED(views[1]);
   views[0]->Hide();
@@ -3599,10 +3555,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // LRU renderer is [1], which is still hidden. Showing it and submitting a
   // CompositorFrame to it should evict the next LRU [2].
   views[1]->Show();
-  viz::SurfaceId surface_id1(views[1]->GetFrameSinkId(),
-                             views[1]->GetLocalSurfaceId());
-  views[1]->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id1, 1.f, frame_size));
   EXPECT_HAS_FRAME(views[0]);
   EXPECT_HAS_FRAME(views[1]);
   EXPECT_EVICTED(views[2]);
@@ -3613,26 +3565,13 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // hidden, it becomes the LRU.
   for (size_t i = 1; i < renderer_count; ++i) {
     views[i]->Show();
-    // The renderers who don't have a frame should be waiting. The ones that
-    // have a frame should not.
-    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
-                              views[i]->GetLocalSurfaceId());
-    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
-        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_HAS_FRAME(views[i]);
   }
-  EXPECT_EVICTED(views[0]);
-
-  // Swap a frame on [0], it should be evicted immediately.
-  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   EXPECT_EVICTED(views[0]);
 
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
   // although we're above the limit.
   views[0]->Show();
-  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   for (size_t i = 0; i < renderer_count; ++i)
     EXPECT_HAS_FRAME(views[i]);
 
@@ -3654,8 +3593,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   ASSERT_TRUE(views[1]->window_->layer()->GetFallbackSurfaceId());
   EXPECT_EQ(*views[1]->window_->layer()->GetFallbackSurfaceId(),
             *views[1]->window_->layer()->GetPrimarySurfaceId());
-  views[1]->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id1, 1.f, frame_size));
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
@@ -3742,7 +3679,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   if (features::IsMultiProcessMash())
     return;
 
-  view_->InitAsChild(nullptr);
+  // Make sure |parent_view_| is evicted to avoid interfering with the code
+  // below.
+  parent_view_->delegated_frame_host_->EvictDelegatedFrame();
 
   // The test logic below relies on having max_renderer_frames > 2.  By default,
   // this value is calculated from total physical memory and causes the test to
@@ -3753,7 +3692,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
 
   size_t renderer_count = kMaxRendererFrames;
   gfx::Rect view_rect(100, 100);
-  gfx::Size frame_size = view_rect.size();
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3776,16 +3714,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
         parent_view_->GetNativeView()->GetRootWindow(),
         gfx::Rect());
     views[i]->SetSize(view_rect.size());
-  }
-
-  // Make each renderer visible and swap a frame on it. No eviction should
-  // occur because all frames are visible.
-  for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
-    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
-                              kArbitraryLocalSurfaceId);
-    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
-        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_HAS_FRAME(views[i]);
   }
 

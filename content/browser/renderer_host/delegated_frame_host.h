@@ -51,6 +51,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual float GetDeviceScaleFactor() const = 0;
+  virtual void WasEvicted() = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -171,8 +172,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   void DidNavigate();
 
-  bool IsPrimarySurfaceEvicted() const;
-
   void WindowTitleChanged(const std::string& title);
 
   // If our SurfaceLayer doesn't have a fallback, use the fallback info of
@@ -182,6 +181,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   base::WeakPtr<DelegatedFrameHost> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  bool HasActiveSurface() const;
 
  private:
   friend class DelegatedFrameHostClient;
