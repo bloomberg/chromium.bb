@@ -825,7 +825,7 @@ void WebStateImpl::LoadIfNecessary() {
 }
 
 void WebStateImpl::Reload() {
-  [web_controller_ reload];
+  [web_controller_ reloadWithRendererInitiatedNavigation:NO];
 }
 
 void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {

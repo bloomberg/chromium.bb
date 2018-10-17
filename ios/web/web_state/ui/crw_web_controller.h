@@ -153,8 +153,11 @@ class WebStateImpl;
 // appropriate, as this method won't display any error to the user.
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
 
-// Methods for navigation and properties to interrogate state.
-- (void)reload;
+// Reloads web view. |isRendererInitiated| is YES for renderer-initiated
+// navigation. |isRendererInitiated| is NO for browser-initiated navigation.
+- (void)reloadWithRendererInitiatedNavigation:(BOOL)isRendererInitiated;
+
+// Stops web view loading.
 - (void)stopLoading;
 
 // Loads the URL indicated by current session state.
