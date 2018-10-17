@@ -720,12 +720,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
 
   // InputAckHandler
-  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
-                          InputEventAckSource ack_source,
-                          InputEventAckState ack_result) override;
-  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                        InputEventAckSource ack_source,
                        InputEventAckState ack_result) override;
@@ -737,6 +731,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                          InputEventAckState ack_result) override;
   void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
 
+  // virtual for testing.
+  virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
+                               InputEventAckState ack_result);
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
@@ -791,6 +789,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called by |new_content_rendering_timeout_| if a renderer has loaded new
   // content but failed to produce a compositor frame in a defined time.
   void ClearDisplayedGraphics();
+
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
+                          InputEventAckSource ack_source,
+                          InputEventAckState ack_result);
 
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);

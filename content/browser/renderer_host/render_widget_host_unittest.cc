@@ -103,15 +103,16 @@ class MockInputRouter : public InputRouter {
   ~MockInputRouter() override {}
 
   // InputRouter
-  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override {
+  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event,
+                      MouseEventCallback event_result_callback) override {
     sent_mouse_event_ = true;
   }
   void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
     sent_wheel_event_ = true;
   }
-  void SendKeyboardEvent(
-      const NativeWebKeyboardEventWithLatencyInfo& key_event) override {
+  void SendKeyboardEvent(const NativeWebKeyboardEventWithLatencyInfo& key_event,
+                         KeyboardEventCallback event_result_callback) override {
     sent_keyboard_event_ = true;
   }
   void SendGestureEvent(

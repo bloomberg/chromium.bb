@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 
+#include "base/callback_forward.h"
 #include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -30,15 +31,30 @@ class InputRouter {
 
   virtual ~InputRouter() = default;
 
-  // WebInputEvents
-  virtual void SendMouseEvent(
-      const MouseEventWithLatencyInfo& mouse_event) = 0;
+  // Note: if the event is processed immediately, the supplied callback is run
+  // *synchronously*. If |this| is destroyed while waiting on a result from
+  // the renderer, then callbacks are *not* run.
+  using MouseEventCallback =
+      base::OnceCallback<void(const MouseEventWithLatencyInfo& event,
+                              InputEventAckSource ack_source,
+                              InputEventAckState ack_result)>;
+  virtual void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event,
+                              MouseEventCallback event_result_callback) = 0;
+
   virtual void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) = 0;
+
+  using KeyboardEventCallback = base::OnceCallback<void(
+      const NativeWebKeyboardEventWithLatencyInfo& event,
+      InputEventAckSource ack_source,
+      InputEventAckState ack_result)>;
   virtual void SendKeyboardEvent(
-      const NativeWebKeyboardEventWithLatencyInfo& key_event) = 0;
+      const NativeWebKeyboardEventWithLatencyInfo& key_event,
+      KeyboardEventCallback event_result_callback) = 0;
+
   virtual void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) = 0;
+
   virtual void SendTouchEvent(
       const TouchEventWithLatencyInfo& touch_event) = 0;
 
