@@ -1386,11 +1386,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   }
 
   DrawResult draw_result = CalculateRenderPasses(frame);
-  if (client_name) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::StringPrintf("Compositing.%s.DrawResult", client_name),
-        draw_result);
-  }
   if (draw_result != DRAW_SUCCESS) {
     DCHECK(!resourceless_software_draw_);
     return draw_result;
