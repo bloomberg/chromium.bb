@@ -1635,21 +1635,6 @@
             ]
         }
     ],
-    "DriveFS": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DriveFS"
-                    ]
-                }
-            ]
-        }
-    ],
     "DynamicExpectCT": [
         {
             "platforms": [
