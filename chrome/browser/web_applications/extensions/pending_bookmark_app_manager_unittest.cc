@@ -16,7 +16,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/web_applications/components/install_result_code.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -126,11 +125,10 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   void InstallWebAppOrShortcutFromWebContents(
       content::WebContents* web_contents,
       BookmarkAppInstallationTask::ResultCallback callback) override {
-    BookmarkAppInstallationTask::ResultCode result_code =
-        BookmarkAppInstallationTask::ResultCode::kInstallationFailed;
+    auto result_code = web_app::InstallResultCode::kFailedUnknownReason;
     std::string app_id;
     if (succeeds_) {
-      result_code = BookmarkAppInstallationTask::ResultCode::kSuccess;
+      result_code = web_app::InstallResultCode::kSuccess;
       app_id = GenerateFakeAppId(app_info().url);
       ExtensionRegistry::Get(profile_)->AddEnabled(
           CreateDummyExtension(app_id));

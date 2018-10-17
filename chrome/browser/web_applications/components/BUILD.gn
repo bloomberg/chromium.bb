@@ -5,7 +5,6 @@
 source_set("components") {
   sources = [
     "install_manager.h",
-    "install_result_code.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
     "web_app_constants.h",
