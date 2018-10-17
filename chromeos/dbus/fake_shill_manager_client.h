@@ -59,18 +59,6 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   void GetService(const base::DictionaryValue& properties,
                   const ObjectPathCallback& callback,
                   const ErrorCallback& error_callback) override;
-  void VerifyDestination(const VerificationProperties& properties,
-                         const BooleanCallback& callback,
-                         const ErrorCallback& error_callback) override;
-  void VerifyAndEncryptCredentials(
-      const VerificationProperties& properties,
-      const std::string& service_path,
-      const StringCallback& callback,
-      const ErrorCallback& error_callback) override;
-  void VerifyAndEncryptData(const VerificationProperties& properties,
-                            const std::string& data,
-                            const StringCallback& callback,
-                            const ErrorCallback& error_callback) override;
   void ConnectToBestServices(const base::Closure& callback,
                              const ErrorCallback& error_callback) override;
   void SetNetworkThrottlingStatus(const NetworkThrottlingStatus& status,
