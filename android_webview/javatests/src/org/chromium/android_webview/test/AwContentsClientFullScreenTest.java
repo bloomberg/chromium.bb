@@ -20,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
@@ -188,9 +189,8 @@ public class AwContentsClientFullScreenTest {
     }
 
     @Test
-    //@MediumTest
-    //@Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/789306")
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView() throws Throwable {
         mContentsClient.setOnHideCustomViewRunnable(
                 () -> mContentsClient.getExitCallback().onCustomViewHidden());
@@ -312,7 +312,8 @@ public class AwContentsClientFullScreenTest {
 
         // Enter fullscreen and verify that the power save blocker is
         // still there.
-        DOMUtils.clickNode(mTestContainerView.getWebContents(), CUSTOM_FULLSCREEN_CONTROL_ID);
+        JSUtils.clickNodeWithUserGesture(
+                mTestContainerView.getWebContents(), CUSTOM_FULLSCREEN_CONTROL_ID);
         mContentsClient.waitForCustomViewShown();
         assertKeepScreenOnActive(mTestContainerView, true);
 
@@ -358,7 +359,8 @@ public class AwContentsClientFullScreenTest {
             // (containing the fullscreen <video>) so we just rely on that fact here.
             TouchCommon.singleClickView(mContentsClient.getCustomView());
         } else {
-            DOMUtils.clickNode(mTestContainerView.getWebContents(), CUSTOM_PLAY_CONTROL_ID);
+            JSUtils.clickNodeWithUserGesture(
+                    mTestContainerView.getWebContents(), CUSTOM_PLAY_CONTROL_ID);
         }
     }
 
@@ -467,7 +469,8 @@ public class AwContentsClientFullScreenTest {
 
     private void loadTestPageAndClickFullscreen(String videoTestUrl) throws Exception {
         loadTestPage(videoTestUrl);
-        DOMUtils.clickNode(mTestContainerView.getWebContents(), CUSTOM_FULLSCREEN_CONTROL_ID);
+        JSUtils.clickNodeWithUserGesture(
+                mTestContainerView.getWebContents(), CUSTOM_FULLSCREEN_CONTROL_ID);
     }
 
     private void loadTestPage(String videoTestUrl) throws Exception {
