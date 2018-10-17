@@ -18,19 +18,34 @@
 // identity::IdentityTestEnvironment in the test.
 class IdentityTestEnvironmentProfileAdaptor {
  public:
-  // This static method must be called as part of configuring the TestingProfile
-  // that the test is using. It will append the set of
-  // testing factories that identity::IdentityTestEnvironment
+  // Creates and returns a TestingProfile that has been configured with the set
+  // of testing factories that IdentityTestEnvironment requires.
+  static std::unique_ptr<content::BrowserContext>
+  CreateProfileForIdentityTestEnvironment();
+
+  // Like the above, but additionally configures the returned Profile with
+  // |input_factories|.
+  static std::unique_ptr<content::BrowserContext>
+  CreateProfileForIdentityTestEnvironment(
+      const TestingProfile::TestingFactories& input_factories);
+
+  // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
   // factories supplied to TestingProfile (via one of the various mechanisms for
-  // doing so, e.g. using a TestingProfile::Builder).
+  // doing so). Prefer the above API if possible, as it is less fragile. This
+  // API is primarily for use in tests that do not create the TestingProfile
+  // internally but rather simply supply the set of TestingFactories to some
+  // external facility (e.g., a superclass).
   static void AppendIdentityTestEnvironmentFactories(
       TestingProfile::TestingFactories* factories_to_append_to);
 
   // Constructs an adaptor that associates an IdentityTestEnvironment instance
   // with |profile| via the relevant backing objects. Note that
-  // AppendIdentityTestEnvironmentFactories() must have previously been invoked
-  // on the set of testing factories used to configure |profile|.
+  // |profile| must have been configured with the IdentityTestEnvironment
+  // testing factories, either because it was created via
+  // CreateProfileForIdentityTestEnvironment() or because
+  // AppendIdentityTestEnvironmentFactories() was invoked on the set of
+  // factories supplied to it.
   // |profile| must outlive this object.
   explicit IdentityTestEnvironmentProfileAdaptor(Profile* profile);
   ~IdentityTestEnvironmentProfileAdaptor() {}
