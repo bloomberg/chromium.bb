@@ -142,7 +142,7 @@ class MidiHostTest : public testing::Test {
     const std::string name("doki-doki-pi-pine");
     const std::string version("3.14159265359");
     PortState state = PortState::CONNECTED;
-    midi::MidiPortInfo info(id, manufacturer, name, version, state);
+    midi::mojom::PortInfo info(id, manufacturer, name, version, state);
 
     host_->AddOutputPort(info);
   }

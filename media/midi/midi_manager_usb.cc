@@ -159,13 +159,13 @@ bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
     if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
       output_streams_.push_back(
           std::make_unique<UsbMidiOutputStream>(jacks[j]));
-      AddOutputPort(MidiPortInfo(id, manufacturer, product_name, version,
-                                 PortState::OPENED));
+      AddOutputPort(mojom::PortInfo(id, manufacturer, product_name, version,
+                                    PortState::OPENED));
     } else {
       DCHECK_EQ(jacks[j].direction(), UsbMidiJack::DIRECTION_IN);
       input_stream_->Add(jacks[j]);
-      AddInputPort(MidiPortInfo(id, manufacturer, product_name, version,
-                                PortState::OPENED));
+      AddInputPort(mojom::PortInfo(id, manufacturer, product_name, version,
+                                   PortState::OPENED));
     }
   }
   return true;

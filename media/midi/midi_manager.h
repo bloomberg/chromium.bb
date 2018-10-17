@@ -17,7 +17,6 @@
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "media/midi/midi_export.h"
-#include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.mojom.h"
 
 namespace base {
@@ -39,8 +38,8 @@ class MIDI_EXPORT MidiManagerClient {
   // AddInputPort() and AddOutputPort() are called before CompleteStartSession()
   // is called to notify existing MIDI ports, and also called after that to
   // notify new MIDI ports are added.
-  virtual void AddInputPort(const MidiPortInfo& info) = 0;
-  virtual void AddOutputPort(const MidiPortInfo& info) = 0;
+  virtual void AddInputPort(const mojom::PortInfo& info) = 0;
+  virtual void AddOutputPort(const mojom::PortInfo& info) = 0;
 
   // SetInputPortState() and SetOutputPortState() are called to notify a known
   // device gets disconnected, or connected again.
@@ -140,8 +139,8 @@ class MIDI_EXPORT MidiManager {
 
   // The following five methods can be called on any thread to notify clients of
   // status changes on ports, or to obtain port status.
-  void AddInputPort(const MidiPortInfo& info);
-  void AddOutputPort(const MidiPortInfo& info);
+  void AddInputPort(const mojom::PortInfo& info);
+  void AddOutputPort(const mojom::PortInfo& info);
   void SetInputPortState(uint32_t port_index, mojom::PortState state);
   void SetOutputPortState(uint32_t port_index, mojom::PortState state);
   mojom::PortState GetOutputPortState(uint32_t port_index);
@@ -191,9 +190,9 @@ class MIDI_EXPORT MidiManager {
   scoped_refptr<base::SingleThreadTaskRunner> session_thread_runner_
       GUARDED_BY(lock_);
 
-  // Keeps all MidiPortInfo.
-  MidiPortInfoList input_ports_ GUARDED_BY(lock_);
-  MidiPortInfoList output_ports_ GUARDED_BY(lock_);
+  // Keeps all PortInfo.
+  std::vector<mojom::PortInfo> input_ports_ GUARDED_BY(lock_);
+  std::vector<mojom::PortInfo> output_ports_ GUARDED_BY(lock_);
 
   // Tracks if actual data transmission happens.
   bool data_sent_ GUARDED_BY(lock_) = false;

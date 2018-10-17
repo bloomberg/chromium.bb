@@ -157,14 +157,14 @@ void MidiMessageFilter::OnSessionStarted(midi::mojom::Result result) {
       base::BindOnce(&MidiMessageFilter::HandleClientAdded, this, result));
 }
 
-void MidiMessageFilter::OnAddInputPort(midi::MidiPortInfo info) {
+void MidiMessageFilter::OnAddInputPort(midi::mojom::PortInfo info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&MidiMessageFilter::HandleAddInputPort, this, info));
 }
 
-void MidiMessageFilter::OnAddOutputPort(midi::MidiPortInfo info) {
+void MidiMessageFilter::OnAddOutputPort(midi::mojom::PortInfo info) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -234,7 +234,7 @@ void MidiMessageFilter::HandleClientAdded(midi::mojom::Result result) {
   }
 }
 
-void MidiMessageFilter::HandleAddInputPort(midi::MidiPortInfo info) {
+void MidiMessageFilter::HandleAddInputPort(midi::mojom::PortInfo info) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_.push_back(info);
   const WebString id = WebString::FromUTF8(info.id);
@@ -245,7 +245,7 @@ void MidiMessageFilter::HandleAddInputPort(midi::MidiPortInfo info) {
     client->DidAddInputPort(id, manufacturer, name, version, info.state);
 }
 
-void MidiMessageFilter::HandleAddOutputPort(midi::MidiPortInfo info) {
+void MidiMessageFilter::HandleAddOutputPort(midi::mojom::PortInfo info) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_.push_back(info);
   const WebString id = WebString::FromUTF8(info.id);
