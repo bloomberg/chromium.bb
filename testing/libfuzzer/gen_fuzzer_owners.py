@@ -104,7 +104,8 @@ def FindGroupsAndDepsInDeps(deps_list, build_dir):
   groups = []
   deps_for_groups = {}
   for deps in deps_list:
-    output = subprocess.check_output([GNPath(), 'desc', build_dir, deps])
+    output = subprocess.check_output(
+        [GNPath(), 'desc', '--fail-on-unused-args', build_dir, deps])
     needle = 'Type: '
     for line in output.splitlines():
       if needle and not line.startswith(needle):
@@ -164,7 +165,7 @@ def GetSourcesFromDeps(deps_list, build_dir):
   all_sources = []
   for deps in full_deps_list:
     output = subprocess.check_output(
-        [GNPath(), 'desc', build_dir, deps, 'sources'])
+        [GNPath(), 'desc', '--fail-on-unused-args', build_dir, deps, 'sources'])
     for source in output.splitlines():
       if source.startswith('//'):
         source = source[2:]
