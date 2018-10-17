@@ -155,6 +155,16 @@ message StopVmResponse {
   string failure_reason = 2;
 }
 
+// Response to a SyncTimes RPC.
+message SyncVmTimesResponse {
+  // The total number of VMs we attempted to update.
+  uint32 requests = 1;
+  // Number of failed requests.
+  uint32 failures = 2;
+  // Reasons for failures, if any.
+  repeated string failure_reason = 3;
+}
+
 // Request for information about the VM.
 message GetVmInfoRequest {
   // The name of the VM to query.
