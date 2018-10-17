@@ -2023,6 +2023,86 @@ void av1_fwd_txfm2d_16x32_sse4_1(const int16_t *input, int32_t *coeff,
   (void)bd;
 }
 
+void av1_fwd_txfm2d_32x64_sse4_1(const int16_t *input, int32_t *coeff,
+                                 int stride, TX_TYPE tx_type, int bd) {
+  (void)tx_type;
+  __m128i in[512];
+  __m128i *outcoef128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_32X64];
+  const int txw_idx = get_txw_idx(TX_32X64);
+  const int txh_idx = get_txh_idx(TX_32X64);
+  const int txfm_size_col = tx_size_wide[TX_32X64];
+  const int txfm_size_row = tx_size_high[TX_32X64];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int num_row = txfm_size_row >> 2;
+  const int num_col = txfm_size_col >> 2;
+
+  // column transform
+  load_buffer_32x8n(input, in, stride, 0, 0, shift[0], txfm_size_row);
+  for (int i = 0; i < num_col; i++) {
+    av1_fdct64_new_sse4_1((in + i), (in + i), bitcol, num_col, num_col);
+  }
+  for (int i = 0; i < num_col; i++) {
+    col_txfm_16x16_rounding((in + i * txfm_size_row), -shift[1]);
+  }
+  transpose_8nx8n(in, outcoef128, txfm_size_col, txfm_size_row);
+
+  // row transform
+  for (int i = 0; i < num_row; i++) {
+    av1_fdct32_new_sse4_1((outcoef128 + i), (in + i), bitrow, num_row);
+  }
+  transpose_8nx8n(in, outcoef128, txfm_size_row, txfm_size_col);
+  av1_round_shift_rect_array_32_sse4_1(outcoef128, outcoef128, 512, -shift[2],
+                                       NewSqrt2);
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_64x32_sse4_1(const int16_t *input, int32_t *coeff,
+                                 int stride, TX_TYPE tx_type, int bd) {
+  (void)tx_type;
+  __m128i in[512];
+  __m128i *outcoef128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_64X32];
+  const int txw_idx = get_txw_idx(TX_64X32);
+  const int txh_idx = get_txh_idx(TX_64X32);
+  const int txfm_size_col = tx_size_wide[TX_64X32];
+  const int txfm_size_row = tx_size_high[TX_64X32];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int num_row = txfm_size_row >> 2;
+  const int num_col = txfm_size_col >> 2;
+
+  // column transform
+  for (int i = 0; i < 32; i++) {
+    load_buffer_4x4(input + 0 + i * stride, in + 0 + i * 16, 4, 0, 0, shift[0]);
+    load_buffer_4x4(input + 16 + i * stride, in + 4 + i * 16, 4, 0, 0,
+                    shift[0]);
+    load_buffer_4x4(input + 32 + i * stride, in + 8 + i * 16, 4, 0, 0,
+                    shift[0]);
+    load_buffer_4x4(input + 48 + i * stride, in + 12 + i * 16, 4, 0, 0,
+                    shift[0]);
+  }
+
+  for (int i = 0; i < num_col; i++) {
+    av1_fdct32_new_sse4_1((in + i), (in + i), bitcol, num_col);
+  }
+
+  for (int i = 0; i < num_row; i++) {
+    col_txfm_16x16_rounding((in + i * txfm_size_col), -shift[1]);
+  }
+  transpose_8nx8n(in, outcoef128, txfm_size_col, txfm_size_row);
+
+  // row transform
+  for (int i = 0; i < num_row; i++) {
+    av1_fdct64_new_sse4_1((outcoef128 + i), (in + i), bitrow, num_row, num_row);
+  }
+  transpose_8nx8n(in, outcoef128, txfm_size_row, txfm_size_col >> 1);
+  av1_round_shift_rect_array_32_sse4_1(outcoef128, outcoef128, 512 >> 1,
+                                       -shift[2], NewSqrt2);
+  (void)bd;
+}
+
 void av1_fwd_txfm2d_32x16_sse4_1(const int16_t *input, int32_t *coeff,
                                  int stride, TX_TYPE tx_type, int bd) {
   assert(DCT_DCT == tx_type);
@@ -2180,5 +2260,86 @@ void av1_fwd_txfm2d_8x4_sse4_1(const int16_t *input, int32_t *coeff, int stride,
   av1_round_shift_rect_array_32_sse4_1(outcoeff128, in, txfm_size_col,
                                        -shift[2], NewSqrt2);
   transpose_8nx8n(in, outcoeff128, txfm_size_row, txfm_size_col);
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_16x64_sse4_1(const int16_t *input, int32_t *coeff,
+                                 int stride, TX_TYPE tx_type, int bd) {
+  __m128i in[256];
+  __m128i *outcoeff128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_16X64];
+  const int txw_idx = get_txw_idx(TX_16X64);
+  const int txh_idx = get_txh_idx(TX_16X64);
+  const int txfm_size_col = tx_size_wide[TX_16X64];
+  const int txfm_size_row = tx_size_high[TX_16X64];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+  const int num_col = txfm_size_col >> 2;
+  // col tranform
+  for (int i = 0; i < txfm_size_row; i += num_col) {
+    load_buffer_4x4(input + (i + 0) * stride, in + (i + 0) * num_col, num_col,
+                    ud_flip, lr_flip, shift[0]);
+    load_buffer_4x4(input + (i + 1) * stride, in + (i + 1) * num_col, num_col,
+                    ud_flip, lr_flip, shift[0]);
+    load_buffer_4x4(input + (i + 2) * stride, in + (i + 2) * num_col, num_col,
+                    ud_flip, lr_flip, shift[0]);
+    load_buffer_4x4(input + (i + 3) * stride, in + (i + 3) * num_col, num_col,
+                    ud_flip, lr_flip, shift[0]);
+  }
+
+  for (int i = 0; i < num_col; i++) {
+    av1_fdct64_new_sse4_1(in + i, outcoeff128 + i, bitcol, num_col, num_col);
+  }
+
+  col_txfm_16x16_rounding(outcoeff128, -shift[1]);
+  col_txfm_16x16_rounding(outcoeff128 + 64, -shift[1]);
+  col_txfm_16x16_rounding(outcoeff128 + 128, -shift[1]);
+  col_txfm_16x16_rounding(outcoeff128 + 192, -shift[1]);
+
+  transpose_8nx8n(outcoeff128, in, txfm_size_col, 32);
+  fdct16x16_sse4_1(in, in, bitrow, 8);
+  transpose_8nx8n(in, outcoeff128, 32, txfm_size_col);
+  memset(coeff + txfm_size_col * 32, 0, txfm_size_col * 32 * sizeof(*coeff));
+  (void)bd;
+}
+
+void av1_fwd_txfm2d_64x16_sse4_1(const int16_t *input, int32_t *coeff,
+                                 int stride, TX_TYPE tx_type, int bd) {
+  __m128i in[256];
+  __m128i *outcoeff128 = (__m128i *)coeff;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_64X16];
+  const int txw_idx = get_txw_idx(TX_64X16);
+  const int txh_idx = get_txh_idx(TX_64X16);
+  const int txfm_size_col = tx_size_wide[TX_64X16];
+  const int txfm_size_row = tx_size_high[TX_64X16];
+  int bitcol = fwd_cos_bit_col[txw_idx][txh_idx];
+  int bitrow = fwd_cos_bit_row[txw_idx][txh_idx];
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+  // col tranform
+  for (int i = 0; i < txfm_size_row; i++) {
+    load_buffer_4x4(input + 0 + i * stride, in + 0 + i * txfm_size_row, 4,
+                    ud_flip, lr_flip, shift[0]);
+    load_buffer_4x4(input + 16 + i * stride, in + 4 + i * txfm_size_row, 4,
+                    ud_flip, lr_flip, shift[0]);
+    load_buffer_4x4(input + 32 + i * stride, in + 8 + i * txfm_size_row, 4,
+                    ud_flip, lr_flip, shift[0]);
+    load_buffer_4x4(input + 48 + i * stride, in + 12 + i * txfm_size_row, 4,
+                    ud_flip, lr_flip, shift[0]);
+  }
+
+  fdct16x16_sse4_1(in, outcoeff128, bitcol, txfm_size_row);
+  col_txfm_16x16_rounding(outcoeff128, -shift[1]);
+  col_txfm_16x16_rounding(outcoeff128 + 64, -shift[1]);
+  col_txfm_16x16_rounding(outcoeff128 + 128, -shift[1]);
+  col_txfm_16x16_rounding(outcoeff128 + 192, -shift[1]);
+
+  transpose_8nx8n(outcoeff128, in, txfm_size_col, txfm_size_row);
+  for (int i = 0; i < 4; i++) {
+    av1_fdct64_new_sse4_1(in + i, in + i, bitrow, 4, 4);
+  }
+  transpose_8nx8n(in, outcoeff128, txfm_size_row, 32);
   (void)bd;
 }
