@@ -62,6 +62,14 @@ base::WaitableEvent g_init_thread_init_done(
     base::WaitableEvent::InitialState::NOT_SIGNALED);
 
 void NativeInit() {
+// In integrated mode, ICU and FeatureList has been initialized by the host.
+#if !BUILDFLAG(INTEGRATED_MODE)
+#if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
+  base::i18n::InitializeICU();
+#endif
+  base::FeatureList::InitializeInstance(std::string(), std::string());
+#endif
+
   if (!base::TaskScheduler::GetInstance())
     base::TaskScheduler::CreateAndStartWithDefaultParams("Cronet");
   url::Initialize();
@@ -101,14 +109,6 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
 void JNI_CronetLibraryLoader_CronetInitOnInitThread(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
-// In integrated mode, ICU and FeatureList has been initialized by the host.
-#if !BUILDFLAG(INTEGRATED_MODE)
-#if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
-  base::i18n::InitializeICU();
-#endif
-  base::FeatureList::InitializeInstance(std::string(), std::string());
-#endif
-
   // Initialize message loop for init thread.
   DCHECK(!base::MessageLoop::current());
   DCHECK(!g_init_message_loop);
