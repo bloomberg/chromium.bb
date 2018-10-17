@@ -1255,30 +1255,29 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.setupCurrentDirectory_ = function() {
-    var tracker = this.directoryModel_.createDirectoryChangeTracker();
-    var queue = new AsyncUtil.Queue();
+    const tracker = this.directoryModel_.createDirectoryChangeTracker();
+    const queue = new AsyncUtil.Queue();
 
     // Wait until the volume manager is initialized.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       tracker.start();
       this.volumeManager_.ensureInitialized(callback);
-    }.bind(this));
+    });
 
-    var nextCurrentDirEntry;
-    var selectionEntry;
+    let nextCurrentDirEntry;
+    let selectionEntry;
 
     // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry
     // in case of being a display root or a default directory to open files.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       if (!this.launchParams_.selectionURL) {
         callback();
         return;
       }
 
       window.webkitResolveLocalFileSystemURL(
-          this.launchParams_.selectionURL,
-          function(inEntry) {
-            var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+          this.launchParams_.selectionURL, (inEntry) => {
+            const locationInfo = this.volumeManager_.getLocationInfo(inEntry);
             // If location information is not available, then the volume is
             // no longer (or never) available.
             if (!locationInfo) {
@@ -1304,53 +1303,50 @@ FileManager.prototype = /** @struct */ {
               selectionEntry = inEntry;
 
             callback();
-          }.bind(this), callback);
-    }.bind(this));
+          }, callback);
+    });
     // Resolve the currentDirectoryURL to currentDirectoryEntry (if not done
     // by the previous step).
-    queue.run(function(callback) {
+    queue.run((callback) => {
       if (nextCurrentDirEntry || !this.launchParams_.currentDirectoryURL) {
         callback();
         return;
       }
 
       window.webkitResolveLocalFileSystemURL(
-          this.launchParams_.currentDirectoryURL,
-          function(inEntry) {
-            var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+          this.launchParams_.currentDirectoryURL, (inEntry) => {
+            const locationInfo = this.volumeManager_.getLocationInfo(inEntry);
             if (!locationInfo) {
               callback();
               return;
             }
             nextCurrentDirEntry = inEntry;
             callback();
-          }.bind(this), callback);
-      // TODO(mtomasz): Implement reopening on special search, when fake
-      // entries are converted to directory providers. crbug.com/433161.
-    }.bind(this));
+          }, callback);
+    });
 
     // If the directory to be changed to is not available, then first fallback
     // to the parent of the selection entry.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       if (nextCurrentDirEntry || !selectionEntry) {
         callback();
         return;
       }
-      selectionEntry.getParent(function(inEntry) {
+      selectionEntry.getParent((inEntry) => {
         nextCurrentDirEntry = inEntry;
         callback();
-      }.bind(this));
-    }.bind(this));
+      });
+    });
 
     // Check if the next current directory is not a virtual directory which is
     // not available in UI. This may happen to shared on Drive.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       if (!nextCurrentDirEntry) {
         callback();
         return;
       }
-      var locationInfo = this.volumeManager_.getLocationInfo(
-          nextCurrentDirEntry);
+      const locationInfo =
+          this.volumeManager_.getLocationInfo(nextCurrentDirEntry);
       // If we can't check, assume that the directory is illegal.
       if (!locationInfo) {
         nextCurrentDirEntry = null;
@@ -1359,19 +1355,21 @@ FileManager.prototype = /** @struct */ {
       }
       // Having root directory of DRIVE_OTHER here should be only for shared
       // with me files. Fallback to Drive root in such case.
-      if (locationInfo.isRootEntry && locationInfo.rootType ===
-              VolumeManagerCommon.RootType.DRIVE_OTHER) {
-        var volumeInfo = this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
+      if (locationInfo.isRootEntry &&
+          locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER) {
+        const volumeInfo =
+            this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
         if (!volumeInfo) {
           nextCurrentDirEntry = null;
           callback();
           return;
         }
-        volumeInfo.resolveDisplayRoot().then(
-            function(entry) {
+        volumeInfo.resolveDisplayRoot()
+            .then((entry) => {
               nextCurrentDirEntry = entry;
               callback();
-            }).catch(function(error) {
+            })
+            .catch((error) => {
               console.error(error.stack || error);
               nextCurrentDirEntry = null;
               callback();
@@ -1379,25 +1377,25 @@ FileManager.prototype = /** @struct */ {
       } else {
         callback();
       }
-    }.bind(this));
+    });
 
     // If the directory to be changed to is still not resolved, then fallback
     // to the default display root.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       if (nextCurrentDirEntry) {
         callback();
         return;
       }
-      this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
+      this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
         nextCurrentDirEntry = displayRoot;
         callback();
-      }.bind(this));
-    }.bind(this));
+      });
+    });
 
     // If selection failed to be resolved (eg. didn't exist, in case of saving
     // a file, or in case of a fallback of the current directory, then try to
     // resolve again using the target name.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       if (selectionEntry ||
           !nextCurrentDirEntry ||
           !this.launchParams_.targetName) {
@@ -1406,28 +1404,28 @@ FileManager.prototype = /** @struct */ {
       }
       // Try to resolve as a file first. If it fails, then as a directory.
       nextCurrentDirEntry.getFile(
-          this.launchParams_.targetName,
-          {},
-          function(targetEntry) {
+          this.launchParams_.targetName, {},
+          (targetEntry) => {
             selectionEntry = targetEntry;
             callback();
-          }, function() {
+          },
+          () => {
             // Failed to resolve as a file
             nextCurrentDirEntry.getDirectory(
-                this.launchParams_.targetName,
-                {},
-                function(targetEntry) {
+                this.launchParams_.targetName, {},
+                (targetEntry) => {
                   selectionEntry = targetEntry;
                   callback();
-                }, function() {
+                },
+                () => {
                   // Failed to resolve as either file or directory.
                   callback();
                 });
-          }.bind(this));
-    }.bind(this));
+          });
+    });
 
+    // If there is no target select MyFiles by default.
     queue.run((callback) => {
-      // If there is no target select MyFiles by default.
       if (!nextCurrentDirEntry)
         nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
 
@@ -1435,7 +1433,7 @@ FileManager.prototype = /** @struct */ {
     });
 
     // Finalize.
-    queue.run(function(callback) {
+    queue.run((callback) => {
       // Check directory change.
       tracker.stop();
       if (tracker.hasChanged) {
@@ -1448,7 +1446,7 @@ FileManager.prototype = /** @struct */ {
           selectionEntry,
           this.launchParams_.targetName);
       callback();
-    }.bind(this));
+    });
   };
 
   /**
