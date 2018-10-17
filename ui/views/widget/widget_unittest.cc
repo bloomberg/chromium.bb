@@ -1698,6 +1698,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   EXPECT_EQ(0, h1.GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, h2.GetEventCount(ui::ET_MOUSEWHEEL));
+
+  root_view->RemovePreTargetHandler(&h1);
 }
 
 TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {

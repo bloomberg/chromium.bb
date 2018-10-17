@@ -1234,6 +1234,7 @@ TEST_F(WindowTreeClientTest, InputEventRootWindow) {
   EXPECT_EQ(gfx::Point(20, 30), root_handler.last_event_location());
   EXPECT_EQ(0, child_delegate.move_count());
   EXPECT_EQ(gfx::Point(), child_delegate.last_event_location());
+  top_level->RemovePreTargetHandler(&root_handler);
 }
 
 TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {

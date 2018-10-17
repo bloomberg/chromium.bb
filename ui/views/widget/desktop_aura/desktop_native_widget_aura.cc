@@ -315,6 +315,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   wm::SetActivationClient(host_->window(), NULL);
   focus_client_.reset();
 
+  host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
+
   host_->RemoveObserver(this);
   host_.reset();
   // WindowEventDispatcher owns |desktop_window_tree_host_|.

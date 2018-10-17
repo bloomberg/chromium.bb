@@ -62,6 +62,7 @@ WMTestHelper::~WMTestHelper() {
     test_ws_->Shutdown(run_loop.QuitClosure());
     run_loop.Run();
   }
+  host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
 }
 
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* window,

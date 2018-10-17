@@ -687,6 +687,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           display_configurator_.get())),
       native_cursor_manager_(nullptr),
       weak_factory_(this) {
+  // Ash doesn't properly remove pre-target-handlers.
+  ui::EventHandler::DisableCheckTargets();
+
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
