@@ -116,7 +116,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
                           WorkerThread* thread,
                           WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
-    auto* global_scope = ToAnimationWorkletGlobalScope(thread->GlobalScope());
+    auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
     ScriptState* script_state =
         global_scope->ScriptController()->GetScriptState();
     ASSERT_TRUE(script_state);
@@ -130,7 +130,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   void RunBasicParsingTestOnWorklet(WorkerThread* thread,
                                     WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
-    auto* global_scope = ToAnimationWorkletGlobalScope(thread->GlobalScope());
+    auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
     ScriptState* script_state =
         global_scope->ScriptController()->GetScriptState();
     ASSERT_TRUE(script_state);
@@ -175,7 +175,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   void RunConstructAndAnimateTestOnWorklet(WorkerThread* thread,
                                            WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
-    auto* global_scope = ToAnimationWorkletGlobalScope(thread->GlobalScope());
+    auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
     ScriptState* script_state =
         global_scope->ScriptController()->GetScriptState();
     ASSERT_TRUE(script_state);

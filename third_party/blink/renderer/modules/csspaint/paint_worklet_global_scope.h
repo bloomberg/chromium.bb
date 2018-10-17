@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_pending_generator_registry.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -57,11 +58,12 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_;
 };
 
-DEFINE_TYPE_CASTS(PaintWorkletGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsPaintWorkletGlobalScope(),
-                  context.IsPaintWorkletGlobalScope());
+template <>
+struct DowncastTraits<PaintWorkletGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsPaintWorkletGlobalScope();
+  }
+};
 
 }  // namespace blink
 

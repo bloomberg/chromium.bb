@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -126,11 +127,12 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   float sample_rate_ = 0.0;
 };
 
-DEFINE_TYPE_CASTS(AudioWorkletGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsAudioWorkletGlobalScope(),
-                  context.IsAudioWorkletGlobalScope());
+template <>
+struct DowncastTraits<AudioWorkletGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsAudioWorkletGlobalScope();
+  }
+};
 
 }  // namespace blink
 

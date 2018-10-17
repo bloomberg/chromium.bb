@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/custom/pending_layout_registry.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -55,11 +56,12 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
   Member<PendingLayoutRegistry> pending_layout_registry_;
 };
 
-DEFINE_TYPE_CASTS(LayoutWorkletGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsLayoutWorkletGlobalScope(),
-                  context.IsLayoutWorkletGlobalScope());
+template <>
+struct DowncastTraits<LayoutWorkletGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsLayoutWorkletGlobalScope();
+  }
+};
 
 }  // namespace blink
 
