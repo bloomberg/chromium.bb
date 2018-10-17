@@ -67,6 +67,8 @@ namespace content {
 
 namespace {
 
+constexpr float kHitTestTolerance = 1.f;
+
 class RenderWidgetHostMouseEventMonitor {
  public:
   explicit RenderWidgetHostMouseEventMonitor(RenderWidgetHost* host)
@@ -220,11 +222,13 @@ void DispatchMouseEventAndWaitUntilDispatch(
   RouteMouseEventAndWaitUntilDispatch(router, root_view, expected_target,
                                       &event);
   EXPECT_TRUE(monitor.EventWasReceived());
-  EXPECT_NEAR(expected_location.x(), monitor.event().PositionInWidget().x, 2)
+  EXPECT_NEAR(expected_location.x(), monitor.event().PositionInWidget().x,
+              kHitTestTolerance)
       << " & original location was " << location.x() << ", " << location.y()
       << " & root_location was " << root_location.x() << ", "
       << root_location.y();
-  EXPECT_NEAR(expected_location.y(), monitor.event().PositionInWidget().y, 2);
+  EXPECT_NEAR(expected_location.y(), monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
 }
 
 // Wrapper for the above method that creates a MouseDown to send.
@@ -1408,9 +1412,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         const blink::WebGestureEvent& gesture_event =
             static_cast<const blink::WebGestureEvent&>(event);
         EXPECT_NEAR(expected_position.x(), gesture_event.PositionInWidget().x,
-                    1);
+                    kHitTestTolerance);
         EXPECT_NEAR(expected_position.y(), gesture_event.PositionInWidget().y,
-                    1);
+                    kHitTestTolerance);
         return true;
       });
 
@@ -1486,9 +1490,9 @@ class SitePerProcessEmulatedTouchBrowserTest
           const blink::WebGestureEvent& gesture_event =
               static_cast<const blink::WebGestureEvent&>(event);
           EXPECT_NEAR(expected_position.x(), gesture_event.PositionInWidget().x,
-                      1);
+                      kHitTestTolerance);
           EXPECT_NEAR(expected_position.y(), gesture_event.PositionInWidget().y,
-                      1);
+                      kHitTestTolerance);
           EXPECT_EQ(blink::kWebGestureDeviceTouchscreen,
                     gesture_event.SourceDevice());
           // We expect all gesture events to have non-zero ids otherwise they
@@ -2282,8 +2286,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   waiter.Wait();
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
-  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x, 2);
-  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y, 2);
+  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x,
+              kHitTestTolerance);
+  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 
   // Surface hit test can only learn about pointer-events changes when
@@ -2320,8 +2326,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   child_waiter.Wait();
 
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_NEAR(23, child_frame_monitor.event().PositionInWidget().x, 2);
-  EXPECT_NEAR(23, child_frame_monitor.event().PositionInWidget().y, 2);
+  EXPECT_NEAR(23, child_frame_monitor.event().PositionInWidget().x,
+              kHitTestTolerance);
+  EXPECT_NEAR(23, child_frame_monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
 }
 
 // Verify that an event is properly retargeted to the main frame when an
@@ -2371,8 +2379,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                                       &child_event);
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
-  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x, 2);
-  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y, 2);
+  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x,
+              kHitTestTolerance);
+  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
@@ -3146,8 +3156,8 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   // The child_view should receive a mouse-move event.
   EXPECT_TRUE(child_monitor.EventWasReceived());
   EXPECT_EQ(blink::WebInputEvent::kMouseMove, child_monitor.event().GetType());
-  EXPECT_NEAR(10, child_monitor.event().PositionInWidget().x, 2);
-  EXPECT_NEAR(10, child_monitor.event().PositionInWidget().y, 2);
+  EXPECT_NEAR(8, child_monitor.event().PositionInWidget().x, kHitTestTolerance);
+  EXPECT_NEAR(8, child_monitor.event().PositionInWidget().y, kHitTestTolerance);
 
   // The root_view should also receive a mouse-move event.
   EXPECT_TRUE(root_monitor.EventWasReceived());
@@ -4381,8 +4391,8 @@ void CreateContextMenuTestHelper(
 
   ContextMenuParams params = context_menu_delegate.getParams();
 
-  EXPECT_NEAR(point.x(), params.x, 2);
-  EXPECT_NEAR(point.y(), params.y, 2);
+  EXPECT_NEAR(point.x(), params.x, kHitTestTolerance);
+  EXPECT_NEAR(point.y(), params.y, kHitTestTolerance);
 }
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
@@ -5098,7 +5108,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
   // scale that to pixels, it's (3, 53). Note that 35 * 1.5 should be 52.5,
   // so we already lost precision there in the transform from draw quad.
   EXPECT_NEAR(mouse_down_coords.y(), event_monitor.event().PositionInWidget().y,
-              1);
+              kHitTestTolerance);
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
@@ -5142,7 +5152,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   // Create two points to hit test: One in the child of the main frame, and
   // one in the frame nested within that. The hit test request is sent to the
   // child's renderer.
-  gfx::Point point_in_child(1, 1);
+  gfx::PointF point_in_child(1, 1);
   gfx::PointF point_in_nested_child(5, 5);
   rwhv_grandchild->TransformPointToCoordSpaceForView(
       point_in_nested_child, rwhv_child, &point_in_nested_child);
@@ -5178,7 +5188,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
-        gfx::ToCeiledPoint(point_in_nested_child), 0,
+        point_in_nested_child, 0,
         base::BindLambdaForTesting(
             [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
               received_frame_sink_id = id;
@@ -5188,8 +5198,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     content::RunThisRunLoop(&run_loop);
     // |point_in_nested_child| should hit test to |rwhv_grandchild|.
     ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
-    EXPECT_NEAR(returned_point.x(), 5, 2);
-    EXPECT_NEAR(returned_point.y(), 5, 2);
+    EXPECT_NEAR(returned_point.x(), 5, kHitTestTolerance);
+    EXPECT_NEAR(returned_point.y(), 5, kHitTestTolerance);
   }
 }
 
