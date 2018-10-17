@@ -183,13 +183,6 @@ QUIC_FLAG(bool,
 // IsPacketUsefulForRetransmittableData.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_is_useful_for_retrans, true)
 
-// If true, QUIC connection will notify the debug visitor after a connectivity
-// probing is sent.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent,
-    true)
-
 // If true, disable QUIC version 35.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, false)
 // If true, then QuicCryptoServerConfig::ProcessClientHelloAfterGetProof() will
@@ -208,12 +201,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_new_lru_cache, false)
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
-
-// If true, QuicSpdySession::OnStreamHeaderList() will close the connection
-// if the stream id referenced indicates a static stream."
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_check_stream_nonstatic_on_header_list,
-          true)
 
 // If true, calling StopReading() on a level-triggered QUIC stream sequencer
 // will cause the sequencer to discard future data.
@@ -267,4 +254,16 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_path_degrading_alarm, false)
 // When true, QUIC server push uses a unidirectional stream.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_unidirectional_server_push_stream,
+          false)
+
+// If true, a QUIC connection will attempt to process decryptable packets when
+// a new decryption key is made available.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_decrypt_packets_on_key_change,
+          false)
+
+// This flag fixes a bug where dispatcher's last_packet_is_ietf_quic may be
+// wrong when getting proof asynchronously.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic,
           false)

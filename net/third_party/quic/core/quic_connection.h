@@ -664,6 +664,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     return sent_packet_manager_;
   }
 
+  // Returns the underlying sent packet manager.
+  QuicSentPacketManager& sent_packet_manager() { return sent_packet_manager_; }
+
   bool CanWrite(HasRetransmittableData retransmittable);
 
   // When the flusher is out of scope, only the outermost flusher will cause a
@@ -742,6 +745,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   QuicStringPiece GetCurrentPacket();
 
+  const QuicFramer& framer() const { return framer_; }
+
   const QuicPacketGenerator& packet_generator() const {
     return packet_generator_;
   }
@@ -795,6 +800,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool deprecate_post_process_after_data() const {
     return deprecate_post_process_after_data_;
   }
+
+  // Attempts to process any queued undecryptable packets.
+  void MaybeProcessUndecryptablePackets();
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -938,9 +946,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Queues |packet| in the hopes that it can be decrypted in the
   // future, when a new key is installed.
   void QueueUndecryptablePacket(const QuicEncryptedPacket& packet);
-
-  // Attempts to process any queued undecryptable packets.
-  void MaybeProcessUndecryptablePackets();
 
   // Sends any packets which are a response to the last packet, including both
   // acks and pending writes if an ack opened the congestion window.
@@ -1180,7 +1185,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicArenaScopedPtr<QuicAlarm> retransmittable_on_wire_alarm_;
   // An alarm that fires when this connection is considered degrading.
   QuicArenaScopedPtr<QuicAlarm> path_degrading_alarm_;
-
+  // An alarm that fires to process undecryptable packets when new decyrption
+  // keys are available.
+  QuicArenaScopedPtr<QuicAlarm> process_undecryptable_packets_alarm_;
   // Neither visitor is owned by this class.
   QuicConnectionVisitorInterface* visitor_;
   QuicConnectionDebugVisitor* debug_visitor_;
@@ -1323,12 +1330,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update.
   bool donot_retransmit_old_window_updates_;
 
-  // Latched value of
-  // quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent
-  const bool notify_debug_visitor_on_connectivity_probing_sent_;
-
   // Latched value of quic_reloadable_flag_quic_move_post_process_after_data.
   const bool deprecate_post_process_after_data_;
+
+  // Latched value of quic_reloadable_flag_quic_decrypt_packets_on_key_change.
+  const bool decrypt_packets_on_key_change_;
 };
 
 }  // namespace quic

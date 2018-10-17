@@ -47,8 +47,9 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
   ~QuicUnackedPacketMapTest() override {}
 
   SerializedPacket CreateRetransmittablePacket(QuicPacketNumber packet_number) {
-    return CreateRetransmittablePacketForStream(packet_number,
-                                                kHeadersStreamId);
+    return CreateRetransmittablePacketForStream(
+        packet_number, QuicUtils::GetHeadersStreamId(
+                           CurrentSupportedVersions()[0].transport_version));
   }
 
   SerializedPacket CreateRetransmittablePacketForStream(
@@ -146,7 +147,8 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
     }
     QuicTransmissionInfo* info =
         unacked_packets_.GetMutableTransmissionInfo(old_packet_number);
-    QuicStreamId stream_id = kHeadersStreamId;
+    QuicStreamId stream_id = QuicUtils::GetHeadersStreamId(
+        CurrentSupportedVersions()[0].transport_version);
     for (const auto& frame : info->retransmittable_frames) {
       if (frame.type == STREAM_FRAME) {
         stream_id = frame.stream_frame.stream_id;

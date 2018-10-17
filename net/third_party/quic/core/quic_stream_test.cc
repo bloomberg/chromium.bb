@@ -129,7 +129,10 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   uint32_t initial_flow_control_window_bytes_;
   QuicTime::Delta zero_;
   ParsedQuicVersionVector supported_versions_;
-  const QuicStreamId kTestStreamId = 5u;
+  const QuicStreamId kTestStreamId =
+      QuicUtils::GetHeadersStreamId(
+          AllSupportedVersions()[0].transport_version) +
+      2;
 };
 
 TEST_F(QuicStreamTest, WriteAllData) {

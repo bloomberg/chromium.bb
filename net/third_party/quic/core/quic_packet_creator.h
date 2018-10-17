@@ -232,6 +232,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   QuicByteCount pending_padding_bytes() const { return pending_padding_bytes_; }
 
+  QuicTransportVersion transport_version() const {
+    return framer_->transport_version();
+  }
+
  private:
   friend class test::QuicPacketCreatorPeer;
 

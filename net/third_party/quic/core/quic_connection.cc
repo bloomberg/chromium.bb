@@ -199,6 +199,21 @@ class RetransmittableOnWireAlarmDelegate : public QuicAlarm::Delegate {
   QuicConnection* connection_;
 };
 
+class ProcessUndecryptablePacketsAlarmDelegate : public QuicAlarm::Delegate {
+ public:
+  explicit ProcessUndecryptablePacketsAlarmDelegate(QuicConnection* connection)
+      : connection_(connection) {}
+  ProcessUndecryptablePacketsAlarmDelegate(
+      const ProcessUndecryptablePacketsAlarmDelegate&) = delete;
+  ProcessUndecryptablePacketsAlarmDelegate& operator=(
+      const ProcessUndecryptablePacketsAlarmDelegate&) = delete;
+
+  void OnAlarm() override { connection_->MaybeProcessUndecryptablePackets(); }
+
+ private:
+  QuicConnection* connection_;
+};
+
 }  // namespace
 
 #define ENDPOINT \
@@ -286,6 +301,9 @@ QuicConnection::QuicConnection(
       path_degrading_alarm_(alarm_factory_->CreateAlarm(
           arena_.New<PathDegradingAlarmDelegate>(this),
           &arena_)),
+      process_undecryptable_packets_alarm_(alarm_factory_->CreateAlarm(
+          arena_.New<ProcessUndecryptablePacketsAlarmDelegate>(this),
+          &arena_)),
       visitor_(nullptr),
       debug_visitor_(nullptr),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
@@ -328,10 +346,10 @@ QuicConnection::QuicConnection(
       supports_release_time_(writer->SupportsReleaseTime()),
       release_time_into_future_(QuicTime::Delta::Zero()),
       donot_retransmit_old_window_updates_(false),
-      notify_debug_visitor_on_connectivity_probing_sent_(GetQuicReloadableFlag(
-          quic_notify_debug_visitor_on_connectivity_probing_sent)),
       deprecate_post_process_after_data_(
-          GetQuicReloadableFlag(quic_deprecate_post_process_after_data)) {
+          GetQuicReloadableFlag(quic_deprecate_post_process_after_data)),
+      decrypt_packets_on_key_change_(
+          GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -837,7 +855,7 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnStreamFrame(frame);
   }
-  if (frame.stream_id != kCryptoStreamId &&
+  if (frame.stream_id != QuicUtils::GetCryptoStreamId(transport_version()) &&
       last_decrypted_packet_level_ == ENCRYPTION_NONE) {
     if (MaybeConsiderAsMemoryCorruption(frame)) {
       CloseConnection(QUIC_MAYBE_CORRUPTED_MEMORY,
@@ -2460,6 +2478,16 @@ void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
 void QuicConnection::SetDecrypter(EncryptionLevel level,
                                   std::unique_ptr<QuicDecrypter> decrypter) {
   framer_.SetDecrypter(level, std::move(decrypter));
+  if (!decrypt_packets_on_key_change_) {
+    return;
+  }
+
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_decrypt_packets_on_key_change, 1,
+                    3);
+  if (!undecryptable_packets_.empty() &&
+      !process_undecryptable_packets_alarm_->IsSet()) {
+    process_undecryptable_packets_alarm_->Set(clock_->ApproximateNow());
+  }
 }
 
 void QuicConnection::SetAlternativeDecrypter(
@@ -2467,6 +2495,16 @@ void QuicConnection::SetAlternativeDecrypter(
     std::unique_ptr<QuicDecrypter> decrypter,
     bool latch_once_used) {
   framer_.SetAlternativeDecrypter(level, std::move(decrypter), latch_once_used);
+  if (!decrypt_packets_on_key_change_) {
+    return;
+  }
+
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_decrypt_packets_on_key_change, 2,
+                    3);
+  if (!undecryptable_packets_.empty() &&
+      !process_undecryptable_packets_alarm_->IsSet()) {
+    process_undecryptable_packets_alarm_->Set(clock_->ApproximateNow());
+  }
 }
 
 const QuicDecrypter* QuicConnection::decrypter() const {
@@ -2484,6 +2522,12 @@ void QuicConnection::QueueUndecryptablePacket(
 }
 
 void QuicConnection::MaybeProcessUndecryptablePackets() {
+  if (decrypt_packets_on_key_change_) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_decrypt_packets_on_key_change,
+                      3, 3);
+    process_undecryptable_packets_alarm_->Cancel();
+  }
+
   if (undecryptable_packets_.empty() || encryption_level_ == ENCRYPTION_NONE) {
     return;
   }
@@ -2881,7 +2925,8 @@ bool QuicConnection::IsTerminationPacket(const SerializedPacket& packet) {
     }
     if (save_crypto_packets_as_termination_packets_ &&
         frame.type == STREAM_FRAME &&
-        frame.stream_frame.stream_id == kCryptoStreamId) {
+        frame.stream_frame.stream_id ==
+            QuicUtils::GetCryptoStreamId(transport_version())) {
       return true;
     }
   }
@@ -2974,10 +3019,7 @@ bool QuicConnection::SendConnectivityProbingPacket(
     return false;
   }
 
-  if (notify_debug_visitor_on_connectivity_probing_sent_ &&
-      debug_visitor_ != nullptr) {
-    QUIC_FLAG_COUNT(
-        quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent);  // NOLINT
+  if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPacketSent(
         *probing_packet, probing_packet->original_packet_number,
         probing_packet->transmission_type, packet_send_time);
@@ -3080,7 +3122,7 @@ QuicStringPiece QuicConnection::GetCurrentPacket() {
 
 bool QuicConnection::MaybeConsiderAsMemoryCorruption(
     const QuicStreamFrame& frame) {
-  if (frame.stream_id == kCryptoStreamId ||
+  if (frame.stream_id == QuicUtils::GetCryptoStreamId(transport_version()) ||
       last_decrypted_packet_level_ != ENCRYPTION_NONE) {
     return false;
   }

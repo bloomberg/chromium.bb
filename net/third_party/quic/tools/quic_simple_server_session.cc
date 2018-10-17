@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -28,7 +29,8 @@ QuicSimpleServerSession::QuicSimpleServerSession(
                             helper,
                             crypto_config,
                             compressed_certs_cache),
-      highest_promised_stream_id_(0),
+      highest_promised_stream_id_(
+          QuicUtils::GetInvalidStreamId(connection->transport_version())),
       quic_simple_server_backend_(quic_simple_server_backend) {}
 
 QuicSimpleServerSession::~QuicSimpleServerSession() {
@@ -128,7 +130,9 @@ void QuicSimpleServerSession::HandleFrameOnNonexistentOutgoingStream(
   // range of next_outgoing_stream_id_ and highes_promised_stream_id_),
   // connection shouldn't be closed.
   // Otherwise behave in the same way as base class.
-  if (stream_id > highest_promised_stream_id_) {
+  if (highest_promised_stream_id_ ==
+          QuicUtils::GetInvalidStreamId(connection()->transport_version()) ||
+      stream_id > highest_promised_stream_id_) {
     QuicSession::HandleFrameOnNonexistentOutgoingStream(stream_id);
   }
 }

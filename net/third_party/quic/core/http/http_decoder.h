@@ -1,5 +1,9 @@
-#ifndef NET_THIRD_PARTY_QUIC_CORE_HTTP_HTTP_FRAMER_H_
-#define NET_THIRD_PARTY_QUIC_CORE_HTTP_HTTP_FRAMER_H_
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef NET_THIRD_PARTY_QUIC_CORE_HTTP_HTTP_DECODER_H_
+#define NET_THIRD_PARTY_QUIC_CORE_HTTP_HTTP_DECODER_H_
 
 #include <cstddef>
 
@@ -12,16 +16,16 @@ namespace quic {
 
 class QuicDataReader;
 
-// A class for framing the HTTP frames that are exchanged in an HTTP over QUIC
+// A class for decoding the HTTP frames that are exchanged in an HTTP over QUIC
 // session.
-class QUIC_EXPORT_PRIVATE HttpFramer {
+class QUIC_EXPORT_PRIVATE HttpDecoder {
  public:
   class QUIC_EXPORT_PRIVATE Visitor {
    public:
     virtual ~Visitor() {}
 
     // Called if an error is detected.
-    virtual void OnError(HttpFramer* framer) = 0;
+    virtual void OnError(HttpDecoder* decoder) = 0;
 
     // Called when a PRIORITY frame has been successfully parsed.
     virtual void OnPriorityFrame(const PriorityFrame& frame) = 0;
@@ -67,12 +71,12 @@ class QUIC_EXPORT_PRIVATE HttpFramer {
     // to allow callers to handle unknown frames.
   };
 
-  HttpFramer();
+  HttpDecoder();
 
-  ~HttpFramer();
+  ~HttpDecoder();
 
-  // Set callbacks to be called from the framer.  A visitor must be set, or
-  // else the framer will crash.  It is acceptable for the visitor to do
+  // Set callbacks to be called from the decoder.  A visitor must be set, or
+  // else the decoder will crash.  It is acceptable for the visitor to do
   // nothing.  If this is called multiple times, only the last visitor
   // will be used.  |visitor| will be owned by the caller.
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
@@ -87,7 +91,7 @@ class QUIC_EXPORT_PRIVATE HttpFramer {
 
  private:
   // Represents the current state of the parsing state machine.
-  enum HttpFramerState {
+  enum HttpDecoderState {
     STATE_READING_FRAME_LENGTH,
     STATE_READING_FRAME_TYPE,
     STATE_READING_FRAME_PAYLOAD,
@@ -124,7 +128,7 @@ class QUIC_EXPORT_PRIVATE HttpFramer {
   // Visitor to invoke when messages are parsed.
   Visitor* visitor_;  // Unowned.
   // Current state of the parsing.
-  HttpFramerState state_;
+  HttpDecoderState state_;
   // Type of the frame currently being parsed.
   uint8_t current_frame_type_;
   // Length of the payload of the frame currently being parsed.
@@ -141,4 +145,4 @@ class QUIC_EXPORT_PRIVATE HttpFramer {
 
 }  // namespace quic
 
-#endif  // NET_THIRD_PARTY_QUIC_CORE_HTTP_HTTP_FRAMER_H_
+#endif  // NET_THIRD_PARTY_QUIC_CORE_HTTP_HTTP_DECODER_H_

@@ -291,6 +291,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   bool initial_headers_sent_;
 
   quic::QuicSpdyClientSessionBase* session_;
+  quic::QuicTransportVersion quic_version_;
 
   // Set to false if this stream should not be migrated to a cellular network
   // during connection migration.

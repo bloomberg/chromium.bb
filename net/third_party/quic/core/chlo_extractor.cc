@@ -10,6 +10,7 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
@@ -116,8 +117,9 @@ bool ChloFramerVisitor::OnPacketHeader(const QuicPacketHeader& header) {
 }
 bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
   QuicStringPiece data(frame.data_buffer, frame.data_length);
-  if (frame.stream_id == kCryptoStreamId && frame.offset == 0 &&
-      QuicTextUtils::StartsWith(data, "CHLO")) {
+  if (frame.stream_id ==
+          QuicUtils::GetCryptoStreamId(framer_->transport_version()) &&
+      frame.offset == 0 && QuicTextUtils::StartsWith(data, "CHLO")) {
     CryptoFramer crypto_framer;
     crypto_framer.set_visitor(this);
     if (!crypto_framer.ProcessInput(data)) {

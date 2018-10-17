@@ -195,6 +195,12 @@ QuicAlarm* QuicConnectionPeer::GetPathDegradingAlarm(
 }
 
 // static
+QuicAlarm* QuicConnectionPeer::GetProcessUndecryptablePacketsAlarm(
+    QuicConnection* connection) {
+  return connection->process_undecryptable_packets_alarm_.get();
+}
+
+// static
 QuicPacketWriter* QuicConnectionPeer::GetWriter(QuicConnection* connection) {
   return connection->writer_;
 }

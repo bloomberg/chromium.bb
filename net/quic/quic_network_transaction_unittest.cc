@@ -64,6 +64,7 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
@@ -1196,7 +1197,8 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
     size_t len = std::min(chunk_size, spdy_frame.size() - offset);
     mock_quic_data.AddRead(
         ASYNC, ConstructServerDataPacket(
-                   packet_number++, quic::kHeadersStreamId, false, false,
+                   packet_number++,
+                   quic::QuicUtils::GetHeadersStreamId(version_), false, false,
                    offset, base::StringPiece(spdy_frame.data() + offset, len)));
   }
 
@@ -1252,7 +1254,8 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
     size_t len = std::min(chunk_size, spdy_frame.size() - offset);
     mock_quic_data.AddRead(
         ASYNC, ConstructServerDataPacket(
-                   packet_number++, quic::kHeadersStreamId, false, false,
+                   packet_number++,
+                   quic::QuicUtils::GetHeadersStreamId(version_), false, false,
                    offset, base::StringPiece(spdy_frame.data() + offset, len)));
   }
 
@@ -2570,34 +2573,42 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(3, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         3, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      4, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(5, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      6, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         6, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 2
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 3
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         9, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(9, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      10, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       11, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -2680,41 +2691,51 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(3, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         3, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      4, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(5, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      6, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         6, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 2
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 3
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         9, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(9, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      10, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
   // RTO 4
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(11, quic::kHeadersStreamId,
-                                                true, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      12, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       11, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       12, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       13, true, quic::QUIC_TOO_MANY_RTOS,
@@ -2800,42 +2821,49 @@ TEST_P(QuicNetworkTransactionTest,
                                       3, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_STREAM_CANCELLED));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(4, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      5, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
                                       6, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_STREAM_CANCELLED));
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // RTO 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
                                       9, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_STREAM_CANCELLED));
   // RTO 3
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(10, quic::kHeadersStreamId,
-                                                true, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      11, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       11, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
   // RTO 4
   quic_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstPacket(12, true, GetNthClientInitiatedStreamId(0),
                                   quic::QUIC_STREAM_CANCELLED));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(13, quic::kHeadersStreamId,
-                                                true, false, 0, request_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       13, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, 0, request_data));
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       14, true, quic::QUIC_TOO_MANY_RTOS,
@@ -2993,34 +3021,42 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(3, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         3, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      4, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(5, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      6, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         6, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 2
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 3
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         9, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(9, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      10, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       11, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -3127,34 +3163,42 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(3, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         3, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      4, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(5, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      6, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         6, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 2
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 3
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         9, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(9, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      10, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       11, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -3276,33 +3320,41 @@ TEST_P(QuicNetworkTransactionTest,
 
   // TLP 1
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(4, quic::kHeadersStreamId,
-                                                false, false, 0, request_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       4, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      5, quic::kHeadersStreamId, false, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       5, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, settings_offset, settings_data));
   // RTO 1
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(6, quic::kHeadersStreamId,
-                                                false, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      7, quic::kHeadersStreamId, false, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       6, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       7, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, settings_offset, settings_data));
   // RTO 2
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(8, quic::kHeadersStreamId,
-                                                false, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      9, quic::kHeadersStreamId, false, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       8, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       9, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, settings_offset, settings_data));
   // RTO 3
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(10, quic::kHeadersStreamId,
-                                                false, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      11, quic::kHeadersStreamId, false, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       11, quic::QuicUtils::GetHeadersStreamId(version_), false,
+                       false, settings_offset, settings_data));
 
   if (quic::GetQuicReloadableFlag(
           quic_fix_time_of_first_packet_sent_after_receiving)) {
@@ -3410,41 +3462,51 @@ TEST_P(QuicNetworkTransactionTest,
                      client_maker_.MakeInitialSettingsPacketAndSaveData(
                          2, &header_stream_offset, &settings_data));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(3, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         3, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      4, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(5, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      6, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         6, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 2
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 3
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         9, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(9, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      10, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
   // RTO 4
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(11, quic::kHeadersStreamId,
-                                                true, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      12, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       11, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       12, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
 
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       13, true, quic::QUIC_TOO_MANY_RTOS,
@@ -3555,42 +3617,49 @@ TEST_P(QuicNetworkTransactionTest,
                                       3, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_STREAM_CANCELLED));
   // TLP 1
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(4, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         4, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // TLP 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      5, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         5, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   // RTO 1
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
                                       6, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_STREAM_CANCELLED));
-  quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(7, quic::kHeadersStreamId, true,
-                                                false, 0, request_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         7, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, 0, request_data));
   // RTO 2
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      8, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+  quic_data.AddWrite(SYNCHRONOUS,
+                     client_maker_.MakeDataPacket(
+                         8, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                         false, settings_offset, settings_data));
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRstPacket(
                                       9, true, GetNthClientInitiatedStreamId(0),
                                       quic::QUIC_STREAM_CANCELLED));
   // RTO 3
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(10, quic::kHeadersStreamId,
-                                                true, false, 0, request_data));
-  quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDataPacket(
-                                      11, quic::kHeadersStreamId, true, false,
-                                      settings_offset, settings_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       10, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, 0, request_data));
+  quic_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       11, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, settings_offset, settings_data));
   // RTO 4
   quic_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstPacket(12, true, GetNthClientInitiatedStreamId(0),
                                   quic::QUIC_STREAM_CANCELLED));
   quic_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeDataPacket(13, quic::kHeadersStreamId,
-                                                true, false, 0, request_data));
+      SYNCHRONOUS, client_maker_.MakeDataPacket(
+                       13, quic::QuicUtils::GetHeadersStreamId(version_), true,
+                       false, 0, request_data));
   // RTO 5
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
                                       14, true, quic::QUIC_TOO_MANY_RTOS,

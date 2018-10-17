@@ -400,14 +400,17 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   const QuicString serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
-  session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+  session_->UnregisterStreamPriority(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+      /*is_static=*/true);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), nullptr);
   MockQuicCryptoServerStream* crypto_stream =
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
-  session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
-                                   QuicStream::kDefaultPriority);
+  session_->RegisterStreamPriority(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+      /*is_static=*/true, QuicStream::kDefaultPriority);
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
@@ -425,7 +428,8 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
       max_bandwidth_estimate_timestamp);
   // Queue up some pending data.
-  session_->MarkConnectionLevelWriteBlocked(kCryptoStreamId);
+  session_->MarkConnectionLevelWriteBlocked(QuicUtils::GetCryptoStreamId(
+      session_->connection()->transport_version()));
   EXPECT_TRUE(session_->HasDataToWrite());
 
   // There will be no update sent yet - not enough time has passed.

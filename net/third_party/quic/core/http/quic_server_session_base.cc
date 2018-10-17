@@ -7,6 +7,7 @@
 #include "net/third_party/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_stream.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -198,7 +199,8 @@ bool QuicServerSessionBase::ShouldCreateIncomingStream(QuicStreamId id) {
     return false;
   }
 
-  if (id % 2 == 0) {
+  if (QuicUtils::IsServerInitiatedStreamId(connection()->transport_version(),
+                                           id)) {
     QUIC_DLOG(INFO) << "Invalid incoming even stream_id:" << id;
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Client created even numbered stream",

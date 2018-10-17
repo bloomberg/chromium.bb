@@ -55,7 +55,9 @@ class QuicSimpleServerSessionPeer {
   static void SetCryptoStream(QuicSimpleServerSession* s,
                               QuicCryptoServerStream* crypto_stream) {
     s->crypto_stream_.reset(crypto_stream);
-    s->RegisterStaticStream(kCryptoStreamId, crypto_stream);
+    s->RegisterStaticStream(
+        QuicUtils::GetCryptoStreamId(s->connection()->transport_version()),
+        crypto_stream);
   }
 
   static QuicSpdyStream* CreateIncomingStream(QuicSimpleServerSession* s,
@@ -347,7 +349,8 @@ TEST_P(QuicSimpleServerSessionTest, CreateEvenIncomingDynamicStream) {
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID,
                               "Client created even numbered stream", _));
-  QuicSimpleServerSessionPeer::CreateIncomingStream(session_.get(), 2);
+  QuicSimpleServerSessionPeer::CreateIncomingStream(session_.get(),
+                                                    GetNthServerInitiatedId(0));
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenIncomingStreams());
 }
 
@@ -404,7 +407,9 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
 
-  session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+  session_->UnregisterStreamPriority(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+      /*is_static=*/true);
   // Assume encryption already established.
   QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), nullptr);
   MockQuicCryptoServerStream* crypto_stream =
@@ -412,8 +417,9 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
                                      session_.get(), &stream_helper_);
   crypto_stream->set_encryption_established(true);
   QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
-  session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
-                                   QuicStream::kDefaultPriority);
+  session_->RegisterStreamPriority(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+      /*is_static=*/true, QuicStream::kDefaultPriority);
 
   // Create push streams till reaching the upper limit of allowed open streams.
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
@@ -438,7 +444,8 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
 }
 
 TEST_P(QuicSimpleServerSessionTest, OnStreamFrameWithEvenStreamId) {
-  QuicStreamFrame frame(2, false, 0, QuicStringPiece());
+  QuicStreamFrame frame(GetNthServerInitiatedId(0), false, 0,
+                        QuicStringPiece());
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID,
                               "Client sent data on server push stream", _));
@@ -450,8 +457,8 @@ TEST_P(QuicSimpleServerSessionTest, GetEvenIncomingError) {
   // promised yet should result close connection.
   EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
                                             "Data for nonexistent stream", _));
-  EXPECT_EQ(nullptr,
-            QuicSessionPeer::GetOrCreateDynamicStream(session_.get(), 4));
+  EXPECT_EQ(nullptr, QuicSessionPeer::GetOrCreateDynamicStream(
+                         session_.get(), GetNthServerInitiatedId(1)));
 }
 
 // In order to test the case where server push stream creation goes beyond
@@ -495,7 +502,9 @@ class QuicSimpleServerSessionServerPushTest
 
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
 
-    session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+    session_->UnregisterStreamPriority(
+        QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+        /*is_static=*/true);
     QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), nullptr);
     // Assume encryption already established.
     MockQuicCryptoServerStream* crypto_stream = new MockQuicCryptoServerStream(
@@ -504,8 +513,9 @@ class QuicSimpleServerSessionServerPushTest
 
     crypto_stream->set_encryption_established(true);
     QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
-    session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
-                                     QuicStream::kDefaultPriority);
+    session_->RegisterStreamPriority(
+        QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+        /*is_static=*/true, QuicStream::kDefaultPriority);
   }
 
   // Given |num_resources|, create this number of fake push resources and push
@@ -586,7 +596,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
               SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
   EXPECT_CALL(*session_, SendBlocked(next_out_going_stream_id));
-  session_->StreamDraining(2);
+  session_->StreamDraining(GetNthServerInitiatedId(0));
   // Number of open outgoing streams should still be the same, because a new
   // stream is opened. And the queue should be empty.
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());

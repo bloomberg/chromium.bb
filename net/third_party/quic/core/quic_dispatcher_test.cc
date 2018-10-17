@@ -152,6 +152,7 @@ class TestDispatcher : public QuicDispatcher {
   using QuicDispatcher::current_client_address;
   using QuicDispatcher::current_peer_address;
   using QuicDispatcher::current_self_address;
+  using QuicDispatcher::framer;
 };
 
 // A Connection class which unregisters the session from the dispatcher when
@@ -2428,6 +2429,37 @@ TEST_F(AsyncGetProofTest, DispatcherFailedToPickUpVersionForAsyncProof) {
   // version mismatch between the CHLO packet and the dispatcher.
   GetFakeProofSource()->InvokePendingCallback(0);
   ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);
+}
+
+// Regression test for b/116200989.
+TEST_F(AsyncGetProofTest, DispatcherHasWrongLastPacketIsIetfQuic) {
+  SetQuicReloadableFlag(quic_fix_last_packet_is_ietf_quic, true);
+
+  // Process a packet of v44.
+  ProcessPacket(client_addr_, 1, true,
+                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_44),
+                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
+                PACKET_4BYTE_PACKET_NUMBER, 1);
+  EXPECT_TRUE(dispatcher_->framer()->last_packet_is_ietf_quic());
+
+  // Process another packet of v43.
+  ProcessPacket(client_addr_, 2, true,
+                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43),
+                SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
+                PACKET_4BYTE_PACKET_NUMBER, 1);
+  EXPECT_FALSE(dispatcher_->framer()->last_packet_is_ietf_quic());
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 2);
+
+  // Complete the ProofSource::GetProof call for v44.
+  GetFakeProofSource()->InvokePendingCallback(0);
+  // Verify the last_packet_is_ietf_quic gets reset properly.
+  EXPECT_TRUE(dispatcher_->framer()->last_packet_is_ietf_quic());
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 1);
+
+  // Complete the ProofSource::GetProof call for v43.
+  GetFakeProofSource()->InvokePendingCallback(0);
+  EXPECT_FALSE(dispatcher_->framer()->last_packet_is_ietf_quic());
+  ASSERT_EQ(GetFakeProofSource()->NumPendingCallbacks(), 0);
 }
 
 }  // namespace
