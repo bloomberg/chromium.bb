@@ -25,8 +25,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
-#include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.h"
+#include "media/midi/midi_service.mojom.h"
 #include "media/midi/task_service.h"
 
 namespace midi {
@@ -1175,8 +1175,8 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
       uint32_t web_port_index = port_state_.push_back(std::move(new_port));
       it = new_port_state->erase(it);
 
-      MidiPortInfo info(opaque_key, manufacturer, port_name, version,
-                        PortState::OPENED);
+      mojom::PortInfo info(opaque_key, manufacturer, port_name, version,
+                           PortState::OPENED);
       switch (type) {
         case MidiPort::Type::kInput:
           if (Subscribe(web_port_index, client_id, port_id))

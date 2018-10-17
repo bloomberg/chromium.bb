@@ -220,7 +220,7 @@ void MidiManager::CompleteInitialization(Result result) {
   pending_clients_.clear();
 }
 
-void MidiManager::AddInputPort(const MidiPortInfo& info) {
+void MidiManager::AddInputPort(const mojom::PortInfo& info) {
   ReportUsage(Usage::INPUT_PORT_ADDED);
   base::AutoLock auto_lock(lock_);
   input_ports_.push_back(info);
@@ -228,7 +228,7 @@ void MidiManager::AddInputPort(const MidiPortInfo& info) {
     client->AddInputPort(info);
 }
 
-void MidiManager::AddOutputPort(const MidiPortInfo& info) {
+void MidiManager::AddOutputPort(const mojom::PortInfo& info) {
   ReportUsage(Usage::OUTPUT_PORT_ADDED);
   base::AutoLock auto_lock(lock_);
   output_ports_.push_back(info);

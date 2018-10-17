@@ -26,8 +26,8 @@
 #include "device/usb/usb_ids.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
-#include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.h"
+#include "media/midi/midi_service.mojom.h"
 #include "media/midi/midi_switches.h"
 
 namespace midi {
@@ -293,7 +293,7 @@ class Port {
   size_t index() { return index_; }
   void set_device_id(uint32_t device_id) { device_id_ = device_id; }
   uint32_t device_id() { return device_id_; }
-  const MidiPortInfo& info() { return info_; }
+  const mojom::PortInfo& info() { return info_; }
 
   virtual bool Connect() {
     if (info_.state != mojom::PortState::DISCONNECTED)
@@ -323,7 +323,7 @@ class Port {
   const uint16_t product_id_;
   const uint32_t driver_version_;
   const std::string product_name_;
-  MidiPortInfo info_;
+  mojom::PortInfo info_;
 };  // class Port
 
 }  // namespace

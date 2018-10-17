@@ -109,8 +109,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
   ~FakeMidiManagerClient() override = default;
 
   // MidiManagerClient implementation.
-  void AddInputPort(const MidiPortInfo& info) override {}
-  void AddOutputPort(const MidiPortInfo& info) override {}
+  void AddInputPort(const mojom::PortInfo& info) override {}
+  void AddOutputPort(const mojom::PortInfo& info) override {}
   void SetInputPortState(uint32_t port_index, PortState state) override {}
   void SetOutputPortState(uint32_t port_index, PortState state) override {}
   void CompleteStartSession(Result result) override {
