@@ -1554,9 +1554,6 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
                             sync_service->IsUsingSecondaryPassphrase());
     html_source->AddBoolean(
         "uploadToGoogleActive",
-        base::FeatureList::IsEnabled(
-            autofill::features::
-                kAutofillEnablePaymentsInteractionsOnAuthError) ||
             syncer::GetUploadToGoogleState(
                 sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
                 syncer::UploadState::ACTIVE);

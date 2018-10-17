@@ -1561,12 +1561,6 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   if (is_syncing_for_test_)
     return true;
 
-  // Check if the feature to offer server cards on auth error is enabled.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnablePaymentsInteractionsOnAuthError)) {
-    return true;
-  }
-
   // Server cards should be suggested if the sync service active.
   return syncer::GetUploadToGoogleState(
              sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
