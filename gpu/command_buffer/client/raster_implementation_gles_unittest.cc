@@ -243,17 +243,15 @@ class RasterImplementationGLESTest : public testing::Test {
   RasterImplementationGLESTest() {}
 
   void SetUp() override {
-    gl_.reset(new RasterMockGLES2Interface());
-
-    ri_.reset(new RasterImplementationGLES(gl_.get(), &command_buffer_,
-                                           gpu::Capabilities()));
+    gl_ = std::make_unique<RasterMockGLES2Interface>();
+    ri_ = std::make_unique<RasterImplementationGLES>(gl_.get(),
+                                                     gpu::Capabilities());
   }
 
   void TearDown() override {}
 
   void SetUpWithCapabilities(const gpu::Capabilities& capabilities) {
-    ri_.reset(new RasterImplementationGLES(gl_.get(), &command_buffer_,
-                                           capabilities));
+    ri_.reset(new RasterImplementationGLES(gl_.get(), capabilities));
   }
 
   void ExpectBindTexture(GLenum target, GLuint texture_id) {
@@ -275,7 +273,6 @@ class RasterImplementationGLESTest : public testing::Test {
   }
 
   ContextSupportStub support_;
-  MockClientCommandBuffer command_buffer_;
   std::unique_ptr<RasterMockGLES2Interface> gl_;
   std::unique_ptr<RasterImplementationGLES> ri_;
 

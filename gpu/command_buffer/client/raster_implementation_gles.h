@@ -19,8 +19,6 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 
 namespace gpu {
-class CommandBuffer;
-
 namespace raster {
 
 struct Capabilities;
@@ -29,7 +27,6 @@ struct Capabilities;
 class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
  public:
   RasterImplementationGLES(gles2::GLES2Interface* gl,
-                           CommandBuffer* command_buffer,
                            const gpu::Capabilities& caps);
   ~RasterImplementationGLES() override;
 
