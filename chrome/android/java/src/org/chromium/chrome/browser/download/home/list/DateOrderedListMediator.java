@@ -132,7 +132,7 @@ class DateOrderedListMediator {
         //                             [DateOrderedListMutator] ->
         //                                 [ListItemModel]
 
-        mProvider = new OfflineContentProviderGlue(provider, config.isOffTheRecord);
+        mProvider = new OfflineContentProviderGlue(provider, config);
         mShareController = shareController;
         mModel = model;
         mDeleteController = deleteController;
