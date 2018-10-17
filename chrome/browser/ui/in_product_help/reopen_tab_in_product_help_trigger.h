@@ -37,7 +37,7 @@ class ReopenTabInProductHelpTrigger {
   void SetShowHelpCallback(ShowHelpCallback callback);
 
   // Should be called when an active tab is closed.
-  void ActiveTabClosed(base::TimeTicks activation_time);
+  void ActiveTabClosed(base::TimeDelta active_duration);
 
   // Should be called when a blank new tab is opened by user action.
   void NewTabOpened();

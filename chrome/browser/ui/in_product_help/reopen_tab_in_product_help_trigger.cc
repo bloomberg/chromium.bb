@@ -43,14 +43,14 @@ void ReopenTabInProductHelpTrigger::SetShowHelpCallback(
 }
 
 void ReopenTabInProductHelpTrigger::ActiveTabClosed(
-    base::TimeTicks activation_time) {
+    base::TimeDelta active_duration) {
   // Reset all flags at this point. We should only trigger IPH if the events
   // happen in the prescribed order.
   ResetTriggerState();
 
-  DCHECK(activation_time <= clock_->NowTicks());
+  DCHECK(active_duration >= base::TimeDelta());
   // We only go to the next state if the closing tab was active for long enough.
-  if (clock_->NowTicks() - activation_time >= kTabMinimumActiveDuration) {
+  if (active_duration >= kTabMinimumActiveDuration) {
     trigger_state_ = ACTIVE_TAB_CLOSED;
     time_of_last_step_ = clock_->NowTicks();
   }
