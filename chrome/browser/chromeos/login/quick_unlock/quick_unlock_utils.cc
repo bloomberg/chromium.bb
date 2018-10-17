@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 
 #include "base/feature_list.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -39,7 +40,19 @@ bool HasPolicyValue(const PrefService* pref_service, const char* value) {
          quick_unlock_whitelist->end();
 }
 
+std::string GetBoardName() {
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return board[0];
+}
+
 bool IsFingerprintDisabledByPolicy(const PrefService* pref_service) {
+  // Always allow fingerprint on nocturne. This is a temporary measure to allow
+  // dogfooding.
+  if (GetBoardName() == "nocturne")
+    return false;
+
   const bool enabled =
       HasPolicyValue(pref_service, kQuickUnlockWhitelistOptionAll) ||
       HasPolicyValue(pref_service, kQuickUnlockWhitelistOptionFingerprint);
