@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
-#include "chrome/browser/webauthn/transport_list_model.h"
 
 namespace ui {
 class MenuModel;

@@ -89,7 +89,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
   for (const auto transport : transport_availability_.available_transports) {
-    transport_list_model_.AppendTransport(transport);
+    available_transports_.emplace_back(transport);
   }
 
   StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
