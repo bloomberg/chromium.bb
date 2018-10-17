@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -224,6 +225,10 @@ class WebviewLoginTest : public OobeBaseTest {
     return web_view_found;
   }
 
+ protected:
+  ScopedCrosSettingsTestHelper settings_helper_{
+      /* create_settings_service= */ false};
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewLoginTest);
 };
@@ -288,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowGuest) {
   WaitForGaiaPageLoad();
   JsExpect("!$('guest-user-header-bar-item').hidden");
-  CrosSettings::Get()->SetBoolean(kAccountsPrefAllowGuest, false);
+  settings_helper_.SetBoolean(kAccountsPrefAllowGuest, false);
   JsExpect("$('guest-user-header-bar-item').hidden");
 }
 
@@ -301,8 +306,8 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   JsExpect(frame_url + ".search('flow=nosignup') == -1");
 
   // Disallow new users - we also need to set a whitelist due to weird logic.
-  CrosSettings::Get()->Set(kAccountsPrefUsers, base::ListValue());
-  CrosSettings::Get()->SetBoolean(kAccountsPrefAllowNewUser, false);
+  settings_helper_.Set(kAccountsPrefUsers, base::ListValue());
+  settings_helper_.SetBoolean(kAccountsPrefAllowNewUser, false);
   WaitForGaiaPageReload();
 
   // flow=nosignup indicates that user creation is not allowed.
