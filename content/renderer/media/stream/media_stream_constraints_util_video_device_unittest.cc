@@ -1493,7 +1493,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryAspectRatioRange) {
     const double kMinAspectRatio = 3.0;
     const double kMaxAspectRatio = 4.0;
 
-    const long kMinHeight = 600;
+    const int kMinHeight = 600;
     constraint_factory_.Reset();
     constraint_factory_.basic().height.SetMin(kMinHeight);
     constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
@@ -1721,9 +1721,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   advanced4.width.SetMax(1000);
   advanced4.height.SetMax(1000);
   result = SelectSettings();
-  // Even though the default device supports the resolution in the fourth
-  // advanced natively, having better support for the previous sets has
-  // precedence, so the high-res device is selected.
+  // The fourth advanced set does not change the allowed range set by previous
+  // sets, so the selection is the same as in the previous case.
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
@@ -1738,19 +1737,23 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   constraint_factory_.basic().height.SetIdeal(100);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
-  // The high-res device at 600x400@10Hz supports all advanced sets and is
-  // better at supporting the ideal value.
-  // It beats 320x240@30Hz because the penalty for the native frame rate takes
-  // precedence over the native fitness distance.
-  // Both support standard fitness distance equally, since 600x400 can be
-  // cropped to 320x240.
-  EXPECT_EQ(high_res_device_->device_id, result.device_id());
-  EXPECT_EQ(600, result.Width());
-  EXPECT_EQ(400, result.Height());
+  // The allowed resolution range set by constraints is [320x240-640x480], but
+  // since the ideal resolution is 100x100, the preferred resolution in the
+  // allowed range is 320x240.
+  // With regards to frame rate, the maximum allowed is 10Hz.
+  // This means that the track should be configured as 320x240@10Hz.
+  // The low-res device at 320x240@30Hz is selected over the high-res device
+  // at 640x400@10Hz because the distance between 320x240@30Hz and 320x240@10Hz
+  // is lower than the distance between 640x400@10Hz and 320x240@10Hz.
+  // Both candidates support standard fitness distance equally, since both can
+  // use adjusments to produce 320x240@10Hz.
+  EXPECT_EQ(low_res_device_->device_id, result.device_id());
+  EXPECT_EQ(320, result.Width());
+  EXPECT_EQ(240, result.Height());
   EXPECT_EQ(320, result.track_adapter_settings().max_width);
   EXPECT_EQ(240, result.track_adapter_settings().max_height);
-  EXPECT_EQ(320.0 / 400.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(600.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().min_aspect_ratio);
+  EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
 
   constraint_factory_.basic().width.SetIdeal(2000);
@@ -2174,6 +2177,37 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set.
   EXPECT_EQ(std::string(kDeviceID1), result.device_id());
   CheckTrackAdapterSettingsEqualsFormat(result);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryDeviceIDAndResolution) {
+  constraint_factory_.Reset();
+  blink::WebMediaTrackConstraintSet& advanced1 =
+      constraint_factory_.AddAdvanced();
+  advanced1.device_id.SetExact(
+      {blink::WebString::FromASCII(low_res_device_->device_id)});
+
+  blink::WebMediaTrackConstraintSet& advanced2 =
+      constraint_factory_.AddAdvanced();
+  advanced2.device_id.SetExact(
+      {blink::WebString::FromASCII(high_res_device_->device_id)});
+  advanced2.width.SetMax(50);
+  advanced2.height.SetMax(50);
+
+  blink::WebMediaTrackConstraintSet& advanced3 =
+      constraint_factory_.AddAdvanced();
+  advanced3.width.SetExact(800);
+  advanced3.height.SetExact(600);
+
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The second advanced set must be ignored because it contradicts the first
+  // set, but the third set must be applied.
+  EXPECT_EQ(result.device_id(), low_res_device_->device_id);
+  EXPECT_EQ(result.Width(), 800);
+  EXPECT_EQ(result.track_adapter_settings().max_width, 800);
+  EXPECT_EQ(result.Height(), 600);
+  EXPECT_EQ(result.track_adapter_settings().max_height, 600);
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
