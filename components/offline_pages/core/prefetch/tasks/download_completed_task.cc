@@ -28,7 +28,7 @@ enum class DownloadOutcome {
   DOWNLOAD_FAILED_ITEM_UPDATED,
   DOWNLOAD_SUCCEEDED_ITEM_NOT_FOUND,
   DOWNLOAD_FAILED_ITEM_NOT_FOUND,
-  COUNT  // Must always be the last element.
+  kMaxValue = DOWNLOAD_FAILED_ITEM_NOT_FOUND,
 };
 
 DownloadOutcome GetDownloadOutcome(bool successful_download,
@@ -161,7 +161,7 @@ void DownloadCompletedTask::OnPrefetchItemUpdated(bool successful_download,
   DownloadOutcome status =
       GetDownloadOutcome(successful_download, update_info.success);
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.Prefetching.DownloadFinishedUpdate",
-                            status, DownloadOutcome::COUNT);
+                            status);
 
   TaskComplete();
 }
