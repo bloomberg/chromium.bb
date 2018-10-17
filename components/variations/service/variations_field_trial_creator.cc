@@ -37,6 +37,7 @@
 #include "components/variations/variations_switches.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace variations {
 namespace {
@@ -210,14 +211,15 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   UMA_HISTOGRAM_BOOLEAN("Variations.SafeMode.FellBackToSafeMode2",
                         run_in_safe_mode);
 
-  // Note that passing |&ui_string_overrider_| via base::Unretained below is
-  // safe because the callback is executed synchronously. It is not possible to
-  // pass UIStringOverrider directly to VariationSeedProcessor as the variations
-  // component should not depend on //ui/base.
+  // Note that passing base::Unretained(this) below is safe because the callback
+  // is executed synchronously. It is not possible to pass UIStringOverrider
+  // directly to VariationsSeedProcessor (which is in components/variations and
+  // not components/variations/service) as the variations component should not
+  // depend on //ui/base.
   VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, *client_filterable_state,
-      base::Bind(&UIStringOverrider::OverrideUIString,
-                 base::Unretained(&ui_string_overrider_)),
+      base::BindRepeating(&VariationsFieldTrialCreator::OverrideUIString,
+                          base::Unretained(this)),
       low_entropy_provider.get(), feature_list);
 
   // Store into the |safe_seed_manager| the combined server and client data used
@@ -351,6 +353,18 @@ void VariationsFieldTrialCreator::OverrideVariationsPlatform(
     Study::Platform platform_override) {
   has_platform_override_ = true;
   platform_override_ = platform_override;
+}
+
+void VariationsFieldTrialCreator::OverrideCachedUIStrings() {
+  DCHECK(ui::ResourceBundle::HasSharedInstance());
+
+  ui::ResourceBundle* bundle = &ui::ResourceBundle::GetSharedInstance();
+  bundle->CheckCanOverrideStringResources();
+
+  for (auto const& it : overridden_strings_map_)
+    bundle->OverrideLocaleStringResource(it.first, it.second);
+
+  overridden_strings_map_.clear();
 }
 
 // static
@@ -508,6 +522,27 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   platform_field_trials->SetupFieldTrials();
 
   return used_seed;
+}
+
+void VariationsFieldTrialCreator::OverrideUIString(uint32_t resource_hash,
+                                                   const base::string16& str) {
+  int resource_id = ui_string_overrider_.GetResourceIndex(resource_hash);
+  if (resource_id == -1)
+    return;
+
+  // This function may be called before the resource bundle is initialized. So
+  // we cache the UI strings and override them after the full browser starts.
+  if (!ui::ResourceBundle::HasSharedInstance()) {
+    overridden_strings_map_[resource_id] = str;
+    return;
+  }
+
+  ui::ResourceBundle::GetSharedInstance().OverrideLocaleStringResource(
+      resource_id, str);
+}
+
+bool VariationsFieldTrialCreator::IsOverrideResourceMapEmpty() {
+  return overridden_strings_map_.empty();
 }
 
 VariationsSeedStore* VariationsFieldTrialCreator::GetSeedStore() {

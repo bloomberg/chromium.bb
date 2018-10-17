@@ -115,6 +115,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ukm_service.h"
 #include "components/update_client/update_query_params.h"
+#include "components/variations/service/variations_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -474,6 +475,7 @@ void BrowserProcessImpl::SetMetricsServices(
   metrics_services_manager_ = std::move(manager);
   metrics_services_manager_client_ =
       static_cast<ChromeMetricsServicesManagerClient*>(client);
+  metrics_services_manager_->GetVariationsService()->OverrideCachedUIStrings();
 }
 
 namespace {
