@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -238,7 +237,6 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   }
 
   bool IsRunningInCorrectSequence() const {
-    base::AssertBlockingAllowed();
     return task_runner_->RunsTasksInCurrentSequence();
   }
 

@@ -263,7 +263,6 @@ void Operation::GetMD5SumOfFile(
 }
 
 bool Operation::IsRunningInCorrectSequence() const {
-  base::AssertBlockingAllowed();
   return task_runner_->RunsTasksInCurrentSequence();
 }
 
