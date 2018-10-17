@@ -730,7 +730,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   bool destruction_in_progress_ = false;
   bool marked_canvas_dirty_;
-  bool animation_frame_in_progress_;
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER

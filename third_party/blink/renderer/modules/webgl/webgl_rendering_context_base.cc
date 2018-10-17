@@ -1119,7 +1119,6 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   // into account here?
 
   marked_canvas_dirty_ = false;
-  animation_frame_in_progress_ = false;
   active_texture_unit_ = 0;
   pack_alignment_ = 4;
   unpack_alignment_ = 4;
@@ -1361,10 +1360,8 @@ void WebGLRenderingContextBase::MarkContextChanged(
   if (!canvas())
     return;
 
-  marked_canvas_dirty_ = true;
-
-  if (!animation_frame_in_progress_) {
-    animation_frame_in_progress_ = true;
+  if (!marked_canvas_dirty_) {
+    marked_canvas_dirty_ = true;
     LayoutBox* layout_box = canvas()->GetLayoutBox();
     if (layout_box && layout_box->HasAcceleratedCompositing()) {
       layout_box->ContentChanged(change_type);
@@ -1397,7 +1394,7 @@ void WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
-  animation_frame_in_progress_ = false;
+  marked_canvas_dirty_ = false;
 }
 
 void WebGLRenderingContextBase::OnErrorMessage(const char* message,
@@ -1544,11 +1541,13 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   if (isContextLost())
     return false;
 
-  bool must_clear_now = ClearIfComposited() != kSkipped;
-  if (!marked_canvas_dirty_ && !must_clear_now)
-    return false;
+  ClearIfComposited();
 
-  marked_canvas_dirty_ = false;
+  // This method will be called after FinalizeFrame() in certain
+  // situations, for example when printing a page containing the canvas.
+  // Unfortunately it's not feasible to track whether the canvas is dirty
+  // at this point and whether this paint operation can be skipped, so we
+  // do it all the time.
 
   if (Host()->ResourceProvider() &&
       Host()->ResourceProvider()->Size() != GetDrawingBuffer()->Size()) {
