@@ -803,6 +803,12 @@ class BrowserView : public BrowserWindow,
   };
   base::Optional<ResizeSession> interactive_resize_;
 
+// Set to true if QuitInstructionBubbleController is added as pre-target
+// handler.
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  bool added_quit_instructions_ = false;
+#endif
+
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};
 

@@ -1206,7 +1206,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 
 void BrowserView::DestroyBrowser() {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
+  if (added_quit_instructions_) {
     GetWidget()->GetNativeView()->RemovePreTargetHandler(
         QuitInstructionBubbleController::GetInstance());
   }
@@ -2054,6 +2054,13 @@ views::View* BrowserView::CreateOverlayView() {
 }
 
 void BrowserView::OnWidgetDestroying(views::Widget* widget) {
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (added_quit_instructions_) {
+    GetWidget()->GetNativeView()->RemovePreTargetHandler(
+        QuitInstructionBubbleController::GetInstance());
+  }
+#endif
+
   // Destroy any remaining WebContents early on. Doing so may result in
   // calling back to one of the Views/LayoutManagers or supporting classes of
   // BrowserView. By destroying here we ensure all said classes are valid.
@@ -2384,6 +2391,7 @@ void BrowserView::InitViews() {
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
+    added_quit_instructions_ = true;
     GetWidget()->GetNativeView()->AddPreTargetHandler(
         QuitInstructionBubbleController::GetInstance());
   }

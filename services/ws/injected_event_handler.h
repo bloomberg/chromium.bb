@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "services/ws/window_service_observer.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_observer.h"
@@ -65,6 +66,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
   void Inject(std::unique_ptr<ui::Event> event, ResultCallback result_callback);
 
  private:
+  class ScopedPreTargetRegister;
+
   // Tracks the client and identifier for an event that this object is waiting
   // on.
   struct EventId {
@@ -110,6 +113,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) InjectedEventHandler
   std::unique_ptr<EventId> event_id_;
 
   bool event_dispatched_ = false;
+
+  std::unique_ptr<ScopedPreTargetRegister> pre_target_register_;
+
+  base::WeakPtrFactory<InjectedEventHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InjectedEventHandler);
 };

@@ -696,6 +696,7 @@ TEST_F(GestureRecognizerTest, TouchCancelCanDestroyWindow) {
 
   EXPECT_EQ(1, handler->touch_cancelled_count());
   EXPECT_EQ(nullptr, window->parent());
+  window->RemovePreTargetHandler(handler.get());
 }
 
 // Check that appropriate touch events generate tap gesture events.
@@ -3814,6 +3815,7 @@ TEST_F(GestureRecognizerTest, CancelAllActiveTouches) {
   EXPECT_EQ(2U, points.size());
   EXPECT_EQ(gfx::PointF(101.f, 201.f), points[0]);
   EXPECT_EQ(gfx::PointF(350.f, 300.f), points[1]);
+  window->RemovePreTargetHandler(handler.get());
 }
 
 // Check that appropriate touch events generate show press events

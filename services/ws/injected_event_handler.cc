@@ -13,6 +13,25 @@
 
 namespace ws {
 
+// RAII style class whose constructor adds a pre-target handler, and destructor
+// removes it.
+class InjectedEventHandler::ScopedPreTargetRegister {
+ public:
+  ScopedPreTargetRegister(ui::EventTarget* target, ui::EventHandler* handler)
+      : target_(target), handler_(handler) {
+    target->AddPreTargetHandler(handler,
+                                ui::EventTarget::Priority::kAccessibility);
+  }
+
+  ~ScopedPreTargetRegister() { target_->RemovePreTargetHandler(handler_); }
+
+ private:
+  ui::EventTarget* target_;
+  ui::EventHandler* handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPreTargetRegister);
+};
+
 InjectedEventHandler::InjectedEventHandler(
     WindowService* window_service,
     aura::WindowTreeHost* window_tree_host)
@@ -33,17 +52,17 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
   result_callback_ = std::move(result_callback);
   DCHECK(result_callback_);
 
-  aura::Window* window_tree_host_window = window_tree_host_->window();
-  window_tree_host_window->AddPreTargetHandler(
-      this, ui::EventTarget::Priority::kAccessibility);
+  auto this_ref = weak_factory_.GetWeakPtr();
+  pre_target_register_ = std::make_unique<ScopedPreTargetRegister>(
+      window_tree_host_->window(), this);
   // No need to do anything with the result of sending the event.
   ignore_result(
       window_tree_host_->event_sink()->OnEventFromSource(event.get()));
-
-  // WARNING: it's possible |this| has been destroyed. Make sure you don't
-  // access any locals after this. The use of |this| here is safe as it's only
-  // used to remove from a list.
-  window_tree_host_window->RemovePreTargetHandler(this);
+  if (!this_ref)
+    return;
+  // |pre_target_register_| needs to be a member to ensure it's destroyed
+  // if |this| is destroyed.
+  pre_target_register_.reset();
 }
 
 void InjectedEventHandler::NotifyCallback() {
