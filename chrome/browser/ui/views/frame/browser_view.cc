@@ -625,6 +625,11 @@ WebContents* BrowserView::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+bool BrowserView::IsBrowserTypeHostedApp() const {
+  return extensions::HostedAppBrowserController::
+      IsForExperimentalHostedAppBrowser(browser_.get());
+}
+
 bool BrowserView::IsTopControlsSlideBehaviorEnabled() const {
   return top_controls_slide_controller_ &&
          top_controls_slide_controller_->IsEnabled();

@@ -12,7 +12,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -114,8 +113,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view->browser())) {
+  if (browser_view->IsBrowserTypeHostedApp()) {
     // TODO(alancutter): Avoid snapshotting GetTitlebarFeatureColor() values
     // here and call it on demand in
     // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.

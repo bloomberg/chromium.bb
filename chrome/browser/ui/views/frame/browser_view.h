@@ -241,6 +241,10 @@ class BrowserView : public BrowserWindow,
     return browser_->is_type_tabbed();
   }
 
+  // Returns true if the Browser object associated with this BrowserView is a
+  // for an installed hosted app.
+  bool IsBrowserTypeHostedApp() const;
+
   // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
   // allowed to slide up and down with the gesture scrolls on the current tab's
   // page.

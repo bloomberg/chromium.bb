@@ -188,9 +188,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
-  DCHECK(
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view_->browser()));
+  DCHECK(browser_view_->IsBrowserTypeHostedApp());
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,

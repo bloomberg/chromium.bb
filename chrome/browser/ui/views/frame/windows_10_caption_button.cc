@@ -270,9 +270,7 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
 const ui::ThemeProvider* Windows10CaptionButton::GetFrameThemeProvider() const {
   // TODO(https://crbug.com/891560): Move this check up into
   // BrowserFrame::GetThemeProvider() and have it return the default theme.
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          frame_view_->browser_view()->browser())) {
+  if (frame_view_->browser_view()->IsBrowserTypeHostedApp())
     return nullptr;
-  }
   return GetThemeProvider();
 }
