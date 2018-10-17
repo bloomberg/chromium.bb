@@ -80,27 +80,6 @@ interface VideoEncodeAccelerator {
   // Initializes the video encoder with specific configuration.  Called once per
   // encoder construction.
   // Parameters:
-  //  |input_format| is the pixel format of the input frames.
-  //  |visible_size| is the resolution of the input frames.
-  //  |input_storage| the type of the input buffer.
-  //  |output_profile| is the codec profile of the encoded output stream.
-  //  |initial_bitrate| is the initial bitrate of the encoded output stream,
-  //  in bits per second.
-  //  |client| is the client of this video encoder. The client must be valid
-  //  during the lifetime of this accelerator.
-  // Callback:
-  //  Called with true iff initialization is successful. The client should not
-  //  invoke any other methods before the callback.
-  InitializeDeprecated@1(VideoPixelFormat input_format,
-                         Size visible_size,
-                         StorageType input_storage,
-                         VideoCodecProfile output_profile,
-                         uint32 initial_bitrate,
-                         VideoEncodeClient client) => (bool success);
-
-  // Initializes the video encoder with specific configuration.  Called once per
-  // encoder construction.
-  // Parameters:
   //  |config| is the parameter set for encoder initialization.
   //  |input_storage| the type of the input buffer.
   //  |client| is the client of this video encoder. The client must be valid
