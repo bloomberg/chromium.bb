@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
@@ -718,6 +719,15 @@ class ResourceScheduler::Client {
           "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable",
           in_flight_delayable_count_);
     }
+
+    DCHECK(!request->url_request()->creation_time().is_null());
+    base::TimeDelta queuing_duration =
+        base::TimeTicks::Now() - request->url_request()->creation_time();
+    base::UmaHistogramMediumTimes(
+        "ResourceScheduler.RequestQueuingDuration.Priority" +
+            base::IntToString(request->get_request_priority_params().priority),
+        queuing_duration);
+
     InsertInFlightRequest(request);
     request->Start(start_mode);
   }
