@@ -7,8 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/memory/memory_coordinator_client_registry.h"
-#include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/no_destructor.h"
 #include "base/sys_info.h"
@@ -128,7 +126,6 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
           SessionRestoreStatsCollector::UmaStatsReportingDelegate>());
   shared_tab_loader_ = this;
   this_retainer_ = this;
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
   TabLoadTracker::Get()->AddObserver(this);
 
   // Invoke the post-construction testing callback if it exists. This allows
@@ -147,7 +144,6 @@ TabLoader::~TabLoader() {
 
   shared_tab_loader_ = nullptr;
   TabLoadTracker::Get()->RemoveObserver(this);
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
   SessionRestore::OnTabLoaderFinishedLoadingTabs();
 }
 
@@ -277,32 +273,11 @@ void TabLoader::OnMemoryPressure(
   }
 }
 
-void TabLoader::OnMemoryStateChange(base::MemoryState state) {
-  ReentrancyHelper lifetime_helper(this);
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      break;
-    case base::MemoryState::THROTTLED:
-      StopLoadingTabs();
-      break;
-    case base::MemoryState::SUSPENDED:
-    // Note that SUSPENDED never occurs in the main browser process so far.
-    // Fall through.
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-      break;
-  }
-}
-
 bool TabLoader::ShouldStopLoadingTabs() const {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
   if (g_max_loaded_tab_count_for_testing != 0 &&
       scheduled_to_load_count_ >= g_max_loaded_tab_count_for_testing)
     return true;
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    return base::MemoryCoordinatorProxy::GetInstance()
-               ->GetCurrentMemoryState() != base::MemoryState::NORMAL;
-  }
   if (base::MemoryPressureMonitor::Get()) {
     return base::MemoryPressureMonitor::Get()->GetCurrentPressureLevel() !=
            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
