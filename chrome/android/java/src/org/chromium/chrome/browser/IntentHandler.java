@@ -449,7 +449,7 @@ public class IntentHandler {
         }
 
         String referrerUrl = getReferrerUrlIncludingExtraHeaders(intent);
-        String extraHeaders = getExtraHeadersFromIntent(intent);
+        String extraHeaders = getExtraHeadersFromIntent(intent, true);
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
@@ -551,7 +551,7 @@ public class IntentHandler {
         if (referrer != null) {
             params.setReferrer(new Referrer(referrer, getReferrerPolicyFromIntent(intent)));
         }
-        String headers = getExtraHeadersFromIntent(intent);
+        String headers = getExtraHeadersFromIntent(intent, true);
         if (headers != null) params.setVerbatimHeaders(headers);
     }
 
@@ -727,21 +727,37 @@ public class IntentHandler {
     }
 
     /**
+     * Calls {@link #getExtraHeadersFromIntent(Intent, boolean)} with shouldLogHeaders as false.
+     */
+    public static String getExtraHeadersFromIntent(Intent intent) {
+        return getExtraHeadersFromIntent(intent, false);
+    }
+
+    /**
      * Returns a String (or null) containing the extra headers sent by the intent, if any.
      *
      * This methods skips the referrer header.
      *
      * @param intent The intent containing the bundle extra with the HTTP headers.
+     * @param shouldLogHeaders Whether we should perform logging on the types of headers that the
+     *                         Intent contains. This should only be done for Intents as they come
+     *                         in to Chrome.
      */
-    public static String getExtraHeadersFromIntent(Intent intent) {
+    public static String getExtraHeadersFromIntent(Intent intent, boolean shouldLogHeaders) {
         Bundle bundleExtraHeaders = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
         if (bundleExtraHeaders == null) return null;
         StringBuilder extraHeaders = new StringBuilder();
+
+        // We do some logging to determine what kinds of headers developers are inserting.
+        IntentHeadersRecorder recorder = shouldLogHeaders ? new IntentHeadersRecorder() : null;
+
         for (String key : bundleExtraHeaders.keySet()) {
             String value = bundleExtraHeaders.getString(key);
 
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
+
+            if (shouldLogHeaders) recorder.recordHeader(key, value);
 
             if (!HttpUtil.isAllowedHeader(key, value)) continue;
 
@@ -749,6 +765,10 @@ public class IntentHandler {
             extraHeaders.append(key);
             extraHeaders.append(": ");
             extraHeaders.append(value);
+        }
+
+        if (shouldLogHeaders) {
+            recorder.report(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
         }
         return extraHeaders.length() == 0 ? null : extraHeaders.toString();
     }
