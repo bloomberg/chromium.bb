@@ -117,7 +117,7 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
     if possible_browser is None:
       self.skipTest('Cannot find the browser to run the test.')
 
-    if self.id() in _DISABLED_TESTS:
+    if self.id() in _DISABLED_TESTS and not options.run_disabled_tests:
       self.skipTest('Test is explicitly disabled')
 
     single_page_benchmark = SinglePageBenchmark()
