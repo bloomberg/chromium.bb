@@ -30,6 +30,7 @@
 #include "av1/common/idct.h"
 #include "av1/common/mvref_common.h"
 #include "av1/common/obmc.h"
+#include "av1/common/onyxc_int.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"
@@ -173,11 +174,6 @@ static const double ADST_FLIP_SVM[8] = {
   /* horizontal */
   -7.7051, -3.2234, -3.6193, 3.4533
 };
-
-typedef struct {
-  int16_t x;
-  int16_t y;
-} sobel_xy;
 
 typedef struct {
   PREDICTION_MODE mode;
@@ -12358,4 +12354,82 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       src += x->plane[0].src.stride;
     }
   }
+}
+
+static INLINE uint8_t get_pix(const uint8_t *src, int stride, int i, int j) {
+  return src[i + stride * j];
+}
+
+// 8-tap Gaussian convolution filter with sigma = 1.3, sums to 128,
+// all co-efficients must be even.
+DECLARE_ALIGNED(16, static const int16_t, gauss_filter[8]) = { 2,  12, 30, 40,
+                                                               30, 12, 2,  0 };
+
+void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
+                   uint8_t *dst) {
+  ConvolveParams conv_params = get_conv_params(0, 0, 0);
+  InterpFilterParams filter = { .filter_ptr = gauss_filter,
+                                .taps = 8,
+                                .subpel_shifts = 0,
+                                .interp_filter = EIGHTTAP_REGULAR };
+  // Requirements from the vector-optimized implementations.
+  assert(h % 4 == 0);
+  assert(w % 8 == 0);
+  // Because we use an eight tap filter, the stride should be at least 7 + w.
+  assert(src_stride >= w + 7);
+  av1_convolve_2d_sr(src, src_stride, dst, w, w, h, &filter, &filter, 0, 0,
+                     &conv_params);
+}
+
+/* Use standard 3x3 Sobel matrix. */
+sobel_xy sobel(const uint8_t *input, int stride, int i, int j) {
+  const int16_t s_x = get_pix(input, stride, i - 1, j - 1) -
+                      get_pix(input, stride, i + 1, j - 1) +
+                      2 * get_pix(input, stride, i - 1, j) -
+                      2 * get_pix(input, stride, i + 1, j) +
+                      get_pix(input, stride, i - 1, j + 1) -
+                      get_pix(input, stride, i + 1, j + 1);
+  const int16_t s_y = get_pix(input, stride, i - 1, j - 1) +
+                      2 * get_pix(input, stride, i, j - 1) +
+                      get_pix(input, stride, i + 1, j - 1) -
+                      get_pix(input, stride, i - 1, j + 1) -
+                      2 * get_pix(input, stride, i, j + 1) -
+                      get_pix(input, stride, i + 1, j + 1);
+  sobel_xy r = { .x = s_x, .y = s_y };
+  return r;
+}
+
+static uint16_t edge_probability(const uint8_t *input, int w, int h) {
+  // The probability of an edge in the whole image is the same as the highest
+  // probability of an edge for any individual pixel. Use Sobel as the metric
+  // for finding an edge.
+  uint16_t highest = 0;
+  // Ignore the 1 pixel border around the image for the computation.
+  for (int j = 1; j < h - 1; ++j) {
+    for (int i = 1; i < w - 1; ++i) {
+      sobel_xy g = sobel(input, w, i, j);
+      uint16_t magnitude = (uint16_t)sqrt(g.x * g.x + g.y * g.y);
+      highest = AOMMAX(highest, magnitude);
+    }
+  }
+  return highest;
+}
+
+/* Uses most of the Canny edge detection algorithm to find if there are any
+ * edges in the image.
+ */
+uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h) {
+  if (w < 3 || h < 3) {
+    return 0;
+  }
+  uint8_t *blurred = NULL;
+  blurred = (uint8_t *)aom_memalign(32, sizeof(*blurred) * w * h);
+  gaussian_blur(src, src_stride, w, h, blurred);
+  // Skip the non-maximum suppression step in Canny edge detection. We just
+  // want a probability of an edge existing in the buffer, which is determined
+  // by the strongest edge in it -- we don't need to eliminate the weaker
+  // edges. Use Sobel for the edge detection.
+  uint16_t prob = edge_probability(blurred, w, h);
+  aom_free(blurred);
+  return prob;
 }
