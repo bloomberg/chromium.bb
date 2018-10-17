@@ -269,7 +269,7 @@ class STORAGE_EXPORT DatabaseTracker
                                     net::CompletionOnceCallback callback);
 
   // Returns the directory where all DB files for the given origin are stored.
-  base::string16 GetOriginDirectory(const std::string& origin_identifier);
+  base::FilePath GetOriginDirectory(const std::string& origin_identifier);
 
   bool is_initialized_ = false;
   const bool is_incognito_;

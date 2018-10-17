@@ -823,9 +823,8 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, WebSqlDeletion) {
   TestSiteData("WebSql", GetParam());
 }
 
-// TODO(crbug.com/876659): Enable once this is fixed.
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       DISABLED_WebSqlIncognitoDeletion) {
+                       WebSqlIncognitoDeletion) {
   UseIncognitoBrowser();
   TestSiteData("WebSql", GetParam());
 }
