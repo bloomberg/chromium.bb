@@ -27,7 +27,9 @@
 namespace settings {
 TtsHandler::TtsHandler() : weak_factory_(this) {}
 
-TtsHandler::~TtsHandler() {}
+TtsHandler::~TtsHandler() {
+  TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+}
 
 void TtsHandler::HandleGetAllTtsVoiceData(const base::ListValue* args) {
   OnVoicesChanged();
