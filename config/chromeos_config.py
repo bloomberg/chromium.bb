@@ -1728,6 +1728,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'moblab-generic-vm',
       'nami',
+      'nocturne',
       'nyan_big',
       'nyan_kitty',
       'oak',
@@ -1781,7 +1782,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
-      'nocturne',
       'rammus', # contact:zhuohao@
       'kalista', # contact:zhuohao@
   ])
