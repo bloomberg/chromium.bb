@@ -647,6 +647,30 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
 #if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsReload LitePagePreviewsReload
+#else
+#define MAYBE_LitePagePreviewsReload DISABLED_LitePagePreviewsReload
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsReload) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  base::HistogramTester histogram_tester;
+  GetWebContents()->GetController().Reload(
+      content::ReloadType::ORIGINAL_REQUEST_URL, false);
+  content::WaitForLoadStop(GetWebContents());
+  VerifyPreviewNotLoaded();
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.IneligibleReasons",
+      PreviewsLitePageNavigationThrottle::IneligibleReason::kLoadOriginalReload,
+      1);
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_LitePagePreviewsRedirect LitePagePreviewsRedirect
 #else
 #define MAYBE_LitePagePreviewsRedirect DISABLED_LitePagePreviewsRedirect

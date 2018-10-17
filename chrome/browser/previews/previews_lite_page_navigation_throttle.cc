@@ -379,6 +379,21 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
+  // First check if the user is attempting to load the original page on a
+  // preview.
+  std::string original_url;
+  if (navigation_handle()->GetReloadType() ==
+          content::ReloadType::ORIGINAL_REQUEST_URL &&
+      GetOriginalURL(navigation_handle()->GetURL(), &original_url)) {
+    LoadAndBypass(navigation_handle()->GetWebContents(), manager_,
+                  MakeOpenURLParams(navigation_handle(), GURL(original_url),
+                                    std::string()),
+                  true);
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
+                              IneligibleReason::kLoadOriginalReload);
+    return content::NavigationThrottle::CANCEL;
+  }
+
   const bool trigger =
       IsEligibleForPreview() &&
       !manager_->CheckSingleBypass(navigation_handle()->GetURL().spec());

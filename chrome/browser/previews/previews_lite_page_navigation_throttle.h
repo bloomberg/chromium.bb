@@ -39,7 +39,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kServerUnavailable = 3,
     kInfoBarNotSeen = 4,
     kNetworkNotSlow = 5,
-    kMaxValue = kNetworkNotSlow,
+    kLoadOriginalReload = 6,
+    kMaxValue = kLoadOriginalReload,
   };
 
   // The response type from the previews server. This enum must
