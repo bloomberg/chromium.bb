@@ -244,3 +244,24 @@
 -PasswordManagerBrowserTest.*
 -PictureInPictureWindowControllerBrowserTest.*
 -UpdateServiceTest.*
+
+# More potential 10.13 killers. All from shard 4 of browser_tests.
+-BookmarkBubbleSignInDelegateTest.*
+-BrowserWindowTouchBarControllerTest.*
+-CloudPrintProxyPolicyStartupTest.*
+-ExtensionUninstallDialogViewBrowserTest.*
+-IdentityGetProfileUserInfoFunctionTest.*
+-MediaRouterDialogControllerWebUIBrowserTest.*
+-MediaRouterWebUIBrowserTest.*
+-PaymentMethodViewControllerTest.*
+-PaymentRequestCanMakePaymentQueryTest.*
+-PaymentRequestCompleteSuggestionsForEverythingTest.*
+-PaymentRequestOrderSummaryViewControllerTest.*
+-PaymentRequestPaymentResponseShippingAddressTest.*
+-PaymentRequestWebContentsManagerTest.*
+-PermissionsApiTest.*
+-PrintPreviewBaseSettingsSectionTest.*
+-PrintPreviewDestinationItemTest.*
+-ProfileListDesktopBrowserTest.*
+-SubresourceFilterWebSocketBrowserTest.*
+-TabCaptureApiTest.*
