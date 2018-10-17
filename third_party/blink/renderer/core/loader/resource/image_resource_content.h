@@ -188,7 +188,6 @@ class CORE_EXPORT ImageResourceContent final
   // ImageObserver
   void DecodedSizeChangedTo(const blink::Image*, size_t new_size) override;
   bool ShouldPauseAnimation(const blink::Image*) override;
-  void AnimationAdvanced(const blink::Image*) override;
   void Changed(const blink::Image*) override;
   void AsyncLoadCompleted(const blink::Image*) override;
 

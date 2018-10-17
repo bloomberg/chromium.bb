@@ -62,7 +62,6 @@ class SVGImageTest : public testing::Test {
     void DecodedSizeChangedTo(const Image*, size_t new_size) override {}
 
     bool ShouldPauseAnimation(const Image*) override { return should_pause_; }
-    void AnimationAdvanced(const Image*) override {}
 
     void Changed(const Image*) override {}
 

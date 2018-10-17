@@ -1963,7 +1963,7 @@ TEST(ImageResourceTest, DeferredInvalidation) {
 
   // Image animated.
   static_cast<ImageObserver*>(image_resource->GetContent())
-      ->AnimationAdvanced(image_resource->GetContent()->GetImage());
+      ->Changed(image_resource->GetContent()->GetImage());
   EXPECT_EQ(obs->ImageChangedCount(), 3);
   EXPECT_EQ(obs->Defer(), ImageResourceObserver::CanDeferInvalidation::kYes);
 }

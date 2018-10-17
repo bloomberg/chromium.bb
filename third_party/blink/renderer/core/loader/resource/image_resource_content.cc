@@ -541,12 +541,6 @@ bool ImageResourceContent::ShouldPauseAnimation(const blink::Image* image) {
   return true;
 }
 
-void ImageResourceContent::AnimationAdvanced(const blink::Image* image) {
-  if (!image || image != image_)
-    return;
-  NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes);
-}
-
 void ImageResourceContent::UpdateImageAnimationPolicy() {
   if (!image_)
     return;

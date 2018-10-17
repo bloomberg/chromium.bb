@@ -107,16 +107,12 @@ class BitmapImageTest : public testing::Test {
       last_decoded_size_ = new_size;
     }
     bool ShouldPauseAnimation(const Image*) override { return false; }
-    void AnimationAdvanced(const Image*) override {
-      animation_advanced_ = true;
-    }
     void AsyncLoadCompleted(const Image*) override { NOTREACHED(); }
 
     void Changed(const Image*) override {}
 
     size_t last_decoded_size_;
     int last_decoded_size_changed_delta_;
-    bool animation_advanced_ = false;
   };
 
   static scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {

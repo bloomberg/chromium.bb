@@ -680,7 +680,7 @@ void SVGImage::AdvanceAnimationForTesting() {
     page_->Animator().ServiceScriptedAnimations(
         base::TimeTicks() +
         base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));
-    GetImageObserver()->AnimationAdvanced(this);
+    GetImageObserver()->Changed(this);
   }
 }
 
