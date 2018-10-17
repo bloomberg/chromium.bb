@@ -10,6 +10,8 @@
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/tests/texture_image_factory.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -55,6 +57,7 @@ class SharedImageBackingFactoryGLTextureTest
   TextureImageFactory image_factory_;
   std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
+  SharedImageManager shared_image_manager_;
 };
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
@@ -67,8 +70,13 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
                                                      color_space, usage);
   EXPECT_TRUE(backing);
 
-  // TODO(ericrk): Validate via a SharedImageRepresentation. For now use legacy
-  // mailbox.
+  // Check clearing.
+  if (!backing->IsCleared()) {
+    backing->SetCleared();
+    EXPECT_TRUE(backing->IsCleared());
+  }
+
+  // First, validate via a legacy mailbox.
   EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
   TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
   ASSERT_TRUE(texture_base);
@@ -85,7 +93,21 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
     EXPECT_EQ(height, size.height());
   }
 
-  backing->Destroy(true /* have_context */);
+  // Next, validate via a SharedImageRepresentationGLTexture.
+  EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
+  auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+  if (!use_passthrough()) {
+    EXPECT_TRUE(gl_representation);
+    EXPECT_TRUE(gl_representation->GetTexture()->service_id());
+    EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+    EXPECT_EQ(size, gl_representation->size());
+    EXPECT_EQ(format, gl_representation->format());
+    EXPECT_EQ(color_space, gl_representation->color_space());
+    EXPECT_EQ(usage, gl_representation->usage());
+    gl_representation.reset();
+  }
+
+  shared_image_manager_.Unregister(mailbox);
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 
@@ -99,8 +121,13 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
                                                      color_space, usage);
   EXPECT_TRUE(backing);
 
-  // TODO(ericrk): Validate via a SharedImageRepresentation. For now use legacy
-  // mailbox.
+  // Check clearing.
+  if (!backing->IsCleared()) {
+    backing->SetCleared();
+    EXPECT_TRUE(backing->IsCleared());
+  }
+
+  // First, validate via a legacy mailbox.
   EXPECT_TRUE(backing->ProduceLegacyMailbox(&mailbox_manager_));
   TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
   ASSERT_TRUE(texture_base);
@@ -116,7 +143,20 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   ASSERT_TRUE(image);
   EXPECT_EQ(size, image->GetSize());
 
-  backing->Destroy(true /* have_context */);
+  // Next, validate via a SharedImageRepresentationGLTexture.
+  EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
+  auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
+  if (!use_passthrough()) {
+    EXPECT_TRUE(gl_representation);
+    EXPECT_TRUE(gl_representation->GetTexture()->service_id());
+    EXPECT_EQ(size, gl_representation->size());
+    EXPECT_EQ(format, gl_representation->format());
+    EXPECT_EQ(color_space, gl_representation->color_space());
+    EXPECT_EQ(usage, gl_representation->usage());
+    gl_representation.reset();
+  }
+
+  shared_image_manager_.Unregister(mailbox);
   EXPECT_FALSE(mailbox_manager_.ConsumeTexture(mailbox));
 }
 

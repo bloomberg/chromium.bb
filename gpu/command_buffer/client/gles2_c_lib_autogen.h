@@ -1421,6 +1421,12 @@ void GL_APIENTRY GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
 GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) {
   return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(mailbox);
 }
+GLuint GL_APIENTRY
+GLES2CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
+                                              const GLbyte* mailbox) {
+  return gles2::GetGLContext()->CreateAndTexStorage2DSharedImageCHROMIUM(
+      internalFormat, mailbox);
+}
 void GL_APIENTRY GLES2BindUniformLocationCHROMIUM(GLuint program,
                                                   GLint location,
                                                   const char* name) {
@@ -2897,6 +2903,11 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glCreateAndConsumeTextureCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glCreateAndConsumeTextureCHROMIUM),
+    },
+    {
+        "glCreateAndTexStorage2DSharedImageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glCreateAndTexStorage2DSharedImageCHROMIUM),
     },
     {
         "glBindUniformLocationCHROMIUM",

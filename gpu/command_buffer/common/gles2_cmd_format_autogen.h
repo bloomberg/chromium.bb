@@ -13160,6 +13160,60 @@ static_assert(
     offsetof(CreateAndConsumeTextureINTERNALImmediate, texture) == 4,
     "offset of CreateAndConsumeTextureINTERNALImmediate texture should be 4");
 
+struct CreateAndTexStorage2DSharedImageINTERNALImmediate {
+  typedef CreateAndTexStorage2DSharedImageINTERNALImmediate ValueType;
+  static const CommandId kCmdId =
+      kCreateAndTexStorage2DSharedImageINTERNALImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLuint _texture, GLenum _internalFormat, const GLbyte* _mailbox) {
+    SetHeader();
+    texture = _texture;
+    internalFormat = _internalFormat;
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture,
+            GLenum _internalFormat,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture, _internalFormat, _mailbox);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture;
+  uint32_t internalFormat;
+};
+
+static_assert(
+    sizeof(CreateAndTexStorage2DSharedImageINTERNALImmediate) == 12,
+    "size of CreateAndTexStorage2DSharedImageINTERNALImmediate should be 12");
+static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
+                       header) == 0,
+              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
+              "header should be 0");
+static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
+                       texture) == 4,
+              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
+              "texture should be 4");
+static_assert(offsetof(CreateAndTexStorage2DSharedImageINTERNALImmediate,
+                       internalFormat) == 8,
+              "offset of CreateAndTexStorage2DSharedImageINTERNALImmediate "
+              "internalFormat should be 8");
+
 struct BindUniformLocationCHROMIUMBucket {
   typedef BindUniformLocationCHROMIUMBucket ValueType;
   static const CommandId kCmdId = kBindUniformLocationCHROMIUMBucket;

@@ -17,14 +17,32 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
 
 namespace gpu {
+// Representation of a SharedImageBackingGLTexture as a GL Texture.
+class SharedImageRepresentationGLTextureImpl
+    : public SharedImageRepresentationGLTexture {
+ public:
+  SharedImageRepresentationGLTextureImpl(SharedImageManager* manager,
+                                         SharedImageBacking* backing,
+                                         gles2::Texture* texture)
+      : SharedImageRepresentationGLTexture(manager, backing),
+        texture_(texture) {}
+
+  gles2::Texture* GetTexture() override { return texture_; }
+
+ private:
+  gles2::Texture* texture_;
+};
 
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
 // as a gles2::Texture. Can be used with the legacy mailbox implementation.
@@ -43,15 +61,23 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 
   ~SharedImageBackingGLTexture() override { DCHECK(!texture_); }
 
+  bool IsCleared() const override {
+    return texture_->IsLevelCleared(texture_->target(), 0);
+  }
+
+  void SetCleared() override {
+    texture_->SetLevelCleared(texture_->target(), 0, true);
+  }
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(texture_);
     mailbox_manager->ProduceTexture(mailbox(), texture_);
     return true;
   }
 
-  void Destroy(bool have_context) override {
+  void Destroy() override {
     DCHECK(texture_);
-    texture_->RemoveLightweightRef(have_context);
+    texture_->RemoveLightweightRef(have_context());
     texture_ = nullptr;
   }
 
@@ -75,6 +101,13 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     // Dump all sub-levels held by the texture. They will appear below the
     // main gl/textures/client_X/mailbox_Y dump.
     texture_->DumpLevelMemory(pmd, client_tracing_id, dump_name);
+  }
+
+ protected:
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      SharedImageManager* manager) override {
+    return std::make_unique<SharedImageRepresentationGLTextureImpl>(
+        manager, this, texture_);
   }
 
  private:
@@ -102,21 +135,32 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
     DCHECK(!passthrough_texture_);
   }
 
+  bool IsCleared() const override { return is_cleared_; }
+  void SetCleared() override { is_cleared_ = true; }
+
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
     DCHECK(passthrough_texture_);
     mailbox_manager->ProduceTexture(mailbox(), passthrough_texture_.get());
     return true;
   }
 
-  void Destroy(bool have_context) override {
+  void Destroy() override {
     DCHECK(passthrough_texture_);
-    if (!have_context)
+    if (!have_context())
       passthrough_texture_->MarkContextLost();
     passthrough_texture_.reset();
   }
 
+ protected:
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      SharedImageManager* manager) override {
+    // TODO(ericrk): Add support.
+    return nullptr;
+  }
+
  private:
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
+  bool is_cleared_ = false;
 };
 
 SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(

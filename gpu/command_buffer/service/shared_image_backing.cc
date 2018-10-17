@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/shared_image_backing.h"
 
+#include "gpu/command_buffer/service/shared_image_representation.h"
+
 namespace gpu {
 
 SharedImageBacking::SharedImageBacking(const Mailbox& mailbox,
@@ -21,6 +23,11 @@ SharedImageBacking::~SharedImageBacking() = default;
 
 size_t SharedImageBacking::EstimatedSize() const {
   return 0;
+}
+
+std::unique_ptr<SharedImageRepresentationGLTexture>
+SharedImageBacking::ProduceGLTexture(SharedImageManager* manager) {
+  return nullptr;
 }
 
 }  // namespace gpu

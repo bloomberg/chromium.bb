@@ -2653,6 +2653,19 @@ void CreateAndConsumeTextureINTERNALImmediate(GLuint texture,
   }
 }
 
+void CreateAndTexStorage2DSharedImageINTERNALImmediate(GLuint texture,
+                                                       GLenum internalFormat,
+                                                       const GLbyte* mailbox) {
+  const uint32_t size = gles2::cmds::
+      CreateAndTexStorage2DSharedImageINTERNALImmediate::ComputeSize();
+  gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>(size);
+  if (c) {
+    c->Init(texture, internalFormat, mailbox);
+  }
+}
+
 void BindUniformLocationCHROMIUMBucket(GLuint program,
                                        GLint location,
                                        uint32_t name_bucket_id) {

@@ -11,7 +11,6 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
-
 class GPU_GLES2_EXPORT SharedImageManager {
  public:
   SharedImageManager();
@@ -24,11 +23,19 @@ class GPU_GLES2_EXPORT SharedImageManager {
 
   // Releases the registration ref. If a backing reaches zero refs, it is
   // destroyed.
-  void Unregister(const Mailbox& mailbox, bool have_context);
+  void Unregister(const Mailbox& mailbox);
 
-  // TODO(ericrk): Add the ability to get a backing as a
-  // SharedImageRepresentation. Representations also take a ref on the
-  // mailbox, releasing it when the representation is destroyed.
+  // Marks the backing associated with a mailbox as context lost.
+  void OnContextLost(const Mailbox& mailbox);
+
+  // Accessors which return a SharedImageRepresentation. Representations also
+  // take a ref on the mailbox, releasing it when the representation is
+  // destroyed.
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      const Mailbox& mailbox);
+
+  // Called by SharedImageRepresentation in the destructor.
+  void OnRepresentationDestroyed(const Mailbox& mailbox);
 
   // Dump memory for the given mailbox.
   void OnMemoryDump(const Mailbox& mailbox,

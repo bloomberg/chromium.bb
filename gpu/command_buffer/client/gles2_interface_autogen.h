@@ -738,6 +738,9 @@ virtual void DrawElementsInstancedANGLE(GLenum mode,
 virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
 virtual void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) = 0;
 virtual GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) = 0;
+virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum internalFormat,
+    const GLbyte* mailbox) = 0;
 virtual void BindUniformLocationCHROMIUM(GLuint program,
                                          GLint location,
                                          const char* name) = 0;

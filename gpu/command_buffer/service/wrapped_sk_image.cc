@@ -47,10 +47,14 @@ class WrappedSkImageBacking : public SharedImageBacking {
     return true;
   }
 
-  void Destroy(bool have_context) override {
+  void Destroy() override {
     DCHECK(!!wrapped_sk_image_);
     wrapped_sk_image_.reset();
   }
+
+  bool IsCleared() const override { return wrapped_sk_image_->cleared(); }
+
+  void SetCleared() override { wrapped_sk_image_->SetCleared(); }
 
   size_t EstimatedSize() const override {
     return wrapped_sk_image_->estimated_size();

@@ -20,12 +20,13 @@ class MemoryAllocatorDump;
 
 namespace gpu {
 class MailboxManager;
+class SharedImageManager;
+class SharedImageRepresentationGLTexture;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
 // Should not be accessed direclty, instead is accessed through a
 // SharedImageRepresentation.
-// TODO(ericrk): Add SharedImageRepresentation and Begin/End logic.
-class SharedImageBacking {
+class GPU_GLES2_EXPORT SharedImageBacking {
  public:
   SharedImageBacking(const Mailbox& mailbox,
                      viz::ResourceFormat format,
@@ -40,6 +41,18 @@ class SharedImageBacking {
   const gfx::ColorSpace& color_space() const { return color_space_; }
   uint32_t usage() const { return usage_; }
   const Mailbox& mailbox() const { return mailbox_; }
+  void OnContextLost() { have_context_ = false; }
+
+  // Tracks whether the backing has ever been cleared, or whether it may contain
+  // uninitialized pixels.
+  virtual bool IsCleared() const = 0;
+
+  // Marks the backing as cleared, after which point it is assumed to contain no
+  // unintiailized pixels.
+  virtual void SetCleared() = 0;
+
+  // Destroys the underlying backing. Must be called before destruction.
+  virtual void Destroy() = 0;
 
   // Memory dump helpers:
   // Returns the estimated size of the backing. If 0 is returned, the dump will
@@ -55,7 +68,15 @@ class SharedImageBacking {
   // Prepares the backing for use with the legacy mailbox system.
   // TODO(ericrk): Remove this once the new codepath is complete.
   virtual bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) = 0;
-  virtual void Destroy(bool have_context) = 0;
+
+ protected:
+  // Used by SharedImageManager.
+  friend class SharedImageManager;
+  virtual std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      SharedImageManager* manager);
+
+  // Used by subclasses in Destroy.
+  bool have_context() const { return have_context_; }
 
  private:
   const Mailbox mailbox_;
@@ -63,6 +84,8 @@ class SharedImageBacking {
   const gfx::Size size_;
   const gfx::ColorSpace color_space_;
   const uint32_t usage_;
+
+  bool have_context_ = true;
 };
 
 }  // namespace gpu

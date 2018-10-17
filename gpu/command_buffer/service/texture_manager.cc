@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
@@ -1968,13 +1969,20 @@ scoped_refptr<TextureRef> TextureRef::Create(TextureManager* manager,
 
 TextureRef::~TextureRef() {
   manager_->StopTracking(this);
-  texture_->RemoveTextureRef(
-      this, force_context_lost_ ? false : manager_->have_context_);
+  bool have_context = force_context_lost_ ? false : manager_->have_context_;
+  texture_->RemoveTextureRef(this, have_context);
   manager_ = nullptr;
+  if (!have_context && shared_image_)
+    shared_image_->OnContextLost();
 }
 
 void TextureRef::ForceContextLost() {
   force_context_lost_ = true;
+}
+
+void TextureRef::SetSharedImageRepresentation(
+    std::unique_ptr<SharedImageRepresentationGLTexture> shared_image) {
+  shared_image_ = std::move(shared_image);
 }
 
 TextureManager::TextureManager(MemoryTracker* memory_tracker,
@@ -2232,6 +2240,17 @@ TextureRef* TextureManager::Consume(
   bool result = textures_.insert(std::make_pair(client_id, ref)).second;
   DCHECK(result);
   return ref.get();
+}
+
+TextureRef* TextureManager::ConsumeSharedImage(
+    GLuint client_id,
+    std::unique_ptr<SharedImageRepresentationGLTexture> shared_image) {
+  DCHECK(client_id);
+  Texture* texture = shared_image->GetTexture();
+  TextureRef* ref = Consume(client_id, texture);
+  if (ref)
+    ref->SetSharedImageRepresentation(std::move(shared_image));
+  return ref;
 }
 
 void TextureManager::SetParameteri(

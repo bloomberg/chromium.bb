@@ -1000,6 +1000,9 @@ void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override;
 
 GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
 
+GLuint CreateAndTexStorage2DSharedImageCHROMIUM(GLenum internalFormat,
+                                                const GLbyte* mailbox) override;
+
 void BindUniformLocationCHROMIUM(GLuint program,
                                  GLint location,
                                  const char* name) override;
