@@ -35,7 +35,8 @@ TEST_F(CWVAutofillSuggestionTest, Initialization) {
                                                    formName:formName
                                                   fieldName:fieldName
                                             fieldIdentifier:fieldIdentifier
-                                                    frameID:frameID];
+                                                    frameID:frameID
+                                       isPasswordSuggestion:NO];
   EXPECT_NSEQ(formName, suggestion.formName);
   EXPECT_NSEQ(fieldName, suggestion.fieldName);
   EXPECT_NSEQ(fieldIdentifier, suggestion.fieldIdentifier);

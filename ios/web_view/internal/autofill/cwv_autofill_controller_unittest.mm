@@ -139,7 +139,8 @@ TEST_F(CWVAutofillControllerTest, FillSuggestion) {
                                                    formName:kTestFormName
                                                   fieldName:kTestFieldName
                                             fieldIdentifier:kTestFieldIdentifier
-                                                    frameID:kTestFrameId];
+                                                    frameID:kTestFrameId
+                                       isPasswordSuggestion:NO];
   __block BOOL fill_completion_was_called = NO;
   [autofill_controller_ fillSuggestion:suggestion
                      completionHandler:^{
