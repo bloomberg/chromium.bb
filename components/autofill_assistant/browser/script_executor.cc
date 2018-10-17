@@ -137,6 +137,14 @@ void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
   delegate_->GetWebController()->FocusElement(selectors, std::move(callback));
 }
 
+void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
+  delegate_->GetUiController()->ShowProgressBar(progress, message);
+}
+
+void ScriptExecutor::HideProgressBar() {
+  delegate_->GetUiController()->HideProgressBar();
+}
+
 void ScriptExecutor::SetFieldValue(const std::vector<std::string>& selectors,
                                    const std::string& value,
                                    base::OnceCallback<void(bool)> callback) {

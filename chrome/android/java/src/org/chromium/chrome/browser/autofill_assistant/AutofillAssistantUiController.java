@@ -237,6 +237,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 new AutofillAssistantUiDelegate.Details(title, url, date, description));
     }
 
+    @CalledByNative
+    private void onShowProgressBar(int progress, String message) {
+        mUiDelegate.showProgressBar(progress, message);
+    }
+
+    @CalledByNative
+    private void onHideProgressBar() {
+        mUiDelegate.hideProgressBar();
+    }
+
     // native methods.
     private native long nativeInit(
             WebContents webContents, String[] parameterNames, String[] parameterValues);

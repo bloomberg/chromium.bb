@@ -143,6 +143,12 @@ class ActionDelegate {
   // Show contextual information.
   virtual void ShowDetails(const DetailsProto& details) = 0;
 
+  // Show the progress bar with |message| and set it at |progress|%.
+  virtual void ShowProgressBar(int progress, const std::string& message) = 0;
+
+  // Hide the progress bar.
+  virtual void HideProgressBar() = 0;
+
  protected:
   ActionDelegate() = default;
 };
