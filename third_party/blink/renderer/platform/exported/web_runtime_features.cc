@@ -540,10 +540,6 @@ void WebRuntimeFeatures::EnableScheduledScriptStreaming(bool enable) {
   RuntimeEnabledFeatures::SetScheduledScriptStreamingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableOffMainThreadWebSocket(bool enable) {
-  RuntimeEnabledFeatures::SetOffMainThreadWebSocketEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableExperimentalProductivityFeatures(bool enable) {
   RuntimeEnabledFeatures::SetExperimentalProductivityFeaturesEnabled(enable);
 }
