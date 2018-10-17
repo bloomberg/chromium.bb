@@ -183,9 +183,9 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
   NGLayoutInputNode first_child = FirstChild();
   scoped_refptr<NGLayoutResult> layout_result;
-  if (box_->IsLayoutNGMixin()) {
-    layout_result = ToLayoutBlockFlow(box_)->CachedLayoutResult(
-        constraint_space, break_token);
+  if (block_flow) {
+    layout_result =
+        block_flow->CachedLayoutResult(constraint_space, break_token);
     if (layout_result) {
       // TODO(layoutng): Figure out why these two call can't be inside the
       // !constraint_space.IsIntermediateLayout() block below.
@@ -204,8 +204,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // LayoutNGMixin::CurrentFragment and therefore has to be up-to-date.
       // In particular, that fragment would have an incorrect offset if we
       // don't re-set the result here.
-      ToLayoutBlockFlow(box_)->SetCachedLayoutResult(
-          constraint_space, break_token, *layout_result);
+      block_flow->SetCachedLayoutResult(constraint_space, break_token,
+                                        *layout_result);
       if (!constraint_space.IsIntermediateLayout() && first_child &&
           first_child.IsInline()) {
         block_flow->UpdatePaintFragmentFromCachedLayoutResult(
