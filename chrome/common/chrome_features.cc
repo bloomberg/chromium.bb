@@ -480,7 +480,7 @@ const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
 const base::Feature kNewPrintPreview{"NewPrintPreview",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kNupPrinting{"NupPrinting",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the
