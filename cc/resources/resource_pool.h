@@ -51,6 +51,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   // Delay before a resource is considered expired.
   static constexpr base::TimeDelta kDefaultExpirationDelay =
       base::TimeDelta::FromSeconds(5);
+  // Max delay before an evicted resource is flushed.
+  static constexpr base::TimeDelta kDefaultMaxFlushDelay =
+      base::TimeDelta::FromSeconds(1);
 
   // A base class to hold ownership of gpu backed PoolResources. Allows the
   // client to define destruction semantics.
@@ -390,6 +393,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   std::map<size_t, std::unique_ptr<PoolResource>> in_use_resources_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  base::TimeTicks flush_evicted_resources_deadline_;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
 

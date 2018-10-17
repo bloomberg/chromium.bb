@@ -67,6 +67,7 @@ bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
 }  // namespace
 
 constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
+constexpr base::TimeDelta ResourcePool::kDefaultMaxFlushDelay;
 
 void ResourcePool::GpuBacking::InitOverlayCandidateAndTextureTarget(
     const viz::ResourceFormat format,
@@ -95,6 +96,7 @@ ResourcePool::ResourcePool(
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
       tracing_id_(g_next_tracing_id.GetNext()),
+      flush_evicted_resources_deadline_(base::TimeTicks::Max()),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
@@ -458,6 +460,10 @@ void ResourcePool::DeleteResource(std::unique_ptr<PoolResource> resource) {
       resource->size(), resource->format());
   total_memory_usage_bytes_ -= resource_bytes;
   --total_resource_count_;
+  if (flush_evicted_resources_deadline_ == base::TimeTicks::Max()) {
+    flush_evicted_resources_deadline_ =
+        base::TimeTicks::Now() + kDefaultMaxFlushDelay;
+  }
 }
 
 void ResourcePool::UpdateResourceContentIdAndInvalidation(
@@ -497,7 +503,9 @@ void ResourcePool::EvictExpiredResources() {
 
   EvictResourcesNotUsedSince(current_time - resource_expiration_delay_);
 
-  if (unused_resources_.empty()) {
+  if (unused_resources_.empty() ||
+      flush_evicted_resources_deadline_ < current_time) {
+    flush_evicted_resources_deadline_ = base::TimeTicks::Max();
     // If nothing is evictable, we have deleted one (and possibly more)
     // resources without any new activity. Flush to ensure these deletions are
     // processed.
@@ -510,9 +518,12 @@ void ResourcePool::EvictExpiredResources() {
   }
 
   // If we still have evictable resources, schedule a call to
-  // EvictExpiredResources at the time when the LRU buffer expires.
-  ScheduleEvictExpiredResourcesIn(GetUsageTimeForLRUResource() +
-                                  resource_expiration_delay_ - current_time);
+  // EvictExpiredResources for either (a) the time when the LRU buffer expires
+  // or (b) the deadline to explicitly flush previously evicted resources.
+  ScheduleEvictExpiredResourcesIn(
+      std::min(GetUsageTimeForLRUResource() + resource_expiration_delay_,
+               flush_evicted_resources_deadline_) -
+      current_time);
 }
 
 void ResourcePool::EvictResourcesNotUsedSince(base::TimeTicks time_limit) {
