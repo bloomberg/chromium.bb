@@ -129,8 +129,8 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
       this.onMountCompleted_.bind(this));
   console.debug('Requesting volume list.');
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
-    console.debug('Volume list fetched with: ' + volumeMetadataList.length +
-        ' items.');
+    console.debug(
+        'Volume list fetched with: ' + volumeMetadataList.length + ' items.');
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList. crbug.com/330061.
     // But volumes reported by onMountCompleted events must be added after the
@@ -215,6 +215,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         this.finishRequest_(requestKey, status);
         if (event.status === 'success')
           this.volumeInfoList.remove(event.volumeMetadata.volumeId);
+        console.debug('unmounted volume: ' + volumeId);
         callback();
         break;
     }
