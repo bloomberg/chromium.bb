@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -129,7 +130,7 @@ class SelectFileDialogExtensionBrowserTest
                                        downloads_dir_);
 
     // The test resources are setup: enable and add default ChromeOS component
-    // extensions now and not before: crbug.com/831074, crbug.com/804413
+    // extensions now and not before: crbug.com/831074, crbug.com/804413.
     file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
   }
 
@@ -197,6 +198,10 @@ class SelectFileDialogExtensionBrowserTest
     }
   }
 
+  bool OpenDialogIsResizable() const {
+    return dialog_->IsResizeable();  // See crrev.com/600185.
+  }
+
   void TryOpeningSecondDialog(const gfx::NativeWindow& owning_window) {
     second_listener_.reset(new MockSelectFileDialogListener());
     second_dialog_ = new SelectFileDialogExtension(second_listener_.get(),
@@ -260,6 +265,32 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
   // up the dialog.  Make sure we don't crash.
   dialog_->ListenerDestroyed();
   listener_.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, CanResize) {
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+
+  // Open the file dialog on the default path.
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     base::FilePath(), owning_window, ""));
+
+  // The dialog should be resizable.
+  ASSERT_TRUE(OpenDialogIsResizable());
+}
+
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
+                       CanResize_TabletMode) {
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+
+  // Setup tablet mode.
+  test::SetAndWaitForTabletMode(true);
+
+  // Open the file dialog on the default path.
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     base::FilePath(), owning_window, ""));
+
+  // The dialog should not be resizable in tablet mode.
+  ASSERT_FALSE(OpenDialogIsResizable());
 }
 
 // TODO(jamescook): Add a test for selecting a file for an <input type='file'/>
