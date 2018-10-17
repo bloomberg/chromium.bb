@@ -715,7 +715,8 @@
   "android-builder-perf": {
     "additional_compile_targets": [
       "microdump_stackwalk",
-      "angle_perftests"
+      "angle_perftests",
+      "chrome_apk"
     ]
   },
   "android-go-perf": {
@@ -1020,7 +1021,8 @@
   "android_arm64-builder-perf": {
     "additional_compile_targets": [
       "microdump_stackwalk",
-      "angle_perftests"
+      "angle_perftests",
+      "chrome_apk"
     ]
   },
   "linux-builder-perf": {
