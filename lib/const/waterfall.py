@@ -8,11 +8,8 @@
 WATERFALL_INTERNAL = 'chromeos'
 WATERFALL_EXTERNAL = 'chromiumos'
 WATERFALL_INFRA = 'chromeos.infra'
-WATERFALL_TRYBOT = 'chromiumos.tryserver'
 WATERFALL_RELEASE = 'chromeos_release'
 WATERFALL_BRANCH = 'chromeos.branch'
-WATERFALL_CHROMIUM = 'chromiumos.chromium'
-WATERFALL_CHROME = 'chromeos.chrome'
 # Used for all swarming builds.
 WATERFALL_SWARMING = 'go/legoland'
 
@@ -28,22 +25,17 @@ EMAIL_WATERFALLS = (
 # URLs to the various waterfalls.
 BUILD_DASHBOARD = 'https://build.chromium.org/p/chromiumos'
 BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
-TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
 RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'
 BRANCH_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.branch'
-CHROMIUM_DASHBOARD = ('https://uberchromegw.corp.google.com/'
-                      'i/chromiumos.chromium')
-CHROME_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.chrome'
+SWARMING_DASHBOARD = 'http://go/legoland'
 
 # Waterfall to dashboard URL mapping.
 WATERFALL_TO_DASHBOARD = {
     WATERFALL_INTERNAL: BUILD_INT_DASHBOARD,
     WATERFALL_EXTERNAL: BUILD_DASHBOARD,
-    WATERFALL_TRYBOT: TRYBOT_DASHBOARD,
     WATERFALL_RELEASE: RELEASE_DASHBOARD,
     WATERFALL_BRANCH: BRANCH_DASHBOARD,
-    WATERFALL_CHROMIUM: CHROMIUM_DASHBOARD,
-    WATERFALL_CHROME: CHROME_DASHBOARD,
+    WATERFALL_SWARMING: SWARMING_DASHBOARD,
 }
 
 # Sheriff-o-Matic tree which Chrome OS alerts are posted to.

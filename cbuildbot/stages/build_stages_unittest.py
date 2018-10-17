@@ -529,14 +529,14 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
 
     self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         status=constants.BUILDER_STATUS_INFLIGHT,
         timeout_seconds=23456,
         buildbucket_id='100')
 
     self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         status=constants.BUILDER_STATUS_INFLIGHT,
         timeout_seconds=23456,
@@ -595,7 +595,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def testChrootReusePreviousMasterFailed(self):
     master_id = self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 123, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 123, 'test_config',
         'test_hostname', status=constants.BUILDER_STATUS_FAILED,
         buildbucket_id='2178')
     self.PatchObject(
@@ -612,7 +612,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def testChrootReuseAllPassed(self):
     master_id = self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 123, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 123, 'test_config',
         'test_hostname', status=constants.BUILDER_STATUS_PASSED,
         buildbucket_id='2178')
     self.PatchObject(

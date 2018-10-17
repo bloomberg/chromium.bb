@@ -675,7 +675,7 @@ class _BuilderRunBase(object):
     # waterfall if no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
             os.environ.get('BUILDBOT_MASTERNAME') or
-            waterfall.WATERFALL_TRYBOT)
+            waterfall.WATERFALL_SWARMING)
 
   def GetBuildbotUrl(self):
     """Gets the URL of the waterfall hosting the current build."""
@@ -685,7 +685,7 @@ class _BuilderRunBase(object):
     # waterfall if no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-url') or
             os.environ.get('BUILDBOT_BUILDBOTURL') or
-            constants.TRYBOT_DASHBOARD)
+            constants.SWARMING_DASHBOARD)
 
   def GetBuilderName(self):
     """Get the name of this builder on the current waterfall."""

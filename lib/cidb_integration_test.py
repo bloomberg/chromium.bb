@@ -273,12 +273,12 @@ class CIDBAPITest(CIDBIntegrationTest):
     db = self._PrepareFreshDatabase(65)
     self.assertEqual([], db.GetBuildMessages(1))
     master_build_id = db.InsertBuild('builder name',
-                                     waterfall.WATERFALL_TRYBOT,
+                                     waterfall.WATERFALL_SWARMING,
                                      1,
                                      'master',
                                      'hostname')
     slave_build_id = db.InsertBuild('slave builder name',
-                                    waterfall.WATERFALL_TRYBOT,
+                                    waterfall.WATERFALL_SWARMING,
                                     2,
                                     'slave',
                                     'slave hostname',
@@ -308,7 +308,7 @@ class CIDBAPITest(CIDBIntegrationTest):
     mm2.pop('timestamp')
     self.assertEqual({'build_id': master_build_id,
                       'build_config': 'master',
-                      'waterfall': waterfall.WATERFALL_TRYBOT,
+                      'waterfall': waterfall.WATERFALL_SWARMING,
                       'builder_name': 'builder name',
                       'build_number': 1L,
                       'message_type': 'message_type',
@@ -324,7 +324,7 @@ class CIDBAPITest(CIDBIntegrationTest):
     sm10.pop('timestamp')
     self.assertEqual({'build_id': slave_build_id,
                       'build_config': 'slave',
-                      'waterfall': waterfall.WATERFALL_TRYBOT,
+                      'waterfall': waterfall.WATERFALL_SWARMING,
                       'builder_name': 'slave builder name',
                       'build_number': 2L,
                       'message_type': 'message_type',
