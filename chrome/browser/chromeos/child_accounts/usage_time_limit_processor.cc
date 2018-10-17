@@ -496,18 +496,20 @@ UsageTimeLimitProcessor::GetActiveTimeUsageLimit() {
 }
 
 bool UsageTimeLimitProcessor::HasActiveOverride() {
-  if (!time_limit_override_)
+  base::Time last_reset_time = ConvertPolicyTime(LockOverrideResetTime(), 0);
+  if (current_time_ < last_reset_time)
+    last_reset_time -= base::TimeDelta::FromDays(1);
+
+  bool has_lock_override =
+      time_limit_override_ && time_limit_override_->action ==
+                                  internal::TimeLimitOverride::Action::kLock;
+  bool has_valid_lock_override =
+      has_lock_override && time_limit_override_->created_at > last_reset_time;
+  if (!time_limit_override_ || (has_lock_override && !has_valid_lock_override))
     return false;
 
-  if (overridden_window_limit_ || overridden_usage_limit_)
-    return true;
-
-  if (!overridden_usage_limit_ && !overridden_window_limit_ &&
-      time_limit_override_->action ==
-          internal::TimeLimitOverride::Action::kLock)
-    return true;
-
-  return false;
+  return overridden_window_limit_ || overridden_usage_limit_ ||
+         has_valid_lock_override;
 }
 
 bool UsageTimeLimitProcessor::IsLocked() {
