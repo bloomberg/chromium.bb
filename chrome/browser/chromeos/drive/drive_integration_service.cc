@@ -422,9 +422,7 @@ class DriveIntegrationService::PreferenceWatcher
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver
   void OnConnectionChanged(network::mojom::ConnectionType type) override {
-    bool is_offline =
-        type == network::mojom::ConnectionType::CONNECTION_UNKNOWN ||
-        type == network::mojom::ConnectionType::CONNECTION_NONE;
+    bool is_offline = type == network::mojom::ConnectionType::CONNECTION_NONE;
     // Check for a pending remount first. In this case, DriveFS will not be
     // mounted and thus its interface will be null.
     if (integration_service_->drivefs_holder_ &&
