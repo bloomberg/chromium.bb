@@ -84,7 +84,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader) override;
+      ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors) override;
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
