@@ -4303,6 +4303,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   }
 
+  web::WebState* webState = [_model currentTab].webState;
+  if (webState && params.url.GetOrigin() != kChromeUINewTabURL) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(webState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      NTPHelper->Deactivate();
+    }
+  }
+
   Tab* currentTab = [_model currentTab];
   DCHECK(currentTab);
   currentTab.navigationManager->LoadURLWithParams(params);

@@ -62,7 +62,7 @@ NewTabPageTabHelper::NewTabPageTabHelper(
        FakeboxFocuser,
        SnackbarCommands,
        UrlLoader> dispatcher)
-    : delegate_(delegate) {
+    : delegate_(delegate), web_state_(web_state) {
   DCHECK(delegate);
   DCHECK(base::FeatureList::IsEnabled(kBrowserContainerContainsNTP));
 
@@ -100,6 +100,10 @@ void NewTabPageTabHelper::DismissModals() const {
   return [ntp_coordinator_ dismissModals];
 }
 
+void NewTabPageTabHelper::Deactivate() {
+  SetActive(false);
+}
+
 #pragma mark - WebStateObserver
 
 void NewTabPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
@@ -112,10 +116,16 @@ void NewTabPageTabHelper::DidStartNavigation(
   if (navigation_context->IsSameDocument()) {
     return;
   }
+
+  SetActive(navigation_context->GetUrl().GetOrigin() == kChromeUINewTabURL);
+}
+
+#pragma mark - Private
+
+void NewTabPageTabHelper::SetActive(bool active) {
   // Save the NTP scroll offset before we navigate away.
-  web::NavigationManager* manager = web_state->GetNavigationManager();
-  if (web_state->GetLastCommittedURL().GetOrigin() == kChromeUINewTabURL) {
-    DCHECK(IsActive());
+  web::NavigationManager* manager = web_state_->GetNavigationManager();
+  if (web_state_->GetLastCommittedURL().GetOrigin() == kChromeUINewTabURL) {
     web::NavigationItem* item = manager->GetLastCommittedItem();
     web::PageDisplayState displayState;
     CGPoint scrollOffset = ntp_coordinator_.scrollOffset;
@@ -126,10 +136,11 @@ void NewTabPageTabHelper::DidStartNavigation(
 
   bool was_active = IsActive();
 
-  // Start or stop the NTP.
-  web::NavigationItem* item = manager->GetPendingItem();
-  if (item && item->GetURL().GetOrigin() == kChromeUINewTabURL) {
-    item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  if (active) {
+    web::NavigationManager* manager = web_state_->GetNavigationManager();
+    web::NavigationItem* item = manager->GetPendingItem();
+    if (item)
+      item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
     [ntp_coordinator_ start];
   } else {
     [ntp_coordinator_ stop];
