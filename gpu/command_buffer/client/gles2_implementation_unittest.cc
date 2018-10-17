@@ -4455,6 +4455,15 @@ TEST_F(GLES2ImplementationTest, ReentrantErrorCallbacksShouldNotCrash) {
   ResetErrorMessageCallback();
 }
 
+TEST_F(GLES2ImplementationTest, DeleteZero) {
+  gl_->DeleteProgram(0);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+  gl_->DeleteShader(0);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+  gl_->DeleteSync(0);
+  EXPECT_EQ(GL_NO_ERROR, CheckError());
+}
+
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"
 
