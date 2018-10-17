@@ -45,13 +45,6 @@ class GpuArcVideoEncodeAccelerator
 
   // ::arc::mojom::VideoEncodeAccelerator implementation.
   void GetSupportedProfiles(GetSupportedProfilesCallback callback) override;
-  void InitializeDeprecated(VideoPixelFormat input_format,
-                            const gfx::Size& visible_size,
-                            VideoEncodeAccelerator::StorageType input_storage,
-                            VideoCodecProfile output_profile,
-                            uint32_t initial_bitrate,
-                            VideoEncodeClientPtr client,
-                            InitializeCallback callback) override;
   void Initialize(const media::VideoEncodeAccelerator::Config& config,
                   VideoEncodeAccelerator::StorageType input_storage,
                   VideoEncodeClientPtr client,
