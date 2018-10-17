@@ -854,9 +854,6 @@
       name: "OffMainThreadCSSPaint",
     },
     {
-      name: "OffMainThreadWebSocket",
-    },
-    {
       name: "OffscreenCanvas",
       status: "stable",
     },
