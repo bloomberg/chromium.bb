@@ -193,12 +193,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   const std::vector<base::TimeDelta>& GetAccuracyRecordingIntervals()
       const override;
 
-  void set_bandwidth_delay_product_kbits(int32_t value) {
-    bandwidth_delay_product_kbits_ = value;
-  }
-
-  base::Optional<int32_t> GetBandwidthDelayProductKbits() const override;
-
   // Returns the number of entries in |net_log_| that have type set to |type|.
   int GetEntriesCount(NetLogEventType type) const;
 
@@ -285,10 +279,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // If set, GetRTTEstimateInternal() would return the set value.
   base::Optional<base::TimeDelta> start_time_null_end_to_end_rtt_;
-
-  // If set, GetBandwidthDelayProductKbits() would return its set value.
-  // Otherwise, the base implementation is called.
-  base::Optional<int32_t> bandwidth_delay_product_kbits_;
 
   LocalHttpTestServer embedded_test_server_;
 

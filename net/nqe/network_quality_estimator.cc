@@ -891,43 +891,6 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
                             EFFECTIVE_CONNECTION_TYPE_LAST);
 }
 
-void NetworkQualityEstimator::ComputeBandwidthDelayProduct() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Reset the bandwidth delay product to prevent stale values being returned.
-  bandwidth_delay_product_kbits_.reset();
-
-  // Record the bandwidth delay product (BDP) from the 80 percentile throughput
-  // and the 20 percentile transport RTT. Percentiles are reversed for
-  // throughput. The reason for using the 20 percentile transport RTT is to get
-  // an estimate of the true RTT sans the queueing delay. The minimum value of
-  // transport RTT was not used because it is likely to be noisy. For
-  // throughput, the 80 percentile value is considered to get an estimate of the
-  // maximum bandwidth when there is no congestion. The maximum value of
-  // observed throughput was not used because it is likely to be noisy.
-  base::TimeDelta transport_rtt = GetRTTEstimateInternal(
-      base::TimeTicks(), nqe::internal::OBSERVATION_CATEGORY_TRANSPORT, 20,
-      nullptr);
-  if (transport_rtt == nqe::internal::InvalidRTT())
-    return;
-
-  int32_t downlink_throughput_kbps =
-      GetDownlinkThroughputKbpsEstimateInternal(base::TimeTicks(), 20);
-  if (downlink_throughput_kbps == nqe::internal::INVALID_RTT_THROUGHPUT)
-    return;
-
-  bandwidth_delay_product_kbits_ =
-      (downlink_throughput_kbps * transport_rtt.InMilliseconds()) / 1000;
-
-  // Record UMA histograms.
-  UMA_HISTOGRAM_TIMES("NQE.BDPComputationTransportRTT.OnECTComputation",
-                      transport_rtt);
-  UMA_HISTOGRAM_COUNTS_1M("NQE.BDPComputationKbps.OnECTComputation",
-                          downlink_throughput_kbps);
-  UMA_HISTOGRAM_COUNTS_1M("NQE.BDPKbits.OnECTComputation",
-                          bandwidth_delay_product_kbits_.value());
-}
-
 void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -952,8 +915,6 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
 
   network_quality_ = nqe::internal::NetworkQuality(http_rtt, transport_rtt,
                                                    downstream_throughput_kbps);
-  ComputeBandwidthDelayProduct();
-
   UMA_HISTOGRAM_ENUMERATION("NQE.EffectiveConnectionType.OnECTComputation",
                             effective_connection_type_,
                             EFFECTIVE_CONNECTION_TYPE_LAST);
@@ -1678,12 +1639,6 @@ base::Optional<int32_t> NetworkQualityEstimator::GetDownstreamThroughputKbps()
     return base::Optional<int32_t>();
   }
   return network_quality_.downstream_throughput_kbps();
-}
-
-base::Optional<int32_t> NetworkQualityEstimator::GetBandwidthDelayProductKbits()
-    const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return bandwidth_delay_product_kbits_;
 }
 
 void NetworkQualityEstimator::MaybeUpdateCachedEstimateApplied(

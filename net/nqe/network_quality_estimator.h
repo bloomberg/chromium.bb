@@ -153,12 +153,6 @@ class NET_EXPORT NetworkQualityEstimator
   // null.
   base::Optional<int32_t> GetDownstreamThroughputKbps() const;
 
-  // Returns the current bandwidth delay product estimate (in kilobits). If the
-  // estimate is not available, the returned optional value is null. The
-  // bandwidth delay product is calculated from the transport RTT and the
-  // downlink bandwidth estimates. Virtualized for testing.
-  virtual base::Optional<int32_t> GetBandwidthDelayProductKbits() const;
-
   // Adds |observer| to the list of RTT and throughput estimate observers.
   // The observer must register and unregister itself on the same thread.
   // |observer| would be notified on the thread on which it registered.
@@ -416,7 +410,6 @@ class NET_EXPORT NetworkQualityEstimator
                            OnPrefsReadWithReadingDisabled);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ForceEffectiveConnectionTypeThroughFieldTrial);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestBDPComputation);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ObservationDiscardedIfCachedEstimateAvailable);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
@@ -513,11 +506,6 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Returns true if the cached network quality estimate was successfully read.
   bool ReadCachedNetworkQualityEstimate();
-
-  // Computes the bandwidth delay product in kilobits. The computed value is
-  // stored in |bandwidth_delay_product_kbits_| and can be accessed using
-  // |GetBandwidthDelayProductKbits|.
-  void ComputeBandwidthDelayProduct();
 
   // Gathers metrics for the next connection type. Called when there is a change
   // in the connection type.
@@ -624,9 +612,6 @@ class NET_EXPORT NetworkQualityEstimator
   // Current estimate of the network quality.
   nqe::internal::NetworkQuality network_quality_;
   base::Optional<base::TimeDelta> end_to_end_rtt_;
-
-  // Current estimate of the bandwidth delay product (BDP) in kilobits.
-  base::Optional<int32_t> bandwidth_delay_product_kbits_;
 
   // Current effective connection type. It is updated on connection change
   // events. It is also updated every time there is network traffic (provided
