@@ -766,7 +766,6 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     page = Page::Create(page_clients);
     page->GetSettings().SetScriptEnabled(false);
     page->GetSettings().SetPluginsEnabled(false);
-    page->GetSettings().SetAcceleratedCompositingEnabled(false);
 
     // Because this page is detached, it can't get default font settings
     // from the embedder. Copy over font settings so we have sensible
