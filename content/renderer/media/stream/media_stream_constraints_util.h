@@ -25,6 +25,8 @@ template <typename T>
 class NumericRangeSet;
 }  // namespace media_constraints
 
+extern const double kMinDeviceCaptureFrameRate;
+
 // This class represents the output the SelectSettings algorithm for video
 // constraints (see https://w3c.github.io/mediacapture-main/#dfn-selectsettings)
 // The input to SelectSettings is a user-supplied constraints object, and its
