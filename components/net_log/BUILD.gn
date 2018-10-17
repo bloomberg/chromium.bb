@@ -32,6 +32,7 @@ source_set("unit_tests") {
     "//net",
     "//net:test_support",
     "//services/network:network_service",
+    "//services/network:test_support",
     "//services/network/public/cpp",
     "//services/network/public/cpp:cpp_base",
     "//testing/gtest",

@@ -190,6 +190,8 @@ class NetExportFileWriter {
   void OnStartResult(net::NetLogCaptureMode capture_mode, int result);
   void OnStopResult(int result);
 
+  void OnConnectionError();
+
   // Contains tasks to be done after |net_log_exporter_| has completely
   // stopped writing.
   void ResetExporterThenSetStateNotLogging();
