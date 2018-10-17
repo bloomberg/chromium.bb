@@ -911,6 +911,7 @@ class DriveFsTestVolume : public DriveTestVolume {
   CreateDriveFsConnectionDelegate() override {
     CHECK(base::CreateDirectory(GetMyDrivePath()));
     CHECK(base::CreateDirectory(GetTeamDriveGrandRoot()));
+    CHECK(base::CreateDirectory(mount_path().Append(".Trash")));
 
     if (!fake_drivefs_helper_) {
       fake_drivefs_helper_ =
