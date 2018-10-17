@@ -8,13 +8,17 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -25,7 +29,6 @@
 #include "chrome/browser/search/ntp_icon_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/thumbnail_source.h"
-#include "chrome/browser/search/url_validity_checker_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -41,6 +44,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
+#include "components/search/url_validity_checker_impl.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -50,6 +54,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/color_utils.h"
 
 namespace {
@@ -809,9 +814,14 @@ void InstantService::FallbackToDefaultThemeInfo() {
 }
 
 UrlValidityChecker* InstantService::GetUrlValidityChecker() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (url_checker_for_testing_ != nullptr)
     return url_checker_for_testing_;
-  return UrlValidityCheckerFactory::GetUrlValidityChecker();
+  static base::NoDestructor<UrlValidityCheckerImpl> checker(
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      base::DefaultTickClock::GetInstance());
+  return checker.get();
 }
 
 // static
