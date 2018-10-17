@@ -201,6 +201,7 @@ class PLATFORM_EXPORT ResourceLoader final
   uint32_t inflight_keepalive_bytes_;
   bool is_cache_aware_loading_activated_;
 
+  bool should_use_isolated_code_cache_ = false;
   bool is_downloading_to_blob_ = false;
   mojo::AssociatedBinding<mojom::blink::ProgressClient> progress_binding_;
   bool blob_finished_ = false;
