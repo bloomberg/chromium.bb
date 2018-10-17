@@ -49,7 +49,7 @@ namespace {
 #define DCHECK_NOT_ON_DEVICE_THREAD() DCHECK_CURRENTLY_ON(BrowserThread::UI)
 
 // Convenience macro to block the test procedure and run all pending UI tasks.
-#define RUN_UI_TASKS() RunAllPendingInMessageLoop(BrowserThread::UI)
+#define RUN_UI_TASKS() base::RunLoop().RunUntilIdle()
 
 // Convenience macro to post a task to run on the device thread.
 #define POST_DEVICE_TASK(closure) \
@@ -57,7 +57,9 @@ namespace {
 
 // Convenience macro to block the test procedure until all pending tasks have
 // run on the device thread.
-#define WAIT_FOR_DEVICE_TASKS() RunAllPendingInMessageLoop(BrowserThread::IO)
+#define WAIT_FOR_DEVICE_TASKS()            \
+  browser_threads_.RunIOThreadUntilIdle(); \
+  RUN_UI_TASKS()
 
 // Capture parameters.
 constexpr gfx::Size kResolution = gfx::Size(320, 180);
@@ -407,11 +409,10 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
     return true;
   }
 
- private:
+ protected:
   // See the threading notes at top of this file.
   TestBrowserThreadBundle browser_threads_;
 
- protected:
   NiceMock<MockFrameSinkVideoCapturer> capturer_;
   std::unique_ptr<FrameSinkVideoCaptureDevice> device_;
 };
