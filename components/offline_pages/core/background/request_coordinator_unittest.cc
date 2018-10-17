@@ -1015,7 +1015,8 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithLoadingDisabled) {
   EXPECT_TRUE(processing_callback_called());
 
   EXPECT_FALSE(state() == RequestCoordinatorState::PICKING);
-  EXPECT_EQ(Offliner::LOADING_NOT_ACCEPTED, last_offlining_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_NOT_ACCEPTED,
+            last_offlining_status());
 }
 
 // TODO(dougarnett): Add StartScheduledProcessing test for QUEUE_UPDATE_FAILED.
@@ -1033,7 +1034,8 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_TRUE(state() == RequestCoordinatorState::PICKING);
 
   // Now, quick, before it can do much (we haven't called PumpLoop), cancel it.
-  coordinator()->StopProcessing(Offliner::REQUEST_COORDINATOR_CANCELED);
+  coordinator()->StopProcessing(
+      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
@@ -1081,7 +1083,8 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_FALSE(state() == RequestCoordinatorState::PICKING);
 
   // Now we cancel it while the background loader is busy.
-  coordinator()->StopProcessing(Offliner::REQUEST_COORDINATOR_CANCELED);
+  coordinator()->StopProcessing(
+      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
 
   // Let the async callbacks in the cancel run.
   PumpLoop();

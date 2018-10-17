@@ -22,8 +22,9 @@ TEST(PrefetchTaskTestBaseTest, StateEnumIsFullyRepresentedInOrderedArray) {
   // build error. When the new element is then added here, the test will fail
   // until it is properly added to |kOrderedPrefetchItemStates|.
   // Note: this code assumes that the minimum assigned value in the enum is 0
-  // and that the maximum is correctly represented by the MAX labeled element.
-  for (int i = 0; i <= static_cast<int>(PrefetchItemState::MAX); ++i) {
+  // and that the maximum is correctly represented by the kMaxValue labeled
+  // element.
+  for (int i = 0; i <= static_cast<int>(PrefetchItemState::kMaxValue); ++i) {
     PrefetchItemState maybe_valid_state = static_cast<PrefetchItemState>(i);
     switch (maybe_valid_state) {
       case PrefetchItemState::NEW_REQUEST:

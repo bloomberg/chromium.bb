@@ -137,7 +137,7 @@ enum class PrefetchItemState {
   // client.
   ZOMBIE = 100,
   // Max item state, needed for histograms
-  MAX = ZOMBIE
+  kMaxValue = ZOMBIE
 };
 
 // Error codes used to identify the reason why a prefetch entry has finished
@@ -147,7 +147,7 @@ enum class PrefetchItemState {
 // New entries can be added anywhere as long as they are assigned unique values
 // and kept in ascending order. Deprecated entries should be labeled as such but
 // never removed. Assigned values should never be reused. Remember to update the
-// MAX value if adding a new trailing item.
+// kMaxValue value if adding a new trailing item.
 //
 // Changes to this enum must be reflected in the respective metrics enum named
 // OflinePrefetchItemErrorCode in enums.xml. Use the exact same integer value
@@ -200,7 +200,7 @@ enum class PrefetchItemErrorCode {
   // downloaded.
   SUGGESTION_INVALIDATED = 1700,
   // Note: Must always have the same value as the last actual entry.
-  MAX = SUGGESTION_INVALIDATED
+  kMaxValue = SUGGESTION_INVALIDATED
 };
 
 // Callback invoked upon completion of a prefetch request.
