@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+(function() {
+
+'use strict';
+
 /**
- * This variable is checked in SelectFileDialogExtensionBrowserTest.
+ * This variable is checked in several integration and unit tests, to make sure
+ * that new code changes don't cause unhandled exceptions.
  * @type {number}
  */
 window.JSErrorCount = 0;
@@ -26,55 +32,62 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error(event.reason);
 });
 
-// Overrides console.error() to count errors.
 /**
- * @param {...*} var_args Message to be logged.
+ * Overrides console.error() to count errors.
+ *
+ * @param {...*} args Message and/or objects to be logged.
  */
-console.error = (function() {
-  var orig = console.error;
-  return function() {
+console.error = (() => {
+  const orig = console.error;
+  return (...args) => {
     window.JSErrorCount++;
-    return orig.apply(this, arguments);
+    return orig.apply(this, args);
   };
 })();
 
-// Overrides console.assert() to count errors.
 /**
+ * Overrides console.assert() to count errors.
+ *
  * @param {boolean} condition If false, log a message and stack trace.
- * @param {...*} var_args Objects to.
+ * @param {...*} args Message and/or objects to be logged when condition is
+ * false.
  */
-console.assert = (function() {
-  var orig = console.assert;
-  return function(condition) {
+console.assert = (() => {
+  const orig = console.assert;
+  return (condition, ...args) => {
     if (!condition)
       window.JSErrorCount++;
-    return orig.apply(this, arguments);
+    return orig.apply(this, [condition].concat(args));
   };
 })();
 
 /**
- * Wraps the function to use it as a callback.
- * This does:
- *  - Capture the stack trace in case of error.
+ * Wraps the function to use it as a callback, adding:
+ *  - Stack trace of wrapping time, which better reveals the call site.
  *  - Bind this object
  *
- * @param {Object} thisObject Object to be used as this.
- * @return {Function} Wrapped function.
+ * @param {Object=} thisObject Object to be used as this.
+ * @param {...*} bindArgs Arguments to be bound with the wrapped function.
+ * @return {function(...)} Wrapped function.
  */
-Function.prototype.wrap = function(thisObject) {
-  var func = this;
-  var liveStack = (new Error('Stack trace before async call')).stack;
-  if (thisObject === undefined)
+Function.prototype.wrap = function(thisObject, ...bindArgs) {
+  const func = this;
+  const bindStack = (new Error('Stack trace before async call')).stack;
+  if (thisObject === undefined) {
     thisObject = null;
-
-  return function wrappedCallback() {
+  }
+  return function wrappedCallback(...args) {
     try {
-      return func.apply(thisObject, arguments);
+      const finalArgs = bindArgs.concat(args);
+      return func.apply(thisObject, finalArgs);
     } catch (e) {
-      console.error('Exception happens in callback.', liveStack);
-
-      window.JSErrorCount++;
+      // Log current exception and the stack for the binding time.
+      console.error(
+          e.stack || e,
+          'Exception happened in callback which was bound at:', bindStack);
       throw e;
     }
   };
 };
+
+})();
