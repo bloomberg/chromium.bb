@@ -56,9 +56,8 @@ TEST(ReopenTabInProductHelpTriggerTest, TriggersIPH) {
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissImmediately, &reopen_tab_iph));
 
-  auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
@@ -77,9 +76,8 @@ TEST(ReopenTabInProductHelpTriggerTest, RespectsBackendShouldTrigger) {
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissImmediately, &reopen_tab_iph));
 
-  auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
@@ -93,9 +91,8 @@ TEST(ReopenTabInProductHelpTriggerTest, TabNotActiveLongEnough) {
   base::SimpleTestTickClock clock;
   ReopenTabInProductHelpTrigger reopen_tab_iph(&mock_tracker, &clock);
 
-  auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration / 2);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration / 2);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 }
@@ -112,16 +109,14 @@ TEST(ReopenTabInProductHelpTriggerTest, RespectsTimeouts) {
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissImmediately, &reopen_tab_iph));
 
-  auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   clock.Advance(ReopenTabInProductHelpTrigger::kNewTabOpenedTimeout);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 
-  activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
   clock.Advance(ReopenTabInProductHelpTrigger::kOmniboxFocusedTimeout);
   reopen_tab_iph.OmniboxFocused();
@@ -146,17 +141,16 @@ TEST(ReopenTabInProductHelpTriggerTest, TriggersTwice) {
   reopen_tab_iph.SetShowHelpCallback(
       base::BindRepeating(DismissAndSetFlag, &reopen_tab_iph, &triggered));
 
-  auto activation_time = clock.NowTicks();
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 
   EXPECT_TRUE(triggered);
   triggered = false;
 
-  clock.Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
-  reopen_tab_iph.ActiveTabClosed(activation_time);
+  reopen_tab_iph.ActiveTabClosed(
+      ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
   reopen_tab_iph.NewTabOpened();
   reopen_tab_iph.OmniboxFocused();
 
