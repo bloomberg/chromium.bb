@@ -592,10 +592,8 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // Hosted apps use their app icon and shouldn't show a throbber.
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view()->browser())) {
+  if (browser_view()->IsBrowserTypeHostedApp())
     return false;
-  }
 
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to null check the selected
@@ -789,8 +787,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   } else {
     auto default_frame_header = std::make_unique<ash::DefaultFrameHeader>(
         frame(), this, caption_button_container_);
-    if (extensions::HostedAppBrowserController::
-            IsForExperimentalHostedAppBrowser(browser)) {
+    if (browser_view()->IsBrowserTypeHostedApp()) {
       SetUpForHostedApp(default_frame_header.get());
     } else if (!browser->is_app()) {
       default_frame_header->SetFrameColors(kMdWebUiFrameColor,
@@ -836,8 +833,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
     active_color = GetFrameColor(kActive);
     inactive_color = GetFrameColor(kInactive);
-  } else if (extensions::HostedAppBrowserController::
-                 IsForExperimentalHostedAppBrowser(browser_view()->browser())) {
+  } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
     frame_header_->set_button_color_mode(

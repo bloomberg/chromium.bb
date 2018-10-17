@@ -175,8 +175,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view->browser())) {
+  if (browser_view->IsBrowserTypeHostedApp()) {
     hosted_app_button_container_ = new HostedAppButtonContainer(
         frame, browser_view, GetReadableFrameForegroundColor(kActive),
         GetReadableFrameForegroundColor(kInactive));
@@ -659,8 +658,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 
 SkColor OpaqueBrowserFrameView::GetReadableFrameForegroundColor(
     ActiveState active_state) const {
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view()->browser())) {
+  if (browser_view()->IsBrowserTypeHostedApp()) {
     base::Optional<SkColor> theme_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
     if (theme_color)
