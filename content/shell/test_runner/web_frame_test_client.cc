@@ -520,7 +520,10 @@ void WebFrameTestClient::DidAddMessageToConsole(
       level = "MESSAGE";
   }
   std::string console_message(std::string("CONSOLE ") + level + ": ");
-  if (source_line) {
+  // Do not print line numbers if there is no associated source file name.
+  // TODO(crbug.com/896194): Figure out why the source line is flaky for empty
+  // source names.
+  if (!source_name.IsEmpty() && source_line) {
     console_message += base::StringPrintf("line %d: ", source_line);
   }
   // Console messages shouldn't be included in the expected output for
