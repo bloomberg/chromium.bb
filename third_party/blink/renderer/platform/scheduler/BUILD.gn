@@ -111,7 +111,6 @@ blink_platform_sources("scheduler") {
     "util/thread_cpu_throttler.h",
     "util/thread_load_tracker.cc",
     "util/thread_load_tracker.h",
-    "util/thread_type.h",
     "util/tracing_helper.cc",
     "util/tracing_helper.h",
     "worker/compositor_metrics_helper.cc",
