@@ -15,6 +15,10 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/access_token_info.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace identity {
 
 // Helper class to ease the task of obtaining an OAuth2 access token for a
@@ -52,6 +56,20 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
                      TokenCallback callback,
                      Mode mode);
 
+  // Instantiates a fetcher and immediately starts the process of obtaining an
+  // OAuth2 access token for |account_id| and |scopes|, allowing clients to pass
+  // a |url_loader_factory| of their choice. The |callback| is called
+  // once the request completes (successful or not). If the AccessTokenFetcher
+  // is destroyed before the process completes, the callback is not called.
+  AccessTokenFetcher(
+      const std::string& account_id,
+      const std::string& oauth_consumer_name,
+      OAuth2TokenService* token_service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const OAuth2TokenService::ScopeSet& scopes,
+      TokenCallback callback,
+      Mode mode);
+
   ~AccessTokenFetcher() override;
 
  private:
@@ -80,6 +98,7 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
 
   const std::string account_id_;
   OAuth2TokenService* token_service_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const OAuth2TokenService::ScopeSet scopes_;
   const Mode mode_;
 
