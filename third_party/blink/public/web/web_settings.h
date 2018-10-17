@@ -126,7 +126,6 @@ class WebSettings {
   virtual bool ShrinksViewportContentToFit() const = 0;
   virtual bool ViewportEnabled() const = 0;
   virtual void SetAccelerated2dCanvasMSAASampleCount(int) = 0;
-  virtual void SetAcceleratedCompositingEnabled(bool) = 0;
   virtual void SetPreferCompositingToLCDTextEnabled(bool) = 0;
   // Not implemented yet, see http://crbug.com/178119
   virtual void SetAcceleratedCompositingForTransitionEnabled(bool) {}

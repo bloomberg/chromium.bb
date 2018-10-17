@@ -473,10 +473,6 @@ void WebSettingsImpl::SetEditingBehavior(EditingBehavior behavior) {
   settings_->SetEditingBehaviorType(static_cast<EditingBehaviorType>(behavior));
 }
 
-void WebSettingsImpl::SetAcceleratedCompositingEnabled(bool enabled) {
-  settings_->SetAcceleratedCompositingEnabled(enabled);
-}
-
 void WebSettingsImpl::SetMockScrollbarsEnabled(bool enabled) {
   settings_->SetMockScrollbarsEnabled(enabled);
 }

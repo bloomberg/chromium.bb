@@ -343,16 +343,22 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
   SetVisibilityState(visibility_state, true);
 
+  // WebViews, and WebWidgets, are used to host a Page and present it via a
+  // WebLayerTreeView compositor. The WidgetClient() provides compositing
+  // support for the WebView.
+  // In some cases, a WidgetClient() is not provided, or it informs us that
+  // it won't be presenting content via a compositor. In that case we keep the
+  // Page in the loop so that it will paint all content into the root layer
+  // as multiple layers can only be used when compositing them together later.
+  //
   // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
   // but for various reasons, that's not the case... WebView plugin, printing,
   // workers, and tests don't use a compositor in their WebViews. Sometimes
   // they avoid the compositor by using a null client, and sometimes by having
   // the client return a null compositor. We should make things more consistent
   // and clear.
-  // For some reason this was not set when WidgetClient() is not provided,
-  // even though there will be no LayerTreeView in that case either.
-  if (WidgetClient() && WidgetClient()->AllowsBrokenNullLayerTreeView())
-    page_->GetSettings().SetAcceleratedCompositingEnabled(false);
+  if (WidgetClient() && !WidgetClient()->AllowsBrokenNullLayerTreeView())
+    page_->GetSettings().SetAcceleratedCompositingEnabled(true);
 
   dev_tools_emulator_ = DevToolsEmulator::Create(this);
 

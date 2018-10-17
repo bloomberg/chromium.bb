@@ -63,10 +63,6 @@ class LocalFrameClientImplTest : public testing::Test {
         .WillByDefault(Return(WebString()));
 
     helper_.Initialize(&web_frame_client_);
-    // FIXME: http://crbug.com/363843. This needs to find a better way to
-    // not create graphics layers.
-    helper_.GetWebView()->GetSettings()->SetAcceleratedCompositingEnabled(
-        false);
   }
 
   void TearDown() override {

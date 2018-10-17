@@ -156,7 +156,6 @@ class BrowserControlsSimTest : public SimTest {
 
     // Use settings that resemble the Android configuration.
     WebView().GetSettings()->SetViewportEnabled(true);
-    WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
     WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
     WebView().GetSettings()->SetViewportMetaEnabled(true);
     WebView().GetSettings()->SetViewportEnabled(true);

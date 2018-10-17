@@ -70,8 +70,7 @@ namespace blink {
 
 namespace {
 
-void configureAndroidCompositing(WebSettings* settings) {
-  settings->SetAcceleratedCompositingEnabled(true);
+void ConfigureAndroidCompositing(WebSettings* settings) {
   settings->SetPreferCompositingToLCDTextEnabled(true);
   settings->SetViewportMetaEnabled(true);
   settings->SetViewportEnabled(true);
@@ -1687,7 +1686,7 @@ TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
 TEST_P(VisualViewportTest, visualViewportIsInert) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
   web_view_impl->Resize(IntSize(200, 300));
 
@@ -2042,7 +2041,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
 
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2101,8 +2100,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   EXPECT_EQ(page_height, backgroundLayer->Size().height());
 }
 
-static void configureAndroidNonCompositing(WebSettings* settings) {
-  settings->SetAcceleratedCompositingEnabled(true);
+static void ConfigureAndroidNonCompositing(WebSettings* settings) {
   settings->SetPreferCompositingToLCDTextEnabled(false);
   settings->SetViewportMetaEnabled(true);
   settings->SetViewportEnabled(true);
@@ -2118,7 +2116,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &configureAndroidNonCompositing);
+      nullptr, nullptr, nullptr, &ConfigureAndroidNonCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2200,7 +2198,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2270,7 +2268,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
 
   int page_width = 320;
   int page_height = 590;
@@ -2401,7 +2399,6 @@ class VisualViewportSimTest : public SimTest {
 
     // Use settings that resemble the Android configuration.
     WebView().GetSettings()->SetViewportEnabled(true);
-    WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
     WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
     WebView().GetSettings()->SetViewportMetaEnabled(true);
     WebView().GetSettings()->SetViewportEnabled(true);

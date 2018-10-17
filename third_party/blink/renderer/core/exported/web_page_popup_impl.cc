@@ -280,6 +280,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 
   Settings& main_settings = web_view_->GetPage()->GetSettings();
   page_ = Page::Create(page_clients);
+  page_->GetSettings().SetAcceleratedCompositingEnabled(true);
   page_->GetSettings().SetScriptEnabled(true);
   page_->GetSettings().SetAllowScriptsToCloseWindows(true);
   page_->GetSettings().SetDeviceSupportsTouch(
