@@ -251,32 +251,4 @@ if (!is_ios && !is_android) {
       "//net:test_support",
     ]
   }
-
-  executable("cronet_sample") {
-    testonly = true
-    sources = [
-      "native/sample/main.cc",
-      "native/sample/sample_executor.cc",
-      "native/sample/sample_executor.h",
-      "native/sample/sample_url_request_callback.cc",
-      "native/sample/sample_url_request_callback.h",
-    ]
-    deps = [
-      "//components/cronet",
-      "//components/cronet/native:cronet_native_headers",
-    ]
-    if (is_linux && !is_component_build) {
-      public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
-    }
-  }
-
-  test("cronet_sample_test") {
-    sources = [
-      "native/sample/test/sample_test.cc",
-    ]
-    deps = [
-      ":cronet_sample",
-      "//testing/gtest:gtest",
-    ]
-  }
 }
