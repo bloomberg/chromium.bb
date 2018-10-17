@@ -38,24 +38,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
-          "--run-manual",
-          "--ui-test-action-max-timeout=350000",
-          "--test-launcher-jobs=1",
-          "--test-launcher-bot-mode",
-          "--test-launcher-print-test-stdio=always",
-          "--results-url=https://chromeperf.appspot.com",
-          "--perf-dashboard-id=browser_tests",
-          "--annotate=graphing",
-          "--perf-id=${buildername}"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--gtest_filter=WebRtcApprtcBrowserTest.*",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -159,24 +141,6 @@
   },
   "Mac Tester": {
     "gtest_tests": [
-      {
-        "args": [
-          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
-          "--run-manual",
-          "--ui-test-action-max-timeout=350000",
-          "--test-launcher-jobs=1",
-          "--test-launcher-bot-mode",
-          "--test-launcher-print-test-stdio=always",
-          "--results-url=https://chromeperf.appspot.com",
-          "--perf-dashboard-id=browser_tests",
-          "--annotate=graphing",
-          "--perf-id=${buildername}"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
       {
         "args": [
           "--gtest_filter=WebRtcApprtcBrowserTest.*",
@@ -285,24 +249,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
-          "--run-manual",
-          "--ui-test-action-max-timeout=350000",
-          "--test-launcher-jobs=1",
-          "--test-launcher-bot-mode",
-          "--test-launcher-print-test-stdio=always",
-          "--results-url=https://chromeperf.appspot.com",
-          "--perf-dashboard-id=browser_tests",
-          "--annotate=graphing",
-          "--perf-id=${buildername}"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--gtest_filter=WebRtcApprtcBrowserTest.*",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -399,24 +345,6 @@
   },
   "Win7 Tester": {
     "gtest_tests": [
-      {
-        "args": [
-          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
-          "--run-manual",
-          "--ui-test-action-max-timeout=350000",
-          "--test-launcher-jobs=1",
-          "--test-launcher-bot-mode",
-          "--test-launcher-print-test-stdio=always",
-          "--results-url=https://chromeperf.appspot.com",
-          "--perf-dashboard-id=browser_tests",
-          "--annotate=graphing",
-          "--perf-id=${buildername}"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
       {
         "args": [
           "--gtest_filter=WebRtcApprtcBrowserTest.*",
@@ -516,24 +444,6 @@
   "Win7 Tester (long-running)": {},
   "Win8 Tester": {
     "gtest_tests": [
-      {
-        "args": [
-          "--gtest_filter=WebRtcInternalsPerfBrowserTest.*:WebRtcStatsPerfBrowserTest.*:WebRtcVideoDisplayPerfBrowserTests*:WebRtcVideoQualityBrowserTests*:WebRtcWebcamBrowserTests*",
-          "--run-manual",
-          "--ui-test-action-max-timeout=350000",
-          "--test-launcher-jobs=1",
-          "--test-launcher-bot-mode",
-          "--test-launcher-print-test-stdio=always",
-          "--results-url=https://chromeperf.appspot.com",
-          "--perf-dashboard-id=browser_tests",
-          "--annotate=graphing",
-          "--perf-id=${buildername}"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
       {
         "args": [
           "--gtest_filter=WebRtcApprtcBrowserTest.*",
