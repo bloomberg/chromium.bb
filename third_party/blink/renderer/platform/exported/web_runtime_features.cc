@@ -64,6 +64,10 @@ void WebRuntimeFeatures::EnableFeatureFromString(const std::string& name,
   RuntimeEnabledFeatures::SetFeatureEnabledFromString(name, enable);
 }
 
+bool WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() {
+  return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
+}
+
 void WebRuntimeFeatures::EnableTestOnlyFeatures(bool enable) {
   RuntimeEnabledFeatures::SetTestFeaturesEnabled(enable);
 }
@@ -332,8 +336,8 @@ void WebRuntimeFeatures::EnableScriptedSpeech(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableSlimmingPaintV2(bool enable) {
-  RuntimeEnabledFeatures::SetSlimmingPaintV2Enabled(enable);
+bool WebRuntimeFeatures::IsSlimmingPaintV2Enabled() {
+  return RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
 }
 
 void WebRuntimeFeatures::EnableUserActivationV2(bool enable) {

@@ -2621,7 +2621,11 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.use_layer_lists = cmd.HasSwitch(cc::switches::kEnableLayerLists);
+  // Blink sends cc a layer list and property trees when either Blink Gen
+  // Property Trees or Slimming Paint V2 are enabled.
+  settings.use_layer_lists =
+      blink::WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() ||
+      blink::WebRuntimeFeatures::IsSlimmingPaintV2Enabled();
 
   // The means the renderer compositor has 2 possible modes:
   // - Threaded compositing with a scheduler.

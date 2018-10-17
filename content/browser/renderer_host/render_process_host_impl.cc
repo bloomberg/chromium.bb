@@ -2889,14 +2889,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   if (IsMainFrameBeforeActivationEnabled())
     command_line->AppendSwitch(cc::switches::kEnableMainFrameBeforeActivation);
-
-  // Slimming Paint v2 implies layer lists in the renderer.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSlimmingPaintV2) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBlinkGenPropertyTrees)) {
-    command_line->AppendSwitch(cc::switches::kEnableLayerLists);
-  }
 }
 
 void RenderProcessHostImpl::AppendRendererCommandLine(
@@ -3091,7 +3083,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableGpuBenchmarking,
-    cc::switches::kEnableLayerLists,
     cc::switches::kShowCompositedLayerBorders,
     cc::switches::kShowFPSCounter,
     cc::switches::kShowLayerAnimationBounds,

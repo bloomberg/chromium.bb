@@ -324,8 +324,8 @@ const char kEnablePreferCompositingToLCDText[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
-// A shorthand for adding both "--enable-blink-features=BlinkGenPropertyTrees"
-// and "--enable-layer-lists".
+// This is now an alias of "--enable-blink-features=BlinkGenPropertyTrees".
+// TODO(pdr): This flag is redundant and should be removed.
 const char kEnableBlinkGenPropertyTrees[] = "enable-blink-gen-property-trees";
 
 // Enables Web Platform features that are in development.
@@ -392,6 +392,8 @@ const char kEnableServiceBinaryLauncher[] = "enable-service-binary-launcher";
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
 // Enables slimming paint phase 2: https://www.chromium.org/blink/slimming-paint
+// This is now an alias of "--enable-blink-features=SlimmingPaintV2".
+// TODO(pdr): This flag is redundant should be removed.
 const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
 
 // On platforms that support it, enables smooth scroll animation.
