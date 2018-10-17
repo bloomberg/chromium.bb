@@ -408,6 +408,10 @@ if (is_component_ffmpeg) {
         "$target_gen_dir/ffmpeg.def",
       ]
     }
+
+    if (is_mac && !is_component_build) {
+      ldflags += [ "-Wl,-install_name,@rpath/libffmpeg.dylib" ]
+    }
   }
 } else {
   source_set("ffmpeg") {
