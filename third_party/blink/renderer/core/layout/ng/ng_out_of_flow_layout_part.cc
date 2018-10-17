@@ -74,7 +74,7 @@ void NGOutOfFlowLayoutPart::Run(LayoutBox* only_layout) {
     }
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
-    descendant_candidates.clear();
+    descendant_candidates.resize(0);
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
         &descendant_candidates, container_builder_->GetLayoutObject());
   }

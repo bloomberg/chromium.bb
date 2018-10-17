@@ -206,6 +206,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
           child_offset(child_offset_arg),
           is_line_relative(true),
           line_direction(line_direction_arg) {}
+
+    // This constructor is not meant to be called, but required so we can use
+    // Vector::resize(0).
+    NGOutOfFlowPositionedCandidate() {}
   };
 
   NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle>,

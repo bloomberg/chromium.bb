@@ -20,6 +20,10 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   DISALLOW_NEW();
 
  public:
+  // This constructor is not meant to be called, but required so we can use
+  // Vector::resize(0).
+  NGUnpositionedFloat() : node(nullptr) {}
+
   NGUnpositionedFloat(NGBlockNode node, const NGBlockBreakToken* token)
       : node(node), token(token) {}
 

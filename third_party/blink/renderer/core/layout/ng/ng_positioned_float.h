@@ -15,6 +15,10 @@ class NGLayoutResult;
 
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
+  // This constructor is not meant to be called, but required so we can use
+  // Vector::resize(0).
+  NGPositionedFloat() {}
+
   NGPositionedFloat(scoped_refptr<NGLayoutResult> layout_result,
                     const NGBfcOffset& bfc_offset);
   ~NGPositionedFloat();

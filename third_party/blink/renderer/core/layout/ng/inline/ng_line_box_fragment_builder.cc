@@ -26,8 +26,8 @@ NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
 NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() = default;
 
 void NGLineBoxFragmentBuilder::Reset() {
-  children_.clear();
-  offsets_.clear();
+  children_.resize(0);
+  offsets_.resize(0);
   metrics_ = NGLineHeightMetrics();
   size_.inline_size = LayoutUnit();
 }
