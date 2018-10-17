@@ -699,8 +699,36 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
   const VisiblePosition& end =
       EndOfParagraph(valid_pos, kCanSkipOverEditingBoundary);
   ABORT_EDITING_COMMAND_IF(end.IsNull());
-  MoveParagraph(start, end, VisiblePosition::BeforeNode(*placeholder),
-                editing_state, kPreserveSelection);
+  // Node* outer_block = start.DeepEquivalent().AnchorNode()->parentNode();
+  Node* const outer_block = HighestEnclosingNodeOfType(
+      start.DeepEquivalent(), &IsInline, kCanCrossEditingBoundary, nullptr);
+  MoveParagraphWithClones(
+      start, end, list_item_element,
+      outer_block ? outer_block : start.DeepEquivalent().AnchorNode(),
+      editing_state);
+  if (editing_state->IsAborted())
+    return;
+
+  RemoveNode(placeholder, editing_state);
+  if (editing_state->IsAborted())
+    return;
+
+  // Manually remove block_element because moveParagraphWithClones sometimes
+  // leaves it behind in the document. See the bug 33668 and
+  // editing/execCommand/insert-list-orphaned-item-with-nested-lists.html.
+  // FIXME: This might be a bug in moveParagraphWithClones or
+  // deleteSelection.
+  Node* const start_of_paragaph = start.DeepEquivalent().AnchorNode();
+  if (start_of_paragaph && start_of_paragaph->isConnected()) {
+    RemoveNode(start_of_paragaph, editing_state);
+    if (editing_state->IsAborted())
+      return;
+  }
+
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::FirstPositionInNode(*list_item_element))
+          .Build()));
 }
 
 void InsertListCommand::Trace(blink::Visitor* visitor) {
