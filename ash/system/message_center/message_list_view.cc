@@ -433,7 +433,7 @@ void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   if (need_update)
     DoUpdateIfPossible();
 
-  if (GetWidget())
+  if (GetWidget() && !GetWidget()->IsClosed())
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
@@ -483,7 +483,7 @@ void MessageListView::DoUpdateIfPossible() {
   adding_views_.clear();
   deleting_views_.clear();
 
-  if (!animator_.IsAnimating() && GetWidget())
+  if (!animator_.IsAnimating() && GetWidget() && !GetWidget()->IsClosed())
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
