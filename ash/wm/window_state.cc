@@ -484,6 +484,10 @@ void WindowState::OnRevertDrag(const gfx::Point& location) {
     delegate_->OnDragFinished(/*canceled=*/true, location);
 }
 
+display::Display WindowState::GetDisplay() {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+}
+
 void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
                                     int window_component,
                                     ::wm::WindowMoveSource source) {

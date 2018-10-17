@@ -18,6 +18,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_owner.h"
+#include "ui/display/display.h"
 #include "ui/gfx/animation/tween.h"
 
 namespace gfx {
@@ -337,6 +338,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
+
+  // Returns the Display that this WindowState is on.
+  display::Display GetDisplay();
 
   class TestApi {
    public:
