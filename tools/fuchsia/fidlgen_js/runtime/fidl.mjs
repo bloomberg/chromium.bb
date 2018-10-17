@@ -17,6 +17,9 @@ const $fidl__kAlignmentMask = 0x7;
 
 const $fidl__kLE = true;
 
+const $fidl__kUserspaceTxidMask = 0x7fffffff;
+var $fidl__nextTxid = 1;
+
 function $fidl__align(size) {
   return size + (($fidl__kAlignment - (size & $fidl__kAlignmentMask)) &
                  $fidl__kAlignmentMask);
@@ -40,6 +43,8 @@ function $fidl_Encoder(ordinal) {
  */
 $fidl_Encoder.prototype._encodeMessageHeader = function(ordinal) {
   this.alloc($fidl_kMessageHeaderSize);
+  var txid = $fidl__nextTxid++ & $fidl__kUserspaceTxidMask;
+  this.data.setUint32($fidl_kMessageTxidOffset, txid, $fidl__kLE);
   this.data.setUint32($fidl_kMessageOrdinalOffset, ordinal, $fidl__kLE);
 };
 
@@ -89,29 +94,61 @@ $fidl_Encoder.prototype.messageHandles = function() {
 };
 
 
+/**
+ * @constructor
+ * @param {Array} data
+ * @param {Array} handles
+ */
+function $fidl_Decoder(data, handles) {
+  this.data = data;
+  this.handles = handles;
+  this.nextOffset = 0;
+  this.nextHandle = 0;
+}
+
+/**
+ * @param {number} size
+ */
+$fidl_Decoder.prototype.claimMemory = function(size) {
+  var result = this.nextOffset;
+  this.nextOffset = $fidl__align(size);
+  return result;
+}
+
+$fidl_Decoder.prototype.claimHandle = function() {
+  return this.handles[this.nextHandle++];
+}
+
+
 // Type tables and encoding helpers for generated Proxy code.
 const _kTT_int8 = {
-  enc: function(e, o, v) { e.data.setInt8(o, v, $fidl__kLE); },
+  enc: function(e, o, v) { e.data.setInt8(o, v); },
+  dec: function(d, o) { return d.data.getInt8(o); },
 };
 
 const _kTT_int16 = {
   enc: function(e, o, v) { e.data.setInt16(o, v, $fidl__kLE); },
+  dec: function(d, o) { return d.data.getInt16(o, $fidl__kLE); },
 };
 
 const _kTT_int32 = {
   enc: function(e, o, v) { e.data.setUint32(o, v, $fidl__kLE); },
+  dec: function(d, o) { return d.data.getInt32(o, $fidl__kLE); },
 };
 
 const _kTT_uint8 = {
-  enc: function(e, o, v) { e.data.setUint8(o, v, $fidl__kLE); },
+  enc: function(e, o, v) { e.data.setUint8(o, v); },
+  dec: function(d, o) { return d.data.getUint8(o); },
 };
 
 const _kTT_uint16 = {
   enc: function(e, o, v) { e.data.setUint16(o, v, $fidl__kLE); },
+  dec: function(d, o) { return d.data.getUint16(o, $fidl__kLE); },
 };
 
 const _kTT_uint32 = {
   enc: function(e, o, v) { e.data.setUint32(o, v, $fidl__kLE); },
+  dec: function(d, o) { return d.data.getUint32(o, $fidl__kLE); },
 };
 
 const _kTT_String_Nonnull = {

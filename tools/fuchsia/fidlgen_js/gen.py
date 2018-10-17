@@ -222,7 +222,7 @@ function %(name)s() {}
                        for x in method.maybe_request]
         if len(param_names):
           self.f.write('/**\n')
-          # TODO(crbug.com/883496): Emit @param type comments here.
+          # TODO(crbug.com/883496): Emit @param and @return type comments.
           self.f.write(' */\n')
         self.f.write('%(name)s.prototype.%(method_name)s = '
                 'function(%(param_names)s) {};\n\n' % {
@@ -287,13 +287,42 @@ function %(proxy_name)s() {
         'offset': param.offset })
 
         self.f.write(
-'''  var $result = zx.channelWrite(this.channel,
-                                $encoder.messageData(),
-                                $encoder.messageHandles());
-  if ($result !== zx.ZX_OK) {
-    throw "zx.channelWrite failed: " + $result;
+'''  var $writeResult = zx.channelWrite(this.channel,
+                                     $encoder.messageData(),
+                                     $encoder.messageHandles());
+  if ($writeResult !== zx.ZX_OK) {
+    throw "zx.channelWrite failed: " + $writeResult;
   }
-};
+''')
+
+      if method.has_response:
+        self.f.write('''
+  return zx
+      .objectWaitOne(this.channel, zx.ZX_CHANNEL_READABLE, zx.ZX_TIME_INFINITE)
+      .then(() => new Promise(res => {
+          var $readResult = zx.channelRead(this.channel);
+          if ($readResult.status !== zx.ZX_OK) {
+            throw "channel read failed";
+          }
+
+          var $view = new DataView($readResult.data);
+
+          var $decoder = new $fidl_Decoder($view, []);
+          $decoder.claimMemory(%(size)s - $fidl_kMessageHeaderSize);
+''' % { 'size': method.maybe_response_size })
+        for param, ttname in zip(method.maybe_response, type_tables):
+          self.f.write(
+'''          var %(param_name)s = _kTT_%(type_table)s.dec($decoder, %(offset)s);
+''' % { 'type_table': ttname,
+        'param_name': _CompileIdentifier(param.name),
+        'offset': param.offset })
+
+        self.f.write('''
+          res(%(args)s);
+        }));
+''' % { 'args': ', '.join(x.name for x in method.maybe_response) })
+
+      self.f.write('''};
 
 ''')
 
