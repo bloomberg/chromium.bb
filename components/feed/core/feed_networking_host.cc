@@ -120,7 +120,7 @@ void NetworkFetch::StartAccessTokenFetch() {
 void NetworkFetch::AccessTokenFetchFinished(
     GoogleServiceAuthError error,
     identity::AccessTokenInfo access_token_info) {
-  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.TokenFetchStatus",
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Network.TokenFetchStatus",
                             error.state(), GoogleServiceAuthError::NUM_STATES);
   access_token_ = access_token_info.token;
   StartLoader();
@@ -218,7 +218,7 @@ void NetworkFetch::PopulateRequestBody(network::SimpleURLLoader* loader) {
   }
 
   UMA_HISTOGRAM_COUNTS_1M(
-      "ContentSuggestions.Feed.RequestSizeKB.Compressed",
+      "ContentSuggestions.Feed.Network.RequestSizeKB.Compressed",
       static_cast<int>(compressed_request_body.size() / 1024));
 }
 
@@ -242,13 +242,13 @@ void NetworkFetch::OnSimpleLoaderComplete(
     response_body.assign(begin, end);
   }
 
-  base::UmaHistogramSparse("ContentSuggestions.Feed.NetworkRequestStatusCode",
+  base::UmaHistogramSparse("ContentSuggestions.Feed.Network.RequestStatusCode",
                            status_code);
 
   // The below is true even if there is a protocol error, so this will
   // record response size as long as the request completed.
   if (status_code >= 200) {
-    UMA_HISTOGRAM_COUNTS_1M("ContentSuggestions.Feed.ResponseSizeKB",
+    UMA_HISTOGRAM_COUNTS_1M("ContentSuggestions.Feed.Network.ResponseSizeKB",
                             static_cast<int>(response_body.size() / 1024));
   }
 

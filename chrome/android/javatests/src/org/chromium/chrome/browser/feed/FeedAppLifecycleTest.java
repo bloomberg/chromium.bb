@@ -68,6 +68,8 @@ public class FeedAppLifecycleTest {
     private AppLifecycleListener mAppLifecycleListener;
     private ChromeTabbedActivity mActivity;
     private FeedAppLifecycle mAppLifecycle;
+    private final String mHistogramAppLifecycleEvents =
+            "ContentSuggestions.Feed.AppLifecycle.Events";
 
     @Before
     public void setUp() throws InterruptedException, TimeoutException {
@@ -101,8 +103,7 @@ public class FeedAppLifecycleTest {
             throws InterruptedException, TimeoutException {
         assertEquals(0,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents",
-                        AppLifecycleEvent.ENTER_BACKGROUND));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.ENTER_BACKGROUND));
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         signalActivityStop(mActivity);
         signalActivityStart(mActivity);
@@ -111,12 +112,10 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(2)).onEnterForeground();
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents",
-                        AppLifecycleEvent.ENTER_BACKGROUND));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.ENTER_BACKGROUND));
         assertEquals(2,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents",
-                        AppLifecycleEvent.ENTER_FOREGROUND));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.ENTER_FOREGROUND));
     }
 
     @Test
@@ -134,8 +133,7 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(1)).initialize();
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents",
-                        AppLifecycleEvent.INITIALIZE));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.INITIALIZE));
     }
 
     @Test
@@ -148,7 +146,7 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(1)).onClearAll();
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents", AppLifecycleEvent.CLEAR_ALL));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
     }
 
     @Test
@@ -161,7 +159,7 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(1)).onClearAll();
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents", AppLifecycleEvent.CLEAR_ALL));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
     }
 
     @Test
@@ -174,7 +172,7 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(1)).onClearAll();
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents", AppLifecycleEvent.CLEAR_ALL));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
     }
 
     @Test
@@ -187,7 +185,7 @@ public class FeedAppLifecycleTest {
         verify(mAppLifecycleListener, times(1)).onClearAll();
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        "ContentSuggestions.Feed.AppLifecycleEvents", AppLifecycleEvent.CLEAR_ALL));
+                        mHistogramAppLifecycleEvents, AppLifecycleEvent.CLEAR_ALL));
     }
 
     @Test

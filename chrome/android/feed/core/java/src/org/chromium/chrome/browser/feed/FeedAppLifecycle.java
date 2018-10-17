@@ -184,7 +184,7 @@ public class FeedAppLifecycle
     }
 
     private void reportEvent(@AppLifecycleEvent int event) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "ContentSuggestions.Feed.AppLifecycleEvents", event, AppLifecycleEvent.NUM_ENTRIES);
+        RecordHistogram.recordEnumeratedHistogram("ContentSuggestions.Feed.AppLifecycle.Events",
+                event, AppLifecycleEvent.NUM_ENTRIES);
     }
 }
