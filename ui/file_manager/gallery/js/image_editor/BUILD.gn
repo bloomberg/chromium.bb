@@ -47,7 +47,7 @@ js_library("exif_encoder") {
   externs_list = [ "../../../externs/exif_entry.js" ]
 }
 
-js_library("exif_encoder_unittest") {
+js_unittest("exif_encoder_unittest") {
   deps = [
     ":exif_encoder",
     ":test_util",
@@ -120,7 +120,7 @@ js_library("image_encoder") {
   ]
 }
 
-js_library("image_encoder_unittest") {
+js_unittest("image_encoder_unittest") {
   deps = [
     ":image_encoder",
     ":test_util",
@@ -179,7 +179,7 @@ js_library("image_view") {
   ]
 }
 
-js_library("image_view_unittest") {
+js_unittest("image_view_unittest") {
   deps = [
     ":image_view",
     "..:mock_gallery_item",
@@ -207,6 +207,7 @@ js_unit_tests("unit_tests") {
 }
 
 group("closure_compile") {
+  testonly = true
   deps = [
     ":closure_compile_module",
     ":unit_tests_type_check",

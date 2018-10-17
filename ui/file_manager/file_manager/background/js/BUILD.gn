@@ -19,6 +19,7 @@ related_apps = [
 ]
 
 group("closure_compile") {
+  testonly = true
   deps = [
     ":closure_compile_module",
     ":unit_tests_type_check",
@@ -305,7 +306,7 @@ js_library("volume_manager_factory") {
   ]
 }
 
-js_library("volume_manager_unittest") {
+js_unittest("volume_manager_unittest") {
   deps = [
     ":volume_manager_factory",
     "//ui/file_manager/base/js:mock_chrome",

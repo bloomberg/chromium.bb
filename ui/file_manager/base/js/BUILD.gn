@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 visibility = [ "//ui/file_manager/*" ]
 
 group("closure_compile") {
+  testonly = true
   deps = [
     ":closure_compile_module",
     ":test_support_type_check",
@@ -21,6 +22,7 @@ js_type_check("closure_compile_module") {
 }
 
 js_type_check("test_support_type_check") {
+  testonly = true
   deps = [
     ":mock_chrome",
     ":test_error_reporting",
@@ -45,9 +47,11 @@ js_library("filtered_volume_manager") {
 }
 
 js_library("mock_chrome") {
+  testonly = true
 }
 
 js_library("test_error_reporting") {
+  testonly = true
   deps = [
     # Note we allow targets depending on test_error_reporting to access
     # webui_resource_test transitively.

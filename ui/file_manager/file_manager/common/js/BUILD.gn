@@ -9,6 +9,7 @@ import("//third_party/closure_compiler/js_unit_tests.gni")
 visibility = [ "//ui/file_manager/*" ]
 
 group("closure_compile") {
+  testonly = true
   deps = [
     ":closure_compile_module",
     ":test_support_type_check",
@@ -34,6 +35,7 @@ js_type_check("closure_compile_module") {
 }
 
 js_type_check("test_support_type_check") {
+  testonly = true
   deps = [
     ":test_importer_common",
     ":unittest_util",
@@ -43,7 +45,7 @@ js_type_check("test_support_type_check") {
 js_library("async_util") {
 }
 
-js_library("async_util_unittest") {
+js_unittest("async_util_unittest") {
   deps = [
     ":async_util",
     "//ui/file_manager/base/js:test_error_reporting",
@@ -57,7 +59,7 @@ js_library("files_app_entry_types") {
   externs_list = [ "../../../externs/volume_info.js" ]
 }
 
-js_library("files_app_entry_types_unittest") {
+js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
     ":volume_manager_common",
@@ -91,6 +93,7 @@ js_library("importer_common") {
 }
 
 js_library("test_importer_common") {
+  testonly = true
   deps = [
     ":importer_common",
     ":unittest_util",
@@ -100,7 +103,7 @@ js_library("test_importer_common") {
   visibility = [ "//ui/file_manager/file_manager/*" ]
 }
 
-js_library("importer_common_unittest") {
+js_unittest("importer_common_unittest") {
   deps = [
     ":mock_entry",
     ":test_importer_common",
@@ -113,7 +116,7 @@ js_library("importer_common_unittest") {
 js_library("lru_cache") {
 }
 
-js_library("lru_cache_unittest") {
+js_unittest("lru_cache_unittest") {
   deps = [
     ":lru_cache",
     "//ui/webui/resources/js:webui_resource_test",
@@ -151,7 +154,7 @@ js_library("mock_entry") {
 js_library("progress_center_common") {
 }
 
-js_library("unittest_util") {
+js_unittest("unittest_util") {
   # Only files app tests use this util file.
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
@@ -179,7 +182,7 @@ js_library("util") {
   ]
 }
 
-js_library("util_unittest") {
+js_unittest("util_unittest") {
   deps = [
     ":mock_entry",
     ":util",
