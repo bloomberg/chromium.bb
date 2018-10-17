@@ -1202,7 +1202,8 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   var entry = this.getCurrentDirEntry();
   if (entry && !this.volumeManager_.getVolumeInfo(entry)) {
     this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
-      this.changeDirectoryEntry(displayRoot);
+      if (displayRoot)
+        this.changeDirectoryEntry(displayRoot);
     }.bind(this));
   }
 
