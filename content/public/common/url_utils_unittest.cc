@@ -43,6 +43,8 @@ TEST(UrlUtilsTest, IsSafeRedirectTarget) {
       GURL(), CreateValidURL("filesystem:http://foo.com/bar")));
   EXPECT_FALSE(
       IsSafeRedirectTarget(GURL(), CreateValidURL("data:text/plain,foo")));
+  EXPECT_FALSE(
+      IsSafeRedirectTarget(GURL(), CreateValidURL("blob:https://foo.com/bar")));
 #if defined(OS_ANDROID)
   EXPECT_FALSE(
       IsSafeRedirectTarget(GURL(), CreateValidURL("content://foo.bar")));
