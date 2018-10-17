@@ -137,20 +137,20 @@ TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
 
   GURL url(kChromeUINewTabURL);
   web::FakeNavigationContext context;
-  test_navigation_manager_->GetPendingItem()->SetURL(url);
+  context.SetUrl(url);
   test_web_state_.OnNavigationStarted(&context);
   EXPECT_TRUE(tab_helper()->IsActive());
 
   GURL not_ntp_url(kTestURL);
-  test_navigation_manager_->GetPendingItem()->SetURL(not_ntp_url);
+  context.SetUrl(not_ntp_url);
   test_web_state_.OnNavigationStarted(&context);
   EXPECT_FALSE(tab_helper()->IsActive());
 
-  test_navigation_manager_->GetPendingItem()->SetURL(url);
+  context.SetUrl(url);
   test_web_state_.OnNavigationStarted(&context);
   EXPECT_TRUE(tab_helper()->IsActive());
 
-  test_navigation_manager_->GetPendingItem()->SetURL(not_ntp_url);
+  context.SetUrl(not_ntp_url);
   test_web_state_.OnNavigationStarted(&context);
   EXPECT_FALSE(tab_helper()->IsActive());
 }

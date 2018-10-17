@@ -49,6 +49,11 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // Returns the current NTP controller.
   id<NewTabPageOwning> GetController() const;
 
+  // Disables this tab helper.  This is useful when navigating away from an NTP,
+  // so the tab helper can be disabled immediately, and before any potential
+  // WebStateObserver callback.
+  void Deactivate();
+
   // Returns the UIViewController for the current NTP.
   // TODO(crbug.com/826369): Currently there's a 1:1 relationship between the
   // webState and the NTP, so we can't delegate this coordinator to the BVC.
@@ -76,6 +81,9 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   void DidStartNavigation(web::WebState* web_state,
                           web::NavigationContext* navigation_context) override;
 
+  // Enable or disable the tab helper.
+  void SetActive(bool active);
+
   // The Objective-C NTP coordinator instance.
   // TODO(crbug.com/826369): Currently there's a 1:1 relationship between the
   // webState and the NTP, so we can't delegate this coordinator to the BVC.
@@ -84,6 +92,9 @@ class NewTabPageTabHelper : public web::WebStateObserver,
 
   // Used to present and dismiss the NTP.
   __weak id<NewTabPageTabHelperDelegate> delegate_ = nil;
+
+  // The WebState with which this object is associated.
+  web::WebState* web_state_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageTabHelper);
 };
