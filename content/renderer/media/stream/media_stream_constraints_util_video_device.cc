@@ -30,9 +30,6 @@ using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
 // device ID, noise reduction, resolution and frame rate.
 const int kNumDefaultDistanceEntries = 4;
 
-// The minimum aspect ratio to be supported by sources.
-const double kMinSourceAspectRatio = 0.05;
-
 // VideoKind enum values. See https://w3c.github.io/mediacapture-depth.
 const char kVideoKindColor[] = "color";
 const char kVideoKindDepth[] = "depth";
@@ -213,12 +210,10 @@ void GetSourceAspectRatioRange(const ConstrainedFormat& constrained_format,
 
   *min_source_aspect_ratio = std::max(
       constrained_format.MinAspectRatio(),
-      std::max(static_cast<double>(min_width) / static_cast<double>(max_height),
-               kMinSourceAspectRatio));
+      static_cast<double>(min_width) / static_cast<double>(max_height));
   *max_source_aspect_ratio = std::min(
       constrained_format.MaxAspectRatio(),
-      std::max(static_cast<double>(max_width) / static_cast<double>(min_height),
-               kMinSourceAspectRatio));
+      static_cast<double>(max_width) / static_cast<double>(min_height));
 }
 
 // Returns a custom distance between a string and a string constraint.
