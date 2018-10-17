@@ -22,6 +22,9 @@ cr.define('multidevice_setup', function() {
 
     /** @return {boolean} */
     shouldExitSetupFlowAfterSettingHost() {}
+
+    /** @return {string} */
+    getStartSetupCancelButtonTextId() {}
   }
 
   return {

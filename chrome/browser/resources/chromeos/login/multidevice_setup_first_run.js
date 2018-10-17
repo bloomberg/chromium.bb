@@ -45,6 +45,11 @@ cr.define('multidevice_setup', function() {
     shouldExitSetupFlowAfterSettingHost() {
       return true;
     }
+
+    /** @override */
+    getStartSetupCancelButtonTextId() {
+      return 'noThanks';
+    }
   }
 
   const MultiDeviceSetupFirstRun = Polymer({

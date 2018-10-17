@@ -15,7 +15,7 @@ Polymer({
     /** Overridden from UiPageContainerBehavior. */
     cancelButtonTextId: {
       type: String,
-      value: 'cancel',
+      computed: 'getCancelButtonTextId_(delegate)',
     },
 
     /** Overridden from UiPageContainerBehavior. */
@@ -53,6 +53,12 @@ Polymer({
       type: String,
       notify: true,
     },
+
+    /**
+     * Delegate object which performs differently in OOBE vs. non-OOBE mode.
+     * @type {!multidevice_setup.MultiDeviceSetupDelegate}
+     */
+    delegate: Object,
   },
 
   behaviors: [
@@ -81,6 +87,15 @@ Polymer({
       helpArticleLinks[i].onclick = this.fire.bind(
           this, 'open-learn-more-webview-requested', helpArticleLinks[i].href);
     }
+  },
+
+  /**
+   * @param {!multidevice_setup.MultiDeviceSetupDelegate} delegate
+   * @return {string} The cancel button text ID, dependent on OOBE vs. non-OOBE.
+   * @private
+   */
+  getCancelButtonTextId_: function(delegate) {
+    return this.delegate.getStartSetupCancelButtonTextId();
   },
 
   /**

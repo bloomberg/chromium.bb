@@ -46,6 +46,11 @@ cr.define('multidevice_setup', () => {
     shouldExitSetupFlowAfterSettingHost() {
       return this.shouldExitSetupFlowAfterSettingHost_;
     }
+
+    /** @override */
+    getStartSetupCancelButtonTextId() {
+      return 'cancel';
+    }
   }
 
   /** @implements {multidevice_setup.MojoInterfaceProvider} */
