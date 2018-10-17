@@ -218,8 +218,7 @@ public class SiteSettingsPreferencesTest {
                 websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
                 Assert.assertEquals(
                         "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                        !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(),
-                        enabled);
+                        PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(), enabled);
             }
         });
     }

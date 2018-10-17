@@ -476,7 +476,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     mCategory.getContentSettingsType(), setting.toInt());
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            prefServiceBridge.setBlockThirdPartyCookiesEnabled(!((boolean) newValue));
+            prefServiceBridge.setBlockThirdPartyCookiesEnabled(((boolean) newValue));
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
             prefServiceBridge.setNotificationsVibrateEnabled((boolean) newValue);
         }
@@ -873,7 +873,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(
-                !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
+                PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
         thirdPartyCookiesPref.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(
                 ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES));
         thirdPartyCookiesPref.setManagedPreferenceDelegate(
