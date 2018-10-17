@@ -474,6 +474,16 @@ app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_.state_fullscreen();
 }
 
+void AppListControllerImpl::OnWindowDragStarted() {
+  in_window_dragging_ = true;
+  UpdateHomeLauncherVisibility();
+}
+
+void AppListControllerImpl::OnWindowDragEnded() {
+  in_window_dragging_ = false;
+  UpdateHomeLauncherVisibility();
+}
+
 void AppListControllerImpl::FlushForTesting() {
   bindings_.FlushForTesting();
 }
@@ -848,7 +858,7 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
 
   const bool in_overview =
       Shell::Get()->window_selector_controller()->IsSelecting();
-  if (in_wallpaper_preview_ || in_overview)
+  if (in_wallpaper_preview_ || in_overview || in_window_dragging_)
     presenter_.GetWindow()->Hide();
   else
     presenter_.GetWindow()->Show();
