@@ -720,8 +720,8 @@ const char kNPAPIPluginsNotSupported[] = "NPAPI plugins are not supported.";
 const char kOneUISurfaceOnly[] =
     "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
 const char kPermissionMarkedOptionalAndRequired[] =
-    "Permission '*' cannot be specified as both required and optional in the "
-    "manifest; this permission will be treated as required.";
+    "Optional permission '*' is redundant with the required permissions;"
+    "this permission will be omitted.";
 const char kPermissionMustBeOptional[] =
     "Permission '*' must be specified in the optional section of the manifest.";
 const char kPermissionNotAllowed[] =
