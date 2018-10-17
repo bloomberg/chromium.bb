@@ -382,6 +382,9 @@ const IDNTestCase idn_cases[] = {
     // музей (museum in Russian) has characters without a Latin-look-alike.
     {"xn--e1adhj9a.com", L"\x043c\x0443\x0437\x0435\x0439.com", true},
 
+    // ѕсоԗе.com is Cyrillic with Latin lookalikes.
+    {"xn--e1ari3f61c.com", L"\x0455\x0441\x043e\x0517\x0435.com", false},
+
     // Combining Diacritic marks after a script other than Latin-Greek-Cyrillic
     {"xn--rsa2568fvxya.com", L"\xd55c\x0301\xae00.com", false},  // 한́글.com
     {"xn--rsa0336bjom.com", L"\x6f22\x0307\x5b57.com", false},   // 漢̇字.com
