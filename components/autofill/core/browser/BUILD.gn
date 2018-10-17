@@ -577,6 +577,7 @@ fuzzer_test("form_structure_fuzzer") {
     "form_structure_fuzzer.cc",
   ]
   deps = [
+    # TODO(crbug.com/896313): Reduce the dependency on "browser".
     ":browser",
     "//base:base",
     "//components/autofill/core/common:common",
@@ -600,6 +601,7 @@ if (use_libfuzzer) {
       "form_structure_process_query_response_fuzzer.cc",
     ]
     deps = [
+      # TODO(crbug.com/896313): Reduce the dependency on "browser".
       ":browser",
       "//base:base",
       "//components/autofill/core/browser/proto",
@@ -618,4 +620,20 @@ if (use_libfuzzer) {
       "//third_party/libprotobuf-mutator",
     ]
   }
+}
+
+fuzzer_test("autofill_phone_number_i18n_fuzzer") {
+  sources = [
+    "phone_number_i18n_fuzzer.cc",
+  ]
+
+  deps = [
+    # TODO(crbug.com/896313): Reduce the dependency on "browser".
+    ":browser",
+    "//base",
+    "//base:i18n",
+    "//third_party/libphonenumber",
+  ]
+
+  dict = "phone_number_i18n_fuzzer.dict"
 }
