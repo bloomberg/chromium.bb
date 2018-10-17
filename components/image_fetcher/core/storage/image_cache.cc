@@ -4,6 +4,7 @@
 
 #include "components/image_fetcher/core/storage/image_cache.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -74,10 +75,12 @@ void ImageCache::SaveImage(std::string url, std::string image_data) {
   QueueOrStartRequest(std::move(request));
 }
 
-void ImageCache::LoadImage(std::string url, ImageDataCallback callback) {
+void ImageCache::LoadImage(bool read_only,
+                           std::string url,
+                           ImageDataCallback callback) {
   base::OnceClosure request =
       base::BindOnce(&ImageCache::LoadImageImpl, weak_ptr_factory_.GetWeakPtr(),
-                     url, std::move(callback));
+                     read_only, url, std::move(callback));
   QueueOrStartRequest(std::move(request));
 }
 
@@ -148,12 +151,15 @@ void ImageCache::SaveImageImpl(const std::string& url, std::string image_data) {
   metadata_store_->SaveImageMetadata(key, length);
 }
 
-void ImageCache::LoadImageImpl(const std::string& url,
+void ImageCache::LoadImageImpl(bool read_only,
+                               const std::string& url,
                                ImageDataCallback callback) {
   std::string key = HashUrlToKey(url);
 
   data_store_->LoadImage(key, std::move(callback));
-  metadata_store_->UpdateImageMetadata(key);
+  if (!read_only) {
+    metadata_store_->UpdateImageMetadata(key);
+  }
 }
 
 void ImageCache::DeleteImageImpl(const std::string& url) {

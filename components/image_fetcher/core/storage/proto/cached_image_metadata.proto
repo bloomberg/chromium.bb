@@ -15,7 +15,8 @@ message CachedImageMetadataProto {
   // The time which the entry was created at. Used for garbage collection.
   optional int64 creation_time = 2;
 
-  // The time which the entry was last used. Used for LRU eviction.
+  // The time which the entry was last used. Used for LRU eviction. This time
+  // won't always be updated, such as if the cache is in a read-only mode.
   optional int64 last_used_time = 3;
 
   // Size of the image data. Used to decide when to stop evictions after a

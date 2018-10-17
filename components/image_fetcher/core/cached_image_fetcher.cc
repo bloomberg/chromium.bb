@@ -87,9 +87,11 @@ void CachedImageFetcher::ReportEvent(CachedImageFetcherEvent event) {
 
 CachedImageFetcher::CachedImageFetcher(
     std::unique_ptr<ImageFetcher> image_fetcher,
-    scoped_refptr<ImageCache> image_cache)
+    scoped_refptr<ImageCache> image_cache,
+    bool read_only)
     : image_fetcher_(std::move(image_fetcher)),
       image_cache_(image_cache),
+      read_only_(read_only),
       weak_ptr_factory_(this) {
   DCHECK(image_fetcher_);
   DCHECK(image_cache_);
@@ -124,7 +126,7 @@ void CachedImageFetcher::FetchImageAndData(
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   // First, try to load the image from the cache, then try the network.
   image_cache_->LoadImage(
-      image_url.spec(),
+      read_only_, image_url.spec(),
       base::BindOnce(&CachedImageFetcher::OnImageFetchedFromCache,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(), id,
                      image_url, std::move(data_callback),
@@ -255,8 +257,10 @@ void CachedImageFetcher::EncodeDataAndCache(const GURL& image_url,
     return;
   }
 
-  image_cache_->SaveImage(
-      image_url.spec(), std::string(encoded_data.begin(), encoded_data.end()));
+  if (!read_only_) {
+    image_cache_->SaveImage(image_url.spec(), std::string(encoded_data.begin(),
+                                                          encoded_data.end()));
+  }
 }
 
 }  // namespace image_fetcher

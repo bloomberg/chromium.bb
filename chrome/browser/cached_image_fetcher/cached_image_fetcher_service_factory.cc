@@ -85,7 +85,6 @@ KeyedService* CachedImageFetcherServiceFactory::BuildServiceInstanceFor(
       std::make_unique<ImageDataStoreDisk>(cache_path, task_runner);
 
   Profile* profile = Profile::FromBrowserContext(context);
-  // TODO(wylieb): Start in read-only mode if user is incognito.
   scoped_refptr<ImageCache> image_cache = base::MakeRefCounted<ImageCache>(
       std::move(data_store), std::move(metadata_store), profile->GetPrefs(),
       clock, task_runner);
@@ -96,7 +95,8 @@ KeyedService* CachedImageFetcherServiceFactory::BuildServiceInstanceFor(
 
   return new CachedImageFetcherService(
       base::BindRepeating(CreateImageDecoderImpl),
-      std::move(url_loader_factory), std::move(image_cache));
+      std::move(url_loader_factory), std::move(image_cache),
+      context->IsOffTheRecord());
 }
 
 content::BrowserContext*

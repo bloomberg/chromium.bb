@@ -44,8 +44,9 @@ class ImageCache : public base::RefCounted<ImageCache> {
   void SaveImage(std::string url, std::string image_data);
 
   // Loads the image data for the |url| and passes it to |callback|. If there's
-  // no image in the cache, then an empty string is returned.
-  void LoadImage(std::string url, ImageDataCallback callback);
+  // no image in the cache, then an empty string is returned. If |read_only|
+  // is true, then the cache metadata won't be updated.
+  void LoadImage(bool read_only, std::string url, ImageDataCallback callback);
 
   // Deletes the image data for the |url|.
   void DeleteImage(std::string url);
@@ -67,7 +68,9 @@ class ImageCache : public base::RefCounted<ImageCache> {
   // Saves the |image_data| for |url|.
   void SaveImageImpl(const std::string& url, std::string image_data);
   // Loads the data for |url|, calls the user back before updating metadata.
-  void LoadImageImpl(const std::string& url, ImageDataCallback callback);
+  void LoadImageImpl(bool read_only,
+                     const std::string& url,
+                     ImageDataCallback callback);
   // Deletes the data for |url|.
   void DeleteImageImpl(const std::string& url);
 

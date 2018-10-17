@@ -46,7 +46,8 @@ enum class CachedImageFetcherEvent {
 // TODO(wylieb): Transcode the image once it's downloaded.
 // TODO(wylieb): Consider creating a struct to encapsulate the request.
 // CachedImageFetcher takes care of fetching images from the network and caching
-// them.
+// them. Has a read-only mode which doesn't perform write operations on the
+// cache.
 class CachedImageFetcher : public ImageFetcher {
  public:
   // Report CachedImageFetcher events, used by sub-systems to report events (as
@@ -54,7 +55,8 @@ class CachedImageFetcher : public ImageFetcher {
   static void ReportEvent(CachedImageFetcherEvent event);
 
   CachedImageFetcher(std::unique_ptr<ImageFetcher> image_fetcher,
-                     scoped_refptr<ImageCache> image_cache);
+                     scoped_refptr<ImageCache> image_cache,
+                     bool read_only);
   ~CachedImageFetcher() override;
 
   // ImageFetcher:
@@ -112,11 +114,17 @@ class CachedImageFetcher : public ImageFetcher {
                             const RequestMetadata& request_metadata);
   void EncodeDataAndCache(const GURL& image_url, const gfx::Image& image);
 
-  // ImageFetcher has some state that's stored, so it's owned by
-  // CachedImageFetcher.
+  // Whether the ImageChache is allowed to be modified in any way from requests
+  // made by this CachedImageFetcher. This includes updating last used times,
+  // writing new data to the cache, or cleaning up unreadable data. Note that
+  // the ImageCache may still decide to perform eviction/reconciliation even
+  // when only read only CachedImageFetchers are using it.
   std::unique_ptr<ImageFetcher> image_fetcher_;
 
   scoped_refptr<ImageCache> image_cache_;
+
+  // When true, read the cache as write-only. Used for when users are incognito.
+  bool read_only_;
 
   gfx::Size desired_image_frame_size_;
 

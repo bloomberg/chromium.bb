@@ -33,7 +33,8 @@ class CachedImageFetcherService : public KeyedService {
   explicit CachedImageFetcherService(
       CreateImageDecoderCallback create_image_decoder_callback,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      scoped_refptr<ImageCache> image_cache);
+      scoped_refptr<ImageCache> image_cache,
+      bool read_only);
   ~CachedImageFetcherService() override;
 
   // Create an instance of CachedImageFetcher based on the ImageCache.
@@ -43,6 +44,10 @@ class CachedImageFetcherService : public KeyedService {
   CreateImageDecoderCallback create_image_decoder_callback_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<ImageCache> image_cache_;
+
+  // If true, the CachedImageFetcher will be started in read-only mode. Read-
+  // only mode doesn't perform write operations on the cache.
+  bool read_only_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherService);
 };
