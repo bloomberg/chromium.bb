@@ -2288,31 +2288,8 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'browser_tests': {
-        'args': [
-          # TODO(crbug.com/888429): Move to filter file once these are swarmed.
-          ('--gtest_filter='
-           'WebRtcInternalsPerfBrowserTest.*:'
-           'WebRtcStatsPerfBrowserTest.*:'
-           'WebRtcVideoDisplayPerfBrowserTests*:'
-           'WebRtcVideoQualityBrowserTests*:'
-           'WebRtcWebcamBrowserTests*'),
-          '--run-manual',
-          '--ui-test-action-max-timeout=350000',
-          '--test-launcher-jobs=1',
-          '--test-launcher-bot-mode',
-          '--test-launcher-print-test-stdio=always',
-          '--results-url=https://chromeperf.appspot.com',
-          '--perf-dashboard-id=browser_tests',
-          '--annotate=graphing',
-          '--perf-id=${buildername}',
-          # TODO(phoglund): figure out if we need this and implement webrtc_got_rev in that case.
-          # '--perf-config={"a_default_rev": "r_webrtc_git", "r_webrtc_git":${webrtc_got_rev}}',
-          ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
+      # TODO(crbug.com/888429): move performance browser tests here once
+      # they successfully upload perf results.
     },
 
     'webrtc_chromium_gtests': {
