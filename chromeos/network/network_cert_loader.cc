@@ -342,6 +342,9 @@ void NetworkCertLoader::OnCertCacheUpdated() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "OnCertCacheUpdated";
 
+  if (is_shutting_down_)
+    return;
+
   // If user_cert_cache_ has access to system certificates and it has already
   // finished its initial load, it will contain system certificates which we can
   // filter.
@@ -398,6 +401,9 @@ void NetworkCertLoader::StoreCertsFromCache(
 
 void NetworkCertLoader::UpdateCertificates() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (is_shutting_down_)
+    return;
 
   // Only trigger a notification to observers if one of the |CertCache|s has
   // already loaded certificates. Don't trigger notifications if policy-provided
