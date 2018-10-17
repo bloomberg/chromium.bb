@@ -5,11 +5,12 @@
 # found in the LICENSE file.
 
 import argparse
-from fidl import *
+import fidl
 import json
 
 
 class _CompoundIdentifier(object):
+
   def __init__(self, library, name):
     self.library = library
     self.name = name
@@ -45,20 +46,20 @@ def _CompileIdentifier(ident):
 
 def _JsTypeForPrimitiveType(t):
   mapping = {
-    IntegerType.INT16: 'number',
-    IntegerType.INT32: 'number',
-    IntegerType.INT64: 'BigInt',
-    IntegerType.INT8: 'number',
-    IntegerType.UINT16: 'number',
-    IntegerType.UINT32: 'number',
-    IntegerType.UINT64: 'BigInt',
-    IntegerType.UINT8: 'number',
+      fidl.IntegerType.INT16: 'number',
+      fidl.IntegerType.INT32: 'number',
+      fidl.IntegerType.INT64: 'BigInt',
+      fidl.IntegerType.INT8: 'number',
+      fidl.IntegerType.UINT16: 'number',
+      fidl.IntegerType.UINT32: 'number',
+      fidl.IntegerType.UINT64: 'BigInt',
+      fidl.IntegerType.UINT8: 'number',
   }
   return mapping[t]
 
 
 def _InlineSizeOfType(t):
-  if t.kind == TypeKind.PRIMITIVE:
+  if t.kind == fidl.TypeKind.PRIMITIVE:
     return {
         'int16': 2,
         'int32': 4,
@@ -68,39 +69,40 @@ def _InlineSizeOfType(t):
         'uint32': 4,
         'uint64': 8,
         'uint8': 1,
-        }[t.subtype]
+    }[t.subtype]
   else:
     raise NotImplementedError()
 
 
 def _CompileConstant(val):
-  if val.kind == ConstantKind.IDENTIFIER:
+  if val.kind == fidl.ConstantKind.IDENTIFIER:
     raise NotImplementedError()
-  elif val.kind == ConstantKind.LITERAL:
+  elif val.kind == fidl.ConstantKind.LITERAL:
     return _CompileLiteral(val.literal)
   else:
     raise Exception('unexpected kind')
 
 
 def _CompileLiteral(val):
-  if val.kind == LiteralKind.STRING:
+  if val.kind == fidl.LiteralKind.STRING:
     # TODO(crbug.com/883496): This needs to encode the string in an escaped
     # form suitable to JS. Currently using the escaped Python representation,
     # which is passably compatible, but surely has differences in edge cases.
     return repr(val.value)
-  elif val.kind == LiteralKind.NUMERIC:
+  elif val.kind == fidl.LiteralKind.NUMERIC:
     return val.value
-  elif val.kind == LiteralKind.TRUE:
+  elif val.kind == fidl.LiteralKind.TRUE:
     return 'true'
-  elif val.kind == LiteralKind.FALSE:
+  elif val.kind == fidl.LiteralKind.FALSE:
     return 'false'
-  elif val.kind == LiteralKind.DEFAULT:
+  elif val.kind == fidl.LiteralKind.DEFAULT:
     return 'default'
   else:
     raise Exception('unexpected kind')
 
 
 class Compiler(object):
+
   def __init__(self, fidl, output_file):
     self.fidl = fidl
     self.f = output_file
@@ -132,7 +134,7 @@ class Compiler(object):
 ''')
 
   def _CompileConst(self, c):
-      self.f.write('''/**
+    self.f.write('''/**
   * @const {%(type)s}
   */
 const %(name)s = %(value)s;
@@ -142,15 +144,15 @@ const %(name)s = %(value)s;
     compound = _ParseCompoundIdentifier(enum.name)
     name = _CompileCompoundIdentifier(compound)
     js_type = _JsTypeForPrimitiveType(enum.type)
-    data = { 'js_type': js_type, 'type': enum.type.value, 'name': name }
+    data = {'js_type': js_type, 'type': enum.type.value, 'name': name}
     self.f.write('''/**
  * @enum {%(js_type)s}
  */
 const %(name)s = {
 ''' % data)
     for member in enum.members:
-      self.f.write('''  %s: %s,\n''' %
-          (member.name, _CompileConstant(member.value)))
+      self.f.write(
+          '''  %s: %s,\n''' % (member.name, _CompileConstant(member.value)))
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 
@@ -164,8 +166,10 @@ const %(name)s = {
  * @struct
  */
 function %(name)s(%(param_names)s) {
-''' % { 'name': name,
-        'param_names': ', '.join(param_names) })
+''' % {
+        'name': name,
+        'param_names': ', '.join(param_names)
+    })
     for member in struct.members:
       member_name = _ChangeIfReserved(member.name)
       value = '%(member_name)s'
@@ -173,26 +177,24 @@ function %(name)s(%(param_names)s) {
         value = ('(%(member_name)s !== undefined) ? %(member_name)s : ' +
                  _CompileConstant(member.maybe_default_value))
       self.f.write(('  this.%(member_name)s = ' + value + ';\n') %
-                   { 'member_name': member_name })
+                   {'member_name': member_name})
     self.f.write('}\n\n')
 
-    self.f.write(
-'''const _kTT_%(name)s = {
+    self.f.write('''const _kTT_%(name)s = {
   enc: function(e, o, v) {
-''' % { 'name': name })
+''' % {'name': name})
 
     for member in struct.members:
       element_ttname = self._CompileType(member.type)
       self.f.write(
           '    _kTT_%(element_ttname)s.enc('
           'e, o + %(offset)s, v.%(member_name)s);\n' % {
-            'element_ttname': element_ttname,
-            'offset': member.offset,
-            'member_name': _ChangeIfReserved(member.name)
+              'element_ttname': element_ttname,
+              'offset': member.offset,
+              'member_name': _ChangeIfReserved(member.name)
           })
 
-    self.f.write(
-'''  },
+    self.f.write('''  },
   dec: function(d, o) {
 ''')
 
@@ -201,31 +203,32 @@ function %(name)s(%(param_names)s) {
       self.f.write(
           '    var $temp_%(member_name)s = _kTT_%(element_ttname)s.dec('
           'd, o + %(offset)s);\n' % {
-            'element_ttname': element_ttname,
-            'offset': member.offset,
-            'member_name': _ChangeIfReserved(member.name)
+              'element_ttname': element_ttname,
+              'offset': member.offset,
+              'member_name': _ChangeIfReserved(member.name)
           })
     self.f.write('''    return new %(name)s(%(temp_names)s);
   }
 };
 
-''' % { 'name': name,
-        'temp_names': ', '.join(['$temp_' + x for x in param_names]) })
-
+''' % {
+        'name': name,
+        'temp_names': ', '.join(['$temp_' + x for x in param_names])
+    })
 
   def _CompileType(self, t):
-    if t.kind == TypeKind.PRIMITIVE:
+    if t.kind == fidl.TypeKind.PRIMITIVE:
       return t.subtype
-    elif t.kind == TypeKind.STRING:
+    elif t.kind == fidl.TypeKind.STRING:
       return 'String' + ('_Nullable' if t.nullable else '_Nonnull')
-    elif t.kind == TypeKind.IDENTIFIER:
+    elif t.kind == fidl.TypeKind.IDENTIFIER:
       compound = _ParseCompoundIdentifier(t.identifier)
       name = _CompileCompoundIdentifier(compound)
       return name
-    elif t.kind == TypeKind.VECTOR:
+    elif t.kind == fidl.TypeKind.VECTOR:
       element_ttname = self._CompileType(t.element_type)
-      ttname = ('VEC_' + ('Nullable_' if t.nullable else 'Nonnull_') +
-                element_ttname)
+      ttname = (
+          'VEC_' + ('Nullable_' if t.nullable else 'Nonnull_') + element_ttname)
       throw_if_null = '/* v may be null */'
       pointer_set = '''    if (v === null || v === undefined) {
       e.data.setUint32(o + 8, 0, $fidl__kLE);
@@ -244,8 +247,8 @@ function %(name)s(%(param_names)s) {
 
       if ttname not in self.type_table_defined:
         self.type_table_defined.add(ttname)
-        self.output_deferred_to_eof += (
-'''const _kTT_%(ttname)s = {
+        self.output_deferred_to_eof += ('''\
+const _kTT_%(ttname)s = {
   enc: function(e, o, v) {
     %(throw_if_null_enc)s
     e.data.setUint32(o, v.length, $fidl__kLE);
@@ -273,16 +276,17 @@ function %(name)s(%(param_names)s) {
   }
 };
 
-''' % { 'ttname': ttname,
-        'element_ttname': element_ttname,
-        'element_size': _InlineSizeOfType(t.element_type),
-        'pointer_set': pointer_set,
-        'throw_if_null_enc': throw_if_null_enc,
-        'throw_if_null_dec': throw_if_null_dec })
+''' % {
+            'ttname': ttname,
+            'element_ttname': element_ttname,
+            'element_size': _InlineSizeOfType(t.element_type),
+            'pointer_set': pointer_set,
+            'throw_if_null_enc': throw_if_null_enc,
+            'throw_if_null_dec': throw_if_null_dec
+        })
       return ttname
     else:
       raise NotImplementedError()
-
 
   def _GenerateJsInterfaceForInterface(self, name, interface):
     """Generates a JS @interface for the given FIDL interface."""
@@ -291,23 +295,24 @@ function %(name)s(%(param_names)s) {
  */
 function %(name)s() {}
 
-''' % { 'name': name })
+''' % {'name': name})
 
     # Define a JS interface part for the interface for typechecking.
     for method in interface.methods:
       method_name = _CompileIdentifier(method.name)
       if method.has_request:
-        param_names = [_CompileIdentifier(x.name)
-                       for x in method.maybe_request]
+        param_names = [_CompileIdentifier(x.name) for x in method.maybe_request]
         if len(param_names):
           self.f.write('/**\n')
           # TODO(crbug.com/883496): Emit @param and @return type comments.
           self.f.write(' */\n')
-        self.f.write('%(name)s.prototype.%(method_name)s = '
-                'function(%(param_names)s) {};\n\n' % {
-                  'name': name,
-                  'method_name': method_name,
-                  'param_names': ', '.join(param_names)})
+        self.f.write(
+            '%(name)s.prototype.%(method_name)s = '
+            'function(%(param_names)s) {};\n\n' % {
+                'name': name,
+                'method_name': method_name,
+                'param_names': ', '.join(param_names)
+            })
 
     # Emit message ordinals for later use.
     for method in interface.methods:
@@ -316,7 +321,8 @@ function %(name)s() {}
           'const _k%(name)s_%(method_name)s_Ordinal = %(ordinal)s;\n' % {
               'name': name,
               'method_name': method_name,
-              'ordinal': method.ordinal})
+              'ordinal': method.ordinal
+          })
 
     self.f.write('\n')
 
@@ -336,8 +342,10 @@ function %(proxy_name)s() {
   this.channel = channel;
 };
 
-''' % { 'name': name,
-        'proxy_name': proxy_name })
+''' % {
+        'name': name,
+        'proxy_name': proxy_name
+    })
     for method in interface.methods:
       method_name = _CompileIdentifier(method.name)
       if method.has_request:
@@ -346,27 +354,32 @@ function %(proxy_name)s() {
           type_tables.append(self._CompileType(param.type))
         param_names = [_CompileIdentifier(x.name) for x in method.maybe_request]
         self.f.write(
-'''%(proxy_name)s.prototype.%(method_name)s = function(%(param_names)s) {
+            '''\
+%(proxy_name)s.prototype.%(method_name)s = function(%(param_names)s) {
   if (this.channel === zx.ZX_HANDLE_INVALID) {
     throw "channel closed";
   }
   var $encoder = new $fidl_Encoder(_k%(name)s_%(method_name)s_Ordinal);
   $encoder.alloc(%(size)s - $fidl_kMessageHeaderSize);
-''' % { 'name': name,
-        'proxy_name': proxy_name,
-        'method_name': method_name,
-        'param_names': ', '.join(param_names),
-        'size': method.maybe_request_size})
+''' % {
+                'name': name,
+                'proxy_name': proxy_name,
+                'method_name': method_name,
+                'param_names': ', '.join(param_names),
+                'size': method.maybe_request_size
+            })
 
         for param, ttname in zip(method.maybe_request, type_tables):
           self.f.write(
-'''  _kTT_%(type_table)s.enc($encoder, %(offset)s, %(param_name)s);
-''' % { 'type_table': ttname,
-        'param_name': _CompileIdentifier(param.name),
-        'offset': param.offset })
+              '''\
+  _kTT_%(type_table)s.enc($encoder, %(offset)s, %(param_name)s);
+''' % {
+                  'type_table': ttname,
+                  'param_name': _CompileIdentifier(param.name),
+                  'offset': param.offset
+              })
 
-        self.f.write(
-'''  var $writeResult = zx.channelWrite(this.channel,
+        self.f.write('''  var $writeResult = zx.channelWrite(this.channel,
                                      $encoder.messageData(),
                                      $encoder.messageHandles());
   if ($writeResult !== zx.ZX_OK) {
@@ -391,18 +404,21 @@ function %(proxy_name)s() {
 
           var $decoder = new $fidl_Decoder($view, []);
           $decoder.claimMemory(%(size)s - $fidl_kMessageHeaderSize);
-''' % { 'size': method.maybe_response_size })
+''' % {'size': method.maybe_response_size})
         for param, ttname in zip(method.maybe_response, type_tables):
           self.f.write(
-'''          var %(param_name)s = _kTT_%(type_table)s.dec($decoder, %(offset)s);
-''' % { 'type_table': ttname,
-        'param_name': _CompileIdentifier(param.name),
-        'offset': param.offset })
+              '''\
+          var %(param_name)s = _kTT_%(type_table)s.dec($decoder, %(offset)s);
+''' % {
+                  'type_table': ttname,
+                  'param_name': _CompileIdentifier(param.name),
+                  'offset': param.offset
+              })
 
         self.f.write('''
           res(%(args)s);
         }));
-''' % { 'args': ', '.join(x.name for x in method.maybe_response) })
+''' % {'args': ', '.join(x.name for x in method.maybe_response)})
 
       self.f.write('''};
 
@@ -421,9 +437,9 @@ def main():
   parser.add_argument('--output', required=True)
   args = parser.parse_args()
 
-  fidl = fidl_from_dict(json.load(open(args.json, 'r')))
+  fidl_obj = fidl.fidl_from_dict(json.load(open(args.json, 'r')))
   with open(args.output, 'w') as f:
-    c = Compiler(fidl, f)
+    c = Compiler(fidl_obj, f)
     c.Compile()
 
 
