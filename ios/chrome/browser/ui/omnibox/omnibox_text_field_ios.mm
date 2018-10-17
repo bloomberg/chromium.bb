@@ -42,7 +42,6 @@
 
 namespace {
 
-const CGFloat kFontSize = 16;
 const CGFloat kEditingRectWidthInset = 12;
 const CGFloat kClearButtonRightMarginIphone = 7;
 
@@ -66,9 +65,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 // Font to use in regular x regular size class. If not set, the regular font is
 // used instead.
-@property(nonatomic, strong) UIFont* largerFont;
+@property(nonatomic, strong, readonly) UIFont* largerFont;
 // Font to use in Compact x Any and Any x Compact size class.
-@property(nonatomic, strong) UIFont* normalFont;
+@property(nonatomic, strong, readonly) UIFont* normalFont;
 
 // Gets the bounds of the rect covering the URL.
 - (CGRect)preEditLabelRectForBounds:(CGRect)bounds;
@@ -105,39 +104,21 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 @synthesize selectedTextBackgroundColor = _selectedTextBackgroundColor;
 @synthesize placeholderTextColor = _placeholderTextColor;
 @synthesize incognito = _incognito;
-@synthesize largerFont = _largerFont;
-@synthesize normalFont = _normalFont;
 @synthesize suggestionCommandsEndpoint = _suggestionCommandsEndpoint;
 
 #pragma mark - Public methods
 // Overload to allow for code-based initialization.
 - (instancetype)initWithFrame:(CGRect)frame {
   return [self initWithFrame:frame
-                        font:[UIFont systemFontOfSize:kFontSize]
                    textColor:TextColor()
                    tintColor:nil];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
-                   largerFont:(UIFont*)largerFont
-                    textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor {
-  self = [self initWithFrame:frame
-                        font:font
-                   textColor:textColor
-                   tintColor:tintColor];
-  _largerFont = largerFont;
-  return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
                     textColor:(UIColor*)textColor
                     tintColor:(UIColor*)tintColor {
   self = [super initWithFrame:frame];
   if (self) {
-    _normalFont = font;
     _displayedTextColor = textColor;
     if (tintColor) {
       [self setTintColor:tintColor];
@@ -457,11 +438,15 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [super setDelegate:delegate];
 }
 
-- (UIFont*)currentFont {
-  if (!self.largerFont) {
-    return self.normalFont;
-  }
+- (UIFont*)largerFont {
+  return [UIFont systemFontOfSize:kLocationBarRegularRegularFontSize];
+}
 
+- (UIFont*)normalFont {
+  return [UIFont systemFontOfSize:kLocationBarSteadyFontSize];
+}
+
+- (UIFont*)currentFont {
   return IsCompactWidth() ? self.normalFont : self.largerFont;
 }
 
