@@ -148,6 +148,7 @@ class ArcAuthService : public KeyedService,
   chromeos::AccountMapperUtil account_mapper_util_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  bool url_loader_factory_for_testing_set_ = false;
 
   // A list of pending enrollment token / auth code requests.
   std::vector<std::unique_ptr<ArcFetcherBase>> pending_token_requests_;
