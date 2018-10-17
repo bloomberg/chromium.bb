@@ -78,9 +78,9 @@ ImageHelper::Job::Job(ImageJobType job_type,
       pixel_size_(pixel_size),
       connector_(std::move(connector)),
       weak_ptr_factory_(this) {
-  num_icons_ = (images_.size() < kFaviconsPerCategoryImage)
+  num_icons_ = (images_.size() < explore_sites::kFaviconsPerCategoryImage)
                    ? images_.size()
-                   : kFaviconsPerCategoryImage;
+                   : explore_sites::kFaviconsPerCategoryImage;
 }
 
 ImageHelper::Job::~Job() {}
