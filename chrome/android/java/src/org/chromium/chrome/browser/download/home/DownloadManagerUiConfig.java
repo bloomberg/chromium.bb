@@ -22,6 +22,16 @@ public class DownloadManagerUiConfig {
 
     /** Whether showing full width images should be supported. */
     public final boolean supportFullWidthImages;
+
+    /** Whether or not to use the legacy download path or use the new OfflineContentProvider. */
+    public final boolean useNewDownloadPath;
+
+    /**
+     * Whether or not to use the legacy download thumbnail path or use the new
+     * OfflineContentProvider.
+     */
+    public final boolean useNewDownloadPathThumbnails;
+
     /**
      * The time interval during which a download update is considered recent enough to show
      * in Just Now section.
@@ -34,6 +44,8 @@ public class DownloadManagerUiConfig {
         isSeparateActivity = builder.mIsSeparateActivity;
         useGenericViewTypes = builder.mUseGenericViewTypes;
         supportFullWidthImages = builder.mSupportFullWidthImages;
+        useNewDownloadPath = builder.mUseNewDownloadPath;
+        useNewDownloadPathThumbnails = builder.mUseNewDownloadPathThumbnails;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
     }
 
@@ -48,6 +60,8 @@ public class DownloadManagerUiConfig {
         private boolean mIsSeparateActivity;
         private boolean mUseGenericViewTypes;
         private boolean mSupportFullWidthImages;
+        private boolean mUseNewDownloadPath;
+        private boolean mUseNewDownloadPathThumbnails;
         private long mJustNowThresholdSeconds;
 
         public Builder() {
@@ -74,6 +88,16 @@ public class DownloadManagerUiConfig {
 
         public Builder setSupportFullWidthImages(boolean supportFullWidthImages) {
             mSupportFullWidthImages = supportFullWidthImages;
+            return this;
+        }
+
+        public Builder setUseNewDownloadPath(boolean useNewDownloadPath) {
+            mUseNewDownloadPath = useNewDownloadPath;
+            return this;
+        }
+
+        public Builder setUseNewDownloadPathThumbnails(boolean useNewDownloadPathThumbnails) {
+            mUseNewDownloadPathThumbnails = useNewDownloadPathThumbnails;
             return this;
         }
 
