@@ -55,7 +55,6 @@ camera.views.GalleryBase = function(context, router, model, rootElement, name) {
    * @private
    */
   this.forceUpcomingFocusSync_ = false;
-
 };
 
 /**
