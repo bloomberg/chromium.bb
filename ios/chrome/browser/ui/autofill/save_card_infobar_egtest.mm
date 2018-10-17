@@ -65,6 +65,8 @@ enum InfobarEvent : int {
   REQUESTED_UPLOAD_SAVE,
   RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
   SENT_UPLOAD_CARD_REQUEST,
+  RECEIVED_UPLOAD_CARD_RESPONSE,
+  STRIKE_CHANGE_COMPLETE
 };
 
 id<GREYMatcher> closeButtonMatcher() {
@@ -199,6 +201,14 @@ class SaveCardInfobarEGTestHelper {
 
 - (void)sentUploadCardRequest {
   [self onEvent:InfobarEvent::SENT_UPLOAD_CARD_REQUEST];
+}
+
+- (void)receivedUploadCardResponse {
+  [self onEvent:InfobarEvent::RECEIVED_UPLOAD_CARD_RESPONSE];
+}
+
+- (void)ccsmStrikeChangeComplete {
+  [self onEvent:InfobarEvent::STRIKE_CHANGE_COMPLETE];
 }
 
 #pragma mark - Page interaction helper methods

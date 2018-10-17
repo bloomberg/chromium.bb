@@ -23,6 +23,7 @@ class DictionaryValue;
 namespace autofill {
 
 class CreditCard;
+class StrikeDatabase;
 
 // An InfoBarDelegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission. Only used on mobile.
@@ -32,6 +33,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
       bool upload,
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
+      StrikeDatabase* strike_database,
       base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
       base::OnceClosure local_save_card_callback,
       PrefService* pref_service);
@@ -85,6 +87,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|,
   PrefService* pref_service_;
 
+  // Weak reference to the Autofill StrikeDatabase.
+  StrikeDatabase* strike_database_;
+
   // Did the user ever explicitly accept or dismiss this infobar?
   bool had_user_interaction_;
 
@@ -96,6 +101,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   // The sub-label for the card to show in the content of the infobar.
   base::string16 card_sub_label_;
+
+  // The last four digits of the card for which save is being offered.
+  base::string16 card_last_four_digits_;
 
   // The legal messages to show in the content of the infobar.
   LegalMessageLines legal_messages_;

@@ -21,6 +21,7 @@ class PrefService;
 namespace autofill {
 
 enum class BubbleType;
+class StrikeDatabase;
 
 // Implementation of per-tab class to control the save credit card bubble and
 // Omnibox icon.
@@ -34,6 +35,8 @@ class SaveCardBubbleControllerImpl
   class ObserverForTest {
    public:
     virtual void OnBubbleShown() = 0;
+    virtual void OnBubbleClosed() = 0;
+    virtual void OnSCBCStrikeChangeComplete() = 0;
   };
 
   ~SaveCardBubbleControllerImpl() override;
@@ -131,6 +134,9 @@ class SaveCardBubbleControllerImpl
 
   void FetchAccountInfo();
 
+  // Fetches the Autofill StrikeDatabase for the current profile.
+  StrikeDatabase* GetStrikeDatabase();
+
   // Displays both the offer-to-save bubble and is associated omnibox icon.
   void ShowBubble();
 
@@ -139,6 +145,10 @@ class SaveCardBubbleControllerImpl
 
   // Update the visibility and toggled state of the Omnibox save card icon.
   void UpdateIcon();
+
+  // Used for browsertests. Gives the |observer_for_testing_| a notification
+  // a strike change has been made.
+  void OnStrikeChangeComplete(const int num_strikes);
 
   void OpenUrl(const GURL& url);
 
@@ -184,6 +194,11 @@ class SaveCardBubbleControllerImpl
   // requesting the cardholder name.
   bool should_request_name_from_user_ = false;
 
+  // Whether the offer-to-save bubble should be shown or not. If true, behaves
+  // normally. If false, the omnibox icon will be displayed when offering credit
+  // card save, but the bubble itself will not pop up.
+  bool show_bubble_ = true;
+
   // The account info of the signed-in user.
   AccountInfo account_info_;
 
@@ -202,6 +217,8 @@ class SaveCardBubbleControllerImpl
 
   // Observer for when a bubble is created. Initialized only during tests.
   ObserverForTest* observer_for_testing_ = nullptr;
+
+  base::WeakPtrFactory<SaveCardBubbleControllerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImpl);
 };

@@ -37,6 +37,7 @@
 #include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -45,11 +46,6 @@
 namespace autofill {
 
 namespace {
-
-// If the Autofill StrikeDatabase returns this many strikes for a given card, it
-// will not show the offer-to-save bubble on Desktop or infobar on Android.
-// On Desktop, however, the omnibox icon will still be available.
-const int kMaxStrikesToPreventPoppingUpOfferToSavePrompt = 3;
 
 // If |name| consists of three whitespace-separated parts and the second of the
 // three parts is a single character or a single character followed by a period,
@@ -92,6 +88,7 @@ CreditCardSaveManager::~CreditCardSaveManager() {}
 void CreditCardSaveManager::AttemptToOfferCardLocalSave(
     const CreditCard& card) {
   local_card_save_candidate_ = card;
+  show_save_prompt_ = base::nullopt;
 
   // Query the Autofill StrikeDatabase on if we should pop up the offer-to-save
   // prompt for this card.
@@ -119,6 +116,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   upload_request_ = payments::PaymentsClient::UploadRequestDetails();
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;
+  show_save_prompt_ = base::nullopt;
 
   // In an ideal scenario, when uploading a card, we would have:
   //  1) Card number and expiration
@@ -252,6 +250,9 @@ bool CreditCardSaveManager::IsUploadEnabledForNetwork(
 void CreditCardSaveManager::OnDidUploadCard(
     AutofillClient::PaymentsRpcResult result,
     const std::string& server_id) {
+  if (observer_for_testing_)
+    observer_for_testing_->OnReceivedUploadCardResponse();
+
   if (result == AutofillClient::SUCCESS &&
       upload_request_.card.HasFirstAndLastName()) {
     AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(
@@ -286,6 +287,19 @@ void CreditCardSaveManager::OnDidUploadCard(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
           base::DoNothing());
+    }
+  } else {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillSaveCreditCardUsesStrikeSystem) &&
+        show_save_prompt_.value()) {
+      // If the upload failed and the bubble was actually shown (NOT just the
+      // icon), count that as a strike against offering upload in the future.
+      StrikeDatabase* strike_database = client_->GetStrikeDatabase();
+      strike_database->AddStrike(
+          strike_database->GetKeyForCreditCardSave(
+              base::UTF16ToUTF8(upload_request_.card.LastFourDigits())),
+          base::BindRepeating(&CreditCardSaveManager::OnStrikeChangeComplete,
+                              weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }
@@ -697,6 +711,11 @@ void CreditCardSaveManager::SendUploadCardRequest() {
   payments_client_->UploadCard(
       upload_request_, base::BindOnce(&CreditCardSaveManager::OnDidUploadCard,
                                       weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CreditCardSaveManager::OnStrikeChangeComplete(const int num_strikes) {
+  if (observer_for_testing_)
+    observer_for_testing_->OnCCSMStrikeChangeComplete();
 }
 
 AutofillMetrics::CardUploadDecisionMetric
