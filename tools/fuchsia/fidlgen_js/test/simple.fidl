@@ -22,6 +22,14 @@ struct BasicStruct {
   uint32 u32 = 4000000000;
 };
 
+struct StuffAndThings {
+  int32 count;
+  string id;
+  vector<int32> a_vector;
+  BasicStruct basic;
+  string later_string;
+};
+
 interface Testola {
   1: DoSomething();
 
@@ -34,4 +42,6 @@ interface Testola {
   5: WithResponse(int32 a, int32 b) -> (int32 sum);
 
   6: SendAStruct(BasicStruct basic);
+
+  7: NestedStructsWithResponse(BasicStruct basic) -> (StuffAndThings resp);
 };

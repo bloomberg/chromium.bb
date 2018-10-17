@@ -104,6 +104,7 @@ function $fidl_Decoder(data, handles) {
   this.handles = handles;
   this.nextOffset = 0;
   this.nextHandle = 0;
+  this.claimMemory($fidl_kMessageHeaderSize);
 }
 
 /**
@@ -111,7 +112,7 @@ function $fidl_Decoder(data, handles) {
  */
 $fidl_Decoder.prototype.claimMemory = function(size) {
   var result = this.nextOffset;
-  this.nextOffset = $fidl__align(size);
+  this.nextOffset = $fidl__align(this.nextOffset + size);
   return result;
 }
 
@@ -168,6 +169,13 @@ const _kTT_String_Nonnull = {
     e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);
     e.outOfLine.push([$fidl_OutOfLineStringEnc, asUtf8]);
   },
+  dec: function(d, o) {
+    var len = d.data.getUint32(o, $fidl__kLE);
+    var pointer = d.data.getUint32(o + 8, $fidl__kLE);
+    if (pointer === 0) throw "non-null string required";
+    var dataOffset = d.claimMemory(len);
+    return zx.utf8ArrayToStr(new DataView(d.data.buffer, dataOffset, len));
+  }
 };
 
 function $fidl_OutOfLineStringEnc(e, strAsUtf8Array) {

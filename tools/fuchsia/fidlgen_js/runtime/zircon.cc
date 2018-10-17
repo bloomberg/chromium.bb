@@ -281,6 +281,20 @@ v8::Local<v8::Value> StrToUtf8Array(gin::Arguments* args) {
   return gin::ConvertToV8(args->isolate(), data);
 }
 
+v8::Local<v8::Value> Utf8ArrayToStr(gin::Arguments* args) {
+  gin::ArrayBufferView data;
+  if (!args->GetNext(&data)) {
+    args->ThrowError();
+    return v8::Local<v8::Value>();
+  }
+
+  // Get the UTF-8 out into a string, and then rely on ConvertToV8 to convert
+  // that to a UCS-2 string.
+  return gin::StringToV8(
+      args->isolate(), base::StringPiece(static_cast<const char*>(data.bytes()),
+                                         data.num_bytes()));
+}
+
 v8::Local<v8::Object> GetOrCreateZxObject(v8::Isolate* isolate,
                                           v8::Local<v8::Object> global) {
   v8::Local<v8::Object> zx;
@@ -389,13 +403,17 @@ ZxBindings::ZxBindings(v8::Isolate* isolate, v8::Local<v8::Object> global)
   SET_CONSTANT(ZX_CHANNEL_MAX_MSG_BYTES);
   SET_CONSTANT(ZX_CHANNEL_MAX_MSG_HANDLES);
 
-  // Utility to make string handling easier to convert from a UCS2 JS string to
-  // an array of UTF-8 (which is how strings are represented in FIDL).
+  // Utilities to make string handling easier to convert to/from UCS-2 (JS) <->
+  // UTF-8 (FIDL).
   // TODO(crbug.com/883496): This is not really zx, should move to a generic
   // runtime helper file if there are more similar C++ helpers required.
   zx->Set(
       gin::StringToSymbol(isolate, "strToUtf8Array"),
       gin::CreateFunctionTemplate(isolate, base::BindRepeating(&StrToUtf8Array))
+          ->GetFunction());
+  zx->Set(
+      gin::StringToSymbol(isolate, "utf8ArrayToStr"),
+      gin::CreateFunctionTemplate(isolate, base::BindRepeating(&Utf8ArrayToStr))
           ->GetFunction());
 
 #undef SET_CONSTANT
