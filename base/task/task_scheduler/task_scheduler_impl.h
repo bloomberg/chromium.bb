@@ -38,8 +38,11 @@ namespace base {
 
 class HistogramBase;
 class Thread;
+struct Feature;
 
 namespace internal {
+
+extern const BASE_EXPORT base::Feature kMergeBlockingNonBlockingPools;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
