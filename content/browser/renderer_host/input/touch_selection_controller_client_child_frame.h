@@ -37,6 +37,8 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
       float device_scale_factor);
 
  private:
+  void TransformSelectionBoundsAndUpdate();
+
   // ui::TouchSelectionControllerClient:
   bool SupportsAnimation() const override;
   void SetNeedsAnimate() override;
@@ -60,11 +62,9 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
   RenderWidgetHostViewChildFrame* rwhv_;
   TouchSelectionControllerClientManager* manager_;
 
-  // The last selection bounds reported by the view.
+  // The last selection bounds reported by the view, in view coordinates.
   gfx::SelectionBound selection_start_;
   gfx::SelectionBound selection_end_;
-  // Keep track of the view origin as of the last time selection was updated.
-  gfx::PointF view_origin_at_last_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientChildFrame);
 };
