@@ -8625,8 +8625,9 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
 static char kTestString[] = "At least 20 characters.";
 static QuicStreamId kTestQuicStreamId = 1;
 static bool ExpectedStreamFrame(const QuicStreamFrame& frame) {
-  return frame.stream_id == kTestQuicStreamId && !frame.fin &&
-         frame.offset == 0 &&
+  return (frame.stream_id == kTestQuicStreamId ||
+          frame.stream_id == QuicUtils::GetCryptoStreamId(QUIC_VERSION_99)) &&
+         !frame.fin && frame.offset == 0 &&
          QuicString(frame.data_buffer, frame.data_length) == kTestString;
   // FIN is hard-coded false in ConstructEncryptedPacket.
   // Offset 0 is hard-coded in ConstructEncryptedPacket.
@@ -8829,12 +8830,16 @@ TEST_P(QuicFramerTest, StartsWithChlo) {
   struct iovec iovec;
   iovec.iov_base = const_cast<char*>(data.data());
   iovec.iov_len = data.length();
-  producer.SaveStreamData(kCryptoStreamId, &iovec, 1, 0, 0, data.length());
+  producer.SaveStreamData(
+      QuicUtils::GetCryptoStreamId(framer_.transport_version()), &iovec, 1, 0,
+      0, data.length());
   for (size_t offset = 0; offset < 5; ++offset) {
     if (offset == 0 || offset == 4) {
-      EXPECT_TRUE(framer_.StartsWithChlo(kCryptoStreamId, offset));
+      EXPECT_TRUE(framer_.StartsWithChlo(
+          QuicUtils::GetCryptoStreamId(framer_.transport_version()), offset));
     } else {
-      EXPECT_FALSE(framer_.StartsWithChlo(kCryptoStreamId, offset));
+      EXPECT_FALSE(framer_.StartsWithChlo(
+          QuicUtils::GetCryptoStreamId(framer_.transport_version()), offset));
     }
   }
 }

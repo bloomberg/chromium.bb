@@ -9,6 +9,7 @@
 
 #include "net/third_party/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quic/core/quic_unacked_packet_map.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
@@ -32,7 +33,8 @@ class GeneralLossAlgorithmTest : public QuicTest {
 
   void SendDataPacket(QuicPacketNumber packet_number) {
     QuicStreamFrame frame;
-    frame.stream_id = kHeadersStreamId;
+    frame.stream_id = QuicUtils::GetHeadersStreamId(
+        CurrentSupportedVersions()[0].transport_version);
     SerializedPacket packet(packet_number, PACKET_1BYTE_PACKET_NUMBER, nullptr,
                             kDefaultLength, false, false);
     packet.retransmittable_frames.push_back(QuicFrame(frame));

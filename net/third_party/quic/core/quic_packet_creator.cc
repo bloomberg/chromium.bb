@@ -632,7 +632,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames) {
   QUIC_DVLOG(1) << ENDPOINT << "Adding frame: " << frame;
   if (frame.type == STREAM_FRAME &&
-      frame.stream_frame.stream_id != kCryptoStreamId &&
+      frame.stream_frame.stream_id !=
+          QuicUtils::GetCryptoStreamId(framer_->transport_version()) &&
       packet_.encryption_level == ENCRYPTION_NONE) {
     const QuicString error_details =
         "Cannot send stream data without encryption.";
@@ -661,7 +662,8 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     packet_.retransmittable_frames.push_back(frame);
     queued_frames_.push_back(frame);
     if (frame.type == STREAM_FRAME &&
-        frame.stream_frame.stream_id == kCryptoStreamId) {
+        frame.stream_frame.stream_id ==
+            QuicUtils::GetCryptoStreamId(framer_->transport_version())) {
       packet_.has_crypto_handshake = IS_HANDSHAKE;
     }
   } else {
@@ -733,7 +735,9 @@ void QuicPacketCreator::AddPendingPadding(QuicByteCount size) {
 bool QuicPacketCreator::StreamFrameStartsWithChlo(
     const QuicStreamFrame& frame) const {
   if (framer_->perspective() == Perspective::IS_SERVER ||
-      frame.stream_id != kCryptoStreamId || frame.data_length < sizeof(kCHLO)) {
+      frame.stream_id !=
+          QuicUtils::GetCryptoStreamId(framer_->transport_version()) ||
+      frame.data_length < sizeof(kCHLO)) {
     return false;
   }
   return framer_->StartsWithChlo(frame.stream_id, frame.offset);

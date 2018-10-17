@@ -9,6 +9,7 @@
 
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_flow_controller.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -54,7 +55,10 @@ QuicSession::QuicSession(QuicConnection* connection,
       max_open_incoming_streams_(config_.GetMaxIncomingDynamicStreamsToSend()),
       next_outgoing_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 3),
       largest_peer_created_stream_id_(
-          perspective() == Perspective::IS_SERVER ? 1 : 0),
+          perspective() == Perspective::IS_SERVER
+              ? QuicUtils::GetCryptoStreamId(connection_->transport_version())
+              : QuicUtils::GetInvalidStreamId(
+                    connection_->transport_version())),
       num_dynamic_incoming_streams_(0),
       num_draining_incoming_streams_(0),
       num_locally_closed_incoming_streams_highest_offset_(0),
@@ -95,8 +99,11 @@ void QuicSession::Initialize() {
   connection_->set_donot_retransmit_old_window_updates(
       control_frame_manager_.donot_retransmit_old_window_updates());
 
-  DCHECK_EQ(kCryptoStreamId, GetMutableCryptoStream()->id());
-  RegisterStaticStream(kCryptoStreamId, GetMutableCryptoStream());
+  DCHECK_EQ(QuicUtils::GetCryptoStreamId(connection_->transport_version()),
+            GetMutableCryptoStream()->id());
+  RegisterStaticStream(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()),
+      GetMutableCryptoStream());
 }
 
 QuicSession::~QuicSession() {
@@ -117,6 +124,10 @@ void QuicSession::RegisterStaticStream(QuicStreamId id, QuicStream* stream) {
   static_stream_map_[id] = stream;
 
   if (faster_get_stream_) {
+    // TODO(rch): Change + 2 when uni/bidi support is added.
+    QUIC_BUG_IF(id > largest_static_stream_id_ + 2)
+        << ENDPOINT << "Static stream registered out of order: " << id
+        << " vs: " << largest_static_stream_id_;
     largest_static_stream_id_ = std::max(id, largest_static_stream_id_);
   }
 }
@@ -124,7 +135,8 @@ void QuicSession::RegisterStaticStream(QuicStreamId id, QuicStream* stream) {
 void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
   // TODO(rch) deal with the error case of stream id 0.
   QuicStreamId stream_id = frame.stream_id;
-  if (stream_id == kInvalidStreamId) {
+  if (stream_id ==
+      QuicUtils::GetInvalidStreamId(connection()->transport_version())) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -154,7 +166,8 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
 
 void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   QuicStreamId stream_id = frame.stream_id;
-  if (stream_id == kInvalidStreamId) {
+  if (stream_id ==
+      QuicUtils::GetInvalidStreamId(connection()->transport_version())) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -403,9 +416,11 @@ bool QuicSession::WillingAndAbleToWrite() const {
 }
 
 bool QuicSession::HasPendingHandshake() const {
-  return QuicContainsKey(streams_with_pending_retransmission_,
-                         kCryptoStreamId) ||
-         write_blocked_streams_.IsStreamBlocked(kCryptoStreamId);
+  return QuicContainsKey(
+             streams_with_pending_retransmission_,
+             QuicUtils::GetCryptoStreamId(connection_->transport_version())) ||
+         write_blocked_streams_.IsStreamBlocked(
+             QuicUtils::GetCryptoStreamId(connection_->transport_version()));
 }
 
 bool QuicSession::HasOpenDynamicStreams() const {
@@ -429,7 +444,8 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
   // it might end up resulting in unencrypted stream data being sent.
   // While this is impossible to avoid given sufficient corruption, this
   // seems like a reasonable mitigation.
-  if (id == kCryptoStreamId && stream != GetMutableCryptoStream()) {
+  if (id == QuicUtils::GetCryptoStreamId(connection_->transport_version()) &&
+      stream != GetMutableCryptoStream()) {
     QUIC_BUG << "Stream id mismatch";
     connection_->CloseConnection(
         QUIC_INTERNAL_ERROR,
@@ -437,7 +453,8 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return QuicConsumedData(0, false);
   }
-  if (!IsEncryptionEstablished() && id != kCryptoStreamId) {
+  if (!IsEncryptionEstablished() &&
+      id != QuicUtils::GetCryptoStreamId(connection_->transport_version())) {
     // Do not let streams write without encryption. The calling stream will end
     // up write blocked until OnCanWrite is next called.
     return QuicConsumedData(0, false);
@@ -445,7 +462,7 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
   if (connection_->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
     // Set the next sending packets' long header type.
     QuicLongHeaderType type = ZERO_RTT_PROTECTED;
-    if (id == kCryptoStreamId) {
+    if (id == QuicUtils::GetCryptoStreamId(connection_->transport_version())) {
       type = GetCryptoStream()->GetLongHeaderType(offset);
     }
     connection_->SetLongHeaderType(type);
@@ -856,7 +873,9 @@ void QuicSession::StreamDraining(QuicStreamId stream_id) {
 
 bool QuicSession::MaybeIncreaseLargestPeerStreamId(
     const QuicStreamId stream_id) {
-  if (stream_id <= largest_peer_created_stream_id_) {
+  if (largest_peer_created_stream_id_ !=
+          QuicUtils::GetInvalidStreamId(connection()->transport_version()) &&
+      stream_id <= largest_peer_created_stream_id_) {
     return true;
   }
 
@@ -948,7 +967,8 @@ void QuicSession::set_max_open_outgoing_streams(
 }
 
 bool QuicSession::IsClosedStream(QuicStreamId id) {
-  DCHECK_NE(0u, id);
+  DCHECK_NE(QuicUtils::GetInvalidStreamId(connection_->transport_version()),
+            id);
   if (IsOpenStream(id)) {
     // Stream is active
     return false;
@@ -959,12 +979,15 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
     return id < next_outgoing_stream_id_;
   }
   // For peer created streams, we also need to consider available streams.
-  return id <= largest_peer_created_stream_id_ &&
+  return largest_peer_created_stream_id_ !=
+             QuicUtils::GetInvalidStreamId(connection()->transport_version()) &&
+         id <= largest_peer_created_stream_id_ &&
          !QuicContainsKey(available_streams_, id);
 }
 
 bool QuicSession::IsOpenStream(QuicStreamId id) {
-  DCHECK_NE(0u, id);
+  DCHECK_NE(QuicUtils::GetInvalidStreamId(connection_->transport_version()),
+            id);
   if (QuicContainsKey(static_stream_map_, id) ||
       QuicContainsKey(dynamic_stream_map_, id)) {
     // Stream is active
@@ -1251,17 +1274,21 @@ QuicUint128 QuicSession::GetStatelessResetToken() const {
 bool QuicSession::RetransmitLostData() {
   QuicConnection::ScopedPacketFlusher retransmission_flusher(
       connection_, QuicConnection::SEND_ACK_IF_QUEUED);
-  if (QuicContainsKey(streams_with_pending_retransmission_, kCryptoStreamId)) {
+  if (QuicContainsKey(
+          streams_with_pending_retransmission_,
+          QuicUtils::GetCryptoStreamId(connection_->transport_version()))) {
     SetTransmissionType(HANDSHAKE_RETRANSMISSION);
     // Retransmit crypto data first.
-    QuicStream* crypto_stream = GetStream(kCryptoStreamId);
+    QuicStream* crypto_stream = GetStream(
+        QuicUtils::GetCryptoStreamId(connection_->transport_version()));
     crypto_stream->OnCanWrite();
     DCHECK(CheckStreamWriteBlocked(crypto_stream));
     if (crypto_stream->HasPendingRetransmission()) {
       // Connection is write blocked.
       return false;
     } else {
-      streams_with_pending_retransmission_.erase(kCryptoStreamId);
+      streams_with_pending_retransmission_.erase(
+          QuicUtils::GetCryptoStreamId(connection_->transport_version()));
     }
   }
   if (control_frame_manager_.HasPendingRetransmission()) {
@@ -1306,7 +1333,8 @@ void QuicSession::NeuterUnencryptedData() {
     QuicCryptoStream* crypto_stream = GetMutableCryptoStream();
     crypto_stream->NeuterUnencryptedStreamData();
     if (!crypto_stream->HasPendingRetransmission()) {
-      streams_with_pending_retransmission_.erase(kCryptoStreamId);
+      streams_with_pending_retransmission_.erase(
+          QuicUtils::GetCryptoStreamId(connection_->transport_version()));
     }
   }
   connection_->NeuterUnencryptedPackets();

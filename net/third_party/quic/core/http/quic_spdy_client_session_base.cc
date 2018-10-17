@@ -6,6 +6,7 @@
 
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -20,7 +21,8 @@ QuicSpdyClientSessionBase::QuicSpdyClientSessionBase(
     const QuicConfig& config)
     : QuicSpdySession(connection, nullptr, config),
       push_promise_index_(push_promise_index),
-      largest_promised_stream_id_(kInvalidStreamId) {}
+      largest_promised_stream_id_(
+          QuicUtils::GetInvalidStreamId(connection->transport_version())) {}
 
 QuicSpdyClientSessionBase::~QuicSpdyClientSessionBase() {
   //  all promised streams for this session
@@ -66,7 +68,10 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
-  if (promised_stream_id != kInvalidStreamId &&
+  if (promised_stream_id !=
+          QuicUtils::GetInvalidStreamId(connection()->transport_version()) &&
+      largest_promised_stream_id_ !=
+          QuicUtils::GetInvalidStreamId(connection()->transport_version()) &&
       promised_stream_id <= largest_promised_stream_id_) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID,

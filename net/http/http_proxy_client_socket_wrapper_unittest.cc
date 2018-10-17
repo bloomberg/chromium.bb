@@ -28,6 +28,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
@@ -43,8 +44,6 @@ const int kProxyPort = 6121;
 const char kOriginHost[] = "www.google.org";
 const int kOriginPort = 443;
 const char kUserAgent[] = "Mozilla/1.0";
-
-const quic::QuicStreamId kClientDataStreamId1 = quic::kHeadersStreamId + 2;
 
 class MockSSLConfigService : public SSLConfigService {
  public:
@@ -85,6 +84,8 @@ class HttpProxyClientSocketWrapperTest
         cert_transparency_verifier_(new DoNothingCTVerifier()),
         random_generator_(0),
         quic_version_(std::get<0>(GetParam())),
+        client_data_stream_id1_(
+            quic::QuicUtils::GetHeadersStreamId(quic_version_) + 2),
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
         client_maker_(quic_version_,
                       0,
@@ -165,7 +166,7 @@ class HttpProxyClientSocketWrapperTest
     spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
     return client_maker_.MakeRequestHeadersPacket(
-        packet_number, kClientDataStreamId1, kIncludeVersion, !kFin,
+        packet_number, client_data_stream_id1_, kIncludeVersion, !kFin,
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
         std::move(block), 0, nullptr, &header_stream_offset_);
   }
@@ -177,7 +178,7 @@ class HttpProxyClientSocketWrapperTest
     block[":status"] = "200";
 
     return server_maker_.MakeResponseHeadersPacket(
-        packet_number, kClientDataStreamId1, !kIncludeVersion, fin,
+        packet_number, client_data_stream_id1_, !kIncludeVersion, fin,
         std::move(block), nullptr, &response_offset_);
   }
 
@@ -188,7 +189,7 @@ class HttpProxyClientSocketWrapperTest
       quic::QuicPacketNumber smallest_received,
       quic::QuicPacketNumber least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
-        packet_number, !kIncludeVersion, kClientDataStreamId1, error_code,
+        packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
         largest_received, smallest_received, least_unacked, kSendFeedback);
   }
 
@@ -224,6 +225,7 @@ class HttpProxyClientSocketWrapperTest
   quic::test::MockRandom random_generator_;
 
   const quic::QuicTransportVersion quic_version_;
+  const quic::QuicStreamId client_data_stream_id1_;
   const bool client_headers_include_h2_stream_dependency_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;

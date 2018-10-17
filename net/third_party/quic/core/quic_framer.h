@@ -482,6 +482,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   bool last_packet_is_ietf_quic() const { return last_packet_is_ietf_quic_; }
 
+  void set_last_packet_is_ietf_quic(bool last_packet_is_ietf_quic) {
+    last_packet_is_ietf_quic_ = last_packet_is_ietf_quic;
+  }
+
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
   }
@@ -494,6 +498,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool is_ietf_format() {
     return version_.transport_version == QUIC_VERSION_99;
   }
+
+  QuicTime creation_time() const { return creation_time_; }
 
  private:
   friend class test::QuicFramerPeer;

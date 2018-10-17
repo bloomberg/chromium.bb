@@ -10,6 +10,7 @@
 #include "net/third_party/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -71,8 +72,10 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicSpdyClientSessionTest()
       : crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                        TlsClientHandshaker::CreateSslCtx()),
-        promised_stream_id_(kInvalidStreamId),
-        associated_stream_id_(kInvalidStreamId) {
+        promised_stream_id_(
+            QuicUtils::GetInvalidStreamId(GetParam().transport_version)),
+        associated_stream_id_(
+            QuicUtils::GetInvalidStreamId(GetParam().transport_version)) {
     Initialize();
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
@@ -161,7 +164,8 @@ TEST_P(QuicSpdyClientSessionTest, NoEncryptionAfterInitialEncryption) {
   EXPECT_TRUE(session_->IsEncryptionEstablished());
   QuicSpdyClientStream* stream = session_->CreateOutgoingBidirectionalStream();
   ASSERT_TRUE(stream != nullptr);
-  EXPECT_NE(kCryptoStreamId, stream->id());
+  EXPECT_NE(QuicUtils::GetCryptoStreamId(connection_->transport_version()),
+            stream->id());
 
   // Process an "inchoate" REJ from the server which will cause
   // an inchoate CHLO to be sent and will leave the encryption level
@@ -311,7 +315,6 @@ TEST_P(QuicSpdyClientSessionTest, ReceivedMalformedTrailersAfterSendingRst) {
 
 TEST_P(QuicSpdyClientSessionTest, OnStreamHeaderListWithStaticStream) {
   // Test situation where OnStreamHeaderList is called by stream with static id.
-  FLAGS_quic_restart_flag_quic_check_stream_nonstatic_on_header_list = true;
   CompleteCryptoHandshake();
 
   QuicHeaderList trailers;
@@ -320,7 +323,9 @@ TEST_P(QuicSpdyClientSessionTest, OnStreamHeaderListWithStaticStream) {
   trailers.OnHeaderBlockEnd(0, 0);
 
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
-  session_->OnStreamHeaderList(kCryptoStreamId, /*fin=*/false, 0, trailers);
+  session_->OnStreamHeaderList(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()),
+      /*fin=*/false, 0, trailers);
 }
 
 TEST_P(QuicSpdyClientSessionTest, OnPromiseHeaderListWithStaticStream) {
@@ -334,8 +339,9 @@ TEST_P(QuicSpdyClientSessionTest, OnPromiseHeaderListWithStaticStream) {
   trailers.OnHeaderBlockEnd(0, 0);
 
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
-  session_->OnPromiseHeaderList(kCryptoStreamId, promised_stream_id_, 0,
-                                trailers);
+  session_->OnPromiseHeaderList(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()),
+      promised_stream_id_, 0, trailers);
 }
 
 TEST_P(QuicSpdyClientSessionTest, GoAwayReceived) {
@@ -475,7 +481,8 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseOutgoingStreamId) {
       session_->CreateOutgoingBidirectionalStream());
 
   // Promise an illegal (outgoing) stream id.
-  promised_stream_id_ = 1;
+  promised_stream_id_ =
+      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, 0);
   EXPECT_CALL(
       *connection_,
       CloseConnection(QUIC_INVALID_STREAM_ID,

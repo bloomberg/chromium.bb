@@ -1,4 +1,8 @@
-#include "net/third_party/quic/core/http/http_framer.h"
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "net/third_party/quic/core/http/http_decoder.h"
 #include "net/third_party/quic/core/quic_data_reader.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_fallthrough.h"
@@ -19,7 +23,7 @@ uint8_t ExtractBits(uint8_t flags, uint8_t num_bits, uint8_t offset) {
 
 }  // namespace
 
-HttpFramer::HttpFramer()
+HttpDecoder::HttpDecoder()
     : visitor_(nullptr),
       state_(STATE_READING_FRAME_LENGTH),
       current_frame_type_(0),
@@ -28,9 +32,9 @@ HttpFramer::HttpFramer()
       error_(QUIC_NO_ERROR),
       error_detail_("") {}
 
-HttpFramer::~HttpFramer() {}
+HttpDecoder::~HttpDecoder() {}
 
-size_t HttpFramer::ProcessInput(const char* data, size_t len) {
+size_t HttpDecoder::ProcessInput(const char* data, size_t len) {
   QuicDataReader reader(data, len, NETWORK_BYTE_ORDER);
   while (error_ == QUIC_NO_ERROR && reader.BytesRemaining() != 0) {
     switch (state_) {
@@ -57,7 +61,7 @@ size_t HttpFramer::ProcessInput(const char* data, size_t len) {
   return len - reader.BytesRemaining();
 }
 
-void HttpFramer::ReadFrameLength(QuicDataReader* reader) {
+void HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
   DCHECK_NE(0u, reader->BytesRemaining());
   if (!reader->ReadVarInt62(&current_frame_length_)) {
     // TODO(rch): Handle partial delivery.
@@ -69,7 +73,7 @@ void HttpFramer::ReadFrameLength(QuicDataReader* reader) {
   remaining_frame_length_ = current_frame_length_;
 }
 
-void HttpFramer::ReadFrameType(QuicDataReader* reader) {
+void HttpDecoder::ReadFrameType(QuicDataReader* reader) {
   DCHECK_NE(0u, reader->BytesRemaining());
   if (!reader->ReadUInt8(&current_frame_type_)) {
     RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame type");
@@ -79,7 +83,7 @@ void HttpFramer::ReadFrameType(QuicDataReader* reader) {
   state_ = STATE_READING_FRAME_PAYLOAD;
 }
 
-void HttpFramer::ReadFramePayload(QuicDataReader* reader) {
+void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
   DCHECK_NE(0u, reader->BytesRemaining());
   switch (current_frame_type_) {
     case 0x0: {  // DATA
@@ -88,7 +92,7 @@ void HttpFramer::ReadFramePayload(QuicDataReader* reader) {
       }
       size_t bytes_to_read =
           std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
-      StringPiece payload;
+      QuicStringPiece payload;
       if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
         RaiseError(QUIC_INTERNAL_ERROR, "Unable to read data");
         return;
@@ -107,7 +111,7 @@ void HttpFramer::ReadFramePayload(QuicDataReader* reader) {
       }
       size_t bytes_to_read =
           std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
-      StringPiece payload;
+      QuicStringPiece payload;
       if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
         RaiseError(QUIC_INTERNAL_ERROR, "Unable to read data");
         return;
@@ -182,7 +186,7 @@ void HttpFramer::ReadFramePayload(QuicDataReader* reader) {
       if (bytes_to_read == 0) {
         return;
       }
-      StringPiece payload;
+      QuicStringPiece payload;
       if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
         RaiseError(QUIC_INTERNAL_ERROR, "Unable to read data");
         return;
@@ -248,10 +252,10 @@ void HttpFramer::ReadFramePayload(QuicDataReader* reader) {
   }
 }
 
-void HttpFramer::DiscardFramePayload(QuicDataReader* reader) {
+void HttpDecoder::DiscardFramePayload(QuicDataReader* reader) {
   size_t bytes_to_read =
       std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
-  StringPiece payload;
+  QuicStringPiece payload;
   if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
     RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame payload");
     return;
@@ -262,15 +266,13 @@ void HttpFramer::DiscardFramePayload(QuicDataReader* reader) {
   }
 }
 
-void HttpFramer::BufferFramePayload(QuicDataReader* reader) {
+void HttpDecoder::BufferFramePayload(QuicDataReader* reader) {
   if (current_frame_length_ == remaining_frame_length_) {
     buffer_.erase(buffer_.size());
     buffer_.reserve(current_frame_length_);
   }
   size_t bytes_to_read =
       std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
-  LOG(INFO) << " offset: " << current_frame_length_ - remaining_frame_length_;
-  LOG(INFO) << " size: " << buffer_.length();
   if (!reader->ReadBytes(
           &(buffer_[0]) + current_frame_length_ - remaining_frame_length_,
           bytes_to_read)) {
@@ -280,14 +282,14 @@ void HttpFramer::BufferFramePayload(QuicDataReader* reader) {
   remaining_frame_length_ -= bytes_to_read;
 }
 
-void HttpFramer::RaiseError(QuicErrorCode error, QuicString error_detail) {
+void HttpDecoder::RaiseError(QuicErrorCode error, QuicString error_detail) {
   state_ = STATE_ERROR;
   error_ = error;
   error_detail_ = std::move(error_detail);
 }
 
-bool HttpFramer::ParsePriorityFrame(QuicDataReader* reader,
-                                    PriorityFrame* frame) {
+bool HttpDecoder::ParsePriorityFrame(QuicDataReader* reader,
+                                     PriorityFrame* frame) {
   uint8_t flags;
   if (!reader->ReadUInt8(&flags)) {
     RaiseError(QUIC_INTERNAL_ERROR, "Unable to read priority frame flags");
@@ -314,8 +316,8 @@ bool HttpFramer::ParsePriorityFrame(QuicDataReader* reader,
   return true;
 }
 
-bool HttpFramer::ParseSettingsFrame(QuicDataReader* reader,
-                                    SettingsFrame* frame) {
+bool HttpDecoder::ParseSettingsFrame(QuicDataReader* reader,
+                                     SettingsFrame* frame) {
   while (!reader->IsDoneReading()) {
     uint16_t id;
     if (!reader->ReadUInt16(&id)) {
@@ -323,38 +325,12 @@ bool HttpFramer::ParseSettingsFrame(QuicDataReader* reader,
                  "Unable to read settings frame identifier");
       return false;
     }
-    uint64_t length;
-    if (!reader->ReadVarInt62(&length)) {
-      RaiseError(QUIC_INTERNAL_ERROR,
-                 "Unable to read settings frame content length");
+    uint64_t content;
+    if (!reader->ReadVarInt62(&content)) {
+      RaiseError(QUIC_INTERNAL_ERROR, "Unable to read settings frame content");
       return false;
     }
-    // TODO(rch): Settings frame content encoding is currently undefined.
-    if (length == 2) {
-      uint16_t content;
-      if (!reader->ReadUInt16(&content)) {
-        RaiseError(QUIC_INTERNAL_ERROR,
-                   "Unable to read settings frame content");
-        return false;
-      }
-      frame->values[id] = content;
-    } else if (length == 4) {
-      uint32_t content;
-      if (!reader->ReadUInt32(&content)) {
-        RaiseError(QUIC_INTERNAL_ERROR,
-                   "Unable to read settings frame content");
-        return false;
-      }
-      frame->values[id] = content;
-    } else {
-      // Just discard the setting.
-      QuicStringPiece ignored;
-      if (!reader->ReadStringPiece(&ignored, length)) {
-        RaiseError(QUIC_INTERNAL_ERROR,
-                   "Unable to read settings frame content");
-        return false;
-      }
-    }
+    frame->values[id] = content;
   }
   return true;
 }

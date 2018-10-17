@@ -90,15 +90,6 @@ const bool kIncludePathId = true;
 // Signifies that the QuicPacket will include a diversification nonce.
 const bool kIncludeDiversificationNonce = true;
 
-// Stream ID is reserved to denote an invalid ID.
-const QuicStreamId kInvalidStreamId = 0;
-
-// Reserved ID for the crypto stream.
-const QuicStreamId kCryptoStreamId = 1;
-
-// Reserved ID for the headers stream.
-const QuicStreamId kHeadersStreamId = 3;
-
 // Header key used to identify final offset on data stream when sending HTTP/2
 // trailing headers over QUIC.
 QUIC_EXPORT_PRIVATE extern const char* const kFinalOffsetHeaderKey;

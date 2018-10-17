@@ -205,7 +205,8 @@ class TestSession : public QuicSession {
 
   QuicConsumedData SendStreamData(QuicStream* stream) {
     struct iovec iov;
-    if (stream->id() != kCryptoStreamId &&
+    if (stream->id() !=
+            QuicUtils::GetCryptoStreamId(connection()->transport_version()) &&
         this->connection()->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
       this->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
@@ -259,7 +260,9 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void CheckClosedStreams() {
-    for (QuicStreamId i = kCryptoStreamId; i < 100; i++) {
+    for (QuicStreamId i =
+             QuicUtils::GetCryptoStreamId(connection_->transport_version());
+         i < 100; i++) {
       if (!QuicContainsKey(closed_streams_, i)) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
@@ -280,7 +283,10 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     return connection_->transport_version();
   }
 
-  QuicStreamId GetNthClientInitiatedId(int n) { return 3 + 2 * n; }
+  QuicStreamId GetNthClientInitiatedId(int n) {
+    return QuicUtils::GetHeadersStreamId(connection_->transport_version()) +
+           2 * n;
+  }
 
   QuicStreamId GetNthServerInitiatedId(int n) { return 2 + 2 * n; }
 
@@ -318,18 +324,25 @@ TEST_P(QuicSessionTestServer, IsCryptoHandshakeConfirmed) {
 
 TEST_P(QuicSessionTestServer, IsClosedStreamDefault) {
   // Ensure that no streams are initially closed.
-  for (QuicStreamId i = kCryptoStreamId; i < 100; i++) {
+  for (QuicStreamId i =
+           QuicUtils::GetCryptoStreamId(connection_->transport_version());
+       i < 100; i++) {
     EXPECT_FALSE(session_.IsClosedStream(i)) << "stream id: " << i;
   }
 }
 
 TEST_P(QuicSessionTestServer, AvailableStreams) {
-  ASSERT_TRUE(session_.GetOrCreateDynamicStream(9) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthClientInitiatedId(3)) !=
+              nullptr);
   // Both 5 and 7 should be available.
-  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
-  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 7));
-  ASSERT_TRUE(session_.GetOrCreateDynamicStream(7) != nullptr);
-  ASSERT_TRUE(session_.GetOrCreateDynamicStream(5) != nullptr);
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_,
+                                                 GetNthClientInitiatedId(1)));
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_,
+                                                 GetNthClientInitiatedId(2)));
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthClientInitiatedId(2)) !=
+              nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthClientInitiatedId(1)) !=
+              nullptr);
 }
 
 TEST_P(QuicSessionTestServer, IsClosedStreamLocallyCreated) {
@@ -637,7 +650,8 @@ TEST_P(QuicSessionTestServer, BufferedHandshake) {
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   // Blocking (due to buffering of) the Crypto stream is detected.
-  session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId);
+  session_.MarkConnectionLevelWriteBlocked(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()));
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   TestStream* stream4 = session_.CreateOutgoingBidirectionalStream();
@@ -709,7 +723,8 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
 
   // Mark the crypto and headers streams as write blocked, we expect them to be
   // allowed to write later.
-  session_.MarkConnectionLevelWriteBlocked(kCryptoStreamId);
+  session_.MarkConnectionLevelWriteBlocked(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()));
 
   // Create a data stream, and although it is write blocked we never expect it
   // to be allowed to write as we are connection level flow control blocked.
@@ -803,7 +818,9 @@ TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
 
 TEST_P(QuicSessionTestServer, OnStreamFrameFinStaticStreamId) {
   // Send two bytes of payload.
-  QuicStreamFrame data1(kCryptoStreamId, true, 0, QuicStringPiece("HT"));
+  QuicStreamFrame data1(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()), true, 0,
+      QuicStringPiece("HT"));
   EXPECT_CALL(*connection_,
               CloseConnection(
                   QUIC_INVALID_STREAM_ID, "Attempt to close a static stream",
@@ -813,8 +830,10 @@ TEST_P(QuicSessionTestServer, OnStreamFrameFinStaticStreamId) {
 
 TEST_P(QuicSessionTestServer, OnRstStreamStaticStreamId) {
   // Send two bytes of payload.
-  QuicRstStreamFrame rst1(kInvalidControlFrameId, kCryptoStreamId,
-                          QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst1(
+      kInvalidControlFrameId,
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()),
+      QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(*connection_,
               CloseConnection(
                   QUIC_INVALID_STREAM_ID, "Attempt to reset a static stream",
@@ -824,7 +843,9 @@ TEST_P(QuicSessionTestServer, OnRstStreamStaticStreamId) {
 
 TEST_P(QuicSessionTestServer, OnStreamFrameInvalidStreamId) {
   // Send two bytes of payload.
-  QuicStreamFrame data1(kInvalidStreamId, true, 0, QuicStringPiece("HT"));
+  QuicStreamFrame data1(
+      QuicUtils::GetInvalidStreamId(connection_->transport_version()), true, 0,
+      QuicStringPiece("HT"));
   EXPECT_CALL(*connection_,
               CloseConnection(
                   QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
@@ -834,8 +855,10 @@ TEST_P(QuicSessionTestServer, OnStreamFrameInvalidStreamId) {
 
 TEST_P(QuicSessionTestServer, OnRstStreamInvalidStreamId) {
   // Send two bytes of payload.
-  QuicRstStreamFrame rst1(kInvalidControlFrameId, kInvalidStreamId,
-                          QUIC_ERROR_PROCESSING_STREAM, 0);
+  QuicRstStreamFrame rst1(
+      kInvalidControlFrameId,
+      QuicUtils::GetInvalidStreamId(connection_->transport_version()),
+      QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(*connection_,
               CloseConnection(
                   QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
@@ -909,8 +932,9 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   // send window.
   CryptoHandshakeMessage msg;
   session_.GetMutableCryptoStream()->OnHandshakeMessage(msg);
-  EXPECT_TRUE(
-      QuicSessionPeer::IsStreamWriteBlocked(&session_, kCryptoStreamId));
+  EXPECT_TRUE(QuicSessionPeer::IsStreamWriteBlocked(
+      &session_,
+      QuicUtils::GetCryptoStreamId(connection_->transport_version())));
   // Stream is now unblocked and will no longer have buffered data.
   EXPECT_FALSE(crypto_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
@@ -1187,14 +1211,20 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSessionTestClient, AvailableStreamsClient) {
-  ASSERT_TRUE(session_.GetOrCreateDynamicStream(6) != nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthServerInitiatedId(2)) !=
+              nullptr);
   // Both 2 and 4 should be available.
-  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 2));
-  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_, 4));
-  ASSERT_TRUE(session_.GetOrCreateDynamicStream(2) != nullptr);
-  ASSERT_TRUE(session_.GetOrCreateDynamicStream(4) != nullptr);
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_,
+                                                 GetNthServerInitiatedId(0)));
+  EXPECT_TRUE(QuicSessionPeer::IsStreamAvailable(&session_,
+                                                 GetNthServerInitiatedId(1)));
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthServerInitiatedId(0)) !=
+              nullptr);
+  ASSERT_TRUE(session_.GetOrCreateDynamicStream(GetNthServerInitiatedId(1)) !=
+              nullptr);
   // And 5 should be not available.
-  EXPECT_FALSE(QuicSessionPeer::IsStreamAvailable(&session_, 5));
+  EXPECT_FALSE(QuicSessionPeer::IsStreamAvailable(&session_,
+                                                  GetNthClientInitiatedId(1)));
 }
 
 TEST_P(QuicSessionTestClient, RecordFinAfterReadSideClosed) {
@@ -1251,15 +1281,15 @@ TEST_P(QuicSessionTestServer, ZombieStreams) {
   EXPECT_TRUE(stream2->IsWaitingForAcks());
 
   EXPECT_CALL(*connection_, SendControlFrame(_));
-  EXPECT_CALL(*connection_, OnStreamReset(2, _));
-  session_.CloseStream(2);
-  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
+  EXPECT_CALL(*connection_, OnStreamReset(stream2->id(), _));
+  session_.CloseStream(stream2->id());
+  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
   ASSERT_EQ(1u, session_.closed_streams()->size());
-  EXPECT_EQ(2u, session_.closed_streams()->front()->id());
-  session_.OnStreamDoneWaitingForAcks(2);
-  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), 2));
+  EXPECT_EQ(stream2->id(), session_.closed_streams()->front()->id());
+  session_.OnStreamDoneWaitingForAcks(stream2->id());
+  EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
   EXPECT_EQ(1u, session_.closed_streams()->size());
-  EXPECT_EQ(2u, session_.closed_streams()->front()->id());
+  EXPECT_EQ(stream2->id(), session_.closed_streams()->front()->id());
 }
 
 // Regression test of b/71548958.
@@ -1305,7 +1335,9 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
   TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();
   TestStream* stream4 = session_.CreateOutgoingBidirectionalStream();
 
-  QuicStreamFrame frame1(kCryptoStreamId, false, 0, 1300);
+  QuicStreamFrame frame1(
+      QuicUtils::GetCryptoStreamId(connection_->transport_version()), false, 0,
+      1300);
   QuicStreamFrame frame2(stream2->id(), false, 0, 9);
   QuicStreamFrame frame3(stream4->id(), false, 0, 9);
 

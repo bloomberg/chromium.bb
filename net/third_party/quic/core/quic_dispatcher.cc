@@ -86,7 +86,6 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
                                         QuicStreamOffset offset,
                                         QuicByteCount data_length,
                                         QuicDataWriter* writer) override {
-    DCHECK_EQ(kCryptoStreamId, id);
     if (send_buffer_.WriteStreamData(offset, data_length, writer)) {
       return WRITE_SUCCESS;
     }
@@ -158,17 +157,19 @@ class StatelessConnectionTerminator {
     while (offset < reject.length()) {
       QuicFrame frame;
       creator_.SetLongHeaderType(RETRY);
-      if (!creator_.ConsumeData(kCryptoStreamId, reject.length(), offset,
-                                offset,
-                                /*fin=*/false,
-                                /*needs_full_padding=*/true, &frame)) {
+      if (!creator_.ConsumeData(
+              QuicUtils::GetCryptoStreamId(framer_->transport_version()),
+              reject.length(), offset, offset,
+              /*fin=*/false,
+              /*needs_full_padding=*/true, &frame)) {
         QUIC_BUG << "Unable to consume data into an empty packet.";
         return;
       }
       offset += frame.stream_frame.data_length;
       if (offset < reject.length()) {
-        DCHECK(!creator_.HasRoomForStreamFrame(kCryptoStreamId, offset,
-                                               frame.stream_frame.data_length));
+        DCHECK(!creator_.HasRoomForStreamFrame(
+            QuicUtils::GetCryptoStreamId(framer_->transport_version()), offset,
+            frame.stream_frame.data_length));
       }
       creator_.Flush();
     }
@@ -998,7 +999,9 @@ class StatelessRejectorProcessDoneCallback
         additional_context_(dispatcher->GetPerPacketContext()),
         current_packet_(
             dispatcher->current_packet_->Clone()),  // Note: copies the packet
-        first_version_(first_version) {}
+        first_version_(first_version),
+        current_packet_is_ietf_quic_(
+            dispatcher->framer()->last_packet_is_ietf_quic()) {}
 
   void Run(std::unique_ptr<StatelessRejector> rejector) override {
     if (additional_context_ != nullptr) {
@@ -1006,7 +1009,8 @@ class StatelessRejectorProcessDoneCallback
     }
     dispatcher_->OnStatelessRejectorProcessDone(
         std::move(rejector), current_client_address_, current_peer_address_,
-        current_self_address_, std::move(current_packet_), first_version_);
+        current_self_address_, std::move(current_packet_), first_version_,
+        current_packet_is_ietf_quic_);
   }
 
  private:
@@ -1019,6 +1023,7 @@ class StatelessRejectorProcessDoneCallback
   std::unique_ptr<QuicDispatcher::PerPacketContext> additional_context_;
   std::unique_ptr<QuicReceivedPacket> current_packet_;
   ParsedQuicVersion first_version_;
+  const bool current_packet_is_ietf_quic_;
 };
 
 void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
@@ -1102,7 +1107,8 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
     const QuicSocketAddress& current_peer_address,
     const QuicSocketAddress& current_self_address,
     std::unique_ptr<QuicReceivedPacket> current_packet,
-    ParsedQuicVersion first_version) {
+    ParsedQuicVersion first_version,
+    bool current_packet_is_ietf_quic) {
   // Reset current_* to correspond to the packet which initiated the stateless
   // reject logic.
   current_client_address_ = current_client_address;
@@ -1111,6 +1117,12 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   current_packet_ = current_packet.get();
   current_connection_id_ = rejector->connection_id();
   framer_.set_version(first_version);
+  if (GetQuicReloadableFlag(quic_fix_last_packet_is_ietf_quic)) {
+    if (framer_.last_packet_is_ietf_quic() != current_packet_is_ietf_quic) {
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic);
+    }
+    framer_.set_last_packet_is_ietf_quic(current_packet_is_ietf_quic);
+  }
 
   // Stop buffering packets on this connection
   const auto num_erased =

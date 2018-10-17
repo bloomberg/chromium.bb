@@ -801,7 +801,12 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
   header.packet_number = packet_number;
-  QuicFrame frame(QuicStreamFrame(1, false, 0, QuicStringPiece(data)));
+  QuicFrame frame(QuicStreamFrame(
+      QuicUtils::GetCryptoStreamId(
+          versions != nullptr
+              ? (*versions)[0].transport_version
+              : CurrentSupportedVersions()[0].transport_version),
+      false, 0, QuicStringPiece(data)));
   QuicFrames frames;
   frames.push_back(frame);
   QuicFramer framer(
