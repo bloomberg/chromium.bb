@@ -179,7 +179,7 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     DCHECK(!dispatching_pointer_id_);
     base::AutoReset<int> dispatch_holder(&dispatching_pointer_id_, pointer_id);
     DispatchEventResult dispatch_result = target->DispatchEvent(*pointer_event);
-    return EventHandlingUtil::ToWebInputEventResult(dispatch_result);
+    return event_handling_util::ToWebInputEventResult(dispatch_result);
   }
   return WebInputEventResult::kNotHandled;
 }
@@ -354,10 +354,10 @@ void PointerEventManager::AdjustTouchPointerEvent(
       pointer_event.unique_touch_event_id, pointer_event.PositionInWidget());
 }
 
-EventHandlingUtil::PointerEventTarget
+event_handling_util::PointerEventTarget
 PointerEventManager::ComputePointerEventTarget(
     const WebPointerEvent& web_pointer_event) {
-  EventHandlingUtil::PointerEventTarget pointer_event_target;
+  event_handling_util::PointerEventTarget pointer_event_target;
 
   int pointer_id = pointer_event_factory_.GetPointerEventId(web_pointer_event);
   // Do the hit test either when the touch first starts or when the touch
@@ -410,7 +410,7 @@ WebInputEventResult PointerEventManager::DispatchTouchPointerEvent(
     const WebPointerEvent& web_pointer_event,
     const Vector<WebPointerEvent>& coalesced_events,
     const Vector<WebPointerEvent>& predicted_events,
-    const EventHandlingUtil::PointerEventTarget& pointer_event_target) {
+    const event_handling_util::PointerEventTarget& pointer_event_target) {
   DCHECK_NE(web_pointer_event.GetType(),
             WebInputEvent::Type::kPointerCausedUaAction);
 
@@ -544,7 +544,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   WebPointerEvent pointer_event = event.WebPointerEventInRootFrame();
   if (ShouldAdjustPointerEvent(event))
     AdjustTouchPointerEvent(pointer_event);
-  EventHandlingUtil::PointerEventTarget pointer_event_target =
+  event_handling_util::PointerEventTarget pointer_event_target =
       ComputePointerEventTarget(pointer_event);
 
   // Any finger lifting is a user gesture only when it wasn't associated with a
@@ -614,7 +614,7 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
   WebInputEventResult result = CreateAndDispatchPointerEvent(
       target, mouse_event_type, event, coalesced_events, predicted_events);
 
-  result = EventHandlingUtil::MergeEventResult(
+  result = event_handling_util::MergeEventResult(
       result, mouse_event_manager_->DispatchMouseEvent(
                   target, mouse_event_type, event, canvas_region_id, nullptr));
 
@@ -701,17 +701,17 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     EventTarget* mouse_target = effective_target;
     // Event path could be null if pointer event is not dispatched and
     // that happens for example when pointer event feature is not enabled.
-    if (!EventHandlingUtil::IsInDocument(mouse_target) &&
+    if (!event_handling_util::IsInDocument(mouse_target) &&
         pointer_event->HasEventPath()) {
       for (const auto& context :
            pointer_event->GetEventPath().NodeEventContexts()) {
-        if (EventHandlingUtil::IsInDocument(context.GetNode())) {
+        if (event_handling_util::IsInDocument(context.GetNode())) {
           mouse_target = context.GetNode();
           break;
         }
       }
     }
-    result = EventHandlingUtil::MergeEventResult(
+    result = event_handling_util::MergeEventResult(
         result,
         mouse_event_manager_->DispatchMouseEvent(
             mouse_target, MouseEventNameForPointerEventInputType(event_type),

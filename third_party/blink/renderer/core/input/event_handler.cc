@@ -631,7 +631,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
       mev.InnerNode());
 
-  LocalFrame* subframe = EventHandlingUtil::SubframeForHitTestResult(mev);
+  LocalFrame* subframe = event_handling_util::SubframeForHitTestResult(mev);
   if (subframe) {
     WebInputEventResult result = PassMousePressEventToSubframe(mev, subframe);
     // Start capturing future events for this frame.  We only do this if we
@@ -707,7 +707,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   // dragging if we keep the selection in case of mousedown. FireFox also has
   // the same behavior and it's more compatible with other browsers.
   GetSelectionController().InitializeSelectionState();
-  HitTestResult hit_test_result = EventHandlingUtil::HitTestResultInFrame(
+  HitTestResult hit_test_result = event_handling_util::HitTestResultInFrame(
       frame_, HitTestLocation(document_point), HitTestRequest::kReadOnly);
   InputDeviceCapabilities* source_capabilities =
       frame_->GetDocument()
@@ -788,9 +788,9 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
     return result;
 
   if (PaintLayer* layer =
-          EventHandlingUtil::LayerForNode(hovered_node_result.InnerNode())) {
+          event_handling_util::LayerForNode(hovered_node_result.InnerNode())) {
     if (ScrollableArea* layer_scrollable_area =
-            EventHandlingUtil::AssociatedScrollableArea(layer))
+            event_handling_util::AssociatedScrollableArea(layer))
       layer_scrollable_area->MouseMovedInContentArea();
   }
 
@@ -897,8 +897,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   if (force_leave) {
     frame_->GetDocument()->UpdateHoverActiveState(request, nullptr);
   } else {
-    mev = EventHandlingUtil::PerformMouseEventHitTest(frame_, request,
-                                                      mouse_event);
+    mev = event_handling_util::PerformMouseEventHitTest(frame_, request,
+                                                        mouse_event);
   }
 
   if (hovered_node_result)
@@ -924,9 +924,9 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
   LocalFrame* new_subframe =
       capturing_mouse_events_node_.Get()
-          ? EventHandlingUtil::SubframeForTargetNode(
+          ? event_handling_util::SubframeForTargetNode(
                 capturing_mouse_events_node_.Get())
-          : EventHandlingUtil::SubframeForHitTestResult(mev);
+          : event_handling_util::SubframeForHitTestResult(mev);
 
   // We want mouseouts to happen first, from the inside out.  First send a
   // move event to the last subframe so that it will fire mouseouts.
@@ -1034,12 +1034,14 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kRelease;
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev =
-      EventHandlingUtil::PerformMouseEventHitTest(frame_, request, mouse_event);
+      event_handling_util::PerformMouseEventHitTest(frame_, request,
+                                                    mouse_event);
   Element* mouse_release_target = mev.InnerElement();
-  LocalFrame* subframe = capturing_mouse_events_node_.Get()
-                             ? EventHandlingUtil::SubframeForTargetNode(
-                                   capturing_mouse_events_node_.Get())
-                             : EventHandlingUtil::SubframeForHitTestResult(mev);
+  LocalFrame* subframe =
+      capturing_mouse_events_node_.Get()
+          ? event_handling_util::SubframeForTargetNode(
+                capturing_mouse_events_node_.Get())
+          : event_handling_util::SubframeForHitTestResult(mev);
   if (event_handler_will_reset_capturing_mouse_events_node_)
     capturing_mouse_events_node_ = nullptr;
   if (subframe)
@@ -1079,7 +1081,8 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
   CaptureMouseEventsToWidget(false);
 
-  return EventHandlingUtil::MergeEventResult(click_event_result, event_result);
+  return event_handling_util::MergeEventResult(click_event_result,
+                                               event_result);
 }
 
 static bool TargetIsFrame(Node* target, LocalFrame*& frame) {
@@ -1105,7 +1108,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
 
   HitTestRequest request(HitTestRequest::kReadOnly);
   MouseEventWithHitTestResults mev =
-      EventHandlingUtil::PerformMouseEventHitTest(frame_, request, event);
+      event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
   // Drag events should never go to text nodes (following IE, and proper
   // mouseover/out dispatch)
@@ -2099,7 +2102,7 @@ void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
   // opportunity for Layer to update the :hover and :active pseudoclasses.
   HitTestRequest request(HitTestRequest::kRelease);
   MouseEventWithHitTestResults mev =
-      EventHandlingUtil::PerformMouseEventHitTest(frame_, request, event);
+      event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
   LocalFrame* target_frame;
   if (TargetIsFrame(mev.InnerNode(), target_frame)) {

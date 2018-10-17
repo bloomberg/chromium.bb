@@ -258,7 +258,7 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
         mouse_event.menu_source_type);
 
     DispatchEventResult dispatch_result = target->DispatchEvent(*event);
-    return EventHandlingUtil::ToWebInputEventResult(dispatch_result);
+    return event_handling_util::ToWebInputEventResult(dispatch_result);
   }
   return WebInputEventResult::kNotHandled;
 }
@@ -316,7 +316,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     mouse_down_element_->UpdateDistributionForFlatTreeTraversal();
     mouse_release_target.UpdateDistributionForFlatTreeTraversal();
     click_target_node = mouse_release_target.CommonAncestor(
-        *mouse_down_element_, EventHandlingUtil::ParentForClickEvent);
+        *mouse_down_element_, event_handling_util::ParentForClickEvent);
   }
   if (!click_target_node)
     return WebInputEventResult::kNotHandled;
@@ -394,9 +394,9 @@ void MouseEventManager::SetNodeUnderMouse(
   node_under_mouse_ = target;
 
   PaintLayer* layer_for_last_node =
-      EventHandlingUtil::LayerForNode(last_node_under_mouse);
+      event_handling_util::LayerForNode(last_node_under_mouse);
   PaintLayer* layer_for_node_under_mouse =
-      EventHandlingUtil::LayerForNode(node_under_mouse_.Get());
+      event_handling_util::LayerForNode(node_under_mouse_.Get());
   Page* page = frame_->GetPage();
 
   if (page && (layer_for_last_node &&
@@ -404,7 +404,7 @@ void MouseEventManager::SetNodeUnderMouse(
                 layer_for_node_under_mouse != layer_for_last_node))) {
     // The mouse has moved between layers.
     if (ScrollableArea* scrollable_area_for_last_node =
-            EventHandlingUtil::AssociatedScrollableArea(layer_for_last_node))
+            event_handling_util::AssociatedScrollableArea(layer_for_last_node))
       scrollable_area_for_last_node->MouseExitedContentArea();
   }
 
@@ -413,7 +413,7 @@ void MouseEventManager::SetNodeUnderMouse(
                 layer_for_node_under_mouse != layer_for_last_node))) {
     // The mouse has moved between layers.
     if (ScrollableArea* scrollable_area_for_node_under_mouse =
-            EventHandlingUtil::AssociatedScrollableArea(
+            event_handling_util::AssociatedScrollableArea(
                 layer_for_node_under_mouse))
       scrollable_area_for_node_under_mouse->MouseEnteredContentArea();
   }
@@ -759,8 +759,8 @@ bool MouseEventManager::HandleDragDropIfPossible(
         CurrentTimeTicks());
     HitTestRequest request(HitTestRequest::kReadOnly);
     MouseEventWithHitTestResults mev =
-        EventHandlingUtil::PerformMouseEventHitTest(frame_, request,
-                                                    mouse_drag_event);
+        event_handling_util::PerformMouseEventHitTest(frame_, request,
+                                                      mouse_drag_event);
     mouse_down_may_start_drag_ = true;
     ResetDragSource();
     mouse_down_pos_ = frame_->View()->ConvertFromRootFrame(
@@ -1062,7 +1062,7 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
                                         ? MouseEvent::kFromTouch
                                         : MouseEvent::kRealOrIndistinguishable);
 
-  return EventHandlingUtil::ToWebInputEventResult(
+  return event_handling_util::ToWebInputEventResult(
       drag_target->DispatchEvent(*me));
 }
 
