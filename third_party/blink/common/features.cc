@@ -59,7 +59,7 @@ const base::Feature kServiceWorkerParallelSideDataReading{
 // Enable new service worker glue for NetworkService. Can be
 // enabled independently of NetworkService.
 const base::Feature kServiceWorkerServicification{
-    "ServiceWorkerServicification", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerServicification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Freeze scheduler task queues in background after allowed grace time.
 // "stop" is a legacy name.
