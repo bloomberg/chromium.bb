@@ -2032,7 +2032,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
          !_webStateImpl->HasWebUI();
 }
 
-- (void)reload {
+- (void)reloadWithRendererInitiatedNavigation:(BOOL)isRendererInitiated {
   // Clear last user interaction.
   // TODO(crbug.com/546337): Move to after the load commits, in the subclass
   // implementation. This will be inaccurate if the reload fails or is
@@ -2047,6 +2047,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                        transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
            sameDocumentNavigation:NO
                    hasUserGesture:YES];
+    navigationContext->SetIsRendererInitiated(isRendererInitiated);
     _webStateImpl->OnNavigationStarted(navigationContext.get());
     [self didStartLoading];
     self.navigationManagerImpl->CommitPendingItem();
@@ -2221,7 +2222,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
 
   if (delta == 0) {
-    [self reload];
+    [self reloadWithRendererInitiatedNavigation:YES];
     return;
   }
 
@@ -4191,6 +4192,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                        sameDocumentNavigation:NO
                                hasUserGesture:true];
   }
+  context->SetIsRendererInitiated(false);
   context->SetLoadingHtmlString(true);
   [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
@@ -4405,15 +4407,23 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
+  ui::PageTransition transition =
+      [self pageTransitionFromNavigationType:action.navigationType];
   BOOL isMainFrameNavigationAction = [self isMainFrameNavigationAction:action];
-  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages) &&
-      isMainFrameNavigationAction) {
+  if (isMainFrameNavigationAction) {
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:requestURL];
-    if (context && context->IsLoadingErrorPage()) {
-      // loadHTMLString: navigation which loads error page into WKWebView.
-      decisionHandler(WKNavigationActionPolicyAllow);
-      return;
+    if (context) {
+      DCHECK(!context->IsRendererInitiated());
+      transition = context->GetPageTransition();
+
+      if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+        if (context->IsLoadingErrorPage()) {
+          // loadHTMLString: navigation which loads error page into WKWebView.
+          decisionHandler(WKNavigationActionPolicyAllow);
+          return;
+        }
+      }
     }
   }
 
@@ -4457,8 +4467,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  ui::PageTransition transition =
-      [self pageTransitionFromNavigationType:action.navigationType];
   BOOL userInteractedWithRequestMainFrame =
       [self userClickedRecently] &&
       net::GURLWithNSURL(action.request.mainDocumentURL) ==
@@ -5622,6 +5630,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       WKNavigation* navigation = [self loadPOSTRequest:request];
       [_navigationStates setContext:std::move(navigationContext)
                       forNavigation:navigation];
+      [_navigationStates setState:web::WKNavigationState::REQUESTED
+                    forNavigation:navigation];
       return;
     }
   }
@@ -5635,6 +5645,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                              transition:self.currentTransition
                  sameDocumentNavigation:sameDocumentNavigation
                          hasUserGesture:YES];
+    navigationContext->SetIsRendererInitiated(false);
     WKNavigation* navigation = [self loadRequest:request];
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
@@ -5677,6 +5688,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                              transition:self.currentTransition
                  sameDocumentNavigation:sameDocumentNavigation
                          hasUserGesture:YES];
+    navigationContext->SetIsRendererInitiated(false);
     WKNavigation* navigation = nil;
     if (navigationURL == net::GURLWithNSURL([_webView URL])) {
       navigation = [_webView reload];
