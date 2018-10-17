@@ -41,9 +41,7 @@ class BrowserContext;
 namespace arc {
 
 namespace mojom {
-class AppHost;
 class AppInstance;
-class IntentHelperHost;
 class IntentHelperInstance;
 }  // namespace mojom
 
@@ -54,6 +52,8 @@ class ArcBluetoothBridge
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
       public device::BluetoothLocalGattService::Delegate,
+      public ConnectionObserver<mojom::AppInstance>,
+      public ConnectionObserver<mojom::IntentHelperInstance>,
       public mojom::BluetoothHost {
  public:
   using GattStatusCallback =
@@ -341,9 +341,6 @@ class ArcBluetoothBridge
   void StartDiscoveryImpl(bool le_scan);
   void CancelDiscoveryImpl();
 
-  template <typename InstanceType, typename HostType>
-  class ConnectionObserverImpl;
-
   // Power state change on Bluetooth adapter.
   enum class AdapterPowerState { TURN_OFF, TURN_ON };
 
@@ -393,8 +390,9 @@ class ArcBluetoothBridge
   bool IsPowerChangeInitiatedByLocal(
       ArcBluetoothBridge::AdapterPowerState powered) const;
 
-  // Sends initial power state when all preconditions are met.
-  void MaybeSendInitialPowerChange();
+  // ConnectionObserver<mojom::AppInstance>:
+  // ConnectionObserver<mojom::IntentHelperInstance>:
+  void OnConnectionReady() override;
 
   // Manages the powered change intents sent to Android.
   void EnqueueLocalPowerChange(AdapterPowerState powered);
@@ -574,12 +572,6 @@ class ArcBluetoothBridge
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
 
-  // Observers to listen the start-up of App and Intent Helper.
-  std::unique_ptr<ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>
-      app_observer_;
-  std::unique_ptr<ConnectionObserverImpl<mojom::IntentHelperInstance,
-                                         mojom::IntentHelperHost>>
-      intent_helper_observer_;
   // Queue to track the powered state changes initiated by Android.
   base::queue<AdapterPowerState> remote_power_changes_;
   // Queue to track the powered state changes initiated by Chrome.
