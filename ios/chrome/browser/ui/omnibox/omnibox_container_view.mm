@@ -59,16 +59,12 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
 #pragma mark - Public methods
 
 - (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
-                   largerFont:(UIFont*)largerFont
                     textColor:(UIColor*)textColor
                 textFieldTint:(UIColor*)textFieldTint
                      iconTint:(UIColor*)iconTint {
   self = [super initWithFrame:frame];
   if (self) {
     _textField = [[OmniboxTextFieldIOS alloc] initWithFrame:frame
-                                                       font:font
-                                                 largerFont:largerFont
                                                   textColor:textColor
                                                   tintColor:textFieldTint];
     [self addSubview:_textField];
