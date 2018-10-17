@@ -790,6 +790,16 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStopped(int embedded_worker_id) {
   }
 }
 
+void EmbeddedWorkerTestHelper::SimulateRequestTermination(
+    int embedded_worker_id,
+    base::OnceCallback<void(bool)> callback) {
+  base::RunLoop loop;
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
+      ->RequestTermination(std::move(callback));
+  base::RunLoop().RunUntilIdle();
+}
+
 void EmbeddedWorkerTestHelper::OnInitializeGlobalScope(
     int embedded_worker_id,
     blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
