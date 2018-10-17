@@ -222,6 +222,9 @@
   <message name="IDS_MEDIA_ROUTER_SINK_CONNECTING" desc="Text shown as the status of a Cast destination that we are starting a Cast session on.">
     Connecting...
   </message>
+  <message name="IDS_MEDIA_ROUTER_STOP_CASTING" desc="Text shown when user hovers over the stop icon for a cast device.">
+    Stop casting
+  </message>
 
   <!-- Sink Search -->
   <message name="IDS_MEDIA_ROUTER_SEARCH_LABEL" desc="Label for search input in sink list.">
