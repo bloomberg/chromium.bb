@@ -538,8 +538,20 @@ config("compiler") {
     ]
 
     if (is_win && use_lld) {
-      # Absolutize source file path for PDB.
-      ldflags += [ "/PDBSourcePath:" + rebase_path(root_build_dir) ]
+      if (symbol_level == 2 || (is_clang && using_sanitizer)) {
+        # Absolutize source file path for PDB. Pass the real build directory
+        # if the pdb contains source-level debug information.
+        ldflags += [ "/PDBSourcePath:" + rebase_path(root_build_dir) ]
+      } else {
+        # On Windows, (non-sanitizier) symbol_level 1 builds don't contain
+        # debug information in obj files; the linker just creates enough
+        # debug info at link time to produce symbolized stacks (without line
+        # numbers). In that case, there's no downside in using a fake fixed
+        # base directory for paths in the pdb. This makes the pdb output
+        # fully deterministic and independent of the build directory.
+        assert(symbol_level == 1 && !(is_clang && using_sanitizer))
+        ldflags += [ "/PDBSourcePath:o:\fake\prefix" ]
+      }
     }
   }
 
