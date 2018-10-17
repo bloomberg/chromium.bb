@@ -20495,6 +20495,7 @@ Called by update_net_error_codes.py.-->
   <int value="2605" label="DateToLocaleString"/>
   <int value="2606" label="DateToLocaleDateString"/>
   <int value="2607" label="DateToLocaleTimeString"/>
+  <int value="2608" label="MalformedCSP"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
