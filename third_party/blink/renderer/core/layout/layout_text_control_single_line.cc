@@ -244,10 +244,10 @@ LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
     if (LayoutBox* spin_layout_object =
             spin_button ? spin_button->GetLayoutBox() : nullptr) {
       result += spin_layout_object->BorderAndPaddingLogicalWidth();
-      // Since the width of spinLayoutObject is not calculated yet,
-      // spinLayoutObject->logicalWidth() returns 0.
-      // So ensureComputedStyle()->logicalWidth() is used instead.
-      result += spin_button->EnsureComputedStyle()->LogicalWidth().Value();
+      // Since the width of spin_layout_object is not calculated yet,
+      // spin_layout_object->LogicalWidth() returns 0. Use the computed logical
+      // width instead.
+      result += spin_layout_object->StyleRef().LogicalWidth().Value();
     }
   }
 
