@@ -5,6 +5,7 @@
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
@@ -17,10 +18,6 @@
 namespace content {
 
 namespace {
-
-// TODO(c.padhi): Allow frame rates lower than 1Hz,
-// see https://crbug.com/814131.
-const float kMinDeviceCaptureFrameRate = 1.0f;
 
 template <typename P, typename T>
 bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
@@ -103,6 +100,8 @@ bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
 }
 
 }  // namespace
+
+const double kMinDeviceCaptureFrameRate = std::numeric_limits<double>::min();
 
 VideoCaptureSettings::VideoCaptureSettings() : VideoCaptureSettings("") {}
 
@@ -275,7 +274,8 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
   // adjustment.
   double track_max_frame_rate = frame_rate_set.Max().value_or(0.0);
   if (basic_constraint_set.frame_rate.HasIdeal()) {
-    track_max_frame_rate = basic_constraint_set.frame_rate.Ideal();
+    track_max_frame_rate = std::max(basic_constraint_set.frame_rate.Ideal(),
+                                    kMinDeviceCaptureFrameRate);
     if (frame_rate_set.Min() && track_max_frame_rate < *frame_rate_set.Min())
       track_max_frame_rate = *frame_rate_set.Min();
     if (frame_rate_set.Max() && track_max_frame_rate > *frame_rate_set.Max())

@@ -324,7 +324,7 @@ double FrameRateConstraintSourceDistance(
                              media::limits::kMaxFramesPerSecond) +
                              blink::DoubleConstraint::kConstraintEpsilon));
   bool constraint_max_out_of_range =
-      ((constraint_max < 1.0) ||
+      ((constraint_max < kMinDeviceCaptureFrameRate) ||
        (constraint_max < constrained_format.MinFrameRate().value_or(0.0) -
                              blink::DoubleConstraint::kConstraintEpsilon));
   bool constraint_self_contradicts = constraint_min > constraint_max;

@@ -368,14 +368,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFrameRate) {
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
             result.failed_constraint_name());
-
-  // Maximum frame rate must be at least 1.0.
-  constraint_factory_.Reset();
-  constraint_factory_.basic().frame_rate.SetMax(0.99);
-  result = SelectSettings();
-  EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
-            result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
