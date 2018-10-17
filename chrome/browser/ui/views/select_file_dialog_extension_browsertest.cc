@@ -266,14 +266,8 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
 // page element, as that uses different memory management pathways.
 // crbug.com/98791
 
-// Flaky on Chrome OS, see: http://crbug.com/477360
-#if defined(OS_CHROMEOS)
-#define MAYBE_SelectFileAndCancel DISABLED_SelectFileAndCancel
-#else
-#define MAYBE_SelectFileAndCancel SelectFileAndCancel
-#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       MAYBE_SelectFileAndCancel) {
+                       SelectFileAndCancel) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   // Open the file dialog on the default path.
