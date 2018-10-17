@@ -13,17 +13,49 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 
+namespace {
+
+TestingProfile::TestingFactories GetIdentityTestEnvironmentFactories() {
+  return {{GaiaCookieManagerServiceFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
+          {ProfileOAuth2TokenServiceFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
+          {SigninManagerFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
+}
+
+}  // namespace
+
+// static
+std::unique_ptr<content::BrowserContext> IdentityTestEnvironmentProfileAdaptor::
+    CreateProfileForIdentityTestEnvironment() {
+  return CreateProfileForIdentityTestEnvironment(
+      TestingProfile::TestingFactories());
+}
+
+// static
+std::unique_ptr<content::BrowserContext>
+IdentityTestEnvironmentProfileAdaptor::CreateProfileForIdentityTestEnvironment(
+    const TestingProfile::TestingFactories& input_factories) {
+  TestingProfile::Builder builder;
+
+  for (auto& input_factory : input_factories) {
+    builder.AddTestingFactory(input_factory.first, input_factory.second);
+  }
+
+  for (auto& identity_factory : GetIdentityTestEnvironmentFactories()) {
+    builder.AddTestingFactory(identity_factory.first, identity_factory.second);
+  }
+
+  return builder.Build();
+}
+
 // static
 void IdentityTestEnvironmentProfileAdaptor::
     AppendIdentityTestEnvironmentFactories(
         TestingProfile::TestingFactories* factories_to_append_to) {
-  TestingProfile::TestingFactories identity_factories = {
-      {GaiaCookieManagerServiceFactory::GetInstance(),
-       base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
-      {ProfileOAuth2TokenServiceFactory::GetInstance(),
-       base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
-      {SigninManagerFactory::GetInstance(),
-       base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
+  TestingProfile::TestingFactories identity_factories =
+      GetIdentityTestEnvironmentFactories();
   factories_to_append_to->insert(factories_to_append_to->end(),
                                  identity_factories.begin(),
                                  identity_factories.end());
