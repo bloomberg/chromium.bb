@@ -1760,6 +1760,13 @@
           '--enable-features=SingleProcessMash',
         ],
       },
+      'single_process_mash_interactive_ui_tests': {
+        'test': 'interactive_ui_tests',
+        'args': [
+          '--enable-features=SingleProcessMash',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter',
+        ],
+      },
       'ui_chromeos_unittests': {},
       'views_mus_unittests': {},
       'views_mus_interactive_ui_tests': {},
@@ -1830,13 +1837,6 @@
         'test': 'content_unittests',
         'args': [
           '--enable-features=Mash',
-        ],
-      },
-      'single_process_mash_interactive_ui_tests': {
-        'test': 'interactive_ui_tests',
-        'args': [
-          '--enable-features=SingleProcessMash',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter',
         ],
       },
     },
