@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
-#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -162,11 +161,14 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
     decode_info = decode_info.makeAlphaType(kUnpremul_SkAlphaType);
   }
 
-  PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
-  bool decoded = frame_generator_->DecodeAndScale(
-      data_.get(), all_data_received_, frame_index, decode_info, memory,
-      adjusted_row_bytes, alpha_option, client_id);
-  PlatformInstrumentation::DidDecodeLazyPixelRef();
+  bool decoded = false;
+  {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                 "Decode LazyPixelRef", "LazyPixelRef", lazy_pixel_ref);
+    decoded = frame_generator_->DecodeAndScale(
+        data_.get(), all_data_received_, frame_index, decode_info, memory,
+        adjusted_row_bytes, alpha_option, client_id);
+  }
 
   if (decoded && needs_color_xform) {
     TRACE_EVENT0("blink", "DecodingImageGenerator::getPixels - apply xform");
@@ -213,13 +215,11 @@ bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
   DCHECK(all_data_received_);
 
   TRACE_EVENT0("blink", "DecodingImageGenerator::getYUV8Planes");
-
-  PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "Decode LazyPixelRef", "LazyPixelRef", lazy_pixel_ref);
   bool decoded =
       frame_generator_->DecodeToYUV(data_.get(), frame_index, size_info.fSizes,
                                     planes, size_info.fWidthBytes);
-  PlatformInstrumentation::DidDecodeLazyPixelRef();
-
   return decoded;
 }
 
