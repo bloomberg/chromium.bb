@@ -33,12 +33,12 @@ bool CanBeginGestureDrag(ui::GestureEvent* event) {
 
   const gfx::Point location_in_screen =
       event->target()->GetScreenLocation(*event);
-  const gfx::Rect display_bounds =
+  const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
-          .bounds();
+          .work_area();
 
-  gfx::Rect hit_bounds_in_screen(display_bounds);
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
   hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
   if (hit_bounds_in_screen.Contains(location_in_screen))
     return true;
@@ -118,8 +118,6 @@ ImmersiveGestureHandlerClassic::~ImmersiveGestureHandlerClassic() {
 }
 
 void ImmersiveGestureHandlerClassic::OnGestureEvent(ui::GestureEvent* event) {
-  // TODO(minch): Make window can be dragged from top if docked magnifier is
-  // enabled. http://crbug.com/866680.
   if (CanDrag(event)) {
     DCHECK(tablet_mode_app_window_drag_controller_);
     if (tablet_mode_app_window_drag_controller_->DragWindowFromTop(event))
