@@ -16,6 +16,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_state.h"
@@ -530,6 +531,8 @@ class WallpaperControllerTest : public AshTestBase {
   void ClearDecodeFilePaths() {
     controller_->decode_requests_for_testing_.clear();
   }
+
+  void ClearWallpaper() { controller_->current_wallpaper_.reset(); }
 
   WallpaperController* controller_;  // Not owned.
 
@@ -1059,9 +1062,17 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), POLICY);
 
-  // Log out the user and remove the policy wallpaper. Verify the wallpaper
-  // info is reset to default and the user is no longer policy controlled.
+  // Clear the wallpaper and log out the user. Verify the policy wallpaper is
+  // shown in the login screen.
+  ClearWallpaper();
   ClearLogin();
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(controller_->GetWallpaperType(), POLICY);
+  EXPECT_TRUE(
+      controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
+  // Remove the policy wallpaper. Verify the wallpaper info is reset to default
+  // and the user is no longer policy controlled.
   controller_->RemovePolicyWallpaper(InitializeUser(account_id_1),
                                      wallpaper_files_id_1);
   WaitUntilCustomWallpapersDeleted(account_id_1);
@@ -1073,7 +1084,8 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
   EXPECT_EQ(wallpaper_info, default_wallpaper_info);
   EXPECT_FALSE(
       controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
-  // Verify the wallpaper is not updated since the user hasn't logged in.
+  // Verify the wallpaper is not updated since the user hasn't logged in (to
+  // avoid abrupt wallpaper change in login screen).
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), POLICY);
 
@@ -1082,6 +1094,40 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
+}
+
+TEST_F(WallpaperControllerTest, RemovePolicyWallpaperNoOp) {
+  auto verify_custom_wallpaper_info = [&]() {
+    EXPECT_EQ(CUSTOMIZED, controller_->GetWallpaperType());
+    EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+    WallpaperInfo wallpaper_info;
+    EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
+                                                  false /*is_ephemeral=*/));
+    WallpaperInfo expected_wallpaper_info(
+        base::FilePath(wallpaper_files_id_1).Append(file_name_1).value(),
+        WALLPAPER_LAYOUT_CENTER, CUSTOMIZED, base::Time::Now().LocalMidnight());
+    EXPECT_EQ(expected_wallpaper_info, wallpaper_info);
+  };
+
+  // Set a custom wallpaper. Verify the user is not policy controlled and the
+  // wallpaper info is correct.
+  SimulateUserLogin(kUser1);
+  controller_->SetCustomWallpaper(
+      InitializeUser(account_id_1), wallpaper_files_id_1, file_name_1,
+      WALLPAPER_LAYOUT_CENTER, CreateImage(640, 480, kWallpaperColor),
+      false /*preview_mode=*/);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_FALSE(
+      controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
+  verify_custom_wallpaper_info();
+
+  // Verify RemovePolicyWallpaper() is a no-op when the user doesn't have a
+  // policy wallpaper.
+  controller_->RemovePolicyWallpaper(InitializeUser(account_id_1),
+                                     wallpaper_files_id_1);
+  RunAllTasksUntilIdle();
+  verify_custom_wallpaper_info();
 }
 
 TEST_F(WallpaperControllerTest, SetThirdPartyWallpaper) {
