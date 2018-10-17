@@ -72,6 +72,7 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
       GetArcAppIdByPackageNameCallback callback) override {
     std::move(callback).Run(std::string());
   }
+  void ShowLockScreenNotificationSettings() override {}
 
  private:
   bool no_notifiers_ = false;
