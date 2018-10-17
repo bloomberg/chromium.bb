@@ -383,29 +383,6 @@ IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_SetResetClear) {
   ASSERT_EQ(3, wallpaper_change_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_PRE_PersistOverLogout) {
-  SetSystemSalt();
-  RegisterUser(testUsers_[0]);
-  StartupUtils::MarkOobeCompleted();
-}
-
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_PersistOverLogout) {
-  SetSystemSalt();
-  LoginUser(testUsers_[0]);
-
-  // Set wallpaper policy to red image.
-  InjectPolicy(0, kRedImageFileName);
-
-  // Run until wallpaper has changed to expected color.
-  RunUntilWallpaperChangeToColor(kRedImageColor);
-  StartupUtils::MarkOobeCompleted();
-}
-
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PersistOverLogout) {
-  LoginUser(testUsers_[0]);
-  RunUntilWallpaperChangeToColor(kRedImageColor);
-}
-
 IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_DevicePolicyTest) {
   SetSystemSalt();
   RegisterUser(testUsers_[0]);

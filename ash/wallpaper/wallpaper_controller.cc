@@ -1236,7 +1236,9 @@ void WallpaperController::RemoveUserWallpaper(
 void WallpaperController::RemovePolicyWallpaper(
     mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {
-  DCHECK(IsPolicyControlled(user_info->account_id, user_info->is_ephemeral));
+  if (!IsPolicyControlled(user_info->account_id, user_info->is_ephemeral))
+    return;
+
   // Updates the screen only when the user has logged in.
   const bool show_wallpaper =
       Shell::Get()->session_controller()->IsActiveUserSessionStarted();
