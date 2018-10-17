@@ -131,6 +131,12 @@ void UrlData::RedirectTo(const scoped_refptr<UrlData>& url_data) {
   // Copy any cached data over to the new location.
   url_data->multibuffer()->MergeFrom(multibuffer());
 
+  // All |bytes_received_callbacks_| should also listen for bytes on the
+  // redirect UrlData.
+  for (const auto& cb : bytes_received_callbacks_) {
+    url_data->AddBytesReceivedCallback(cb);
+  }
+
   std::vector<RedirectCB> redirect_callbacks;
   redirect_callbacks.swap(redirect_callbacks_);
   for (const RedirectCB& cb : redirect_callbacks) {
@@ -217,6 +223,18 @@ void UrlData::set_range_supported() {
 ResourceMultiBuffer* UrlData::multibuffer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return &multibuffer_;
+}
+
+void UrlData::AddBytesReceivedCallback(BytesReceivedCB bytes_received_cb) {
+  bytes_received_callbacks_.emplace_back(std::move(bytes_received_cb));
+}
+
+void UrlData::AddBytesReadFromNetwork(int64_t b) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bytes_read_from_network_ += b;
+  for (const auto& cb : bytes_received_callbacks_) {
+    cb.Run(b);
+  }
 }
 
 size_t UrlData::CachedSize() {

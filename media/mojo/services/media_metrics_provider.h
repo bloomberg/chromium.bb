@@ -52,6 +52,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       mojom::WatchTimeRecorderRequest request) override;
   void AcquireVideoDecodeStatsRecorder(
       mojom::VideoDecodeStatsRecorderRequest request) override;
+  void AddBytesReceived(uint64_t bytes_received) override;
 
   // Session unique ID which maps to a given WebMediaPlayerImpl instances. Used
   // to coordinate multiply logged events with a singly logged metric.
@@ -72,6 +73,9 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   bool initialized_ = false;
   bool is_mse_;
   mojom::MediaURLScheme url_scheme_;
+
+  // Total number of bytes received by the media player so far.
+  uint64_t total_bytes_received_ = 0;
 
   base::TimeDelta time_to_metadata_ = kNoTimestamp;
   base::TimeDelta time_to_first_frame_ = kNoTimestamp;

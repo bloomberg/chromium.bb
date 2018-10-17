@@ -171,9 +171,16 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Virtual so we can override it for testing.
   virtual ResourceMultiBuffer* multibuffer();
 
+  // Callback for reporting number of bytes received by the network.
+  using BytesReceivedCB = base::RepeatingCallback<void(uint64_t)>;
+
+  // Register a BytesReceivedCallback for this UrlData. These callbacks will be
+  // copied to another UrlData if there is a redirect.
+  void AddBytesReceivedCallback(BytesReceivedCB bytes_received_cb);
+
   void AddBytesRead(int64_t b) { bytes_read_from_cache_ += b; }
   int64_t BytesReadFromCache() const { return bytes_read_from_cache_; }
-  void AddBytesReadFromNetwork(int64_t b) { bytes_read_from_network_ += b; }
+  void AddBytesReadFromNetwork(int64_t b);
   int64_t BytesReadFromNetwork() const { return bytes_read_from_network_; }
 
   // Call |cb| when it's ok to start preloading an URL.
@@ -261,6 +268,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
+
+  std::vector<BytesReceivedCB> bytes_received_callbacks_;
 
   // Number of data sources that are currently preloading this url.
   int preloading_ = 0;
