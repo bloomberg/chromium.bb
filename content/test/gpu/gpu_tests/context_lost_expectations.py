@@ -69,6 +69,6 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Fail('ContextLost_WebGLContextLostFromQuantity',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
 
-    # Temporary until Ganesh fix is made.
-    self.Flaky('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
-               ['win', 'nvidia'], bug=878258)
+    # Temporary until Ganesh fix is made. Too flaky to mark as flaky.
+    self.Fail('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
+               ['win'], bug=878258)
