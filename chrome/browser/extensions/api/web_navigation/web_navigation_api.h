@@ -85,6 +85,10 @@ class WebNavigationTabObserver
   bool IsReferenceFragmentNavigation(content::RenderFrameHost* frame_host,
                                      const GURL& url);
 
+  // Called when a RenderFrameHost goes into pending deletion. Stop tracking it
+  // and its children.
+  void RenderFrameHostPendingDeletion(content::RenderFrameHost*);
+
   // Tracks the state of the frames we are sending events for.
   FrameNavigationState navigation_state_;
 

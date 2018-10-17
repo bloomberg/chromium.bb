@@ -244,11 +244,8 @@ void WebNavigationTabObserver::FrameDeleted(
 void WebNavigationTabObserver::RenderFrameHostChanged(
     content::RenderFrameHost* old_host,
     content::RenderFrameHost* new_host) {
-  if (old_host) {
-    RenderFrameDeleted(old_host);
-    navigation_state_.FrameHostDeleted(old_host);
-  }
-
+  if (old_host)
+    RenderFrameHostPendingDeletion(old_host);
   navigation_state_.FrameHostCreated(new_host);
 }
 
@@ -470,6 +467,30 @@ bool WebNavigationTabObserver::IsReferenceFragmentNavigation(
   replacements.ClearRef();
   return existing_url.ReplaceComponents(replacements) ==
       url.ReplaceComponents(replacements);
+}
+
+void WebNavigationTabObserver::RenderFrameHostPendingDeletion(
+    content::RenderFrameHost* pending_delete_rfh) {
+  // The |pending_delete_rfh| and its children are now pending deletion.
+  // Stop tracking them.
+
+  // 1) Collect them.
+  std::vector<content::RenderFrameHost*> to_be_deleted;
+  for (content::RenderFrameHost* render_frame_host : navigation_state_) {
+    if (render_frame_host == pending_delete_rfh ||
+        render_frame_host->IsDescendantOf(pending_delete_rfh)) {
+      to_be_deleted.push_back(render_frame_host);
+    }
+  }
+
+  // 2) Delete them.
+  for (content::RenderFrameHost* render_frame_host : to_be_deleted) {
+    // The RenderFrame may still be loading. Call RenderFrameDeleted()
+    // immediately to properly dispatch a load error occurred.
+    RenderFrameDeleted(render_frame_host);
+
+    navigation_state_.FrameHostDeleted(render_frame_host);
+  }
 }
 
 ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
