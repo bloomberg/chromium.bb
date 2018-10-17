@@ -173,29 +173,6 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
   return std::move(remapped_resolver);
 }
 
-// This function is for forwarding metrics usage pref changes to the metrics
-// service on the appropriate thread.
-// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
-void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
-                                       int message_size,
-                                       bool is_cellular) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(
-                               [](const std::string& service_name,
-                                  int message_size, bool is_cellular) {
-                                 // Some unit tests use IOThread but do not
-                                 // initialize MetricsService. In that case it's
-                                 // fine to skip the update.
-                                 auto* metrics_service =
-                                     g_browser_process->metrics_service();
-                                 if (metrics_service) {
-                                   metrics_service->UpdateMetricsUsagePrefs(
-                                       service_name, message_size, is_cellular);
-                                 }
-                               },
-                               service_name, message_size, is_cellular));
-}
-
 }  // namespace
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -407,7 +384,7 @@ void IOThread::ConstructSystemRequestContext() {
         extension_event_router_forwarder());
     builder->set_network_delegate(
         globals_->data_use_ascriber->CreateNetworkDelegate(
-            std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
+            std::move(chrome_network_delegate)));
 
     std::unique_ptr<net::CertVerifier> cert_verifier;
     if (g_cert_verifier_for_io_thread_testing) {
@@ -453,8 +430,4 @@ void IOThread::ConstructSystemRequestContext() {
     network_service->ConfigureStubHostResolver(
         stub_resolver_enabled_, std::move(dns_over_https_servers_));
   }
-}
-
-metrics::UpdateUsagePrefCallbackType IOThread::GetMetricsDataUseForwarder() {
-  return base::Bind(&UpdateMetricsUsagePrefsOnUIThread);
 }

@@ -25,7 +25,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/buildflags.h"
-#include "components/metrics/data_use_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -149,9 +148,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // simplicity and requires a browser restart. May only be called on the IO
   // thread.
   void DisableQuic();
-
-  // Returns the callback for updating data use prefs.
-  metrics::UpdateUsagePrefCallbackType GetMetricsDataUseForwarder();
 
   // Configures |builder|'s ProxyResolutionService based on prefs and policies.
   void SetUpProxyService(network::URLRequestContextBuilderMojo* builder) const;

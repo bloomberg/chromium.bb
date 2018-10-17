@@ -452,12 +452,12 @@ void MetricsService::PushExternalLog(const std::string& log) {
   log_store()->StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
-void MetricsService::UpdateMetricsUsagePrefs(const std::string& service_name,
-                                             int message_size,
-                                             bool is_cellular) {
+void MetricsService::UpdateMetricsUsagePrefs(int message_size,
+                                             bool is_cellular,
+                                             bool is_metrics_service_usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  reporting_service_.UpdateMetricsUsagePrefs(service_name, message_size,
-                                             is_cellular);
+  reporting_service_.UpdateMetricsUsagePrefs(message_size, is_cellular,
+                                             is_metrics_service_usage);
 }
 
 //------------------------------------------------------------------------------
