@@ -137,7 +137,10 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
     }
 
     *cumulative_migrated_entity_count += entity_ptrs.size();
-    worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs, nullptr);
+
+    worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs,
+                                      /*from_uss_migrator=*/true,
+                                      /*status=*/nullptr);
   }
 
   worker->PassiveApplyUpdates(nullptr);
