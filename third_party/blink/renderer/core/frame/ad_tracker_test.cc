@@ -421,15 +421,9 @@ class AdTrackerDisabledSimTest : public SimTest {
   std::unique_ptr<SimRequest> main_resource_;
 };
 
-TEST_F(AdTrackerDisabledSimTest, ResourceLoadedWhenAdTaggingDisabled) {
-  SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
-
-  main_resource_->Complete(R"HTML(
-    <iframe src=https://example.com/iframe.html></iframe>
-    )HTML");
-
-  iframe_resource.Complete("<body></body>");
-
+TEST_F(AdTrackerDisabledSimTest, VerifyAdTrackingDisabled) {
+  main_resource_->Complete("<body></body>");
+  EXPECT_FALSE(GetDocument().GetFrame()->GetAdTracker());
   EXPECT_FALSE(GetDocument().GetFrame()->IsAdSubframe());
 }
 
