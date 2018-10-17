@@ -36,8 +36,6 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 
 #include <memory>
@@ -52,6 +50,8 @@ struct WebNotificationData;
 struct WebPaymentRequestEventData;
 struct WebServiceWorkerClientInfo;
 struct WebServiceWorkerError;
+struct WebServiceWorkerObjectInfo;
+struct WebServiceWorkerRegistrationObjectInfo;
 class WebURLResponse;
 
 // A proxy interface to talk to the worker's GlobalScope implementation.
@@ -63,8 +63,7 @@ class WebServiceWorkerContextProxy {
   virtual void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) = 0;
 
-  virtual void SetRegistration(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle>) = 0;
+  virtual void SetRegistration(WebServiceWorkerRegistrationObjectInfo) = 0;
 
   // Script evaluation does not start until this function is called.
   virtual void ReadyToEvaluateScript() = 0;

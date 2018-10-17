@@ -35,7 +35,6 @@
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -96,18 +95,18 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
       : resolver_(resolver) {}
   ~GetRegistrationCallback() override = default;
 
-  void OnSuccess(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
+  void OnSuccess(WebServiceWorkerRegistrationObjectInfo info) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (!handle) {
+    if (info.registration_id ==
+        mojom::blink::kInvalidServiceWorkerRegistrationId) {
       // Resolve the promise with undefined.
       resolver_->Resolve();
       return;
     }
-    resolver_->Resolve(ServiceWorkerRegistration::GetOrCreate(
-        resolver_->GetExecutionContext(), std::move(handle)));
+    resolver_->Resolve(
+        ServiceWorkerRegistration::Take(resolver_, std::move(info)));
   }
 
   void OnError(const WebServiceWorkerError& error) override {
@@ -132,14 +131,15 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
       : ready_(ready) {}
   ~GetRegistrationForReadyCallback() override = default;
 
-  void OnSuccess(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
+  void OnSuccess(WebServiceWorkerRegistrationObjectInfo info) override {
     DCHECK_EQ(ready_->GetState(), ReadyProperty::kPending);
 
     if (ready_->GetExecutionContext() &&
         !ready_->GetExecutionContext()->IsContextDestroyed()) {
-      ready_->Resolve(ServiceWorkerRegistration::GetOrCreate(
-          ready_->GetExecutionContext(), std::move(handle)));
+      ready_->Resolve(
+          ServiceWorkerContainerClient::From(
+              To<Document>(ready_->GetExecutionContext()))
+              ->GetOrCreateServiceWorkerRegistration(std::move(info)));
     }
   }
 

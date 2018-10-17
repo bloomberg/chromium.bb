@@ -38,6 +38,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
@@ -192,9 +193,9 @@ void ServiceWorkerGlobalScopeProxy::BindServiceWorkerHost(
 }
 
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
-    std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
+    WebServiceWorkerRegistrationObjectInfo info) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->SetRegistration(std::move(handle));
+  WorkerGlobalScope()->SetRegistration(std::move(info));
 }
 
 void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {

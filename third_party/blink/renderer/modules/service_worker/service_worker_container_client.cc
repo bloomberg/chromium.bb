@@ -21,6 +21,25 @@ ServiceWorkerContainerClient::~ServiceWorkerContainerClient() = default;
 const char ServiceWorkerContainerClient::kSupplementName[] =
     "ServiceWorkerContainerClient";
 
+ServiceWorkerRegistration*
+ServiceWorkerContainerClient::GetOrCreateServiceWorkerRegistration(
+    WebServiceWorkerRegistrationObjectInfo info) {
+  if (info.registration_id == mojom::blink::kInvalidServiceWorkerRegistrationId)
+    return nullptr;
+
+  ServiceWorkerRegistration* registration =
+      service_worker_registration_objects_.at(info.registration_id);
+  if (registration) {
+    registration->Attach(std::move(info));
+    return registration;
+  }
+
+  registration =
+      new ServiceWorkerRegistration(GetSupplementable(), std::move(info));
+  service_worker_registration_objects_.Set(info.registration_id, registration);
+  return registration;
+}
+
 ServiceWorker* ServiceWorkerContainerClient::GetOrCreateServiceWorker(
     WebServiceWorkerObjectInfo info) {
   if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
@@ -52,6 +71,7 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
 }
 
 void ServiceWorkerContainerClient::Trace(blink::Visitor* visitor) {
+  visitor->Trace(service_worker_registration_objects_);
   visitor->Trace(service_worker_objects_);
   Supplement<Document>::Trace(visitor);
 }

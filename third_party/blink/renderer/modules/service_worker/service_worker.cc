@@ -139,6 +139,17 @@ String ServiceWorker::state() const {
   return g_null_atom;
 }
 
+ServiceWorker* ServiceWorker::From(
+    ExecutionContext* context,
+    mojom::blink::ServiceWorkerObjectInfoPtr info) {
+  if (!info)
+    return nullptr;
+  return From(context, WebServiceWorkerObjectInfo(
+                           info->version_id, info->state, info->url,
+                           info->host_ptr_info.PassHandle(),
+                           info->request.PassHandle()));
+}
+
 ServiceWorker* ServiceWorker::From(ExecutionContext* context,
                                    WebServiceWorkerObjectInfo info) {
   if (!context)

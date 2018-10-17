@@ -33,11 +33,9 @@
 #include <memory>
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -48,11 +46,14 @@ class RespondWithObserver;
 class RequestInit;
 class ScriptPromise;
 class ScriptState;
+class ServiceWorker;
 class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
 class WaitUntilObserver;
 struct GlobalScopeCreationParams;
+struct WebServiceWorkerObjectInfo;
+struct WebServiceWorkerRegistrationObjectInfo;
 
 typedef RequestOrUSVString RequestInfo;
 
@@ -107,7 +108,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   void BindServiceWorkerHost(mojom::blink::ServiceWorkerHostAssociatedPtrInfo);
 
-  void SetRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle>);
+  void SetRegistration(WebServiceWorkerRegistrationObjectInfo info);
 
   // Returns the ServiceWorker object described by the object info in current
   // execution context. Creates a new object if needed, or else returns the
