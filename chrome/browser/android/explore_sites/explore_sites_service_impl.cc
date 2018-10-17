@@ -60,7 +60,8 @@ void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
                                                int pixel_size,
                                                BitmapCallback callback) {
   task_queue_.AddTask(std::make_unique<GetImagesTask>(
-      explore_sites_store_.get(), category_id, kFaviconsPerCategoryImage,
+      explore_sites_store_.get(), category_id,
+      explore_sites::kFaviconsPerCategoryImage,
       base::BindOnce(&ExploreSitesServiceImpl::ComposeCategoryImage,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      pixel_size)));
