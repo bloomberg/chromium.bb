@@ -75,11 +75,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   // Check if the upload to Google state is active.
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillEnablePaymentsInteractionsOnAuthError) &&
-      syncer::GetUploadToGoogleState(sync_service,
+  if (syncer::GetUploadToGoogleState(sync_service,
                                      syncer::ModelType::AUTOFILL_WALLET_DATA) !=
-          syncer::UploadState::ACTIVE) {
+      syncer::UploadState::ACTIVE) {
     return false;
   }
 

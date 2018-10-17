@@ -82,12 +82,6 @@ const base::Feature kAutofillEnableCompanyName{
 const base::Feature kAutofillEnableIFrameSupportOniOS{
     "AutofillEnableIFrameSupportOniOS", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the server credit cards are offered to be filled and
-// uploaded to Google Pay if the sync service is in auth error.
-const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError{
-    "AutofillDontOfferServerCardsOnAuthError",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, no local copy of server card will be saved when upload
 // succeeds.
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
