@@ -124,16 +124,16 @@ void ResourceMultiBufferDataProvider::Start() {
     }
   }
 
-  active_loader_ =
-      url_data_->url_index()->fetch_context()->CreateUrlLoader(options);
-
   url_data_->WaitToLoad(
       base::BindOnce(&ResourceMultiBufferDataProvider::StartLoading,
-                     weak_factory_.GetWeakPtr(), std::move(request)));
+                     weak_factory_.GetWeakPtr(), std::move(request), options));
 }
 
 void ResourceMultiBufferDataProvider::StartLoading(
-    std::unique_ptr<WebURLRequest> request) {
+    std::unique_ptr<WebURLRequest> request,
+    const blink::WebAssociatedURLLoaderOptions& options) {
+  active_loader_ =
+      url_data_->url_index()->fetch_context()->CreateUrlLoader(options);
   active_loader_->LoadAsynchronously(*request, this);
 }
 
