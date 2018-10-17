@@ -12333,6 +12333,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DrawResult">
+  <obsolete>
+    Deprecated 10/2018.
+  </obsolete>
   <int value="0" label="Invalid"/>
   <int value="1" label="Success"/>
   <int value="2" label="Abort: checkerboard animation"/>
