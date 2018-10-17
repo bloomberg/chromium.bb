@@ -2447,7 +2447,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'moblab-generic-vm',
       'nami',
-      'nocturne',
       'nyan_big',
       'nyan_kitty',
       'oak',
@@ -2501,6 +2500,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
+      'nocturne',
       'rammus', # contact:zhuohao@
       'kalista', # contact:zhuohao@
   ])
@@ -2768,6 +2768,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('reef',          None,            None,               None),            # reef (APL)
     ('coral',         None,            None,               None),            # coral (APL)
     (None,            'eve',           'soraka',           'eve'),           # poppy (KBL)
+    ('nocturne',      None,            None,               'nocturne'),      # Nocturne (KBL)
     (None,            None,            'kevin-arcnext',    None),            # gru + arcnext
     (None,            None,            'caroline-arcnext', None),            # arcnext
     ('nyan_blaze',    None,            None,               None),            # Add for Skylab test
