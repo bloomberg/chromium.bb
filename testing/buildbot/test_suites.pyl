@@ -1762,6 +1762,9 @@
           '--enable-features=SingleProcessMash',
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter',
         ],
+        'swarming': {
+          'shards': 3,
+        },
       },
       'ui_chromeos_unittests': {},
       'views_mus_unittests': {},
