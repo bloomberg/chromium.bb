@@ -170,6 +170,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
     if (_target_type == "android_apk") {
       command_line_flags_file = "chrome-command-line"
+    } else {
+      deps += [ "//chrome/android:bundle_canary_java" ]
     }
     product_version_resources_dep = "//chrome/android:product_version_resources"
 

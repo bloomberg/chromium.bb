@@ -402,6 +402,13 @@ android_library("chrome_java") {
   annotation_processor_deps = [ "//third_party/android_deps:dagger_processor" ]
 }
 
+android_library("bundle_canary_java") {
+  java_files = [ "//base/android/java/src/org/chromium/base/BundleCanary.java" ]
+  deps = [
+    "//base:base_java",
+  ]
+}
+
 action("chrome_android_java_google_api_keys_srcjar") {
   script = "//build/android/gyp/java_google_api_keys.py"
   _output_path = "$target_gen_dir/$target_name.srcjar"
