@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {}
 
@@ -178,6 +179,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   pending_request.account_id = account_id;
   pending_request.client_id = client_id;
   pending_request.client_secret = client_secret;
+  pending_request.url_loader_factory = url_loader_factory;
   pending_request.scopes = scopes;
   pending_request.request = request->AsWeakPtr();
   pending_requests_.push_back(pending_request);
