@@ -72,6 +72,18 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
 
   const v8::Eternal<v8::Name>* keys = eternalV8TestInterfaceEventInitKeys(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  auto create_property = [dictionary, context, keys, isolate](
+                             size_t key_index, v8::Local<v8::Value> value) {
+    bool added_property;
+    v8::Local<v8::Name> key = keys[key_index].Get(isolate);
+    if (!dictionary->CreateDataProperty(context, key, value)
+             .To(&added_property)) {
+      return false;
+    }
+    return added_property;
+  };
+
   v8::Local<v8::Value> string_member_value;
   bool string_member_has_value_or_default = false;
   if (impl.hasStringMember()) {
@@ -79,7 +91,7 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
     string_member_has_value_or_default = true;
   }
   if (string_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), string_member_value))) {
+      !create_property(0, string_member_value)) {
     return false;
   }
 

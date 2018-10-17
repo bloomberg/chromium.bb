@@ -64,6 +64,18 @@ v8::Local<v8::Value> TestPermissiveDictionary::ToV8Impl(v8::Local<v8::Object> cr
 bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   const v8::Eternal<v8::Name>* keys = eternalV8TestPermissiveDictionaryKeys(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  auto create_property = [dictionary, context, keys, isolate](
+                             size_t key_index, v8::Local<v8::Value> value) {
+    bool added_property;
+    v8::Local<v8::Name> key = keys[key_index].Get(isolate);
+    if (!dictionary->CreateDataProperty(context, key, value)
+             .To(&added_property)) {
+      return false;
+    }
+    return added_property;
+  };
+
   v8::Local<v8::Value> boolean_member_value;
   bool boolean_member_has_value_or_default = false;
   if (impl.hasBooleanMember()) {
@@ -71,7 +83,7 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Loca
     boolean_member_has_value_or_default = true;
   }
   if (boolean_member_has_value_or_default &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), boolean_member_value))) {
+      !create_property(0, boolean_member_value)) {
     return false;
   }
 
