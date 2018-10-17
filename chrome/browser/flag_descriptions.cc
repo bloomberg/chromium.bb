@@ -2692,8 +2692,7 @@ const char kTranslateAndroidManualTriggerDescription[] =
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
-    "When enabled, a badge will be shown on the app menu button if the update "
-    "type is Update Available or Unsupported OS Version.";
+    "When enabled, an update badge will be shown on the app menu button.";
 
 const char kUpdateMenuItemCustomSummaryDescription[] =
     "When this flag and the force show update menu item flag are enabled, a "
@@ -2701,14 +2700,10 @@ const char kUpdateMenuItemCustomSummaryDescription[] =
 const char kUpdateMenuItemCustomSummaryName[] =
     "Update menu item custom summary";
 
-const char kUpdateMenuTypeName[] =
-    "Forces the update menu type to a specific type";
-const char kUpdateMenuTypeDescription[] =
-    "When set, forces the update type to be a specific one, which impacts "
-    "the app menu badge and menu item for updates.";
-const char kUpdateMenuTypeNone[] = "None";
-const char kUpdateMenuTypeUpdateAvailable[] = "Update Available";
-const char kUpdateMenuTypeUnsupportedOSVersion[] = "Unsupported OS Version";
+const char kUpdateMenuItemName[] = "Force show update menu item";
+const char kUpdateMenuItemDescription[] =
+    R"*(When enabled, an "Update Chrome" item will be shown in the app )*"
+    R"*(menu.)*";
 
 const char kVrBrowsingTabsViewName[] = "VR browsing tabs view";
 const char kVrBrowsingTabsViewDescription[] =

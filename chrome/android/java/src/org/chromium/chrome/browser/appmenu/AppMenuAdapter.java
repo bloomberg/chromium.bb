@@ -197,8 +197,13 @@ class AppMenuAdapter extends BaseAdapter {
                     holder = (CustomMenuItemViewHolder) convertView.getTag();
                 }
                 setupStandardMenuItemViewHolder(holder, convertView, item);
-                UpdateMenuItemHelper.getInstance().decorateMenuItemViews(
-                        mInflater.getContext(), holder.text, holder.image, holder.summary);
+                String summary = UpdateMenuItemHelper.getInstance().getMenuItemSummaryText(
+                        mInflater.getContext());
+                if (TextUtils.isEmpty(summary)) {
+                    holder.summary.setVisibility(View.GONE);
+                } else {
+                    holder.summary.setText(summary);
+                }
                 break;
             }
             case MenuItemType.THREE_BUTTON:
