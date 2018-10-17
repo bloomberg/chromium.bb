@@ -80,7 +80,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Does not take ownership of |connection| or |visitor|.
   QuicSession(QuicConnection* connection,
               Visitor* owner,
-              const QuicConfig& config);
+              const QuicConfig& config,
+              const ParsedQuicVersionVector& supported_versions);
   QuicSession(const QuicSession&) = delete;
   QuicSession& operator=(const QuicSession&) = delete;
 
@@ -342,6 +343,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   bool deprecate_post_process_after_data() const;
 
+  const ParsedQuicVersionVector& supported_versions() const {
+    return supported_versions_;
+  }
+
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
 
@@ -591,6 +596,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Clean up closed_streams_ when this alarm fires.
   std::unique_ptr<QuicAlarm> closed_streams_clean_up_alarm_;
+
+  // Supported version list used by the crypto handshake only. Please note, this
+  // list may be a superset of the connection framer's supported versions.
+  ParsedQuicVersionVector supported_versions_;
 };
 
 }  // namespace quic

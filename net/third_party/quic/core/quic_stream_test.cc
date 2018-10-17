@@ -74,7 +74,8 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
 
   void Initialize() {
     connection_ = new StrictMock<MockQuicConnection>(
-        &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions_);
+        &helper_, &alarm_factory_, Perspective::IS_SERVER,
+        ParsedVersionOfIndex(supported_versions_, 0));
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_);
 

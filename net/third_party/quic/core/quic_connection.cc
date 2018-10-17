@@ -348,6 +348,7 @@ QuicConnection::QuicConnection(
       donot_retransmit_old_window_updates_(false),
       deprecate_post_process_after_data_(
           GetQuicReloadableFlag(quic_deprecate_post_process_after_data)),
+      no_version_negotiation_(supported_versions.size() == 1),
       decrypt_packets_on_key_change_(
           GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
   if (ack_mode_ == ACK_DECIMATION) {
@@ -377,6 +378,9 @@ QuicConnection::QuicConnection(
                          : kDefaultMaxPacketSize);
   received_packet_manager_.set_max_ack_ranges(255);
   MaybeEnableSessionDecidesWhatToWrite();
+  DCHECK(!GetQuicRestartFlag(quic_no_server_conn_ver_negotiation) ||
+         perspective_ == Perspective::IS_CLIENT ||
+         supported_versions.size() == 1);
 }
 
 QuicConnection::~QuicConnection() {
@@ -560,12 +564,16 @@ bool QuicConnection::OnProtocolVersionMismatch(
     ParsedQuicVersion received_version) {
   QUIC_DLOG(INFO) << ENDPOINT << "Received packet with mismatched version "
                   << ParsedQuicVersionToString(received_version);
-  // TODO(satyamshekhar): Implement no server state in this mode.
   if (perspective_ == Perspective::IS_CLIENT) {
     const QuicString error_details = "Protocol version mismatch.";
     QUIC_BUG << ENDPOINT << error_details;
     TearDownLocalConnectionState(QUIC_INTERNAL_ERROR, error_details,
                                  ConnectionCloseSource::FROM_SELF);
+    return false;
+  }
+  if (no_version_negotiation_) {
+    // Drop old packets that were sent by the client before the version was
+    // negotiated.
     return false;
   }
   DCHECK_NE(version(), received_version);

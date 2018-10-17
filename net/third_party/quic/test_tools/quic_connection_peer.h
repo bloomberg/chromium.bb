@@ -135,6 +135,8 @@ class QuicConnectionPeer {
   static void SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
       QuicConnection* connection,
       size_t new_value);
+  static void SetNoVersionNegotiation(QuicConnection* connection,
+                                      bool no_version_negotiation);
 };
 
 }  // namespace test

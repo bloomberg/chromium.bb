@@ -147,8 +147,9 @@ class QuartcSessionTest : public QuicTest {
     QuicString remote_fingerprint_value = "value";
     QuicConfig config;
     return QuicMakeUnique<QuartcSession>(
-        std::move(quic_connection), config, remote_fingerprint_value,
-        perspective, &simulator_, simulator_.GetClock(), std::move(writer));
+        std::move(quic_connection), config, CurrentSupportedVersions(),
+        remote_fingerprint_value, perspective, &simulator_,
+        simulator_.GetClock(), std::move(writer));
   }
 
   std::unique_ptr<QuicConnection> CreateConnection(Perspective perspective,
@@ -157,7 +158,8 @@ class QuartcSessionTest : public QuicTest {
     ip.FromString("0.0.0.0");
     return QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), &simulator_, simulator_.GetAlarmFactory(),
-        writer, /*owns_writer=*/false, perspective, CurrentSupportedVersions());
+        writer, /*owns_writer=*/false, perspective,
+        ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
   }
 
   // Runs all tasks scheduled in the next 200 ms.

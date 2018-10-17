@@ -17,6 +17,7 @@ namespace quic {
 
 QuicSimpleServerSession::QuicSimpleServerSession(
     const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection,
     QuicSession::Visitor* visitor,
     QuicCryptoServerStream::Helper* helper,
@@ -24,6 +25,7 @@ QuicSimpleServerSession::QuicSimpleServerSession(
     QuicCompressedCertsCache* compressed_certs_cache,
     QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicServerSessionBase(config,
+                            supported_versions,
                             connection,
                             visitor,
                             helper,

@@ -54,6 +54,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
 
   // Takes ownership of |connection|.
   QuicSimpleServerSession(const QuicConfig& config,
+                          const ParsedQuicVersionVector& supported_versions,
                           QuicConnection* connection,
                           QuicSession::Visitor* visitor,
                           QuicCryptoServerStream::Helper* helper,

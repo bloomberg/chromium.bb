@@ -298,10 +298,12 @@ QuicHpackDebugVisitor::QuicHpackDebugVisitor() {}
 
 QuicHpackDebugVisitor::~QuicHpackDebugVisitor() {}
 
-QuicSpdySession::QuicSpdySession(QuicConnection* connection,
-                                 QuicSession::Visitor* visitor,
-                                 const QuicConfig& config)
-    : QuicSession(connection, visitor, config),
+QuicSpdySession::QuicSpdySession(
+    QuicConnection* connection,
+    QuicSession::Visitor* visitor,
+    const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions)
+    : QuicSession(connection, visitor, config, supported_versions),
       max_inbound_header_list_size_(kDefaultMaxUncompressedHeaderSize),
       server_push_enabled_(true),
       stream_id_(

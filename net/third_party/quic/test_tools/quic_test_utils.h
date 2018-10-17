@@ -709,6 +709,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   // Takes ownership of |connection|.
   TestQuicSpdyServerSession(QuicConnection* connection,
                             const QuicConfig& config,
+                            const ParsedQuicVersionVector& supported_versions,
                             const QuicCryptoServerConfig* crypto_config,
                             QuicCompressedCertsCache* compressed_certs_cache);
   TestQuicSpdyServerSession(const TestQuicSpdyServerSession&) = delete;

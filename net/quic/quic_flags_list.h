@@ -267,3 +267,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic,
           false)
+
+// If true, dispatcher passes in a single version when creating a server
+// connection, such that version negotiation is not supported in connection.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation,
+          false)

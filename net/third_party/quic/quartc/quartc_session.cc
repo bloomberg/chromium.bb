@@ -119,12 +119,16 @@ bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
 
 QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                              const QuicConfig& config,
+                             const ParsedQuicVersionVector& supported_versions,
                              const QuicString& unique_remote_server_id,
                              Perspective perspective,
                              QuicConnectionHelperInterface* helper,
                              const QuicClock* clock,
                              std::unique_ptr<QuartcPacketWriter> packet_writer)
-    : QuicSession(connection.get(), nullptr /*visitor*/, config),
+    : QuicSession(connection.get(),
+                  nullptr /*visitor*/,
+                  config,
+                  supported_versions),
       unique_remote_server_id_(unique_remote_server_id),
       perspective_(perspective),
       packet_writer_(std::move(packet_writer)),

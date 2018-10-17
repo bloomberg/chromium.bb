@@ -384,9 +384,9 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
                             PacketSavingConnection* client_conn,
                             QuicCryptoClientStream* client,
                             const FakeServerOptions& options) {
-  PacketSavingConnection* server_conn =
-      new PacketSavingConnection(helper, alarm_factory, Perspective::IS_SERVER,
-                                 client_conn->supported_versions());
+  PacketSavingConnection* server_conn = new PacketSavingConnection(
+      helper, alarm_factory, Perspective::IS_SERVER,
+      ParsedVersionOfIndex(client_conn->supported_versions(), 0));
 
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
@@ -398,9 +398,9 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
                                  server_conn->random_generator(),
                                  &crypto_config, options);
 
-  TestQuicSpdyServerSession server_session(server_conn, *server_quic_config,
-                                           &crypto_config,
-                                           &compressed_certs_cache);
+  TestQuicSpdyServerSession server_session(
+      server_conn, *server_quic_config, client_conn->supported_versions(),
+      &crypto_config, &compressed_certs_cache);
   server_session.OnSuccessfulVersionNegotiation(
       client_conn->supported_versions().front());
   EXPECT_CALL(*server_session.helper(),

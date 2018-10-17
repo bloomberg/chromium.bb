@@ -340,7 +340,7 @@ MockQuicConnection::MockQuicConnection(MockQuicConnectionHelper* helper,
                          helper,
                          alarm_factory,
                          perspective,
-                         AllSupportedVersions()) {}
+                         ParsedVersionOfIndex(CurrentSupportedVersions(), 0)) {}
 
 MockQuicConnection::MockQuicConnection(QuicSocketAddress address,
                                        MockQuicConnectionHelper* helper,
@@ -351,7 +351,7 @@ MockQuicConnection::MockQuicConnection(QuicSocketAddress address,
                          helper,
                          alarm_factory,
                          perspective,
-                         AllSupportedVersions()) {}
+                         ParsedVersionOfIndex(CurrentSupportedVersions(), 0)) {}
 
 MockQuicConnection::MockQuicConnection(QuicConnectionId connection_id,
                                        MockQuicConnectionHelper* helper,
@@ -362,7 +362,7 @@ MockQuicConnection::MockQuicConnection(QuicConnectionId connection_id,
                          helper,
                          alarm_factory,
                          perspective,
-                         CurrentSupportedVersions()) {}
+                         ParsedVersionOfIndex(CurrentSupportedVersions(), 0)) {}
 
 MockQuicConnection::MockQuicConnection(
     MockQuicConnectionHelper* helper,
@@ -438,7 +438,10 @@ MockQuicSession::MockQuicSession(QuicConnection* connection)
 
 MockQuicSession::MockQuicSession(QuicConnection* connection,
                                  bool create_mock_crypto_stream)
-    : QuicSession(connection, nullptr, DefaultQuicConfig()) {
+    : QuicSession(connection,
+                  nullptr,
+                  DefaultQuicConfig(),
+                  CurrentSupportedVersions()) {
   if (create_mock_crypto_stream) {
     crypto_stream_ = QuicMakeUnique<MockQuicCryptoStream>(this);
   }
@@ -510,7 +513,10 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
 
 MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection,
                                          bool create_mock_crypto_stream)
-    : QuicSpdySession(connection, nullptr, DefaultQuicConfig()) {
+    : QuicSpdySession(connection,
+                      nullptr,
+                      DefaultQuicConfig(),
+                      connection->supported_versions()) {
   if (create_mock_crypto_stream) {
     crypto_stream_ = QuicMakeUnique<MockQuicCryptoStream>(this);
   }
@@ -548,9 +554,11 @@ size_t MockQuicSpdySession::WriteHeaders(
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache)
     : QuicServerSessionBase(config,
+                            supported_versions,
                             connection,
                             &visitor_,
                             &helper_,
@@ -1045,11 +1053,12 @@ void CreateServerSessionForTest(
       << "Connections must start at non-zero times, otherwise the "
       << "strike-register will be unhappy.";
 
-  *server_connection = new PacketSavingConnection(
-      helper, alarm_factory, Perspective::IS_SERVER, supported_versions);
+  *server_connection =
+      new PacketSavingConnection(helper, alarm_factory, Perspective::IS_SERVER,
+                                 ParsedVersionOfIndex(supported_versions, 0));
   *server_session = new TestQuicSpdyServerSession(
-      *server_connection, DefaultQuicConfig(), server_crypto_config,
-      compressed_certs_cache);
+      *server_connection, DefaultQuicConfig(), supported_versions,
+      server_crypto_config, compressed_certs_cache);
 
   // We advance the clock initially because the default time is zero and the
   // strike register worries that we've just overflowed a uint32_t time.

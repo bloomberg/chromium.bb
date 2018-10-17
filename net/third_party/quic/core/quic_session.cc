@@ -46,7 +46,8 @@ class ClosedStreamsCleanUpDelegate : public QuicAlarm::Delegate {
 
 QuicSession::QuicSession(QuicConnection* connection,
                          Visitor* owner,
-                         const QuicConfig& config)
+                         const QuicConfig& config,
+                         const ParsedQuicVersionVector& supported_versions)
     : connection_(connection),
       visitor_(owner),
       write_blocked_streams_(),
@@ -78,7 +79,8 @@ QuicSession::QuicSession(QuicConnection* connection,
       faster_get_stream_(GetQuicReloadableFlag(quic_session_faster_get_stream)),
       control_frame_manager_(this),
       last_message_id_(0),
-      closed_streams_clean_up_alarm_(nullptr) {
+      closed_streams_clean_up_alarm_(nullptr),
+      supported_versions_(supported_versions) {
   if (faster_get_stream_) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_session_faster_get_stream);
   }

@@ -36,6 +36,7 @@ class QUIC_EXPORT_PRIVATE QuicServerSessionBase : public QuicSpdySession {
   // Does not take ownership of |connection|. |crypto_config| must outlive the
   // session. |helper| must outlive any created crypto streams.
   QuicServerSessionBase(const QuicConfig& config,
+                        const ParsedQuicVersionVector& supported_versions,
                         QuicConnection* connection,
                         QuicSession::Visitor* visitor,
                         QuicCryptoServerStream::Helper* helper,
