@@ -14,7 +14,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -100,10 +99,8 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
 }
 
 int SelectedKeywordView::GetExtraInternalSpacing() const {
-  // MD Refresh needs more space to align the label text with suggestion text.
-  return ui::MaterialDesignController::IsRefreshUi()
-             ? 11
-             : GetWidthBetweenIconAndSeparator();
+  // Align the label text with the suggestion text.
+  return 11;
 }
 
 const char* SelectedKeywordView::GetClassName() const {

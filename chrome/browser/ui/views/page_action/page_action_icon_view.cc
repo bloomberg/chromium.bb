@@ -7,9 +7,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -207,8 +205,6 @@ PageActionIconView::CreateInkDropHighlight() const {
 
 std::unique_ptr<views::InkDropMask> PageActionIconView::CreateInkDropMask()
     const {
-  if (!LocationBarView::IsRounded())
-    return nullptr;
   return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
                                                        height() / 2.f);
 }

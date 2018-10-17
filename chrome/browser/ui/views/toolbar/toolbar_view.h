@@ -125,9 +125,6 @@ class ToolbarView : public views::AccessiblePaneView,
     return &app_menu_icon_controller_;
   }
 
-  // AccessiblePaneView:
-  bool SetPaneFocus(View* initial_focus) override;
-
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::MenuButton* source,
                            const gfx::Point& point,
@@ -176,7 +173,6 @@ class ToolbarView : public views::AccessiblePaneView,
  protected:
   // AccessiblePaneView:
   bool SetPaneFocusAndFocusDefault() override;
-  void RemovePaneFocus() override;
 
   // ui::MaterialDesignControllerObserver:
   void OnMdModeChanged() override;
