@@ -127,9 +127,6 @@
 -org.chromium.android_webview.test.ClientOnReceivedErrorTest.testOnReceivedErrorOnInvalidScheme
 -org.chromium.android_webview.test.ClientOnReceivedErrorTest.testOnReceivedErrorOnInvalidUrl
 
-# https://crbug.com/891722
--org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForUserGesture
-
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testShouldInterceptRequestDeadlock
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
