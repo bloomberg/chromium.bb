@@ -131,11 +131,11 @@ class WebRtcAudioProcessorTest : public ::testing::Test {
     webrtc::AudioProcessing::Config ap_config = audio_processing->GetConfig();
     EXPECT_TRUE(ap_config.echo_canceller.enabled);
     EXPECT_FALSE(ap_config.echo_canceller.mobile_mode);
+    EXPECT_TRUE(ap_config.high_pass_filter.enabled);
 
     EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
     EXPECT_TRUE(audio_processing->noise_suppression()->level() ==
                 webrtc::NoiseSuppression::kHigh);
-    EXPECT_TRUE(audio_processing->high_pass_filter()->is_enabled());
     EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
     EXPECT_TRUE(audio_processing->gain_control()->mode() ==
                 webrtc::GainControl::kAdaptiveAnalog);
