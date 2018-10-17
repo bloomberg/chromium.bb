@@ -104,6 +104,8 @@ class Compiler(object):
   def __init__(self, fidl, output_file):
     self.fidl = fidl
     self.f = output_file
+    self.output_deferred_to_eof = ''
+    self.type_table_defined = set()
 
   def Compile(self):
     self._EmitHeader()
@@ -117,6 +119,8 @@ class Compiler(object):
       self._CompileStruct(s)
     for i in self.fidl.interface_declarations:
       self._CompileInterface(i)
+
+    self.f.write(self.output_deferred_to_eof)
 
   def _EmitHeader(self):
     self.f.write('''// Copyright 2018 The Chromium Authors. All rights reserved.
@@ -196,12 +200,12 @@ function %(name)s(%(param_names)s) {
       element_ttname = self._CompileType(member.type)
       self.f.write(
           '    var $temp_%(member_name)s = _kTT_%(element_ttname)s.dec('
-          'e, o + %(offset)s);\n' % {
+          'd, o + %(offset)s);\n' % {
             'element_ttname': element_ttname,
             'offset': member.offset,
             'member_name': _ChangeIfReserved(member.name)
           })
-    self.f.write('''    return %(name)s(%(temp_names)s);
+    self.f.write('''    return new %(name)s(%(temp_names)s);
   }
 };
 
@@ -231,15 +235,19 @@ function %(name)s(%(param_names)s) {
       e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);
     }'''
       if not t.nullable:
-        throw_if_null = ('if (v === null || v === undefined) '
-                         'throw "non-null vector required";')
+        throw_if_null_enc = ('if (v === null || v === undefined) '
+                             'throw "non-null vector required";')
+        throw_if_null_dec = ('if (pointer === 0) '
+                             'throw "non-null vector required";')
         pointer_set = '''    e.data.setUint32(o + 8, 0xffffffff, $fidl__kLE);
     e.data.setUint32(o + 12, 0xffffffff, $fidl__kLE);'''
 
-      self.f.write(
+      if ttname not in self.type_table_defined:
+        self.type_table_defined.add(ttname)
+        self.output_deferred_to_eof += (
 '''const _kTT_%(ttname)s = {
   enc: function(e, o, v) {
-    %(throw_if_null)s
+    %(throw_if_null_enc)s
     e.data.setUint32(o, v.length, $fidl__kLE);
     e.data.setUint32(o + 4, 0, $fidl__kLE);
 %(pointer_set)s
@@ -251,13 +259,26 @@ function %(name)s(%(param_names)s) {
       },
       v]);
   },
+  dec: function(d, o) {
+    var len = d.data.getUint32(o, $fidl__kLE);
+    var pointer = d.data.getUint32(o + 8, $fidl__kLE);
+    %(throw_if_null_dec)s
+    var dataOffset = d.claimMemory(len * %(element_size)s);
+    var result = [];
+    for (var i = 0; i < len; i++) {
+      result.push(_kTT_%(element_ttname)s.dec(
+          d, dataOffset + (i * %(element_size)s)));
+    }
+    return result;
+  }
 };
 
 ''' % { 'ttname': ttname,
         'element_ttname': element_ttname,
         'element_size': _InlineSizeOfType(t.element_type),
         'pointer_set': pointer_set,
-        'throw_if_null': throw_if_null })
+        'throw_if_null_enc': throw_if_null_enc,
+        'throw_if_null_dec': throw_if_null_dec })
       return ttname
     else:
       raise NotImplementedError()
@@ -354,6 +375,9 @@ function %(proxy_name)s() {
 ''')
 
       if method.has_response:
+        type_tables = []
+        for param in method.maybe_response:
+          type_tables.append(self._CompileType(param.type))
         self.f.write('''
   return zx
       .objectWaitOne(this.channel, zx.ZX_CHANNEL_READABLE, zx.ZX_TIME_INFINITE)

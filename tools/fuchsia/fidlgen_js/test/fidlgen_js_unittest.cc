@@ -189,6 +189,30 @@ class TestolaImpl : public fidljstest::Testola {
     basic_struct_ = basic_struct;
   }
 
+  void NestedStructsWithResponse(
+      fidljstest::BasicStruct basic_struct,
+      NestedStructsWithResponseCallback resp) override {
+    // Construct a response, echoing the passed in structure with some
+    // modifications, as well as additional data.
+    fidljstest::StuffAndThings sat;
+    sat.count = 123;
+    sat.id = "here is my id";
+    sat.a_vector.push_back(1);
+    sat.a_vector.push_back(-2);
+    sat.a_vector.push_back(4);
+    sat.a_vector.push_back(-8);
+    sat.basic.b = !basic_struct.b;
+    sat.basic.i8 = basic_struct.i8 * 2;
+    sat.basic.i16 = basic_struct.i16 * 2;
+    sat.basic.i32 = basic_struct.i32 * 2;
+    sat.basic.u8 = basic_struct.u8 * 2;
+    sat.basic.u16 = basic_struct.u16 * 2;
+    sat.basic.u32 = basic_struct.u32 * 2;
+    sat.later_string = "ⓣⓔⓡⓜⓘⓝⓐⓣⓞⓡ";
+
+    resp(std::move(sat));
+  }
+
   bool was_do_something_called() const { return was_do_something_called_; }
   int32_t received_int() const { return received_int_; }
   const std::string& received_msg() const { return received_msg_; }
@@ -454,6 +478,63 @@ TEST_F(FidlGenJsTest, RawReceiveFidlStructMessage) {
   EXPECT_EQ(received_struct.u16, 65000);
   // Make sure this didn't get defaulted, even though it has a false-ish value.
   EXPECT_EQ(received_struct.u32, 0u);
+}
+
+TEST_F(FidlGenJsTest, RawReceiveFidlNestedStructsAndRespond) {
+  base::AsyncDispatcher dispatcher;
+
+  v8::Isolate* isolate = instance_->isolate();
+  BindingsSetupHelper helper(isolate);
+
+  TestolaImpl testola_impl;
+  fidl::Binding<fidljstest::Testola> binding(&testola_impl);
+  binding.Bind(std::move(helper.server()), &dispatcher);
+
+  // Send the data from the JS side into the channel.
+  std::string source = R"(
+      var proxy = new TestolaProxy();
+      proxy.$bind(testHandle);
+      var toSend = new BasicStruct(false, -5, -6, -7, 8, 32000, 2000000000);
+      proxy.NestedStructsWithResponse(toSend)
+           .then(sat => {
+             this.result_count = sat.count;
+             this.result_id = sat.id;
+             this.result_vector = sat.a_vector;
+             this.result_basic_b = sat.basic.b;
+             this.result_basic_i8 = sat.basic.i8;
+             this.result_basic_i16 = sat.basic.i16;
+             this.result_basic_i32 = sat.basic.i32;
+             this.result_basic_u8 = sat.basic.u8;
+             this.result_basic_u16 = sat.basic.u16;
+             this.result_basic_u32 = sat.basic.u32;
+             this.result_later_string = sat.later_string;
+           })
+           .catch((e) => log('HOT GARBAGE: ' + e));
+    )";
+  helper.runner().Run(source, "test.js");
+
+  // Run the dispatcher to read the request.
+  EXPECT_EQ(dispatcher.DispatchOrWaitUntil(ZX_TIME_INFINITE), ZX_OK);
+
+  // Run the dispatcher again to write the response.
+  EXPECT_EQ(dispatcher.DispatchOrWaitUntil(ZX_TIME_INFINITE), ZX_OK);
+
+  EXPECT_EQ(helper.Get<int>("result_count"), 123);
+  EXPECT_EQ(helper.Get<std::string>("result_id"), "here is my id");
+  auto result_vector = helper.Get<std::vector<int>>("result_vector");
+  ASSERT_EQ(result_vector.size(), 4u);
+  EXPECT_EQ(result_vector[0], 1);
+  EXPECT_EQ(result_vector[1], -2);
+  EXPECT_EQ(result_vector[2], 4);
+  EXPECT_EQ(result_vector[3], -8);
+  EXPECT_EQ(helper.Get<bool>("result_basic_b"), true);
+  EXPECT_EQ(helper.Get<int>("result_basic_i8"), -10);
+  EXPECT_EQ(helper.Get<int>("result_basic_i16"), -12);
+  EXPECT_EQ(helper.Get<int>("result_basic_i32"), -14);
+  EXPECT_EQ(helper.Get<unsigned int>("result_basic_u8"), 16u);
+  EXPECT_EQ(helper.Get<unsigned int>("result_basic_u16"), 64000u);
+  EXPECT_EQ(helper.Get<unsigned int>("result_basic_u32"), 4000000000u);
+  EXPECT_EQ(helper.Get<std::string>("result_later_string"), "ⓣⓔⓡⓜⓘⓝⓐⓣⓞⓡ");
 }
 
 int main(int argc, char** argv) {
