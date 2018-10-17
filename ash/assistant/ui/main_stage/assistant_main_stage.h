@@ -54,7 +54,8 @@ class AssistantMainStage : public views::View,
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
   void OnPendingQueryChanged(const AssistantQuery& query) override;
   void OnPendingQueryCleared() override;
-  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseChanged(
+      const std::shared_ptr<AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,

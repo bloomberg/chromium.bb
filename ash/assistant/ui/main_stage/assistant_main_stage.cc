@@ -558,7 +558,8 @@ void AssistantMainStage::OnPendingQueryCleared() {
     UpdateFooter();
 }
 
-void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
+void AssistantMainStage::OnResponseChanged(
+    const std::shared_ptr<AssistantResponse>& response) {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
 

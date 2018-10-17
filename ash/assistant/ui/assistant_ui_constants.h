@@ -22,6 +22,7 @@ constexpr int kPaddingDip = 14;
 constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;
 constexpr int kMarginDip = 8;
+constexpr int kUiElementHorizontalMarginDip = 32;
 
 // Typography.
 constexpr SkColor kTextColorHint = gfx::kGoogleGrey500;
