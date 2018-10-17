@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/skottie_wrapper.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

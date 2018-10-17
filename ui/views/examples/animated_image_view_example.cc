@@ -14,8 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/skottie_wrapper.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/animated_image_view.h"
 #include "ui/views/controls/button/button.h"
@@ -99,7 +99,7 @@ class AnimationGallery : public View,
 #endif  // defined(OS_POSIX)
     base::ReadFileToString(path, &json);
 
-    auto skottie = base::MakeRefCounted<gfx::SkottieWrapper>(
+    auto skottie = base::MakeRefCounted<cc::SkottieWrapper>(
         base::RefCountedString::TakeString(&json));
     animated_image_view_->SetAnimatedImage(
         std::make_unique<gfx::SkiaVectorAnimation>(skottie));
