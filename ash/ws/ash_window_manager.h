@@ -35,6 +35,7 @@ class AshWindowManager : public mojom::AshWindowManager,
   void CommitSnap(ws::Id window_id, mojom::SnapDirection snap) override;
   void MaximizeWindowByCaptionClick(ws::Id window_id,
                                     ui::mojom::PointerKind pointer) override;
+  void BounceWindow(ws::Id window_id) override;
 
  private:
   ws::WindowTree* window_tree_;
