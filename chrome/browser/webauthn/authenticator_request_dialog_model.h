@@ -15,7 +15,6 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
-#include "chrome/browser/webauthn/transport_list_model.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -118,7 +117,6 @@ class AuthenticatorRequestDialogModel {
     return current_step() == Step::kClosed;
   }
 
-  TransportListModel* transport_list_model() { return &transport_list_model_; }
   const TransportAvailabilityInfo* transport_availability() const {
     return &transport_availability_;
   }
@@ -261,6 +259,10 @@ class AuthenticatorRequestDialogModel {
     return saved_authenticators_;
   }
 
+  const std::vector<AuthenticatorTransport>& available_transports() {
+    return available_transports_;
+  }
+
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator,
                             base::TimeDelta delay);
@@ -273,11 +275,11 @@ class AuthenticatorRequestDialogModel {
   // kBlePowerOnAutomatic.
   base::Optional<Step> next_step_once_ble_powered_;
 
-  TransportListModel transport_list_model_;
   base::ObserverList<Observer>::Unchecked observers_;
 
   // These fields are only filled out when the UX flow is started.
   TransportAvailabilityInfo transport_availability_;
+  std::vector<AuthenticatorTransport> available_transports_;
   base::Optional<device::FidoTransportProtocol> last_used_transport_;
 
   // Transport type and id of Mac TouchId and BLE authenticators are cached so
