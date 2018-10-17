@@ -18,7 +18,11 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kIconSizeDip = 22;
+// The desired height for the action view icon is 24dip in mic state to match
+// the static mic button in DialogPlate. The |kMicIcon| resource used for the
+// static button has different internal padding than does that of the icon drawn
+// by LogoView, so we add 2dip for visual consistency.
+constexpr int kIconSizeDip = 26;
 constexpr int kPreferredSizeDip = 32;
 
 }  // namespace

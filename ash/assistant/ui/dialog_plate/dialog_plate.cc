@@ -10,7 +10,6 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/views_util.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -35,7 +34,7 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kIconSizeDip = 20;
+constexpr int kIconSizeDip = 24;
 constexpr int kButtonSizeDip = 32;
 constexpr int kPreferredHeightDip = 48;
 
@@ -262,7 +261,7 @@ void DialogPlate::InitLayout() {
 
   // Settings.
   settings_button_ = assistant::util::CreateImageButton(
-      this, kNotificationSettingsIcon, kButtonSizeDip, kIconSizeDip,
+      this, kSettingsIcon, kButtonSizeDip, kIconSizeDip,
       IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME, gfx::kGoogleGrey600);
   settings_button_->set_id(static_cast<int>(DialogPlateButtonId::kSettings));
   AddChildView(settings_button_);
@@ -328,7 +327,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
   voice_layout_container_->layer()->SetFillsBoundsOpaquely(false);
   voice_layout_container_->layer()->SetOpacity(0.f);
 
-  constexpr int kLeftPaddingDip = 4;
+  constexpr int kLeftPaddingDip = 8;
   views::BoxLayout* layout_manager = voice_layout_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
