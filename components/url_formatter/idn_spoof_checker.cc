@@ -88,7 +88,8 @@ IDNSpoofChecker::HuffmanTrieParams g_trie_params{
 
 std::string LookupMatchInTopDomains(const std::string& skeleton) {
   DCHECK(!skeleton.empty());
-  DCHECK_NE(skeleton.back(), '.');
+  // There are no other guarantees about a skeleton string such as not including
+  // a dot. Skeleton of certain characters are dots (e.g. "۰" (U+06F0)).
   TopDomainPreloadDecoder preload_decoder(
       g_trie_params.huffman_tree, g_trie_params.huffman_tree_size,
       g_trie_params.trie, g_trie_params.trie_bits,
@@ -366,6 +367,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
 }
 
 std::string IDNSpoofChecker::GetSimilarTopDomain(base::StringPiece16 hostname) {
+  DCHECK(!hostname.empty());
   for (const std::string& skeleton : GetSkeletons(hostname)) {
     DCHECK(!skeleton.empty());
     std::string matching_top_domain = LookupMatchInTopDomains(skeleton);
