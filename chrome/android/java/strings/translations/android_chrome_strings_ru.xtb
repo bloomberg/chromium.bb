@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">Перейдите в настройки и предоставьте Chrome разрешение скачивать статьи только по сети Wi-Fi.</translation>
 <translation id="3632295766818638029">Показать пароль</translation>
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
-<translation id="3661699943263275414">Сторонние веб-сайты могут сохранять и читать файлы cookie</translation>
 <translation id="3662546969139119822">Нет записей</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
 <translation id="3692944402865947621">Не удалось скачать файл <ph name="FILE_NAME" />, так как хранилище недоступно.</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">Чтобы использовать эту функцию, включите <ph name="BEGIN_LINK" />Действия в браузере<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Нет закладок</translation>
 <translation id="4409723563706114196">Загружать страницы предварительно</translation>
-<translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
 <translation id="4419556793104466535">Настройки синхронизации, персонализации и других сервисов</translation>
 <translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">Для этой функции используется <ph name="BEGIN_LINK" />синхронизация<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Показать на карте</translation>
 <translation id="5487521232677179737">Удалить данные</translation>
+<translation id="5487729733663684359">Невозможно обновить Chrome в текущей версии Android.</translation>
 <translation id="5494920125229734069">Выделить все</translation>
 <translation id="550684401320795253">Chrome обновляется…</translation>
 <translation id="5512137114520586844">Этим аккаунтом управляет <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">Панель "Показать похожие страницы" открыта полностью</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6192792657125177640">Исключения</translation>
+<translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
 <translation id="6768277682697012280">Установка модуля дополненной реальности...</translation>
 <translation id="6776813977906306442">Чтобы скачать видео для просмотра, нажмите соответствующую кнопку</translation>
+<translation id="6782111308708962316">Запретить сторонним веб-сайтам сохранять и просматривать файлы cookie</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="679325081238418596">Вы сможете работать с одними и теми же закладками, историей, паролями и другими настройками на любом устройстве</translation>
 <translation id="6818926723028410516">Выберите объекты</translation>

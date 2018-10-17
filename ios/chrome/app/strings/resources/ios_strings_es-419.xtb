@@ -19,6 +19,7 @@
 <translation id="1201530049782216880">Nueva pestaña de incógnito</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="1219674500290482172">No se puede establecer conexión con Internet.</translation>
+<translation id="122699739164161391">Cerrar todas las pestañas</translation>
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1265739287306757398">Más información</translation>
 <translation id="127138278192656016">Usar la sincronización y todos los servicios</translation>
@@ -79,6 +80,7 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artículos sin leer en tu lista de lectura</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
+<translation id="2239626343334228536">Borrando datos de navegación…</translation>
 <translation id="2256128224215992540">Sugerencias de sitios y búsqueda</translation>
 <translation id="2267753748892043616">Agregar cuenta</translation>
 <translation id="2273327106802955778">Menú Más</translation>
@@ -86,6 +88,7 @@
 <translation id="2339560363438331454">Sincronización y servicios</translation>
 <translation id="2351097562818989364">Se restableció la configuración de traducción.</translation>
 <translation id="2359808026110333948">Continuar</translation>
+<translation id="2360196772093551345">Solicitar sitio móvil</translation>
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
@@ -116,6 +119,7 @@
 <translation id="285960592395650245">Volver a descargar</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2871695793448672541">Contraseña oculta</translation>
+<translation id="288655811176831528">Cerrar pestaña</translation>
 <translation id="2898963176829412617">Nueva carpeta…</translation>
 <translation id="2916171785467530738">Autocompletar búsquedas y URL</translation>
 <translation id="291754862089661335">Coloca el código QR o de barras en este recuadro</translation>
@@ -145,6 +149,7 @@
 <translation id="3393920035788932672">Ventanas permitidas</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
+<translation id="345565170154308620">Administrar contraseñas…</translation>
 <translation id="3469166899695866866">¿Deseas detener la descarga?</translation>
 <translation id="3470502288861289375">Copiando…</translation>
 <translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
@@ -155,6 +160,8 @@
 <translation id="3494788280727468875">Confirmar el borrado de los datos de navegación</translation>
 <translation id="3519193562722059437">Abre una pestaña para navegar por la Web.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
+<translation id="3533202363250687977">Cerrar todas las pestañas de incógnito</translation>
+<translation id="3533436815740441613">Nueva pestaña</translation>
 <translation id="3551320343578183772">Cerrar pestaña</translation>
 <translation id="3588820906588687999">Abrir imagen en nueva pestaña</translation>
 <translation id="3603009562372709545">Copiar URL del vínculo</translation>
@@ -177,6 +184,7 @@
 <translation id="3989635538409502728">Salir</translation>
 <translation id="3995521777587992544">Barra de progreso de la carga de la página; se cargó <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4004204301268239848">Las contraseñas se guardan en tu Cuenta de Google para que puedas usarlas en cualquier dispositivo.</translation>
 <translation id="4038354071007134711">Ninguna aplicación puede abrir el archivo.</translation>
 <translation id="4042870976416480368">Buscar en la página</translation>
 <translation id="4049507953662678203">Asegúrate de tener una conexión de red y vuelve a intentarlo.</translation>
@@ -202,6 +210,7 @@
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
 <translation id="4460091562821778167">Preguntarme qué apps usar cada vez</translation>
+<translation id="4476574785019001431">Configuración</translation>
 <translation id="4496373720959965247">Agrega pestañas y alterna entre páginas</translation>
 <translation id="4508750114462689118">Cerrar promoción de acceso</translation>
 <translation id="4526249700380860531">Consulta y administra las contraseñas que guardaste en <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />.</translation>
@@ -217,6 +226,8 @@
 
 Tus datos están encriptados con tu frase de contraseña para sincronización. Debes ingresarla para iniciar la sincronización.</translation>
 <translation id="473775607612524610">Actualizar</translation>
+<translation id="4749030437873592350">Buscar en la página…</translation>
+<translation id="4751645464639803239">Nueva pestaña de incógnito</translation>
 <translation id="4807020197310989387">1 artículo sin leer en tu lista de lectura</translation>
 <translation id="481968316161811770">Cookies, datos del sitio</translation>
 <translation id="4854345657858711387">Establecer una contraseña</translation>
@@ -329,6 +340,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6656103420185847513">Editar carpeta</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="667999046851023355">Documento</translation>
+<translation id="6709334795756764830">Editar favorito</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">No se pueden exportar las contraseñas</translation>
 <translation id="6780034285637185932">Código postal</translation>
@@ -338,6 +350,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Elemento creado</translation>
 <translation id="685040365210406336">No hacer cambios</translation>
+<translation id="6851516051005285358">Solicitar versión de escritorio</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6914783257214138813">Las personas que tengan acceso al archivo exportado podrán ver tus contraseñas.</translation>
@@ -351,6 +364,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
+<translation id="7099761977003084116">Pestañas recientes</translation>
 <translation id="7102005569666697658">Descargando… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
@@ -366,6 +380,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7291368939935408496">Preparando las contraseñas…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
+<translation id="7383797227493018512">Lista de lectura</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="741204030948306876">Sí, acepto</translation>
 <translation id="7425346204213733349">Los cambios de tus favoritos, historial, contraseñas y otras opciones de configuración ya no se sincronizarán con tu cuenta de Google. Sin embargo, los datos existentes permanecerán almacenados en tu cuenta de Google.</translation>
@@ -449,6 +464,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Informar de un problema</translation>
 <translation id="8971089644512329999">Aceptar</translation>
+<translation id="8976382372951310360">Ayuda</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8985320356172329008">Accediste a Google como</translation>
 <translation id="902659348151742535">Es posible que Google use tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>
@@ -457,6 +473,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="9055772144595778347">Error al acceder</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9079935439869366234">Marcar todas como no leídas</translation>
+<translation id="9081058212938299310">¿Quieres actualizar la contraseña para <ph name="USERNAME" />?</translation>
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>

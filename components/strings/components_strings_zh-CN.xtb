@@ -280,6 +280,7 @@
 <translation id="2788784517760473862">接受的信用卡</translation>
 <translation id="2794233252405721443">网站已被屏蔽</translation>
 <translation id="2799020568854403057">您要访问的网站包含有害应用</translation>
+<translation id="2799223571221894425">重新启动</translation>
 <translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2826760142808435982">该连接使用 <ph name="CIPHER" /> 进行加密和身份验证，并使用 <ph name="KX" /> 作为密钥交换机制。</translation>

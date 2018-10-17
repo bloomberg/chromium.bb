@@ -333,7 +333,6 @@
 <translation id="3630011985153972676">在“设置”中允许 Chrome 在连接到 Wi-Fi 网络时为您下载文章。</translation>
 <translation id="3632295766818638029">显示密码</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，系统会在您每次登录网站之前要求您进行验证。</translation>
-<translation id="3661699943263275414">第三方网站可以保存和读取 Cookie 数据</translation>
 <translation id="3662546969139119822">此处没有任何历史记录</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
 <translation id="3692944402865947621">未能成功下载“<ph name="FILE_NAME" />”，因为无法访问它的存储位置。</translation>
@@ -420,7 +419,6 @@
 <translation id="4398088515904522762">要使用此功能，请开启<ph name="BEGIN_LINK" />活动和互动行为<ph name="END_LINK" />。</translation>
 <translation id="4404568932422911380">没有书签</translation>
 <translation id="4409723563706114196">使用网页联想查询功能</translation>
-<translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4419556793104466535">控制同步、个性化和其他服务</translation>
 <translation id="4432792777822557199">从现在开始，源语言为<ph name="SOURCE_LANGUAGE" />的网页一律会被翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
@@ -564,6 +562,7 @@
 <translation id="5466407412363861127">此功能会进行<ph name="BEGIN_LINK" />同步<ph name="END_LINK" />处理。</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
+<translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
 <translation id="5494920125229734069">全选</translation>
 <translation id="550684401320795253">正在更新 Chrome…</translation>
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
@@ -665,6 +664,7 @@
 <translation id="618993374665929060">已全屏打开“更多类似内容”列表</translation>
 <translation id="6192333916571137726">下载文件</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
 <translation id="6210748933810148297">您的身份不是 <ph name="EMAIL" />？</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
@@ -743,6 +743,7 @@
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6768277682697012280">正在安装 AR 模块…</translation>
 <translation id="6776813977906306442">您可使用“下载”按钮下载视频以供日后观看</translation>
+<translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">可让您在所有设备上使用您的书签、历史记录、密码和其他设置</translation>
 <translation id="6818926723028410516">选择内容</translation>

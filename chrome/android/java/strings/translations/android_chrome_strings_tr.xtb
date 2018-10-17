@@ -333,7 +333,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3630011985153972676">Kablosuz bağlantı kullanılırken Chrome'un makaleleri indirmesine ayarlardan izin verin.</translation>
 <translation id="3632295766818638029">Şifreyi göster</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
-<translation id="3661699943263275414">Üçüncü taraf web siteleri, çerez verilerini kaydedebilir ve okuyabilir.</translation>
 <translation id="3662546969139119822">Burada geçmiş yok</translation>
 <translation id="3672452749423051839">Gezinme hataları ile ilgili öneriler</translation>
 <translation id="3692944402865947621">Depolama konumuna erişilemediği için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
@@ -420,7 +419,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4398088515904522762">Bu özelliği kullanmak için <ph name="BEGIN_LINK" />Etkinlik ve etkileşimler<ph name="END_LINK" />'i açın.</translation>
 <translation id="4404568932422911380">Yer işareti yok</translation>
 <translation id="4409723563706114196">Sayfa tahminlerini kullan</translation>
-<translation id="4412992751769744546">Üçüncü taraf çerezlere izin ver</translation>
 <translation id="4419556793104466535">Senkronizasyon, kişiselleştirme ve daha fazla özelliği kontrol edin</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfalar artık <ph name="TARGET_LANGUAGE" /> diline çevrilecek</translation>
 <translation id="4434045419905280838">Pop-up'lar ve yönlendirmeler</translation>
@@ -564,6 +562,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="5466407412363861127">Bu özellik <ph name="BEGIN_LINK" />senkronizasyonu<ph name="END_LINK" /> kullanıyor.</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
+<translation id="5487729733663684359">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor.</translation>
 <translation id="5494920125229734069">Tümünü seç</translation>
 <translation id="550684401320795253">Chrome güncelleniyor...</translation>
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
@@ -665,6 +664,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="618993374665929060">Tam yükseklite açılan, bunun gibi daha fazlası sayfası</translation>
 <translation id="6192333916571137726">Dosyayı indir</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
+<translation id="6196640612572343990">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="6206551242102657620">Bağlantı güvenli. Site bilgileri</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> değil misiniz?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçenekleri</translation>
@@ -743,6 +743,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6766622839693428701">Kapatmak için aşağı kaydırın.</translation>
 <translation id="6768277682697012280">AR modülü yükleniyor...</translation>
 <translation id="6776813977906306442">İndir düğmesini kullanarak videoları daha sonra izlemek üzere indirin</translation>
+<translation id="6782111308708962316">Üçüncü taraf web sitelerinin çerez verilerini kaydetmesini ve okumasını engelle</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="679325081238418596">Yer işaretlerinizi, geçmişinizi, şifrelerinizi ve diğer ayarlarınızı tüm cihazlarınızda kullanın.</translation>
 <translation id="6818926723028410516">Öğe seçin</translation>

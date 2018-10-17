@@ -333,7 +333,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="3630011985153972676">Consenti a Chrome di scaricare gli articoli quando è attiva la connessione Wi-Fi.</translation>
 <translation id="3632295766818638029">Visualizza password</translation>
 <translation id="363596933471559332">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
-<translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3662546969139119822">Nessuna cronologia presente</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
 <translation id="3692944402865947621">Download di <ph name="FILE_NAME" /> non riuscito perché non è possibile trovare il percorso di archiviazione.</translation>
@@ -420,7 +419,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4398088515904522762">Per utilizzare questa funzione, attiva <ph name="BEGIN_LINK" />Attività e interazioni<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Nessun segnalibro</translation>
 <translation id="4409723563706114196">Usa previsioni di pagina</translation>
-<translation id="4412992751769744546">Consenti cookie di terze parti</translation>
 <translation id="4419556793104466535">Controlla la sincronizzazione, la personalizzazione e non solo</translation>
 <translation id="4432792777822557199">Le pagine in <ph name="SOURCE_LANGUAGE" /> verranno tradotte in <ph name="TARGET_LANGUAGE" /> d'ora in poi</translation>
 <translation id="4434045419905280838">Popup e reindirizzamenti</translation>
@@ -564,6 +562,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="5466407412363861127">Questa funzione utilizza la <ph name="BEGIN_LINK" />sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Apri nell'app di mappe</translation>
 <translation id="5487521232677179737">Cancella dati</translation>
+<translation id="5487729733663684359">Gli aggiornamenti di Chrome non sono più supportati per questa versione di Android.</translation>
 <translation id="5494920125229734069">Seleziona tutto</translation>
 <translation id="550684401320795253">Aggiornamento di Chrome...</translation>
 <translation id="5512137114520586844">Questo account è gestito da <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="618993374665929060">Foglio Altri contenuti simili aperto a schermo intero</translation>
 <translation id="6192333916571137726">Scarica file</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
+<translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6206551242102657620">La connessione è sicura. Informazioni sul sito</translation>
 <translation id="6210748933810148297">Non sei <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opzioni <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -743,6 +743,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6766622839693428701">Fai scorrere verso il basso per chiudere.</translation>
 <translation id="6768277682697012280">Installazione modulo AR…</translation>
 <translation id="6776813977906306442">Usa il pulsante di download per scaricare video da guardare in seguito.</translation>
+<translation id="6782111308708962316">Impedisci ai siti web di terze parti di salvare e leggere i dati dei cookie</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="679325081238418596">Utilizza i tuoi Preferiti, la cronologia, le password e le impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="6818926723028410516">Seleziona elementi</translation>

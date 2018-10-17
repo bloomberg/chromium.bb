@@ -333,7 +333,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3630011985153972676">Allow Chrome to download articles for you when on Wi-Fi under settings.</translation>
 <translation id="3632295766818638029">Unmask password</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
-<translation id="3661699943263275414">Third-party websites can save and read cookie data</translation>
 <translation id="3662546969139119822">No history here</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
@@ -420,7 +419,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4398088515904522762">To use this feature, turn on <ph name="BEGIN_LINK" />Activity and interactions<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">No bookmarks</translation>
 <translation id="4409723563706114196">Use page predictions</translation>
-<translation id="4412992751769744546">Allow third-party cookies</translation>
 <translation id="4419556793104466535">Control sync, personalisation and more</translation>
 <translation id="4432792777822557199">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
@@ -564,6 +562,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5466407412363861127">This feature uses <ph name="BEGIN_LINK" />sync<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Open in maps app</translation>
 <translation id="5487521232677179737">Clear data</translation>
+<translation id="5487729733663684359">Chrome updates are no longer supported for this version of Android.</translation>
 <translation id="5494920125229734069">Select all</translation>
 <translation id="550684401320795253">Updating Chrome...</translation>
 <translation id="5512137114520586844">This account is managed by <ph name="PARENT_NAME" />.</translation>
@@ -665,6 +664,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="618993374665929060">More like this opened at full height</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Options</translation>
@@ -743,6 +743,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6766622839693428701">Swipe down to close.</translation>
 <translation id="6768277682697012280">Installing AR module...</translation>
 <translation id="6776813977906306442">Download videos to watch later using the Download button</translation>
+<translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="679325081238418596">Get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="6818926723028410516">Select items</translation>

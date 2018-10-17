@@ -601,6 +601,7 @@
 <translation id="1850508293116537636">Girar a la &amp;derecha</translation>
 <translation id="1852799913675865625">Se ha producido un error al intentar leer el archivo: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
+<translation id="1854180393107901205">Detener el envío</translation>
 <translation id="1856715684130786728">Añadir ubicación...</translation>
 <translation id="1858585891038687145">Confiar en este certificado para identificar a los fabricantes de software</translation>
 <translation id="1861262398884155592">Esta carpeta está vacía</translation>
@@ -1467,7 +1468,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3182749001423093222">Revisión ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
 <translation id="3184560914950696195">No se puede guardar en $1. Las imágenes editadas se guardarán en la carpeta de descargas.</translation>
-<translation id="3186202398303525187">Dejar que las aplicaciones de Linux abran $1.</translation>
+<translation id="3186202398303525187">Deja que las aplicaciones de Linux abran $1.</translation>
 <translation id="3188257591659621405">Mis archivos</translation>
 <translation id="3188465121994729530">Media móvil</translation>
 <translation id="3190558889382726167">Contraseña guardada</translation>

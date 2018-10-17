@@ -324,7 +324,6 @@
 <translation id="3630011985153972676">設定での Wi-Fi 接続時にお客様向けの記事のダウンロードを許可します。</translation>
 <translation id="3632295766818638029">パスワードを表示</translation>
 <translation id="363596933471559332">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能がオフの場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
-<translation id="3661699943263275414">サードパーティのウェブサイトに Cookie データの保存と読み取りを許可する</translation>
 <translation id="3662546969139119822">履歴はありません</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
 <translation id="3692944402865947621">保存場所にアクセスできないため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
@@ -409,7 +408,6 @@
 <translation id="4398088515904522762">この機能を使用するには、[<ph name="BEGIN_LINK" />アクティビティと操作<ph name="END_LINK" />] をオンにしてください。</translation>
 <translation id="4404568932422911380">ブックマークがありません</translation>
 <translation id="4409723563706114196">ページ予測を使用する</translation>
-<translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
 <translation id="4419556793104466535">同期、カスタマイズ、その他の管理</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
@@ -551,6 +549,7 @@
 <translation id="5466407412363861127">この機能では<ph name="BEGIN_LINK" />同期<ph name="END_LINK" />が使用されます。</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを消去</translation>
+<translation id="5487729733663684359">このバージョンの Android では Chrome の更新はサポートされなくなりました。</translation>
 <translation id="5494920125229734069">すべて選択する</translation>
 <translation id="550684401320795253">Chrome を更新しています...</translation>
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
@@ -651,6 +650,7 @@
 <translation id="618993374665929060">類似するコンテンツが画面全体に開いています</translation>
 <translation id="6192333916571137726">ダウンロード ファイル</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6206551242102657620">接続は保護されています。サイト情報</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ではありませんか？</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> のオプション</translation>
@@ -727,6 +727,7 @@
 <translation id="6766622839693428701">閉じるには下にスワイプします。</translation>
 <translation id="6768277682697012280">AR モジュールをインストールしています...</translation>
 <translation id="6776813977906306442">動画をダウンロードして後で見るには、[ダウンロード] をクリックします</translation>
+<translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定がどの端末でも利用できるようになります</translation>
 <translation id="6820607729870073286">保存したウェブサイト設定はありません。</translation>
