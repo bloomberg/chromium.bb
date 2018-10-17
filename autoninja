@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Set unique build ID.
+export AUTONINJA_BUILD_ID="$(python -c "import uuid; print uuid.uuid4()")"
 
 # Execute whatever is printed by autoninja.py.
 # Also print it to reassure that the right settings are being used.
