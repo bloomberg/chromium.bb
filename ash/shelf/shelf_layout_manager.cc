@@ -1212,7 +1212,7 @@ void ShelfLayoutManager::StartGestureDrag(
   } else {
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler && visibility_state() == SHELF_VISIBLE &&
+    if (home_launcher_handler && IsVisible() &&
         home_launcher_handler->OnPressEvent(
             HomeLauncherGestureHandler::Mode::kSlideUpToShow,
             gesture_in_screen.location())) {
@@ -1237,7 +1237,7 @@ void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler && visibility_state() == SHELF_VISIBLE &&
+  if (home_launcher_handler && IsVisible() &&
       home_launcher_handler->OnScrollEvent(
           gesture_in_screen.location(),
           gesture_in_screen.details().scroll_y())) {
@@ -1301,8 +1301,16 @@ void ShelfLayoutManager::CompleteAppListDrag(
 
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler && visibility_state() == SHELF_VISIBLE &&
-      home_launcher_handler->OnReleaseEvent(gesture_in_screen.location())) {
+  bool dragged_down;
+  if (home_launcher_handler && IsVisible() &&
+      home_launcher_handler->OnReleaseEvent(gesture_in_screen.location(),
+                                            &dragged_down)) {
+    if (dragged_down && visibility_state() == SHELF_AUTO_HIDE) {
+      DCHECK_EQ(SHELF_AUTO_HIDE_SHOWN, gesture_drag_auto_hide_state_);
+      gesture_drag_auto_hide_state_ = SHELF_AUTO_HIDE_HIDDEN;
+      gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+      UpdateVisibilityState();
+    }
     gesture_drag_status_ = GESTURE_DRAG_NONE;
     return;
   }
