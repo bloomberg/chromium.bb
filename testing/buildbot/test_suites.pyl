@@ -473,9 +473,6 @@
           'shards': 6,
         },
       },
-    },
-
-    'chromeos_isolated_scripts_experimental': {
       'telemetry_unittests': {
         'args': [
           '--jobs=1',
@@ -483,10 +480,9 @@
           # By default, CrOS VMs' ssh servers listen on local port 9222.
           '--remote=127.0.0.1',
           '--remote-ssh-port=9222',
-          # Always fails.
-          '--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView',
-          '--skip=telemetry.internal.backends.browser_backend_unittest.BrowserBackendIntegrationTest.testSmokeIsBrowserRunningReturnFalse',
         ],
+        # TODO(crbug.com/876494): Move this out of experimental.
+        'experiment_percentage': 50,
         'swarming': {
           'hard_timeout': 1200,
           'idempotent': False,  # https://crbug.com/549140
