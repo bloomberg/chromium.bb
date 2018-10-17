@@ -868,6 +868,15 @@ void WebViewGuest::DocumentOnLoadCompletedInMainFrame() {
 
 void WebViewGuest::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  WebViewGuest* opener = GetOpener();
+  if (opener && navigation_handle->IsInMainFrame()) {
+    auto it = opener->pending_new_windows_.find(this);
+    if (it != opener->pending_new_windows_.end()) {
+      NewWindowInfo& info = it->second;
+      info.did_start_navigating_away_from_initial_url = true;
+    }
+  }
+
   // loadStart shouldn't be sent for same document navigations.
   if (navigation_handle->IsSameDocument())
     return;
@@ -1147,8 +1156,11 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
     auto it = opener->pending_new_windows_.find(this);
     if (it != opener->pending_new_windows_.end()) {
       const NewWindowInfo& new_window_info = it->second;
-      if (new_window_info.changed || !web_contents()->HasOpener())
+      if (!new_window_info.did_start_navigating_away_from_initial_url &&
+          (new_window_info.url_changed_via_open_url ||
+           !web_contents()->HasOpener())) {
         NavigateGuest(new_window_info.url.spec(), false /* force_navigation */);
+      }
 
       // Once a new guest is attached to the DOM of the embedder page, then the
       // lifetime of the new guest is no longer managed by the opener guest.
@@ -1324,7 +1336,8 @@ WebContents* WebViewGuest::OpenURLFromTab(
         return nullptr;
       const NewWindowInfo& info = it->second;
       NewWindowInfo new_window_info(params.url, info.name);
-      new_window_info.changed = new_window_info.url != info.url;
+      new_window_info.url_changed_via_open_url =
+          new_window_info.url != info.url;
       it->second = new_window_info;
       return nullptr;
     }
