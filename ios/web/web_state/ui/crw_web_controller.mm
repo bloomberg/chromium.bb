@@ -4983,7 +4983,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     web::NavigationItemImpl* item = web::GetItemWithUniqueID(
         self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-    if (!IsWKInternalUrl(currentWKItemURL) && currentWKItemURL == webViewURL &&
+    // For reasons not fully understood, |item| may be nullptr. Only apply the
+    // location.replace heuristic if this is not the case.
+    // TODO(crbug.com/864769): Figure out the cause.
+    if (item && !IsWKInternalUrl(currentWKItemURL) &&
+        currentWKItemURL == webViewURL &&
         currentWKItemURL != context->GetUrl()) {
       // WKWebView sometimes changes URL on the same navigation, likely due to
       // location.replace() in onload handler that only changes page fragment.
