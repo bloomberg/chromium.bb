@@ -1772,10 +1772,8 @@ void EnsureCustomPinchZoomInvoked(WebContents* guest_contents,
   zoom_watcher.Wait();
 }
 
-#if defined(OS_MACOSX)
-
-// Ensure that Mac trackpad pinch events are handled by the PDF viewer.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TrackpadPinchInvokesCustomZoom) {
+// Ensure that touchpad pinch events are handled by the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchpadPinchInvokesCustomZoom) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -1795,8 +1793,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TrackpadPinchInvokesCustomZoom) {
                                std::move(send_pinch));
 }
 
-#else  // !defined(OS_MACOSX)
-
+#if !defined(OS_MACOSX)
 // Ensure that ctrl-wheel events are handled by the PDF viewer.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
@@ -1817,8 +1814,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
   EnsureCustomPinchZoomInvoked(guest_contents, GetActiveWebContents(),
                                std::move(send_ctrl_wheel));
 }
-
-#endif  // defined(OS_MACOSX)
+#endif  // !defined(OS_MACOSX)
 
 #if (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
     (defined(OS_CHROME) && defined(MEMORY_SANITIZER))
