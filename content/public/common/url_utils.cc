@@ -115,7 +115,7 @@ bool IsSafeRedirectTarget(const GURL& from_url, const GURL& to_url) {
   static base::NoDestructor<std::set<std::string>> kUnsafeSchemes(
       std::set<std::string>({
         url::kAboutScheme, url::kDataScheme, url::kFileScheme,
-            url::kFileSystemScheme,
+            url::kFileSystemScheme, url::kBlobScheme,
 #if defined(OS_ANDROID)
             url::kContentScheme,
 #endif
