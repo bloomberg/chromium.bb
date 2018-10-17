@@ -417,8 +417,8 @@ void SharedWorkerServiceImpl::AddAdditionalRequestHeaders(
             url::Origin::Create(resource_request->url))) {
       site_value = "same-origin";
     }
-    std::string value = base::StringPrintf(
-        "destination=\"sharedworker\", site=\"%s\"", site_value.c_str());
+    std::string value = base::StringPrintf("destination=sharedworker, site=%s",
+                                           site_value.c_str());
     resource_request->headers.SetHeaderIfMissing("Sec-Metadata", value);
   }
 }

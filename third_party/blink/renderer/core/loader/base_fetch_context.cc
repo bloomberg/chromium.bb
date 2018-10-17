@@ -41,7 +41,7 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
     case mojom::RequestContextType::XML_HTTP_REQUEST:
     case mojom::RequestContextType::SUBRESOURCE:
     case mojom::RequestContextType::PREFETCH:
-      return "\"\"";
+      return "";
     case mojom::RequestContextType::CSP_REPORT:
       return "report";
     case mojom::RequestContextType::AUDIO:
@@ -150,6 +150,12 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (blink::RuntimeEnabledFeatures::SecMetadataEnabled()) {
     const char* destination_value =
         GetDestinationFromContext(request.GetRequestContext());
+
+    // If the request's destination is the empty string (e.g. `fetch()`), then
+    // we'll use the identifier "empty" instead.
+    if (strlen(destination_value) == 0)
+      destination_value = "empty";
+
     // We'll handle adding the header to navigations outside of Blink.
     if (strncmp(destination_value, "document", 8) != 0 &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
