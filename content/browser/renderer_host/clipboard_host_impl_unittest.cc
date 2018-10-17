@@ -73,18 +73,16 @@ TEST_F(ClipboardHostImplTest, ReentrancyInSyncCall) {
 
   // ReadText() is a sync method, so normally, one wouldn't call this method
   // directly. These are not normal times though...
-  base::RunLoop run_loop;
-  mojo_clipboard()->ReadText(
-      ui::CLIPBOARD_TYPE_COPY_PASTE,
-      base::BindLambdaForTesting(
-          [&run_loop](const base::string16& ignored) { run_loop.Quit(); }));
+  mojo_clipboard()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, base::DoNothing());
 
   // Now purposely write a raw message which (hopefully) won't deserialize to
   // anything valid. The receiver side should still be in the midst of
   // dispatching ReadText() when Mojo attempts to deserialize this message,
   // which should cause a validation failure that signals a connection error.
+  base::RunLoop run_loop;
   mojo::WriteMessageRaw(mojo_clipboard().internal_state()->handle(), "moo", 3,
                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+  mojo_clipboard().set_connection_error_handler(run_loop.QuitClosure());
   run_loop.Run();
 
   EXPECT_TRUE(mojo_clipboard().encountered_error());
