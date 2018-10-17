@@ -7,7 +7,7 @@
 cpu@chromium.org
 grt@chromium.org
 jcivelli@chromium.org
-rockot@chromium.org
+rockot@google.com
 
 per-file bookmarks_strings.grdp=*
 per-file chromeos_strings.grdp=*
