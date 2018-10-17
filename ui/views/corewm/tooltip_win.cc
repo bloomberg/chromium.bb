@@ -7,6 +7,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/win/windowsx_shim.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -17,22 +18,6 @@
 
 namespace views {
 namespace corewm {
-
-namespace {
-
-// Substitute GetWindowFont() from windowsx.h.
-// Do not include windowsx.h as its macros break the views jumbo build.
-HFONT GetWindowFont(HWND hwnd) {
-  return reinterpret_cast<HFONT>(::SendMessage(hwnd, WM_GETFONT, 0, 0));
-}
-
-// Substitute SetWindowFont() from windowsx.h.
-// Do not include windowsx.h as its macros break the views jumbo build.
-void SetWindowFont(HWND hwnd, HFONT hfont, BOOL fRedraw) {
-  ::SendMessage(hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(hfont), fRedraw);
-}
-
-}  // namespace
 
 TooltipWin::TooltipWin(HWND parent)
     : parent_hwnd_(parent),
