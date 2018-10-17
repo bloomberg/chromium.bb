@@ -764,6 +764,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)dismissPopups;
 // Returns the footer view if one exists (e.g. the voice search bar).
 - (UIView*)footerView;
+// Returns the appropriate frame for the NTP.
+// TODO(crbug.com/826369): Most of this method's implementation details can be
+// unwound when BVC fullscreen and NTP experiments are enabled by default.
+- (CGRect)ntpFrameForWebState:(web::WebState*)webState;
 // Returns web contents frame without including primary toolbar.
 - (CGRect)visibleFrameForTab:(Tab*)tab;
 // Returns the header height needed for |tab|.
@@ -1705,6 +1709,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Update the toolbar height to account for |topLayoutGuide| changes.
   self.primaryToolbarHeightConstraint.constant =
       [self primaryToolbarHeightWithInset];
+
+  if (self.currentWebState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(self.currentWebState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      UIViewController* viewController = NTPHelper->GetViewController();
+      viewController.view.frame =
+          [self ntpFrameForWebState:self.currentWebState];
+    }
+  }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -2561,6 +2575,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         NewTabPageTabHelper::FromWebState(tab.webState);
     if (NTPHelper && NTPHelper->IsActive()) {
       UIViewController* viewController = NTPHelper->GetViewController();
+      viewController.view.frame = [self ntpFrameForWebState:tab.webState];
       _browserContainerCoordinator.viewController.contentViewController =
           viewController;
     } else {
@@ -2657,6 +2672,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (UIView*)footerView {
   return self.secondaryToolbarCoordinator.viewController.view;
+}
+
+- (CGRect)ntpFrameForWebState:(web::WebState*)webState {
+  UIEdgeInsets headerInset = UIEdgeInsetsMake(
+      [self nativeContentHeaderHeightForWebState:webState], 0, 0, 0);
+  return UIEdgeInsetsInsetRect(self.contentArea.bounds, headerInset);
 }
 
 - (CGRect)visibleFrameForTab:(Tab*)tab {
