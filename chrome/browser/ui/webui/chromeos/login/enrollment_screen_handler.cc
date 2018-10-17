@@ -35,6 +35,7 @@
 #include "components/login/localized_values_builder.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -766,11 +767,40 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   }
 }
 
-void EnrollmentScreenHandler::HandleCompleteLogin(
-    const std::string& user,
-    const std::string& auth_code) {
+void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
   VLOG(1) << "HandleCompleteLogin";
   observe_network_failure_ = false;
+
+  // When the network service is enabled, the webRequest API doesn't expose
+  // cookie headers. So manually fetch the cookies for the GAIA URL from the
+  // CookieManager.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  content::StoragePartition* partition =
+      signin_partition_manager->GetCurrentStoragePartition();
+  net::CookieOptions cookie_options;
+  cookie_options.set_include_httponly();
+
+  partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      GaiaUrls::GetInstance()->gaia_url(), cookie_options,
+      base::BindOnce(&EnrollmentScreenHandler::OnGetCookiesForCompleteLogin,
+                     weak_ptr_factory_.GetWeakPtr(), user));
+}
+
+void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
+    const std::string& user,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  std::string auth_code;
+  for (const auto& cookie : cookies) {
+    if (cookie.Name() == "oauth_code") {
+      auth_code = cookie.Value();
+      break;
+    }
+  }
+
+  DCHECK(!auth_code.empty());
+
   DCHECK(controller_);
   controller_->OnLoginDone(gaia::SanitizeEmail(user), auth_code);
 }

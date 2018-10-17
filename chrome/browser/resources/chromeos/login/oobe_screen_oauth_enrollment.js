@@ -124,13 +124,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           'authCompleted',
           (function(e) {
             var detail = e.detail;
-            if (!detail.email || !detail.authCode) {
+            if (!detail.email) {
               this.showError(
                   loadTimeData.getString('fatalEnrollmentError'), false);
               return;
             }
-            chrome.send(
-                'oauthEnrollCompleteLogin', [detail.email, detail.authCode]);
+            chrome.send('oauthEnrollCompleteLogin', [detail.email]);
           }).bind(this));
 
       this.offlineAdUi_.addEventListener('authCompleted', function(e) {

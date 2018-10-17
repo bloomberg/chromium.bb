@@ -67,6 +67,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -743,12 +744,48 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& gaia_id,
     const std::string& email,
     const std::string& password,
-    const std::string& auth_code,
     bool using_saml,
-    const std::string& gaps_cookie,
     const ::login::StringList& services) {
   if (!LoginDisplayHost::default_host())
     return;
+
+  // When the network service is enabled, the webRequest API doesn't expose
+  // cookie headers. So manually fetch the cookies for the GAIA URL from the
+  // CookieManager.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  content::StoragePartition* partition =
+      signin_partition_manager->GetCurrentStoragePartition();
+  net::CookieOptions cookie_options;
+  cookie_options.set_include_httponly();
+
+  partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      GaiaUrls::GetInstance()->gaia_url(), cookie_options,
+      base::BindOnce(&GaiaScreenHandler::OnGetCookiesForCompleteAuthentication,
+                     weak_factory_.GetWeakPtr(), gaia_id, email, password,
+                     using_saml, services));
+}
+
+void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
+    const std::string& gaia_id,
+    const std::string& email,
+    const std::string& password,
+    bool using_saml,
+    const ::login::StringList& services,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  std::string auth_code, gaps_cookie;
+  for (const auto& cookie : cookies) {
+    if (cookie.Name() == "oauth_code")
+      auth_code = cookie.Value();
+    else if (cookie.Name() == "GAPS")
+      gaps_cookie = cookie.Value();
+  }
+
+  if (auth_code.empty()) {
+    HandleCompleteLogin(gaia_id, email, password, using_saml);
+    return;
+  }
 
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());
@@ -883,9 +920,6 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
                                         const std::string& typed_email,
                                         const std::string& password,
                                         bool using_saml) {
-  if (!LoginDisplayHost::default_host())
-    return;
-
   if (using_saml && !using_saml_api_)
     RecordSAMLScrapingVerificationResultInHistogram(true);
 

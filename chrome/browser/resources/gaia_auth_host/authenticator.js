@@ -29,8 +29,6 @@ cr.define('cr.login', function() {
   var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   var LOCATION_HEADER = 'location';
   var COOKIE_HEADER = 'cookie';
-  var SET_COOKIE_HEADER = 'set-cookie';
-  var OAUTH_CODE_COOKIE = 'oauth_code';
   var GAPS_COOKIE = 'GAPS';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
@@ -140,10 +138,8 @@ cr.define('cr.login', function() {
     this.initialFrameUrl_ = null;
     this.reloadUrl_ = null;
     this.trusted_ = true;
-    this.oauthCode_ = null;
     this.gapsCookie_ = null;
     this.gapsCookieSent_ = false;
-    this.newGapsCookie_ = null;
     this.readyFired_ = false;
     this.webviewEventManager_ = WebviewEventManager.create();
 
@@ -191,10 +187,8 @@ cr.define('cr.login', function() {
     this.email_ = null;
     this.gaiaId_ = null;
     this.password_ = null;
-    this.oauthCode_ = null;
     this.gapsCookie_ = null;
     this.gapsCookieSent_ = false;
-    this.newGapsCookie_ = null;
     this.readyFired_ = false;
     this.chooseWhatToSync_ = false;
     this.skipForNow_ = false;
@@ -302,7 +296,6 @@ cr.define('cr.login', function() {
     this.clientId_ = data.clientId;
     this.gapsCookie_ = data.gapsCookie;
     this.gapsCookieSent_ = false;
-    this.newGapsCookie_ = null;
     this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
     this.chromeOSApiVersion_ = data.chromeOSApiVersion;
 
@@ -554,16 +547,6 @@ cr.define('cr.login', function() {
         // URL will contain a source=3 field.
         var location = decodeURIComponent(header.value);
         this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
-      } else if (this.isNewGaiaFlow && headerName == SET_COOKIE_HEADER) {
-        var headerValue = header.value;
-        if (headerValue.startsWith(OAUTH_CODE_COOKIE + '=')) {
-          this.oauthCode_ =
-              headerValue.substring(OAUTH_CODE_COOKIE.length + 1).split(';')[0];
-        }
-        if (headerValue.startsWith(GAPS_COOKIE + '=')) {
-          this.newGapsCookie_ =
-              headerValue.substring(GAPS_COOKIE.length + 1).split(';')[0];
-        }
       }
     }
   };
@@ -609,6 +592,8 @@ cr.define('cr.login', function() {
 
       for (var i = 0, l = headers.length; i < l; ++i) {
         if (headers[i].name == COOKIE_HEADER) {
+          // TODO(jam): this doesn't work with network service since webRequest
+          // won't see the Cookie header. Who uses this?
           headers[i].value = this.updateCookieValue_(
               headers[i].value, GAPS_COOKIE, gapsCookie);
           found = true;
@@ -860,13 +845,11 @@ cr.define('cr.login', function() {
             email: this.email_ || '',
             gaiaId: this.gaiaId_ || '',
             password: this.password_ || '',
-            authCode: this.oauthCode_,
             usingSAML: this.authFlow == AuthFlow.SAML,
             chooseWhatToSync: this.chooseWhatToSync_,
             skipForNow: this.skipForNow_,
             sessionIndex: this.sessionIndex_ || '',
             trusted: this.trusted_,
-            gapsCookie: this.newGapsCookie_ || this.gapsCookie_ || '',
             services: this.services_ || [],
           }
         }));
@@ -919,9 +902,9 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.onSamlApiPasswordAdded_ = function(e) {
     // Saml API 'add' password might be received after the 'loadcommit' event.
-    // In such case, maybeCompleteAuth_ should be attempted again if oauth code
-    // is available.
-    if (this.oauthCode_)
+    // In such case, maybeCompleteAuth_ should be attempted again if GAIA ID is
+    // available.
+    if (this.gaiaId_)
       this.maybeCompleteAuth_();
   };
 
@@ -997,7 +980,7 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadCommit_ = function(e) {
-    if (this.oauthCode_)
+    if (this.gaiaId_)
       this.maybeCompleteAuth_();
   };
 

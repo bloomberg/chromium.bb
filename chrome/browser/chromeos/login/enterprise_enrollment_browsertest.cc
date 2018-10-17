@@ -181,18 +181,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
 
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
-    // Trigger an authCompleted event from the authenticator.
-    // clang-format off
-    js_checker().Evaluate(
-      "$('oauth-enrollment').authenticator_.dispatchEvent("
-          "new CustomEvent('authCompleted',"
-                          "{"
-                            "detail: {"
-                              "email: 'testuser@test.com',"
-                              "authCode: 'test_auth_code'"
-                            "}"
-                          "}));");
-    // clang-format on
+    enrollment_screen()->OnLoginDone("testuser@test.com", "test_auth_code");
   }
 
   void DisableAttributePromptUpdate() {
