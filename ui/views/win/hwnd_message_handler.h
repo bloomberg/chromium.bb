@@ -687,6 +687,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // glass. Defaults to false.
   bool dwm_transition_desired_;
 
+  // Is DWM composition currently enabled?
+  // Note: According to MSDN docs for DwmIsCompositionEnabled(), this is always
+  // true starting in Windows 8.
+  bool dwm_composition_enabled_;
+
   // True if HandleWindowSizeChanging has been called in the delegate, but not
   // HandleClientSizeChanged.
   bool sent_window_size_changing_;
