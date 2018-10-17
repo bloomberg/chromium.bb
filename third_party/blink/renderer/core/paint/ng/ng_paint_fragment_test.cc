@@ -567,4 +567,24 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
   EXPECT_FALSE(container.Children()[2]->IsDirty());
 }
 
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyInsideInlineBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      <div id="inline-block" style="display: inline-block">
+        <span id="target">DELETE ME</span>
+      </div>
+    </div>)HTML");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  const NGPaintFragment& line0 = *container.Children()[0];
+  EXPECT_FALSE(line0.IsDirty());
+
+  const NGPaintFragment& inline_block =
+      *GetPaintFragmentByElementId("inline-block");
+  const NGPaintFragment& inner_line0 = *inline_block.Children()[0];
+  EXPECT_TRUE(inner_line0.IsDirty());
+}
+
 }  // namespace blink

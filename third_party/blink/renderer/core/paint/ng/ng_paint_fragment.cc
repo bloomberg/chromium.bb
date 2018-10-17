@@ -551,10 +551,14 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
     if (TryMarkLineBoxDirtyFor(*previous))
       return;
   }
-  // There is no siblings, try parent.
+
+  // There is no siblings, try parent. If it's a non-atomic inline (e.g., span),
+  // mark dirty for it, but if it's an atomic inline (e.g., inline block), do
+  // not propagate across inline formatting context boundary.
   const LayoutObject& parent = *layout_object.Parent();
-  if (parent.IsInline())
+  if (parent.IsInline() && !parent.IsAtomicInlineLevel())
     return MarkLineBoxesDirtyFor(parent);
+
   if (!parent.IsLayoutNGMixin())
     return;
   const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
