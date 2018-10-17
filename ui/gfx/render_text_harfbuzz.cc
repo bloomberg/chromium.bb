@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1422,7 +1423,8 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
     size_t cursor = current.caret_pos();
 #if defined(OS_WIN)
     // Windows generally advances to the start of a word in either direction.
-    // TODO: Break on the end of a word when the neighboring text is puctuation.
+    // TODO: Break on the end of a word when the neighboring text is
+    // punctuation.
     if (iter.IsStartOfWord(cursor))
       break;
 #else
@@ -1817,6 +1819,7 @@ void RenderTextHarfBuzz::ShapeRuns(
 
   std::vector<Font> fallback_font_list;
   {
+    SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontsTime");
     TRACE_EVENT0("ui", "RenderTextHarfBuzz::GetFallbackFonts");
     fallback_font_list = GetFallbackFonts(primary_font);
 
@@ -1847,6 +1850,8 @@ void RenderTextHarfBuzz::ShapeRuns(
   }
 
   // Use a set to track the fallback fonts and avoid duplicate entries.
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER(
+      "RenderTextHarfBuzz.ShapeRunsWithFallbackFontsTime");
   TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRunsWithFallbackFonts",
                "fonts_count", fallback_font_list.size());
   std::set<Font, CaseInsensitiveCompare> fallback_fonts;
