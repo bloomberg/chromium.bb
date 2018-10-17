@@ -12,6 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
+@class CWVAutofillSuggestion;
 @class CWVPasswordController;
 
 // Internal protocol to receive callbacks related to password autofilling.
@@ -55,6 +56,22 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// See same method in |CWVAutofillController|. This one only fetches password
+// autofill suggestions.
+- (void)fetchSuggestionsForFormWithName:(NSString*)formName
+                              fieldName:(NSString*)fieldName
+                        fieldIdentifier:(NSString*)fieldIdentifier
+                              fieldType:(NSString*)fieldType
+                                frameID:(NSString*)frameID
+                      completionHandler:
+                          (void (^)(NSArray<CWVAutofillSuggestion*>*))
+                              completionHandler;
+
+// See same method in |CWVAutofillController|. This one autofills password form
+// on the page.
+- (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
+     completionHandler:(void (^)(void))completionHandler;
 
 @end
 

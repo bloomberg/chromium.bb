@@ -55,7 +55,9 @@
     if (!suggestions.count || !strongSelf) {
       return;
     }
-
+    // Dismiss the previous alert dialog so that we can popup a new one.
+    [strongSelf->_alertController dismissViewControllerAnimated:NO
+                                                     completion:nil];
     UIAlertController* alertController =
         [self newAlertControllerWithTitle:@"Pick a suggestion" message:nil];
     UIAlertAction* cancelAction =
@@ -231,8 +233,9 @@
 }
 
 - (UIAlertAction*)actionForSuggestion:(CWVAutofillSuggestion*)suggestion {
-  NSString* title = [NSString stringWithFormat:@"%@ %@", suggestion.value,
-                                               suggestion.displayDescription];
+  NSString* title =
+      [NSString stringWithFormat:@"%@ %@", suggestion.value,
+                                 suggestion.displayDescription ?: @""];
   return [UIAlertAction actionWithTitle:title
                                   style:UIAlertActionStyleDefault
                                 handler:^(UIAlertAction* _Nonnull action) {

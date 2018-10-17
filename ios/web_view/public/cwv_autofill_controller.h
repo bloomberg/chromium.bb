@@ -37,14 +37,17 @@ CWV_EXPORT
                   frameID:(NSString*)frameID
         completionHandler:(nullable void (^)(void))completionHandler;
 
-// For the field named |fieldName|, identified by |fieldIdentifier| in the form
-// named |formName|, fetches suggestions that can be used to autofill.
+// For the field named |fieldName|, identified by |fieldIdentifier|, with type
+// |fieldType| in the form named |formName|, fetches suggestions that can be
+// used to autofill.
 // No-op if no such form and field can be found in the current page.
 // |fieldIdentifier| identifies the field that had focus. It is passed to
 // CWVAutofillControllerDelegate and forwarded to this method.
 // |fieldType| is the 'type' attribute of the html field.
-// |completionHandler| will only be called on success.
 // |frameID| is the ID of the web frame containing the form.
+// |completionHandler| will only be called on success.
+// Note: It will return password suggestions over profile/credit card
+// suggestions.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier

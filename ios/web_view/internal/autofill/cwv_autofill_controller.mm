@@ -48,6 +48,25 @@
                                     FormActivityObserver,
                                     CWVPasswordControllerDelegate>
 
+// For the field named |fieldName|, identified by |fieldIdentifier|, with type
+// |fieldType| in the form named |formName|, fetches non-password suggestions
+// that can be used to autofill.
+// No-op if no such form and field can be found in the current page.
+// |fieldIdentifier| identifies the field that had focus. It is passed to
+// CWVAutofillControllerDelegate and forwarded to this method.
+// |fieldType| is the 'type' attribute of the html field.
+// |frameID| is the ID of the web frame containing the form.
+// |completionHandler| will only be called on success.
+- (void)
+fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
+                                 fieldName:(NSString*)fieldName
+                           fieldIdentifier:(NSString*)fieldIdentifier
+                                 fieldType:(NSString*)fieldType
+                                   frameID:(NSString*)frameID
+                         completionHandler:
+                             (void (^)(NSArray<CWVAutofillSuggestion*>*))
+                                 completionHandler;
+
 @end
 
 @implementation CWVAutofillController {
@@ -56,6 +75,9 @@
 
   // Autofill agent associated with |webState|.
   AutofillAgent* _autofillAgent;
+
+  // Handles password autofilling related logic.
+  CWVPasswordController* _passwordController;
 
   // Autofill client associated with |webState|.
   std::unique_ptr<autofill::WebViewAutofillClientIOS> _autofillClient;
@@ -75,9 +97,6 @@
 
   std::unique_ptr<autofill::FormActivityObserverBridge>
       _formActivityObserverBridge;
-
-  // Handles password autofilling related logic.
-  CWVPasswordController* _passwordController;
 
   NSString* _lastFocusFormActivityWebFrameID;
 }
@@ -168,8 +187,53 @@
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:
-                          (void (^)(NSArray<CWVAutofillSuggestion*>*))
+                          (void (^)(NSArray<CWVAutofillSuggestion*>* _Nonnull))
                               completionHandler {
+  __block NSArray<CWVAutofillSuggestion*>* passwordSuggestions;
+  __block NSArray<CWVAutofillSuggestion*>* nonPasswordSuggestions;
+  void (^resultHandler)() = ^{
+    // Will continue process after both fetch operations are done.
+    if (passwordSuggestions && nonPasswordSuggestions) {
+      // If password suggestion is found, show password suggestion only,
+      // otherwise show other autofill suggestions.
+      completionHandler(passwordSuggestions.count > 0 ? passwordSuggestions
+                                                      : nonPasswordSuggestions);
+    }
+  };
+  // Fetch password suggestion first.
+  [_passwordController
+      fetchSuggestionsForFormWithName:formName
+                            fieldName:fieldName
+                      fieldIdentifier:fieldIdentifier
+                            fieldType:fieldType
+                              frameID:frameID
+                    completionHandler:^(
+                        NSArray<CWVAutofillSuggestion*>* suggestions) {
+                      passwordSuggestions = suggestions;
+                      resultHandler();
+                    }];
+  [self fetchNonPasswordSuggestionsForFormWithName:formName
+                                         fieldName:fieldName
+                                   fieldIdentifier:fieldIdentifier
+                                         fieldType:fieldType
+                                           frameID:frameID
+                                 completionHandler:^(
+                                     NSArray<CWVAutofillSuggestion*>*
+                                         suggestions) {
+                                   nonPasswordSuggestions = suggestions;
+                                   resultHandler();
+                                 }];
+}
+
+- (void)
+fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
+                                 fieldName:(NSString*)fieldName
+                           fieldIdentifier:(NSString*)fieldIdentifier
+                                 fieldType:(NSString*)fieldType
+                                   frameID:(NSString*)frameID
+                         completionHandler:
+                             (void (^)(NSArray<CWVAutofillSuggestion*>*))
+                                 completionHandler {
   __weak CWVAutofillController* weakSelf = self;
   id availableHandler = ^(BOOL suggestionsAvailable) {
     CWVAutofillController* strongSelf = weakSelf;
@@ -186,15 +250,17 @@
                                                         formName:formName
                                                        fieldName:fieldName
                                                  fieldIdentifier:fieldIdentifier
-                                                         frameID:frameID];
+                                                         frameID:frameID
+                                            isPasswordSuggestion:NO];
         [autofillSuggestions addObject:autofillSuggestion];
       }
       completionHandler([autofillSuggestions copy]);
     };
+    // Set |typedValue| to " " to bypass the filtering logic in |AutofillAgent|.
     [strongSelf->_autofillAgent retrieveSuggestionsForForm:formName
                                                  fieldName:fieldName
                                            fieldIdentifier:fieldIdentifier
-                                                 fieldType:@""
+                                                 fieldType:fieldType
                                                       type:nil
                                                 typedValue:@" "
                                                    frameID:frameID
@@ -204,10 +270,11 @@
   // It is necessary to call |checkIfSuggestionsAvailableForForm| before
   // |retrieveSuggestionsForForm| because the former actually queries the db,
   // while the latter merely returns them.
+  // Set |typedValue| to " " to bypass the filtering logic in |AutofillAgent|.
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
                                            fieldName:fieldName
                                      fieldIdentifier:fieldIdentifier
-                                           fieldType:@""
+                                           fieldType:fieldType
                                                 type:nil
                                           typedValue:@" "
                                              frameID:frameID
@@ -219,16 +286,25 @@
 
 - (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
      completionHandler:(nullable void (^)(void))completionHandler {
-  [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
-                            fieldName:suggestion.fieldName
-                      fieldIdentifier:suggestion.fieldIdentifier
-                                 form:suggestion.formName
-                              frameID:suggestion.frameID
-                    completionHandler:^{
-                      if (completionHandler) {
-                        completionHandler();
-                      }
-                    }];
+  if (suggestion.isPasswordSuggestion) {
+    [_passwordController fillSuggestion:suggestion
+                      completionHandler:^{
+                        if (completionHandler) {
+                          completionHandler();
+                        }
+                      }];
+  } else {
+    [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
+                              fieldName:suggestion.fieldName
+                        fieldIdentifier:suggestion.fieldIdentifier
+                                   form:suggestion.formName
+                                frameID:suggestion.frameID
+                      completionHandler:^{
+                        if (completionHandler) {
+                          completionHandler();
+                        }
+                      }];
+  }
 }
 
 - (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion {
@@ -401,8 +477,8 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
-  NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
+  NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
   if (params.type == "focus") {
     _lastFocusFormActivityWebFrameID = nsFrameID;
