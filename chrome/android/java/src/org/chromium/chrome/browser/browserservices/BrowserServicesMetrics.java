@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.browserservices;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 
@@ -93,8 +94,9 @@ public class BrowserServicesMetrics {
 
         @Override
         public void close() {
-            RecordHistogram.recordMediumTimesHistogram(
-                    mMetric, now() - mStart, TimeUnit.MILLISECONDS);
+            // Use {@link CachedMetrics} so this can be called before native is loaded.
+            new CachedMetrics.MediumTimesHistogramSample(mMetric, TimeUnit.MILLISECONDS)
+                    .record(now() - mStart);
         }
     }
 
