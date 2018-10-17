@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app_shim/app_shim_delegate.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "content/public/browser/ns_view_bridge_factory_impl.h"
 #include "content/public/common/ns_view_bridge_factory.mojom.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -110,48 +110,7 @@ void AppShimController::CreateChannelAndSendLaunchApp(
 }
 
 void AppShimController::SetUpMenu() {
-  NSString* title = base::SysUTF16ToNSString(app_mode_info_->app_mode_name);
-
-  // Create a main menu since [NSApp mainMenu] is nil.
-  base::scoped_nsobject<NSMenu> main_menu([[NSMenu alloc] initWithTitle:title]);
-
-  // The title of the first item is replaced by OSX with the name of the app and
-  // bold styling. Create a dummy item for this and make it hidden.
-  NSMenuItem* dummy_item =
-      [main_menu addItemWithTitle:title action:nil keyEquivalent:@""];
-  base::scoped_nsobject<NSMenu> dummy_submenu(
-      [[NSMenu alloc] initWithTitle:title]);
-  [dummy_item setSubmenu:dummy_submenu];
-  [dummy_item setHidden:YES];
-
-  // Construct an unbolded app menu, to match how it appears in the Chrome menu
-  // bar when the app is focused.
-  NSMenuItem* item =
-      [main_menu addItemWithTitle:title action:nil keyEquivalent:@""];
-  base::scoped_nsobject<NSMenu> submenu([[NSMenu alloc] initWithTitle:title]);
-  [item setSubmenu:submenu];
-
-  // Add a quit entry.
-  NSString* quit_localized_string =
-      l10n_util::GetNSStringF(IDS_EXIT_MAC, app_mode_info_->app_mode_name);
-  [submenu addItemWithTitle:quit_localized_string
-                     action:@selector(terminate:)
-              keyEquivalent:@"q"];
-
-  // Add File, Edit, and Window menus. These are just here to make the
-  // transition smoother, i.e. from another application to the shim then to
-  // Chrome.
-  [main_menu addItemWithTitle:l10n_util::GetNSString(IDS_FILE_MENU_MAC)
-                       action:nil
-                keyEquivalent:@""];
-  [main_menu addItemWithTitle:l10n_util::GetNSString(IDS_EDIT_MENU_MAC)
-                       action:nil
-                keyEquivalent:@""];
-  [main_menu addItemWithTitle:l10n_util::GetNSString(IDS_WINDOW_MENU_MAC)
-                       action:nil
-                keyEquivalent:@""];
-
-  [NSApp setMainMenu:main_menu];
+  chrome::BuildMainMenu(NSApp, delegate_, app_mode_info_->app_mode_name, true);
 }
 
 void AppShimController::ChannelError(uint32_t custom_reason,

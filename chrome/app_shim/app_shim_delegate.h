@@ -14,7 +14,8 @@ class AppShimController;
 
 // An application delegate to catch user interactions and send the appropriate
 // IPC messages to Chrome.
-@interface AppShimDelegate : NSObject<NSApplicationDelegate> {
+@interface AppShimDelegate
+    : NSObject<NSApplicationDelegate, NSUserInterfaceValidations> {
  @private
   AppShimController* appShimController_;  // Weak, initially NULL.
   BOOL terminateNow_;
