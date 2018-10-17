@@ -88,13 +88,6 @@ void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
   SetProperty(views::kHighlightPathKey,
               CreateToolbarHighlightPath(this, gfx::Insets()).release());
-  if (focus_ring()) {
-    // For extensions we can't use a circular focus ring path since it may
-    // obscure the extension icon.
-    gfx::Path path;
-    path.addRect(RectToSkRect(GetLocalBounds()));
-    focus_ring()->SetPath(path);
-  }
 
   MenuButton::OnBoundsChanged(previous_bounds);
 }
