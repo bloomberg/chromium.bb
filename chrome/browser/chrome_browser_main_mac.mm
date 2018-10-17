@@ -30,11 +30,13 @@
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
@@ -129,7 +131,8 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   AppController* app_controller = [[AppController alloc] init];
   [NSApp setDelegate:app_controller];
 
-  chrome::BuildMainMenu(NSApp, app_controller);
+  chrome::BuildMainMenu(NSApp, app_controller,
+                        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), false);
   [app_controller mainMenuCreated];
 
   // Do Keychain reauthorization. This gets two chances to run. If the first

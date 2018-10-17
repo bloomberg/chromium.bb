@@ -96,4 +96,8 @@
   [NSApp terminate:nil];
 }
 
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  return NO;
+}
+
 @end
