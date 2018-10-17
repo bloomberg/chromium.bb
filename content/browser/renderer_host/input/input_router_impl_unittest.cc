@@ -242,7 +242,8 @@ class InputRouterImplTest : public testing::Test {
     NativeWebKeyboardEventWithLatencyInfo key_event(
         type, WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
         ui::LatencyInfo());
-    input_router_->SendKeyboardEvent(key_event);
+    input_router_->SendKeyboardEvent(
+        key_event, disposition_handler_->CreateKeyboardEventCallback());
   }
 
   void SimulateWheelEvent(float x,
@@ -264,8 +265,10 @@ class InputRouterImplTest : public testing::Test {
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type, int x, int y) {
-    input_router_->SendMouseEvent(MouseEventWithLatencyInfo(
-        SyntheticWebMouseEventBuilder::Build(type, x, y, 0)));
+    input_router_->SendMouseEvent(
+        MouseEventWithLatencyInfo(
+            SyntheticWebMouseEventBuilder::Build(type, x, y, 0)),
+        disposition_handler_->CreateMouseEventCallback());
   }
 
   void SimulateGestureEvent(WebGestureEvent gesture) {

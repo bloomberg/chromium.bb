@@ -66,11 +66,12 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   ~InputRouterImpl() override;
 
   // InputRouter
-  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override;
+  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event,
+                      MouseEventCallback event_result_callback) override;
   void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
-  void SendKeyboardEvent(
-      const NativeWebKeyboardEventWithLatencyInfo& key_event) override;
+  void SendKeyboardEvent(const NativeWebKeyboardEventWithLatencyInfo& key_event,
+                         KeyboardEventCallback event_result_callback) override;
   void SendGestureEvent(
       const GestureEventWithLatencyInfo& gesture_event) override;
   void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
@@ -118,7 +119,8 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   // Keeps track of last position of touch points and sets MovementXY for them.
   void SetMovementXYForTouchPoints(blink::WebTouchEvent* event);
 
-  void SendMouseEventImmediately(const MouseEventWithLatencyInfo& mouse_event);
+  void SendMouseEventImmediately(const MouseEventWithLatencyInfo& mouse_event,
+                                 MouseEventCallback event_result_callback);
 
   // PassthroughTouchEventQueueClient
   void SendTouchEventImmediately(
@@ -166,6 +168,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   void KeyboardEventHandled(
       const NativeWebKeyboardEventWithLatencyInfo& event,
+      KeyboardEventCallback event_result_callback,
       InputEventAckSource source,
       const ui::LatencyInfo& latency,
       InputEventAckState state,
@@ -173,6 +176,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const base::Optional<cc::TouchAction>& touch_action);
   void MouseEventHandled(
       const MouseEventWithLatencyInfo& event,
+      MouseEventCallback event_result_callback,
       InputEventAckSource source,
       const ui::LatencyInfo& latency,
       InputEventAckState state,
