@@ -324,6 +324,12 @@ class POLICY_EXPORT CloudPolicyClient {
   // Whether the client is registered with the device management service.
   bool is_registered() const { return !dm_token_.empty(); }
 
+  // Whether the client requires reregistration with the device management
+  // service.
+  bool requires_reregistration() const {
+    return !reregistration_dm_token_.empty();
+  }
+
   const std::string& dm_token() const { return dm_token_; }
   const std::string& client_id() const { return client_id_; }
   const base::DictionaryValue* configuration_seed() const {
@@ -531,6 +537,11 @@ class POLICY_EXPORT CloudPolicyClient {
 
  private:
   void SetClientId(const std::string& client_id);
+
+  // Used to store a copy of the previously used |dm_token_|. This is used
+  // during re-registration, which gets triggered by a failed policy fetch with
+  // error |DM_STATUS_SERVICE_DEVICE_NOT_FOUND|.
+  std::string reregistration_dm_token_;
 
   // Used to create tasks which run delayed on the UI thread.
   base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_;
