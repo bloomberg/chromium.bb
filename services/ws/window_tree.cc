@@ -1501,6 +1501,9 @@ void WindowTree::SetWindowBounds(
 void WindowTree::SetWindowTransform(uint32_t change_id,
                                     Id window_id,
                                     const gfx::Transform& transform) {
+  // NOTE: Tests may time out if they trigger this NOTIMPLEMENTED because
+  // the change is not ack'd. The code under test may need to change to
+  // avoid triggering window transforms outside the window manager.
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

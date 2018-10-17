@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "services/ws/window_tree.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -74,6 +75,15 @@ void AshWindowManager::MaximizeWindowByCaptionClick(
 
   const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
   wm::GetWindowState(window)->OnWMEvent(&wm_event);
+}
+
+void AshWindowManager::BounceWindow(ws::Id window_id) {
+  aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
+  if (!window || !window_tree_->IsTopLevel(window)) {
+    DVLOG(1) << "BounceWindow passed invalid window, id=" << window_id;
+    return;
+  }
+  ::wm::AnimateWindow(window, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
 }  // namespace ash

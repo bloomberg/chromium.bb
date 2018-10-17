@@ -27,4 +27,7 @@ interface AshWindowManager {
   // Maximizes the window in response to a double click or tap on the HTCAPTION
   // area.
   MaximizeWindowByCaptionClick(uint64 window_id, ui.mojom.PointerKind pointer);
+
+  // Plays the window bounce animation (scale the window up and down).
+  BounceWindow(uint64 window_id);
 };
