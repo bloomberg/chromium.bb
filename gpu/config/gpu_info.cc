@@ -75,7 +75,6 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
 
 namespace gpu {
 
-#if defined(OS_WIN)
 const char* OverlayFormatToString(OverlayFormat format) {
   switch (format) {
     case OverlayFormat::kBGRA:
@@ -91,7 +90,6 @@ bool OverlayCapability::operator==(const OverlayCapability& other) const {
   return format == other.format &&
          is_scaling_supported == other.is_scaling_supported;
 }
-#endif
 
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
     : flags(0) {}
@@ -188,7 +186,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool passthrough_cmd_decoder;
     bool can_support_threaded_texture_mailbox;
 #if defined(OS_WIN)
-    bool direct_composition_overlays;
+    bool direct_composition;
+    bool supports_overlays;
     OverlayCapabilities overlay_capabilities;
     DxDiagNode dx_diagnostics;
     Dx12VulkanVersionInfo dx12_vulkan_version_info;
@@ -247,7 +246,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
                       can_support_threaded_texture_mailbox);
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
-  enumerator->AddBool("directCompositionOverlays", direct_composition_overlays);
+  enumerator->AddBool("directComposition", direct_composition);
+  enumerator->AddBool("supportsOverlays", supports_overlays);
   for (const auto& cap : overlay_capabilities)
     EnumerateOverlayCapability(cap, enumerator);
   EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);
