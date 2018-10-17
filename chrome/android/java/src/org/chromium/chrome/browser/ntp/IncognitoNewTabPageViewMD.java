@@ -145,7 +145,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP) {
             // Small padding.
             paddingHorizontalDp = mWidthDp <= 240 ? 24 : 32;
-            paddingVerticalDp = (mHeightDp <= 600) ? 32 : 72;
+            paddingVerticalDp = 32;
 
             // Align left.
             mContainer.setGravity(Gravity.START);
