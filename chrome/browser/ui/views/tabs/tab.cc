@@ -400,6 +400,15 @@ void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SetProperty(views::kHighlightPathKey, new SkPath(path));
 }
 
+bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
+    controller_->SelectTab(this);
+    return true;
+  }
+
+  return false;
+}
+
 namespace {
 bool IsSelectionModifierDown(const ui::MouseEvent& event) {
 #if defined(OS_MACOSX)
