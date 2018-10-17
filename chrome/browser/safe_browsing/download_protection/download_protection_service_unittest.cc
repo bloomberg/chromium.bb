@@ -280,8 +280,9 @@ class DownloadProtectionServiceTest : public testing::Test {
     test_event_router_ =
         extensions::CreateAndUseTestEventRouter(profile_.get());
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
-        ->SetTestingFactory(profile_.get(),
-                            BuildSafeBrowsingPrivateEventRouter);
+        ->SetTestingFactory(
+            profile_.get(),
+            base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
   }
 
   void TearDown() override {
