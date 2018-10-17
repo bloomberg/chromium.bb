@@ -1403,6 +1403,21 @@
             ]
         }
     ],
+    "DataReductionProxyServerExperiments": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "OnDeviceSafeBrowsingFieldTrialEnabled",
+                    "params": {
+                        "exp": "disable_server_safebrowsing"
+                    }
+                }
+            ]
+        }
+    ],
     "DataSaverSiteBreakdownUsingPageLoadMetrics": [
         {
             "platforms": [
