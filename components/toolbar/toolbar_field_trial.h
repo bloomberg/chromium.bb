@@ -18,6 +18,10 @@ extern const base::Feature kHideSteadyStateUrlScheme;
 // the toolbar. It is restored during editing.
 extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
 
+// Feature used to hide the path, query and ref from steady state URLs
+// displayed in the toolbar. It is restored during editing.
+extern const base::Feature kHideSteadyStateUrlPathQueryAndRef;
+
 // Returns true if either the steady-state elision flag for scheme or the
 // #upcoming-ui-features flag is enabled.
 bool IsHideSteadyStateUrlSchemeEnabled();

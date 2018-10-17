@@ -48,6 +48,11 @@ base::string16 ToolbarModelImpl::GetURLForDisplay() const {
 
 #if defined(OS_IOS)
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
+#else
+  if (base::FeatureList::IsEnabled(
+          toolbar::features::kHideSteadyStateUrlPathQueryAndRef)) {
+    format_types |= url_formatter::kFormatUrlTrimAfterHost;
+  }
 #endif
 
   if (toolbar::features::IsHideSteadyStateUrlSchemeEnabled())

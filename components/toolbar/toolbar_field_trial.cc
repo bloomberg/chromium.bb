@@ -29,6 +29,15 @@ const base::Feature kHideSteadyStateUrlTrivialSubdomains {
 #endif
 };
 
+const base::Feature kHideSteadyStateUrlPathQueryAndRef {
+  "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef",
+#if defined(OS_IOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 bool IsHideSteadyStateUrlSchemeEnabled() {
   return base::FeatureList::IsEnabled(kHideSteadyStateUrlScheme) ||
          base::FeatureList::IsEnabled(::features::kExperimentalUi);
