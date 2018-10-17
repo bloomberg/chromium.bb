@@ -4461,7 +4461,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableGoogleAssistantName,
      flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::switches::kAssistantFeature)},
-#endif  // defined(OS_ANDROID)
+
+    {"enable-media-session-ash-media-keys",
+     flag_descriptions::kEnableMediaSessionAshMediaKeysName,
+     flag_descriptions::kEnableMediaSessionAshMediaKeysDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMediaSessionAccelerators)},
+#endif  // defined(OS_CHROMEOS)
 };
 
 class FlagsStateSingleton {

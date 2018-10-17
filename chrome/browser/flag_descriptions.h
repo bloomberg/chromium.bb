@@ -1987,6 +1987,9 @@ extern const char kEnableHomeLauncherGesturesDescription[];
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 
+extern const char kEnableMediaSessionAshMediaKeysName[];
+extern const char kEnableMediaSessionAshMediaKeysDescription[];
+
 extern const char kEnableNewStyleLauncherName[];
 extern const char kEnableNewStyleLauncherDescription[];
 
