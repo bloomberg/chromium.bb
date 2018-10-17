@@ -331,14 +331,8 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
-// Flaky on Chrome OS, see: http://crbug.com/477360
-#if defined(OS_CHROMEOS)
-#define MAYBE_OpenSingletonTabAndCancel DISABLED_OpenSingletonTabAndCancel
-#else
-#define MAYBE_OpenSingletonTabAndCancel OpenSingletonTabAndCancel
-#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       MAYBE_OpenSingletonTabAndCancel) {
+                       OpenSingletonTabAndCancel) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   // Open the file dialog on the default path.
