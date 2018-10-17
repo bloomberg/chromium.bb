@@ -22,6 +22,10 @@ KalmanPredictor::KalmanPredictor() = default;
 
 KalmanPredictor::~KalmanPredictor() = default;
 
+const char* KalmanPredictor::GetName() const {
+  return "Kalman";
+}
+
 void KalmanPredictor::Reset() {
   x_predictor_.Reset();
   y_predictor_.Reset();
