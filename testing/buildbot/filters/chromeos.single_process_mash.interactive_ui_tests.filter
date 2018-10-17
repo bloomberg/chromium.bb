@@ -21,8 +21,6 @@
 
 # misc.
 -DevToolsManagerDelegateTest.ShowMinimizedWindow
--OmniboxViewViewsTest.DeactivateTouchEditingOnExecuteCommand
--OmniboxViewViewsTest.SelectAllOnTap
 -WindowActivityWatcherTest.Basic
 -WindowActivityWatcherTest.MultipleWindows
 -WindowActivityWatcherTest.WindowActivation

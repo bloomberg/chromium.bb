@@ -33,6 +33,7 @@
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
@@ -97,7 +98,12 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
-    ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+    gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+#if defined(OS_CHROMEOS)
+    if (features::IsUsingWindowService())
+      window = nullptr;
+#endif
+    ui::test::EventGenerator generator(window);
     if (press_location == release_location) {
       generator.GestureTapAt(press_location);
     } else {
