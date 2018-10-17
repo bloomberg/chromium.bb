@@ -163,31 +163,13 @@ Polymer({
 
   /** @override */
   attached: function() {
-    // TODO(crbug.com/892260): This description is inaccurate. Remove this and
-    // simplify logic below.
-    //
-    // The item uid is built from id, origin, and username for the
-    // following reasons: origin and username are enough to describe and
-    // uniquely identify an entry. It is impossible to have two entries
-    // that have the same origin and username, but different passwords,
-    // as the password update logic prevents these cases. The entry is
-    // required to force a refresh of entries, after a removal or undo of
-    // a removal has taken place. All entries before the point of
-    // modification are uneffected, but the ones following need to be
-    // refreshed. Including the index in the uid achieves this effect.
-    // See https://crbug.com/862119 how this could lead to bugs otherwise.
-    const getItemUid = item => [item.entry.id, item.entry.loginPair.urls.origin,
-                                item.entry.loginPair.username]
-                                   .join('_');
-
     // Create listener functions.
     const setSavedPasswordsListener = list => {
       const newList = list.map(entry => ({entry: entry, password: ''}));
-      this.updateList('savedPasswords', getItemUid, newList);
-      this.savedPasswords.forEach((item, index) => {
-        item.password = '';
-        this.$.passwordList.notifyPath(`items.${index}.password`);
-      });
+      // Because the backend guarantees that item.entry.id uniquely identifies a
+      // given entry and is stable with regard to mutations to the list, it is
+      // sufficient to just use this id to create a item uid.
+      this.updateList('savedPasswords', item => item.entry.id, newList);
     };
 
     const setPasswordExceptionsListener = list => {
