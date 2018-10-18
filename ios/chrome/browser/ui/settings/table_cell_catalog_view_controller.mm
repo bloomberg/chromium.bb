@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -21,6 +22,7 @@ namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierText = kSectionIdentifierEnumZero,
+  SectionIdentifierSettings,
   SectionIdentifierURL,
 };
 
@@ -37,6 +39,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLWithSupplementalText,
   ItemTypeURLWithBadgeImage,
   ItemTypeTextSettingsDetail,
+  ItemTypeLinkFooter,
 };
 }
 
@@ -66,6 +69,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierText];
+  [model addSectionWithIdentifier:SectionIdentifierSettings];
   [model addSectionWithIdentifier:SectionIdentifierURL];
 
   // SectionIdentifierText.
@@ -113,19 +117,27 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:textActionButtonItem
       toSectionWithIdentifier:SectionIdentifierText];
 
+  // SectionIdentifierSettings.
   SettingsDetailItem* settingsDetailItem =
       [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  settingsDetailItem.text = @"Short text";
+  settingsDetailItem.text = @"Settings cells";
   settingsDetailItem.detailText = @"Short";
   [model addItem:settingsDetailItem
-      toSectionWithIdentifier:SectionIdentifierText];
+      toSectionWithIdentifier:SectionIdentifierSettings];
 
   SettingsDetailItem* settingsDetailItemLong =
       [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
   settingsDetailItemLong.text = @"Very long text eating the other detail label";
   settingsDetailItemLong.detailText = @"A bit less short";
   [model addItem:settingsDetailItemLong
-      toSectionWithIdentifier:SectionIdentifierText];
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  TableViewLinkHeaderFooterItem* linkFooter =
+      [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeLinkFooter];
+  linkFooter.text =
+      @"This is a footer text view with a BEGIN_LINKlinkEND_LINK in the middle";
+  [model setFooter:linkFooter
+      forSectionWithIdentifier:SectionIdentifierSettings];
 
   // SectionIdentifierURL.
   TableViewURLItem* item =
