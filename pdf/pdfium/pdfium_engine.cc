@@ -1343,7 +1343,12 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
         is_form_text_area &&
         IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
 
-    FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
+    if (event.GetClickCount() == 1) {
+      FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
+    } else if (event.GetClickCount() == 2) {
+      FORM_OnLButtonDoubleClick(form(), page, event.GetModifiers(), page_x,
+                                page_y);
+    }
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
