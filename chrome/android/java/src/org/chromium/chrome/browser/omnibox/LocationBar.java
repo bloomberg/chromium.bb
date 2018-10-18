@@ -150,6 +150,9 @@ public interface LocationBar extends UrlBarDelegate {
     View getContainerView();
 
     /**
+     * TODO(twellington): Try to remove this method. It's only used to return an in-product help
+     *                    bubble anchor view... which should be moved out of tab and perhaps into
+     *                    the status bar icon component.
      * @return The view containing the security icon.
      */
     View getSecurityIconView();

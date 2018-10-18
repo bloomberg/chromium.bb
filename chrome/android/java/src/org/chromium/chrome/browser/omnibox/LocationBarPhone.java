@@ -165,7 +165,7 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    protected boolean shouldAnimateIconChanges() {
+    public boolean shouldAnimateIconChanges() {
         return super.shouldAnimateIconChanges() || isUrlFocusChangeInProgress();
     }
 
