@@ -25,6 +25,7 @@ struct ScriptHandle {
   // When set to true this script can be run in 'autostart mode'. Script won't
   // be shown.
   bool autostart;
+  bool highlight;
 };
 
 // Script represents a sequence of actions.

@@ -168,12 +168,17 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private void onUpdateScripts(String[] scriptNames, String[] scriptPaths) {
+    private void onUpdateScripts(
+            String[] scriptNames, String[] scriptPaths, boolean[] scriptsHighlightFlags) {
+        assert scriptNames.length == scriptPaths.length;
+        assert scriptNames.length == scriptsHighlightFlags.length;
+
         ArrayList<AutofillAssistantUiDelegate.ScriptHandle> scriptHandles = new ArrayList<>();
-        // Note that scriptNames and scriptPaths are one-on-one matched by index.
+        // Note that scriptNames, scriptPaths and scriptsHighlightFlags are one-on-one matched by
+        // index.
         for (int i = 0; i < scriptNames.length; i++) {
-            scriptHandles.add(
-                    new AutofillAssistantUiDelegate.ScriptHandle(scriptNames[i], scriptPaths[i]));
+            scriptHandles.add(new AutofillAssistantUiDelegate.ScriptHandle(
+                    scriptNames[i], scriptPaths[i], scriptsHighlightFlags[i]));
         }
         mUiDelegate.updateScripts(scriptHandles);
     }

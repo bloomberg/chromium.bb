@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
@@ -112,11 +113,14 @@ class AutofillAssistantUiDelegate {
         private final String mName;
         /** The script path. */
         private final String mPath;
+        /** Whether the script should be highlighted. */
+        private final boolean mHighlight;
 
         /** Constructor. */
-        public ScriptHandle(String name, String path) {
+        public ScriptHandle(String name, String path, boolean highlight) {
             mName = name;
             mPath = path;
+            mHighlight = highlight;
         }
 
         /** Returns the display name. */
@@ -127,6 +131,11 @@ class AutofillAssistantUiDelegate {
         /** Returns the script path. */
         public String getPath() {
             return mPath;
+        }
+
+        /** Returns whether the script should be highlighted. */
+        public boolean isHighlight() {
+            return mHighlight;
         }
     }
 
@@ -240,6 +249,17 @@ class AutofillAssistantUiDelegate {
                 clearChipsViewContainer();
                 mClient.onScriptSelected(scriptHandle.getPath());
             });
+
+            if (scriptHandle.isHighlight()) {
+                int highlightColor = mActivity.getResources().getColor(
+                        org.chromium.chrome.R.color.modern_blue_600);
+                int strokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1,
+                        mActivity.getResources().getDisplayMetrics());
+                ((GradientDrawable) chipView.getBackground().getCurrent())
+                        .setStroke(strokeWidth, highlightColor);
+                chipView.setTextColor(highlightColor);
+            }
+
             addChipViewToContainer(chipView);
         }
 
