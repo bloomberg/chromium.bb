@@ -410,10 +410,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     return;
                 }
 
+                // TODO(crbug.com/896476): Remove this.
                 if (tab.isPreview()) {
-                    // Some previews are not fully decided until the page finishes loading. If this
-                    // is a preview, update the security icon which will also update the verbose
-                    // status view to make sure the "Lite" badge is displayed.
+                    // Some previews (like Client LoFi) are not fully decided until the page
+                    // finishes loading. If this is a preview, update the security icon which will
+                    // also update the verbose status view to make sure the "Lite" badge is
+                    // displayed.
                     mLocationBar.updateSecurityIcon();
                 }
 
@@ -550,6 +552,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                     int httpStatusCode) {
                 if (hasCommitted && isInMainFrame && !isSameDocument) {
                     mToolbar.onNavigatedToDifferentPage();
+                }
+
+                if (hasCommitted && tab.isPreview()) {
+                    // Some previews are not fully decided until the page commits. If this
+                    // is a preview, update the security icon which will also update the verbose
+                    // status view to make sure the "Lite" badge is displayed.
+                    mLocationBar.updateSecurityIcon();
                 }
 
                 // If the load failed due to a different navigation, there is no need to reset the

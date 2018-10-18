@@ -166,9 +166,14 @@ public class ToolbarModel implements ToolbarDataProvider {
             return buildUrlBarData(url, formattedUrl);
         }
 
+        if (isPreview()) {
+            // Strip the scheme from the original URL for the Previews UI.
+            return buildUrlBarData(url, UrlUtilities.stripScheme(url));
+        }
+
         if (isOfflinePage()) {
             String originalUrl = mTab.getOriginalUrl();
-            formattedUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(
+            formattedUrl = UrlUtilities.stripScheme(
                     DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
 
             // Clear the editing text for untrusted offline pages.

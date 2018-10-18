@@ -207,7 +207,7 @@ public class PageInfoController
 
         String displayUrl = UrlFormatter.formatUrlForCopy(mFullUrl);
         if (isShowingOfflinePage()) {
-            displayUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
+            displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
         SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
         OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
