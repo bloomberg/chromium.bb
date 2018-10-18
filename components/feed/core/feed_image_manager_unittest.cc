@@ -37,11 +37,11 @@ const char kImageData[] = "pie image";
 const char kImageData2[] = "cake image";
 
 const char kUmaImageLoadSuccessHistogramName[] =
-    "NewTabPage.Feed.ImageFetchResult";
+    "ContentSuggestions.Feed.Image.FetchResult";
 const char kUmaCacheLoadHistogramName[] =
-    "NewTabPage.Feed.ImageLoadFromCacheTime";
+    "ContentSuggestions.Feed.Image.LoadFromCacheTime";
 const char kUmaNetworkLoadHistogramName[] =
-    "NewTabPage.Feed.ImageLoadFromNetworkTime";
+    "ContentSuggestions.Feed.Image.LoadFromNetworkTime";
 
 // Keep in sync with DIMENSION_UNKNOWN in third_party/feed/src/main/java/com/
 //  google/android/libraries/feed/host/imageloader/ImageLoaderApi.java.

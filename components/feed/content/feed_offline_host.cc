@@ -63,7 +63,8 @@ class CallbackAggregator : public base::RefCounted<CallbackAggregator> {
 
   ~CallbackAggregator() {
     base::TimeDelta duration = base::Time::Now() - start_time_;
-    UMA_HISTOGRAM_TIMES("Feed.Offline.GetStatusDuration", duration);
+    UMA_HISTOGRAM_TIMES("ContentSuggestions.Feed.Offline.GetStatusDuration",
+                        duration);
     std::move(on_completion_).Run(std::move(urls_));
   }
 
@@ -163,7 +164,8 @@ base::Optional<int64_t> FeedOfflineHost::GetOfflineId(const std::string& url) {
 void FeedOfflineHost::GetOfflineStatus(
     std::vector<std::string> urls,
     base::OnceCallback<void(std::vector<std::string>)> callback) {
-  UMA_HISTOGRAM_EXACT_LINEAR("Feed.Offline.GetStatusCount", urls.size(), 50);
+  UMA_HISTOGRAM_EXACT_LINEAR("ContentSuggestions.Feed.Offline.GetStatusCount",
+                             urls.size(), 50);
 
   scoped_refptr<CallbackAggregator> aggregator =
       base::MakeRefCounted<CallbackAggregator>(

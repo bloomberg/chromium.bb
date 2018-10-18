@@ -53,7 +53,8 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       })");
 
 void ReportFetchResult(FeedImageFetchResult result) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Feed.ImageFetchResult", result);
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Image.FetchResult",
+                            result);
 }
 
 gfx::Size CreateGfxSize(int width_px, int height_px) {
@@ -160,7 +161,7 @@ void FeedImageManager::OnImageDecodedFromDatabase(size_t url_index,
   // Report success if the url exists.
   // This check is for concurrent access to the same url.
   if (url_timers_.find(image_id) != url_timers_.end()) {
-    UMA_HISTOGRAM_TIMES("NewTabPage.Feed.ImageLoadFromCacheTime",
+    UMA_HISTOGRAM_TIMES("ContentSuggestions.Feed.Image.LoadFromCacheTime",
                         url_timers_[image_id].Elapsed());
     ClearUmaTimer(image_id);
     ReportFetchResult(FeedImageFetchResult::kSuccessCached);
@@ -247,7 +248,7 @@ void FeedImageManager::OnImageDecodedFromNetwork(size_t url_index,
   // Report success if the url exists.
   // This check is for concurrent access to the same url.
   if (url_timers_.find(image_id) != url_timers_.end()) {
-    UMA_HISTOGRAM_TIMES("NewTabPage.Feed.ImageLoadFromNetworkTime",
+    UMA_HISTOGRAM_TIMES("ContentSuggestions.Feed.Image.LoadFromNetworkTime",
                         url_timers_[image_id].Elapsed());
     ClearUmaTimer(image_id);
     ReportFetchResult(FeedImageFetchResult::kSuccessFetched);
