@@ -41,8 +41,8 @@ per-file *buffer_types.*=reveman@chromium.org
 per-file *buffer_types.*=dcastagna@chromium.org
 per-file *buffer_types.*=rjkroege@chromium.org
 per-file *buffer_types.*=spang@chromium.org
-per-file *pixmap.*=rjkroege@chromium.org
-per-file *pixmap.*=spang@chromium.org
+per-file *native_pixmap*=rjkroege@chromium.org
+per-file *native_pixmap*=spang@chromium.org
 
 # Vector icons.
 per-file *vector_icon*=estade@chromium.org
