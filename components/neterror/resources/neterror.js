@@ -246,9 +246,9 @@ function getSuggestedContentDiv(item, index) {
 
 // Populates a list of suggested offline content.
 // Note: For security reasons all content downloaded from the web is considered
-// unsafe and must be securely handled to be presented on the dino page. The
-// image content is already safely re-encoded after being downloaded but the
-// textual content, like title and attribution, must be properly handled here.
+// unsafe and must be securely handled to be presented on the dino page. Images
+// have already been safely re-encoded but textual content -- like title and
+// attribution -- must be properly handled here.
 function offlineContentAvailable(suggestions) {
   if (!suggestions || !loadTimeData.valueExists('offlineContentList'))
     return;
