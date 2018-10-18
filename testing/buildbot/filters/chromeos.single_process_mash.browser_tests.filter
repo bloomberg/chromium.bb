@@ -51,9 +51,6 @@
 -PDFExtensionTest.*
 -PDFExtensionHitTestTest.*
 
-# ash::Shell access for LogoutConfirmationController
--DeviceLocalAccountTest.*
-
 # Fails: immersive_controller->IsRevealed() returns false.
 # http://crbug.com/791148
 -vZoomBubbleBrowserTest.*

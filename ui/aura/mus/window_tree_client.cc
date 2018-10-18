@@ -714,21 +714,23 @@ void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
   // deletion. The connection to the server is about to be dropped and the
   // server will take appropriate action.
   // TODO: decide how to deal with windows not owned by this client.
+  base::Optional<uint32_t> delete_change_id;
   if (!in_shutdown_ && origin == Origin::CLIENT &&
       (WasCreatedByThisClient(window) || IsRoot(window))) {
-    const uint32_t change_id =
+    delete_change_id =
         ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
             window, ChangeType::DELETE_WINDOW));
-    tree_->DeleteWindow(change_id, window->server_id());
+    tree_->DeleteWindow(delete_change_id.value(), window->server_id());
   }
 
   windows_.erase(window->server_id());
 
-  // Remove any InFlightChanges associated with the window.
+  // Remove any InFlightChanges associated with the window, except the delete.
   std::set<uint32_t> in_flight_change_ids_to_remove;
   for (const auto& pair : in_flight_map_) {
-    if (pair.second->window() == window)
-      in_flight_change_ids_to_remove.insert(pair.first);
+    const uint32_t change_id = pair.first;
+    if (pair.second->window() == window && change_id != delete_change_id)
+      in_flight_change_ids_to_remove.insert(change_id);
   }
   for (auto change_id : in_flight_change_ids_to_remove)
     in_flight_map_.erase(change_id);
