@@ -196,7 +196,7 @@ bool HTMLObjectElement::HasFallbackContent() const {
     // Ignore whitespace-only text, and <param> tags, any other content is
     // fallback content.
     if (child->IsTextNode()) {
-      if (!ToText(child)->ContainsOnlyWhitespace())
+      if (!ToText(child)->ContainsOnlyWhitespaceOrEmpty())
         return true;
     } else if (!IsHTMLParamElement(*child)) {
       return true;

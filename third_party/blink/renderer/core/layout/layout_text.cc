@@ -194,7 +194,7 @@ void LayoutText::StyleDidChange(StyleDifference diff,
     TransformText();
 
   // This is an optimization that kicks off font load before layout.
-  if (!GetText().ContainsOnlyWhitespace())
+  if (!GetText().ContainsOnlyWhitespaceOrEmpty())
     new_style.GetFont().WillUseFontData(GetText());
 
   TextAutosizer* text_autosizer = GetDocument().GetTextAutosizer();
@@ -376,7 +376,7 @@ String LayoutText::PlainText() const {
     plain_text_builder.Append(text);
     if (text_box->NextForSameLayoutObject() &&
         text_box->NextForSameLayoutObject()->Start() > text_box->end() &&
-        text.length() && !text.Right(1).ContainsOnlyWhitespace())
+        text.length() && !text.Right(1).ContainsOnlyWhitespaceOrEmpty())
       plain_text_builder.Append(kSpaceCharacter);
   }
   return plain_text_builder.ToString();
@@ -998,8 +998,8 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
 
   int len = TextLength();
 
-  if (!len ||
-      (strip_front_spaces && GetText().Impl()->ContainsOnlyWhitespace())) {
+  if (!len || (strip_front_spaces &&
+               GetText().Impl()->ContainsOnlyWhitespaceOrEmpty())) {
     first_line_min_width = LayoutUnit();
     last_line_min_width = LayoutUnit();
     first_line_max_width = LayoutUnit();

@@ -69,7 +69,7 @@ void RemoveWhiteSpaceOnlyTextNode(ContainerNode& container) {
   for (Node* descendant :
        CollectFromIterable(NodeTraversal::InclusiveDescendantsOf(container))) {
     if (Text* text = ToTextOrNull(descendant)) {
-      if (text->ContainsOnlyWhitespace())
+      if (text->ContainsOnlyWhitespaceOrEmpty())
         text->remove();
     } else if (Element* element = ToElementOrNull(descendant)) {
       if (ShadowRoot* shadow_root = element->OpenShadowRoot())

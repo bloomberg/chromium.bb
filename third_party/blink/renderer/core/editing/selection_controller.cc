@@ -581,7 +581,7 @@ static bool IsEmptyWordRange(const EphemeralRangeInFlatTree range) {
                  .SetEmitsObjectReplacementCharacter(
                      HasEditableStyle(*range.StartPosition().AnchorNode()))
                  .Build());
-  return str.IsEmpty() || str.SimplifyWhiteSpace().ContainsOnlyWhitespace();
+  return str.SimplifyWhiteSpace().ContainsOnlyWhitespaceOrEmpty();
 }
 
 bool SelectionController::SelectClosestWordFromHitTestResult(

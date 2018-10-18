@@ -58,7 +58,7 @@ void WhitespaceAttacher::DidVisitText(Text* text) {
     if (text->data().IsEmpty())
       return;
     SetLastTextNode(text);
-    if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespace())
+    if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespaceOrEmpty())
       last_text_node_needs_reattach_ = true;
     return;
   }
@@ -73,11 +73,11 @@ void WhitespaceAttacher::DidVisitText(Text* text) {
   if (LayoutObject* text_layout_object = text->GetLayoutObject()) {
     ReattachWhitespaceSiblings(text_layout_object);
   } else {
-    if (last_text_node_->ContainsOnlyWhitespace())
+    if (last_text_node_->ContainsOnlyWhitespaceOrEmpty())
       last_text_node_->ReattachLayoutTreeIfNeeded(Node::AttachContext());
   }
   SetLastTextNode(text);
-  if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespace())
+  if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespaceOrEmpty())
     last_text_node_needs_reattach_ = true;
 }
 
@@ -116,7 +116,8 @@ void WhitespaceAttacher::ReattachWhitespaceSiblings(
   for (Node* sibling = last_text_node_; sibling;
        sibling = LayoutTreeBuilderTraversal::NextLayoutSibling(*sibling)) {
     LayoutObject* sibling_layout_object = sibling->GetLayoutObject();
-    if (sibling->IsTextNode() && ToText(sibling)->ContainsOnlyWhitespace()) {
+    if (sibling->IsTextNode() &&
+        ToText(sibling)->ContainsOnlyWhitespaceOrEmpty()) {
       bool had_layout_object = !!sibling_layout_object;
       ToText(sibling)->ReattachLayoutTreeIfNeeded(context);
       sibling_layout_object = sibling->GetLayoutObject();
@@ -170,7 +171,7 @@ void WhitespaceAttacher::UpdateLastTextNodeFromDisplayContents() {
     LayoutObject* layout_object = sibling->GetLayoutObject();
     if (sibling->IsTextNode()) {
       Text* text = ToText(sibling);
-      if (text->ContainsOnlyWhitespace()) {
+      if (text->ContainsOnlyWhitespaceOrEmpty()) {
         last_text_node_ = text;
         return;
       }
