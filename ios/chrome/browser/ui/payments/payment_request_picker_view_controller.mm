@@ -97,7 +97,8 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
   self.tableView.delegate = self;
 
   [self updateTableInset];
-  self.tableView.rowHeight = MDCCellDefaultOneLineHeight;
+  self.tableView.estimatedRowHeight = MDCCellDefaultOneLineHeight;
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.accessibilityIdentifier =
       kPaymentRequestPickerViewControllerAccessibilityID;
 

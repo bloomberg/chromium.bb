@@ -114,6 +114,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
     item.complete =
         _paymentRequest->profile_comparator()->IsContactInfoComplete(
             contactProfile);
+    item.useScaledFont = YES;
     if (_paymentRequest->selected_contact_profile() == contactProfile)
       _selectedItemIndex = index;
 

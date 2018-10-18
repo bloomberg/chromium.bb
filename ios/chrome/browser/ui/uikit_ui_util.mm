@@ -129,6 +129,42 @@ UIFont* GetUIFont(int fontFace, bool isBold, CGFloat fontSize) {
   return [UIFont fontWithName:fontFaceName size:fontSize];
 }
 
+void SetUILabelScaledFont(UILabel* label, UIFont* font) {
+  if (@available(iOS 11, *)) {
+    label.font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
+    label.adjustsFontForContentSizeCategory = YES;
+  } else {
+    label.font = font;
+  }
+}
+
+void MaybeSetUILabelScaledFont(BOOL maybe, UILabel* label, UIFont* font) {
+  if (maybe) {
+    SetUILabelScaledFont(label, font);
+  } else {
+    label.font = font;
+  }
+}
+
+void SetUITextFieldScaledFont(UITextField* textField, UIFont* font) {
+  if (@available(iOS 11, *)) {
+    textField.font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
+    textField.adjustsFontForContentSizeCategory = YES;
+  } else {
+    textField.font = font;
+  }
+}
+
+void MaybeSetUITextFieldScaledFont(BOOL maybe,
+                                   UITextField* textField,
+                                   UIFont* font) {
+  if (maybe) {
+    SetUITextFieldScaledFont(textField, font);
+  } else {
+    textField.font = font;
+  }
+}
+
 void AddBorderShadow(UIView* view, CGFloat offset, UIColor* color) {
   CGRect rect = CGRectInset(view.bounds, -offset, -offset);
   CGPoint waypoints[] = {
