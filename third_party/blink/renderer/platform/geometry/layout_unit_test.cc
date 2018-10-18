@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include <limits.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
