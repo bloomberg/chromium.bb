@@ -138,4 +138,104 @@ TEST_F(MediaControllerTest, ActiveController_Suspend_Noop_Abandoned) {
   }
 }
 
+TEST_F(MediaControllerTest, ActiveController_SuspendResume) {
+  test::MockMediaSession media_session;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->Suspend();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->Resume();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Active) {
+  test::MockMediaSession media_session;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->ToggleSuspendResume();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Ducked) {
+  test::MockMediaSession media_session;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    media_session.StartDucking();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->ToggleSuspendResume();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kDucking);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    media_session.StopDucking();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Inactive) {
+  test::MockMediaSession media_session;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    media_session.Stop();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kInactive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->ToggleSuspendResume();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+}
+
+TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Suspended) {
+  test::MockMediaSession media_session;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->Suspend();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    controller()->ToggleSuspendResume();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+}
+
 }  // namespace media_session

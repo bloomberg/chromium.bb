@@ -19,9 +19,40 @@ void MediaController::Suspend() {
     session_->Suspend(mojom::MediaSession::SuspendType::kUI);
 }
 
-void MediaController::SetMediaSession(mojom::MediaSession* session) {
+void MediaController::Resume() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->Resume(mojom::MediaSession::SuspendType::kUI);
+}
+
+void MediaController::ToggleSuspendResume() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  switch (state_) {
+    case mojom::MediaSessionInfo::SessionState::kInactive:
+    case mojom::MediaSessionInfo::SessionState::kSuspended:
+      Resume();
+      break;
+    case mojom::MediaSessionInfo::SessionState::kDucking:
+    case mojom::MediaSessionInfo::SessionState::kActive:
+      Suspend();
+      break;
+  }
+}
+
+void MediaController::SetMediaSession(
+    mojom::MediaSession* session,
+    mojom::MediaSessionInfo::SessionState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_ = session;
+  state_ = state;
+}
+
+void MediaController::ClearMediaSession() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  session_ = nullptr;
+  state_ = mojom::MediaSessionInfo::SessionState::kInactive;
 }
 
 void MediaController::BindToInterface(mojom::MediaControllerRequest request) {

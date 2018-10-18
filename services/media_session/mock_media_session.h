@@ -57,6 +57,8 @@ class MockMediaSession : public mojom::MediaSession {
   void AddObserver(mojom::MediaSessionObserverPtr) override;
   void GetDebugInfo(GetDebugInfoCallback) override;
 
+  void Stop();
+
   void AbandonAudioFocusFromClient();
   base::UnguessableToken GetRequestIdFromClient();
 
