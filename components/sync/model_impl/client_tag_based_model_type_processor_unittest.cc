@@ -1348,6 +1348,26 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldStopAndClearMetadata) {
   worker()->VerifyPendingCommits({{kHash1}, {kHash2}, {kHash3}});
 }
 
+// Test proper handling of disable-sync before initial sync done.
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldNotClearBridgeMetadataPriorToMergeSyncData) {
+  // Populate the bridge's metadata with some non-empty values for us to later
+  // check that it hasn't been cleared.
+  const std::string kTestEncryptionKeyName = "TestEncryptionKey";
+  ModelTypeState model_type_state(db().model_type_state());
+  model_type_state.set_encryption_key_name(kTestEncryptionKeyName);
+  bridge()->mutable_db()->set_model_type_state(model_type_state);
+
+  ModelReadyToSync();
+  OnSyncStarting();
+  ASSERT_FALSE(type_processor()->IsTrackingMetadata());
+
+  type_processor()->OnSyncStopping(CLEAR_METADATA);
+  EXPECT_FALSE(type_processor()->IsTrackingMetadata());
+  EXPECT_EQ(kTestEncryptionKeyName,
+            db().model_type_state().encryption_key_name());
+}
+
 // Test re-encrypt everything when desired encryption key changes.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReencryptCommitsWithNewKey) {
   InitializeToReadyState();
