@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -29,8 +30,8 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
   // This may block the main thread.
   static void CollectAllGarbage();
 
-  static void EnsureSharedBackingThread();
-  static void ClearSharedBackingThread();
+  static WorkletThreadHolder<AnimationWorkletThread>*
+  GetWorkletThreadHolderForTesting();
 
  private:
   explicit AnimationWorkletThread(WorkerReportingProxy&);
@@ -43,6 +44,9 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
   WebThreadType GetThreadType() const override {
     return WebThreadType::kAnimationWorkletThread;
   }
+
+  void EnsureSharedBackingThread();
+  void ClearSharedBackingThread();
 };
 
 }  // namespace blink

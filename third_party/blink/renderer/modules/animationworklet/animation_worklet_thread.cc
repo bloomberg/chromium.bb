@@ -15,6 +15,10 @@
 
 namespace blink {
 
+namespace {
+unsigned s_ref_count = 0;
+}
+
 std::unique_ptr<AnimationWorkletThread> AnimationWorkletThread::Create(
     WorkerReportingProxy& worker_reporting_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
@@ -27,9 +31,19 @@ template class WorkletThreadHolder<AnimationWorkletThread>;
 
 AnimationWorkletThread::AnimationWorkletThread(
     WorkerReportingProxy& worker_reporting_proxy)
-    : WorkerThread(worker_reporting_proxy) {}
+    : WorkerThread(worker_reporting_proxy) {
+  DCHECK(IsMainThread());
+  if (++s_ref_count == 1) {
+    EnsureSharedBackingThread();
+  }
+}
 
-AnimationWorkletThread::~AnimationWorkletThread() = default;
+AnimationWorkletThread::~AnimationWorkletThread() {
+  DCHECK(IsMainThread());
+  if (--s_ref_count == 0) {
+    ClearSharedBackingThread();
+  }
+}
 
 WorkerBackingThread& AnimationWorkletThread::GetWorkerBackingThread() {
   return *WorkletThreadHolder<AnimationWorkletThread>::GetInstance()
@@ -53,20 +67,29 @@ void AnimationWorkletThread::CollectAllGarbage() {
   done_event.Wait();
 }
 
-void AnimationWorkletThread::EnsureSharedBackingThread() {
-  WorkletThreadHolder<AnimationWorkletThread>::EnsureInstance(
-      ThreadCreationParams(WebThreadType::kAnimationWorkletThread));
-}
-
-void AnimationWorkletThread::ClearSharedBackingThread() {
-  WorkletThreadHolder<AnimationWorkletThread>::ClearInstance();
-}
-
 WorkerOrWorkletGlobalScope* AnimationWorkletThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                "AnimationWorkletThread::CreateWorkerGlobalScope");
   return AnimationWorkletGlobalScope::Create(std::move(creation_params), this);
+}
+
+void AnimationWorkletThread::EnsureSharedBackingThread() {
+  DCHECK(IsMainThread());
+  WorkletThreadHolder<AnimationWorkletThread>::EnsureInstance(
+      ThreadCreationParams(WebThreadType::kAnimationWorkletThread));
+}
+
+void AnimationWorkletThread::ClearSharedBackingThread() {
+  DCHECK(IsMainThread());
+  DCHECK_EQ(s_ref_count, 0u);
+  WorkletThreadHolder<AnimationWorkletThread>::ClearInstance();
+}
+
+// static
+WorkletThreadHolder<AnimationWorkletThread>*
+AnimationWorkletThread::GetWorkletThreadHolderForTesting() {
+  return WorkletThreadHolder<AnimationWorkletThread>::GetInstance();
 }
 
 }  // namespace blink

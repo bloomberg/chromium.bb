@@ -36,7 +36,6 @@ bool AnimationWorklet::NeedsToCreateGlobalScope() {
 
 WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  AnimationWorkletThread::EnsureSharedBackingThread();
 
   Document* document = To<Document>(GetExecutionContext());
   AnimationWorkletProxyClient* proxy_client =
