@@ -133,17 +133,11 @@ HistogramBase* GetHistogramForTaskTraits(
                         : 0];
 }
 
-// Upper bound for the
-// TaskScheduler.BlockShutdownTasksPostedDuringShutdown histogram.
-constexpr HistogramBase::Sample kMaxBlockShutdownTasksPostedDuringShutdown =
-    1000;
-
-void RecordNumBlockShutdownTasksPostedDuringShutdown(
-    HistogramBase::Sample value) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "TaskScheduler.BlockShutdownTasksPostedDuringShutdown", value, 1,
-      kMaxBlockShutdownTasksPostedDuringShutdown, 50);
-}
+// Maximum number of BLOCK_SHUTDOWN tasks that can be posted during shutdown. If
+// that many BLOCK_SHUTDOWN tasks are posted during shutdown, it is possible
+// that buggy code is posting an infinite number of tasks and that shutdown will
+// never complete. The mitigation is to induce a crash.
+constexpr int kMaxBlockShutdownTasksPostedDuringShutdown = 1000;
 
 // Returns the maximum number of TaskPriority::BEST_EFFORT sequences that can be
 // scheduled concurrently based on command line flags.
@@ -707,20 +701,6 @@ void TaskTracker::PerformShutdown() {
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     shutdown_event_->Wait();
   }
-
-  {
-    AutoSchedulerLock auto_lock(shutdown_lock_);
-
-    // Record TaskScheduler.BlockShutdownTasksPostedDuringShutdown if less than
-    // |kMaxBlockShutdownTasksPostedDuringShutdown| BLOCK_SHUTDOWN tasks were
-    // posted during shutdown. Otherwise, the histogram has already been
-    // recorded in BeforePostTask().
-    if (num_block_shutdown_tasks_posted_during_shutdown_ <
-        kMaxBlockShutdownTasksPostedDuringShutdown) {
-      RecordNumBlockShutdownTasksPostedDuringShutdown(
-          num_block_shutdown_tasks_posted_during_shutdown_);
-    }
-  }
 }
 
 void TaskTracker::SetMaxNumScheduledSequences(int max_scheduled_sequences,
@@ -819,16 +799,8 @@ bool TaskTracker::BeforePostTask(
       }
 
       ++num_block_shutdown_tasks_posted_during_shutdown_;
-
-      if (num_block_shutdown_tasks_posted_during_shutdown_ ==
-          kMaxBlockShutdownTasksPostedDuringShutdown) {
-        // Record the TaskScheduler.BlockShutdownTasksPostedDuringShutdown
-        // histogram as soon as its upper bound is hit. That way, a value will
-        // be recorded even if an infinite number of BLOCK_SHUTDOWN tasks are
-        // posted, preventing shutdown to complete.
-        RecordNumBlockShutdownTasksPostedDuringShutdown(
-            num_block_shutdown_tasks_posted_during_shutdown_);
-      }
+      CHECK_LT(num_block_shutdown_tasks_posted_during_shutdown_,
+               kMaxBlockShutdownTasksPostedDuringShutdown);
     }
 
     return true;
