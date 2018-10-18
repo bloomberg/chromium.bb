@@ -7,12 +7,14 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -21,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -88,11 +91,17 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
         features::kDataReductionProxyRobustConnection,
         {{params::GetMissingViaBypassParamName(), "true"},
          {"warmup_fetch_callback_enabled", "true"}});
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
+    // Make sure the favicon doesn't mess with the tests.
+    favicon_catcher_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/favicon.ico");
+    embedded_test_server()->StartAcceptingConnections();
+
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
     EnableDataSaver(true);
   }
@@ -127,6 +136,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
+  std::unique_ptr<net::test_server::ControllableHttpResponse> favicon_catcher_;
 };
 
 class DataReductionProxyBrowsertest : public DataReductionProxyBrowsertestBase {
@@ -202,6 +212,28 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   ui_test_utils::NavigateToURL(
       browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
   EXPECT_EQ(GetBody(), kDummyBody);
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
+  base::HistogramTester histogram_tester;
+
+  // Make sure we wait for timing information.
+  page_load_metrics::PageLoadMetricsTestWaiter waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  waiter.AddPageExpectation(
+      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kFirstPaint);
+
+  // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/echo"));
+  waiter.Wait();
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.ProxySchemeUsed",
+                                      ProxyScheme::PROXY_SCHEME_HTTP, 1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.DataReductionProxy.PaintTiming."
+      "NavigationToFirstContentfulPaint",
+      1);
 }
 
 class DataReductionProxyFallbackBrowsertest
