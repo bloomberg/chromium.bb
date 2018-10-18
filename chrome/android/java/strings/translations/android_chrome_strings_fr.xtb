@@ -195,7 +195,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="2414672073755873541">Pas de contenu ici</translation>
 <translation id="2414886740292270097">Foncé</translation>
 <translation id="2416359993254398973">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site.</translation>
-<translation id="24241740415720680">Page simplifiée diffusée par Google</translation>
 <translation id="2426805022920575512">Sélectionner un autre compte</translation>
 <translation id="2433507940547922241">Apparence</translation>
 <translation id="2434158240863470628">Téléchargement terminé <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Avance rapide</translation>
-<translation id="3860879523841717702">Page simplifiée diffusée par Google. Appuyez pour charger la page originale.</translation>
 <translation id="3868004864571585162">Cookies, licences multimédias et données de sites</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
@@ -492,7 +490,6 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4913169188695071480">Ne plus actualiser</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /> lors de la recherche d'appareils…</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
-<translation id="4956867391417827202">Bloquer les annonces des sites qui affichent des annonces intrusives ou trompeuses</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran.</translation>
 <translation id="4961334780091921942">Vos mots de passe, votre historique et plus encore sur tous les appareils</translation>
 <translation id="4961700429721424617">Vous vous déconnectez d'un compte géré par <ph name="MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chrome de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
@@ -809,13 +806,11 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="723171743924126238">Sélectionner des images</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7250468141469952378">Nombre d'éléments sélectionnés : <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Bloqué sur certains sites</translation>
 <translation id="7253272406652746122">Ajoutez un compte Google depuis la page "Comptes" dans l'application "Paramètres" de votre appareil.</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
 <translation id="729975465115245577">Aucune application n'est installée sur votre appareil pour stocker le fichier de mots de passe.</translation>
 <translation id="7302081693174882195">Détails : tri effectué par volume de données enregistrées</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>
-<translation id="7335671571918306053">Page simplifiée diffusée par Google. Appuyez sur le bouton "Charger le site d'origine" pour charger la page d'origine.</translation>
 <translation id="7352939065658542140">VIDÉO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
 <translation id="7359002509206457351">Accéder aux modes de paiement</translation>

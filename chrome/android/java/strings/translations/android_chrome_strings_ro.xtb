@@ -195,7 +195,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="2414672073755873541">Nu există conținut aici</translation>
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="2416359993254398973">Chrome are nevoie de permisiune ca să acceseze camera foto pentru acest site.</translation>
-<translation id="24241740415720680">Pagină Lite oferită de Google</translation>
 <translation id="2426805022920575512">Alege alt cont</translation>
 <translation id="2433507940547922241">Aspect</translation>
 <translation id="2434158240863470628">Descărcare finalizată <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="3822502789641063741">Ștergi stocarea site-urilor?</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3859306556332390985">Derulează înainte</translation>
-<translation id="3860879523841717702">Pagină Lite oferită de Google. Atinge pentru a încărca versiunea originală.</translation>
 <translation id="3868004864571585162">Cookie-uri, licențe media și date privind site-urile</translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="3895926599014793903">Forțează activarea zoomului</translation>
@@ -492,7 +490,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4913169188695071480">Oprește actualizarea</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /> în timp ce se caută dispozitive…</translation>
 <translation id="4943872375798546930">Nu există rezultate</translation>
-<translation id="4956867391417827202">Blochează anunțurile de la site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> accesează conținutul de pe ecran</translation>
 <translation id="4961334780091921942">Parolele, istoricul și alte date, pe toate dispozitivele</translation>
 <translation id="4961700429721424617">Te deconectezi de la un cont gestionat de <ph name="MANAGED_DOMAIN" />. Astfel, se vor șterge datele Chrome de pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
@@ -809,13 +806,11 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="723171743924126238">Selectează imagini</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selectate</translation>
-<translation id="7251326866581677552">Blocate pe anumite site-uri</translation>
 <translation id="7253272406652746122">Adaugă un Cont Google din pagina Conturi din aplicația Setări a dispozitivului.</translation>
 <translation id="7274013316676448362">Site blocat</translation>
 <translation id="729975465115245577">Dispozitivul nu are o aplicație pentru stocarea fișierului parolelor.</translation>
 <translation id="7302081693174882195">Detalii: sortate după volumul de date salvate</translation>
 <translation id="7333031090786104871">Încă se adaugă site-ul anterior</translation>
-<translation id="7335671571918306053">Pagină Lite oferită de Google. Atinge butonul Încarcă versiunea originală pentru a încărca pagina originală.</translation>
 <translation id="7352939065658542140">VIDEOCLIP</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Trimite un element selectat}few{Trimite # elemente selectate}other{Trimite # de elemente selectate}}</translation>
 <translation id="7359002509206457351">Acces la metodele de plată</translation>

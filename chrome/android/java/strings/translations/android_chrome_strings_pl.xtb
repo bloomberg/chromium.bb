@@ -195,7 +195,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2414672073755873541">Nic tu nie ma</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2416359993254398973">Chrome potrzebuje uprawnień dostępu do aparatu na tej stronie.</translation>
-<translation id="24241740415720680">Lżejsza wersja strony dostarczona przez Google</translation>
 <translation id="2426805022920575512">Wybierz inne konto</translation>
 <translation id="2433507940547922241">Wygląd</translation>
 <translation id="2434158240863470628">Ukończono pobieranie <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="3822502789641063741">Wyczyścić dane witryn?</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
-<translation id="3860879523841717702">Lżejsza wersja strony dostarczona przez Google. Kliknij, by załadować oryginał.</translation>
 <translation id="3868004864571585162">Pliki cookie, licencje multimediów i dane witryn</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
@@ -492,7 +490,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4913169188695071480">Zatrzymaj odświeżanie</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /> w trakcie wyszukiwania urządzeń…</translation>
 <translation id="4943872375798546930">Brak wyników</translation>
-<translation id="4956867391417827202">Blokowanie reklam na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> udostępnia Twój ekran</translation>
 <translation id="4961334780091921942">Twoje hasła, historia i inne dane na wszystkich Twoich urządzeniach</translation>
 <translation id="4961700429721424617">Wylogowujesz się z konta, którym zarządza <ph name="MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chrome z tego urządzenia, ale pozostaną one na Twoim koncie Google.</translation>
@@ -809,13 +806,11 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="723171743924126238">Wybierz zdjęcia</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
 <translation id="7250468141469952378">Wybrano <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Blokowane na niektórych stronach</translation>
 <translation id="7253272406652746122">Otwórz aplikację Ustawienia na urządzeniu, przejdź na stronę Konta i dodaj konto Google.</translation>
 <translation id="7274013316676448362">Zablokowana witryna</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
-<translation id="7335671571918306053">Lżejsza wersja strony dostarczona przez Google. Kliknij przycisk Załaduj oryginał, by załadować oryginalną stronę.</translation>
 <translation id="7352939065658542140">FILM</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Udostępnij 1 wybrany element}few{Udostępnij # wybrane elementy}many{Udostępnij # wybranych elementów}other{Udostępnij # wybranego elementu}}</translation>
 <translation id="7359002509206457351">Dostęp do form płatności</translation>

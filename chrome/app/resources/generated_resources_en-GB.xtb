@@ -98,6 +98,7 @@
 <translation id="1137673463384776352">Open link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Access your Bluetooth and Serial devices</translation>
 <translation id="1140610710803014750">To get your bookmarks on all your devices, sign in and turn on sync.</translation>
+<translation id="1140746652461896221">Block content on any page that you visit</translation>
 <translation id="1143142264369994168">Certificate Signer</translation>
 <translation id="1145292499998999162">Plug-in blocked</translation>
 <translation id="1145532888383813076">Search your device, apps and web.</translation>
@@ -374,6 +375,7 @@
 <translation id="1526560967942511387">Untitled Document</translation>
 <translation id="1529116897397289129">Saved cards will appear here</translation>
 <translation id="1529891865407786369">Power source</translation>
+<translation id="1529899284660134226">Manage shared files and folders</translation>
 <translation id="1530838837447122178">Open mouse and touchpad device settings</translation>
 <translation id="1531004739673299060">Application Window</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
@@ -515,6 +517,7 @@
 <translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
 <translation id="1731911755844941020">Sending request...</translation>
 <translation id="1732215134274276513">Unpin Tabs</translation>
+<translation id="1733383495376208985">Encrypt synced data with your own <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> may not be able to keep itself updated</translation>
 <translation id="1736419249208073774">Explore</translation>
 <translation id="1736827427463982819">Shut down Linux (Beta)</translation>
@@ -943,6 +946,7 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> files selected</translation>
 <translation id="237828693408258535">Translate this page?</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
+<translation id="2379232090534544565">A site is accessing audio and video input</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
@@ -956,6 +960,8 @@
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
 <translation id="2413749388954403953">Change the bookmarks user interface</translation>
+<translation id="241727068219398187">Data was encrypted with your Google password as of
+          <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="2419706071571366386">For security, sign out when your computer isn't being used.</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;ve image as...</translation>
@@ -1306,6 +1312,7 @@
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2926085873880284723">Restore default shortcuts</translation>
 <translation id="2927017729816812676">Cache Storage</translation>
+<translation id="2932085390869194046">Suggest password...</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Account for kids)</translation>
 <translation id="2932483646085333864">Sign out then sign in again to start sync</translation>
 <translation id="2932883381142163287">Report abuse</translation>
@@ -1342,6 +1349,7 @@
 <translation id="2993517869960930405">App Info</translation>
 <translation id="2994669386200004489">Couldn't back up <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Installed by your parent.</translation>
+<translation id="2996286169319737844">Data is encrypted with your sync passphrase. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="3002017044809397427">Found your <ph name="PHONE_TYPE" />. But Smart Lock only works on devices with Android 5.0 and up. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="3003144360685731741">Preferred networks</translation>
 <translation id="3003623123441819449">CSS Cache</translation>
@@ -1463,6 +1471,7 @@
 <translation id="316854673539778496">To get all your extensions on all your devices, sign in and turn on sync.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">You may also skip signing in and <ph name="LINK_START" />browse as Guest<ph name="LINK_END" />.</translation>
+<translation id="3172045848207518317">A site is accessing video input</translation>
 <translation id="3177909033752230686">Page language:</translation>
 <translation id="3182749001423093222">Spell check</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
@@ -1643,6 +1652,7 @@
 <translation id="3461266716147554923"><ph name="URL" /> wants to see text and images copied to the clipboard</translation>
 <translation id="3462311546193741693">Signs you out of most sites. You'll stay signed in to your Google Account so that your synced data can be cleared.</translation>
 <translation id="3462413494201477527">Cancel account setup?</translation>
+<translation id="3464012987031883895">A site is accessing audio input</translation>
 <translation id="346431825526753">This is an account for kids managed by <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3466147780910026086">Scanning your media device...</translation>
 <translation id="3467267818798281173">Ask Google for suggestions</translation>
@@ -2029,6 +2039,7 @@
 <translation id="3994878504415702912">&amp;Zoom</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4002066346123236978">Title</translation>
+<translation id="4002440992267487163">Pin setup</translation>
 <translation id="40027638859996362">Word move</translation>
 <translation id="4005817994523282006">Time zone detection method</translation>
 <translation id="4008291085758151621">Site information is not available in VR</translation>
@@ -2259,6 +2270,7 @@
 <translation id="4412698727486357573">Help Centre</translation>
 <translation id="44141919652824029">Allow '<ph name="APP_NAME" />' to get the list of your attached USB devices?</translation>
 <translation id="4414232939543644979">New &amp;Incognito Window</translation>
+<translation id="4415245286584082850">No devices found. Open a help centre article in a new tab.</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Type a valid URL</translation>
 <translation id="4419409365248380979">Always allow <ph name="HOST" /> to set cookies</translation>
@@ -2323,6 +2335,7 @@
 <translation id="452039078290142656">unknown devices from <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4522600456902129422">Continue allowing this site to see the clipboard</translation>
+<translation id="4525382759303819021">Get the latest updates and recommendations on Play Store apps</translation>
 <translation id="4530494379350999373">Origin</translation>
 <translation id="4533985347672295764">CPU Time</translation>
 <translation id="4534661889221639075">Try again.</translation>
@@ -2459,6 +2472,7 @@
 <translation id="4733082559415072992"><ph name="URL" /> wants to use your device's location</translation>
 <translation id="4733793249294335256">Location</translation>
 <translation id="4734518477988699048">Input value is invalid.</translation>
+<translation id="4735265153267957659">Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. Turn off Smart Lock in Settings.</translation>
 <translation id="473546211690256853">This account is managed by <ph name="DOMAIN" /></translation>
 <translation id="4737715515457435632">Please connect to a network</translation>
 <translation id="473775607612524610">Update</translation>
@@ -2479,6 +2493,7 @@
 <translation id="4762718786438001384">Device disk space critically low</translation>
 <translation id="4763408175235639573">The following cookies were set when you viewed this page</translation>
 <translation id="4763830802490665879">Cookies from multiple sites will be cleared on exit.</translation>
+<translation id="4765582662863429759">Allows Android Messages to relay texts from your phone to your Chromebook</translation>
 <translation id="4768332406694066911">You have certificates from these organisations that identify you</translation>
 <translation id="4772404146526168240">Both screens</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -3028,6 +3043,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">Find</translation>
 <translation id="5551573675707792127">Keyboard and text input</translation>
+<translation id="5552059560155071882">CUPS IPP Parser</translation>
 <translation id="5553089923092577885">Certificate Policy Mappings</translation>
 <translation id="5554489410841842733">This icon will be visible when the extension can act on the current page.</translation>
 <translation id="5554720593229208774">Email Certification Authority</translation>
@@ -3190,8 +3206,10 @@
 <translation id="5787146423283493983">Key Agreement</translation>
 <translation id="5788127256798019331">Play files</translation>
 <translation id="5788367137662787332">Sorry, at least one partition on the device <ph name="DEVICE_LABEL" /> could not be mounted.</translation>
+<translation id="5793339252089865437">If you download the update over your mobile network, it could result in overage charges.</translation>
 <translation id="5794414402486823030">Always open with system viewer</translation>
 <translation id="5794786537412027208">Quit all Chrome Apps</translation>
+<translation id="5799508265798272974">Linux Virtual Machine: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">Destination file was truncated or removed since last download.</translation>
 <translation id="5801568494490449797">Preferences</translation>
 <translation id="5804241973901381774">Permissions</translation>
@@ -3866,6 +3884,7 @@
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Please sign in to <ph name="TOKEN_NAME" /> to import client certificate from <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
+<translation id="6806699711453372963">Manage Linux sharing</translation>
 <translation id="6807889908376551050">Show All...</translation>
 <translation id="6810613314571580006">Automatically sign in to websites using stored credentials. When the feature is disabled, you will be asked for confirmation every time before signing in to a website.</translation>
 <translation id="6810768462515084623">Oops! Looks like your password has expired. Please renew it on another device and try again.</translation>
@@ -3937,6 +3956,7 @@
 <translation id="6921709132208495314">Stop using data on this page</translation>
 <translation id="6922128026973287222">Save data and browse faster using Google Data Saver. Click to learn more.</translation>
 <translation id="6923132443355966645">Scroll/Click</translation>
+<translation id="6923633482430812883">Error mounting share. Please check that the file server that you are connecting to supports SMBv2 or later.</translation>
 <translation id="6930242544192836755">Duration</translation>
 <translation id="6934241953272494177">Scanning your media device…
     <ph name="LINE_BREAK1" />
@@ -4055,6 +4075,7 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Exchange data with the devices named: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Toggle Fullscreen Magnifier</translation>
+<translation id="7096857570999173890">You can use your PIN to unlock your device when you are signed out.</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
 <translation id="7098447629416471489">Other saved search engines will appear here</translation>
 <translation id="7099337801055912064">Can’t load large PPD. Maximum size is 250 KB.</translation>
@@ -4749,6 +4770,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8117620576188476503">Manage connections, updates and settings with the status tray. To get here by keyboard, press Alt + Shift + S.</translation>
 <translation id="8118362518458010043">Disabled by Chrome. This extension may be unsafe.</translation>
 <translation id="8118860139461251237">Manage your downloads</translation>
+<translation id="8123590694679414600">Data was encrypted with your sync passphrase on
+          <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="81238879832906896">Yellow and white flower</translation>
 <translation id="8124313775439841391">Managed ONC</translation>
 <translation id="813082847718468539">View site information</translation>
@@ -5156,6 +5179,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8758418656925882523">Enable dictation (speak to type)</translation>
 <translation id="8759408218731716181">Can't set up multiple sign-in</translation>
 <translation id="8759753423332885148">Learn more.</translation>
+<translation id="8762886931014513155">Your <ph name="DEVICE_TYPE" /> needs an update</translation>
 <translation id="8767621466733104912">Automatically update Chrome for all users</translation>
 <translation id="8770406935328356739">Extension root directory</translation>
 <translation id="8770507190024617908">Manage People</translation>

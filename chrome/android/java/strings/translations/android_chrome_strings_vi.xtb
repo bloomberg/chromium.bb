@@ -195,7 +195,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2414672073755873541">Không có nội dung nào ở đây</translation>
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2416359993254398973">Chrome cần có quyền truy cập máy ảnh của bạn cho trang web này.</translation>
-<translation id="24241740415720680">Trang phiên bản rút gọn do Google cung cấp</translation>
 <translation id="2426805022920575512">Chọn một tài khoản khác</translation>
 <translation id="2433507940547922241">Hình thức</translation>
 <translation id="2434158240863470628">Quá trình tải xuống hoàn tất <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="3822502789641063741">Xóa bộ nhớ trang web?</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3859306556332390985">Tìm kiếm tiến</translation>
-<translation id="3860879523841717702">Trang phiên bản rút gọn do Google cung cấp. Nhấn để tải trang gốc.</translation>
 <translation id="3868004864571585162">Cookie, giấy phép phương tiện và dữ liệu trang web</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
 <translation id="3895926599014793903">Buộc bật thu phóng</translation>
@@ -492,7 +490,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4913169188695071480">Ngừng làm mới</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /> trong khi quét tìm thiết bị…</translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
-<translation id="4956867391417827202">Chặn quảng cáo từ các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> đang chia sẻ màn hình của bạn</translation>
 <translation id="4961334780091921942">Mật khẩu, lịch sử và nhiều nội dung khác của bạn trên tất cả các thiết bị</translation>
 <translation id="4961700429721424617">Bạn đang đăng xuất khỏi tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome khỏi thiết bị này nhưng dữ liệu sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
@@ -809,13 +806,11 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="723171743924126238">Chọn hình ảnh</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7250468141469952378">Đã chọn <ph name="ITEM_COUNT" /> mục</translation>
-<translation id="7251326866581677552">Đã chặn khỏi một số trang web</translation>
 <translation id="7253272406652746122">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
 <translation id="7274013316676448362">Trang web bị chặn</translation>
 <translation id="729975465115245577">Thiết bị của bạn không có ứng dụng để lưu trữ tệp mật khẩu.</translation>
 <translation id="7302081693174882195">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã tiết kiệm được</translation>
 <translation id="7333031090786104871">Vẫn đang thêm trang web trước</translation>
-<translation id="7335671571918306053">Trang phiên bản rút gọn do Google cung cấp. Nhấn vào nút tải bản gốc để tải trang gốc.</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
 <translation id="7359002509206457351">Truy cập vào phương thức thanh toán</translation>

@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">لا يتوفَّر محتوى هنا</translation>
 <translation id="2414886740292270097">داكن</translation>
 <translation id="2416359993254398973">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا لموقع الويب هذا.</translation>
-<translation id="24241740415720680">‏صفحة بسيطة مقدمَّة من Google</translation>
 <translation id="2426805022920575512">اختيار حساب آخر</translation>
 <translation id="2433507940547922241">المظهر</translation>
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@
 <translation id="3822502789641063741">أتمحو سعة تخزين الموقع؟</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
-<translation id="3860879523841717702">‏صفحة بسيطة مقدَّمة من Google. انقر لتحميل الصفحة الأصلية.</translation>
 <translation id="3868004864571585162">ملفات تعريف الارتباط وتراخيص الوسائط وبيانات الموقع الإلكتروني</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
 <translation id="3895926599014793903">فرض تفعيل التكبير/التصغير</translation>
@@ -492,7 +490,6 @@
 <translation id="4913169188695071480">إيقاف التحديث</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /> أثناء البحث عن الأجهزة…</translation>
 <translation id="4943872375798546930">لا نتائج</translation>
-<translation id="4956867391417827202">حظر الإعلانات من المواقع الإلكترونية التي تعرض إعلانات متداخلة أو مضلِّلة</translation>
 <translation id="4958708863221495346">يشارك <ph name="URL_OF_THE_CURRENT_TAB" /> شاشتك</translation>
 <translation id="4961334780091921942">كلمات المرور والسجلّ والمزيد على كل الأجهزة</translation>
 <translation id="4961700429721424617">‏أنت بصدد الخروج من حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بيانات Chrome من هذا الجهاز، ولكن ستظل البيانات في حسابك في Google.</translation>
@@ -809,13 +806,11 @@
 <translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
-<translation id="7251326866581677552">تم الحظر من بعض المواقع</translation>
 <translation id="7253272406652746122">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
 <translation id="7274013316676448362">الموقع المحظور</translation>
 <translation id="729975465115245577">لا يتضمن جهازك تطبيقًا لتخزين ملف كلمات المرور.</translation>
 <translation id="7302081693174882195">التفاصيل: تم الترتيب بحسب مقدار البيانات المحفوظة</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>
-<translation id="7335671571918306053">‏صفحة بسيطة مقدَّمة من Google. انقر على زر التحميل الأصلي لتحميل الصفحة الأصلية.</translation>
 <translation id="7352939065658542140">فيديو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7359002509206457351">الوصول إلى طرق الدفع</translation>

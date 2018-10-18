@@ -10,7 +10,7 @@
 <translation id="1067922213147265141">Outros serviços do Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
-<translation id="1099080783256647258">Quando a Economia de dados está ativada, o Chrome usa os servidores do Google para acelerar e compactar os carregamentos de páginas. Em páginas especialmente lentas, a Economia de dados reescreve a página para carregar apenas o conteúdo essencial. Essa extensão não otimiza as páginas carregadas no modo de navegação anônima.</translation>
+<translation id="1099080783256647258">Quando a Economia de dados está ativada, o Chrome usa os servidores do Google para acelerar e compactar os carregamentos de páginas. Em páginas especialmente lentas, a Economia de dados reescreve a página para carregar apenas o conteúdo essencial. Esse recurso não otimiza as páginas carregadas no modo de navegação anônima.</translation>
 <translation id="1105960400813249514">Captura de tela</translation>
 <translation id="1111673857033749125">Favoritos salvos nos seus outros dispositivos serão exibidos aqui.</translation>
 <translation id="1113597929977215864">Mostrar visualização simplificada</translation>
@@ -195,7 +195,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="2414672073755873541">Não há conteúdo aqui</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2416359993254398973">O Chrome precisa de permissão para este site acessar sua câmera.</translation>
-<translation id="24241740415720680">Página Lite exibida pelo Google</translation>
 <translation id="2426805022920575512">Escolher outra conta</translation>
 <translation id="2433507940547922241">Aparência</translation>
 <translation id="2434158240863470628">Download concluído <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3822502789641063741">Limpar armaz. de sites?</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3859306556332390985">Avançar</translation>
-<translation id="3860879523841717702">Página Lite exibida pelo Google. Toque para carregar a original.</translation>
 <translation id="3868004864571585162">Cookies, licenças de mídia e dados do site</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar zoom</translation>
@@ -411,7 +409,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4275663329226226506">Mídia</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="429312253194641664">Um site está reproduzindo mídia</translation>
+<translation id="429312253194641664">Um site está com mídia aberta</translation>
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
 <translation id="4378154925671717803">Telefone</translation>
@@ -493,7 +491,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4913169188695071480">Parar de atualizar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /> ao procurar dispositivos…</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
-<translation id="4956867391417827202">Bloquear anúncios de sites que mostram anúncios invasivos ou enganosos</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está compartilhando sua tela</translation>
 <translation id="4961334780091921942">Suas senhas, histórico e muito mais em todos os dispositivos</translation>
 <translation id="4961700429721424617">Você está saindo de uma conta gerenciada por <ph name="MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>
@@ -809,13 +806,11 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="723171743924126238">Selecionar imagens</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> itens selecionados</translation>
-<translation id="7251326866581677552">Bloqueados em alguns sites</translation>
 <translation id="7253272406652746122">Adicione uma Conta do Google na página de "Contas" do app "Config." do seu dispositivo.</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
 <translation id="729975465115245577">Seu dispositivo não tem um app para armazenar o arquivo de senhas.</translation>
 <translation id="7302081693174882195">Detalhes: classificados pela quantidade de dados economizados</translation>
 <translation id="7333031090786104871">Ainda adicionando o site anterior</translation>
-<translation id="7335671571918306053">Página Lite exibida pelo Google. Toque no botão "Carregar original" para carregar a página original.</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartilhar 1 item selecionado}one{Compartilhar # item selecionado}other{Compartilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Acessar formas de pagamento</translation>
