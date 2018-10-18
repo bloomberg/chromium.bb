@@ -331,11 +331,7 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 // If enabled, use SurfaceLayer instead of VideoLayer for all playbacks that
 // aren't MediaStream.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Use SurfaceLayer instead of VideoLayer for MediaStream.
-const base::Feature kUseSurfaceLayerForVideoMS{
-    "UseSurfaceLayerForVideoMS", base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use SurfaceLayer instead of VideoLayer when entering Picture-in-Picture mode.
 // Does nothing if UseSurfaceLayerForVideo is enabled.  Does not affect
