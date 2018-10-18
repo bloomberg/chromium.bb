@@ -139,6 +139,12 @@ UnifiedConsentService::UnifiedConsentService(
         metrics::UnifiedConsentRevokeReason::kServiceWasDisabled);
   }
 
+  // Update pref for existing users.
+  // TODO(tangltom): Delete this when all users are migrated.
+  if (pref_service_->GetBoolean(prefs::kUnifiedConsentGiven))
+    pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled,
+                              true);
+
   RecordSettingsHistogram();
 }
 
@@ -156,13 +162,17 @@ void UnifiedConsentService::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kShouldShowUnifiedConsentBump, false);
   registry->RegisterBooleanPref(prefs::kHadEverythingSyncedBeforeMigration,
                                 false);
+  registry->RegisterBooleanPref(prefs::kAllUnifiedConsentServicesWereEnabled,
+                                false);
 }
 
 // static
 void UnifiedConsentService::RollbackIfNeeded(
     PrefService* user_pref_service,
-    syncer::SyncService* sync_service) {
+    syncer::SyncService* sync_service,
+    UnifiedConsentServiceClient* service_client) {
   DCHECK(user_pref_service);
+  DCHECK(service_client);
 
   if (user_pref_service->GetInteger(prefs::kUnifiedConsentMigrationState) ==
       static_cast<int>(MigrationState::kNotInitialized)) {
@@ -182,12 +192,24 @@ void UnifiedConsentService::RollbackIfNeeded(
     new RollbackHelper(sync_service);
   }
 
+  // Turn off all off-by-default services if services were enabled due to
+  // unified consent.
+  if (user_pref_service->GetBoolean(
+          prefs::kAllUnifiedConsentServicesWereEnabled)) {
+    service_client->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
+                                      false);
+    service_client->SetServiceEnabled(Service::kSpellCheck, false);
+    contextual_search::ContextualSearchPreference::GetInstance()->SetPref(
+        user_pref_service, false);
+  }
+
   // Clear all unified consent prefs.
   user_pref_service->ClearPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
   user_pref_service->ClearPref(prefs::kUnifiedConsentGiven);
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
   user_pref_service->ClearPref(prefs::kShouldShowUnifiedConsentBump);
   user_pref_service->ClearPref(prefs::kHadEverythingSyncedBeforeMigration);
+  user_pref_service->ClearPref(prefs::kAllUnifiedConsentServicesWereEnabled);
 }
 
 void UnifiedConsentService::SetUnifiedConsentGiven(bool unified_consent_given) {
@@ -264,6 +286,8 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
     RecordUnifiedConsentRevoked(
         metrics::UnifiedConsentRevokeReason::kUserSignedOut);
   }
+  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled,
+                            false);
 
   // By design, signing out of Chrome automatically disables off-by-default
   // services.
@@ -397,6 +421,8 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
       service_client_->SetServiceEnabled(service, true);
     }
   }
+
+  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
 }
 
 MigrationState UnifiedConsentService::GetMigrationState() {

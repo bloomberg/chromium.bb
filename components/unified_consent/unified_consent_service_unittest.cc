@@ -113,21 +113,27 @@ class FakeUnifiedConsentServiceClient : public UnifiedConsentServiceClient {
     is_not_supported_[service] = true;
   }
 
+  static void ClearServiceStates() {
+    service_enabled_.clear();
+    is_not_supported_.clear();
+  }
+
  private:
-  std::map<Service, bool> service_enabled_;
-  std::map<Service, bool> is_not_supported_;
+  // Service states are shared between multiple instances of this class.
+  static std::map<Service, bool> service_enabled_;
+  static std::map<Service, bool> is_not_supported_;
 
   PrefService* pref_service_;
 };
+
+std::map<Service, bool> FakeUnifiedConsentServiceClient::service_enabled_;
+std::map<Service, bool> FakeUnifiedConsentServiceClient::is_not_supported_;
 
 }  // namespace
 
 class UnifiedConsentServiceTest : public testing::Test {
  public:
-  UnifiedConsentServiceTest() : sync_service_(&pref_service_) {}
-
-  // testing::Test:
-  void SetUp() override {
+  UnifiedConsentServiceTest() : sync_service_(&pref_service_) {
     pref_service_.registry()->RegisterBooleanPref(
         autofill::prefs::kAutofillWalletImportEnabled, false);
     UnifiedConsentService::RegisterPrefs(pref_service_.registry());
@@ -138,9 +144,13 @@ class UnifiedConsentServiceTest : public testing::Test {
     pref_service_.registry()->RegisterStringPref(
         contextual_search::GetPrefName(), "");
 #endif  // defined(OS_ANDROID)
+
+    FakeUnifiedConsentServiceClient::ClearServiceStates();
+    service_client_ =
+        std::make_unique<FakeUnifiedConsentServiceClient>(&pref_service_);
   }
 
-  void TearDown() override {
+  ~UnifiedConsentServiceTest() override {
     if (consent_service_)
       consent_service_->Shutdown();
   }
@@ -164,8 +174,6 @@ class UnifiedConsentServiceTest : public testing::Test {
     consent_service_ = std::make_unique<UnifiedConsentService>(
         std::move(client), &pref_service_,
         identity_test_environment_.identity_manager(), &sync_service_);
-    service_client_ = (FakeUnifiedConsentServiceClient*)
-                          consent_service_->service_client_.get();
 
     sync_service_.FireStateChanged();
     // Run until idle so the migration can finish.
@@ -202,7 +210,7 @@ class UnifiedConsentServiceTest : public testing::Test {
   identity::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;
   std::unique_ptr<UnifiedConsentService> consent_service_;
-  FakeUnifiedConsentServiceClient* service_client_ = nullptr;
+  std::unique_ptr<FakeUnifiedConsentServiceClient> service_client_;
 
   std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;
 };
@@ -570,7 +578,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   SetUnifiedConsentFeatureState(UnifiedConsentFeatureState::kDisabled);
 
   // Rollback
-  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
+  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_,
+                                          service_client_.get());
   base::RunLoop().RunUntilIdle();
 
   // Unified consent prefs should be cleared.
@@ -609,7 +618,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
   consent_service_.reset();
 
   // Rollback
-  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
+  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_,
+                                          service_client_.get());
   // Unified consent prefs should be cleared.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
@@ -620,6 +630,50 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
 
   // Run until idle so the RollbackHelper is deleted.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+
+  // Migrate and opt into unified consent.
+  CreateConsentService();
+  consent_service_->SetUnifiedConsentGiven(true);
+  // Check expectations after opt-in.
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
+  EXPECT_TRUE(
+      pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
+  EXPECT_TRUE(
+      pref_service_.GetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled));
+
+  consent_service_->Shutdown();
+  consent_service_.reset();
+  SetUnifiedConsentFeatureState(UnifiedConsentFeatureState::kDisabled);
+
+  // Rollback
+  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_,
+                                          service_client_.get());
+  base::RunLoop().RunUntilIdle();
+
+  // Unified consent prefs should be cleared.
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
+            GetMigrationState());
+  EXPECT_FALSE(
+      pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
+  // Sync everything should still be on.
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  // Off-by-default services should be turned off.
+  EXPECT_NE(ServiceState::kEnabled,
+            service_client_->GetServiceState(
+                Service::kSafeBrowsingExtendedReporting));
+  EXPECT_NE(ServiceState::kEnabled,
+            service_client_->GetServiceState(Service::kSpellCheck));
+  EXPECT_FALSE(contextual_search::IsEnabled(pref_service_));
 }
 
 TEST_F(UnifiedConsentServiceTest, SettingsHistogram_None) {
@@ -767,13 +821,14 @@ TEST_F(UnifiedConsentServiceTest,
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
                                     0);
-
   // Simulate shutdown.
   consent_service_->Shutdown();
   consent_service_.reset();
 
-  // Privacy settings are disabled. After the second startup, the user should
-  // not be eligible anymore.
+  // Disable privacy setting.
+  service_client_->SetServiceEnabled(Service::kSafeBrowsing, false);
+
+  // After the second startup, the user should not be eligible anymore.
   CreateConsentService(false /* client_services_on_by_default */);
   EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
   histogram_tester.ExpectBucketCount(

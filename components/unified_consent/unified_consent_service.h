@@ -59,7 +59,8 @@ class UnifiedConsentService : public KeyedService,
   // Rolls back changes made during migration. This method does nothing if the
   // user hasn't migrated to unified consent yet.
   static void RollbackIfNeeded(PrefService* user_pref_service,
-                               syncer::SyncService* sync_service);
+                               syncer::SyncService* sync_service,
+                               UnifiedConsentServiceClient* service_client);
 
   // This updates the consent pref and if |unified_consent_given| is true, all
   // unified consent services are enabled.
