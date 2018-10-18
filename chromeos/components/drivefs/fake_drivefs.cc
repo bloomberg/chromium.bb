@@ -287,6 +287,7 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
 void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
                        drivefs::mojom::DriveFsRequest drive_fs_request,
                        drivefs::mojom::DriveFsDelegatePtr delegate) {
+  CHECK(base::CreateDirectory(mount_path_.Append(".Trash")));
   mojo::FuseInterface(std::move(pending_delegate_request_),
                       delegate.PassInterface());
   if (binding_.is_bound())
