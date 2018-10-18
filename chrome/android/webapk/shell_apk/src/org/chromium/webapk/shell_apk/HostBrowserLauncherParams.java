@@ -128,7 +128,11 @@ public class HostBrowserLauncherParams {
         Uri shareUri = Uri.parse(action);
         Uri.Builder builder = shareUri.buildUpon();
         // Uri.Builder uses %20 rather than + for spaces, the spec requires +.
-        builder.encodedQuery(queryBuilder.build().toString().replace("%20", "+").substring(1));
+        String queryString = queryBuilder.build().toString();
+        if (TextUtils.isEmpty(queryString)) {
+            return action;
+        }
+        builder.encodedQuery(queryString.replace("%20", "+").substring(1));
         return builder.build().toString();
     }
 

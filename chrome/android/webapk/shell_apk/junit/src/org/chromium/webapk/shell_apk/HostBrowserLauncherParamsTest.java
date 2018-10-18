@@ -67,6 +67,34 @@ public class HostBrowserLauncherParamsTest {
     }
 
     /*
+     * Test that {@link HostBrowserLauncherParams#createWebShareTargetUriString()} can handle
+     * the case where both values in every pair are null.
+     */
+    @Test
+    public void testCreateWebShareTargetUriStringAllNull() {
+        ArrayList<Pair<String, String>> params = new ArrayList<>();
+        params.add(new Pair<>(null, null));
+        params.add(new Pair<>(null, null));
+        String uri = HostBrowserLauncherParams.createWebShareTargetUriString(
+                "https://www.chromium.org/wst", params);
+        Assert.assertEquals("https://www.chromium.org/wst", uri);
+    }
+
+    /*
+     * Test that {@link HostBrowserLauncherParams#createWebShareTargetUriString()} can handle
+     * the cases where some keys in all pair are null.
+     */
+    @Test
+    public void testCreateWebShareTargetUriStringAllNullWithSomeElementNotNull() {
+        ArrayList<Pair<String, String>> params = new ArrayList<>();
+        params.add(new Pair<>("a", null));
+        params.add(new Pair<>(null, "b"));
+        String uri = HostBrowserLauncherParams.createWebShareTargetUriString(
+                "https://www.chromium.org/wst", params);
+        Assert.assertEquals("https://www.chromium.org/wst", uri);
+    }
+
+    /*
      * Test that {@link HostBrowserLauncherParams#createWebShareTargetUriString()} handles replacing
      * the query string of an action url with an existing query.
      */
