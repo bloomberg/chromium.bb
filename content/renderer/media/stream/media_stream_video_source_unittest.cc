@@ -107,8 +107,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
       double frame_rate,
       bool detect_rotation = false) {
     blink::WebMediaStreamTrack track = CreateTrack(
-        "123",
-        VideoTrackAdapterSettings(width, height, 0.0, HUGE_VAL, frame_rate),
+        "123", VideoTrackAdapterSettings(gfx::Size(width, height), frame_rate),
         base::Optional<bool>(), false, 0.0);
 
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
@@ -200,12 +199,11 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
         CreateTrackAndStartSource(expected_width1, expected_height1,
                                   MediaStreamVideoSource::kDefaultFrameRate);
 
-    blink::WebMediaStreamTrack track2 =
-        CreateTrack("dummy",
-                    VideoTrackAdapterSettings(
-                        expected_width2, expected_height2, 0.0, HUGE_VAL,
-                        MediaStreamVideoSource::kDefaultFrameRate),
-                    base::Optional<bool>(), false, 0.0);
+    blink::WebMediaStreamTrack track2 = CreateTrack(
+        "dummy",
+        VideoTrackAdapterSettings(gfx::Size(expected_width2, expected_height2),
+                                  MediaStreamVideoSource::kDefaultFrameRate),
+        base::Optional<bool>(), false, 0.0);
 
     MockMediaStreamVideoSink sink1;
     sink1.ConnectToTrack(track1);
@@ -463,7 +461,7 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureTrack) {
   EXPECT_EQ(settings.aspect_ratio, 640.0 / 480.0);
 
   source()->ReconfigureTrack(
-      native_track, VideoTrackAdapterSettings(630, 470, 0, HUGE_VAL, 30.0));
+      native_track, VideoTrackAdapterSettings(gfx::Size(630, 470), 30.0));
   native_track->GetSettings(settings);
   EXPECT_EQ(settings.width, 630);
   EXPECT_EQ(settings.height, 470);
@@ -500,7 +498,7 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureStoppedTrack) {
             blink::WebMediaStreamSource::kReadyStateEnded);
 
   source()->ReconfigureTrack(
-      native_track, VideoTrackAdapterSettings(630, 470, 0, HUGE_VAL, 30.0));
+      native_track, VideoTrackAdapterSettings(gfx::Size(630, 470), 30.0));
   blink::WebMediaStreamTrack::Settings stopped_settings;
   native_track->GetSettings(stopped_settings);
   EXPECT_EQ(stopped_settings.width, -1);

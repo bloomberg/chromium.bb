@@ -126,10 +126,14 @@ VideoCaptureSettings::VideoCaptureSettings(
       max_frame_rate_(max_frame_rate) {
   DCHECK(!min_frame_rate ||
          *min_frame_rate_ <= capture_params.requested_format.frame_rate);
-  DCHECK_LE(track_adapter_settings.max_width,
-            capture_params.requested_format.frame_size.width());
-  DCHECK_LE(track_adapter_settings.max_height,
-            capture_params.requested_format.frame_size.height());
+  // TODO(crbug.com/854980): Update these DCHECKS to allow for unspecified
+  // target size.
+  DCHECK(track_adapter_settings.target_size() &&
+         track_adapter_settings.target_size()->width() <=
+             capture_params.requested_format.frame_size.width());
+  DCHECK(track_adapter_settings_.target_size() &&
+         track_adapter_settings_.target_size()->height() <=
+             capture_params.requested_format.frame_size.height());
 }
 
 VideoCaptureSettings::VideoCaptureSettings(const VideoCaptureSettings& other) =
@@ -287,7 +291,7 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     track_max_frame_rate = 0.0;
 
   return VideoTrackAdapterSettings(
-      track_max_width, track_max_height, track_min_aspect_ratio,
+      gfx::Size(track_max_width, track_max_height), track_min_aspect_ratio,
       track_max_aspect_ratio, track_max_frame_rate);
 }
 

@@ -31,7 +31,7 @@ namespace content {
 
 class MediaStreamVideoTrack;
 class VideoTrackAdapter;
-struct VideoTrackAdapterSettings;
+class VideoTrackAdapterSettings;
 
 // MediaStreamVideoSource is an interface used for sending video frames to a
 // MediaStreamVideoTrack.
