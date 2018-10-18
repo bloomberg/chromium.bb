@@ -68,7 +68,8 @@ class NewUnifiedMessageCenterViewTest : public AshTestBase,
   void OnViewPreferredSizeChanged(views::View* view) override {
     if (view->GetPreferredSize() == view->size())
       return;
-    view->SetBoundsRect(gfx::Rect(view->GetPreferredSize()));
+    view->SetBoundsRect(view->visible() ? gfx::Rect(view->GetPreferredSize())
+                                        : gfx::Rect());
     view->Layout();
     ++size_changed_count_;
   }
@@ -152,6 +153,9 @@ TEST_F(NewUnifiedMessageCenterViewTest, AddAndRemoveNotification) {
 
   auto id0 = AddNotification();
   EXPECT_TRUE(message_center_view()->visible());
+  EXPECT_EQ(3 * kUnifiedNotificationCenterSpacing,
+            GetScrollerContents()->height() -
+                GetScroller()->GetVisibleRect().bottom());
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
   AnimateToEnd();
