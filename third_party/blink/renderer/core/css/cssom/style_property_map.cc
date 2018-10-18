@@ -53,6 +53,16 @@ CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
   }
 }
 
+String StyleValueToString(const CSSProperty& property,
+                          const CSSStyleValue& style_value,
+                          const CSSSyntaxComponent* syntax_component) {
+  if (style_value.GetType() == CSSStyleValue::kUnknownType)
+    return style_value.toString();
+  return style_value
+      .ToCSSValueWithProperty(property.PropertyID(), syntax_component)
+      ->CssText();
+}
+
 const CSSVariableReferenceValue* CreateVariableReferenceValue(
     const String& value,
     const CSSParserContext& context) {
@@ -78,14 +88,16 @@ const CSSVariableReferenceValue* CreateVariableReferenceValue(
   StringBuilder builder;
 
   for (const auto& value : values) {
+    const CSSSyntaxComponent* syntax_component = nullptr;
+
     if (!CSSOMTypes::PropertyCanTake(property.PropertyID(),
                                      custom_property_name, &registration,
-                                     *value)) {
+                                     *value, syntax_component)) {
       return nullptr;
     }
     if (!builder.IsEmpty())
       builder.Append(separator);
-    builder.Append(value->toString());
+    builder.Append(StyleValueToString(property, *value, syntax_component));
   }
 
   return CreateVariableReferenceValue(builder.ToString(), context);
@@ -100,9 +112,12 @@ const CSSValue* StyleValueToCSSValue(
   DCHECK_EQ(property.IDEquals(CSSPropertyVariable),
             !custom_property_name.IsNull());
 
+  const CSSSyntaxComponent* syntax_component = nullptr;
+
   const CSSPropertyID property_id = property.PropertyID();
   if (!CSSOMTypes::PropertyCanTake(property_id, custom_property_name,
-                                   registration, style_value)) {
+                                   registration, style_value,
+                                   syntax_component)) {
     return nullptr;
   }
 
@@ -123,7 +138,9 @@ const CSSValue* StyleValueToCSSValue(
       if (registration &&
           style_value.GetType() != CSSStyleValue::kUnparsedType) {
         CSSParserContext* context = CSSParserContext::Create(execution_context);
-        return CreateVariableReferenceValue(style_value.toString(), *context);
+        String string =
+            StyleValueToString(property, style_value, syntax_component);
+        return CreateVariableReferenceValue(string, *context);
       }
       break;
     case CSSPropertyBorderBottomLeftRadius:
@@ -246,7 +263,7 @@ const CSSValue* StyleValueToCSSValue(
       break;
   }
 
-  return style_value.ToCSSValueWithProperty(property_id);
+  return style_value.ToCSSValueWithProperty(property_id, syntax_component);
 }
 
 const CSSValue* CoerceStyleValueOrString(
@@ -342,8 +359,10 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     String css_text;
     if (values[0].IsCSSStyleValue()) {
       CSSStyleValue* style_value = values[0].GetAsCSSStyleValue();
-      if (style_value && CSSOMTypes::PropertyCanTake(property_id, g_null_atom,
-                                                     nullptr, *style_value)) {
+      const CSSSyntaxComponent* syntax_component = nullptr;
+      if (style_value &&
+          CSSOMTypes::PropertyCanTake(property_id, g_null_atom, nullptr,
+                                      *style_value, syntax_component)) {
         css_text = style_value->toString();
       }
     } else {
