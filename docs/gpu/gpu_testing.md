@@ -499,39 +499,38 @@ correctness. There are a few reasons for this.
     more thought; see [Issue 349262](http://crbug.com/349262).
 
 If a reference image based pixel test's result is going to change because of a
-change in ANGLE or Blink (for example), updating the reference images is a
-slightly tricky process. Here's how to do it:
+change in a third party repository (e.g. in ANGLE), updating the reference
+images is a slightly tricky process. Here's how to do it:
 
-*   Mark the pixel test as failing in the [pixel tests]' [test expectations]
-*   Commit the change to ANGLE, Blink, etc. which will change the test's
-    results
+*   Mark the pixel test as failing **without platform condition** in the
+    [pixel test]'s [test expectations]
+*   Commit the change to the third party repository, etc. which will change the
+    test's results
 *   Note that without the failure expectation, this commit would turn some bots
-    red; a Blink change will turn the GPU bots on the chromium.webkit waterfall
-    red, and an ANGLE change will turn the chromium.gpu.fyi bots red
-*   Wait for Blink/ANGLE/etc. to roll
+    red, e.g. an ANGLE change will turn the chromium.gpu.fyi bots red
+*   Wait for the third party repository to roll into Chromium
 *   Commit a change incrementing the revision number associated with the test
     in the [test pages]
 *   Commit a second change removing the failure expectation, once all of the
     bots on the main waterfall have generated new reference images. This change
     should go through the commit queue cleanly.
 
-[pixel tests]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_test_pages.py
-[test expectations]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_expectations.py
-[test pages]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_test_pages.py
-
 When adding a brand new pixel test that uses a reference image, the steps are
 similar, but simpler:
 
-*   Mark the test as failing in the same commit which introduces the new test
+*   In the same commit which introduces the new test, mark the pixel test as
+    failing **without platform condition** in the [pixel test]'s [test
+    expectations]
 *   Wait for the reference images to be produced by all of the GPU bots on the
     waterfalls (see [chromium-gpu-archive/reference-images])
 *   Commit a change un-marking the test as failing
 
-When making a Chromium-side change which changes the pixel tests' results:
+When making a Chromium-side (including Blink which is now in the same Chromium
+repository) change which changes the pixel tests' results:
 
-*   In your CL, both mark the pixel test as failing in the pixel test's test
-    expectations and increment the test's version number in the page set (see
-    above)
+*   In your CL, both mark the pixel test as failing **without platform
+    condition** in the [pixel test]'s [test expectations] and increment the
+    test's version number associated with the test in the [test pages]
 *   After your CL lands, land another CL removing the failure expectations. If
     this second CL goes through the commit queue cleanly, you know reference
     images were generated properly.
@@ -541,6 +540,9 @@ pixels in the rendered image rather than using a reference image per platform.
 The [GPU rasterization test] is a good example of a recently added test which
 performs such spot checks.
 
+[pixel test]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_test_pages.py
+[test expectations]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_expectations.py
+[test pages]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_test_pages.py
 [cloud storage bucket]: https://console.developers.google.com/storage/chromium-gpu-archive/reference-images
 <!-- XXX: old link -->
 [GPU rasterization test]: http://src.chromium.org/viewvc/chrome/trunk/src/content/test/gpu/gpu_tests/gpu_rasterization.py
