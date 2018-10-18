@@ -259,6 +259,8 @@ test("cast_audio_backend_unittests") {
     "filter_group_unittest.cc",
     "mock_mixer_source.cc",
     "mock_mixer_source.h",
+    "mock_post_processor_factory.cc",
+    "mock_post_processor_factory.h",
     "mock_redirected_audio_output.cc",
     "mock_redirected_audio_output.h",
     "stream_mixer_external_audio_pipeline_unittest.cc",
