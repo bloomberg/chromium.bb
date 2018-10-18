@@ -39,7 +39,9 @@ bool PreviewsOptimizationGuide::IsWhitelisted(PreviewsUserData* previews_data,
     return false;
 
   int inflation_percent = 0;
-  if (!hints_->IsWhitelisted(url, type, &inflation_percent))
+  net::EffectiveConnectionType ect_threshold =
+      params::GetECTThresholdForPreview(type);
+  if (!hints_->IsWhitelisted(url, type, &inflation_percent, &ect_threshold))
     return false;
 
   if (inflation_percent != 0 && previews_data)

@@ -111,8 +111,7 @@ enum class PreviewsOptimizationFilterStatus {
 };
 
 // Returns base::nullopt if |optimization_type| can't be converted.
-base::Optional<PreviewsType>
-ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+base::Optional<PreviewsType> ConvertProtoOptimizationTypeToPreviewsType(
     optimization_guide::proto::OptimizationType optimization_type) {
   switch (optimization_type) {
     case optimization_guide::proto::TYPE_UNSPECIFIED:
@@ -123,6 +122,30 @@ ConvertProtoOptimizationTypeToPreviewsOptimizationType(
       return PreviewsType::RESOURCE_LOADING_HINTS;
     case optimization_guide::proto::LITE_PAGE_REDIRECT:
       return PreviewsType::LITE_PAGE_REDIRECT;
+  }
+}
+
+net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
+    optimization_guide::proto::EffectiveConnectionType proto_ect) {
+  switch (proto_ect) {
+    case optimization_guide::proto::EffectiveConnectionType::
+        EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    case optimization_guide::proto::EffectiveConnectionType::
+        EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+    case optimization_guide::proto::EffectiveConnectionType::
+        EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+    case optimization_guide::proto::EffectiveConnectionType::
+        EFFECTIVE_CONNECTION_TYPE_2G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+    case optimization_guide::proto::EffectiveConnectionType::
+        EFFECTIVE_CONNECTION_TYPE_3G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G;
+    case optimization_guide::proto::EffectiveConnectionType::
+        EFFECTIVE_CONNECTION_TYPE_4G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
   }
 }
 
@@ -230,7 +253,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
         continue;
       }
       base::Optional<PreviewsType> previews_type =
-          ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+          ConvertProtoOptimizationTypeToPreviewsType(
               optimization.optimization_type());
       if (!previews_type.has_value()) {
         continue;
@@ -263,7 +286,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
             continue;
           }
           base::Optional<PreviewsType> previews_type =
-              ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+              ConvertProtoOptimizationTypeToPreviewsType(
                   optimization.optimization_type());
 
           if (!previews_type ||
@@ -310,7 +333,7 @@ void PreviewsHints::ParseOptimizationFilters(
     const optimization_guide::proto::Configuration& config) {
   for (const auto blacklist : config.optimization_blacklists()) {
     base::Optional<PreviewsType> previews_type =
-        ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+        ConvertProtoOptimizationTypeToPreviewsType(
             blacklist.optimization_type());
     if (previews_type == PreviewsType::LITE_PAGE_REDIRECT &&
         previews::params::IsLitePageServerPreviewsEnabled() &&
@@ -403,16 +426,19 @@ void PreviewsHints::Initialize() {
   }
 }
 
-bool PreviewsHints::IsWhitelisted(const GURL& url,
-                                  PreviewsType type,
-                                  int* out_inflation_percent) const {
+bool PreviewsHints::IsWhitelisted(
+    const GURL& url,
+    PreviewsType type,
+    int* out_inflation_percent,
+    net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!url.has_host())
     return false;
 
   return IsWhitelistedAtTopLevel(url, type, out_inflation_percent) ||
-         IsWhitelistedInPageHints(url, type, out_inflation_percent);
+         IsWhitelistedInPageHints(url, type, out_inflation_percent,
+                                  out_ect_threshold);
 }
 
 bool PreviewsHints::IsWhitelistedAtTopLevel(const GURL& url,
@@ -450,9 +476,11 @@ bool PreviewsHints::IsWhitelistedAtTopLevel(const GURL& url,
   return false;
 }
 
-bool PreviewsHints::IsWhitelistedInPageHints(const GURL& url,
-                                             PreviewsType type,
-                                             int* out_inflation_percent) const {
+bool PreviewsHints::IsWhitelistedInPageHints(
+    const GURL& url,
+    PreviewsType type,
+    int* out_inflation_percent,
+    net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!hint_cache_)
@@ -475,14 +503,19 @@ bool PreviewsHints::IsWhitelistedInPageHints(const GURL& url,
 
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
-    if (ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+    if (ConvertProtoOptimizationTypeToPreviewsType(
             optimization.optimization_type()) == type) {
       if (IsDisabledExperimentalOptimization(optimization)) {
         // This is an experimental optimization that is not enabled so continue
         // in case there is a non-experimental one.
         continue;
       }
+      // Found whitelisted optimization.
       *out_inflation_percent = optimization.inflation_percent();
+      if (matched_page_hint->has_max_ect_trigger()) {
+        *out_ect_threshold = ConvertProtoEffectiveConnectionType(
+            matched_page_hint->max_ect_trigger());
+      }
       return true;
     }
   }

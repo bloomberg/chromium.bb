@@ -49,13 +49,14 @@ class PreviewsHints {
   void Initialize();
 
   // Whether the URL is whitelisted for the given previews type. If so,
-  // |out_inflation_percent| will be populated if metadata is available for it.
-  // This first checks the top-level whitelist and, if not whitelisted there,
-  // it will check the HintCache for having a loaded, matching PageHint that
-  // whitelists it.
+  // |out_inflation_percent| and |out_ect_threshold| will be populated if
+  // metadata is available for them. This first checks the top-level whitelist
+  // and, if not whitelisted there, it will check the HintCache for having a
+  // loaded, matching PageHint that whitelists it.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
-                     int* out_inflation_percent) const;
+                     int* out_inflation_percent,
+                     net::EffectiveConnectionType* out_ect_threshold) const;
 
   // Whether the URL is blacklisted for the given previews type.
   bool IsBlacklisted(const GURL& url, PreviewsType type) const;
@@ -86,11 +87,13 @@ class PreviewsHints {
                                PreviewsType type,
                                int* out_inflation_percent) const;
   // Returns whether |url| is whitelisted in the page hints contained within
-  // |hint_cache_|. If it is, then |out_inflation_percent| will be populated if
-  // metadata is available for it.
-  bool IsWhitelistedInPageHints(const GURL& url,
-                                PreviewsType type,
-                                int* out_inflation_percent) const;
+  // |hint_cache_|. If it is, then |out_inflation_percent| and
+  // |out_ect_threshold| will be populated if metadata is available for them.
+  bool IsWhitelistedInPageHints(
+      const GURL& url,
+      PreviewsType type,
+      int* out_inflation_percent,
+      net::EffectiveConnectionType* out_ect_threshold) const;
 
   // Parses optimization filters from |config| and populates corresponding
   // supported blacklists in this object.
