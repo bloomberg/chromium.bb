@@ -246,6 +246,10 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
+const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
+const char kIgnoresViewportScaleLimitsDescription[] =
+    "When enabled the page can always be scaled, regardless of author intent.";
+
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "

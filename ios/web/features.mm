@@ -7,6 +7,9 @@
 namespace web {
 namespace features {
 
+const base::Feature kIgnoresViewportScaleLimits{
+    "IgnoresViewportScaleLimits", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kWebFrameMessaging{"WebFrameMessaging",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
