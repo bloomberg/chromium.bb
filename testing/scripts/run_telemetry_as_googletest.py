@@ -54,6 +54,9 @@ class TelemetryUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
   def generate_test_launcher_retry_limit_args(self, retry_limit):
     return ['--retry-limit=%d' % retry_limit]
 
+  def generate_test_repeat_args(self, repeat_count):
+    return ['--repeat=%d' % repeat_count]
+
 
 def main():
   adapter = TelemetryUnittestAdapter()
