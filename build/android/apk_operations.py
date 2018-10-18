@@ -910,16 +910,17 @@ class _Command(object):
     args.__dict__.setdefault('apk_path', None)
     args.__dict__.setdefault('incremental_json', None)
 
-    if self.supports_incremental:
-      incremental_apk_path = None
-      if args.incremental_json and not args.non_incremental:
-        with open(args.incremental_json) as f:
-          install_dict = json.load(f)
-          incremental_apk_path = os.path.join(
-              args.output_directory, install_dict['apk_path'])
-          if not os.path.exists(incremental_apk_path):
-            incremental_apk_path = None
+    incremental_apk_path = None
+    if args.incremental_json and not (self.supports_incremental and
+                                      args.non_incremental):
+      with open(args.incremental_json) as f:
+        install_dict = json.load(f)
+        incremental_apk_path = os.path.join(args.output_directory,
+                                            install_dict['apk_path'])
+        if not os.path.exists(incremental_apk_path):
+          incremental_apk_path = None
 
+    if self.supports_incremental:
       if args.incremental and args.non_incremental:
         self._parser.error('Must use only one of --incremental and '
                            '--non-incremental')
@@ -935,13 +936,13 @@ class _Command(object):
         self._parser.error('Both incremental and non-incremental apks exist. '
                            'Select using --incremental or --non-incremental')
 
-    if ((self.needs_apk_path and not self.is_bundle) or args.apk_path
-        or (self.supports_incremental and args.incremental_json)):
-      if self.supports_incremental and incremental_apk_path:
+    if ((self.needs_apk_path and not self.is_bundle) or args.apk_path or
+        incremental_apk_path):
+      if args.apk_path:
+        self.apk_helper = apk_helper.ToHelper(args.apk_path)
+      elif incremental_apk_path:
         self.install_dict = install_dict
         self.apk_helper = apk_helper.ToHelper(incremental_apk_path)
-      elif args.apk_path:
-        self.apk_helper = apk_helper.ToHelper(args.apk_path)
       else:
         self._parser.error('Apk is not built.')
 
