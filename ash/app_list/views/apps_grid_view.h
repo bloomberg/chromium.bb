@@ -119,6 +119,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // used to trap focus within the folder when it is opened.
   void DisableFocusForShowingActiveFolder(bool disabled);
 
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started);
+
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
 
@@ -253,6 +256,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Returns the last app list item view in the selected page in the folder.
   AppListItemView* GetCurrentPageLastItemViewInFolder();
+
+  // Returns true if tablet mode is active.
+  bool IsTabletMode() const;
 
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
