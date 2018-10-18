@@ -16688,7 +16688,7 @@ Called by update_net_error_codes.py.-->
   <int value="937" label="DELETED_COPRESENCEENDPOINTS_CREATELOCALENDPOINT"/>
   <int value="938" label="DELETED_COPRESENCEENDPOINTS_DESTROYLOCALENDPOINT"/>
   <int value="939" label="DELETED_COPRESENCEENDPOINTS_SEND"/>
-  <int value="940" label="INLINE_INSTALL_PRIVATE_INSTALL"/>
+  <int value="940" label="DELETED_INLINE_INSTALL_PRIVATE_INSTALL"/>
   <int value="941" label="LAUNCHERPAGE_SETENABLED"/>
   <int value="942" label="DELETED_CRYPTOTOKENPRIVATE_REQUESTPERMISSION"/>
   <int value="943" label="BLUETOOTHPRIVATE_DISCONNECTALL"/>
@@ -17392,7 +17392,7 @@ Called by update_net_error_codes.py.-->
   <int value="88" label="kIdltest"/>
   <int value="89" label="kIdle"/>
   <int value="90" label="kImeWindowEnabled"/>
-  <int value="91" label="kInlineInstallPrivate"/>
+  <int value="91" label="kDeleted_InlineInstallPrivate"/>
   <int value="92" label="kInput"/>
   <int value="93" label="kInputMethodPrivate"/>
   <int value="94" label="kDeleted_InterceptAllKeys"/>

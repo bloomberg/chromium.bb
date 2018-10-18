@@ -132,7 +132,7 @@ class APIPermission {
     kIdltest = 88,
     kIdle = 89,
     kImeWindowEnabled = 90,
-    kInlineInstallPrivate = 91,
+    kDeleted_InlineInstallPrivate = 91,
     kInput = 92,
     kInputMethodPrivate = 93,
     kDeleted_InterceptAllKeys = 94,
