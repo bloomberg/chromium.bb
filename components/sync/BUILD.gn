@@ -567,7 +567,6 @@ jumbo_static_library("sync") {
   ]
   deps = [
     "//base:i18n",
-    "//base/third_party/dynamic_annotations",
     "//components/data_use_measurement/core",
     "//components/invalidation/public",
     "//components/keyed_service/core",
@@ -577,7 +576,6 @@ jumbo_static_library("sync") {
     "//components/prefs",
     "//components/reading_list/features:reading_list_buildflags",
     "//components/signin/core/browser",
-    "//components/strings",
     "//components/variations",
     "//components/version_info",
     "//crypto",
