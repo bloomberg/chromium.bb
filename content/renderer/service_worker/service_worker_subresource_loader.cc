@@ -289,6 +289,8 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
   SettleFetchEventDispatch(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
 
+  // TODO(bashi): Remove these histograms. They are replaced with
+  // ServiceWorker.LoadTiming.Subresource UMAs.
   base::TimeDelta delay = actual_dispatch_time - request_dispatch_time;
   UMA_HISTOGRAM_TIMES("ServiceWorker.EventDispatchingDelay", delay);
   UMA_HISTOGRAM_TIMES("ServiceWorker.EventDispatchingDelay_FETCH_SUB_RESOURCE",
@@ -428,6 +430,8 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // factory dies, the web context that made the request is dead so the request
   // is moot.
   DCHECK(!fallback_factory_->HasOneRef());
+
+  RecordTimingMetrics(false /* handled */);
   delete this;
 }
 
@@ -437,6 +441,7 @@ void ServiceWorkerSubresourceLoader::UpdateResponseTiming(
   // PerformanceResourceTiming#fetchStart, which is the time just before
   // dispatching the fetch event, so set it to |dispatch_event_time|.
   response_head_.service_worker_ready_time = timing->dispatch_event_time;
+  fetch_event_timing_ = std::move(timing);
 }
 
 void ServiceWorkerSubresourceLoader::StartResponse(
@@ -530,6 +535,9 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
       "ServiceWorker", "ServiceWorkerSubresourceLoader::CommitCompleted", this,
       TRACE_EVENT_FLAG_FLOW_IN, "error_code", net::ErrorToString(error_code));
 
+  if (error_code == net::OK)
+    RecordTimingMetrics(true /* handled */);
+
   DCHECK_LT(status_, Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
   body_as_blob_.reset();
@@ -543,6 +551,63 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
   // Invalidate weak pointers to prevent callbacks after commit.  This can
   // occur if an error code is encountered which forces an early commit.
   weak_factory_.InvalidateWeakPtrs();
+}
+
+void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
+  DCHECK(fetch_event_timing_);
+
+  // |report_raw_headers| is true when DevTools is attached. Don't record
+  // metrics when DevTools is attached to reduce noise.
+  // TODO(bashi): Relying on |report_raw_header| to detect DevTools existence
+  // is brittle. Figure out a better way to check DevTools is attached.
+  if (resource_request_.report_raw_headers)
+    return;
+
+  // |fetch_event_timing_| can be recorded in different process. We can get
+  // reasonable metrics only when TimeTicks are consistent across processes.
+  if (!base::TimeTicks::IsHighResolution() ||
+      !base::TimeTicks::IsConsistentAcrossProcesses())
+    return;
+
+  base::TimeTicks completion_time = base::TimeTicks::Now();
+
+  // Time spent for service worker startup including mojo message delay.
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.LoadTiming.Subresource."
+      "ForwardServiceWorkerToWorkerReady",
+      response_head_.service_worker_ready_time -
+          response_head_.service_worker_start_time);
+
+  // Time spent by fetch handlers.
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.LoadTiming.Subresource."
+      "WorkerReadyToFetchHandlerEnd",
+      fetch_event_timing_->respond_with_settled_time -
+          response_head_.service_worker_ready_time);
+
+  if (handled) {
+    // Mojo message delay. If the controller service worker lives in the same
+    // process this captures service worker thread -> background thread delay.
+    // Otherwise, this captures IPC delay (this renderer process -> other
+    // renderer process).
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LoadTiming.Subresource."
+        "FetchHandlerEndToResponseReceived",
+        response_head_.load_timing.receive_headers_end -
+            fetch_event_timing_->respond_with_settled_time);
+
+    // Time spent reading response body.
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LoadTiming.Subresource."
+        "ResponseReceivedToCompleted",
+        completion_time - response_head_.load_timing.receive_headers_end);
+  } else {
+    // Mojo message delay (network fallback case). See above for the detail.
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.LoadTiming.Subresource."
+        "FetchHandlerEndToFallbackNetwork",
+        completion_time - fetch_event_timing_->respond_with_settled_time);
+  }
 }
 
 // ServiceWorkerSubresourceLoader: URLLoader implementation -----------------

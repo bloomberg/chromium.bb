@@ -114,6 +114,11 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // CommitResponseHeaders (i.e. status_ == kSentHeader).
   void CommitCompleted(int error_code);
 
+  // Record loading milestones. Called after a response is completed or
+  // a request is fall back to network. Never called when an error is
+  // occurred. |handled| is true when a fetch handler handled a request.
+  void RecordTimingMetrics(bool handled);
+
   network::ResourceResponseHead response_head_;
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
@@ -166,6 +171,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   // The task runner where this loader is running.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
 
   base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_;
 
