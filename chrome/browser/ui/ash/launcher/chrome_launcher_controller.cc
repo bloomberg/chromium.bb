@@ -15,6 +15,7 @@
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/shell.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -82,6 +82,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using extension_misc::kChromeAppId;
@@ -288,7 +289,10 @@ ChromeLauncherController::~ChromeLauncherController() {
 void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
   UpdateAppLaunchersFromPref();
-  SetVirtualKeyboardBehaviorFromPrefs();
+
+  // TODO(sky): update unit test so that this test isn't necessary.
+  if (ash::Shell::HasInstance())
+    SetVirtualKeyboardBehaviorFromPrefs();
 }
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(
@@ -992,20 +996,24 @@ void ChromeLauncherController::UpdatePolicyPinnedAppsFromPrefs() {
 }
 
 void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
-  using keyboard::mojom::KeyboardEnableFlag;
-  if (!ChromeKeyboardControllerClient::HasInstance())  // May be null in tests
-    return;
-  auto* client = ChromeKeyboardControllerClient::Get();
   const PrefService* service = profile()->GetPrefs();
-  if (service->HasPrefPath(prefs::kTouchVirtualKeyboardEnabled)) {
-    // Since these flags are mutually exclusive, setting one clears the other.
-    client->SetEnableFlag(
-        service->GetBoolean(prefs::kTouchVirtualKeyboardEnabled)
-            ? KeyboardEnableFlag::kPolicyEnabled
-            : KeyboardEnableFlag::kPolicyDisabled);
+  const bool was_enabled = keyboard::IsKeyboardEnabled();
+  if (!service->HasPrefPath(prefs::kTouchVirtualKeyboardEnabled)) {
+    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
   } else {
-    client->ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-    client->ClearEnableFlag(KeyboardEnableFlag::kPolicyEnabled);
+    const bool enable =
+        service->GetBoolean(prefs::kTouchVirtualKeyboardEnabled);
+    keyboard::SetKeyboardShowOverride(
+        enable ? keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED
+               : keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
+  }
+  // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
+  if (!features::IsMultiProcessMash()) {
+    const bool is_enabled = keyboard::IsKeyboardEnabled();
+    if (was_enabled && !is_enabled)
+      ash::Shell::Get()->DisableKeyboard();
+    else if (is_enabled && !was_enabled)
+      ash::Shell::Get()->EnableKeyboard();
   }
 }
 

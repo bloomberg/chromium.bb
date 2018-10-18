@@ -1,7 +1,6 @@
 # These tests fail. https://crbug.com/646565
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/0
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/1
--AshKeyboardControllerTest.*
 -LockActionHandlerLayoutManagerTest.KeyboardBounds
 -PipPositionerTest.*
 -PipWindowResizerTest.*

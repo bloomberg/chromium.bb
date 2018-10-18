@@ -6,8 +6,6 @@
 #define UI_KEYBOARD_KEYBOARD_CONTROLLER_H_
 
 #include <memory>
-#include <set>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -29,7 +27,6 @@
 #include "ui/keyboard/keyboard_ukm_recorder.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/public/keyboard_config.mojom.h"
-#include "ui/keyboard/public/keyboard_enable_flag.mojom.h"
 #include "ui/keyboard/queued_container_type.h"
 #include "ui/keyboard/queued_display_change.h"
 
@@ -143,20 +140,9 @@ class KEYBOARD_EXPORT KeyboardController
   bool InsertText(const base::string16& text);
 
   // Updates |keyboard_config_| with |config|. Returns |false| if there is no
-  // change, otherwise returns true and notifies observers if this is enabled.
+  // change, otherwise returns true and notifies observers if this is enabled().
   bool UpdateKeyboardConfig(const mojom::KeyboardConfig& config);
   const mojom::KeyboardConfig& keyboard_config() { return keyboard_config_; }
-
-  // Sets and clears |keyboard_enable_flags_| entries.
-  void SetEnableFlag(mojom::KeyboardEnableFlag flag);
-  void ClearEnableFlag(mojom::KeyboardEnableFlag flag);
-  bool IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const;
-
-  // Returns true if the keyboard should be enabled, i.e. the current result
-  // of Set/ClearEnableFlag should cause the keyboard to be enabled.
-  // TODO(stevenjb/shend): Consider removing this and have all calls to
-  // Set/ClearEnableFlag always enable or disable the keyboard directly.
-  bool IsKeyboardEnableRequested() const;
 
   // Returns true if keyboard overscroll is enabled.
   bool IsKeyboardOverscrollEnabled() const;
@@ -416,10 +402,6 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Keyboard configuration associated with the controller.
   mojom::KeyboardConfig keyboard_config_;
-
-  // Set of active enabled request flags. Used to determine whether the keyboard
-  // should be enabled.
-  std::set<mojom::KeyboardEnableFlag> keyboard_enable_flags_;
 
   NotificationManager notification_manager_;
 
