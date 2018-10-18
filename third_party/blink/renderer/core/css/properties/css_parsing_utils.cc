@@ -1918,7 +1918,7 @@ bool ParseGridTemplateAreasRow(const String& grid_row_names,
                                NamedGridAreaMap& grid_area_map,
                                const size_t row_count,
                                size_t& column_count) {
-  if (grid_row_names.IsEmpty() || grid_row_names.ContainsOnlyWhitespace())
+  if (grid_row_names.ContainsOnlyWhitespaceOrEmpty())
     return false;
 
   Vector<String> column_names =

@@ -313,7 +313,7 @@ class WTF_EXPORT StringImpl {
   }
   UChar32 CharacterStartingAt(wtf_size_t);
 
-  bool ContainsOnlyWhitespace();
+  bool ContainsOnlyWhitespaceOrEmpty();
 
   int ToInt(NumberParsingOptions, bool* ok) const;
   wtf_size_t ToUInt(NumberParsingOptions, bool* ok) const;

@@ -113,7 +113,8 @@ void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
 }
 
 void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
-  if (!inline_text_box_ || inline_text_box_->GetText().ContainsOnlyWhitespace())
+  if (!inline_text_box_ ||
+      inline_text_box_->GetText().ContainsOnlyWhitespaceOrEmpty())
     return;
 
   Vector<AbstractInlineTextBox::WordBoundaries> boundaries;

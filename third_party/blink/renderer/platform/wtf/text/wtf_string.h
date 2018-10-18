@@ -506,8 +506,8 @@ class WTF_EXPORT String {
     return !impl_ || impl_->ContainsOnlyASCII();
   }
   bool ContainsOnlyLatin1() const;
-  bool ContainsOnlyWhitespace() const {
-    return !impl_ || impl_->ContainsOnlyWhitespace();
+  bool ContainsOnlyWhitespaceOrEmpty() const {
+    return !impl_ || impl_->ContainsOnlyWhitespaceOrEmpty();
   }
 
   size_t CharactersSizeInBytes() const {

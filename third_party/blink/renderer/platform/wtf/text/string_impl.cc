@@ -275,7 +275,7 @@ scoped_refptr<StringImpl> StringImpl::Create(const LChar* string) {
   return Create(string, SafeCast<wtf_size_t>(length));
 }
 
-bool StringImpl::ContainsOnlyWhitespace() {
+bool StringImpl::ContainsOnlyWhitespaceOrEmpty() {
   // FIXME: The definition of whitespace here includes a number of characters
   // that are not whitespace from the point of view of LayoutText; I wonder if
   // that's a problem in practice.

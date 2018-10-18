@@ -962,7 +962,7 @@ bool AXLayoutObject::CanIgnoreSpaceNextTo(LayoutObject* layout,
     LayoutText* layout_text = ToLayoutText(layout);
     if (layout_text->HasEmptyText())
       return false;
-    if (layout_text->GetText().Impl()->ContainsOnlyWhitespace())
+    if (layout_text->GetText().Impl()->ContainsOnlyWhitespaceOrEmpty())
       return true;
     auto adjacent_char =
         is_after ? layout_text->FirstCharacterAfterWhitespaceCollapsing()
