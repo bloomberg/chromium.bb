@@ -38,11 +38,7 @@ void LogAppLaunch(int index_in_suggestion_chip_container) {
 
 SearchResultSuggestionChipView::SearchResultSuggestionChipView(
     AppListViewDelegate* view_delegate)
-    : view_delegate_(view_delegate), weak_ptr_factory_(this) {
-  suggestion_chip_view_ = new SuggestionChipView(
-      app_list::SuggestionChipView::Params(), /* listener */ this);
-  AddChildView(suggestion_chip_view_);
-}
+    : view_delegate_(view_delegate), weak_ptr_factory_(this) {}
 
 SearchResultSuggestionChipView::~SearchResultSuggestionChipView() {
   SetSearchResult(nullptr);
@@ -59,7 +55,6 @@ void SearchResultSuggestionChipView::SetSearchResult(SearchResult* item) {
   if (item_)
     item_->AddObserver(this);
 
-  SetVisible(!!item_);
   UpdateSuggestionChipView();
 }
 
@@ -110,15 +105,19 @@ void SearchResultSuggestionChipView::GetAccessibleNodeData(
 }
 
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
-  if (!item_) {
-    suggestion_chip_view_->SetIcon(gfx::ImageSkia());
-    suggestion_chip_view_->SetText(base::string16());
-    suggestion_chip_view_->SetAccessibleName(base::string16());
+  if (!item_)
     return;
-  }
 
-  suggestion_chip_view_->SetIcon(item_->chip_icon());
-  suggestion_chip_view_->SetText(item_->title());
+  if (suggestion_chip_view_) {
+    suggestion_chip_view_->SetIcon(item_->chip_icon());
+    suggestion_chip_view_->SetText(item_->title());
+  } else {
+    app_list::SuggestionChipView::Params params;
+    params.text = item_->title();
+    params.icon = item_->chip_icon();
+    suggestion_chip_view_ = new SuggestionChipView(params, /* listener */ this);
+    AddChildView(suggestion_chip_view_);
+  }
 
   base::string16 accessible_name = item_->title();
   if (item_->id() == app_list::kInternalAppIdContinueReading) {

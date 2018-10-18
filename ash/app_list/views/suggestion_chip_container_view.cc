@@ -42,13 +42,6 @@ SuggestionChipContainerView::SuggestionChipContainerView(
           kChipSpacing));
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
-
-  for (size_t i = 0; i < static_cast<size_t>(kNumStartPageTiles); ++i) {
-    SearchResultSuggestionChipView* chip =
-        new SearchResultSuggestionChipView(view_delegate_);
-    chip->SetIndexInSuggestionChipContainer(i);
-    suggestion_chip_views_.emplace_back(chip);
-  }
 }
 
 SuggestionChipContainerView::~SuggestionChipContainerView() = default;
@@ -57,20 +50,29 @@ int SuggestionChipContainerView::DoUpdate() {
   if (IgnoreUpdateAndLayout())
     return num_results();
 
+  // Clear all current suggestion chips.
+  for (size_t i = 0; i < suggestion_chip_views_.size(); ++i)
+    delete suggestion_chip_views_[i];
+  suggestion_chip_views_.clear();
+
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
           results(), ash::SearchResultDisplayType::kRecommendation,
           /*excludes=*/{}, kNumStartPageTiles);
 
-  // Update search results here, but wait until layout to add them as child
-  // views when we know this view's bounds.
-  for (size_t i = 0; i < static_cast<size_t>(kNumStartPageTiles); ++i) {
-    suggestion_chip_views_[i]->SetSearchResult(
-        i < display_results.size() ? display_results[i] : nullptr);
+  // Create a suggestion chip for each search result, but wait until layout to
+  // add them as child views when we know this view's bounds.
+  for (size_t i = 0; i < display_results.size(); ++i) {
+    auto* result = display_results[i];
+    SearchResultSuggestionChipView* chip =
+        new SearchResultSuggestionChipView(view_delegate_);
+    chip->SetSearchResult(result);
+    chip->SetIndexInSuggestionChipContainer(i);
+    suggestion_chip_views_.emplace_back(chip);
   }
 
   Layout();
-  return std::min(kNumStartPageTiles, static_cast<int>(display_results.size()));
+  return suggestion_chip_views_.size();
 }
 
 const char* SuggestionChipContainerView::GetClassName() const {
@@ -86,14 +88,11 @@ void SuggestionChipContainerView::Layout() {
   int total_width = 0;
   const int max_width = GetContentsBounds().width();
   for (auto* chip : suggestion_chip_views_) {
-    if (!chip->result())
+    const int chip_width = chip->GetPreferredSize().width();
+    if (chip_width + total_width > max_width)
       break;
-    const gfx::Size size = chip->CalculatePreferredSize();
-    if (size.width() + total_width > max_width)
-      break;
-    chip->SetSize(size);
     AddChildView(chip);
-    total_width += (total_width == 0 ? 0 : kChipSpacing) + size.width();
+    total_width += (total_width == 0 ? 0 : kChipSpacing) + chip_width;
   }
 
   views::View::Layout();
@@ -125,12 +124,6 @@ void SuggestionChipContainerView::DisableFocusForShowingActiveFolder(
     bool disabled) {
   for (auto* chip : suggestion_chip_views_)
     chip->suggestion_chip_view()->SetEnabled(!disabled);
-}
-
-void SuggestionChipContainerView::OnTabletModeChanged(bool started) {
-  // Enable/Disable chips' background blur based on tablet mode.
-  for (auto* chip : suggestion_chip_views_)
-    chip->suggestion_chip_view()->SetBackgroundBlurEnabled(started);
 }
 
 bool SuggestionChipContainerView::IgnoreUpdateAndLayout() const {

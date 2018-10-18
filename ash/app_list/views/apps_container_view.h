@@ -69,9 +69,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Updates y position and opacity of the items in this view during dragging.
   void UpdateYPositionAndOpacity();
 
-  // Called when tablet mode starts and ends.
-  void OnTabletModeChanged(bool started);
-
   // views::View overrides:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
