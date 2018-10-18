@@ -15,6 +15,7 @@ group("gn_all") {
     "//third_party/chromium_quic:demo_client",
     "//third_party/chromium_quic:demo_server",
     "//third_party/tinycbor",
+    "//tools/cddl",
   ]
 }
 
@@ -37,7 +38,7 @@ executable("unittests") {
     "//api:api_unittests",
     "//base:base_unittests",
     "//discovery/mdns:mdns_unittests",
-    "//msgs/presentation:unittests",
+    "//msgs:unittests",
     "//sample:hello_unittests",
     "//third_party/googletest:gtest_main",
   ]

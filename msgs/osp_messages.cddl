@@ -1,0 +1,191 @@
+open-screen-message =
+  #6.2000(presentation-url-availability-request) /
+  #6.2001(presentation-url-availability-response) /
+  #6.2002(presentation-url-availability-event) /
+  #6.2010(presentation-initiation-request) /
+  #6.2011(presentation-initiation-response) /
+  #6.2012(presentation-termination-request) /
+  #6.2013(presentation-termination-response) /
+  #6.2014(presentation-termination-event) /
+  #6.2020(presentation-connection-open-request) /
+  #6.2021(presentation-connection-open-response) /
+  #6.2022(presentation-connection-close-request) /
+  #6.2023(presentation-connection-close-response) /
+  #6.2024(presentation-connection-close-event) /
+  #6.2030(presentation-connection-message) /
+  #6.2040(presentation-receiver-status-event)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Common message definitions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+result = (
+  success: 1
+  timeout: 100
+  transient-error: 101
+  permanent-error: 102
+  unknown-error: 199
+)
+
+request-id = uint
+microseconds = uint
+url = text
+
+request = (
+  request-id: request-id
+)
+
+response = (
+  request-id: request-id
+)
+
+timestamp = (
+  timestamp: microseconds
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Presentation API definitions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+presentation-url-availability-request = {
+  request
+  urls: [* url]
+}
+
+presentation-url-availability-response = {
+  response
+  timestamp
+  url-availabilities: [* presentation-url-availability]
+}
+
+presentation-url-availability-event = {
+  timestamp
+  url-availabilities: [* presentation-url-availability]
+}
+
+presentation-id = text
+
+presentation-initiation-request = {
+  request
+  presentation-id: presentation-id
+  url: url
+  headers: text
+  ? connection-id: presentation-connection-id
+}
+
+presentation-url-availability = &(
+  not-compatible: 0
+  compatible: 1
+  not-valid: 10
+)
+
+presentation-initiation-response = {
+  response
+  result: &(result, url-not-valid: 10)
+  ? connection-result: presentation-connection-open-result
+}
+
+presentation-connection-open-result = &(
+  result
+  presentation-unknown-presentation-id
+  presentation-terminating
+)
+
+; Separate enum to avoid redefinition.
+presentation-unknown-presentation-id = (
+  unknown-presentation-id: 12
+)
+
+presentation-terminating = (
+  presentation-terminating: 103
+)
+
+presentation-termination-request = {
+  request
+  presentation-id: presentation-id
+  reason: &(
+    terminated-by-controller: 10
+    user-terminated-via-controller: 11
+  )
+}
+
+presentation-termination-response = {
+  response
+  result: &(
+    result,
+    invalid-presentation-id: 10
+  )
+}
+
+presentation-termination-event = {
+  presentation-id: presentation-id
+  reason: &(
+    receiver: 1
+    user-via-receiver: 2
+    controller: 10
+    user-via-controller: 11
+    new-replacing-current: 20
+    idle-too-long: 30
+  )
+}
+
+presentation-connection-open-request = {
+  request
+  presentation-id: presentation-id
+  connection-id: presentation-connection-id
+}
+
+presentation-connection-open-response = {
+  response
+  result: &(
+    result
+    presentation-unknown-presentation-id
+    presentation-terminating
+  )
+}
+
+presentation-connection-close-request = {
+  request
+  presentation-id: presentation-id
+  connection-id: presentation-connection-id
+}
+
+presentation-connection-close-response = {
+  response
+  result: &(
+    result
+    presentation-unknown-presentation-id
+  )
+}
+
+presentation-connection-close-event = {
+  presentation-id: presentation-id
+  connection-id: presentation-connection-id
+  reason: &(
+    close-method: 1
+    connection-destruction: 10
+    unrecoverable-error: 100
+  )
+  ? error-message: text
+}
+
+presentation-connection-id = uint
+
+presentation-connection-message = [
+  presentation-id: presentation-id
+  connection-id: presentation-connection-id
+  message: bytes / text
+]
+
+presentation-receiver-status-event = {
+  timestamp
+  friendly-name: text
+  presentations: [* presentation-status]
+}
+
+presentation-status = {
+  id: presentation-id
+  url: url
+  title: text
+  connection-count: uint
+}
