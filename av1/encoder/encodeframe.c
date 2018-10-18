@@ -4508,11 +4508,13 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   const TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  SPEED_FEATURES *const sf = &cpi->sf;
+  const SPEED_FEATURES *const sf = &cpi->sf;
   const int leaf_nodes = 256;
   const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
-  int sb_row =
-      (mi_row - tile_info->mi_row_start) >> cm->seq_params.mib_size_log2;
+  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const int mib_size = cm->seq_params.mib_size;
+  const int mib_size_log2 = cm->seq_params.mib_size_log2;
+  const int sb_row = (mi_row - tile_info->mi_row_start) >> mib_size_log2;
 
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
@@ -4525,13 +4527,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
   }
 
-  PC_TREE *const pc_root =
-      td->pc_root[cm->seq_params.mib_size_log2 - MIN_MIB_SIZE_LOG2];
-
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
-       mi_col < tile_info->mi_col_end;
-       mi_col += cm->seq_params.mib_size, sb_col_in_tile++) {
+       mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
     if ((cpi->row_mt == 1) && (tile_info->mi_col_start == mi_col) &&
@@ -4560,6 +4558,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_zero(x->txb_rd_record_intra);
 
     av1_zero(x->pred_mv);
+    PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
     pc_root->index = 0;
 
     const struct segmentation *const seg = &cm->seg;
@@ -4568,8 +4567,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
       const int segment_id =
-          map ? get_segment_id(cm, map, cm->seq_params.sb_size, mi_row, mi_col)
-              : 0;
+          map ? get_segment_id(cm, map, sb_size, mi_row, mi_col) : 0;
       seg_skip = segfeature_active(seg, segment_id, SEG_LVL_SKIP);
     }
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
@@ -4582,13 +4580,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       int offset_qindex;
       if (DELTAQ_MODULATION == 1) {
         const int block_wavelet_energy_level =
-            av1_block_wavelet_energy_level(cpi, x, cm->seq_params.sb_size);
+            av1_block_wavelet_energy_level(cpi, x, sb_size);
         x->sb_energy_level = block_wavelet_energy_level;
         offset_qindex = av1_compute_deltaq_from_energy_level(
             cpi, block_wavelet_energy_level);
       } else {
-        const int block_var_level =
-            av1_log_block_var(cpi, x, cm->seq_params.sb_size);
+        const int block_var_level = av1_log_block_var(cpi, x, sb_size);
         x->sb_energy_level = block_var_level;
         offset_qindex =
             av1_compute_deltaq_from_energy_level(cpi, block_var_level);
@@ -4602,7 +4599,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       assert(current_qindex > 0);
 
       xd->delta_qindex = current_qindex - cm->base_qindex;
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
       xd->mi[0]->current_qindex = current_qindex;
       av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
       if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
@@ -4612,10 +4609,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
         // pre-set the delta lf for loop filter. Note that this value is set
         // before mi is assigned for each block in current superblock
-        for (int j = 0;
-             j < AOMMIN(cm->seq_params.mib_size, cm->mi_rows - mi_row); j++) {
-          for (int k = 0;
-               k < AOMMIN(cm->seq_params.mib_size, cm->mi_cols - mi_col); k++) {
+        for (int j = 0; j < AOMMIN(mib_size, cm->mi_rows - mi_row); j++) {
+          for (int k = 0; k < AOMMIN(mib_size, cm->mi_cols - mi_col); k++) {
             cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
                 .delta_lf_from_base =
                 clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
@@ -4638,21 +4633,18 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
     x->source_variance = UINT_MAX;
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
-      const BLOCK_SIZE bsize =
-          seg_skip ? cm->seq_params.sb_size : sf->always_this_block_size;
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
+      const BLOCK_SIZE bsize = seg_skip ? sb_size : sf->always_this_block_size;
       set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
-                       cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
-                       pc_root);
+      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
+                       &dummy_rate, &dummy_dist, 1, pc_root);
     } else if (cpi->partition_search_skippable_frame) {
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
+      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
       const BLOCK_SIZE bsize =
           get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
       set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
-                       cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
-                       pc_root);
+      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
+                       &dummy_rate, &dummy_dist, 1, pc_root);
     } else {
       int orig_rdmult = cpi->rd.RDMULT;
       x->cb_rdmult = orig_rdmult;
@@ -4667,27 +4659,26 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
       // If required set upper and lower partition size limits
       if (sf->auto_min_max_partition_size) {
-        set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
+        set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
         rd_auto_partition_range(cpi, tile_info, xd, mi_row, mi_col,
                                 &x->min_partition_size, &x->max_partition_size);
       }
 
-      reset_partition(pc_root, cm->seq_params.sb_size);
+      reset_partition(pc_root, sb_size);
       x->use_cb_search_range = 0;
       init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
       // Do the first pass if we need two pass partition search
       if (cpi->sf.two_pass_partition_search &&
           cpi->sf.use_square_partition_only_threshold > BLOCK_4X4 &&
-          mi_row + mi_size_high[cm->seq_params.sb_size] < cm->mi_rows &&
-          mi_col + mi_size_wide[cm->seq_params.sb_size] < cm->mi_cols &&
+          mi_row + mi_size_high[sb_size] < cm->mi_rows &&
+          mi_col + mi_size_wide[sb_size] < cm->mi_cols &&
           cm->frame_type != KEY_FRAME) {
         x->cb_partition_scan = 1;
         // Reset the stats tables.
         if (sf->mode_pruning_based_on_two_pass_partition_search)
           av1_zero(x->first_partition_pass_stats);
-        rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
-                              cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
-                              pc_root, NULL);
+        rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                              &dummy_rdc, INT64_MAX, pc_root, NULL);
         x->cb_partition_scan = 0;
 
         x->source_variance = UINT_MAX;
@@ -4709,8 +4700,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         av1_zero(x->pred_mv);
         pc_root->index = 0;
 
-        for (int idy = 0; idy < mi_size_high[cm->seq_params.sb_size]; ++idy) {
-          for (int idx = 0; idx < mi_size_wide[cm->seq_params.sb_size]; ++idx) {
+        for (int idy = 0; idy < mi_size_high[sb_size]; ++idy) {
+          for (int idx = 0; idx < mi_size_wide[sb_size]; ++idx) {
             const int offset = cm->mi_stride * (mi_row + idy) + (mi_col + idx);
             cm->mi_grid_visible[offset] = 0;
           }
@@ -4738,9 +4729,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         }
       }
 
-      rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col,
-                        cm->seq_params.sb_size, &dummy_rdc, INT64_MAX, pc_root,
-                        NULL);
+      rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                        &dummy_rdc, INT64_MAX, pc_root, NULL);
     }
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
@@ -4759,9 +4749,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     // gives high BD Rate drop for smaller resolutions.
     if (cpi->row_mt == 1) {
       int update_context = 0;
-      if (cm->seq_params.mib_size_log2 == 5) {
+      if (mib_size_log2 == 5) {
         update_context = sb_cols_in_tile == 1 || sb_col_in_tile == 1;
-      } else if (cm->seq_params.mib_size_log2 == 4) {
+      } else if (mib_size_log2 == 4) {
         update_context = sb_cols_in_tile == 1 ||
                          (sb_cols_in_tile == 2 && sb_col_in_tile == 1) ||
                          sb_col_in_tile == 2;
