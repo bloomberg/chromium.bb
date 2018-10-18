@@ -1196,10 +1196,10 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // since the current directory is initializing now.
   var entry = this.getCurrentDirEntry();
   if (entry && !this.volumeManager_.getVolumeInfo(entry)) {
-    this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
+    this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
       if (displayRoot)
         this.changeDirectoryEntry(displayRoot);
-    }.bind(this));
+    });
   }
 
   // If a new file backed provided volume is mounted,
