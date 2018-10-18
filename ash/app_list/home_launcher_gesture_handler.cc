@@ -571,8 +571,15 @@ bool HomeLauncherGestureHandler::IsFinalStateShow() {
   // If fling velocity is greater than the threshold, show the launcher if
   // sliding up, or hide the launcher if sliding down, irregardless of
   // |last_event_location_|.
-  if (std::fabs(last_scroll_y_) > kScrollVelocityThreshold)
-    return mode_ == Mode::kSlideUpToShow;
+  if (mode_ == Mode::kSlideUpToShow &&
+      last_scroll_y_ < -kScrollVelocityThreshold) {
+    return true;
+  }
+
+  if (mode_ == Mode::kSlideDownToHide &&
+      last_scroll_y_ > kScrollVelocityThreshold) {
+    return false;
+  }
 
   return last_event_location_
              ? IsLastEventInTopHalf(*last_event_location_, display_.work_area())
