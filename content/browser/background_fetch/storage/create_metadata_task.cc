@@ -14,6 +14,7 @@
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
+#include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -341,6 +342,54 @@ void CreateMetadataTask::DidStoreMetadata(
       SetStorageErrorAndFinish(
           BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
+  }
+
+  // Create cache entries.
+  cache_manager()->OpenCache(registration_id_.origin(),
+                             CacheStorageOwner::kBackgroundFetch,
+                             registration_id_.unique_id() /* cache_name */,
+                             base::BindOnce(&CreateMetadataTask::DidOpenCache,
+                                            weak_factory_.GetWeakPtr()));
+}
+
+void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
+                                      blink::mojom::CacheStorageError error) {
+  if (error != blink::mojom::CacheStorageError::kSuccess) {
+    SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+    return;
+  }
+
+  DCHECK(handle.value());
+
+  // Create batch PUT operations instead of putting them one-by-one.
+  std::vector<blink::mojom::BatchOperationPtr> operations;
+  operations.reserve(requests_.size());
+  for (auto& request : requests_) {
+    auto operation = blink::mojom::BatchOperation::New();
+    operation->operation_type = blink::mojom::OperationType::kPut;
+    operation->request = std::move(request);
+    // Empty response.
+    operation->response = blink::mojom::FetchAPIResponse::New();
+    operations.push_back(std::move(operation));
+  }
+
+  handle.value()->BatchOperation(
+      std::move(operations), /* fail_on_duplicates= */ false,
+      base::BindOnce(&CreateMetadataTask::DidStoreRequests,
+                     weak_factory_.GetWeakPtr(), handle.Clone()),
+      base::DoNothing());
+}
+
+void CreateMetadataTask::DidStoreRequests(
+    CacheStorageCacheHandle handle,
+    blink::mojom::CacheStorageVerboseErrorPtr error) {
+  if (error->value != blink::mojom::CacheStorageError::kSuccess) {
+    // Delete the metadata in the SWDB.
+    AddDatabaseTask(std::make_unique<MarkRegistrationForDeletionTask>(
+        data_manager(), registration_id_, /* check_for_failure= */ false,
+        base::DoNothing()));
+    SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+    return;
   }
 
   FinishWithError(blink::mojom::BackgroundFetchError::NONE);

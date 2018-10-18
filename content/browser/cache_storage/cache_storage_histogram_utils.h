@@ -36,7 +36,8 @@ enum class ErrorStorageType {
   kDeleteImplBackendClosed = 20,
   kKeysImplBackendClosed = 21,
   kCreateBackendDidCreateFailed = 22,
-  kMaxValue = kCreateBackendDidCreateFailed,
+  kStorageGetAllMatchedEntriesBackendClosed = 23,
+  kMaxValue = kStorageGetAllMatchedEntriesBackendClosed,
 };
 
 blink::mojom::CacheStorageError MakeErrorStorage(ErrorStorageType type);

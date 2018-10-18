@@ -426,16 +426,17 @@ void BackgroundFetchContext::DidFinishJob(
   // active JobController, to terminate in-progress requests.
   data_manager_->MarkRegistrationForDeletion(
       registration_id,
+      /* check_for_failure= */ failure_reason == FailureReason::NONE,
       base::BindOnce(&BackgroundFetchContext::DidMarkForDeletion,
                      weak_factory_.GetWeakPtr(), registration_id,
-                     failure_reason, std::move(callback)));
+                     std::move(callback)));
 }
 
 void BackgroundFetchContext::DidMarkForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    FailureReason failure_reason,
     base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
-    blink::mojom::BackgroundFetchError error) {
+    blink::mojom::BackgroundFetchError error,
+    FailureReason failure_reason) {
   DCHECK(callback);
   std::move(callback).Run(error);
 
@@ -446,40 +447,10 @@ void BackgroundFetchContext::DidMarkForDeletion(
   if (error != blink::mojom::BackgroundFetchError::NONE)
     return;
 
-  if (failure_reason == FailureReason::NONE) {
-    // As far as we know the fetch was successful, go over the entries in the
-    // cache and make sure all the responses are there and successful.
-    data_manager_->GetSettledFetchesForRegistration(
-        registration_id, std::make_unique<BackgroundFetchRequestMatchParams>(),
-        base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches,
-                       weak_factory_.GetWeakPtr(), registration_id));
-    return;
-  }
-
-  // The fetch failed, dispatch an appropriate event.
   auto controllers_iter = job_controllers_.find(registration_id.unique_id());
   DCHECK(controllers_iter != job_controllers_.end());
-  auto registration = controllers_iter->second->NewRegistration(
-      blink::mojom::BackgroundFetchResult::FAILURE);
-  DispatchCompletionEvent(registration_id, std::move(registration));
-}
 
-void BackgroundFetchContext::DidGetSettledFetches(
-    const BackgroundFetchRegistrationId& registration_id,
-    blink::mojom::BackgroundFetchError error,
-    FailureReason failure_reason,
-    std::vector<BackgroundFetchSettledFetch> settled_fetches,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(failure_reason == FailureReason::NONE ||
-         failure_reason == FailureReason::FETCH_ERROR ||
-         failure_reason == FailureReason::SERVICE_WORKER_UNAVAILABLE ||
-         failure_reason == FailureReason::BAD_STATUS);
-
-  auto controllers_iter = job_controllers_.find(registration_id.unique_id());
-  DCHECK(controllers_iter != job_controllers_.end());
   failure_reason = controllers_iter->second->MergeFailureReason(failure_reason);
-
   blink::mojom::BackgroundFetchResult result =
       failure_reason == FailureReason::NONE
           ? blink::mojom::BackgroundFetchResult::SUCCESS
@@ -596,7 +567,7 @@ void BackgroundFetchContext::MatchRequests(
     blink::mojom::BackgroundFetchService::MatchRequestsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  data_manager_->GetSettledFetchesForRegistration(
+  data_manager_->MatchRequests(
       registration_id, std::move(match_params),
       base::BindOnce(&BackgroundFetchContext::DidGetMatchingRequests,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -605,9 +576,7 @@ void BackgroundFetchContext::MatchRequests(
 void BackgroundFetchContext::DidGetMatchingRequests(
     blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
     blink::mojom::BackgroundFetchError error,
-    FailureReason failure_reason,
-    std::vector<BackgroundFetchSettledFetch> settled_fetches,
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
+    std::vector<BackgroundFetchSettledFetch> settled_fetches) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(crbug.com/863016): Update to 0u once we've stopped sending an

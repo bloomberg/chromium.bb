@@ -24,8 +24,10 @@ ScriptPromise BackgroundFetchRecord::responseReady(ScriptState* script_state) {
                                   ResponseReadyProperty::kResponseReady);
   }
   if (!response_) {
-    response_ = Response::Create(ExecutionContext::From(script_state),
-                                 nullptr /* FetchResponseData */);
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
+                                          "The response is not available."));
   }
   DCHECK(response_);
   response_ready_property_->Resolve(response_);

@@ -5341,6 +5341,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="20" label="kDeleteImplBackendClosed"/>
   <int value="21" label="kKeysImplBackendClosed"/>
   <int value="22" label="kCreateBackendDidCreateFailed"/>
+  <int value="23" label="kStorageGetAllMatchedEntriesBackendClosed"/>
 </enum>
 
 <enum name="CacheStorageErrorType">

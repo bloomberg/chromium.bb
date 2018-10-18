@@ -238,15 +238,10 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   HeapVector<Member<BackgroundFetchRecord>> to_return;
   to_return.ReserveInitialCapacity(settled_fetches.size());
   for (const auto& fetch : settled_fetches) {
-    if (fetch->response->response_type ==
-        network::mojom::FetchResponseType::kError) {
-      // Resolve with undefined.
-      resolver->Resolve();
-      return;
-    }
     BackgroundFetchRecord* record = new BackgroundFetchRecord(
         Request::Create(script_state, fetch->request),
-        Response::Create(script_state, *fetch->response));
+        fetch->response ? Response::Create(script_state, *fetch->response)
+                        : nullptr);
     to_return.push_back(record);
   }
 
