@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/unified_accessibility_detailed_view_controller.h"
+#include "ash/system/accessibility/unified_accessibility_detailed_view_controller.h"
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
-#include "ash/system/tray_accessibility.h"
+#include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/system/unified/unified_detailed_view_delegate.h"
 
 namespace ash {
