@@ -23,7 +23,9 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/time_of_day.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -456,6 +458,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   // TODO(jdufault): Implement real UI.
   external_binary_auth_button_ = views::MdTextButton::Create(
       this, base::ASCIIToUTF16("Authenticate with external binary"));
+  external_binary_enrollment_button_ = views::MdTextButton::Create(
+      this, base::ASCIIToUTF16("Enroll with external binary"));
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
@@ -479,6 +483,9 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       login_views_utils::WrapViewForPreferredSize(fingerprint_view_);
   auto* wrapped_external_binary_view =
       login_views_utils::WrapViewForPreferredSize(external_binary_auth_button_);
+  auto* wrapped_external_binary_enrollment_view =
+      login_views_utils::WrapViewForPreferredSize(
+          external_binary_enrollment_button_);
   auto* wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(padding_below_password_view_);
 
@@ -489,6 +496,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   AddChildView(wrapped_pin_view);
   AddChildView(wrapped_fingerprint_view);
   AddChildView(wrapped_external_binary_view);
+  AddChildView(wrapped_external_binary_enrollment_view);
   AddChildView(wrapped_user_view);
   AddChildView(wrapped_padding_below_password_view);
 
@@ -519,6 +527,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_view(wrapped_pin_view);
   add_view(wrapped_fingerprint_view);
   add_view(wrapped_external_binary_view);
+  add_view(wrapped_external_binary_enrollment_view);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
@@ -565,6 +574,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
   external_binary_auth_button_->SetVisible(has_external_binary);
+  external_binary_enrollment_button_->SetVisible(has_external_binary);
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
   if (has_fingerprint && !has_pin) {
@@ -778,9 +788,17 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
   } else if (sender == external_binary_auth_button_) {
     password_view_->SetReadOnly(true);
     external_binary_auth_button_->SetEnabled(false);
+    external_binary_enrollment_button_->SetEnabled(false);
     Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
         current_user()->basic_user_info->account_id,
         base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                       weak_factory_.GetWeakPtr()));
+  } else if (sender == external_binary_enrollment_button_) {
+    password_view_->SetReadOnly(true);
+    external_binary_auth_button_->SetEnabled(false);
+    external_binary_enrollment_button_->SetEnabled(false);
+    Shell::Get()->login_screen_controller()->EnrollUserWithExternalBinary(
+        base::BindOnce(&LoginAuthUserView::OnEnrollmentComplete,
                        weak_factory_.GetWeakPtr()));
   }
 }
@@ -803,20 +821,37 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
 }
 
 void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
-  if (!auth_success.has_value())
-    return;
-
   // Clear the password only if auth fails. Make sure to keep the password view
   // disabled even if auth succeededs, as if the user submits a password while
   // animating the next lock screen will not work as expected. See
   // https://crbug.com/808486.
-  if (!auth_success.value()) {
+  if (!auth_success.has_value() || !auth_success.value()) {
     password_view_->Clear();
     password_view_->SetReadOnly(false);
     external_binary_auth_button_->SetEnabled(true);
+    external_binary_enrollment_button_->SetEnabled(true);
   }
 
   on_auth_.Run(auth_success.value());
+}
+
+void LoginAuthUserView::OnEnrollmentComplete(
+    base::Optional<bool> enrollment_success) {
+  password_view_->SetReadOnly(false);
+  external_binary_auth_button_->SetEnabled(true);
+  external_binary_enrollment_button_->SetEnabled(true);
+
+  std::string result_message;
+  if (!enrollment_success.has_value()) {
+    result_message = "Enrollment attempt failed to received response.";
+  } else {
+    result_message = enrollment_success.value() ? "Enrollment successful."
+                                                : "Enrollment failed.";
+  }
+
+  ToastData toast_data("EnrollmentToast", base::ASCIIToUTF16(result_message),
+                       2000, base::nullopt, true /*visible_on_lock_screen*/);
+  Shell::Get()->toast_manager()->Show(toast_data);
 }
 
 void LoginAuthUserView::OnUserViewTap() {

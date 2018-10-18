@@ -4,6 +4,8 @@
 
 #include "ash/login/login_screen_controller.h"
 
+#include <utility>
+
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/lock_window.h"
@@ -19,6 +21,7 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
+#include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -147,6 +150,20 @@ void LoginScreenController::AuthenticateUserWithExternalBinary(
       account_id,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void LoginScreenController::EnrollUserWithExternalBinary(
+    OnAuthenticateCallback callback) {
+  if (!login_screen_client_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  login_screen_client_->EnrollUserWithExternalBinary(base::BindOnce(
+      [](OnAuthenticateCallback callback, bool success) {
+        std::move(callback).Run(base::make_optional<bool>(success));
+      },
+      std::move(callback)));
 }
 
 void LoginScreenController::AuthenticateUserWithEasyUnlock(
@@ -537,7 +554,7 @@ void LoginScreenController::OnAuthenticateComplete(
     OnAuthenticateCallback callback,
     bool success) {
   authentication_stage_ = AuthenticationStage::kUserCallback;
-  std::move(callback).Run(success);
+  std::move(callback).Run(base::make_optional<bool>(success));
   authentication_stage_ = AuthenticationStage::kIdle;
 }
 

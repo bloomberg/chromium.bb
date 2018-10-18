@@ -229,6 +229,9 @@ interface LoginScreenClient {
   AuthenticateUserWithExternalBinary(signin.mojom.AccountId account_id)
       => (bool auth_success);
 
+  // Attempt to enroll a user in the external binary authentication system.
+  EnrollUserWithExternalBinary() => (bool enrollment_success);
+
   // Try to authenticate |account_id| using easy unlock. This can be used on the
   // login or lock screen.
   // |account_id|: The account id of the user we are authenticating.

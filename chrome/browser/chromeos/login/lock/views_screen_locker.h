@@ -61,6 +61,8 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void HandleAuthenticateUserWithExternalBinary(
       const AccountId& account_id,
       AuthenticateUserWithExternalBinaryCallback callback) override;
+  void HandleEnrollUserWithExternalBinary(
+      EnrollUserWithExternalBinaryCallback) override;
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
@@ -91,6 +93,7 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void OnAllowedInputMethodsChanged();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
   void OnExternalBinaryAuthTimeout();
+  void OnExternalBinaryEnrollmentTimeout();
 
   std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
@@ -114,6 +117,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   AuthenticateUserWithExternalBinaryCallback
       authenticate_with_external_binary_callback_;
 
+  EnrollUserWithExternalBinaryCallback
+      enroll_user_with_external_binary_callback_;
+
   // Callback registered as a lock screen apps focus handler - it should be
   // called to hand focus over to lock screen apps.
   LockScreenAppFocusCallback lock_screen_app_focus_handler_;
@@ -123,9 +129,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
 
   chromeos::MediaAnalyticsClient* media_analytics_client_;
 
-  // Timer for external binary auth attempt. Allows repeated auth attempts up to
-  // a specific timeout.
-  base::OneShotTimer external_binary_auth_timer_;
+  // Timer for external binary auth/enrollment attempt. Allows repeated attempts
+  // up to a specific timeout.
+  base::OneShotTimer external_binary_timer_;
 
   ScopedObserver<chromeos::MediaAnalyticsClient, ViewsScreenLocker>
       scoped_observer_{this};

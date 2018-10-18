@@ -44,6 +44,7 @@ namespace chromeos {
 namespace {
 constexpr char kLockDisplay[] = "lock";
 constexpr char kExternalBinaryAuth[] = "external_binary_auth";
+constexpr char kExternalBinaryEnrollment[] = "external_binary_enrollment";
 constexpr char kWebCameraDeviceContext[] = "WebCamera: WebCamera";
 constexpr base::TimeDelta kExternalBinaryAuthTimeout =
     base::TimeDelta::FromSeconds(2);
@@ -236,12 +237,23 @@ void ViewsScreenLocker::HandleAuthenticateUserWithExternalBinary(
     const AccountId& account_id,
     AuthenticateUserWithExternalBinaryCallback callback) {
   authenticate_with_external_binary_callback_ = std::move(callback);
-  external_binary_auth_timer_.Start(
+  external_binary_timer_.Start(
       FROM_HERE, kExternalBinaryAuthTimeout,
       base::BindOnce(&ViewsScreenLocker::OnExternalBinaryAuthTimeout,
                      weak_factory_.GetWeakPtr()));
   media_analytics_client_->GetState(base::BindOnce(
       &StartGraphIfNeeded, media_analytics_client_, kExternalBinaryAuth));
+}
+
+void ViewsScreenLocker::HandleEnrollUserWithExternalBinary(
+    EnrollUserWithExternalBinaryCallback callback) {
+  enroll_user_with_external_binary_callback_ = std::move(callback);
+  external_binary_timer_.Start(
+      FROM_HERE, kExternalBinaryAuthTimeout,
+      base::BindOnce(&ViewsScreenLocker::OnExternalBinaryEnrollmentTimeout,
+                     weak_factory_.GetWeakPtr()));
+  media_analytics_client_->GetState(base::BindOnce(
+      &StartGraphIfNeeded, media_analytics_client_, kExternalBinaryEnrollment));
 }
 
 void ViewsScreenLocker::HandleAuthenticateUserWithEasyUnlock(
@@ -338,21 +350,29 @@ void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
 
 void ViewsScreenLocker::OnDetectionSignal(
     const mri::MediaPerception& media_perception) {
-  if (!authenticate_with_external_binary_callback_)
-    return;
+  if (authenticate_with_external_binary_callback_) {
+    const mri::FramePerception& frame = media_perception.frame_perception(0);
+    if (frame.frame_id() != 1)
+      return;
 
-  const mri::FramePerception& frame = media_perception.frame_perception(0);
-  if (frame.frame_id() != 1)
-    return;
+    mri::State new_state;
+    new_state.set_status(mri::State::SUSPENDED);
+    media_analytics_client_->SetState(new_state, base::DoNothing());
 
-  mri::State new_state;
-  new_state.set_status(mri::State::SUSPENDED);
-  media_analytics_client_->SetState(new_state, base::DoNothing());
+    external_binary_timer_.Stop();
+    std::move(authenticate_with_external_binary_callback_)
+        .Run(true /*auth_success*/);
+    ScreenLocker::Hide();
+  } else if (enroll_user_with_external_binary_callback_) {
+    const mri::FramePerception& frame = media_perception.frame_perception(0);
 
-  external_binary_auth_timer_.Stop();
-  std::move(authenticate_with_external_binary_callback_)
-      .Run(true /*auth_success*/);
-  ScreenLocker::Hide();
+    external_binary_timer_.Stop();
+    mri::State new_state;
+    new_state.set_status(mri::State::SUSPENDED);
+    media_analytics_client_->SetState(new_state, base::DoNothing());
+    std::move(enroll_user_with_external_binary_callback_)
+        .Run(frame.frame_id() == 1 /*enrollment_success*/);
+  }
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
@@ -382,6 +402,14 @@ void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
 
 void ViewsScreenLocker::OnExternalBinaryAuthTimeout() {
   std::move(authenticate_with_external_binary_callback_)
+      .Run(false /*auth_success*/);
+  mri::State new_state;
+  new_state.set_status(mri::State::SUSPENDED);
+  media_analytics_client_->SetState(new_state, base::DoNothing());
+}
+
+void ViewsScreenLocker::OnExternalBinaryEnrollmentTimeout() {
+  std::move(enroll_user_with_external_binary_callback_)
       .Run(false /*auth_success*/);
   mri::State new_state;
   new_state.set_status(mri::State::SUSPENDED);

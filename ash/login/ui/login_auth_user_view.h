@@ -14,6 +14,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -141,6 +142,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   void OnAuthSubmit(const base::string16& password);
   // Called with the result of the request started in |OnAuthSubmit|.
   void OnAuthComplete(base::Optional<bool> auth_success);
+  // Called with the result of the external binary enrollment request.
+  void OnEnrollmentComplete(base::Optional<bool> enrollment_success);
 
   // Called when the user view has been tapped. This will run |on_auth_| if tap
   // to unlock is enabled, or run |OnOnlineSignInMessageTap| if the online
@@ -166,6 +169,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
   views::LabelButton* external_binary_auth_button_ = nullptr;
+  views::LabelButton* external_binary_enrollment_button_ = nullptr;
 
   // Displays padding between:
   // 1. Password field and pin keyboard
