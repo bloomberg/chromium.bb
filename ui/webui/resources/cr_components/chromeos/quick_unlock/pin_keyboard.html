@@ -36,6 +36,20 @@
   <template>
     <style include="cr-shared-style">
       :host {
+        --backspace-button-ripple-left: calc((var(--backspace-button-width) -
+            var(--pin-button-ripple-width)) / 2);
+        --backspace-button-width: calc(var(--pin-button-width) +
+            var(--pin-button-horizontal-margin) * 2);
+        --pin-button-height: 40px;
+        --pin-button-horizontal-margin: 20px;
+        --pin-button-ripple-height: 48px;
+        --pin-button-ripple-left: calc((var(--pin-button-width) -
+            var(--pin-button-ripple-width)) / 2);
+        --pin-button-ripple-top: calc((var(--pin-button-height) -
+            var(--pin-button-ripple-height)) / 2);
+        --pin-button-ripple-width: 48px;
+        --pin-button-vertical-margin: 8px;
+        --pin-button-width: 40px;
         outline: none;
       }
 
@@ -43,15 +57,20 @@
         align-items: center;
         display: flex;
         flex-direction: column;
+        min-height: 0;
       }
 
       #rowsContainer {
         direction: ltr;
         display: block;
+        width: calc((var(--pin-button-width) +
+            var(--pin-button-horizontal-margin) * 2) * 3);
       }
 
       .row {
         display: flex;
+        margin-bottom: calc(var(--pin-button-vertical-margin) * 2);
+        min-height: 0;
       }
 
       :host([enable-password]) #pinInputDiv {
@@ -63,10 +82,10 @@
       }
 
       #backspaceButton {
-        color: var(--pin-keyboard-backspace-color, #000);
+        color: var(--pin-keyboard-backspace-color, var(--google-grey-700));
         left: 0;
         opacity: var(--pin-keyboard-backspace-opacity, --dark-primary-opacity);
-        padding: 14px;
+        padding: 12px;
         position: absolute;
         top: 0;
       }
@@ -77,74 +96,87 @@
 
       #backspaceButtonContainer {
         position: relative;
+        width: var(--backspace-button-width);
       }
 
       #backspaceButtonContainer paper-ripple {
-        left: var(--pin-keyboard-backspace-paper-ripple-offset, 0);
-        top: var(--pin-keyboard-backspace-paper-ripple-offset, 0);
+        left: var(--pin-keyboard-backspace-paper-ripple-offset,
+            var(--backspace-button-ripple-left));
+        top: var(--pin-keyboard-backspace-paper-ripple-offset,
+            var(--pin-button-ripple-top));
       }
 
       .digit-button {
+        --paper-button: {
+          min-width: 0;
+        };
         align-items: center;
         background: none;
         border-radius: 0;
         box-sizing: border-box;
-        color: #000;
+        color: var(--google-grey-900);
         display: flex;
         flex-direction: column;
-        height: 48px;
+        height: var(--pin-button-height)
         justify-content: center;
-        margin: 0;
-        min-height: 48px;
-        min-width: 48px;
+        margin: 0 var(--pin-button-horizontal-margin);
+        min-height: 0;
         opacity: 0.87px;
-        width: 60px;
+        padding: 0;
+        width: var(--pin-button-width);
 
         @apply --pin-keyboard-digit-button;
       }
 
       .digit-button inner-text {
-        display: flex;
-        flex-direction: column;
         font-family: 'Roboto';
       }
 
       inner-text.letter {
-        color: var(--pin-keyboard-letter-color, --paper-blue-grey-700);
-        font-size: 9px;
-        margin-top: 4px;
+        color: var(--pin-keyboard-letter-color, var(--google-grey-700));
+        font-size: 12px;
+        margin-top: 8px;
 
         @apply --pin-keyboard-digit-button-letter;
       }
 
       .number {
-        color: var(--pin-keyboard-number-color, --paper-blue-grey-700);
-        font-size: 20px;
-        height: 52px;
+        color: var(--pin-keyboard-number-color, var(--paper-blue-grey-700));
+        font-size: 18px;
+        height: 16px;
       }
 
       paper-ripple {
         color: var(--google-grey-700);
-        height: 48px;
-        left: 6px;
-        width: 48px;
+        height: var(--pin-button-ripple-height);
+        left: var(--pin-button-ripple-left);
+        top: var(--pin-button-ripple-top);
+        width: var(--pin-button-ripple-width);
 
         @apply --pin-keyboard-paper-ripple;
       }
 
       #pinInput {
+        --cr-input-error-display: none;
+        --cr-input-input: {
+          font-size: 28px;
+          letter-spacing: 28px;
+        };
+        --cr-input-padding-bottom: 1px;
+        --cr-input-padding-end: 0;
+        --cr-input-padding-start: 0;
+        --cr-input-padding-top: 1px;
         background-color: white;
         border: 0;
         box-sizing: border-box;
         font-face: Roboto-Regular;
         font-size: 13px;
-        height: 43px;
         left: 0;
         opacity: var(--dark-secondary-opacity);
         outline: 0;
         position: relative;
         text-align: center;
-        width: 180px;
+        width: 200px;
 
         @apply --pin-keyboard-pin-input-style;
       }
@@ -165,7 +197,7 @@
     </style>
 
     <div id="root" on-contextmenu="onContextMenu_" on-tap="focusInput_">
-      <div id="pinInputDiv" class="row">
+      <div id="pinInputDiv">
         <cr-input id="pinInput" type="password" value="{{value}}"
             is-input-rtl$="[[isInputRtl_(value)]]"
             has-content$="[[hasInput_(value)]]" invalid="[[hasError]]"
@@ -180,6 +212,7 @@
           <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
+            <inner-text class="letter">&nbsp;</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="2"
