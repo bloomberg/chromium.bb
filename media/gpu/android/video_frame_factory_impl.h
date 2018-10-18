@@ -48,7 +48,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoDecoder::OutputCB output_cb) override;
+      OnceOutputCb output_cb) override;
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override;
 
  private:
@@ -84,7 +84,7 @@ class GpuVideoFrameFactory
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoDecoder::OutputCB output_cb,
+      VideoFrameFactory::OnceOutputCb output_cb,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Set our image group.  Must be called before the first call to

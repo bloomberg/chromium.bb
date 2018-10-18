@@ -100,15 +100,16 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     base::TimeDelta timestamp,
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    VideoDecoder::OutputCB output_cb) {
+    OnceOutputCb output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GpuVideoFrameFactory::CreateVideoFrame,
-                 base::Unretained(gpu_video_frame_factory_.get()),
-                 base::Passed(&output_buffer), texture_owner_, timestamp,
-                 natural_size, std::move(promotion_hint_cb),
-                 std::move(output_cb), base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&GpuVideoFrameFactory::CreateVideoFrame,
+                     base::Unretained(gpu_video_frame_factory_.get()),
+                     base::Passed(&output_buffer), texture_owner_, timestamp,
+                     natural_size, std::move(promotion_hint_cb),
+                     std::move(output_cb),
+                     base::ThreadTaskRunnerHandle::Get()));
 }
 
 void VideoFrameFactoryImpl::RunAfterPendingVideoFrames(
@@ -153,7 +154,7 @@ void GpuVideoFrameFactory::CreateVideoFrame(
     base::TimeDelta timestamp,
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    VideoDecoder::OutputCB output_cb,
+    VideoFrameFactory::OnceOutputCb output_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<VideoFrame> frame;
@@ -163,6 +164,7 @@ void GpuVideoFrameFactory::CreateVideoFrame(
                            timestamp, natural_size,
                            std::move(promotion_hint_cb), &frame, &texture,
                            &codec_image);
+  TRACE_EVENT0("media", "GpuVideoFrameFactory::CreateVideoFrame");
   if (!frame || !texture)
     return;
 
@@ -199,7 +201,8 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   auto release_cb = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       BindToCurrentLoop(std::move(drop_texture_ref)), gpu::SyncToken());
   frame->SetReleaseMailboxCB(std::move(release_cb));
-  task_runner->PostTask(FROM_HERE, base::BindOnce(output_cb, std::move(frame)));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(output_cb), std::move(frame)));
 }
 
 void GpuVideoFrameFactory::CreateVideoFrameInternal(
