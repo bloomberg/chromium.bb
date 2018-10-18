@@ -24,8 +24,7 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -41,8 +40,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using device::MockBluetoothAdapter;
@@ -312,15 +309,20 @@ class EasyUnlockServiceTest : public testing::Test {
   // gaia id and output to |gaia_id|. Returns the created TestingProfile.
   std::unique_ptr<TestingProfile> SetUpProfile(const std::string& email,
                                                std::string* gaia_id) {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        EasyUnlockServiceFactory::GetInstance(),
-        base::BindRepeating(&CreateEasyUnlockServiceForTest));
-    std::unique_ptr<TestingProfile> profile = builder.Build();
+    std::unique_ptr<TestingProfile> profile =
+        IdentityTestEnvironmentProfileAdaptor::
+            CreateProfileForIdentityTestEnvironment(
+                {{EasyUnlockServiceFactory::GetInstance(),
+                  base::BindRepeating(&CreateEasyUnlockServiceForTest)}});
 
-    AccountInfo account_info = identity::SetPrimaryAccount(
-        SigninManagerFactory::GetForProfile(profile.get()),
-        IdentityManagerFactory::GetForProfile(profile.get()), email);
+    // Note: This can simply be a local variable as the test does not need to
+    // interact with IdentityTestEnvironment outside of this method. If that
+    // ever changes, there will need to be distinct instance variables for the
+    // environments associated with |profile_| and |secondary_profile_|.
+    IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(
+        profile.get());
+    AccountInfo account_info =
+        identity_test_env_adaptor.identity_test_env()->SetPrimaryAccount(email);
 
     *gaia_id = account_info.gaia;
 
