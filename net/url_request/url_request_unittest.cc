@@ -777,11 +777,6 @@ class MockCertificateReportSender
   std::string latest_content_type_;
 };
 
-class TestExperimentalFeaturesNetworkDelegate : public TestNetworkDelegate {
- public:
-  bool OnAreExperimentalCookieFeaturesEnabled() const override { return true; }
-};
-
 // OCSPErrorTestDelegate caches the SSLInfo passed to OnSSLCertificateError.
 // This is needed because after the certificate failure, the URLRequest will
 // retry the connection, and return a partial SSLInfo with a cached cert status.
@@ -3256,7 +3251,7 @@ TEST_F(URLRequestTest, StrictSecureCookiesOnNonsecureOrigin) {
   ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(https_server.Start());
 
-  TestExperimentalFeaturesNetworkDelegate network_delegate;
+  TestNetworkDelegate network_delegate;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
   context.Init();
@@ -3283,46 +3278,6 @@ TEST_F(URLRequestTest, StrictSecureCookiesOnNonsecureOrigin) {
     d.RunUntilComplete();
 
     EXPECT_EQ(d.data_received().find("nonsecure-origin=1"), std::string::npos);
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-}
-
-// Tests that secure cookies can be set on secure origins even if strict secure
-// cookies are enabled.
-TEST_F(URLRequestTest, StrictSecureCookiesOnSecureOrigin) {
-  EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(https_server.Start());
-
-  TestExperimentalFeaturesNetworkDelegate network_delegate;
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
-
-  // Try to set a Secure cookie, with experimental features enabled.
-  {
-    TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
-        https_server.GetURL("/set-cookie?secure-origin=1;Secure"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->Start();
-    d.RunUntilComplete();
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-
-  // Verify that the cookie is not set.
-  {
-    TestDelegate d;
-    std::unique_ptr<URLRequest> req(context.CreateRequest(
-        https_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->Start();
-    d.RunUntilComplete();
-
-    EXPECT_NE(d.data_received().find("secure-origin=1"), std::string::npos);
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
