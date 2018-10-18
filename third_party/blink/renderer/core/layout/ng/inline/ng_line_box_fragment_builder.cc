@@ -32,16 +32,6 @@ void NGLineBoxFragmentBuilder::Reset() {
   size_.inline_size = LayoutUnit();
 }
 
-LayoutUnit NGLineBoxFragmentBuilder::LineHeight() const {
-  return metrics_.LineHeight().ClampNegativeToZero();
-}
-
-const NGPhysicalFragment* NGLineBoxFragmentBuilder::Child::PhysicalFragment()
-    const {
-  return layout_result ? layout_result->PhysicalFragment().get()
-                       : fragment.get();
-}
-
 NGLineBoxFragmentBuilder::Child*
 NGLineBoxFragmentBuilder::ChildList::FirstInFlowChild() {
   for (auto& child : *this) {
@@ -59,16 +49,6 @@ NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
       return &child;
   }
   return nullptr;
-}
-
-void NGLineBoxFragmentBuilder::ChildList::InsertChild(
-    unsigned index,
-    scoped_refptr<NGLayoutResult> layout_result,
-    const NGLogicalOffset& offset,
-    LayoutUnit inline_size,
-    UBiDiLevel bidi_level) {
-  children_.insert(
-      index, Child{std::move(layout_result), offset, inline_size, bidi_level});
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
@@ -90,24 +70,6 @@ void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(LayoutUnit delta,
                                                                unsigned end) {
   for (unsigned index = start; index < end; index++)
     children_[index].offset.block_offset += delta;
-}
-
-void NGLineBoxFragmentBuilder::SetMetrics(const NGLineHeightMetrics& metrics) {
-  metrics_ = metrics;
-}
-
-void NGLineBoxFragmentBuilder::SetBaseDirection(TextDirection direction) {
-  base_direction_ = direction;
-}
-
-void NGLineBoxFragmentBuilder::SwapPositionedFloats(
-    Vector<NGPositionedFloat>* positioned_floats) {
-  positioned_floats_.swap(*positioned_floats);
-}
-
-void NGLineBoxFragmentBuilder::SetBreakToken(
-    scoped_refptr<NGInlineBreakToken> break_token) {
-  break_token_ = std::move(break_token);
 }
 
 void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {

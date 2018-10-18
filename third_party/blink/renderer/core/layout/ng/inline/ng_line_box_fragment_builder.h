@@ -6,10 +6,12 @@
 #define NGLineBoxFragmentBuilder_h
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -32,18 +34,26 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
   void Reset();
 
-  LayoutUnit LineHeight() const;
+  LayoutUnit LineHeight() const {
+    return metrics_.LineHeight().ClampNegativeToZero();
+  }
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
-  void SetMetrics(const NGLineHeightMetrics&);
+  void SetMetrics(const NGLineHeightMetrics& metrics) { metrics_ = metrics; }
 
-  void SetBaseDirection(TextDirection);
+  void SetBaseDirection(TextDirection direction) {
+    base_direction_ = direction;
+  }
 
-  void SwapPositionedFloats(Vector<NGPositionedFloat>*);
+  void SwapPositionedFloats(Vector<NGPositionedFloat>* positioned_floats) {
+    positioned_floats_.swap(*positioned_floats);
+  }
 
   // Set the break token for the fragment to build.
   // A finished break token will be attached if not set.
-  void SetBreakToken(scoped_refptr<NGInlineBreakToken>);
+  void SetBreakToken(scoped_refptr<NGInlineBreakToken> break_token) {
+    break_token_ = std::move(break_token);
+  }
 
   // A data struct to keep NGLayoutResult or fragment until the box tree
   // structures and child offsets are finalized.
@@ -108,7 +118,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     }
     bool HasBidiLevel() const { return bidi_level != 0xff; }
     bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
-    const NGPhysicalFragment* PhysicalFragment() const;
+    const NGPhysicalFragment* PhysicalFragment() const {
+      return layout_result ? layout_result->PhysicalFragment().get()
+                           : fragment.get();
+    }
   };
 
   // A vector of Child.
@@ -154,11 +167,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void AddChild(Args&&... args) {
       children_.emplace_back(std::forward<Args>(args)...);
     }
-    void InsertChild(unsigned,
-                     scoped_refptr<NGLayoutResult>,
-                     const NGLogicalOffset&,
+    void InsertChild(unsigned index,
+                     scoped_refptr<NGLayoutResult> layout_result,
+                     const NGLogicalOffset& offset,
                      LayoutUnit inline_size,
-                     UBiDiLevel);
+                     UBiDiLevel bidi_level) {
+      children_.insert(index, Child{std::move(layout_result), offset,
+                                    inline_size, bidi_level});
+    }
 
     void MoveInInlineDirection(LayoutUnit, unsigned start, unsigned end);
     void MoveInBlockDirection(LayoutUnit);
@@ -188,5 +204,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGLineBoxFragmentBuilder::Child);
 
 #endif  // NGLineBoxFragmentBuilder
