@@ -3505,6 +3505,8 @@ gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 		goto fail_with_error;
 	}
 
+	log_egl_info(gr->egl_display);
+
 	if (egl_choose_config(gr, config_attribs, visual_id,
 			      n_ids, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
@@ -3741,7 +3743,6 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		gr->gl_version = GR_GL_VERSION(2, 0);
 	}
 
-	log_egl_info(gr->egl_display);
 	log_gl_info();
 
 	gr->image_target_texture_2d =
