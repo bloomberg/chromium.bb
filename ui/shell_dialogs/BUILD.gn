@@ -117,15 +117,12 @@ test("shell_dialogs_unittests") {
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
-    "//ui/base:base",
-    "//ui/strings:ui_strings_grit",
+    "//ui/base",
+    "//ui/resources:ui_test_pak_data",
+    "//ui/strings",
   ]
 
   if (is_mac) {
     deps += [ ":shell_dialogs_unittests_bundle" ]
-  }
-
-  if (is_win) {
-    deps += [ "//ui/strings:ui_strings_grit" ]
   }
 }

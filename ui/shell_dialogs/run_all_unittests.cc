@@ -53,8 +53,10 @@ void ShellDialogsTestSuite::Initialize() {
   // Setup resource bundle.
   ui::MaterialDesignController::Initialize();
   ui::RegisterPathProvider();
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
+  base::FilePath ui_test_pak_path;
+  base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path);
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 }
 
 void ShellDialogsTestSuite::Shutdown() {

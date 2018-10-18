@@ -29,7 +29,7 @@
 namespace {
 
 // The default title for the various dialogs.
-constexpr wchar_t kSelectFolderDefaultTitle[] = L"Browse For Folder";
+constexpr wchar_t kSelectFolderDefaultTitle[] = L"Select Folder";
 constexpr wchar_t kSelectFileDefaultTitle[] = L"Open";
 constexpr wchar_t kSaveFileDefaultTitle[] = L"Save As";
 
@@ -237,9 +237,8 @@ TEST_F(SelectFileDialogWinTest, CancelAllDialogs) {
   }
 }
 
-// Folder selection is implemented using a different API. The only difference
-// is that the title can be set but it doesn't change the title of the dialog,
-// but sets an extra text label at the top of the dialog.
+// When using SELECT_UPLOAD_FOLDER, the title and the ok button strings are
+// modified to put emphasis on the fact that the whole folder will be uploaded.
 TEST_F(SelectFileDialogWinTest, UploadFolderCheckStrings) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
@@ -251,15 +250,13 @@ TEST_F(SelectFileDialogWinTest, UploadFolderCheckStrings) {
                      base::string16(), default_path, nullptr, 0, L"",
                      native_window(), nullptr);
 
-  // Wait for the window to open. The title of the dialog is still the default.
-  HWND window = WaitForDialogWindow(kSelectFolderDefaultTitle);
+  // Wait for the window to open and make sure the window title was changed from
+  // the default title for a regular select folder operation.
+  HWND window = WaitForDialogWindow(
+      l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE));
+  EXPECT_NE(GetWindowTitle(window), kSelectFolderDefaultTitle);
 
-  // But the dialog contains a extra text label that contains a custom title
-  // set by Chrome.
-  EXPECT_EQ(GetDialogItemText(window, 0),
-            l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE));
-  // The OK button is also modified to put emphasis on the fact that the whole
-  // folder will be uploaded.
+  // Check the OK button text.
   EXPECT_EQ(
       GetDialogItemText(window, 1),
       l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON));

@@ -26,7 +26,7 @@ std::pair<std::vector<base::FilePath>, int> ExecuteCancelledSelectFileDialog(
     ui::SelectFileDialog::Type type,
     const base::string16& title,
     const base::FilePath& default_path,
-    const base::string16& filter,
+    const std::vector<ui::FileFilterSpec>& filter,
     int file_type_index,
     const base::string16& default_extension,
     HWND owner) {
