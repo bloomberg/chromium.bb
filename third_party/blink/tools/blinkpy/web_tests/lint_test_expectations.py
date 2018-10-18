@@ -42,8 +42,7 @@ _log = logging.getLogger(__name__)
 
 
 def lint(host, options):
-    ports_to_lint = [host.port_factory.get(name)
-                     for name in host.port_factory.all_port_names(options.platform)]
+    ports_to_lint = [host.port_factory.get(name) for name in host.port_factory.all_port_names(options.platform)]
     files_linted = set()
 
     # In general, the set of TestExpectation files should be the same for
@@ -81,7 +80,7 @@ def lint(host, options):
 
 
 def check_virtual_test_suites(host, options):
-    port = host.port_factory.get()
+    port = host.port_factory.get(options=options)
     fs = host.filesystem
     layout_tests_dir = port.layout_tests_dir()
     virtual_suites = port.virtual_test_suites()
@@ -100,7 +99,7 @@ def check_virtual_test_suites(host, options):
 
 
 def check_smoke_tests(host, options):
-    port = host.port_factory.get()
+    port = host.port_factory.get(options=options)
     smoke_tests_file = host.filesystem.join(port.layout_tests_dir(), 'SmokeTests')
     failures = []
     if not host.filesystem.exists(smoke_tests_file):

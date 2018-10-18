@@ -49,10 +49,8 @@ MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
 
 class PortTest(LoggingTestCase):
 
-    def make_port(self, executive=None, with_tests=False, port_name=None, host=None, **kwargs):
-        if not 'options' in kwargs:
-            kwargs['options'] = optparse.Values({'target': 'Release', 'configuration': 'Release'})
-        host = host or MockSystemHost()
+    def make_port(self, executive=None, with_tests=False, port_name=None, **kwargs):
+        host = MockSystemHost()
         if executive:
             host.executive = executive
         if with_tests:
@@ -76,7 +74,6 @@ class PortTest(LoggingTestCase):
     def test_get_option__set(self):
         options, _ = optparse.OptionParser().parse_args([])
         options.foo = 'bar'
-        options.target = 'Release'
         port = self.make_port(options=options)
         self.assertEqual(port.get_option('foo'), 'bar')
 
@@ -87,30 +84,6 @@ class PortTest(LoggingTestCase):
     def test_get_option__default(self):
         port = self.make_port()
         self.assertEqual(port.get_option('foo', 'bar'), 'bar')
-
-    def test_get_option__default_target(self):
-        temp_port = self.make_port(options=optparse.Values(
-            {'target': 'Default', 'configuration': 'Release'}))
-        fake_driver_path = temp_port._path_to_driver()
-        host = MockSystemHost()
-        host.filesystem.write_binary_file(fake_driver_path, 'DeathStar')
-        options, _ = optparse.OptionParser().parse_args([])
-        port = self.make_port(host=host, options=options)
-        self.assertEqual(port.get_option('target'), 'Default')
-
-    def test_get_option__default_configuration(self):
-        temp_port = self.make_port(
-            options=optparse.Values({'target': 'Default', 'configuration': 'Debug'}))
-        fake_driver_path = temp_port._path_to_driver()
-        host = MockSystemHost()
-        host.filesystem.write_binary_file(fake_driver_path, 'DeathStar')
-        fake_arg_gn_path = host.filesystem.normpath(
-            host.filesystem.join(fake_driver_path, '..', 'args.gn'))
-        host.filesystem.write_text_file(fake_arg_gn_path, 'is_debug=True')
-        options, _ = optparse.OptionParser().parse_args([])
-        port = self.make_port(host=host, options=options)
-        self.assertEqual(port.get_option('target'), 'Default')
-        self.assertEqual(port.get_option('configuration'), 'Debug')
 
     def test_output_filename(self):
         port = self.make_port()
@@ -392,13 +365,11 @@ class PortTest(LoggingTestCase):
         # --additional-driver-flag. additional_driver_flags() excludes primary_driver_flag().
 
         port_a = self.make_port(options=optparse.Values(
-            {'additional_driver_flag': [], 'target': 'Release', 'configuration': 'Release'}))
+            {'additional_driver_flag': []}))
         port_b = self.make_port(options=optparse.Values(
-            {'additional_driver_flag': ['--bb'], 'target': 'Release',
-             'configuration': 'Release'}))
+            {'additional_driver_flag': ['--bb']}))
         port_c = self.make_port(options=optparse.Values(
-            {'additional_driver_flag': ['--bb', '--cc'], 'target': 'Release',
-             'configuration': 'Release'}))
+            {'additional_driver_flag': ['--bb', '--cc']}))
 
         self.assertEqual(port_a.primary_driver_flag(), None)
         self.assertEqual(port_b.primary_driver_flag(), '--bb')
@@ -425,9 +396,7 @@ class PortTest(LoggingTestCase):
                          ['--cc'] + default_flags)
 
     def test_additional_env_var(self):
-        port = self.make_port(options=optparse.Values(
-            {'additional_env_var': ['FOO=BAR', 'BAR=FOO'], 'target': 'Release',
-             'configuration': 'Release'}))
+        port = self.make_port(options=optparse.Values({'additional_env_var': ['FOO=BAR', 'BAR=FOO']}))
         self.assertEqual(port.get_option('additional_env_var'), ['FOO=BAR', 'BAR=FOO'])
         environment = port.setup_environ_for_server()
         self.assertTrue(('FOO' in environment) & ('BAR' in environment))
@@ -635,14 +604,12 @@ class PortTest(LoggingTestCase):
 
     def test_should_run_as_pixel_test_with_no_pixel_tests_in_args(self):
         # With the --no-pixel-tests flag, no tests should run as pixel tests.
-        options = optparse.Values(
-            {'pixel_tests': False, 'target': 'Release', 'configuration': 'Release'})
+        options = optparse.Values({'pixel_tests': False})
         port = self.make_port(options=options)
         self.assertFalse(port.should_run_as_pixel_test('fast/css/001.html'))
 
     def test_should_run_as_pixel_test_default(self):
-        options = optparse.Values(
-            {'pixel_tests': True, 'target': 'Release', 'configuration': 'Release'})
+        options = optparse.Values({'pixel_tests': True})
         port = self.make_port(options=options)
         self.assertFalse(port.should_run_as_pixel_test('external/wpt/dom/interfaces.html'))
         self.assertFalse(port.should_run_as_pixel_test('virtual/a-name/external/wpt/dom/interfaces.html'))
@@ -824,13 +791,11 @@ class PortTest(LoggingTestCase):
     def test_build_path(self):
         # Test for a protected method - pylint: disable=protected-access
         # Test that optional paths are used regardless of whether they exist.
-        options = optparse.Values({'target': 'Release', 'build_directory': 'xcodebuild',
-                                   'configuration': 'Release'})
+        options = optparse.Values({'configuration': 'Release', 'build_directory': 'xcodebuild'})
         self.assertEqual(self.make_port(options=options)._build_path(), '/mock-checkout/xcodebuild/Release')
 
         # Test that "out" is used as the default.
-        options = optparse.Values({'target': 'Release', 'build_directory': None,
-                                   'configuration': 'Release'})
+        options = optparse.Values({'configuration': 'Release', 'build_directory': None})
         self.assertEqual(self.make_port(options=options)._build_path(), '/mock-checkout/out/Release')
 
     def test_dont_require_http_server(self):
@@ -838,8 +803,7 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.requires_http_server(), False)
 
     def test_can_load_actual_virtual_test_suite_file(self):
-        port = Port(SystemHost(), 'baseport', options=optparse.Values(
-            {'target': 'Release', 'configuration': 'Release'}))
+        port = Port(SystemHost(), 'baseport')
 
         # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
         _ = port.virtual_test_suites()
@@ -881,10 +845,7 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.default_results_directory(), '/mock-checkout/out/Default/layout-test-results')
 
     def test_results_directory(self):
-        options = options=optparse.Values({
-            'results_directory': 'some-directory/results', 'target': 'Release',
-            'configuration': 'Release'})
-        port = self.make_port(options=options)
+        port = self.make_port(options=optparse.Values({'results_directory': 'some-directory/results'}))
         # A results directory can be given as an option, and it is relative to current working directory.
         self.assertEqual(port.host.filesystem.cwd, '/')
         self.assertEqual(port.results_directory(), '/some-directory/results')

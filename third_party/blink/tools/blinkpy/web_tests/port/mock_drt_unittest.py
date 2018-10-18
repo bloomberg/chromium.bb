@@ -41,8 +41,7 @@ from blinkpy.web_tests.port.factory import PortFactory
 
 class MockDRTPortTest(port_testcase.PortTestCase):
 
-    def make_port(self, host=None,
-                  options=optparse.Values({'configuration': 'Release', 'target': 'Release'})):
+    def make_port(self, host=None, options=optparse.Values({'configuration': 'Release'})):
         host = host or MockSystemHost()
         test.add_unit_tests_to_mock_filesystem(host.filesystem)
         return mock_drt.MockDRTPort(host, port_name='mock-mac', options=options)

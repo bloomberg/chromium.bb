@@ -447,10 +447,9 @@ class TestPort(Port):
             'linux': ['precise', 'trusty']
         }
 
-    def _path_to_driver(self, target=None):
+    def _path_to_driver(self):
         # This routine shouldn't normally be called, but it is called by
         # the mock_drt Driver. We return something, but make sure it's useless.
-        del target  # Unused
         return 'MOCK _path_to_driver'
 
     def default_child_processes(self):
@@ -462,12 +461,8 @@ class TestPort(Port):
     def check_sys_deps(self, needs_http):
         return exit_codes.OK_EXIT_STATUS
 
-    def default_target(self):
+    def default_configuration(self):
         return 'Release'
-
-    def check_configuration_and_target(self):
-        if not getattr(self._options, 'configuration', None):
-             self._options.configuration = 'Release'
 
     def diff_image(self, expected_contents, actual_contents):
         diffed = actual_contents != expected_contents
