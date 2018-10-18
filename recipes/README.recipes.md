@@ -854,7 +854,7 @@ This means we started running actual tests (not prerequisite steps
 like checkout or compile), and some of these tests have failed.
 ### *recipe_modules* / [windows\_sdk](/recipes/recipe_modules/windows_sdk)
 
-[DEPS](/recipes/recipe_modules/windows_sdk/__init__.py#5): [recipe\_engine/cipd][recipe_engine/recipe_modules/cipd], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+[DEPS](/recipes/recipe_modules/windows_sdk/__init__.py#5): [recipe\_engine/cipd][recipe_engine/recipe_modules/cipd], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
 The `windows_sdk` module provides safe functions to access a hermetic
 Microsoft Visual Studio installation.
@@ -865,7 +865,7 @@ Available only to Google-run bots.
 
 API for using Windows SDK distributed via CIPD.
 
-&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/windows_sdk/api.py#23)(self, path=None, version=None, enabled=True):**
+&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/windows_sdk/api.py#23)(self, path=None, version=None, enabled=True, target_arch='x64'):**
 
 Setups the SDK environment when enabled.
 
@@ -875,6 +875,7 @@ Args:
   version (str): CIPD version of the SDK
     (default is set via $infra/windows_sdk.version property)
   enabled (bool): Whether the SDK should be used or not.
+  target_arch (str): 'x86' or 'x64'.
 
 Raises:
     StepFailure or InfraFailure.
@@ -887,9 +888,9 @@ Raises:
 &mdash; **def [RunSteps](/recipes/recipe_modules/bot_update/examples/full.py#18)(api):**
 ### *recipes* / [bot\_update:tests/ensure\_checkout](/recipes/recipe_modules/bot_update/tests/ensure_checkout.py)
 
-[DEPS](/recipes/recipe_modules/bot_update/tests/ensure_checkout.py#6): [bot\_update](#recipe_modules-bot_update), [gclient](#recipe_modules-gclient), [recipe\_engine/json][recipe_engine/recipe_modules/json]
+[DEPS](/recipes/recipe_modules/bot_update/tests/ensure_checkout.py#7): [bot\_update](#recipe_modules-bot_update), [gclient](#recipe_modules-gclient), [recipe\_engine/json][recipe_engine/recipe_modules/json]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/bot_update/tests/ensure_checkout.py#13)(api):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/bot_update/tests/ensure_checkout.py#14)(api):**
 ### *recipes* / [cipd:examples/full](/recipes/recipe_modules/cipd/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/cipd/examples/full.py#8): [cipd](#recipe_modules-cipd), [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
