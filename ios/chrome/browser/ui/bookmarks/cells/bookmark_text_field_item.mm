@@ -8,6 +8,8 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/text_field_styling.h"
@@ -65,9 +67,16 @@
 
 #pragma mark - BookmarkTextFieldCell
 
+@interface BookmarkTextFieldCell ()
+// Stack view to display label / value which we'll switch from horizontal to
+// vertical based on preferredContentSizeCategory.
+@property(nonatomic, strong) UIStackView* stackView;
+@end
+
 @implementation BookmarkTextFieldCell
 @synthesize textField = _textField;
 @synthesize titleLabel = _titleLabel;
+@synthesize stackView = _stackView;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -101,36 +110,52 @@
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisVertical];
 
-  // Horizontal StackView.
-  UIStackView* horizontalStack = [[UIStackView alloc]
+  // StackView.
+  self.stackView = [[UIStackView alloc]
       initWithArrangedSubviews:@[ self.titleLabel, self.textField ]];
-  horizontalStack.axis = UILayoutConstraintAxisHorizontal;
-  horizontalStack.spacing = kBookmarkCellViewSpacing;
-  horizontalStack.distribution = UIStackViewDistributionFill;
-  horizontalStack.alignment = UIStackViewAlignmentCenter;
-  [horizontalStack
+  self.stackView.axis = UILayoutConstraintAxisHorizontal;
+  self.stackView.spacing = kBookmarkCellViewSpacing;
+  self.stackView.distribution = UIStackViewDistributionFill;
+  self.stackView.alignment = UIStackViewAlignmentCenter;
+  [self.stackView
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisVertical];
-  horizontalStack.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:horizontalStack];
+  self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:self.stackView];
 
   // Set up constraints.
-  [NSLayoutConstraint activateConstraints:@[
-    [horizontalStack.topAnchor
-        constraintEqualToAnchor:self.contentView.topAnchor
-                       constant:kBookmarkCellVerticalInset],
-    [horizontalStack.bottomAnchor
-        constraintEqualToAnchor:self.contentView.bottomAnchor
-                       constant:-kBookmarkCellVerticalInset],
-    [horizontalStack.leadingAnchor
-        constraintEqualToAnchor:self.contentView.leadingAnchor
-                       constant:kBookmarkCellHorizontalLeadingInset],
-    [horizontalStack.trailingAnchor
-        constraintEqualToAnchor:self.contentView.trailingAnchor
-                       constant:-kBookmarkCellHorizontalTrailingInset],
-  ]];
+  AddSameConstraintsToSidesWithInsets(
+      self.stackView, self.contentView,
+      LayoutSides::kLeading | LayoutSides::kTrailing | LayoutSides::kBottom |
+          LayoutSides::kTop,
+      ChromeDirectionalEdgeInsetsMake(
+          kBookmarkCellVerticalInset, kBookmarkCellHorizontalLeadingInset,
+          kBookmarkCellVerticalInset, kBookmarkCellHorizontalTrailingInset));
+
+  [self applyContentSizeCategoryStyles];
 
   return self;
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (self.traitCollection.preferredContentSizeCategory !=
+      previousTraitCollection.preferredContentSizeCategory) {
+    [self applyContentSizeCategoryStyles];
+  }
+}
+
+- (void)applyContentSizeCategoryStyles {
+  if (ContentSizeCategoryIsAccessibilityCategory(
+          UIScreen.mainScreen.traitCollection.preferredContentSizeCategory)) {
+    self.stackView.axis = UILayoutConstraintAxisVertical;
+    self.stackView.alignment = UIStackViewAlignmentLeading;
+    self.textField.textAlignment = NSTextAlignmentLeft;
+  } else {
+    self.stackView.axis = UILayoutConstraintAxisHorizontal;
+    self.stackView.alignment = UIStackViewAlignmentCenter;
+    self.textField.textAlignment = NSTextAlignmentRight;
+  }
 }
 
 + (UIColor*)textColorForEditing:(BOOL)editing {
