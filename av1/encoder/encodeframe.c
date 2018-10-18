@@ -4880,14 +4880,12 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
   TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
   TOKENEXTRA *tok = NULL;
-  int sb_row_in_tile;
-  int tile_mb_cols = (tile_info->mi_col_end - tile_info->mi_col_start + 2) >> 2;
-
-  int num_mb_rows_in_sb =
-      ((1 << (cm->seq_params.mib_size_log2 + MI_SIZE_LOG2)) + 8) >> 4;
-
-  sb_row_in_tile =
+  const int sb_row_in_tile =
       (mi_row - tile_info->mi_row_start) >> cm->seq_params.mib_size_log2;
+  const int tile_mb_cols =
+      (tile_info->mi_col_end - tile_info->mi_col_start + 2) >> 2;
+  const int num_mb_rows_in_sb =
+      ((1 << (cm->seq_params.mib_size_log2 + MI_SIZE_LOG2)) + 8) >> 4;
 
   get_start_tok(cpi, tile_row, tile_col, mi_row, &tok,
                 cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
