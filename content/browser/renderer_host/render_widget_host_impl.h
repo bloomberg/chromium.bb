@@ -389,7 +389,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency,
       const std::vector<EditCommand>* commands,
-      ui::KeyEvent* original_key_event,
       bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view
@@ -720,7 +719,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // from a newly loaded page. Used for testing.
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
 
-  // InputDispositionHandler
+  // InputAckHandler
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                        InputEventAckSource ack_source,
                        InputEventAckState ack_result) override;
@@ -783,8 +782,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                          RenderProcessHost*,
                                          RenderWidgetHost*);
 
-  class KeyEventResultTracker;
-
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
   void Destroy(bool also_delete);
@@ -793,10 +790,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // content but failed to produce a compositor frame in a defined time.
   void ClearDisplayedGraphics();
 
-  // InputRouter::SendKeyboardEvent() callbacks to this. This may be called
-  // synchronously.
-  void OnKeyboardEventAck(std::unique_ptr<KeyEventResultTracker> result_tracker,
-                          const NativeWebKeyboardEventWithLatencyInfo& event,
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           InputEventAckSource ack_source,
                           InputEventAckState ack_result);
 
