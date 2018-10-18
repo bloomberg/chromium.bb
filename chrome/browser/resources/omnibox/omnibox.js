@@ -43,11 +43,63 @@
      *     presented as a tooltip when the mouse is hovered over the column title.
      */
     constructor(header, url, propertyName, displayAlways, tooltip) {
+      /** @type {string} */
       this.header = header;
+      /** @type {string} */
       this.urlLabelForHeader = url;
+      /** @type {string} */
       this.propertyName = propertyName;
+      /** @type {boolean} */
       this.displayAlways = displayAlways;
+      /** @type {string} */
       this.tooltip = tooltip;
+    }
+  }
+
+  /**
+   * Tracks and aggregates responses from the C++ autocomplete controller.
+   * Typically, the C++ controller returns 3 sets of results per query, unless
+   * a new query is submitted before all 3 responses. OutputController also
+   * triggers appending to and clearing of OmniboxOutput when appropriate (e.g.,
+   * upon receiving a new response or a change in display inputs).
+   */
+  class OutputController {
+    constructor() {
+      /** @private {!Array<mojom.OmniboxResult>} */
+      this.outputResultsGroups = [];
+    }
+
+    clear() {
+      this.outputResultsGroups = [];
+      omniboxOutput.clearOutput();
+    }
+
+    /*
+     * Adds a new response to the page. If we're not displaying incomplete
+     * results, we clear the page and display only the new result. If we are
+     * displaying incomplete results, then this is more efficient than refresh,
+     * as there's no need to clear and re-add previous results.
+     */
+    /** @param {!mojom.OmniboxResult} response A response from C++ autocomplete controller */
+    add(response) {
+      this.outputResultsGroups.push(response);
+      if (!omniboxInputs.$$('show-incomplete-results').checked)
+        omniboxOutput.clearOutput();
+      addResultToOutput(this.outputResultsGroups[this.outputResultsGroups.length - 1]);
+    }
+
+    /*
+     * Refreshes all results. We only display the last (most recent) entry
+     * unless incomplete results is enabled.
+     */
+    refresh() {
+      omniboxOutput.clearOutput();
+      if (omniboxInputs.$$('show-incomplete-results').checked) {
+        this.outputResultsGroups.forEach(addResultToOutput);
+      } else if (this.outputResultsGroups.length) {
+        addResultToOutput(
+            this.outputResultsGroups[this.outputResultsGroups.length - 1]);
+      }
     }
   }
 
@@ -342,38 +394,6 @@
     omniboxOutput.addOutput(p);
   }
 
-  /* Repaints the page based on the contents of the array
-   * progressiveAutocompleteResults, which represents consecutive
-   * autocomplete results.  We only display the last (most recent)
-   * entry unless we're asked to display incomplete results.  For an
-   * example of the output, play with chrome://omnibox/
-   */
-  function refreshAllResults() {
-    omniboxOutput.clearOutput();
-    if (omniboxInputs.$$('show-incomplete-results').checked)
-      browserProxy.progressiveAutocompleteResults.forEach(addResultToOutput);
-    else if (browserProxy.progressiveAutocompleteResults.length)
-      addResultToOutput(
-          browserProxy.progressiveAutocompleteResults
-              [browserProxy.progressiveAutocompleteResults.length - 1]);
-  }
-
-  /*
-   * Adds the last result, based on the contents of the array
-   * progressiveAutocompleteResults, to the page. If we're not displaying
-   * incomplete results, we clear the page and add the last result, similar to
-   * refreshAllResults. If we are displaying incomplete results, then this is
-   * more efficient than refreshAllResults, as there's no need to clear and
-   * re-add previous results.
-   */
-  function refreshNewResult() {
-    if (!omniboxInputs.$$('show-incomplete-results').checked)
-      omniboxOutput.clearOutput();
-    addResultToOutput(
-        browserProxy.progressiveAutocompleteResults
-            [browserProxy.progressiveAutocompleteResults.length - 1]);
-  }
-
   class BrowserProxy {
     constructor() {
       /** @private {!mojom.OmniboxPageHandlerPtr} */
@@ -389,14 +409,6 @@
       this.binding_ =
           new mojo.Binding(mojom.OmniboxPage, this, mojo.makeRequest(client));
       this.pagehandlePtr_.setClientPage(client);
-
-      /**
-       * @type {!Array<mojom.OmniboxResult>} an array of all autocomplete
-       *     results we've seen for this query.  We append to this list once for
-       *     every call to handleNewAutocompleteResult.  See omnibox.mojom for
-       *     details.
-       */
-      this.progressiveAutocompleteResults = [];
     }
 
     /**
@@ -409,8 +421,7 @@
                 preventInlineAutocomplete,
                 preferKeyword,
                 pageClassification) {
-      omniboxOutput.clearOutput();
-      this.progressiveAutocompleteResults = [];
+      outputController.clear();
       // Then, call chrome with a five-element list:
       // - first element: the value in the text box
       // - second element: the location of the cursor in the text box
@@ -425,9 +436,8 @@
           pageClassification);
     }
 
-    handleNewAutocompleteResult(result) {
-      this.progressiveAutocompleteResults.push(result);
-      refreshNewResult();
+    handleNewAutocompleteResult(response) {
+      outputController.add(response);
     }
   }
 
@@ -437,6 +447,8 @@
   let omniboxInputs;
   /** @type {OmniboxOutput} */
   let omniboxOutput;
+  /** @type {OutputController} */
+  let outputController = new OutputController();
 
   document.addEventListener('DOMContentLoaded', () => {
     browserProxy = new BrowserProxy();
@@ -450,6 +462,7 @@
             event.detail.preferKeyword,
             event.detail.pageClassification
         ));
-    omniboxInputs.addEventListener('display-inputs-changed', refreshAllResults);
+    omniboxInputs.addEventListener('display-inputs-changed',
+        outputController.refresh.bind(outputController));
   });
 })();
