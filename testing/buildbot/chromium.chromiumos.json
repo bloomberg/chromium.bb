@@ -823,6 +823,18 @@
       },
       {
         "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
@@ -1521,6 +1533,18 @@
         "test": "gpu_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
