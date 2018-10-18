@@ -36,6 +36,7 @@ enum EmeCodec : uint32_t {
   EME_CODEC_EAC3 = 1 << 11,
   EME_CODEC_MPEG_H_AUDIO = 1 << 12,
   EME_CODEC_FLAC = 1 << 13,
+  EME_CODEC_AV1 = 1 << 14,
 };
 
 // *_ALL values should only be used for masking, do not use them to specify
@@ -63,6 +64,7 @@ constexpr SupportedCodecs GetMp4VideoCodecs() {
   // VP9 codec can be in MP4. Legacy VP9 codec strings ("vp9" and "vp9.0") can
   // not be in "video/mp4" mime type, but that is enforced by media::MimeUtil.
   SupportedCodecs codecs = EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILES123;
+  codecs |= EME_CODEC_AV1;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   codecs |= EME_CODEC_AVC1;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
@@ -84,7 +86,8 @@ constexpr SupportedCodecs EME_CODEC_WEBM_AUDIO_ALL =
     EME_CODEC_OPUS | EME_CODEC_VORBIS;
 
 constexpr SupportedCodecs EME_CODEC_WEBM_VIDEO_ALL =
-    EME_CODEC_VP8 | EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILES123;
+    EME_CODEC_VP8 | EME_CODEC_VP9_PROFILE0 | EME_CODEC_VP9_PROFILES123 |
+    EME_CODEC_AV1;
 
 constexpr SupportedCodecs EME_CODEC_WEBM_ALL =
     EME_CODEC_WEBM_AUDIO_ALL | EME_CODEC_WEBM_VIDEO_ALL;

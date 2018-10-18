@@ -66,6 +66,12 @@ const char kTypeErrorResult[] = "TypeError";
 #define EXPECT_UNSUPPORTED(test) EXPECT_EQ(kUnsupportedResult, test)
 #define EXPECT_TYPEERROR(test) EXPECT_EQ(kTypeErrorResult, test)
 
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+#define EXPECT_AV1 EXPECT_SUCCESS
+#else
+#define EXPECT_AV1 EXPECT_UNSUPPORTED
+#endif
+
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #define EXPECT_PROPRIETARY EXPECT_SUCCESS
 #else
@@ -75,18 +81,22 @@ const char kTypeErrorResult[] = "TypeError";
 // Expectations for External Clear Key.
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #define EXPECT_ECK EXPECT_SUCCESS
+#define EXPECT_ECK_AV1 EXPECT_AV1
 #define EXPECT_ECK_PROPRIETARY EXPECT_PROPRIETARY
 #else
 #define EXPECT_ECK EXPECT_UNSUPPORTED
+#define EXPECT_ECK_AV1 EXPECT_UNSUPPORTED
 #define EXPECT_ECK_PROPRIETARY EXPECT_UNSUPPORTED
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Expectations for Widevine.
 #if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 #define EXPECT_WV_SUCCESS EXPECT_SUCCESS
+#define EXPECT_WV_AV1 EXPECT_AV1
 #define EXPECT_WV_PROPRIETARY EXPECT_PROPRIETARY
 #else
 #define EXPECT_WV_SUCCESS EXPECT_UNSUPPORTED
+#define EXPECT_WV_AV1 EXPECT_UNSUPPORTED
 #define EXPECT_WV_PROPRIETARY EXPECT_UNSUPPORTED
 #endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
@@ -132,6 +142,9 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     vp9_higher_profile_codecs_.push_back("vp09.02.10.10");
     vp9_higher_profile_codecs_.push_back("vp09.03.10.10");
 
+    // AV1 codec string: https://aomediacodec.github.io/av1-isobmff/#codecsparam
+    av1_codecs_.push_back("av01.0.00M.10.0.112");
+
     // Extended codecs are used, so make sure generic ones fail. These will be
     // tested against all init data types as they should always fail to be
     // supported.
@@ -172,6 +185,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   const CodecVector& vp9_higher_profile_codecs() const {
     return vp9_higher_profile_codecs_;
   }
+  const CodecVector& av1_codecs() const { return av1_codecs_; }
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -314,8 +328,11 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
         video_capabilities.c_str(), session_type_string.c_str());
     DVLOG(1) << "command: " << command;
 
-    return ExecuteCommand(browser()->tab_strip_model()->GetActiveWebContents(),
-                          command);
+    auto result = ExecuteCommand(
+        browser()->tab_strip_model()->GetActiveWebContents(), command);
+    DVLOG(1) << "result: " << result;
+
+    return result;
   }
 
   std::string IsSessionTypeSupported(const std::string& key_system,
@@ -381,6 +398,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   CodecVector vp9_profile0_codecs_;
   CodecVector invalid_codecs_;
   CodecVector vp9_higher_profile_codecs_;
+  CodecVector av1_codecs_;
 };
 
 // For ClearKey, nothing additional is required.
@@ -552,6 +570,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Video_WebM) {
                                         vp9_profile0_codecs()));
   EXPECT_SUCCESS(IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType,
                                         vp9_higher_profile_codecs()));
+  EXPECT_AV1(
+      IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType, av1_codecs()));
 
   // Non-video WebM codecs.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType,
@@ -594,6 +614,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Video_MP4) {
                                         vp9_profile0_codecs()));
   EXPECT_SUCCESS(IsSupportedByKeySystem(kClearKey, kVideoMP4MimeType,
                                         vp9_higher_profile_codecs()));
+  EXPECT_AV1(
+      IsSupportedByKeySystem(kClearKey, kVideoWebMMimeType, av1_codecs()));
 
 // High 10-bit Profile is supported when using ClearKey if it is supported for
 // clear content on this platform.
@@ -754,6 +776,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                                     vp9_profile0_codecs()));
   EXPECT_ECK(IsSupportedByKeySystem(kExternalClearKey, kVideoWebMMimeType,
                                     vp9_higher_profile_codecs()));
+  EXPECT_ECK_AV1(IsSupportedByKeySystem(kExternalClearKey, kVideoWebMMimeType,
+                                        av1_codecs()));
 
   // Non-video WebM codecs.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
@@ -798,6 +822,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
                                     vp9_profile0_codecs()));
   EXPECT_ECK(IsSupportedByKeySystem(kExternalClearKey, kVideoMP4MimeType,
                                     vp9_higher_profile_codecs()));
+  EXPECT_ECK_AV1(IsSupportedByKeySystem(kExternalClearKey, kVideoWebMMimeType,
+                                        av1_codecs()));
 
   // High 10-bit Profile is not supported when using ExternalClearKey.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(
@@ -974,6 +1000,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_WebM) {
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
                                             vp9_higher_profile_codecs()));
   EXPECT_UNSUPPORTED(
+      IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType, av1_codecs()));
+  EXPECT_UNSUPPORTED(
       IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType, invalid_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
                                             audio_mp4_codecs()));
@@ -1023,6 +1051,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
   // Invalid or non-MP4 codecs.
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
                                             vp9_higher_profile_codecs()));
+  EXPECT_UNSUPPORTED(
+      IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, av1_codecs()));
   EXPECT_UNSUPPORTED(
       IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, invalid_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
