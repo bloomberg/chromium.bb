@@ -242,12 +242,13 @@ class AndroidPort(base.Port):
 
     def __init__(self, host, port_name, **kwargs):
         _import_android_packages_if_necessary()
+        self._driver_details = ContentShellDriverDetails()
+        self._host_port = factory.PortFactory(host).get(**kwargs)
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
 
         self._operating_system = 'android'
         self._version = 'kitkat'
 
-        self._host_port = factory.PortFactory(host).get(**kwargs)
         self.server_process_constructor = self._android_server_process_constructor
 
         if not self.get_option('disable_breakpad'):
@@ -256,7 +257,6 @@ class AndroidPort(base.Port):
         if self.driver_name() != self.CONTENT_SHELL_NAME:
             raise AssertionError('Layout tests on Android only support content_shell as the driver.')
 
-        self._driver_details = ContentShellDriverDetails()
 
         # Initialize the AndroidDevices class which tracks available devices.
         default_devices = None
