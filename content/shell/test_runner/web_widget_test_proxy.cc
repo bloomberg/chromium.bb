@@ -37,16 +37,6 @@ void WebWidgetTestProxy::Initialize(
   set_widget_test_client(interfaces->CreateWebWidgetTestClient(this));
 }
 
-blink::WebScreenInfo WebWidgetTestProxy::GetScreenInfo() {
-  blink::WebScreenInfo info = RenderWidget::GetScreenInfo();
-  blink::WebScreenInfo test_info = widget_test_client()->GetScreenInfo();
-  if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
-    info.orientation_type = test_info.orientation_type;
-    info.orientation_angle = test_info.orientation_angle;
-  }
-  return info;
-}
-
 void WebWidgetTestProxy::ScheduleAnimation() {
   RenderWidget::ScheduleAnimation();
   widget_test_client()->ScheduleAnimation();

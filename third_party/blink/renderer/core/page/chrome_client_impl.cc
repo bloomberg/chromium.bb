@@ -448,9 +448,9 @@ float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
 }
 
 WebScreenInfo ChromeClientImpl::GetScreenInfo() const {
-  if (!web_view_->WidgetClient())
+  if (!web_view_->Client())
     return {};
-  return web_view_->WidgetClient()->GetScreenInfo();
+  return web_view_->Client()->GetScreenInfo();
 }
 
 base::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting()

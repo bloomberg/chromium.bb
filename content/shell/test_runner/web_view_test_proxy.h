@@ -78,7 +78,6 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
   blink::WebRect ViewRect() override;
   void SetToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
-  blink::WebScreenInfo GetScreenInfo() override;
   bool RequestPointerLock() override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
@@ -198,6 +197,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
+  blink::WebScreenInfo GetScreenInfo() override;
   blink::WebWidgetClient* WidgetClient() override;
 
  private:

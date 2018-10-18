@@ -30,7 +30,6 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   ~WebWidgetTestClient() override;
 
   // WebWidgetClient overrides needed by WebWidgetTestProxy.
-  blink::WebScreenInfo GetScreenInfo() override;
   void ScheduleAnimation() override;
   bool RequestPointerLock() override;
   void RequestPointerUnlock() override;

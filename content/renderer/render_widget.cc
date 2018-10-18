@@ -2381,41 +2381,6 @@ bool RenderWidget::CanComposeInline() {
   return true;
 }
 
-blink::WebScreenInfo RenderWidget::GetScreenInfo() {
-  blink::WebScreenInfo web_screen_info;
-  web_screen_info.device_scale_factor = screen_info_.device_scale_factor;
-  web_screen_info.color_space = screen_info_.color_space;
-  web_screen_info.depth = screen_info_.depth;
-  web_screen_info.depth_per_component = screen_info_.depth_per_component;
-  web_screen_info.is_monochrome = screen_info_.is_monochrome;
-  web_screen_info.rect = blink::WebRect(screen_info_.rect);
-  web_screen_info.available_rect = blink::WebRect(screen_info_.available_rect);
-  switch (screen_info_.orientation_type) {
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitPrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitSecondary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapePrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapeSecondary;
-      break;
-    default:
-      web_screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
-      break;
-  }
-  web_screen_info.orientation_angle = screen_info_.orientation_angle;
-
-  return web_screen_info;
-}
-
 void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
                                          bool event_cancelled) {
   if (event_cancelled) {

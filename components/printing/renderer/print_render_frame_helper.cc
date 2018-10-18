@@ -730,6 +730,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   // TODO(ojan): Remove this override and have this class give a LayerTreeView
   // to the WebWidget.
   bool AllowsBrokenNullLayerTreeView() const override;
+  blink::WebScreenInfo GetScreenInfo() override;
   WebWidgetClient* WidgetClient() override { return this; }
 
   // blink::WebLocalFrameClient:
@@ -885,6 +886,10 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
 bool PrepareFrameAndViewForPrint::AllowsBrokenNullLayerTreeView() const {
   return true;
+}
+
+blink::WebScreenInfo PrepareFrameAndViewForPrint::GetScreenInfo() {
+  return blink::WebScreenInfo();
 }
 
 void PrepareFrameAndViewForPrint::DidStopLoading() {

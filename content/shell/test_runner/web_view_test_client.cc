@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/shell/test_runner/event_sender.h"
+#include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -101,6 +102,21 @@ bool WebViewTestClient::CanHandleGestureEvent() {
 
 bool WebViewTestClient::CanUpdateLayout() {
   return true;
+}
+
+blink::WebScreenInfo WebViewTestClient::GetScreenInfo() {
+  blink::WebScreenInfo screen_info;
+  MockScreenOrientationClient* mock_client =
+      test_runner()->getMockScreenOrientationClient();
+  if (mock_client->IsDisabled()) {
+    // Indicate to WebViewTestProxy that there is no test/mock info.
+    screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
+  } else {
+    // Override screen orientation information with mock data.
+    screen_info.orientation_type = mock_client->CurrentOrientationType();
+    screen_info.orientation_angle = mock_client->CurrentOrientationAngle();
+  }
+  return screen_info;
 }
 
 blink::WebWidgetClient* WebViewTestClient::WidgetClient() {

@@ -79,15 +79,6 @@ void ProxyWebWidgetClient::SetToolTipText(const blink::WebString& text,
   widget_test_client_->SetToolTipText(text, hint);
   base_class_widget_client_->SetToolTipText(text, hint);
 }
-blink::WebScreenInfo ProxyWebWidgetClient::GetScreenInfo() {
-  blink::WebScreenInfo info = base_class_widget_client_->GetScreenInfo();
-  blink::WebScreenInfo test_info = widget_test_client_->GetScreenInfo();
-  if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
-    info.orientation_type = test_info.orientation_type;
-    info.orientation_angle = test_info.orientation_angle;
-  }
-  return info;
-}
 bool ProxyWebWidgetClient::RequestPointerLock() {
   return widget_test_client_->RequestPointerLock();
 }
@@ -230,6 +221,16 @@ blink::WebString WebViewTestProxy::AcceptLanguages() {
 void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
   view_test_client_->DidFocus(calling_frame);
   RenderViewImpl::DidFocus(calling_frame);
+}
+
+blink::WebScreenInfo WebViewTestProxy::GetScreenInfo() {
+  blink::WebScreenInfo info = RenderViewImpl::GetScreenInfo();
+  blink::WebScreenInfo test_info = view_test_client_->GetScreenInfo();
+  if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
+    info.orientation_type = test_info.orientation_type;
+    info.orientation_angle = test_info.orientation_angle;
+  }
+  return info;
 }
 
 blink::WebWidgetClient* WebViewTestProxy::WidgetClient() {

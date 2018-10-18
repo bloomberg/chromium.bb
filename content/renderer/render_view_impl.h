@@ -246,6 +246,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void DidAutoResize(const blink::WebSize& newSize) override;
   blink::WebRect RootWindowRect() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
+  blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
   blink::WebWidgetClient* WidgetClient() override;
 
