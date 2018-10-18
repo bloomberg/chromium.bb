@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/common/media/midi_messages.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,11 +117,7 @@ class MidiHostForTesting : public MidiHost {
 
 class MidiHostTest : public testing::Test {
  public:
-  MidiHostTest()
-      : io_browser_thread_(BrowserThread::IO,
-                           task_environment_.GetMainThreadTaskRunner()),
-        data_(kNoteOn, kNoteOn + arraysize(kNoteOn)),
-        port_id_(0) {
+  MidiHostTest() : data_(kNoteOn, kNoteOn + base::size(kNoteOn)), port_id_(0) {
     std::unique_ptr<FakeMidiManagerFactory> factory =
         std::make_unique<FakeMidiManagerFactory>();
     factory_ = factory->GetWeakPtr();
@@ -174,8 +170,7 @@ class MidiHostTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
-  TestBrowserThread io_browser_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 
   std::vector<uint8_t> data_;
   int32_t port_id_;

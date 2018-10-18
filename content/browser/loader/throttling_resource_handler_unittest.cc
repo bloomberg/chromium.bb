@@ -176,9 +176,7 @@ class TestResourceThrottle : public ResourceThrottle {
 class ThrottlingResourceHandlerTest : public testing::Test {
  public:
   ThrottlingResourceHandlerTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        never_started_url_request_(
+      : never_started_url_request_(
             request_context_.CreateRequest(GURL(kInitialUrl),
                                            net::DEFAULT_PRIORITY,
                                            &never_started_url_request_delegate_,
@@ -224,7 +222,8 @@ class ThrottlingResourceHandlerTest : public testing::Test {
 
  protected:
   // Needs to be first, so it's destroyed last.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   // Machinery to construct a URLRequest that's just used as an argument to
   // methods that expect one, and is never actually started.

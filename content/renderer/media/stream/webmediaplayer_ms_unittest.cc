@@ -22,6 +22,7 @@
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -525,9 +526,9 @@ class WebMediaPlayerMSTest
       public cc::VideoFrameProvider::Client {
  public:
   WebMediaPlayerMSTest()
-      : render_factory_(
-            new MockRenderFactory(base::ThreadTaskRunnerHandle::Get(),
-                                  &message_loop_controller_)),
+      : render_factory_(new MockRenderFactory(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            &message_loop_controller_)),
         gpu_factories_(new media::MockGpuVideoAcceleratorFactories(nullptr)),
         surface_layer_bridge_(
             std::make_unique<NiceMock<MockSurfaceLayerBridge>>()),
@@ -684,8 +685,10 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::MediaLog>(),
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_),
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       gpu_factories_.get(), blink::WebString(),
       base::BindOnce(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
                      base::Unretained(this)),
@@ -764,7 +767,7 @@ void WebMediaPlayerMSTest::StopUsingProvider() {
 void WebMediaPlayerMSTest::StartRendering() {
   if (!rendering_) {
     rendering_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
                                   base::Unretained(this)));
   }
@@ -799,7 +802,7 @@ void WebMediaPlayerMSTest::RenderFrame() {
     auto frame = compositor_->GetCurrentFrame();
     compositor_->PutCurrentFrame();
   }
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
                      base::Unretained(this)),
