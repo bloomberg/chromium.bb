@@ -27,6 +27,8 @@ class ChromeActivityItemThumbnailGeneratorTest : public PlatformTest {
     CGRect frame = {CGPointZero, CGSizeMake(400, 300)};
     UIView* view = [[UIView alloc] initWithFrame:frame];
     view.backgroundColor = [UIColor redColor];
+    web_state_superview_ = [[UIView alloc] initWithFrame:frame];
+    [web_state_superview_ addSubview:view];
     test_web_state_.SetView(view);
 
     SnapshotTabHelper::CreateForWebState(&test_web_state_,
@@ -47,6 +49,8 @@ class ChromeActivityItemThumbnailGeneratorTest : public PlatformTest {
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   web::TestWebState test_web_state_;
+  // The webState's view needs a superview so a snapshot can be taken.
+  UIView* web_state_superview_;
 };
 
 TEST_F(ChromeActivityItemThumbnailGeneratorTest, ThumbnailForNonIncognitoTab) {
