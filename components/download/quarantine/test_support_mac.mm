@@ -20,7 +20,7 @@ namespace download {
 bool IsFileQuarantined(const base::FilePath& file,
                        const GURL& expected_source_url,
                        const GURL& referrer_url) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   if (!base::PathExists(file))
     return false;

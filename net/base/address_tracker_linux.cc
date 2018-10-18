@@ -297,7 +297,7 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
     if (tracking_) {
       // If the loop below takes a long time to run, a new thread should added
       // to the current thread pool to ensure forward progress of all tasks.
-      base::AssertBlockingAllowed();
+      base::AssertBlockingAllowedDeprecated();
       blocking_call.emplace(base::BlockingType::MAY_BLOCK);
     }
 

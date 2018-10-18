@@ -41,7 +41,7 @@ std::unique_ptr<AppLaunchPredictor> CreatePredictor(
 // Save |proto| to |predictor_filename|.
 void SaveToDiskOnWorkerThread(const base::FilePath& predictor_filename,
                               const AppLaunchPredictorProto& proto) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   std::string proto_str;
   if (!proto.SerializeToString(&proto_str))
@@ -55,7 +55,7 @@ void SaveToDiskOnWorkerThread(const base::FilePath& predictor_filename,
 std::unique_ptr<AppLaunchPredictor> LoadPredictorFromDiskOnWorkerThread(
     const base::FilePath& predictor_filename,
     const std::string predictor_name) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   // Loads proto string from local disk.
   std::string proto_str;

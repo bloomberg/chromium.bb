@@ -21,7 +21,7 @@ namespace download {
 namespace {
 
 std::string GetExtendedFileAttribute(const char* path, const char* name) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
   ssize_t len = getxattr(path, name, nullptr, 0);
   if (len <= 0)
     return std::string();

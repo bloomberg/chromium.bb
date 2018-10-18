@@ -113,7 +113,7 @@ base::FilePath* g_download_directory_for_tests = NULL;
 
 base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
                                    const std::string& id) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
   if (!base::DirectoryExists(download_directory) &&

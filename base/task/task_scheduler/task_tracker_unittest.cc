@@ -34,9 +34,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -486,7 +486,8 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   ThreadRestrictions::SetIOAllowed(false);
   Task task_with_may_block(FROM_HERE, Bind([]() {
                              // Shouldn't fail.
-                             AssertBlockingAllowed();
+                             ScopedBlockingCall scope_blocking_call(
+                                 BlockingType::WILL_BLOCK);
                            }),
                            TimeDelta());
   TaskTraits traits_with_may_block = TaskTraits(MayBlock(), GetParam());
@@ -499,8 +500,11 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   // task without the MayBlock() trait.
   ThreadRestrictions::SetIOAllowed(true);
   Task task_without_may_block(
-      FROM_HERE,
-      Bind([]() { EXPECT_DCHECK_DEATH({ AssertBlockingAllowed(); }); }),
+      FROM_HERE, Bind([]() {
+        EXPECT_DCHECK_DEATH({
+          ScopedBlockingCall scope_blocking_call(BlockingType::WILL_BLOCK);
+        });
+      }),
       TimeDelta());
   TaskTraits traits_without_may_block = TaskTraits(GetParam());
   EXPECT_TRUE(tracker_.WillPostTask(

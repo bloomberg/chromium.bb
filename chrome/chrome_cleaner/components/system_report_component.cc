@@ -701,7 +701,7 @@ void ReportInstalledExtensions(JsonParserAPI* json_parser) {
   // mode. This isn't catastrophic since the cleanup tool doesn't have a UI and
   // the system report is collected at the end of the process. We also assert
   // blocking is allowed here since it will block the thread.
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync;
 
   ReportForcelistExtensions();

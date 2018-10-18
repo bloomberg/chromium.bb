@@ -145,7 +145,7 @@ EmptyFilesResult CreateEmptyFiles(
     DiskSpaceFuncPtr disk_space_function,
     scoped_refptr<base::TaskRunner> file_task_runner,
     std::vector<base::FilePath> file_paths) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   File::Error dir_create_status = CreateBlobDirectory(blob_storage_dir);
   if (dir_create_status != File::FILE_OK) {
@@ -186,7 +186,7 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
     size_t total_size_bytes) {
   DCHECK_NE(0u, total_size_bytes);
   UMA_HISTOGRAM_MEMORY_KB("Storage.Blob.PageFileSize", total_size_bytes / 1024);
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   FileCreationInfo creation_info;
   creation_info.file_deletion_runner = std::move(file_task_runner);
