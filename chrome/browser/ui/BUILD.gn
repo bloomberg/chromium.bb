@@ -1266,6 +1266,7 @@ jumbo_split_static_library("ui") {
         "//chrome/browser/web_applications:web_applications_on_extensions",
         "//chrome/browser/web_applications/components",
         "//chrome/browser/web_applications/extensions",
+        "//google_apis/drive",
       ]
     }
   }
@@ -1732,6 +1733,7 @@ jumbo_split_static_library("ui") {
       "//components/login",
       "//components/session_manager/core",
       "//components/user_manager",
+      "//google_apis/drive",
       "//services/data_decoder/public/cpp",
       "//services/device/public/cpp:device_features",
       "//services/device/public/mojom",

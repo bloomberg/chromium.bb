@@ -300,6 +300,7 @@ static_library("test_support") {
       "//chrome/common/extensions/api",
       "//components/guest_view/browser:test_support",
       "//extensions:test_support",
+      "//google_apis/drive:test_support",
     ]
   }
 
@@ -1449,6 +1450,7 @@ test("browser_tests") {
         "//chrome/test/media_router:browser_tests",
         "//components/guest_view/browser:test_support",
         "//components/keep_alive_registry",
+        "//google_apis/drive:test_support",
 
         # TODO(rockot) bug 505926: The chrome_extensions_browsertests target
         # should be deleted and this line removed. See the
@@ -3802,6 +3804,7 @@ test("unit_tests") {
       "//extensions/renderer:unit_test_support",
       "//extensions/strings",
       "//google_apis",
+      "//google_apis/drive",
       "//media/cast:test_support",
       "//services/network/public/mojom",
 
@@ -4598,6 +4601,10 @@ if (!is_android) {
         "//ui/resources:ui_test_pak",
         "//ui/web_dialogs:test_support",
       ]
+
+      if (enable_extensions) {
+        deps += [ "//google_apis/drive:test_support" ]
+      }
     }
   }
 
@@ -5664,6 +5671,10 @@ if (!is_android && !is_fuchsia) {
       "//ui/resources:ui_test_pak",
       "//ui/web_dialogs:test_support",
     ]
+
+    if (enable_extensions) {
+      deps += [ "//google_apis/drive:test_support" ]
+    }
 
     if (is_win) {
       deps += [

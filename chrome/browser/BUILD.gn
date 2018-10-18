@@ -3990,6 +3990,7 @@ jumbo_split_static_library("browser") {
       "//components/drive",
       "//components/guest_view/browser",
       "//extensions/components/javascript_dialog_extensions_client",
+      "//google_apis/drive",
       "//media/cast:net",
       "//services/device/public/mojom",
     ]
@@ -5307,6 +5308,7 @@ static_library("test_support") {
       "//components/drive:test_support",
       "//components/storage_monitor:test_support",
       "//extensions:test_support",
+      "//google_apis:test_support",
       "//services/data_decoder/public/cpp:test_support",
     ]
   }
