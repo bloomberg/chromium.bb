@@ -192,7 +192,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/widevine/cdm/buildflags.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -203,6 +202,7 @@
 #include "chrome/browser/feedback/feedback_profile_observer.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/usb/web_usb_detector.h"
+#include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -253,7 +253,6 @@
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 #include "chrome/install_static/install_util.h"
-#include "ui/base/l10n/l10n_util_win.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
 
@@ -327,6 +326,11 @@
 using content::BrowserThread;
 
 namespace {
+
+struct ApplicationLocaleResult {
+  std::string actual_locale;
+  std::string preferred_locale;
+};
 
 #if !defined(OS_ANDROID)
 // Holds the RunLoop for the non-Android MainMessageLoopRun() to Run().
@@ -677,17 +681,17 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
 }
 
 // Initializes the shared instance of ResourceBundle and returns the locale. An
-// empty string return value indicates failure.
-std::string InitResourceBundleAndDetermineLocale(
+// empty |actual_locale| value indicates failure.
+ApplicationLocaleResult InitResourceBundleAndDetermineLocale(
     const content::MainFunctionParams& params,
     std::unique_ptr<ui::DataPack> data_pack) {
 #if defined(OS_MACOSX)
   // TODO(markusheintz): Read preference pref::kApplicationLocale in order
   // to enforce the application locale.
   // Tests always get en-US.
-  std::string locale = params.ui_task ? "en-US" : std::string();
+  std::string preferred_locale = params.ui_task ? "en-US" : std::string();
 #else
-  std::string locale = g_browser_process->local_state()->GetString(
+  std::string preferred_locale = g_browser_process->local_state()->GetString(
       language::prefs::kApplicationLocale);
 #endif
 
@@ -695,8 +699,8 @@ std::string InitResourceBundleAndDetermineLocale(
                "ChromeBrowserMainParts::InitResourceBundleAndDetermineLocale");
   // On a POSIX OS other than ChromeOS, the parameter that is passed to the
   // method InitSharedInstance is ignored.
-  locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
-      locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  std::string actual_locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
+      preferred_locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
   if (data_pack) {
     ui::ResourceBundle::GetSharedInstance().AddDataPack(std::move(data_pack));
@@ -705,7 +709,7 @@ std::string InitResourceBundleAndDetermineLocale(
                << "Some features may not be available.";
   }
 
-  return locale;
+  return {actual_locale, preferred_locale};
 }
 
 bool IsSiteIsolationEnterprisePolicyApplicable() {
@@ -1053,10 +1057,10 @@ int ChromeBrowserMainParts::LoadLocalState(
 
   // First run prefs may use the ResourceBundle (and get data from it), so this
   // needs to be before ApplyFirstRunPrefs().
-  std::string locale = InitResourceBundleAndDetermineLocale(
+  ApplicationLocaleResult locale_result = InitResourceBundleAndDetermineLocale(
       parameters(), std::move(service_manifest_data_pack_));
 
-  if (locale.empty()) {
+  if (locale_result.actual_locale.empty()) {
     *failed_to_load_resource_bundle = true;
     return chrome::RESULT_CODE_MISSING_DATA;
   }
@@ -1065,7 +1069,8 @@ int ChromeBrowserMainParts::LoadLocalState(
   if (apply_first_run_result != service_manager::RESULT_CODE_NORMAL_EXIT)
     return apply_first_run_result;
 
-  browser_process_->SetApplicationLocale(locale);
+  browser_process_->SetApplicationLocale(locale_result.actual_locale,
+                                         locale_result.preferred_locale);
 
   SetupOriginTrialsCommandLine(browser_process_->local_state());
 

@@ -101,7 +101,7 @@ bool SwitchBrowserLanguageToFrench() {
   EXPECT_NE("fr", default_locale);
 
   // Switch browser language to French.
-  g_browser_process->SetApplicationLocale("fr");
+  g_browser_process->SetApplicationLocale("fr", "fr");
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(language::prefs::kApplicationLocale, "fr");
 

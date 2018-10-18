@@ -848,16 +848,19 @@ const std::string& BrowserProcessImpl::GetApplicationLocale() {
   return locale_;
 }
 
-void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
+void BrowserProcessImpl::SetApplicationLocale(
+    const std::string& actual_locale,
+    const std::string& preferred_locale) {
   // NOTE: this is called before any threads have been created in non-test
   // environments.
-  locale_ = locale;
+  locale_ = actual_locale;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extension_l10n_util::SetProcessLocale(locale);
+  extension_l10n_util::SetProcessLocale(actual_locale);
+  extension_l10n_util::SetPreferredLocale(preferred_locale);
 #endif
-  ChromeContentBrowserClient::SetApplicationLocale(locale);
+  ChromeContentBrowserClient::SetApplicationLocale(actual_locale);
   translate::TranslateDownloadManager::GetInstance()->set_application_locale(
-      locale);
+      actual_locale);
 }
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {

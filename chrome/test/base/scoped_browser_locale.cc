@@ -8,9 +8,9 @@
 
 ScopedBrowserLocale::ScopedBrowserLocale(const std::string& new_locale)
       : old_locale_(g_browser_process->GetApplicationLocale()) {
-  g_browser_process->SetApplicationLocale(new_locale);
+  g_browser_process->SetApplicationLocale(new_locale, new_locale);
 }
 
 ScopedBrowserLocale::~ScopedBrowserLocale() {
-  g_browser_process->SetApplicationLocale(old_locale_);
+  g_browser_process->SetApplicationLocale(old_locale_, old_locale_);
 }
