@@ -43,7 +43,7 @@ TextDecoder* TextDecoder::Create(const String& label,
                                  const TextDecoderOptions& options,
                                  ExceptionState& exception_state) {
   WTF::TextEncoding encoding(
-      label.StripWhiteSpace(&Encoding::IsASCIIWhiteSpace));
+      label.StripWhiteSpace(&encoding::IsASCIIWhiteSpace));
   // The replacement encoding is not valid, but the Encoding API also
   // rejects aliases of the replacement encoding.
   if (!encoding.IsValid() || !strcasecmp(encoding.GetName(), "replacement")) {
