@@ -238,11 +238,19 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   HeapVector<Member<BackgroundFetchRecord>> to_return;
   to_return.ReserveInitialCapacity(settled_fetches.size());
   for (const auto& fetch : settled_fetches) {
-    BackgroundFetchRecord* record = new BackgroundFetchRecord(
-        Request::Create(script_state, fetch->request),
-        fetch->response ? Response::Create(script_state, *fetch->response)
-                        : nullptr);
-    to_return.push_back(record);
+    Request* request = Request::Create(script_state, fetch->request);
+
+    Response* response = fetch->response
+                             ? Response::Create(script_state, *fetch->response)
+                             : nullptr;
+
+    bool aborted =
+        failure_reason_ ==
+            mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
+        failure_reason_ ==
+            mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER;
+
+    to_return.push_back(new BackgroundFetchRecord(request, response, aborted));
   }
 
   if (!return_all) {
