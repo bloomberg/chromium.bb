@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [RuntimeEnabled=DisplayLocking] callback DisplayLockCallback = void(DisplayLockContext context);
-[RuntimeEnabled=DisplayLocking] interface DisplayLockContext {
+[RuntimeEnabled=DisplayLocking, ActiveScriptWrappable] interface DisplayLockContext {
   void schedule(DisplayLockCallback callback);
 };
 
