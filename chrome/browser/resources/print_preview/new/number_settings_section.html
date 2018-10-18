@@ -13,7 +13,8 @@
       }
 
       :host {
-        --cr-input-width: 5em;
+        /* Width = 3 digits + space + cr-input-padding-end/start */
+        --cr-input-width: calc(4em + 16px);
       }
 
       cr-input {
