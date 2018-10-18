@@ -108,6 +108,8 @@ EmeCodec ToVideoEmeCodec(VideoCodec codec, VideoCodecProfile profile) {
       } else {
         return EME_CODEC_NONE;
       }
+    case kCodecAV1:
+      return EME_CODEC_AV1;
     default:
       DVLOG(1) << "Unsupported VideoCodec " << codec;
       return EME_CODEC_NONE;

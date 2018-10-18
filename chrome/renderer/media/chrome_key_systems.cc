@@ -172,6 +172,9 @@ static SupportedCodecs GetSupportedCodecs(
         // TODO(crbug.com/707127): Support VP9 higher profiles.
         supported_codecs |= media::EME_CODEC_VP9_PROFILE0;
         break;
+      case media::VideoCodec::kCodecAV1:
+        supported_codecs |= media::EME_CODEC_AV1;
+        break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       case media::VideoCodec::kCodecH264:
         supported_codecs |= media::EME_CODEC_AVC1;

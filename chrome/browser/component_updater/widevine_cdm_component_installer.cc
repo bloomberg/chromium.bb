@@ -116,6 +116,7 @@ const char kCdmSupportedCdmProxyProtocolsName[] =
 // parameter |kCdmCodecsListName|.
 const char kCdmSupportedCodecVp8[] = "vp8";
 const char kCdmSupportedCodecVp9[] = "vp9.0";
+const char kCdmSupportedCodecAv1[] = "av01";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kCdmSupportedCodecAvc1[] = "avc1";
 #endif
@@ -216,6 +217,8 @@ bool GetCodecs(const base::DictionaryValue& manifest,
       result.push_back(media::VideoCodec::kCodecVP8);
     else if (codec == kCdmSupportedCodecVp9)
       result.push_back(media::VideoCodec::kCodecVP9);
+    else if (codec == kCdmSupportedCodecAv1)
+      result.push_back(media::VideoCodec::kCodecAV1);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     else if (codec == kCdmSupportedCodecAvc1)
       result.push_back(media::VideoCodec::kCodecH264);
