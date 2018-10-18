@@ -154,6 +154,7 @@ TEST_F(NewUnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   EXPECT_TRUE(message_center_view()->visible());
 
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  AnimateToEnd();
   AnimateToMiddle();
   EXPECT_TRUE(message_center_view()->visible());
   AnimateToEnd();

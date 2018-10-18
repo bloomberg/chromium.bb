@@ -68,6 +68,10 @@ class ASH_EXPORT UnifiedMessageListView
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
+  void set_enable_animation(bool enable_animation) {
+    enable_animation_ = enable_animation;
+  }
+
  protected:
   // Virtual for testing.
   virtual message_center::MessageView* CreateMessageView(
@@ -77,6 +81,20 @@ class ASH_EXPORT UnifiedMessageListView
   friend class NewUnifiedMessageCenterViewTest;
   friend class UnifiedMessageListViewTest;
   class MessageViewContainer;
+
+  // UnifiedMessageListView always runs single animation at one time. When
+  // |state_| is IDLE, animation_->is_animating() is always false and vice
+  // versa.
+  enum class State {
+    // No animation is running.
+    IDLE,
+
+    // Sliding out a removed notification. It will transition to MOVE_DOWN.
+    SLIDE_OUT,
+
+    // Moving down notifications.
+    MOVE_DOWN
+  };
 
   MessageViewContainer* GetContainer(int index);
   const MessageViewContainer* GetContainer(int index) const;
@@ -101,6 +119,9 @@ class ASH_EXPORT UnifiedMessageListView
   // |final_bounds|.
   void ResetBounds();
 
+  // Deletes all the MessageViewContainer marked as |is_removed|.
+  void DeleteRemovedNotifications();
+
   NewUnifiedMessageCenterView* const message_center_view_;
 
   // If true, ChildPreferredSizeChanged() will be ignored. This is used in
@@ -112,6 +133,8 @@ class ASH_EXPORT UnifiedMessageListView
   // implicit animation.
   const std::unique_ptr<gfx::LinearAnimation> animation_;
 
+  State state_ = State::IDLE;
+
   // The height the UnifiedMessageListView starts animating from. If not
   // animating, it's ignored.
   int start_height_ = 0;
@@ -119,6 +142,9 @@ class ASH_EXPORT UnifiedMessageListView
   // The final height of the UnifiedMessageListView. If not animating, it's same
   // as height().
   int ideal_height_ = 0;
+
+  // If false, disables animation on notification removal.
+  bool enable_animation_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListView);
 };

@@ -175,9 +175,12 @@ void NewUnifiedMessageCenterView::ButtonPressed(views::Button* sender,
   base::RecordAction(
       base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
 
+  // TODO(tetsui): Support Clear All animation.
+  message_list_view_->set_enable_animation(false);
   message_center::MessageCenter::Get()->RemoveAllNotifications(
       true /* by_user */,
       message_center::MessageCenter::RemoveType::NON_PINNED);
+  message_list_view_->set_enable_animation(true);
 }
 
 void NewUnifiedMessageCenterView::OnWillChangeFocus(views::View* before,
