@@ -1617,6 +1617,17 @@
       },
       {
         "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
           "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_interactive_ui_tests",
