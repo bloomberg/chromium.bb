@@ -138,6 +138,13 @@ interface NetworkServiceClient {
                   url.mojom.Url url,
                   string header_value,
                   int32 load_flags) => ();
+
+  // Called on every request completion to update the network traffic annotation
+  // ID, and the total bytes received and sent.
+  // |network_traffic_annotation_id_hash| represents the hash of unique tag that
+  // identifies the annotation of the request.
+  OnDataUseUpdate(int32 network_traffic_annotation_id_hash, int64 recv_bytes,
+                  int64 sent_bytes);
 };
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.

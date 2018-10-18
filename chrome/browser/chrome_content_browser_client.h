@@ -500,12 +500,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterRendererPreferenceWatcherForWorkers(
       content::BrowserContext* browser_context,
       content::mojom::RendererPreferenceWatcherPtr watcher) override;
-
   base::Optional<std::string> GetOriginPolicyErrorPage(
       content::OriginPolicyErrorReason error_reason,
       const url::Origin& origin,
       const GURL& url) override;
   bool CanIgnoreCertificateErrorIfNeeded() override;
+  void OnNetworkServiceDataUseUpdate(int32_t network_traffic_annotation_id_hash,
+                                     int64_t recv_bytes,
+                                     int64_t sent_bytes) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
