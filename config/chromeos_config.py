@@ -4066,9 +4066,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       # --- end from here ---
 
-      # Disabled pending resolution of crbug.com/894820.
-      #'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
-      #'betty-paladin': site_config.templates.tast_vm_paladin_tests,
+      'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
+      'betty-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
       # Enable the new tcmalloc version on certain boards.

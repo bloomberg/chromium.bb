@@ -173,7 +173,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     Raises:
       failures_lib.TestFailure if an internal error is encountered.
     """
-    image = os.path.join(self.GetImageDirSymlink(), constants.TEST_IMAGE_BIN)
+    image = os.path.join(self.GetImageDirSymlink(), constants.VM_IMAGE_BIN)
     ssh_key = os.path.join(self.GetImageDirSymlink(),
                            constants.TEST_KEY_PRIVATE)
     cmd = [TastVMTestStage.SCRIPT_PATH,
