@@ -127,8 +127,6 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 }
 
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
-  DCHECK_EQ(offsets_.size(), children_.size());
-
   WritingMode line_writing_mode(ToLineWritingMode(GetWritingMode()));
   NGPhysicalSize physical_size = Size().ConvertToPhysical(line_writing_mode);
 

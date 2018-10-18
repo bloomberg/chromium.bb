@@ -156,7 +156,6 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   // A vector of child offsets. Initially set by AddChild().
   const OffsetVector& Offsets() const { return offsets_; }
-  OffsetVector& MutableOffsets() { return offsets_; }
 
   NGPhysicalFragment::NGBoxType BoxType() const;
   NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
