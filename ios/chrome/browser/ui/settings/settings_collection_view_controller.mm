@@ -46,7 +46,7 @@
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/bandwidth_management_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -834,7 +834,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
 
-  SettingsRootCollectionViewController* controller;
+  UIViewController<SettingsRootViewControlling>* controller;
 
   switch (itemType) {
     case ItemTypeSignInButton:
@@ -883,7 +883,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
           initWithBrowserState:_browserState];
       break;
     case ItemTypeBandwidth:
-      controller = [[BandwidthManagementCollectionViewController alloc]
+      controller = [[BandwidthManagementTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAboutChrome:
