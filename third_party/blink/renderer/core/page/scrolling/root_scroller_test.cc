@@ -2464,7 +2464,7 @@ TEST_F(ImplicitRootScrollerSimTest, AppliedAtFractionalZoom) {
       << "<iframe> should remain promoted when URL bar is hidden";
 }
 
-class RootScrollerHitTest : public RootScrollerTest {
+class RootScrollerHitTest : public RootScrollerSimTest {
  public:
   void CheckHitTestAtBottomOfScreen() {
     HideTopControlsWithMaximalScroll();
@@ -2475,31 +2475,38 @@ class RootScrollerHitTest : public RootScrollerTest {
     // target.
     WebPoint point(200, 445);
     WebSize tap_area(20, 20);
-    WebHitTestResult result =
-        GetWebView()->HitTestResultForTap(point, tap_area);
+    WebHitTestResult result = WebView().HitTestResultForTap(point, tap_area);
 
     Node* hit_node = result.GetNode().Unwrap<Node>();
-    Element* target = MainFrame()->GetDocument()->getElementById("target");
+    Element* target = GetDocument().getElementById("target");
     ASSERT_TRUE(target);
     EXPECT_EQ(target, hit_node);
+  }
+
+  BrowserControls& GetBrowserControls() {
+    return GetDocument().GetPage()->GetBrowserControls();
   }
 
  private:
   void HideTopControlsWithMaximalScroll() {
     // Do a scroll gesture that hides the top controls and scrolls all the way
     // to the bottom.
-    GetWebView()->HandleInputEvent(
-        GenerateTouchGestureEvent(WebInputEvent::kGestureScrollBegin));
     ASSERT_EQ(1, GetBrowserControls().ShownRatio());
-    GetWebView()->HandleInputEvent(
-        GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0,
-                                  -GetBrowserControls().TopHeight()));
+    WebView().ApplyViewportChanges({gfx::Vector2dF(), gfx::Vector2dF(), 1, -1,
+                                    cc::BrowserControlsState::kBoth});
     ASSERT_EQ(0, GetBrowserControls().ShownRatio());
-    GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
-        WebInputEvent::kGestureScrollUpdate, 0, -100000));
-    GetWebView()->HandleInputEvent(
-        GenerateTouchGestureEvent(WebInputEvent::kGestureScrollEnd));
-    GetWebView()->ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
+
+    Element* scroller = GetDocument()
+                            .GetPage()
+                            ->GlobalRootScrollerController()
+                            .GlobalRootScroller();
+    ScrollableArea* scrollable_area =
+        ToLayoutBox(scroller->GetLayoutObject())->GetScrollableArea();
+    scrollable_area->DidScroll(FloatPoint(0, 100000));
+
+    WebView().ResizeWithBrowserControls(IntSize(400, 450), 50, 0, false);
+
+    Compositor().BeginFrame();
   }
 };
 
@@ -2508,42 +2515,46 @@ class RootScrollerHitTest : public RootScrollerTest {
 // when the target and scroller are in the same PaintLayer.
 // TODO(chrishtr): fix this for root scrollers.
 TEST_F(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
+  WebView().ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
+  GetBrowserControls().SetShownRatio(1);
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+
   // Add a target at the bottom of the root scroller that's the size of the url
   // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
   // that we can hit this target.
-  Initialize();
-  WebURL baseURL = URLTestHelpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body, html {"
-                                   "    height: 100%;"
-                                   "    margin: 0px;"
-                                   "  }"
-                                   "  #spacer {"
-                                   "    height: 1000px;"
-                                   "  }"
-                                   "  #container {"
-                                   "    position: absolute;"
-                                   "    width: 100%;"
-                                   "    height: 100%;"
-                                   "    overflow: auto;"
-                                   "  }"
-                                   "  #target {"
-                                   "    width: 100%;"
-                                   "    height: 50px;"
-                                   "  }"
-                                   "</style>"
-                                   "<div id='container'>"
-                                   "  <div id='spacer'></div>"
-                                   "  <div id='target'></div>"
-                                   "</div>",
-                                   baseURL);
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              height: 100%;
+              margin: 0px;
+            }
+            #spacer {
+              height: 1000px;
+            }
+            #container {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #target {
+              width: 100%;
+              height: 50px;
+            }
+          </style>
+          <div id='container'>
+            <div id='spacer'></div>
+            <div id='target'></div>
+          </div>
+      )HTML");
 
-  Document* document = MainFrame()->GetDocument();
-  Element* container = document->getElementById("container");
-  Element* target = document->getElementById("target");
-  SetAndSelectRootScroller(*document, container);
+  Element* container = GetDocument().getElementById("container");
+  Element* target = GetDocument().getElementById("target");
+  GetDocument().setRootScroller(container, ASSERT_NO_EXCEPTION);
+
+  Compositor().BeginFrame();
 
   // This test checks hit testing while the target is in the same PaintLayer as
   // the root scroller.
@@ -2557,43 +2568,47 @@ TEST_F(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
 // revealed by hiding the URL bar works properly when using a root scroller
 // when the target and scroller are in different PaintLayers.
 TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarDifferentLayer) {
+  WebView().ResizeWithBrowserControls(IntSize(400, 400), 50, 0, true);
+  GetBrowserControls().SetShownRatio(1);
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+
   // Add a target at the bottom of the root scroller that's the size of the url
   // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
   // that we can hit this target.
-  Initialize();
-  WebURL baseURL = URLTestHelpers::ToKURL("http://www.test.com/");
-  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body, html {"
-                                   "    height: 100%;"
-                                   "    margin: 0px;"
-                                   "  }"
-                                   "  #spacer {"
-                                   "    height: 1000px;"
-                                   "  }"
-                                   "  #container {"
-                                   "    position: absolute;"
-                                   "    width: 100%;"
-                                   "    height: 100%;"
-                                   "    overflow: auto;"
-                                   "  }"
-                                   "  #target {"
-                                   "    width: 100%;"
-                                   "    height: 50px;"
-                                   "    will-change: transform;"
-                                   "  }"
-                                   "</style>"
-                                   "<div id='container'>"
-                                   "  <div id='spacer'></div>"
-                                   "  <div id='target'></div>"
-                                   "</div>",
-                                   baseURL);
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            body, html {
+              height: 100%;
+              margin: 0px;
+            }
+            #spacer {
+              height: 1000px;
+            }
+            #container {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+            }
+            #target {
+              width: 100%;
+              height: 50px;
+              will-change: transform;
+            }
+          </style>
+          <div id='container'>
+            <div id='spacer'></div>
+            <div id='target'></div>
+          </div>
+      )HTML");
 
-  Document* document = MainFrame()->GetDocument();
-  Element* container = document->getElementById("container");
-  Element* target = document->getElementById("target");
-  SetAndSelectRootScroller(*document, container);
+  Element* container = GetDocument().getElementById("container");
+  Element* target = GetDocument().getElementById("target");
+  GetDocument().setRootScroller(container, ASSERT_NO_EXCEPTION);
+
+  Compositor().BeginFrame();
 
   // Ensure the target and container weren't put into the same layer.
   ASSERT_NE(ToLayoutBox(target->GetLayoutObject())->EnclosingLayer(),
