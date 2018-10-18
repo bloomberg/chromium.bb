@@ -63,6 +63,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                                          OnAuthenticateCallback callback);
   void AuthenticateUserWithExternalBinary(const AccountId& account_id,
                                           OnAuthenticateCallback callback);
+  void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);

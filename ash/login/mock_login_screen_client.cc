@@ -5,6 +5,7 @@
 #include "ash/login/mock_login_screen_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/login/login_screen_controller.h"
 #include "ash/shell.h"
@@ -43,6 +44,16 @@ void MockLoginScreenClient::AuthenticateUserWithExternalBinary(
   if (authenticate_user_with_external_binary_callback_storage_) {
     *authenticate_user_with_external_binary_callback_storage_ =
         std::move(callback);
+  } else {
+    std::move(callback).Run(authenticate_user_callback_result_);
+  }
+}
+
+void MockLoginScreenClient::EnrollUserWithExternalBinary(
+    EnrollUserWithExternalBinaryCallback callback) {
+  EnrollUserWithExternalBinary_(callback);
+  if (enroll_user_with_external_binary_callback_storage_) {
+    *enroll_user_with_external_binary_callback_storage_ = std::move(callback);
   } else {
     std::move(callback).Run(authenticate_user_callback_result_);
   }

@@ -380,6 +380,12 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithExternalBinary(
   std::move(callback).Run(false);
 }
 
+void LoginDisplayHostMojo::HandleEnrollUserWithExternalBinary(
+    EnrollUserWithExternalBinaryCallback callback) {
+  // Enroll in external binary auth system is not supported for login.
+  std::move(callback).Run(false);
+}
+
 void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
