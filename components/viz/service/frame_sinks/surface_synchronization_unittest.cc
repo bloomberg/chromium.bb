@@ -2757,12 +2757,20 @@ TEST_F(SurfaceSynchronizationTest,
 
   // |child_id2| Surface should not activate because |child_id1| was never
   // added as a dependency by a parent.
-  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
+  child_support1().SubmitCompositorFrame(
+      child_id2.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
   Surface* child_surface2 = GetSurfaceForId(child_id2);
   ASSERT_NE(nullptr, child_surface2);
   EXPECT_TRUE(child_surface2->HasPendingFrame());
   EXPECT_FALSE(child_surface2->HasActiveFrame());
+  EXPECT_TRUE(child_surface2->has_deadline());
+
+  FrameDeadline deadline = MakeDefaultDeadline();
+  base::TimeTicks deadline_wall_time = deadline.ToWallTime();
+  EXPECT_EQ(deadline_wall_time, child_surface2->deadline_for_testing());
 
   // The parent finally embeds a child surface that hasn't arrived which
   // activates |child_id2|'s Surface in order for the child to make forward
@@ -2971,7 +2979,6 @@ TEST_F(SurfaceSynchronizationTest, ChildBlockedOnParentDeadlineInPast) {
   EXPECT_TRUE(child_surface2->HasActiveFrame());
   EXPECT_FALSE(child_surface2->has_deadline());
 
-  // This failed before the latest change.
   EXPECT_TRUE(child_surface2->HasDependentFrame());
 }
 

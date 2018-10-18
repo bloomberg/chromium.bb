@@ -508,9 +508,13 @@ FrameDeadline Surface::ResolveFrameDeadline(
   const FrameDeadline& deadline = current_frame.metadata.deadline;
   uint32_t deadline_in_frames = deadline.deadline_in_frames();
 
+  bool block_activation =
+      block_activation_on_parent_ && !seen_first_surface_dependency_;
+
   // If no default deadline is available then all deadlines are treated as
   // effectively infinite deadlines.
-  if (!default_deadline || deadline.use_default_lower_bound_deadline()) {
+  if (!default_deadline || deadline.use_default_lower_bound_deadline() ||
+      block_activation) {
     deadline_in_frames = std::max(
         deadline_in_frames,
         default_deadline.value_or(std::numeric_limits<uint32_t>::max()));
