@@ -11,6 +11,33 @@
 namespace media_session {
 namespace test {
 
+MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
+    mojom::MediaSession& media_session)
+    : binding_(this) {
+  mojom::MediaSessionObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  media_session.AddObserver(std::move(observer));
+}
+
+MockMediaSessionMojoObserver::~MockMediaSessionMojoObserver() = default;
+
+void MockMediaSessionMojoObserver::MediaSessionInfoChanged(
+    mojom::MediaSessionInfoPtr session) {
+  session_info_ = std::move(session);
+
+  if (wanted_state_ == session_info_->state)
+    run_loop_.Quit();
+}
+
+void MockMediaSessionMojoObserver::WaitForState(
+    mojom::MediaSessionInfo::SessionState wanted_state) {
+  if (session_info_ && session_info_->state == wanted_state)
+    return;
+
+  wanted_state_ = wanted_state;
+  run_loop_.Run();
+}
+
 MockMediaSession::MockMediaSession() = default;
 
 MockMediaSession::MockMediaSession(bool force_duck) : force_duck_(force_duck) {}
@@ -18,7 +45,6 @@ MockMediaSession::MockMediaSession(bool force_duck) : force_duck_(force_duck) {}
 MockMediaSession::~MockMediaSession() {}
 
 void MockMediaSession::Suspend(SuspendType suspend_type) {
-  DCHECK_EQ(SuspendType::kSystem, suspend_type);
   SetState(mojom::MediaSessionInfo::SessionState::kSuspended);
 }
 
@@ -42,7 +68,9 @@ void MockMediaSession::GetMediaSessionInfo(
   std::move(callback).Run(GetMediaSessionInfoSync());
 }
 
-void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {}
+void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {
+  observers_.AddPtr(std::move(observer));
+}
 
 void MockMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
   mojom::MediaSessionDebugInfoPtr debug_info(
@@ -123,8 +151,14 @@ void MockMediaSession::SetState(mojom::MediaSessionInfo::SessionState state) {
 }
 
 void MockMediaSession::NotifyObservers() {
+  mojom::MediaSessionInfoPtr session_info = GetMediaSessionInfoSync();
+
   if (afr_client_.is_bound())
-    afr_client_->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+    afr_client_->MediaSessionInfoChanged(session_info.Clone());
+
+  observers_.ForAllPtrs([&session_info](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionInfoChanged(session_info.Clone());
+  });
 }
 
 mojom::MediaSessionInfoPtr MockMediaSession::GetMediaSessionInfoSync() const {

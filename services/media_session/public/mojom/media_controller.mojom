@@ -1,0 +1,13 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module media_session.mojom;
+
+// Controls a MediaSession. This will automatically route commands to the
+// correct session if the audio focus changes. If the media session is
+// not controllable then the commands will be no-ops.
+interface MediaController {
+  // Suspend the media session.
+  Suspend();
+};

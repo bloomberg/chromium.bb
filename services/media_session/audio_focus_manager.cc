@@ -201,11 +201,15 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
     observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
       observer->OnFocusLost(row->info().Clone());
     });
+
+    DidChangeFocus();
     return;
   }
 
   if (IsAudioFocusEnforcementEnabled())
     EnforceAudioFocusAbandon(row->audio_focus_type());
+
+  DidChangeFocus();
 
   // Notify observers that we lost audio focus.
   observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
@@ -236,11 +240,10 @@ void AudioFocusManager::BindToDebugInterface(
   debug_bindings_.AddBinding(this, std::move(request));
 }
 
-void AudioFocusManager::CloseAllMojoObjects() {
+void AudioFocusManager::BindToActiveControllerInterface(
+    mojom::MediaControllerRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  observers_.CloseAll();
-  bindings_.CloseAllBindings();
-  debug_bindings_.CloseAllBindings();
+  active_media_controller_.BindToInterface(std::move(request));
 }
 
 void AudioFocusManager::RequestAudioFocusInternal(
@@ -256,6 +259,8 @@ void AudioFocusManager::RequestAudioFocusInternal(
 
   row->SetAudioFocusType(type);
   audio_focus_stack_.push_back(std::move(row));
+
+  DidChangeFocus();
 
   // Notify observers that we were gained audio focus.
   mojom::MediaSessionInfoPtr session_info =
@@ -340,15 +345,17 @@ void AudioFocusManager::EnforceAudioFocusAbandon(mojom::AudioFocusType type) {
   }
 }
 
+void AudioFocusManager::DidChangeFocus() {
+  active_media_controller_.SetMediaSession(
+      audio_focus_stack_.empty() ? nullptr
+                                 : audio_focus_stack_.back()->session());
+}
+
 AudioFocusManager::AudioFocusManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-AudioFocusManager::~AudioFocusManager() {
-  DCHECK(observers_.empty());
-  DCHECK(bindings_.empty());
-  DCHECK(debug_bindings_.empty());
-}
+AudioFocusManager::~AudioFocusManager() = default;
 
 std::unique_ptr<AudioFocusManager::StackRow>
 AudioFocusManager::RemoveFocusEntryIfPresent(RequestId id) {
