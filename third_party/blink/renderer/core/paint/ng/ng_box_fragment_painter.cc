@@ -353,7 +353,7 @@ void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
 }
 
 void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
-  for (const auto& child : box_fragment_.Children()) {
+  for (const NGPaintFragment* child : box_fragment_.Children()) {
     const NGPhysicalFragment& fragment = child->PhysicalFragment();
     if (child->HasSelfPaintingLayer() || fragment.IsFloating())
       continue;
@@ -371,9 +371,9 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
 }
 
 void NGBoxFragmentPainter::PaintFloatingChildren(
-    const Vector<scoped_refptr<NGPaintFragment>>& children,
+    NGPaintFragment::ChildList children,
     const PaintInfo& paint_info) {
-  for (const auto& child : children) {
+  for (const NGPaintFragment* child : children) {
     const NGPhysicalFragment& fragment = child->PhysicalFragment();
     if (child->HasSelfPaintingLayer())
       continue;
@@ -698,10 +698,9 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(
-    const Vector<scoped_refptr<NGPaintFragment>>& line_boxes,
+    NGPaintFragment::ChildList line_boxes,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kSelection &&
@@ -725,7 +724,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     return;
 
   // TODO(layout-dev): Early return if no line intersects cull rect.
-  for (const auto& line : line_boxes) {
+  for (const NGPaintFragment* line : line_boxes) {
     if (line->PhysicalFragment().IsFloatingOrOutOfFlowPositioned())
       continue;
     const LayoutPoint child_offset =
@@ -741,10 +740,10 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 }
 
 void NGBoxFragmentPainter::PaintInlineChildren(
-    const Vector<scoped_refptr<NGPaintFragment>>& inline_children,
+    NGPaintFragment::ChildList inline_children,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-  for (const auto& child : inline_children) {
+  for (const NGPaintFragment* child : inline_children) {
     if (child->PhysicalFragment().IsFloating())
       continue;
     if (child->PhysicalFragment().IsAtomicInline()) {
@@ -756,7 +755,7 @@ void NGBoxFragmentPainter::PaintInlineChildren(
 }
 
 void NGBoxFragmentPainter::PaintInlineChildrenOutlines(
-    const Vector<scoped_refptr<NGPaintFragment>>& line_boxes,
+    NGPaintFragment::ChildList line_boxes,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   // TODO(layout-dev): Implement.
@@ -1170,12 +1169,14 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
 
 bool NGBoxFragmentPainter::HitTestChildren(
     HitTestResult& result,
-    const Vector<scoped_refptr<NGPaintFragment>>& children,
+    NGPaintFragment::ChildList children,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
-    const scoped_refptr<NGPaintFragment>& child = *iter;
+  Vector<NGPaintFragment*, 16> child_vector;
+  children.ToList(&child_vector);
+  for (unsigned i = child_vector.size(); i;) {
+    const NGPaintFragment* child = child_vector[--i];
     const NGPhysicalOffset offset = child->Offset();
     if (child->HasSelfPaintingLayer())
       continue;
@@ -1206,8 +1207,7 @@ bool NGBoxFragmentPainter::HitTestChildren(
       continue;
 
     // Hit test culled inline boxes between |fragment| and its parent fragment.
-    const NGPaintFragment* previous_sibling =
-        std::next(iter) == children.rend() ? nullptr : std::next(iter)->get();
+    const NGPaintFragment* previous_sibling = i ? child_vector[i - 1] : nullptr;
     if (HitTestCulledInlineAncestors(result, *child, previous_sibling,
                                      location_in_container,
                                      child_physical_offset))

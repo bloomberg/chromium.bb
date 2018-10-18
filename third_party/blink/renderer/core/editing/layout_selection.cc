@@ -563,7 +563,7 @@ static bool IsLastLineInInlineBlock(const NGPaintFragment& line) {
   NGPaintFragment* parent = line.Parent();
   if (!parent->PhysicalFragment().IsAtomicInline())
     return false;
-  return parent->Children().back().get() == &line;
+  return &parent->Children().back() == &line;
 }
 
 static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {

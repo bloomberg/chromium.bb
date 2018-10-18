@@ -24,9 +24,9 @@ void NGFieldsetPainter::PaintBoxDecorationBackground(
     const LayoutPoint paint_offset) {
   const NGPaintFragment* legend = nullptr;
   if (fieldset_.Children().size()) {
-    const auto first_child = fieldset_.Children()[0];
-    if (first_child->PhysicalFragment().IsRenderedLegend())
-      legend = &(*first_child);
+    const auto& first_child = fieldset_.Children().front();
+    if (first_child.PhysicalFragment().IsRenderedLegend())
+      legend = &first_child;
   }
 
   // Paint the fieldset (background, other decorations, and) border, with the
