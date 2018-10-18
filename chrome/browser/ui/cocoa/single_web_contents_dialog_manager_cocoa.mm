@@ -37,19 +37,21 @@ void SingleWebContentsDialogManagerCocoa::Show() {
   if (!host_)
     return;
 
-  NSView* parent_view = host_->GetHostView();
+  NSView* parent_view = host_->GetHostView().GetNativeNSView();
   // Note that simply [parent_view window] for an inactive tab is nil. However,
   // the following should always be non-nil for all WebContents containers.
-  NSWindow* parent_window =
-      delegate_->GetWebContents()->GetTopLevelNativeWindow();
+  NSWindow* parent_window = delegate_->GetWebContents()
+                                ->GetTopLevelNativeWindow()
+                                .GetNativeNSWindow();
 
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
       showSheet:sheet_ forParentView:parent_view];
 }
 
 void SingleWebContentsDialogManagerCocoa::Hide() {
-  NSWindow* parent_window =
-      delegate_->GetWebContents()->GetTopLevelNativeWindow();
+  NSWindow* parent_window = delegate_->GetWebContents()
+                                ->GetTopLevelNativeWindow()
+                                .GetNativeNSWindow();
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
       hideSheet:sheet_];
 }

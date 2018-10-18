@@ -48,7 +48,7 @@ void MonitorFinder::FetchMonitorFromWidget() {
     return;
 
   gfx::NativeView native_view = rfh->GetNativeView();
-  NSWindow* window = [native_view window];
+  NSWindow* window = [native_view.GetNativeNSView() window];
   NSScreen* screen = [window screen];
   CGDirectDisplayID display_id =
       [[[screen deviceDescription] objectForKey:@"NSScreenNumber"] intValue];

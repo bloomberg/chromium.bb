@@ -59,12 +59,19 @@ uint64_t g_last_bridged_native_widget_id = 0;
 
 // static
 BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromNativeWindow(
-    gfx::NativeWindow window) {
+    gfx::NativeWindow native_window) {
+  NSWindow* window = native_window.GetNativeNSWindow();
   if (NativeWidgetMacNSWindow* widget_window =
           base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
     return GetFromId([widget_window bridgedNativeWidgetId]);
   }
   return nullptr;  // Not created by NativeWidgetMac.
+}
+
+// static
+BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromNativeView(
+    gfx::NativeView native_view) {
+  return GetFromNativeWindow([native_view.GetNativeNSView() window]);
 }
 
 // static

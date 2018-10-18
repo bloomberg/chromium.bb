@@ -26,7 +26,7 @@ MenuPreTargetHandlerMac::MenuPreTargetHandlerMac(MenuController* controller,
     if (!ui::WeakPtrNSObjectFactory<MenuPreTargetHandlerMac>::Get(handle))
       return event;
 
-    if (!target_window || [event window] == target_window) {
+    if (!target_window || [event window] == target_window.GetNativeNSWindow()) {
       std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
       if (ui_event && ui_event->IsKeyEvent() &&
           controller_->OnWillDispatchKeyEvent(ui_event->AsKeyEvent()) !=

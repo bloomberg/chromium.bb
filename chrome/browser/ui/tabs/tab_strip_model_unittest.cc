@@ -2621,10 +2621,10 @@ TEST_P(TabStripModelTest, TabBlockedState) {
   // DummySingleWebContentsDialogManager doesn't care about the
   // dialog window value, so any dummy value works.
   DummySingleWebContentsDialogManager* native_manager =
-      new DummySingleWebContentsDialogManager(
-          reinterpret_cast<gfx::NativeWindow>(0), modal_dialog_manager);
+      new DummySingleWebContentsDialogManager(gfx::kNullNativeWindow,
+                                              modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
-      reinterpret_cast<gfx::NativeWindow>(0),
+      gfx::kNullNativeWindow,
       std::unique_ptr<web_modal::SingleWebContentsDialogManager>(
           native_manager));
   EXPECT_TRUE(strip_src.IsTabBlocked(1));

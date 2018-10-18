@@ -102,7 +102,7 @@ BrowserWindowTouchBarController* BrowserFrameMac::GetTouchBarController()
 int BrowserFrameMac::SheetPositionY() {
   web_modal::WebContentsModalDialogHost* dialog_host =
       browser_view_->GetWebContentsModalDialogHost();
-  NSView* view = dialog_host->GetHostView();
+  NSView* view = dialog_host->GetHostView().GetNativeNSView();
   // Get the position of the host view relative to the window since
   // ModalDialogHost::GetDialogPosition() is relative to the host view.
   int host_view_y =
@@ -118,7 +118,7 @@ void BrowserFrameMac::InitNativeWidget(
     const views::Widget::InitParams& params) {
   views::NativeWidgetMac::InitNativeWidget(params);
 
-  [[GetNativeWindow() contentView] setWantsLayer:YES];
+  [[GetNativeWindow().GetNativeNSWindow() contentView] setWantsLayer:YES];
 }
 
 NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
@@ -171,11 +171,12 @@ views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
   return nullptr;
 }
 
-void BrowserFrameMac::OnWindowDestroying(NSWindow* window) {
+void BrowserFrameMac::OnWindowDestroying(gfx::NativeWindow native_window) {
   // Clear delegates set in CreateNSWindow() to prevent objects with a reference
   // to |window| attempting to validate commands by looking for a Browser*.
   NativeWidgetMacNSWindow* ns_window =
-      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(window);
+      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(
+          native_window.GetNativeNSWindow());
   [ns_window setCommandHandler:nil];
   [ns_window setCommandDispatcherDelegate:nil];
   [ns_window setWindowTouchBarDelegate:nil];
@@ -237,7 +238,7 @@ bool BrowserFrameMac::HandleKeyboardEvent(
 
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
-  NSWindow* window = GetNativeWindow();
+  NSWindow* window = GetNativeWindow().GetNativeNSWindow();
   DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
   NSObject<CommandDispatchingWindow>* command_dispatching_window =
       base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);

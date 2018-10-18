@@ -115,8 +115,8 @@ class AXNativeWidgetMacTest : public test::WidgetTest {
     // Accessibility hit tests come in Cocoa screen coordinates.
     NSPoint midpoint_in_screen_ = gfx::ScreenPointToNSPoint(
         widget()->GetWindowBoundsInScreen().CenterPoint());
-    return
-        [widget()->GetNativeWindow() accessibilityHitTest:midpoint_in_screen_];
+    return [widget()->GetNativeWindow().GetNativeNSWindow()
+        accessibilityHitTest:midpoint_in_screen_];
   }
 
   id AttributeValueAtMidpoint(NSString* attribute) {
@@ -411,7 +411,7 @@ TEST_F(AXNativeWidgetMacTest, NativeWindowProperties) {
   // Make sure it's |view| in the hit test by checking its accessibility role.
   EXPECT_EQ(NSAccessibilityGroupRole, AXRoleString());
 
-  NSWindow* window = widget()->GetNativeWindow();
+  NSWindow* window = widget()->GetNativeWindow().GetNativeNSWindow();
   EXPECT_NSEQ(window, AttributeValueAtMidpoint(NSAccessibilityWindowAttribute));
   EXPECT_NSEQ(window, AttributeValueAtMidpoint(
                           NSAccessibilityTopLevelUIElementAttribute));
@@ -747,7 +747,8 @@ TEST_F(AXNativeWidgetMacTest, ProtectedTextfields) {
 
   // Get the Textfield accessibility object.
   NSPoint midpoint = gfx::ScreenPointToNSPoint(GetWidgetBounds().CenterPoint());
-  id ax_node = [widget()->GetNativeWindow() accessibilityHitTest:midpoint];
+  id ax_node = [widget()->GetNativeWindow().GetNativeNSWindow()
+      accessibilityHitTest:midpoint];
   EXPECT_TRUE(ax_node);
 
   // Create a native Cocoa NSSecureTextField to compare against.

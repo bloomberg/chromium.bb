@@ -11,7 +11,7 @@ namespace views {
 gfx::Size GetWindowSizeForClientSize(Widget* widget, const gfx::Size& size) {
   DCHECK(widget);
   return BridgedNativeWidgetImpl::GetWindowSizeForClientSize(
-      widget->GetNativeWindow(), size);
+      widget->GetNativeWindow().GetNativeNSWindow(), size);
 }
 
 }  // namespace views

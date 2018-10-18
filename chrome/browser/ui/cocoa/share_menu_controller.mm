@@ -156,7 +156,7 @@ NSString* const kRemindersSharingServiceName =
 
 // Saves details required by delegate methods for the transition animation.
 - (void)saveTransitionDataFromBrowser:(Browser*)browser {
-  windowForShare_ = browser->window()->GetNativeWindow();
+  windowForShare_ = browser->window()->GetNativeWindow().GetNativeNSWindow();
   BrowserView* browserView = BrowserView::GetBrowserViewForBrowser(browser);
   if (!browserView)
     return;

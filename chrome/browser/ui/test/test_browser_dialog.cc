@@ -94,7 +94,7 @@ bool TestBrowserDialog::VerifyUi() {
   // docked magnifier or Chromevox being enabled.
   views::Widget* dialog_widget = *(added.begin());
   const gfx::Rect dialog_bounds = dialog_widget->GetWindowBoundsInScreen();
-  auto* native_window = dialog_widget->GetNativeWindow();
+  gfx::NativeWindow native_window = dialog_widget->GetNativeWindow();
   DCHECK(native_window);
   display::Screen* screen = display::Screen::GetScreen();
   const gfx::Rect display_work_area =

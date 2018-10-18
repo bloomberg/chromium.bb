@@ -159,7 +159,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual BridgeFactoryHost* GetBridgeFactoryHost();
 
   // Optional hook for subclasses invoked by WindowDestroying().
-  virtual void OnWindowDestroying(NSWindow* window) {}
+  virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;

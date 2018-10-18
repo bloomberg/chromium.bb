@@ -34,10 +34,11 @@ std::unique_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
 }
 
 EventMonitorMac::EventMonitorMac(ui::EventObserver* event_observer,
-                                 gfx::NativeWindow target_window,
+                                 gfx::NativeWindow target_native_window,
                                  const std::set<ui::EventType>& types)
     : factory_(this), types_(types) {
   DCHECK(event_observer);
+  NSWindow* target_window = target_native_window.GetNativeNSWindow();
 
   // Capture a WeakPtr via NSObject. This allows the block to detect another
   // event monitor for the same event deleting |this|.

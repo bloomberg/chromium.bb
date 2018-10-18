@@ -76,7 +76,7 @@ class NativeViewHostMacTest : public test::NativeViewHostTestBase {
     toplevel()->GetRootView()->AddChildView(host());
     EXPECT_TRUE(native_host());
 
-    host()->Attach(native_view_);
+    host()->Attach(native_view_.get());
   }
 
  protected:
@@ -118,7 +118,7 @@ TEST_F(NativeViewHostMacTest, Attach) {
   EXPECT_FALSE([native_view_ window]);
   EXPECT_NSEQ(NSZeroRect, [native_view_ frame]);
 
-  host()->Attach(native_view_);
+  host()->Attach(native_view_.get());
   EXPECT_TRUE([native_view_ superview]);
   EXPECT_TRUE([native_view_ window]);
 
@@ -141,7 +141,7 @@ TEST_F(NativeViewHostMacTest, AccessibilityParent) {
   TestViewsHostable views_hostable;
   [view setViewsHostableView:&views_hostable];
 
-  host()->Attach(view);
+  host()->Attach(view.get());
   EXPECT_NSEQ(views_hostable.parent_accessibility_element(),
               toplevel()->GetRootView()->GetNativeViewAccessible());
 
@@ -186,14 +186,14 @@ TEST_F(NativeViewHostMacTest, NativeViewHidden) {
 
   host()->SetVisible(false);
   EXPECT_FALSE([native_view_ isHidden]);  // Stays visible.
-  host()->Attach(native_view_);
+  host()->Attach(native_view_.get());
   EXPECT_TRUE([native_view_ isHidden]);  // Hidden when attached.
 
   host()->Detach();
   [native_view_ setHidden:YES];
   host()->SetVisible(true);
   EXPECT_TRUE([native_view_ isHidden]);  // Stays hidden.
-  host()->Attach(native_view_);
+  host()->Attach(native_view_.get());
   EXPECT_FALSE([native_view_ isHidden]);  // Made visible when attached.
 
   EXPECT_TRUE([native_view_ superview]);
