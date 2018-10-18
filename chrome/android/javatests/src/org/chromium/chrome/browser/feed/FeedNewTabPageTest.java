@@ -6,12 +6,17 @@ package org.chromium.chrome.browser.feed;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.swipeLeft;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+
+import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
@@ -36,6 +41,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
@@ -61,6 +67,9 @@ import java.util.List;
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 public class FeedNewTabPageTest {
+    private static final int SIGNIN_PROMO_POSITION = 1;
+    private static final int ARTICLE_SECTION_HEADER_POSITION = 2;
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -114,18 +123,21 @@ public class FeedNewTabPageTest {
         // that sign-in promo is not shown.
         ThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedIn);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(1));
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
 
         // Simulate sign out, scroll to the position where sign-in promo could be placed, and verify
         // that sign-in promo is shown.
         ThreadUtils.runOnUiThreadBlocking(signinObserver::onSignedOut);
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(1));
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
 
         // Scroll to the article section header in case it is not visible.
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
 
         // Hide articles and verify that the sign-in promo is not shown.
         onView(withId(R.id.header_title)).perform(click());
@@ -134,6 +146,41 @@ public class FeedNewTabPageTest {
         // Show articles and verify that the sign-in promo is shown.
         onView(withId(R.id.header_title)).perform(click());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"FeedNewTabPage"})
+    public void testSignInPromo_DismissBySwipe() {
+        boolean dismissed = ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+        if (dismissed) {
+            ChromePreferenceManager.getInstance().writeBoolean(
+                    ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+        }
+
+        // Verify that sign-in promo is displayed initially.
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
+        onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
+
+        // Swipe away the sign-in promo.
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        SIGNIN_PROMO_POSITION, swipeLeft()));
+
+        ViewGroup view = (ViewGroup) mNtp.getStream().getView();
+        waitForView(view, withId(R.id.signin_promo_view_container), VIEW_NULL);
+        waitForView(view, allOf(withId(R.id.header_title), isDisplayed()));
+
+        // Verify that sign-in promo is gone, but new tab page layout and header are displayed.
+        onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
+        onView(withId(R.id.header_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.ntp_content)).check(matches(isDisplayed()));
+
+        // Reset state.
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, dismissed);
     }
 
     @Test
