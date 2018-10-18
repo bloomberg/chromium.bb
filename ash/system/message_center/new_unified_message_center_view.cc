@@ -208,6 +208,11 @@ void NewUnifiedMessageCenterView::UpdateVisibility() {
 }
 
 void NewUnifiedMessageCenterView::ScrollToPositionFromBottom() {
+  // Following logic doesn't work when the view is invisible, because it uses
+  // the height of |scroller_|.
+  if (!visible())
+    return;
+
   // If the last notification is taller than |scroller_|, we should align the
   // top of the notification with the top of |scroller_|.
   const int last_notification_offset =
