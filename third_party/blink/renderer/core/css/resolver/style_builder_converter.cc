@@ -1701,6 +1701,18 @@ static const CSSValue& ComputeRegisteredPropertyValue(
           css_to_length_conversion_data.CopyWithAdjustedZoom(1));
       return *CSSPrimitiveValue::Create(length, 1);
     }
+    // If we encounter a calculated number that was not resolved during
+    // parsing, it means that a calc()-expression was allowed in place of
+    // an integer. Such calc()-for-integers must be rounded at computed value
+    // time.
+    // https://drafts.csswg.org/css-values-4/#calc-type-checking
+    if (primitive_value.IsCalculated() &&
+        (primitive_value.TypeWithCalcResolved() ==
+         CSSPrimitiveValue::UnitType::kNumber)) {
+      double double_value = primitive_value.CssCalcValue()->DoubleValue();
+      auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
+      return *CSSPrimitiveValue::Create(std::round(double_value), unit_type);
+    }
   }
   return value;
 }

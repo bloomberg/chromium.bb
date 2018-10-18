@@ -245,6 +245,30 @@ CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
   return nullptr;
 }
 
+// This implements the behavior defined in [1], where calc() expressions
+// are valid when <integer> is expected, even if the calc()-expression does
+// not result in an integral value.
+//
+// TODO(andruud): Eventually this behavior should just be part of
+// ConsumeInteger, and this function can be removed. For now, having a separate
+// function with this behavior allows us to implement [1] gradually.
+//
+// [1] https://drafts.csswg.org/css-values-4/#calc-type-checking
+CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(CSSParserTokenRange& range) {
+  CSSParserTokenRange int_range(range);
+  if (CSSPrimitiveValue* value = ConsumeInteger(int_range)) {
+    range = int_range;
+    return value;
+  }
+  CalcParser calc_parser(range);
+  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+    if (calculation->Category() != kCalcNumber)
+      return nullptr;
+    return calc_parser.ConsumeValue();
+  }
+  return nullptr;
+}
+
 CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenRange& range) {
   return ConsumeInteger(range, 1);
 }

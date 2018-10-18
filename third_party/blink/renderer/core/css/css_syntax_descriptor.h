@@ -49,6 +49,7 @@ class CSSSyntaxComponent {
   const String& GetString() const { return string_; }
   CSSSyntaxRepeat GetRepeat() const { return repeat_; }
   bool IsRepeatable() const { return repeat_ != CSSSyntaxRepeat::kNone; }
+  bool IsInteger() const { return type_ == CSSSyntaxType::kInteger; }
   char Separator() const {
     DCHECK(IsRepeatable());
     return repeat_ == CSSSyntaxRepeat::kSpaceSeparated ? ' ' : ',';
@@ -69,6 +70,7 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
                         bool is_animation_tainted) const;
+  const CSSSyntaxComponent* Match(const CSSStyleValue&) const;
   bool CanTake(const CSSStyleValue&) const;
   bool IsValid() const { return !syntax_components_.IsEmpty(); }
   bool IsTokenStream() const {

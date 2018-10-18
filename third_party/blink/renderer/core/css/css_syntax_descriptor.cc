@@ -179,7 +179,7 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::kUrl:
       return ConsumeUrl(range, context);
     case CSSSyntaxType::kInteger:
-      return ConsumeInteger(range);
+      return ConsumeIntegerOrNumberCalc(range);
     case CSSSyntaxType::kAngle:
       return ConsumeAngle(range, context, base::Optional<WebFeature>());
     case CSSSyntaxType::kTime:
@@ -278,12 +278,17 @@ bool CSSSyntaxComponent::CanTake(const CSSStyleValue& value) const {
   }
 }
 
-bool CSSSyntaxDescriptor::CanTake(const CSSStyleValue& value) const {
+const CSSSyntaxComponent* CSSSyntaxDescriptor::Match(
+    const CSSStyleValue& value) const {
   for (const CSSSyntaxComponent& component : syntax_components_) {
     if (component.CanTake(value))
-      return true;
+      return &component;
   }
-  return false;
+  return nullptr;
+}
+
+bool CSSSyntaxDescriptor::CanTake(const CSSStyleValue& value) const {
+  return Match(value);
 }
 
 const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,

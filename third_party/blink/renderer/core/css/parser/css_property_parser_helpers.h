@@ -45,6 +45,7 @@ enum class UnitlessQuirk { kAllow, kForbid };
 CSSPrimitiveValue* ConsumeInteger(
     CSSParserTokenRange&,
     double minimum_value = -std::numeric_limits<double>::max());
+CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(CSSParserTokenRange&);
 CSSPrimitiveValue* ConsumePositiveInteger(CSSParserTokenRange&);
 bool ConsumeNumberRaw(CSSParserTokenRange&, double& result);
 CSSPrimitiveValue* ConsumeNumber(CSSParserTokenRange&, ValueRange);
