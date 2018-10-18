@@ -8,7 +8,7 @@
 // included file but that's all right since any javascript file should start
 // with a copyright comment anyway.
 
-// <include src="../../base/js/error_counter.js">
+// <include src="error_util.js">
 
 // <include src="../../file_manager/common/js/metrics_base.js">
 // <include src="video_player_metrics.js">
