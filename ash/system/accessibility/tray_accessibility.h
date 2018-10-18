@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
-#define ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
+#ifndef ASH_SYSTEM_ACCESSIBILITY_TRAY_ACCESSIBILITY_H_
+#define ASH_SYSTEM_ACCESSIBILITY_TRAY_ACCESSIBILITY_H_
 
 #include <stdint.h>
 
@@ -25,7 +25,7 @@ namespace views {
 class Button;
 class Button;
 class View;
-}
+}  // namespace views
 
 namespace ash {
 class HoverHighlightView;
@@ -150,4 +150,4 @@ class TrayAccessibility : public TrayImageItem,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
+#endif  // ASH_SYSTEM_ACCESSIBILITY_TRAY_ACCESSIBILITY_H_
