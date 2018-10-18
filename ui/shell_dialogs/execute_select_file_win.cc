@@ -13,9 +13,9 @@
 #include "base/files/file_util.h"
 #include "base/win/com_init_util.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/shortcut.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/win/open_file_name_win.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -36,10 +36,92 @@ base::string16 GetExtensionWithoutLeadingDot(const base::string16& extension) {
   return extension.empty() ? extension : extension.substr(1);
 }
 
-struct SelectFolderDialogOptions {
-  const wchar_t* default_path;
-  bool is_upload;
-};
+// Sets which path is going to be open when the dialog will be shown. If
+// |default_path| is not only a directory, also sets the contents of the text
+// box equals to the basename of the path.
+bool SetDefaultPath(IFileDialog* file_dialog,
+                    const base::FilePath& default_path) {
+  if (default_path.empty())
+    return true;
+
+  base::FilePath default_folder;
+  base::FilePath default_file_name;
+  if (IsDirectory(default_path)) {
+    default_folder = default_path;
+  } else {
+    default_folder = default_path.DirName();
+    default_file_name = default_path.BaseName();
+  }
+
+  // Do not fail the file dialog operation if the specified folder is invalid.
+  Microsoft::WRL::ComPtr<IShellItem> default_folder_shell_item;
+  if (SUCCEEDED(SHCreateItemFromParsingName(
+          default_folder.value().c_str(), nullptr,
+          IID_PPV_ARGS(&default_folder_shell_item)))) {
+    if (FAILED(file_dialog->SetFolder(default_folder_shell_item.Get())))
+      return false;
+  }
+
+  return SUCCEEDED(file_dialog->SetFileName(default_file_name.value().c_str()));
+}
+
+// Sets the file extension filters on the dialog.
+bool SetFilters(IFileDialog* file_dialog,
+                const std::vector<FileFilterSpec>& filter,
+                int filter_index) {
+  if (filter.empty())
+    return true;
+
+  // A COMDLG_FILTERSPEC instance does not own any memory. |filter| must still
+  // be alive at the time the dialog is shown.
+  std::vector<COMDLG_FILTERSPEC> comdlg_filterspec(filter.size());
+
+  for (size_t i = 0; i < filter.size(); ++i) {
+    comdlg_filterspec[i].pszName = filter[i].description.c_str();
+    comdlg_filterspec[i].pszSpec = filter[i].extension_spec.c_str();
+  }
+
+  return SUCCEEDED(file_dialog->SetFileTypes(comdlg_filterspec.size(),
+                                             comdlg_filterspec.data())) &&
+         SUCCEEDED(file_dialog->SetFileTypeIndex(filter_index));
+}
+
+// Sets the requested |dialog_options|, making sure to keep the default values
+// when not overwritten.
+bool SetOptions(IFileDialog* file_dialog, DWORD dialog_options) {
+  // First retrieve the default options for a file dialog.
+  DWORD options;
+  if (FAILED(file_dialog->GetOptions(&options)))
+    return false;
+
+  options |= dialog_options;
+
+  return SUCCEEDED(file_dialog->SetOptions(options));
+}
+
+// Configures a |file_dialog| object given the specified parameters.
+bool ConfigureDialog(IFileDialog* file_dialog,
+                     const base::string16& title,
+                     const base::string16& ok_button_label,
+                     const base::FilePath& default_path,
+                     const std::vector<FileFilterSpec>& filter,
+                     int filter_index,
+                     DWORD dialog_options) {
+  // Set title.
+  if (!title.empty()) {
+    if (FAILED(file_dialog->SetTitle(title.c_str())))
+      return false;
+  }
+
+  if (!ok_button_label.empty()) {
+    if (FAILED(file_dialog->SetOkButtonLabel(ok_button_label.c_str())))
+      return false;
+  }
+
+  return SetDefaultPath(file_dialog, default_path) &&
+         SetOptions(file_dialog, dialog_options) &&
+         SetFilters(file_dialog, filter, filter_index);
+}
 
 // Prompt the user for location to save a file.
 // Callers should provide the filter string, and also a filter index.
@@ -51,112 +133,127 @@ struct SelectFolderDialogOptions {
 // returns the file name which contains the drive designator, path, file name,
 // and extension of the user selected file name. |def_ext| is the default
 // extension to give to the file if the user did not enter an extension.
-bool SaveFileAsWithFilter(HWND owner,
-                          const base::FilePath& default_path,
-                          const base::string16& filter,
-                          const base::string16& def_ext,
-                          DWORD* index,
-                          base::FilePath* path) {
-  DCHECK(path);
-  // Having an empty filter makes for a bad user experience. We should always
-  // specify a filter when saving.
-  DCHECK(!filter.empty());
-
-  ui::win::OpenFileName save_as(owner, OFN_OVERWRITEPROMPT | OFN_EXPLORER |
-                                           OFN_ENABLESIZING | OFN_NOCHANGEDIR |
-                                           OFN_PATHMUSTEXIST);
-
-  if (!default_path.empty()) {
-    base::FilePath suggested_file_name;
-    base::FilePath suggested_directory;
-    if (IsDirectory(default_path)) {
-      suggested_directory = default_path;
-    } else {
-      suggested_directory = default_path.DirName();
-      suggested_file_name = default_path.BaseName();
-      // If the default_path is a root directory, |suggested_file_name| will be
-      // '\', and the call to GetSaveFileName below will fail.
-      if (suggested_file_name.value() == L"\\")
-        suggested_file_name.clear();
-    }
-    save_as.SetInitialSelection(suggested_directory, suggested_file_name);
+bool RunSaveFileDialog(HWND owner,
+                       const base::string16& title,
+                       const base::FilePath& default_path,
+                       const std::vector<FileFilterSpec>& filter,
+                       DWORD dialog_options,
+                       const base::string16& def_ext,
+                       int* filter_index,
+                       base::FilePath* path) {
+  Microsoft::WRL::ComPtr<IFileSaveDialog> file_save_dialog;
+  if (FAILED(::CoCreateInstance(CLSID_FileSaveDialog, nullptr,
+                                CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&file_save_dialog)))) {
+    return false;
   }
 
-  save_as.GetOPENFILENAME()->lpstrFilter =
-      filter.empty() ? nullptr : filter.c_str();
-  save_as.GetOPENFILENAME()->nFilterIndex = *index;
-  save_as.GetOPENFILENAME()->lpstrDefExt = &def_ext[0];
+  if (!ConfigureDialog(file_save_dialog.Get(), title, base::string16(),
+                       default_path, filter, *filter_index, dialog_options)) {
+    return false;
+  }
 
-  BOOL success = ::GetSaveFileName(save_as.GetOPENFILENAME());
+  file_save_dialog->SetDefaultExtension(def_ext.c_str());
+
+  HRESULT hr = file_save_dialog->Show(owner);
   BaseShellDialogImpl::DisableOwner(owner);
-  if (!success)
+  if (FAILED(hr))
     return false;
 
-  // Return the user's choice.
-  *path = base::FilePath(save_as.GetOPENFILENAME()->lpstrFile);
-  *index = save_as.GetOPENFILENAME()->nFilterIndex;
+  UINT file_type_index;
+  if (FAILED(file_save_dialog->GetFileTypeIndex(&file_type_index)))
+    return false;
 
-  // Figure out what filter got selected. The filter index is 1-based.
-  base::string16 filter_selected;
-  if (*index > 0) {
-    std::vector<std::tuple<base::string16, base::string16>> filters =
-        ui::win::OpenFileName::GetFilters(save_as.GetOPENFILENAME());
-    if (*index > filters.size())
-      NOTREACHED() << "Invalid filter index.";
-    else
-      filter_selected = std::get<1>(filters[*index - 1]);
+  *filter_index = static_cast<int>(file_type_index);
+
+  Microsoft::WRL::ComPtr<IShellItem> result;
+  if (FAILED(file_save_dialog->GetResult(&result)))
+    return false;
+
+  base::win::ScopedCoMem<wchar_t> display_name;
+  if (FAILED(result->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING,
+                                    &display_name))) {
+    return false;
   }
 
-  // Get the extension that was suggested to the user (when the Save As dialog
-  // was opened).
-  base::string16 suggested_ext =
-      GetExtensionWithoutLeadingDot(default_path.Extension());
-
-  // If we can't get the extension from the default_path, we use the default
-  // extension passed in. This is to cover cases like when saving a web page,
-  // where we get passed in a name without an extension and a default extension
-  // along with it.
-  if (suggested_ext.empty())
-    suggested_ext = def_ext;
-
-  *path = base::FilePath(
-      AppendExtensionIfNeeded(path->value(), filter_selected, suggested_ext));
+  *path = base::FilePath(display_name.get());
   return true;
 }
 
-int CALLBACK BrowseCallbackProc(HWND window,
-                                UINT message,
-                                LPARAM parameter,
-                                LPARAM data) {
-  if (message == BFFM_INITIALIZED) {
-    SelectFolderDialogOptions* options =
-        reinterpret_cast<SelectFolderDialogOptions*>(data);
-    if (options->is_upload) {
-      SendMessage(window, BFFM_SETOKTEXT, 0,
-                  reinterpret_cast<LPARAM>(
-                      l10n_util::GetStringUTF16(
-                          IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON)
-                          .c_str()));
-    }
-    if (options->default_path) {
-      SendMessage(window, BFFM_SETSELECTION, TRUE,
-                  reinterpret_cast<LPARAM>(options->default_path));
-    }
+// Runs an Open file dialog box, with similar semantics for input parameters as
+// RunSaveFileDialog.
+bool RunOpenFileDialog(HWND owner,
+                       const base::string16& title,
+                       const base::string16& ok_button_label,
+                       const base::FilePath& default_path,
+                       const std::vector<FileFilterSpec>& filter,
+                       DWORD dialog_options,
+                       int* filter_index,
+                       std::vector<base::FilePath>* paths) {
+  Microsoft::WRL::ComPtr<IFileOpenDialog> file_open_dialog;
+  if (FAILED(::CoCreateInstance(CLSID_FileOpenDialog, nullptr,
+                                CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&file_open_dialog)))) {
+    return false;
   }
-  return 0;
+
+  if (!ConfigureDialog(file_open_dialog.Get(), title, ok_button_label,
+                       default_path, filter, *filter_index, dialog_options)) {
+    return false;
+  }
+
+  HRESULT hr = file_open_dialog->Show(owner);
+  BaseShellDialogImpl::DisableOwner(owner);
+  if (FAILED(hr))
+    return false;
+
+  UINT file_type_index;
+  if (FAILED(file_open_dialog->GetFileTypeIndex(&file_type_index)))
+    return false;
+
+  *filter_index = static_cast<int>(file_type_index);
+
+  Microsoft::WRL::ComPtr<IShellItemArray> selected_items;
+  if (FAILED(file_open_dialog->GetResults(&selected_items)))
+    return false;
+
+  DWORD result_count;
+  if (FAILED(selected_items->GetCount(&result_count)))
+    return false;
+
+  DCHECK(result_count == 1 || (dialog_options & FOS_ALLOWMULTISELECT) == 0);
+
+  std::vector<base::FilePath> result(result_count);
+  for (DWORD i = 0; i < result_count; ++i) {
+    Microsoft::WRL::ComPtr<IShellItem> shell_item;
+    if (FAILED(selected_items->GetItemAt(i, &shell_item)))
+      return false;
+
+    base::win::ScopedCoMem<wchar_t> display_name;
+    if (FAILED(shell_item->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING,
+                                          &display_name))) {
+      return false;
+    }
+
+    result[i] = base::FilePath(display_name.get());
+  }
+
+  // Only modify the out parameter if the enumeration didn't fail.
+  *paths = std::move(result);
+  return !paths->empty();
 }
 
 // Runs a Folder selection dialog box, passes back the selected folder in |path|
 // and returns true if the user clicks OK. If the user cancels the dialog box
 // the value in |path| is not modified and returns false. Run on the dialog
 // thread.
-bool RunSelectFolderDialog(HWND owner,
-                           SelectFileDialog::Type type,
-                           const base::string16& title,
-                           const base::FilePath& default_path,
-                           base::FilePath* path) {
-  base::win::AssertComInitialized();
-  DCHECK(path);
+bool ExecuteSelectFolder(HWND owner,
+                         SelectFileDialog::Type type,
+                         const base::string16& title,
+                         const base::FilePath& default_path,
+                         std::vector<base::FilePath>* paths) {
+  DCHECK(paths);
+
   base::string16 new_title = title;
   if (new_title.empty() && type == SelectFileDialog::SELECT_UPLOAD_FOLDER) {
     // If it's for uploading don't use default dialog title to
@@ -165,123 +262,65 @@ bool RunSelectFolderDialog(HWND owner,
         l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE);
   }
 
-  wchar_t dir_buffer[MAX_PATH + 1];
-
-  bool result = false;
-  BROWSEINFO browse_info = {};
-  browse_info.hwndOwner = owner;
-  browse_info.lpszTitle = new_title.c_str();
-  browse_info.pszDisplayName = dir_buffer;
-  browse_info.ulFlags = BIF_USENEWUI | BIF_RETURNONLYFSDIRS;
-
-  // If uploading or a default path was provided, update the BROWSEINFO
-  // and set the callback function for the dialog so the strings can be set in
-  // the callback.
-  SelectFolderDialogOptions dialog_options = {};
-  if (!default_path.empty())
-    dialog_options.default_path = default_path.value().c_str();
-  dialog_options.is_upload = type == SelectFileDialog::SELECT_UPLOAD_FOLDER;
-  if (type == SelectFileDialog::SELECT_UPLOAD_FOLDER ||
-      type == SelectFileDialog::SELECT_EXISTING_FOLDER) {
-    browse_info.ulFlags |= BIF_NONEWFOLDERBUTTON;
-  }
-  if (dialog_options.is_upload || dialog_options.default_path) {
-    browse_info.lParam = reinterpret_cast<LPARAM>(&dialog_options);
-    browse_info.lpfn = &BrowseCallbackProc;
+  base::string16 ok_button_label;
+  if (type == SelectFileDialog::SELECT_UPLOAD_FOLDER) {
+    ok_button_label = l10n_util::GetStringUTF16(
+        IDS_SELECT_UPLOAD_FOLDER_DIALOG_UPLOAD_BUTTON);
   }
 
-  LPITEMIDLIST list = SHBrowseForFolder(&browse_info);
-  BaseShellDialogImpl::DisableOwner(owner);
-  if (list) {
-    STRRET out_dir_buffer = {};
-    out_dir_buffer.uType = STRRET_WSTR;
-    Microsoft::WRL::ComPtr<IShellFolder> shell_folder;
-    if (SUCCEEDED(SHGetDesktopFolder(&shell_folder))) {
-      HRESULT hr = shell_folder->GetDisplayNameOf(list, SHGDN_FORPARSING,
-                                                  &out_dir_buffer);
-      if (SUCCEEDED(hr) && out_dir_buffer.uType == STRRET_WSTR) {
-        *path = base::FilePath(out_dir_buffer.pOleStr);
-        CoTaskMemFree(out_dir_buffer.pOleStr);
-        result = true;
-      } else {
-        // Use old way if we don't get what we want.
-        wchar_t old_out_dir_buffer[MAX_PATH + 1];
-        if (SHGetPathFromIDList(list, old_out_dir_buffer)) {
-          *path = base::FilePath(old_out_dir_buffer);
-          result = true;
-        }
-      }
+  DWORD dialog_options = FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM;
 
-      // According to MSDN, Win2000 will not resolve shortcuts, so we do it
-      // ourselves.
-      base::win::ResolveShortcut(*path, path, nullptr);
-    }
-    CoTaskMemFree(list);
-  }
-  return result;
+  std::vector<FileFilterSpec> no_filter;
+  int filter_index = 0;
+
+  return RunOpenFileDialog(owner, new_title, ok_button_label, default_path,
+                           no_filter, dialog_options, &filter_index, paths);
 }
 
-// Runs an Open file dialog box, with similar semantics for input parameters as
-// RunSelectFolderDialog.
-bool RunOpenFileDialog(HWND owner,
-                       const base::string16& title,
-                       const base::FilePath& default_path,
-                       const base::string16& filter,
-                       base::FilePath* path) {
-  // We use OFN_NOCHANGEDIR so that the user can rename or delete the
-  // directory without having to close Chrome first.
-  ui::win::OpenFileName ofn(owner, OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR);
-  if (!default_path.empty()) {
-    if (IsDirectory(default_path))
-      ofn.SetInitialSelection(default_path, base::FilePath());
-    else
-      ofn.SetInitialSelection(default_path.DirName(), default_path.BaseName());
-  }
-  if (!filter.empty())
-    ofn.GetOPENFILENAME()->lpstrFilter = filter.c_str();
-
-  BOOL success = ::GetOpenFileName(ofn.GetOPENFILENAME());
-  BaseShellDialogImpl::DisableOwner(owner);
-  if (success)
-    *path = ofn.GetSingleResult();
-  return success;
+bool ExecuteSelectSingleFile(HWND owner,
+                             const base::string16& title,
+                             const base::FilePath& default_path,
+                             const std::vector<FileFilterSpec>& filter,
+                             int* filter_index,
+                             std::vector<base::FilePath>* paths) {
+  // Note: The title is not passed down for historical reasons.
+  // TODO(pmonette): Figure out if it's a worthwhile improvement.
+  return RunOpenFileDialog(owner, base::string16(), base::string16(),
+                           default_path, filter, 0, filter_index, paths);
 }
 
-// Runs an Open file dialog box that supports multi-select, with similar
-// semantics for input parameters as RunOpenFileDialog.
-bool RunOpenMultiFileDialog(HWND owner,
-                            const base::string16& title,
-                            const base::FilePath& default_path,
-                            const base::string16& filter,
-                            std::vector<base::FilePath>* paths) {
-  // We use OFN_NOCHANGEDIR so that the user can rename or delete the directory
-  // without having to close Chrome first.
-  ui::win::OpenFileName ofn(owner, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST |
-                                       OFN_EXPLORER | OFN_HIDEREADONLY |
-                                       OFN_ALLOWMULTISELECT | OFN_NOCHANGEDIR);
-  if (!default_path.empty()) {
-    if (IsDirectory(default_path))
-      ofn.SetInitialSelection(default_path, base::FilePath());
-    else
-      ofn.SetInitialSelection(default_path.DirName(), base::FilePath());
-  }
-  if (!filter.empty())
-    ofn.GetOPENFILENAME()->lpstrFilter = filter.c_str();
+bool ExecuteSelectMultipleFile(HWND owner,
+                               const base::string16& title,
+                               const base::FilePath& default_path,
+                               const std::vector<FileFilterSpec>& filter,
+                               int* filter_index,
+                               std::vector<base::FilePath>* paths) {
+  DWORD dialog_options = FOS_ALLOWMULTISELECT;
 
-  base::FilePath directory;
-  std::vector<base::FilePath> filenames;
+  // Note: The title is not passed down for historical reasons.
+  // TODO(pmonette): Figure out if it's a worthwhile improvement.
+  return RunOpenFileDialog(owner, base::string16(), base::string16(),
+                           default_path, filter, dialog_options, filter_index,
+                           paths);
+}
 
-  BOOL success = ::GetOpenFileName(ofn.GetOPENFILENAME());
-  BaseShellDialogImpl::DisableOwner(owner);
-  if (success)
-    ofn.GetResult(&directory, &filenames);
+bool ExecuteSaveFile(HWND owner,
+                     const base::FilePath& default_path,
+                     const std::vector<FileFilterSpec>& filter,
+                     const base::string16& def_ext,
+                     int* filter_index,
+                     base::FilePath* path) {
+  DCHECK(path);
+  // Having an empty filter for a bad user experience. We should always
+  // specify a filter when saving.
+  DCHECK(!filter.empty());
 
-  for (std::vector<base::FilePath>::iterator it = filenames.begin();
-       it != filenames.end(); ++it) {
-    paths->push_back(directory.Append(*it));
-  }
+  DWORD dialog_options = FOS_OVERWRITEPROMPT;
 
-  return !paths->empty();
+  // Note: The title is not passed down for historical reasons.
+  // TODO(pmonette): Figure out if it's a worthwhile improvement.
+  return RunSaveFileDialog(owner, base::string16(), default_path, filter,
+                           dialog_options, def_ext, filter_index, path);
 }
 
 }  // namespace
@@ -330,45 +369,39 @@ std::pair<std::vector<base::FilePath>, int> ExecuteSelectFile(
     SelectFileDialog::Type type,
     const base::string16& title,
     const base::FilePath& default_path,
-    const base::string16& filter,
+    const std::vector<FileFilterSpec>& filter,
     int file_type_index,
     const base::string16& default_extension,
     HWND owner) {
+  base::win::AssertComInitialized();
   std::vector<base::FilePath> paths;
-
-  DWORD filter_index = file_type_index;
-
   switch (type) {
     case SelectFileDialog::SELECT_FOLDER:
     case SelectFileDialog::SELECT_UPLOAD_FOLDER:
-    case SelectFileDialog::SELECT_EXISTING_FOLDER: {
-      base::FilePath path;
-      if (RunSelectFolderDialog(owner, type, title, default_path, &path))
-        paths.push_back(std::move(path));
+    case SelectFileDialog::SELECT_EXISTING_FOLDER:
+      ExecuteSelectFolder(owner, type, title, default_path, &paths);
       break;
-    }
     case SelectFileDialog::SELECT_SAVEAS_FILE: {
       base::FilePath path;
-      if (SaveFileAsWithFilter(owner, default_path, filter, default_extension,
-                               &filter_index, &path)) {
+      if (ExecuteSaveFile(owner, default_path, filter, default_extension,
+                          &file_type_index, &path)) {
         paths.push_back(std::move(path));
       }
       break;
     }
-    case SelectFileDialog::SELECT_OPEN_FILE: {
-      base::FilePath path;
-      if (RunOpenFileDialog(owner, title, default_path, filter, &path))
-        paths.push_back(std::move(path));
+    case SelectFileDialog::SELECT_OPEN_FILE:
+      ExecuteSelectSingleFile(owner, title, default_path, filter,
+                              &file_type_index, &paths);
       break;
-    }
     case SelectFileDialog::SELECT_OPEN_MULTI_FILE:
-      RunOpenMultiFileDialog(owner, title, default_path, filter, &paths);
+      ExecuteSelectMultipleFile(owner, title, default_path, filter,
+                                &file_type_index, &paths);
       break;
     case SelectFileDialog::SELECT_NONE:
       NOTREACHED();
   }
 
-  return std::make_pair(std::move(paths), filter_index);
+  return std::make_pair(std::move(paths), file_type_index);
 }
 
 }  // namespace ui

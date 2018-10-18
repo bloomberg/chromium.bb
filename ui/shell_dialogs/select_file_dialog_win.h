@@ -22,13 +22,14 @@ class FilePath;
 namespace ui {
 
 class SelectFilePolicy;
+struct FileFilterSpec;
 
 using ExecuteSelectFileCallback =
     base::RepeatingCallback<std::pair<std::vector<base::FilePath>, int>(
         SelectFileDialog::Type type,
         const base::string16& title,
         const base::FilePath& default_path,
-        const base::string16& filter,
+        const std::vector<FileFilterSpec>& filter,
         int file_type_index,
         const base::string16& default_extension,
         HWND owner)>;

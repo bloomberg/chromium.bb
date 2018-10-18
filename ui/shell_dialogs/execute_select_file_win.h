@@ -25,6 +25,16 @@ SHELL_DIALOGS_EXPORT base::string16 AppendExtensionIfNeeded(
     const base::string16& filter_selected,
     const base::string16& suggested_ext);
 
+// Describes a filter for a file dialog.
+struct FileFilterSpec {
+  // A human readable description of this filter. E.g. "HTML Files."
+  base::string16 description;
+  // The different extensions that map to this spec. This is a semicolon-
+  // separated list of extensions that contains a wildcard and the separator.
+  // E.g. "*.html;*.htm"
+  base::string16 extension_spec;
+};
+
 // Shows the file selection dialog modal to |owner| returns the selected
 // file(s) and file type index via the return value. The file path vector will
 // be empty on failure.
@@ -33,7 +43,7 @@ std::pair<std::vector<base::FilePath>, int> ExecuteSelectFile(
     SelectFileDialog::Type type,
     const base::string16& title,
     const base::FilePath& default_path,
-    const base::string16& filter,
+    const std::vector<FileFilterSpec>& filter,
     int file_type_index,
     const base::string16& default_extension,
     HWND owner);

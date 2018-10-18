@@ -49,23 +49,17 @@ bool GetRegistryDescriptionFromExtension(const base::string16& file_ext,
   return false;
 }
 
-// Set up a filter for a Save/Open dialog, which will consist of |file_ext| file
-// extensions (internally separated by semicolons), |ext_desc| as the text
-// descriptions of the |file_ext| types (optional), and (optionally) the default
-// 'All Files' view. The purpose of the filter is to show only files of a
-// particular type in a Windows Save/Open dialog box. The resulting filter is
-// returned. The filters created here are:
+// Set up a filter for a Save/Open dialog, |ext_desc| as the text descriptions
+// of the |file_ext| types (optional), and (optionally) the default 'All Files'
+// view. The purpose of the filter is to show only files of a particular type in
+// a Windows Save/Open dialog box. The resulting filter is returned. The filter
+// created here are:
 //   1. only files that have 'file_ext' as their extension
 //   2. all files (only added if 'include_all_files' is true)
-// Example:
-//   file_ext: { "*.txt", "*.htm;*.html" }
-//   ext_desc: { "Text Document" }
-//   returned: "Text Document\0*.txt\0HTML Document\0*.htm;*.html\0"
-//             "All Files\0*.*\0\0" (in one big string)
 // If a description is not provided for a file extension, it will be retrieved
 // from the registry. If the file extension does not exist in the registry, it
 // will be omitted from the filter, as it is likely a bogus extension.
-base::string16 FormatFilterForExtensions(
+std::vector<FileFilterSpec> FormatFilterForExtensions(
     const std::vector<base::string16>& file_ext,
     const std::vector<base::string16>& ext_desc,
     bool include_all_files) {
@@ -78,7 +72,11 @@ base::string16 FormatFilterForExtensions(
   if (file_ext.empty())
     include_all_files = true;
 
-  base::string16 result;
+  std::vector<FileFilterSpec> result;
+
+  // Precompute the final size of the resulting vector.
+  size_t final_size = file_ext.size() + (include_all_files ? 1 : 0);
+  result.resize(final_size);
 
   for (size_t i = 0; i < file_ext.size(); ++i) {
     base::string16 ext = file_ext[i];
@@ -119,16 +117,12 @@ base::string16 FormatFilterForExtensions(
         desc = L"*." + ext_name;
     }
 
-    result.append(desc.c_str(), desc.size() + 1);  // Append NULL too.
-    result.append(ext.c_str(), ext.size() + 1);
+    result[i] = {desc, ext};
   }
 
-  if (include_all_files) {
-    result.append(all_desc.c_str(), all_desc.size() + 1);
-    result.append(all_ext.c_str(), all_ext.size() + 1);
-  }
+  if (include_all_files)
+    result.back() = {all_desc, all_ext};
 
-  result.append(1, '\0');  // Double NULL required.
   return result;
 }
 
@@ -171,18 +165,13 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
                             void* params,
                             std::pair<std::vector<base::FilePath>, int> result);
 
-  // The callback function for when the select folder dialog is opened.
-  static int CALLBACK BrowseCallbackProc(HWND window,
-                                         UINT message,
-                                         LPARAM parameter,
-                                         LPARAM data);
-
   bool HasMultipleFileTypeChoicesImpl() override;
 
   // Returns the filter to be used while displaying the open/save file dialog.
   // This is computed from the extensions for the file types being opened.
   // |file_types| can be NULL in which case the returned filter will be empty.
-  static base::string16 GetFilterForFileTypes(const FileTypeInfo* file_types);
+  static std::vector<FileFilterSpec> GetFilterForFileTypes(
+      const FileTypeInfo* file_types);
 
   bool has_multiple_file_type_choices_;
   ExecuteSelectFileCallback execute_select_file_callback_;
@@ -213,7 +202,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
-  base::string16 filter = GetFilterForFileTypes(file_types);
+  std::vector<FileFilterSpec> filter = GetFilterForFileTypes(file_types);
   HWND owner = owning_window && owning_window->GetRootWindow()
                    ? owning_window->GetHost()->GetAcceleratedWidget()
                    : NULL;
@@ -282,10 +271,10 @@ void SelectFileDialogImpl::OnSelectFileExecuted(
 }
 
 // static
-base::string16 SelectFileDialogImpl::GetFilterForFileTypes(
+std::vector<FileFilterSpec> SelectFileDialogImpl::GetFilterForFileTypes(
     const FileTypeInfo* file_types) {
   if (!file_types)
-    return base::string16();
+    return std::vector<FileFilterSpec>();
 
   std::vector<base::string16> exts;
   for (size_t i = 0; i < file_types->extensions.size(); ++i) {
