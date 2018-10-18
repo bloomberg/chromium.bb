@@ -117,8 +117,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     WebRuntimeFeatures::EnableWebUsb(false);
 
-  if (base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking))
-    WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(true);
+  WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(
+      base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking));
 
   if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
     WebRuntimeFeatures::EnableBloatedRendererDetection(true);
