@@ -684,6 +684,16 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
       config.SetProcessFilterConfig(process_config);
       return config;
     }
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_RENDERERS:
+      return TraceConfig(
+          "benchmark,toplevel,ipc,base,ui,v8,task_scheduler,renderer,blink,"
+          "blink_gc,"
+          "disabled-by-default-v8.gc,"
+          "disabled-by-default-blink_gc,"
+          "disabled-by-default-renderer.scheduler,"
+          "disabled-by-default-task_scheduler_diagnostics,"
+          "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
+          record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);
 
