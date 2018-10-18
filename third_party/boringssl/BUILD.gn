@@ -31,7 +31,6 @@ config("internal_config") {
     # TODO(davidben): Fix size_t truncations in BoringSSL.
     # https://crbug.com/boringssl/22
     "//build/config/compiler:no_size_t_to_int_warning",
-    "//build/config/sanitizers:cfi_icall_generalize_pointers",
   ]
   if (is_posix || is_fuchsia) {
     cflags_c = [ "-std=c99" ]
