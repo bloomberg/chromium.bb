@@ -88,6 +88,7 @@ class UnifiedMessageListView::MessageViewContainer
 
   gfx::Rect start_bounds() const { return start_bounds_; }
   gfx::Rect ideal_bounds() const { return ideal_bounds_; }
+  bool is_removed() const { return is_removed_; }
 
   void set_start_bounds(const gfx::Rect& start_bounds) {
     start_bounds_ = start_bounds;
@@ -97,6 +98,8 @@ class UnifiedMessageListView::MessageViewContainer
     ideal_bounds_ = ideal_bounds;
   }
 
+  void set_is_removed() { is_removed_ = true; }
+
  private:
   // The bounds that the container starts animating from. If not animating, it's
   // ignored.
@@ -105,6 +108,10 @@ class UnifiedMessageListView::MessageViewContainer
   // The final bounds of the container. If not animating, it's same as the
   // actual bounds().
   gfx::Rect ideal_bounds_;
+
+  // True when the notification is removed and during SLIDE_OUT animation.
+  // Unused if |state_| is not SLIDE_OUT.
+  bool is_removed_ = false;
 
   MessageView* const message_view_;
   NotificationSwipeControlView* const control_view_;
@@ -198,16 +205,25 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
 
 void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
                                                    bool by_user) {
+  ResetBounds();
+
   for (int i = 0; i < child_count(); ++i) {
     auto* view = GetContainer(i);
     if (view->GetNotificationId() == id) {
-      delete view;
+      view->set_is_removed();
       break;
     }
   }
 
+  if (!enable_animation_) {
+    ResetBounds();
+    return;
+  }
+
   UpdateBorders();
   UpdateBounds();
+
+  state_ = State::SLIDE_OUT;
   animation_->Start();
 }
 
@@ -243,6 +259,17 @@ void UnifiedMessageListView::AnimationEnded(const gfx::Animation* animation) {
   // This is also called from AnimationCanceled().
   animation_->SetCurrentValue(1.0);
   PreferredSizeChanged();
+
+  if (state_ == State::SLIDE_OUT) {
+    DeleteRemovedNotifications();
+    UpdateBorders();
+    UpdateBounds();
+
+    state_ = State::MOVE_DOWN;
+    animation_->Start();
+  } else if (state_ == State::MOVE_DOWN) {
+    state_ = State::IDLE;
+  }
 }
 
 void UnifiedMessageListView::AnimationProgressed(
@@ -295,7 +322,10 @@ void UnifiedMessageListView::UpdateBounds() {
     auto* view = GetContainer(i);
     const int height = view->GetHeightForWidth(kTrayMenuWidth);
     view->set_start_bounds(view->ideal_bounds());
-    view->set_ideal_bounds(gfx::Rect(0, y, kTrayMenuWidth, height));
+    view->set_ideal_bounds(
+        view->is_removed()
+            ? gfx::Rect(kTrayMenuWidth, y, kTrayMenuWidth, height)
+            : gfx::Rect(0, y, kTrayMenuWidth, height));
     y += height;
   }
 
@@ -304,11 +334,23 @@ void UnifiedMessageListView::UpdateBounds() {
 }
 
 void UnifiedMessageListView::ResetBounds() {
+  DeleteRemovedNotifications();
+  UpdateBorders();
   UpdateBounds();
+
+  state_ = State::IDLE;
   if (animation_->is_animating())
     animation_->End();
   else
     PreferredSizeChanged();
+}
+
+void UnifiedMessageListView::DeleteRemovedNotifications() {
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    if (view->is_removed())
+      delete view;
+  }
 }
 
 double UnifiedMessageListView::GetCurrentValue() const {
