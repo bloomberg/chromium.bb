@@ -27,6 +27,10 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
   ~WebIDBFactoryImpl() override;
 
   // See WebIDBFactory.h for documentation on these functions.
+  void GetDatabaseInfo(
+      blink::WebIDBCallbacks* callbacks,
+      const blink::WebSecurityOrigin& origin,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void GetDatabaseNames(
       blink::WebIDBCallbacks* callbacks,
       const blink::WebSecurityOrigin& origin,

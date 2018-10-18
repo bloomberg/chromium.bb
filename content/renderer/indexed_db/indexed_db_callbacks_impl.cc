@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
 using blink::IndexedDBDatabaseMetadata;
@@ -20,6 +21,7 @@ using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
 using blink::WebIDBMetadata;
+using blink::WebIDBNameAndVersion;
 using blink::WebIDBValue;
 using blink::WebString;
 using blink::WebVector;
@@ -75,6 +77,12 @@ WebIDBValue ConvertReturnValue(const blink::mojom::IDBReturnValuePtr& value) {
   return web_value;
 }
 
+WebIDBNameAndVersion ConvertNameVersion(
+    const blink::mojom::IDBNameAndVersionPtr& name_and_version) {
+  return WebIDBNameAndVersion(WebString::FromUTF16(name_and_version->name),
+                              name_and_version->version);
+}
+
 }  // namespace
 
 // static
@@ -119,6 +127,17 @@ void IndexedDBCallbacksImpl::Error(int32_t code,
                                    const base::string16& message) {
   callbacks_->OnError(
       blink::WebIDBDatabaseError(code, WebString::FromUTF16(message)));
+  callbacks_.reset();
+}
+
+void IndexedDBCallbacksImpl::SuccessNamesAndVersionsList(
+    std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
+  WebVector<WebIDBNameAndVersion> web_names_and_versions;
+  web_names_and_versions.reserve(names_and_versions.size());
+  for (const blink::mojom::IDBNameAndVersionPtr& name_version :
+       names_and_versions)
+    web_names_and_versions.emplace_back(ConvertNameVersion(name_version));
+  callbacks_->OnSuccess(web_names_and_versions);
   callbacks_.reset();
 }
 

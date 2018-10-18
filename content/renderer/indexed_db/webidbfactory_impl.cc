@@ -29,6 +29,17 @@ WebIDBFactoryImpl::WebIDBFactoryImpl(IDBFactoryPtrInfo factory_info)
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 
+void WebIDBFactoryImpl::GetDatabaseInfo(
+    WebIDBCallbacks* callbacks,
+    const WebSecurityOrigin& origin,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
+      base::WrapUnique(callbacks), IndexedDBCallbacksImpl::kNoTransaction,
+      nullptr);
+  factory_->GetDatabaseInfo(GetCallbacksProxy(std::move(callbacks_impl)),
+                            url::Origin(origin));
+}
+
 void WebIDBFactoryImpl::GetDatabaseNames(
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,

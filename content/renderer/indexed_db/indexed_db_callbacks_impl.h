@@ -37,6 +37,9 @@ class IndexedDBCallbacksImpl : public blink::mojom::IDBCallbacks {
 
   // blink::mojom::IDBCallbacks implementation:
   void Error(int32_t code, const base::string16& message) override;
+  void SuccessNamesAndVersionsList(
+      std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions)
+      override;
   void SuccessStringList(const std::vector<base::string16>& value) override;
   void Blocked(int64_t existing_version) override;
   void UpgradeNeeded(blink::mojom::IDBDatabaseAssociatedPtrInfo database_info,

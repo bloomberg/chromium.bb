@@ -585,6 +585,10 @@
       status: "stable",
     },
     {
+      name: "IDBGetDatabases",
+      status: "experimental",
+    },
+    {
       name: "IDBObserver",
       status: "experimental",
     },

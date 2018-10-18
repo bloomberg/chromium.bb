@@ -47,6 +47,9 @@ class WebIDBFactory {
  public:
   virtual ~WebIDBFactory() = default;
 
+  virtual void GetDatabaseInfo(WebIDBCallbacks*,
+                               const WebSecurityOrigin&,
+                               scoped_refptr<base::SingleThreadTaskRunner>) = 0;
   virtual void GetDatabaseNames(
       WebIDBCallbacks*,
       const WebSecurityOrigin&,

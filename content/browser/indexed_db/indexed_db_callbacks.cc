@@ -141,6 +141,8 @@ class IndexedDBCallbacks::IOThreadHelper {
   ~IOThreadHelper();
 
   void SendError(const IndexedDBDatabaseError& error);
+  void SendSuccessNamesAndVersionsList(
+      std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions);
   void SendSuccessStringList(const std::vector<base::string16>& value);
   void SendBlocked(int64_t existing_version);
   void SendUpgradeNeeded(SafeIOThreadConnectionWrapper connection,
@@ -234,6 +236,20 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
         base::TimeTicks::Now() - connection_open_start_time_);
     connection_open_start_time_ = base::TimeTicks();
   }
+}
+
+void IndexedDBCallbacks::OnSuccess(
+    std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!complete_);
+  DCHECK(io_helper_);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&IOThreadHelper::SendSuccessNamesAndVersionsList,
+                     base::Unretained(io_helper_.get()),
+                     std::move(names_and_versions)));
+  complete_ = true;
 }
 
 void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
@@ -524,6 +540,18 @@ void IndexedDBCallbacks::IOThreadHelper::SendError(
     return;
   }
   callbacks_->Error(error.code(), error.message());
+}
+
+void IndexedDBCallbacks::IOThreadHelper::SendSuccessNamesAndVersionsList(
+    std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  callbacks_->SuccessNamesAndVersionsList(std::move(names_and_versions));
 }
 
 void IndexedDBCallbacks::IOThreadHelper::SendSuccessStringList(

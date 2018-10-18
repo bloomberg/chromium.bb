@@ -38,7 +38,9 @@ class CONTENT_EXPORT IndexedDBFactory
 
   virtual void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
                                bool forced_close) = 0;
-
+  virtual void GetDatabaseInfo(scoped_refptr<IndexedDBCallbacks> callbacks,
+                               const url::Origin& origin,
+                               const base::FilePath& data_directory) = 0;
   virtual void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                                 const url::Origin& origin,
                                 const base::FilePath& data_directory) = 0;
