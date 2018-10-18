@@ -1003,7 +1003,9 @@ OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
 OmniboxTint LocationBarView::GetTint() {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
   if (theme_service->UsingDefaultTheme()) {
-    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE
+    bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
+    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE ||
+                   is_dark_mode
                ? OmniboxTint::DARK
                : OmniboxTint::LIGHT;
   }
