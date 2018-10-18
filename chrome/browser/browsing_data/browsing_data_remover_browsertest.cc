@@ -10,12 +10,14 @@
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
@@ -31,6 +33,10 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -40,6 +46,10 @@
 #include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -53,7 +63,10 @@
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -63,6 +76,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
@@ -235,6 +249,31 @@ std::string GetCookiesTreeModelInfo(const CookieTreeNode* root) {
   }
   return info.str();
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Sets the APISID Gaia cookie, which is monitored by the AccountReconcilor.
+bool SetGaiaCookieForProfile(Profile* profile) {
+  GURL google_url = GaiaUrls::GetInstance()->google_url();
+  net::CanonicalCookie cookie("APISID", std::string(), "." + google_url.host(),
+                              "/", base::Time(), base::Time(), base::Time(),
+                              false, false, net::CookieSameSite::DEFAULT_MODE,
+                              net::COOKIE_PRIORITY_DEFAULT);
+
+  bool success = false;
+  base::RunLoop loop;
+  base::OnceCallback<void(bool)> callback =
+      base::BindLambdaForTesting([&success, &loop](bool s) {
+        success = s;
+        loop.Quit();
+      });
+  network::mojom::CookieManager* cookie_manager =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetCookieManagerForBrowserProcess();
+  cookie_manager->SetCanonicalCookie(cookie, true, true, std::move(callback));
+  loop.Run();
+  return success;
+}
+#endif
 
 }  // namespace
 
@@ -484,6 +523,32 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   Browser* incognito_browser_ = nullptr;
 };
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Same as BrowsingDataRemoverBrowserTest, but forces Dice to be enabled.
+class DiceBrowsingDataRemoverBrowserTest
+    : public BrowsingDataRemoverBrowserTest {
+ public:
+  void AddAccountToProfile(const std::string& account_id,
+                           Profile* profile,
+                           bool is_primary) {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    token_service->UpdateCredentials(account_id, "token");
+    ASSERT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+    if (is_primary) {
+      SigninManager* signin_manager =
+          SigninManagerFactory::GetForProfile(profile);
+      DCHECK(!signin_manager->IsAuthenticated());
+      signin_manager->SetAuthenticatedAccountInfo(account_id,
+                                                  account_id + "@gmail.com");
+    }
+  }
+
+ private:
+  ScopedAccountConsistencyDice dice_;
+};
+#endif
+
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   DownloadAnItem();
@@ -498,6 +563,105 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, MediaDeviceIdSalt) {
   std::string new_salt = GetBrowser()->profile()->GetMediaDeviceIDSalt();
   EXPECT_NE(original_salt, new_salt);
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Test that Sync is paused when cookies are cleared.
+IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncToken) {
+  Profile* profile = browser()->profile();
+  // Set a Gaia cookie.
+  ASSERT_TRUE(SetGaiaCookieForProfile(profile));
+  // Set a Sync account and a secondary account.
+  const char kPrimaryAccountId[] = "primary_account_id";
+  AddAccountToProfile(kPrimaryAccountId, profile, /*is_primary=*/true);
+  const char kSecondaryAccountId[] = "secondary_account_id";
+  AddAccountToProfile(kSecondaryAccountId, profile, /*is_primary=*/false);
+  // Clear cookies.
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  // Check that the Sync account was not removed and Sync was paused.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kPrimaryAccountId));
+  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_CLIENT,
+            token_service->GetAuthError(kPrimaryAccountId)
+                .GetInvalidGaiaCredentialsReason());
+  // Check that the secondary token was revoked.
+  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kSecondaryAccountId));
+}
+
+// Test that Sync is not paused when cookies are cleared, if synced data is
+// being deleted.
+IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest,
+                       SyncTokenScopedDeletion) {
+  Profile* profile = browser()->profile();
+  // Set a Gaia cookie.
+  ASSERT_TRUE(SetGaiaCookieForProfile(profile));
+  // Set a Sync account and a secondary account.
+  const char kPrimaryAccountId[] = "primary_account_id";
+  AddAccountToProfile(kPrimaryAccountId, profile, /*is_primary=*/true);
+  const char kSecondaryAccountId[] = "secondary_account_id";
+  AddAccountToProfile(kSecondaryAccountId, profile, /*is_primary=*/false);
+  // Sync data is being deleted.
+  std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
+      AccountReconcilorFactory::GetForProfile(profile)
+          ->GetScopedSyncDataDeletion();
+  // Clear cookies.
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  // Check that the Sync token was not revoked.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kPrimaryAccountId));
+  EXPECT_FALSE(token_service->RefreshTokenHasError(kPrimaryAccountId));
+  // Check that the secondary token was revoked.
+  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kSecondaryAccountId));
+}
+
+// Test that Sync is paused when cookies are cleared if Sync was in error, even
+// if synced data is being deleted.
+IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncTokenError) {
+  Profile* profile = browser()->profile();
+  // Set a Gaia cookie.
+  ASSERT_TRUE(SetGaiaCookieForProfile(profile));
+  // Set a Sync account with authentication error.
+  const char kAccountId[] = "account_id";
+  AddAccountToProfile(kAccountId, profile, /*is_primary=*/true);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  token_service->GetDelegate()->UpdateAuthError(
+      kAccountId, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                          CREDENTIALS_REJECTED_BY_SERVER));
+  // Sync data is being deleted.
+  std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion =
+      AccountReconcilorFactory::GetForProfile(profile)
+          ->GetScopedSyncDataDeletion();
+  // Clear cookies.
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  // Check that the account was not removed and Sync was paused.
+  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kAccountId));
+  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_CLIENT,
+            token_service->GetAuthError(kAccountId)
+                .GetInvalidGaiaCredentialsReason());
+}
+
+// Test that the tokens are revoked when cookies are cleared when there is no
+// primary account.
+IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, NoSync) {
+  Profile* profile = browser()->profile();
+  // Set a Gaia cookie.
+  ASSERT_TRUE(SetGaiaCookieForProfile(profile));
+  // Set a non-Sync account.
+  const char kAccountId[] = "account_id";
+  AddAccountToProfile(kAccountId, profile, /*is_primary=*/false);
+  // Clear cookies.
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  // Check that the account was removed.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kAccountId));
+}
+#endif
 
 // The call to Remove() should crash in debug (DCHECK), but the browser-test
 // process model prevents using a death test.
