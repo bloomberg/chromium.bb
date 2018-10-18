@@ -228,7 +228,7 @@ class BaseIsolatedScriptArgsAdapter(object):
         '--isolated-script-test-filter', type=str,
         required=False)
     self._parser.add_argument(
-        '--isolated-script-test-repeat', type=str,
+        '--isolated-script-test-repeat', type=int,
         required=False)
     self._parser.add_argument(
         '--isolated-script-test-launcher-retry-limit', type=int,
