@@ -2150,8 +2150,10 @@ void RenderFrameHostManager::CommitPending() {
       ->render_frame_delegate()
       ->FullscreenStateChanged(current_frame_host(), false);
 
-  // While the old frame is still current, remove its children from the tree.
-  frame_tree_node_->ResetForNewProcess();
+  // TODO(arthursonzogni): Stop doing this. Keep the subframes alive in pending
+  // deletion so that they can always properly execute their unload event
+  // handlers.
+  current_frame_host()->ResetChildren();
 
   // Swap in the pending or speculative frame and make it active. Also ensure
   // the FrameTree stays in sync.

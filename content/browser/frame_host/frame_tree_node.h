@@ -85,9 +85,6 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool IsMainFrame() const;
 
-  // Clears process specific-state in this node to prepare for a new process.
-  void ResetForNewProcess();
-
   // Clears any state in this node which was set by the document itself (CSP
   // Headers, Feature Policy Headers, and CSP-set sandbox flags), and notifies
   // proxies as appropriate. Invoked after committing navigation to a new

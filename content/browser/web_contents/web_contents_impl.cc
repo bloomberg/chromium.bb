@@ -685,8 +685,8 @@ WebContentsImpl::~WebContentsImpl() {
       Source<WebContents>(this),
       NotificationService::NoDetails());
 
-  // Destroy all frame tree nodes except for the root; this notifies observers.
-  frame_tree_.root()->ResetForNewProcess();
+  // Destroy all subframes now. This notifies observers.
+  GetMainFrame()->ResetChildren();
   GetRenderManager()->ResetProxyHosts();
 
   // Manually call the observer methods for the root frame tree node. It is

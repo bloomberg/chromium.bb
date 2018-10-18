@@ -301,7 +301,7 @@ void InterstitialPageImpl::Hide() {
   bool has_focus = render_view_host_->GetWidget()->GetView() &&
                    render_view_host_->GetWidget()->GetView()->HasFocus();
   render_view_host_ = nullptr;
-  frame_tree_->root()->ResetForNewProcess();
+  frame_tree_->root()->current_frame_host()->ResetChildren();
   controller_->delegate()->DetachInterstitialPage(has_focus);
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = controller_->GetVisibleEntry();
