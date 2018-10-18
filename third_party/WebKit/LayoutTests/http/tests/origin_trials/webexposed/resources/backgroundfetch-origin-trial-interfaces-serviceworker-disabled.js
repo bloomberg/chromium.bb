@@ -6,7 +6,7 @@ test(t => {
     self,
     ['BackgroundFetchEvent', 'BackgroundFetchFetch', 'BackgroundFetchManager',
      'BackgroundFetchUpdateUIEvent', 'BackgroundFetchRecord',
-     'BackgroundFetchRegistration', 'BackgroundFetchSettledFetch']);
+     'BackgroundFetchRegistration']);
 }, 'Background Fetch API interfaces in Origin-Trial disabled worker.');
 
 done();

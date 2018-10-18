@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_record.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_query_options.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"

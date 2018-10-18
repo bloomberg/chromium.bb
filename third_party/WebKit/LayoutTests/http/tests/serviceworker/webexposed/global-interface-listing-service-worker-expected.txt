@@ -49,10 +49,6 @@ interface BackgroundFetchRegistration : EventTarget
     method match
     method matchAll
     setter onprogress
-interface BackgroundFetchSettledFetch : BackgroundFetchFetch
-    attribute @@toStringTag
-    getter response
-    method constructor
 interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     attribute @@toStringTag
     method constructor

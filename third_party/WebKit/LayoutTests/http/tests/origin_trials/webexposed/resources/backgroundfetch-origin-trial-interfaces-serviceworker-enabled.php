@@ -15,7 +15,6 @@ test(t => {
     'BackgroundFetchEvent': ['registration'],
     'BackgroundFetchUpdateUIEvent': ['updateUI'],
     'BackgroundFetchRecord': ['request', 'responseReady'],
-    'BackgroundFetchSettledFetch': ['response'],
     'BackgroundFetchRegistration': ['id', 'uploadTotal', 'uploaded',
                                     'downloadTotal', 'downloaded', 'result',
                                     'failureReason', 'recordsAvailable',
