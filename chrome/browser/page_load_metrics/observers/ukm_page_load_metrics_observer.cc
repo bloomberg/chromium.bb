@@ -285,8 +285,6 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
   DCHECK_LE(dns_end_ms, connect_start_ms);
   DCHECK_LE(dns_start_ms, connect_start_ms);
   DCHECK_LE(connect_start_ms, connect_end_ms);
-  DCHECK_LE(connect_end_ms, send_start_ms);
-  DCHECK_LE(send_start_ms, receive_headers_end_ms);
 
   int64_t dns_duration_ms = dns_end_ms - dns_start_ms;
   int64_t connect_duration_ms = connect_end_ms - connect_start_ms;
@@ -298,10 +296,14 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 
   builder->SetMainFrameResource_DNSDelay(dns_duration_ms);
   builder->SetMainFrameResource_ConnectDelay(connect_duration_ms);
-  builder->SetMainFrameResource_RequestStartToSendStart(
-      request_start_to_send_start_ms);
-  builder->SetMainFrameResource_SendStartToReceiveHeadersEnd(
-      send_start_to_receive_headers_end_ms);
+  if (request_start_to_send_start_ms >= 0) {
+    builder->SetMainFrameResource_RequestStartToSendStart(
+        request_start_to_send_start_ms);
+  }
+  if (send_start_to_receive_headers_end_ms >= 0) {
+    builder->SetMainFrameResource_SendStartToReceiveHeadersEnd(
+        send_start_to_receive_headers_end_ms);
+  }
   builder->SetMainFrameResource_RequestStartToReceiveHeadersEnd(
       request_start_to_receive_headers_end_ms);
 }
