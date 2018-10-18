@@ -135,22 +135,6 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source,
   html_source->AddLocalizedString("googleAppsDescription",
                                   IDS_NUX_GOOGLE_APPS_DESCRIPTION);
 
-  // Add required resources.
-  html_source->AddResourcePath("apps/nux_google_apps.html",
-                               IDR_NUX_GOOGLE_APPS_HTML);
-  html_source->AddResourcePath("apps/nux_google_apps.js",
-                               IDR_NUX_GOOGLE_APPS_JS);
-
-  html_source->AddResourcePath("apps/nux_google_apps_proxy.html",
-                               IDR_NUX_GOOGLE_APPS_PROXY_HTML);
-  html_source->AddResourcePath("apps/nux_google_apps_proxy.js",
-                               IDR_NUX_GOOGLE_APPS_PROXY_JS);
-
-  html_source->AddResourcePath("apps/apps_chooser.html",
-                               IDR_NUX_GOOGLE_APPS_CHOOSER_HTML);
-  html_source->AddResourcePath("apps/apps_chooser.js",
-                               IDR_NUX_GOOGLE_APPS_CHOOSER_JS);
-
   // Add icons
   html_source->AddResourcePath("apps/chrome_store_1x.png",
                                IDR_NUX_GOOGLE_APPS_CHROME_STORE_1X);

@@ -22,6 +22,8 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/onboarding_welcome_resources.h"
+#include "chrome/grit/onboarding_welcome_resources_map.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -68,55 +70,14 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
     html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
 
-    // Add onboarding welcome resources.
+    // Add all Onboarding resources.
+    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
+      html_source->AddResourcePath(kOnboardingWelcomeResources[i].name,
+                                   kOnboardingWelcomeResources[i].value);
+    }
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
-    html_source->AddResourcePath(
-        "landing_view.html", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML);
-    html_source->AddResourcePath(
-        "landing_view.js", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS);
-    html_source->AddResourcePath(
-        "navigation_behavior.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_HTML);
-    html_source->AddResourcePath(
-        "navigation_behavior.js",
-        IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_JS);
-    html_source->AddResourcePath(
-        "signin_view.html", IDR_WELCOME_ONBOARDING_WELCOME_SIGNIN_VIEW_HTML);
-    html_source->AddResourcePath("signin_view.js",
-                                 IDR_WELCOME_ONBOARDING_WELCOME_SIGNIN_VIEW_JS);
-    html_source->AddResourcePath("welcome.css",
-                                 IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_CSS);
-    html_source->AddResourcePath(
-        "welcome_app.html", IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML);
-    html_source->AddResourcePath("welcome_app.js",
-                                 IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS);
-    html_source->AddResourcePath(
-        "welcome_browser_proxy.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_HTML);
-    html_source->AddResourcePath(
-        "welcome_browser_proxy.js",
-        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_JS);
 
-    // Add resources shared by the NUX modules.
-    html_source->AddResourcePath(
-        "shared/action_link_style_css.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ACTION_LINK_STYLE_CSS_HTML);
-    html_source->AddResourcePath(
-        "shared/action_link_style.js",
-        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ACTION_LINK_STYLE_JS);
-    html_source->AddResourcePath(
-        "shared/chooser_shared_css.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_CHOOSER_SHARED_CSS);
-    html_source->AddResourcePath(
-        "shared/onboarding_background.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_HTML);
-    html_source->AddResourcePath(
-        "shared/onboarding_background.js",
-        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_JS);
-    html_source->AddResourcePath(
-        "shared/i18n_setup.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML);
     html_source->AddResourcePath(
         "images/background_svgs/blue_circle.svg",
         IDR_WELCOME_ONBOARDING_WELCOME_IMAGES_BACKGROUND_SVGS_BLUE_CIRCLE_SVG);
@@ -153,7 +114,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
     // Add set-as-default onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
-    nux::SetAsDefaultHandler::AddSources(html_source);
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
