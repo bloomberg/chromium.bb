@@ -63,7 +63,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestIntegerIndexedPrimaryGlobalV8Internal {
+namespace test_integer_indexed_primary_global_v8_internal {
 
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -133,12 +133,12 @@ static void indexedPropertyDescriptor(uint32_t index, const v8::PropertyCallback
   }
 }
 
-} // namespace TestIntegerIndexedPrimaryGlobalV8Internal
+}  // namespace test_integer_indexed_primary_global_v8_internal
 
 void V8TestIntegerIndexedPrimaryGlobal::lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_length_Getter");
 
-  TestIntegerIndexedPrimaryGlobalV8Internal::lengthAttributeGetter(info);
+  test_integer_indexed_primary_global_v8_internal::lengthAttributeGetter(info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -146,13 +146,13 @@ void V8TestIntegerIndexedPrimaryGlobal::lengthAttributeSetterCallback(const v8::
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestIntegerIndexedPrimaryGlobalV8Internal::lengthAttributeSetter(v8Value, info);
+  test_integer_indexed_primary_global_v8_internal::lengthAttributeSetter(v8Value, info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedPrimaryGlobal_voidMethodDocument");
 
-  TestIntegerIndexedPrimaryGlobalV8Internal::voidMethodDocumentMethod(info);
+  test_integer_indexed_primary_global_v8_internal::voidMethodDocumentMethod(info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -204,7 +204,7 @@ void V8TestIntegerIndexedPrimaryGlobal::indexedPropertyGetterCallback(uint32_t i
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertyDescriptor(index, info);
+  test_integer_indexed_primary_global_v8_internal::indexedPropertyDescriptor(index, info);
 }
 
 void V8TestIntegerIndexedPrimaryGlobal::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {

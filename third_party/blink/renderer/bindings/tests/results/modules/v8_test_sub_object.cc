@@ -61,7 +61,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestSubObjectV8Internal {
+namespace test_sub_object_v8_internal {
 
 static void unforgeableStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -115,12 +115,12 @@ static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value
   impl->setUnforgeableLongAttribute(cppValue);
 }
 
-} // namespace TestSubObjectV8Internal
+}  // namespace test_sub_object_v8_internal
 
 void V8TestSubObject::unforgeableStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableStringAttribute_Getter");
 
-  TestSubObjectV8Internal::unforgeableStringAttributeAttributeGetter(info);
+  test_sub_object_v8_internal::unforgeableStringAttributeAttributeGetter(info);
 }
 
 void V8TestSubObject::unforgeableStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -128,13 +128,13 @@ void V8TestSubObject::unforgeableStringAttributeAttributeSetterCallback(const v8
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestSubObjectV8Internal::unforgeableStringAttributeAttributeSetter(v8Value, info);
+  test_sub_object_v8_internal::unforgeableStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestSubObject::unforgeableLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSubObject_unforgeableLongAttribute_Getter");
 
-  TestSubObjectV8Internal::unforgeableLongAttributeAttributeGetter(info);
+  test_sub_object_v8_internal::unforgeableLongAttributeAttributeGetter(info);
 }
 
 void V8TestSubObject::unforgeableLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -142,7 +142,7 @@ void V8TestSubObject::unforgeableLongAttributeAttributeSetterCallback(const v8::
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestSubObjectV8Internal::unforgeableLongAttributeAttributeSetter(v8Value, info);
+  test_sub_object_v8_internal::unforgeableLongAttributeAttributeSetter(v8Value, info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestSubObjectAccessors[] = {

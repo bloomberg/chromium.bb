@@ -68,7 +68,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceConstructorV8Internal {
+namespace test_interface_constructor_v8_internal {
 
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor_ConstructorCallback");
@@ -282,49 +282,49 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   switch (std::min(10, info.Length())) {
     case 0:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor1(info);
+        test_interface_constructor_v8_internal::constructor1(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor3(info);
+        test_interface_constructor_v8_internal::constructor3(info);
         return;
       }
       break;
     case 2:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor3(info);
+        test_interface_constructor_v8_internal::constructor3(info);
         return;
       }
       break;
     case 3:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor4(info);
+        test_interface_constructor_v8_internal::constructor4(info);
         return;
       }
       break;
     case 7:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor2(info);
+        test_interface_constructor_v8_internal::constructor2(info);
         return;
       }
       break;
     case 8:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor2(info);
+        test_interface_constructor_v8_internal::constructor2(info);
         return;
       }
       break;
     case 9:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor2(info);
+        test_interface_constructor_v8_internal::constructor2(info);
         return;
       }
       break;
     case 10:
       if (true) {
-        TestInterfaceConstructorV8Internal::constructor2(info);
+        test_interface_constructor_v8_internal::constructor2(info);
         return;
       }
       break;
@@ -339,7 +339,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   exceptionState.ThrowTypeError("No matching constructor signature.");
 }
 
-} // namespace TestInterfaceConstructorV8Internal
+}  // namespace test_interface_constructor_v8_internal
 
 // Suppress warning: global constructors, because struct WrapperTypeInfo is trivial
 // and does not depend on another global objects.
@@ -485,7 +485,7 @@ void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackI
     return;
   }
 
-  TestInterfaceConstructorV8Internal::constructor(info);
+  test_interface_constructor_v8_internal::constructor(info);
 }
 
 static void installV8TestInterfaceConstructorTemplate(

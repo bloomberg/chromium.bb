@@ -75,7 +75,7 @@ static_assert(
 
 {% endif %}{# not is_partial #}
 {% if not is_array_buffer_or_view %}
-namespace {{cpp_class_or_partial}}V8Internal {
+namespace {{internal_namespace}} {
 {% if has_partial_interface %}
 {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
 static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallbackInfo<v8::Value>&) = 0;
@@ -161,23 +161,23 @@ static const struct {
     {% if attribute.has_custom_getter %}
     {{v8_class}}::{{attribute.name}}AttributeGetterCustom,
     {% else %}
-    &{{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter,
+    {{internal_namespace}}::{{attribute.name}}AttributeGetter,
     {% endif %}
     {% else %}
     nullptr,
     {% endif %}
-    {%+ if attribute.has_cross_origin_setter %}&{{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{% else %}nullptr{% endif %},
+    {%+ if attribute.has_cross_origin_setter %}&{{internal_namespace}}::{{attribute.name}}AttributeSetter{% else %}nullptr{% endif %},
   },
   {% endfor %}
   {##### Cross-origin methods #####}
   {% for method in methods if method.is_cross_origin and
         (not method.overload_index or method.overloads) %}
-  {"{{method.name}}", &{{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter, nullptr},
+  {"{{method.name}}", &{{internal_namespace}}::{{method.name}}OriginSafeMethodGetter, nullptr},
   {% endfor %}
 };
 {% endif %}
 {##############################################################################}
-} // namespace {{cpp_class_or_partial}}V8Internal
+}  // namespace {{internal_namespace}}
 
 {# Constants #}
 {% from 'constants.cc.tmpl' import constant_getter_callback with context %}
@@ -264,7 +264,7 @@ void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, c
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable) {
+  for (const auto& attribute : {{internal_namespace}}::kCrossOriginAttributeTable) {
     if (propertyName == attribute.name && attribute.getter) {
       attribute.getter(info);
       return;
@@ -275,7 +275,7 @@ void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, c
   {% if named_property_getter.is_custom %}
   {{v8_class}}::namedPropertyGetterCustom(propertyName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyGetter(propertyName, info);
+  {{internal_namespace}}::namedPropertyGetter(propertyName, info);
   {% endif %}
   {% else %}
   // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
@@ -304,7 +304,7 @@ void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable) {
+  for (const auto& attribute : {{internal_namespace}}::kCrossOriginAttributeTable) {
     if (propertyName == attribute.name && attribute.setter) {
       attribute.setter(value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
       return;
@@ -325,7 +325,7 @@ void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v
 {% if has_cross_origin_named_enumerator %}
 void {{v8_class_or_partial}}::crossOriginNamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
   Vector<String> names;
-  for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable)
+  for (const auto& attribute : {{internal_namespace}}::kCrossOriginAttributeTable)
     names.push_back(attribute.name);
 
   // Use the current context as the creation context, as a cross-origin access
@@ -341,7 +341,7 @@ void {{v8_class_or_partial}}::crossOriginIndexedGetter(uint32_t index, const v8:
   {% if indexed_property_getter.is_custom %}
   {{v8_class}}::indexedPropertyGetterCustom(index, info);
   {% else %}
-  {{cpp_class}}V8Internal::indexedPropertyGetter(index, info);
+  {{internal_namespace}}::indexedPropertyGetter(index, info);
   {% endif %}
 }
 {% endif %}

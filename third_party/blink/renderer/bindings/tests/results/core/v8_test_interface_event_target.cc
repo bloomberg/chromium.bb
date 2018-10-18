@@ -62,9 +62,9 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceEventTargetV8Internal {
+namespace test_interface_event_target_v8_internal {
 
-} // namespace TestInterfaceEventTargetV8Internal
+}  // namespace test_interface_event_target_v8_internal
 
 // Suppress warning: global constructors, because struct WrapperTypeInfo is trivial
 // and does not depend on another global objects.

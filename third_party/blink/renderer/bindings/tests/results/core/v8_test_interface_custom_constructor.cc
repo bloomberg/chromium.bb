@@ -59,9 +59,9 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceCustomConstructorV8Internal {
+namespace test_interface_custom_constructor_v8_internal {
 
-} // namespace TestInterfaceCustomConstructorV8Internal
+}  // namespace test_interface_custom_constructor_v8_internal
 
 void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCustomConstructor_Constructor");

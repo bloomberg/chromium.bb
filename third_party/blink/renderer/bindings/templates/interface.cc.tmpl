@@ -48,7 +48,7 @@ void {{v8_class_or_partial}}::indexedPropertyGetterCallback(uint32_t index, cons
   {% if getter.is_custom %}
   {{v8_class}}::indexedPropertyGetterCustom(index, info);
   {% else %}
-  {{cpp_class}}V8Internal::indexedPropertyGetter(index, info);
+  {{internal_namespace}}::indexedPropertyGetter(index, info);
   {% endif %}
 
   {% else %}{# otherwise, named property #}
@@ -58,7 +58,7 @@ void {{v8_class_or_partial}}::indexedPropertyGetterCallback(uint32_t index, cons
   {% if getter.is_custom %}
   {{v8_class}}::namedPropertyGetterCustom(propertyName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyGetter(propertyName, info);
+  {{internal_namespace}}::namedPropertyGetter(propertyName, info);
   {% endif %}
 
   {% endif %}{# indexed_property_getter #}
@@ -125,7 +125,7 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
   {% if setter.is_custom %}
   {{v8_class}}::indexedPropertySetterCustom(index, v8Value, info);
   {% else %}
-  {{cpp_class}}V8Internal::indexedPropertySetter(index, v8Value, info);
+  {{internal_namespace}}::indexedPropertySetter(index, v8Value, info);
   {% endif %}
 
   {% elif named_property_setter %}
@@ -135,7 +135,7 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
   {% if setter.is_custom %}
   {{v8_class}}::namedPropertySetterCustom(propertyName, v8Value, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertySetter(propertyName, v8Value, info);
+  {{internal_namespace}}::namedPropertySetter(propertyName, v8Value, info);
   {% endif %}
 
   {% else %}{# neither of indexed_property_setter nor named_property_setter #}
@@ -210,7 +210,7 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
   {% if named_property_getter.is_custom_property_query %}
   {{v8_class}}::namedPropertyQueryCustom(indexAsName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyQuery(indexAsName, info);
+  {{internal_namespace}}::namedPropertyQuery(indexAsName, info);
   {% endif %}
   v8::Local<v8::Value> getterValue = info.GetReturnValue().Get();
   if (!getterValue->IsUndefined()) {
@@ -251,9 +251,9 @@ static void namedPropertyDescriptor(uint32_t index, const v8::PropertyCallbackIn
 {% if indexed_property_getter or named_property_getter %}
 void {{v8_class_or_partial}}::indexedPropertyDescriptorCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if indexed_property_getter %}
-  {{cpp_class}}V8Internal::indexedPropertyDescriptor(index, info);
+  {{internal_namespace}}::indexedPropertyDescriptor(index, info);
   {% else %}{# The interface only supports named properties. #}
-  {{cpp_class}}V8Internal::namedPropertyDescriptor(index, info);
+  {{internal_namespace}}::namedPropertyDescriptor(index, info);
   {% endif %}{# indexed_property_getter #}
 }
 
@@ -308,7 +308,7 @@ void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, con
   {% if deleter.is_custom %}
   {{v8_class}}::indexedPropertyDeleterCustom(index, info);
   {% else %}
-  {{cpp_class}}V8Internal::indexedPropertyDeleter(index, info);
+  {{internal_namespace}}::indexedPropertyDeleter(index, info);
   {% endif %}
 
   {% else %}{# otherwise, named property #}
@@ -318,7 +318,7 @@ void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, con
   {% if deleter.is_custom %}
   {{v8_class}}::namedPropertyDeleterCustom(propertyName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyDeleter(propertyName, info);
+  {{internal_namespace}}::namedPropertyDeleter(propertyName, info);
   {% endif %}
 
   {% endif %}{# indexed_property_deleter #}
@@ -417,7 +417,7 @@ void {{v8_class_or_partial}}::namedPropertyGetterCallback(v8::Local<v8::Name> na
   {% if getter.is_custom %}
   {{v8_class}}::namedPropertyGetterCustom(propertyName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyGetter(propertyName, info);
+  {{internal_namespace}}::namedPropertyGetter(propertyName, info);
   {% endif %}
 }
 
@@ -488,7 +488,7 @@ void {{v8_class_or_partial}}::namedPropertySetterCallback(v8::Local<v8::Name> na
   {% if setter.is_custom %}
   {{v8_class}}::namedPropertySetterCustom(propertyName, v8Value, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertySetter(propertyName, v8Value, info);
+  {{internal_namespace}}::namedPropertySetter(propertyName, v8Value, info);
   {% endif %}
 }
 
@@ -548,7 +548,7 @@ void {{v8_class_or_partial}}::namedPropertyDeleterCallback(v8::Local<v8::Name> n
   {% if deleter.is_custom %}
   {{v8_class}}::namedPropertyDeleterCustom(propertyName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyDeleter(propertyName, info);
+  {{internal_namespace}}::namedPropertyDeleter(propertyName, info);
   {% endif %}
 }
 
@@ -624,7 +624,7 @@ void {{v8_class_or_partial}}::namedPropertyQueryCallback(v8::Local<v8::Name> nam
   {% if getter.is_custom_property_query %}
   {{v8_class}}::namedPropertyQueryCustom(propertyName, info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyQuery(propertyName, info);
+  {{internal_namespace}}::namedPropertyQuery(propertyName, info);
   {% endif %}
 }
 
@@ -660,7 +660,7 @@ void {{v8_class_or_partial}}::namedPropertyEnumeratorCallback(const v8::Property
   {% if getter.is_custom_property_enumerator %}
   {{v8_class}}::namedPropertyEnumeratorCustom(info);
   {% else %}
-  {{cpp_class}}V8Internal::namedPropertyEnumerator(info);
+  {{internal_namespace}}::namedPropertyEnumerator(info);
   {% endif %}
 }
 
@@ -702,7 +702,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Lo
 {% block origin_safe_method_setter_callback %}
 {% if has_origin_safe_method_setter %}
 void {{v8_class_or_partial}}::{{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
-  {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, v8Value, info);
+  {{internal_namespace}}::{{cpp_class}}OriginSafeMethodSetter(name, v8Value, info);
 }
 {% endif %}
 {% endblock %}
@@ -801,7 +801,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
       {# Then resolve by testing argument #}
       {% for test, constructor in tests_constructors %}
       if ({{test}}) {
-        {{cpp_class}}V8Internal::constructor{{constructor.overload_index}}(info);
+        {{internal_namespace}}::constructor{{constructor.overload_index}}(info);
         return;
       }
       {% if "exceptionState" in test %}
@@ -857,7 +857,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
   {% elif has_html_constructor %}
   V8HTMLConstructor::HtmlConstructor(info, {{v8_class}}::wrapperTypeInfo, HTMLElementType::k{{interface_name}});
   {% else %}
-  {{cpp_class}}V8Internal::constructor(info);
+  {{internal_namespace}}::constructor(info);
   {% endif %}
 }
 
@@ -1181,7 +1181,7 @@ void {{v8_class}}::UpdateWrapperTypeInfo(
 
 {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
 void {{v8_class}}::register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*method)(const v8::FunctionCallbackInfo<v8::Value>&)) {
-  {{cpp_class}}V8Internal::{{method.name}}MethodForPartialInterface = method;
+  {{internal_namespace}}::{{method.name}}MethodForPartialInterface = method;
 }
 
 {% endfor %}
