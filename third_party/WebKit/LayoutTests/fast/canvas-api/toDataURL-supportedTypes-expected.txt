@@ -1,4 +1,4 @@
-The Actual Canvas
+ The Actual Canvas
 
 Given MIMEType: image/png
 Used MIMEType: image/png

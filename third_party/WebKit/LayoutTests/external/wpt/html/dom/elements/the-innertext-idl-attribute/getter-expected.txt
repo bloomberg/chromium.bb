@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 220 tests; 217 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 229 tests; 226 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -42,6 +42,15 @@ PASS Whitespace around inline-block should not be collapsed ("<div>abc <span sty
 PASS Trailing space at end of inline-block should be collapsed ("<div>abc <span style='display:inline-block'> def </span> ghi")
 PASS Whitespace between <input> and block should be collapsed ("<div><input> <div>abc</div>")
 PASS Whitespace between inline-block and block should be collapsed ("<div><span style='inline-block'></span> <div>abc</div>")
+PASS Whitespace around <img> should not be collapsed ("<div>abc <img> def")
+PASS Whitespace around <img> should not be collapsed ("<div>abc <img width=1 height=1> def")
+PASS Leading whitesapce should not be collapsed ("<div><img> abc")
+PASS Trailing whitesapce should not be collapsed ("<div>abc <img>")
+PASS Whitespace around empty span should be collapsed ("<div>abc <b></b> def")
+PASS Whitespace around empty spans should be collapsed ("<div>abc <b><i></i></b> def")
+PASS <canvas> should not collapse following space ("<div><canvas></canvas> abc")
+PASS Replaced element <img> with display:block should be treated as block-level ("<div>abc <img style='display:block'> def")
+PASS Replaced element <canvas> with display:block should be treated as block-level ("<div>abc <canvas style='display:block'></canvas> def")
 PASS Soft line breaks ignored ("<div style='width:0'>abc def")
 PASS Whitespace text node preserved ("<div style='width:0'><span>abc</span> <span>def</span>")
 FAIL ::first-line styles applied ("<div class='first-line-uppercase' style='width:0'>abc def") assert_equals: expected "ABC def" but got "abc def"

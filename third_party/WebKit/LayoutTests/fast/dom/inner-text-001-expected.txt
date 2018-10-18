@@ -36,4 +36,4 @@ First header
 Second header
 First list element
 Second list element
-This line contains an image.
+This line contains  an image.

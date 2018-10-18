@@ -3,3 +3,5 @@ BUG ID: Bugzilla bug 43341 Setting canvas width after canvas already rendered re
 TEST PASS: The canvas should go blank due to setting on the canvas width.
 
 Actual output: (blank canvas)
+
+
