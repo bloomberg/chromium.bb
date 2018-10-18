@@ -220,7 +220,10 @@ bool IsCrostiniAllowedForProfile(Profile* profile) {
   if (g_crostini_ui_allowed_for_testing) {
     return true;
   }
-  if (profile && (profile->IsChild() || profile->IsLegacySupervised())) {
+  if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
+      profile->IsOffTheRecord() ||
+      chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     return false;
   }
   if (!profile->GetPrefs()->GetBoolean(
