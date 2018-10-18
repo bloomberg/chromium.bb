@@ -39,7 +39,7 @@ void MediaInternalsProxy::GetEverything() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   MediaInternals::GetInstance()->SendHistoricalMediaEvents();
-
+  MediaInternals::GetInstance()->SendGeneralAudioInformation();
 #if !defined(OS_ANDROID)
   MediaInternals::GetInstance()->SendAudioFocusState();
 #endif

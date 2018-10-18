@@ -75,6 +75,9 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   // Replay all saved media events.
   void SendHistoricalMediaEvents();
 
+  // Sends general audio information to each registered UpdateCallback.
+  void SendGeneralAudioInformation();
+
   // Sends all audio cached data to each registered UpdateCallback.
   void SendAudioStreamData();
 
