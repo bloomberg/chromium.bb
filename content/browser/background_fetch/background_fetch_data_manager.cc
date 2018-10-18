@@ -19,9 +19,9 @@
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/background_fetch/storage/get_registration_task.h"
-#include "content/browser/background_fetch/storage/get_settled_fetches_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
+#include "content/browser/background_fetch/storage/match_requests_task.h"
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
 #include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
@@ -150,24 +150,25 @@ void BackgroundFetchDataManager::MarkRequestAsComplete(
       this, registration_id, std::move(request_info), std::move(callback)));
 }
 
-void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
+void BackgroundFetchDataManager::MatchRequests(
     const BackgroundFetchRegistrationId& registration_id,
     std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
     SettledFetchesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  AddDatabaseTask(std::make_unique<background_fetch::GetSettledFetchesTask>(
+  AddDatabaseTask(std::make_unique<background_fetch::MatchRequestsTask>(
       this, registration_id, std::move(match_params), std::move(callback)));
 }
 
 void BackgroundFetchDataManager::MarkRegistrationForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    HandleBackgroundFetchErrorCallback callback) {
+    bool check_for_failure,
+    MarkRegistrationForDeletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(
       std::make_unique<background_fetch::MarkRegistrationForDeletionTask>(
-          this, registration_id, std::move(callback)));
+          this, registration_id, check_for_failure, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::DeleteRegistration(

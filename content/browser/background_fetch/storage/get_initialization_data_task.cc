@@ -500,7 +500,8 @@ void GetInitializationDataTask::FinishWithError(
       // TODO(crbug.com/865388): Getting the Developer ID should be possible
       // since it is part of the key for when we got the Unique ID.
       AddDatabaseTask(std::make_unique<MarkRegistrationForDeletionTask>(
-          data_manager(), data.second.registration_id, base::DoNothing()));
+          data_manager(), data.second.registration_id,
+          /* check_for_failure= */ false, base::DoNothing()));
     }
 
     if (data.second.error ==

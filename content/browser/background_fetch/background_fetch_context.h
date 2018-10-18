@@ -206,9 +206,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Called when the data manager finishes marking a registration as deleted.
   void DidMarkForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchFailureReason failure_reason,
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback,
-      blink::mojom::BackgroundFetchError error);
+      blink::mojom::BackgroundFetchError error,
+      blink::mojom::BackgroundFetchFailureReason failure_reason);
 
   // Called when the sequence of settled fetches for |registration_id| have been
   // retrieved from storage, and the Service Worker event can be invoked.
@@ -225,9 +225,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetMatchingRequests(
       blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
       blink::mojom::BackgroundFetchError error,
-      blink::mojom::BackgroundFetchFailureReason failure_reason,
-      std::vector<BackgroundFetchSettledFetch> settled_fetches,
-      std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
+      std::vector<BackgroundFetchSettledFetch> settled_fetches);
 
   // Dispatches an appropriate event (success, fail, abort).
   void DispatchCompletionEvent(

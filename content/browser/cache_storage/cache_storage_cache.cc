@@ -1764,6 +1764,61 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
   std::move(callback).Run();
 }
 
+void CacheStorageCache::GetAllMatchedEntries(
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    blink::mojom::QueryParamsPtr options,
+    CacheEntriesCallback callback) {
+  if (backend_state_ == BACKEND_CLOSED) {
+    std::move(callback).Run(
+        MakeErrorStorage(ErrorStorageType::kKeysBackendClosed), {});
+    return;
+  }
+
+  scheduler_->ScheduleOperation(base::BindOnce(
+      &CacheStorageCache::GetAllMatchedEntriesImpl,
+      weak_ptr_factory_.GetWeakPtr(), std::move(request), std::move(options),
+      scheduler_->WrapCallbackToRunNext(std::move(callback))));
+}
+
+void CacheStorageCache::GetAllMatchedEntriesImpl(
+    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    blink::mojom::QueryParamsPtr options,
+    CacheEntriesCallback callback) {
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  if (backend_state_ != BACKEND_OPEN) {
+    std::move(callback).Run(
+        MakeErrorStorage(
+            ErrorStorageType::kStorageGetAllMatchedEntriesBackendClosed),
+        {});
+    return;
+  }
+
+  QueryCache(
+      std::move(request), std::move(options),
+      QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
+      base::BindOnce(&CacheStorageCache::GetAllMatchedEntriesDidQueryCache,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CacheStorageCache::GetAllMatchedEntriesDidQueryCache(
+    CacheEntriesCallback callback,
+    blink::mojom::CacheStorageError error,
+    std::unique_ptr<QueryCacheResults> query_cache_results) {
+  if (error != CacheStorageError::kSuccess) {
+    std::move(callback).Run(error, {});
+    return;
+  }
+
+  std::vector<CacheEntry> entries;
+  entries.reserve(query_cache_results->size());
+
+  for (auto& result : *query_cache_results) {
+    entries.emplace_back(std::move(result.request), std::move(result.response));
+  }
+
+  std::move(callback).Run(CacheStorageError::kSuccess, std::move(entries));
+}
+
 void CacheStorageCache::Delete(blink::mojom::BatchOperationPtr operation,
                                ErrorCallback callback) {
   DCHECK(BACKEND_OPEN == backend_state_ || initializing_);

@@ -553,6 +553,18 @@ class CacheStorageCacheTest : public testing::Test {
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
+  bool GetAllMatchedEntries(
+      std::vector<CacheStorageCache::CacheEntry>* cache_entries) {
+    base::RunLoop loop;
+    cache_->GetAllMatchedEntries(
+        nullptr /* request */, nullptr /* options */,
+        base::BindOnce(&CacheStorageCacheTest::CacheEntriesAndErrorCallback,
+                       base::Unretained(this), loop.QuitClosure(),
+                       cache_entries));
+    loop.Run();
+    return callback_error_ == CacheStorageError::kSuccess;
+  }
+
   bool MatchAll(std::vector<blink::mojom::FetchAPIResponsePtr>* responses) {
     return MatchAll(ServiceWorkerFetchRequest(), nullptr, responses);
   }
@@ -688,6 +700,16 @@ class CacheStorageCacheTest : public testing::Test {
       std::vector<blink::mojom::FetchAPIResponsePtr> responses) {
     callback_error_ = error;
     *responses_out = std::move(responses);
+    std::move(quit_closure).Run();
+  }
+
+  void CacheEntriesAndErrorCallback(
+      base::OnceClosure quit_closure,
+      std::vector<CacheStorageCache::CacheEntry>* cache_entries_out,
+      CacheStorageError error,
+      std::vector<CacheStorageCache::CacheEntry> cache_entries) {
+    callback_error_ = error;
+    *cache_entries_out = std::move(cache_entries);
     std::move(quit_closure).Run();
   }
 
@@ -1138,6 +1160,25 @@ TEST_P(CacheStorageCacheTestP, Match_IgnoreVary) {
   blink::mojom::QueryParamsPtr match_params = blink::mojom::QueryParams::New();
   match_params->ignore_vary = true;
   EXPECT_TRUE(Match(body_request_, std::move(match_params)));
+}
+
+TEST_P(CacheStorageCacheTestP, GetAllMatchedEntries_RequestsIncluded) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  std::vector<CacheStorageCache::CacheEntry> cache_entries;
+  EXPECT_TRUE(GetAllMatchedEntries(&cache_entries));
+
+  ASSERT_EQ(1u, cache_entries.size());
+  const auto& request = cache_entries[0].first;
+  EXPECT_EQ(request->url, body_request_.url);
+  EXPECT_EQ(request->headers, body_request_.headers);
+  EXPECT_EQ(request->method, body_request_.method);
+
+  auto& response = cache_entries[0].second;
+  EXPECT_TRUE(ResponseMetadataEqual(*SetCacheName(CreateBlobBodyResponse()),
+                                    *response));
+  blink::mojom::BlobPtr blob(std::move(response->blob->blob));
+  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
 }
 
 TEST_P(CacheStorageCacheTestP, Keys_IgnoreSearch) {
