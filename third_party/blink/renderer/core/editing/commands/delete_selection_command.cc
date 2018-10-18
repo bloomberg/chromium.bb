@@ -1189,7 +1189,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     }
     // HandleGeneralDelete cause DOM mutation events so |ending_position_|
     // can be out of document.
-    if (ending_position_.IsConnected()) {
+    if (ending_position_.IsValidFor(GetDocument())) {
       InsertNodeAt(placeholder, ending_position_, editing_state);
       if (editing_state->IsAborted())
         return;
