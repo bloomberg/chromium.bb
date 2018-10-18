@@ -700,13 +700,6 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     return;
   }
 
-  // No-op if app list is on fullscreen all apps state and the event location is
-  // near an app.
-  if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS &&
-      GetRootAppsGridView()->IsEventNearAppIcon(*event)) {
-    return;
-  }
-
   if (!search_box_view_->is_search_box_active()) {
     if (!IsHomeLauncherEnabledInTabletMode())
       Dismiss();
