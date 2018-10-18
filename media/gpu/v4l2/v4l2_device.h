@@ -19,6 +19,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -300,9 +301,8 @@ class MEDIA_GPU_EXPORT V4L2Device
   static std::string V4L2FormatToString(const struct v4l2_format& format);
 
   // Composes VideoFrameLayout based on v4l2_format.
-  // If error occurs, it returns invalid VideoFrameLayout, which is
-  // VideoFrameLayout(PIXEL_FORMAT_UNKNOWN, gfx::Size()).
-  static VideoFrameLayout V4L2FormatToVideoFrameLayout(
+  // If error occurs, it returns base::nullopt.
+  static base::Optional<VideoFrameLayout> V4L2FormatToVideoFrameLayout(
       const struct v4l2_format& format);
 
   enum class Type {

@@ -501,14 +501,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Clients must use the static factory/wrapping methods to create a new frame.
   // Derived classes should create their own factory/wrapping methods, and use
   // this constructor to do basic initialization.
-  VideoFrame(VideoPixelFormat format,
-             StorageType storage_type,
-             const gfx::Size& coded_size,
-             const gfx::Rect& visible_rect,
-             const gfx::Size& natural_size,
-             base::TimeDelta timestamp);
-
-  // VideoFrameLayout is initialized at caller side.
   VideoFrame(const VideoFrameLayout& layout,
              StorageType storage_type,
              const gfx::Rect& visible_rect,

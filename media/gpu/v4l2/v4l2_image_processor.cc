@@ -291,10 +291,14 @@ bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
   job_record->output_buffer_index = output_buffer_index;
   job_record->ready_cb = std::move(cb);
 
+  auto layout =
+      VideoFrameLayout::Create(output_format_, output_allocated_size_);
+  if (!layout) {
+    return false;
+  }
   // Create the output frame
   job_record->output_frame = VideoFrame::WrapExternalDmabufs(
-      VideoFrameLayout(output_format_, output_allocated_size_),
-      gfx::Rect(output_visible_size_), output_visible_size_,
+      *layout, gfx::Rect(output_visible_size_), output_visible_size_,
       std::move(output_dmabuf_fds), job_record->input_frame->timestamp());
 
   if (!job_record->output_frame)
