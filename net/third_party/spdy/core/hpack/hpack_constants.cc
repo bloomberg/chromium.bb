@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "net/third_party/spdy/core/hpack/hpack_huffman_table.h"
 #include "net/third_party/spdy/core/hpack/hpack_static_table.h"
+#include "net/third_party/spdy/platform/api/spdy_arraysize.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 
 namespace spdy {
@@ -327,13 +328,13 @@ std::vector<HpackHuffmanSymbol> HpackHuffmanCode() {
       {0xfffffffcul, 30, 256},  // EOS 11111111|11111111|11111111|111111
   };
   return std::vector<HpackHuffmanSymbol>(
-      kHpackHuffmanCode, kHpackHuffmanCode + arraysize(kHpackHuffmanCode));
+      kHpackHuffmanCode, kHpackHuffmanCode + SPDY_ARRAYSIZE(kHpackHuffmanCode));
 }
 
 // The "constructor" for a HpackStaticEntry that computes the lengths at
 // compile time.
 #define STATIC_ENTRY(name, value) \
-  { name, arraysize(name) - 1, value, arraysize(value) - 1 }
+  { name, SPDY_ARRAYSIZE(name) - 1, value, SPDY_ARRAYSIZE(value) - 1 }
 
 std::vector<HpackStaticEntry> HpackStaticTableVector() {
   static const HpackStaticEntry kHpackStaticTable[] = {
@@ -400,7 +401,7 @@ std::vector<HpackStaticEntry> HpackStaticTableVector() {
       STATIC_ENTRY("www-authenticate", ""),              // 61
   };
   return std::vector<HpackStaticEntry>(
-      kHpackStaticTable, kHpackStaticTable + arraysize(kHpackStaticTable));
+      kHpackStaticTable, kHpackStaticTable + SPDY_ARRAYSIZE(kHpackStaticTable));
 }
 
 #undef STATIC_ENTRY
