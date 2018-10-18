@@ -33,6 +33,8 @@ class GPU_GLES2_EXPORT SharedImageManager {
   // destroyed.
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       const Mailbox& mailbox);
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(const Mailbox& mailbox);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox);

@@ -22,6 +22,7 @@ namespace gpu {
 class MailboxManager;
 class SharedImageManager;
 class SharedImageRepresentationGLTexture;
+class SharedImageRepresentationGLTexturePassthrough;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
 // Should not be accessed direclty, instead is accessed through a
@@ -74,6 +75,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   friend class SharedImageManager;
   virtual std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager);
+  virtual std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager);
 
   // Used by subclasses in Destroy.
   bool have_context() const { return have_context_; }

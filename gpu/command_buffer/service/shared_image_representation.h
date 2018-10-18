@@ -16,6 +16,7 @@
 namespace gpu {
 namespace gles2 {
 class Texture;
+class TexturePassthrough;
 }  // namespace gles2
 
 // A representation of a SharedImageBacking for use with a specific use case /
@@ -49,6 +50,17 @@ class SharedImageRepresentationGLTexture : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing) {}
 
   virtual gles2::Texture* GetTexture() = 0;
+};
+
+class SharedImageRepresentationGLTexturePassthrough
+    : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationGLTexturePassthrough(SharedImageManager* manager,
+                                                SharedImageBacking* backing)
+      : SharedImageRepresentation(manager, backing) {}
+
+  virtual const scoped_refptr<gles2::TexturePassthrough>&
+  GetTexturePassthrough() = 0;
 };
 
 }  // namespace gpu

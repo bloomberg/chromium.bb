@@ -934,6 +934,9 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   PassthroughResources* GetPassthroughResources() const {
     return group_->passthrough_resources();
   }
+  SharedImageManager* GetSharedImageManager() const {
+    return group_->shared_image_manager();
+  }
   const base::circular_deque<GLES2DecoderPassthroughImpl::PendingReadPixels>&
   GetPendingReadPixels() const {
     return decoder_->pending_read_pixels_;
@@ -966,6 +969,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
                     GLenum type,
                     uint32_t shared_memory_id,
                     uint32_t shared_memory_offset);
+  void DoDeleteTexture(GLuint client_id);
 
   void DoBindFramebuffer(GLenum target, GLuint client_id);
   void DoFramebufferTexture2D(GLenum target,

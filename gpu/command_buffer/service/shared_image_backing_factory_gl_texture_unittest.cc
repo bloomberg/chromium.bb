@@ -95,11 +95,26 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
 
   // Next, validate via a SharedImageRepresentationGLTexture.
   EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
-  auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
   if (!use_passthrough()) {
+    auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
     EXPECT_TRUE(gl_representation);
     EXPECT_TRUE(gl_representation->GetTexture()->service_id());
     EXPECT_EQ(expected_target, gl_representation->GetTexture()->target());
+    EXPECT_EQ(size, gl_representation->size());
+    EXPECT_EQ(format, gl_representation->format());
+    EXPECT_EQ(color_space, gl_representation->color_space());
+    EXPECT_EQ(usage, gl_representation->usage());
+    gl_representation.reset();
+  }
+
+  // Finally, validate a SharedImageRepresentationGLTexturePassthrough.
+  if (use_passthrough()) {
+    auto gl_representation =
+        shared_image_manager_.ProduceGLTexturePassthrough(mailbox);
+    EXPECT_TRUE(gl_representation);
+    EXPECT_TRUE(gl_representation->GetTexturePassthrough()->service_id());
+    EXPECT_EQ(expected_target,
+              gl_representation->GetTexturePassthrough()->target());
     EXPECT_EQ(size, gl_representation->size());
     EXPECT_EQ(format, gl_representation->format());
     EXPECT_EQ(color_space, gl_representation->color_space());
@@ -145,10 +160,23 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
 
   // Next, validate via a SharedImageRepresentationGLTexture.
   EXPECT_TRUE(shared_image_manager_.Register(std::move(backing)));
-  auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
   if (!use_passthrough()) {
+    auto gl_representation = shared_image_manager_.ProduceGLTexture(mailbox);
     EXPECT_TRUE(gl_representation);
     EXPECT_TRUE(gl_representation->GetTexture()->service_id());
+    EXPECT_EQ(size, gl_representation->size());
+    EXPECT_EQ(format, gl_representation->format());
+    EXPECT_EQ(color_space, gl_representation->color_space());
+    EXPECT_EQ(usage, gl_representation->usage());
+    gl_representation.reset();
+  }
+
+  // Finally, validate a SharedImageRepresentationGLTexturePassthrough.
+  if (use_passthrough()) {
+    auto gl_representation =
+        shared_image_manager_.ProduceGLTexturePassthrough(mailbox);
+    EXPECT_TRUE(gl_representation);
+    EXPECT_TRUE(gl_representation->GetTexturePassthrough()->service_id());
     EXPECT_EQ(size, gl_representation->size());
     EXPECT_EQ(format, gl_representation->format());
     EXPECT_EQ(color_space, gl_representation->color_space());

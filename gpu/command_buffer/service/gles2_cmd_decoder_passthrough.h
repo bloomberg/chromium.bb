@@ -39,6 +39,8 @@ class GLFence;
 }
 
 namespace gpu {
+class SharedImageRepresentationGLTexturePassthrough;
+
 namespace gles2 {
 
 class ContextGroup;
@@ -86,6 +88,14 @@ struct PassthroughResources {
   // using the mailbox are deleted
   ClientServiceMap<GLuint, scoped_refptr<TexturePassthrough>>
       texture_object_map;
+
+  // Mapping of client texture IDs to
+  // SharedImageRepresentationGLTexturePassthroughs.
+  // TODO(ericrk): Remove this once TexturePassthrough holds a reference to
+  // the SharedImageRepresentationGLTexturePassthrough itself.
+  base::flat_map<GLuint,
+                 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>>
+      texture_shared_image_map;
 
   // A set of yet-to-be-deleted TexturePassthrough, which should be tossed
   // whenever a context switch happens or the resources is destroyed.

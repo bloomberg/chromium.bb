@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -179,8 +180,12 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
         [api](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
           texture->MarkContextLost();
         });
+    for (const auto& pair : texture_shared_image_map) {
+      pair.second->OnContextLost();
+    }
   }
   texture_object_map.Clear();
+  texture_shared_image_map.clear();
   DestroyPendingTextures(have_context);
 }
 
