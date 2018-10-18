@@ -44,6 +44,7 @@
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
+#include "chrome/common/safe_browsing/mock_binary_feature_extractor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -171,25 +172,6 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
   int download_report_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
-};
-
-class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
- public:
-  MockBinaryFeatureExtractor() {}
-  MOCK_METHOD2(CheckSignature,
-               void(const base::FilePath&,
-                    ClientDownloadRequest_SignatureInfo*));
-  MOCK_METHOD4(ExtractImageFeatures,
-               bool(const base::FilePath&,
-                    ExtractHeadersOption,
-                    ClientDownloadRequest_ImageHeaders*,
-                    google::protobuf::RepeatedPtrField<std::string>*));
-
- protected:
-  ~MockBinaryFeatureExtractor() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBinaryFeatureExtractor);
 };
 
 using NiceMockDownloadItem = NiceMock<download::MockDownloadItem>;
@@ -1622,8 +1604,18 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
       unsigned_dmg,                                             // tmp_path
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
 
-  EXPECT_CALL(item, GetTotalBytes())
-      .WillRepeatedly(Return(std::numeric_limits<int64_t>::max()));
+  // Set the max file size to unpack to 0, so that this DMG is now "too large"
+  std::unique_ptr<DownloadFileTypeConfig> config = policies_.DuplicateConfig();
+  for (int i = 0; i < config->file_types_size(); i++) {
+    if (config->file_types(i).extension() == "dmg") {
+      for (int j = 0; j < config->file_types(i).platform_settings_size(); j++) {
+        config->mutable_file_types(i)
+            ->mutable_platform_settings(j)
+            ->set_max_file_size_to_analyze(0);
+      }
+    }
+  }
+  policies_.SwapConfig(config);
 
   RunLoop run_loop;
   download_service_->CheckClientDownload(

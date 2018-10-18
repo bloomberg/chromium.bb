@@ -49,12 +49,6 @@ void RecordFileExtensionType(const std::string& metric_name,
       metric_name, FileTypePolicies::GetInstance()->UmaValueForFile(file));
 }
 
-void RecordArchivedArchiveFileExtensionType(const base::FilePath& file) {
-  base::UmaHistogramSparse(
-      "SBClientDownload.ArchivedArchiveExtensions",
-      FileTypePolicies::GetInstance()->UmaValueForFile(file));
-}
-
 std::string GetUnsupportedSchemeName(const GURL& download_url) {
   if (download_url.SchemeIs(url::kContentScheme))
     return "ContentScheme";
@@ -89,7 +83,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
       tab_url_(item->GetTabUrl()),
       tab_referrer_url_(item->GetTabReferrerUrl()),
       archived_executable_(false),
-      archive_is_valid_(ArchiveValid::UNSET),
+      archive_is_valid_(FileAnalyzer::ArchiveValid::UNSET),
 #if defined(OS_MACOSX)
       disk_image_signature_(nullptr),
 #endif
@@ -98,6 +92,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
       binary_feature_extractor_(binary_feature_extractor),
       database_manager_(database_manager),
       pingback_enabled_(service_->enabled()),
+      file_analyzer_(new FileAnalyzer(binary_feature_extractor_)),
       finished_(false),
       type_(ClientDownloadRequest::WIN_EXECUTABLE),
       start_time_(base::TimeTicks::Now()),
@@ -375,73 +370,50 @@ void CheckClientDownloadRequest::AnalyzeFile() {
   RecordFileExtensionType(kDownloadExtensionUmaName,
                           item_->GetTargetFilePath());
 
-  // Compute features from the file contents. Note that we record histograms
-  // based on the result, so this runs regardless of whether the pingbacks
-  // are enabled.
-  if (item_->GetTargetFilePath().MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
-    StartExtractZipFeatures();
-  } else if (item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".rar")) &&
-             base::FeatureList::IsEnabled(kInspectDownloadedRarFiles)) {
-    StartExtractRarFeatures();
-#if defined(OS_MACOSX)
-  } else if (item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dmg")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".img")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".iso")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".smi")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".cdr")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dart")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dc42")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".diskcopy42")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dmgpart")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".dvdr")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".imgpart")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".ndif")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".sparsebundle")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".sparseimage")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".toast")) ||
-             item_->GetTargetFilePath().MatchesExtension(
-                 FILE_PATH_LITERAL(".udif"))) {
-    StartExtractDmgFeatures();
-#endif
-  } else {
-#if defined(OS_MACOSX)
-    // Checks for existence of "koly" signature even if file doesn't have
-    // archive-type extension, then calls ExtractFileOrDmgFeatures() with
-    // result.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(DiskImageTypeSnifferMac::IsAppleDiskImage,
-                   item_->GetTargetFilePath()),
-        base::Bind(&CheckClientDownloadRequest::ExtractFileOrDmgFeatures,
-                   this));
-#else
-    StartExtractFileFeatures();
-#endif
-  }
+  file_analyzer_->Start(
+      item_->GetTargetFilePath(), item_->GetFullPath(),
+      base::BindOnce(&CheckClientDownloadRequest::OnFileFeatureExtractionDone,
+                     weakptr_factory_.GetWeakPtr()));
 }
 
-void CheckClientDownloadRequest::OnFileFeatureExtractionDone() {
+void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
+    FileAnalyzer::Results results) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // This can run in any thread, since it just posts more messages.
   if (item_ == nullptr) {
     PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
     return;
   }
+
+  // If it's an archive with no archives or executables, finish early.
+  if ((type_ == ClientDownloadRequest::ZIPPED_EXECUTABLE ||
+       type_ == ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE) &&
+      !results.archived_executable && !results.archived_archive &&
+      results.archive_is_valid == FileAnalyzer::ArchiveValid::VALID) {
+    PostFinishTask(DownloadCheckResult::UNKNOWN,
+                   REASON_ARCHIVE_WITHOUT_BINARIES);
+  }
+
+  // The content checks cannot determine that we decided to sample this file, so
+  // special case that DownloadType.
+  if (type_ != ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
+    type_ = results.type;
+  archived_executable_ = results.archived_executable;
+  archive_is_valid_ = results.archive_is_valid;
+  archived_binaries_.CopyFrom(results.archived_binaries);
+  signature_info_ = results.signature_info;
+  image_headers_.reset(new ClientDownloadRequest_ImageHeaders());
+  *image_headers_ = results.image_headers;
+
+#if defined(OS_MACOSX)
+  if (!results.disk_image_signature.empty())
+    disk_image_signature_ =
+        std::make_unique<std::vector<uint8_t>>(results.disk_image_signature);
+  else
+    disk_image_signature_ = nullptr;
+  detached_code_signatures_.CopyFrom(results.detached_code_signatures);
+#endif
 
   // TODO(noelutz): DownloadInfo should also contain the IP address of
   // every URL in the redirect chain.  We also should check whether the
@@ -459,296 +431,6 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone() {
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::StartTimeout, this));
 }
-
-void CheckClientDownloadRequest::StartExtractFileFeatures() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(item_);  // Called directly from Start(), item should still exist.
-  // Since we do blocking I/O, offload this to a worker thread.
-  // The task does not need to block shutdown.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&CheckClientDownloadRequest::ExtractFileFeatures, this,
-                     item_->GetFullPath()));
-}
-
-void CheckClientDownloadRequest::ExtractFileFeatures(
-    const base::FilePath& file_path) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  binary_feature_extractor_->CheckSignature(file_path, &signature_info_);
-  bool is_signed = (signature_info_.certificate_chain_size() > 0);
-  if (is_signed) {
-    DVLOG(2) << "Downloaded a signed binary: " << file_path.value();
-  } else {
-    DVLOG(2) << "Downloaded an unsigned binary: " << file_path.value();
-  }
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
-                      base::TimeTicks::Now() - start_time);
-
-  start_time = base::TimeTicks::Now();
-  image_headers_.reset(new ClientDownloadRequest_ImageHeaders());
-  if (!binary_feature_extractor_->ExtractImageFeatures(
-          file_path, BinaryFeatureExtractor::kDefaultOptions,
-          image_headers_.get(), nullptr)) {
-    image_headers_.reset();
-  }
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractImageHeadersTime",
-                      base::TimeTicks::Now() - start_time);
-
-  OnFileFeatureExtractionDone();
-}
-
-void CheckClientDownloadRequest::StartExtractRarFeatures() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(item_);  // Called directly from Start(), item should still exist.
-  rar_analysis_start_time_ = base::TimeTicks::Now();
-  // We give the rar analyzer a weak pointer to this object.  Since the
-  // analyzer is refcounted, it might outlive the request.
-  rar_analyzer_ = new SandboxedRarAnalyzer(
-      item_->GetFullPath(),
-      base::BindRepeating(&CheckClientDownloadRequest::OnRarAnalysisFinished,
-                          weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
-  rar_analyzer_->Start();
-}
-
-void CheckClientDownloadRequest::OnRarAnalysisFinished(
-    const ArchiveAnalyzerResults& results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (item_ == nullptr) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
-    return;
-  }
-  if (!service_)
-    return;
-
-  archive_is_valid_ =
-      (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
-  archived_executable_ = results.has_executable;
-  CopyArchivedBinaries(results.archived_binary, &archived_binaries_);
-  DVLOG(1) << "Rar analysis finished for " << item_->GetFullPath().value()
-           << ", has_executable=" << results.has_executable
-           << ", has_archive=" << results.has_archive
-           << ", success=" << results.success;
-
-  if (archived_executable_) {
-    UMA_HISTOGRAM_COUNTS_100("SBClientDownload.RarFileArchivedBinariesCount",
-                             results.archived_binary.size());
-  }
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileSuccess", results.success);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileHasExecutable",
-                        archived_executable_);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileHasArchiveButNoExecutable",
-                        results.has_archive && !archived_executable_);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractRarFeaturesTime",
-                      base::TimeTicks::Now() - rar_analysis_start_time_);
-  for (const auto& file_name : results.archived_archive_filenames)
-    RecordArchivedArchiveFileExtensionType(file_name);
-
-  if (!archived_executable_) {
-    if (results.has_archive) {
-      type_ = ClientDownloadRequest::RAR_COMPRESSED_ARCHIVE;
-    } else if (!results.success) {
-      // .rar files that look invalid to Chrome may be successfully unpacked by
-      // other archive tools, so they may be a real threat.
-      type_ = ClientDownloadRequest::INVALID_RAR;
-    } else {
-      // Normal rar w/o EXEs, or invalid rar and not extended-reporting.
-      PostFinishTask(DownloadCheckResult::UNKNOWN,
-                     REASON_ARCHIVE_WITHOUT_BINARIES);
-      return;
-    }
-  }
-
-  OnFileFeatureExtractionDone();
-}
-
-void CheckClientDownloadRequest::StartExtractZipFeatures() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(item_);  // Called directly from Start(), item should still exist.
-  zip_analysis_start_time_ = base::TimeTicks::Now();
-  // We give the zip analyzer a weak pointer to this object.  Since the
-  // analyzer is refcounted, it might outlive the request.
-  zip_analyzer_ = new SandboxedZipAnalyzer(
-      item_->GetFullPath(),
-      base::Bind(&CheckClientDownloadRequest::OnZipAnalysisFinished,
-                 weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
-  zip_analyzer_->Start();
-}
-
-// static
-void CheckClientDownloadRequest::CopyArchivedBinaries(
-    const ArchivedBinaries& src_binaries,
-    ArchivedBinaries* dest_binaries) {
-  // Limit the number of entries so we don't clog the backend.
-  // We can expand this limit by pushing a new download_file_types update.
-  int limit = FileTypePolicies::GetInstance()->GetMaxArchivedBinariesToReport();
-
-  dest_binaries->Clear();
-  for (int i = 0; i < limit && i < src_binaries.size(); i++) {
-    *dest_binaries->Add() = src_binaries[i];
-  }
-}
-
-void CheckClientDownloadRequest::OnZipAnalysisFinished(
-    const ArchiveAnalyzerResults& results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(ClientDownloadRequest::ZIPPED_EXECUTABLE, type_);
-  if (item_ == nullptr) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
-    return;
-  }
-  if (!service_)
-    return;
-
-  // Even if !results.success, some of the zip may have been parsed.
-  // Some unzippers will successfully unpack archives that we cannot,
-  // so we're lenient here.
-  archive_is_valid_ =
-      (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
-  archived_executable_ = results.has_executable;
-  CopyArchivedBinaries(results.archived_binary, &archived_binaries_);
-  DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
-           << ", has_executable=" << results.has_executable
-           << ", has_archive=" << results.has_archive
-           << ", success=" << results.success;
-
-  if (archived_executable_) {
-    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.ZipFileArchivedBinariesCount",
-                            results.archived_binary.size());
-  }
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileSuccess", results.success);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
-                        archived_executable_);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasArchiveButNoExecutable",
-                        results.has_archive && !archived_executable_);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
-                      base::TimeTicks::Now() - zip_analysis_start_time_);
-  for (const auto& file_name : results.archived_archive_filenames)
-    RecordArchivedArchiveFileExtensionType(file_name);
-
-  if (!archived_executable_) {
-    if (results.has_archive) {
-      type_ = ClientDownloadRequest::ZIPPED_ARCHIVE;
-    } else if (!results.success) {
-      // .zip files that look invalid to Chrome can often be successfully
-      // unpacked by other archive tools, so they may be a real threat.
-      type_ = ClientDownloadRequest::INVALID_ZIP;
-    } else {
-      // Normal zip w/o EXEs, or invalid zip and not extended-reporting.
-      PostFinishTask(DownloadCheckResult::UNKNOWN,
-                     REASON_ARCHIVE_WITHOUT_BINARIES);
-      return;
-    }
-  }
-
-  OnFileFeatureExtractionDone();
-}
-
-#if defined(OS_MACOSX)
-// This is called for .DMGs and other files that can be parsed by
-// SandboxedDMGAnalyzer.
-void CheckClientDownloadRequest::StartExtractDmgFeatures() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(item_);
-
-  // Directly use 'dmg' extension since download file may not have any
-  // extension, but has still been deemed a DMG through file type sniffing.
-  bool too_big_to_unpack =
-      base::checked_cast<uint64_t>(item_->GetTotalBytes()) >
-      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg");
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgTooBigToUnpack",
-                        too_big_to_unpack);
-  if (too_big_to_unpack) {
-    OnFileFeatureExtractionDone();
-  } else {
-    dmg_analyzer_ = new SandboxedDMGAnalyzer(
-        item_->GetFullPath(),
-        base::Bind(&CheckClientDownloadRequest::OnDmgAnalysisFinished,
-                   weakptr_factory_.GetWeakPtr()),
-        content::ServiceManagerConnection::GetForProcess()->GetConnector());
-    dmg_analyzer_->Start();
-    dmg_analysis_start_time_ = base::TimeTicks::Now();
-  }
-}
-
-// Extracts DMG features if file has 'koly' signature, otherwise extracts
-// regular file features.
-void CheckClientDownloadRequest::ExtractFileOrDmgFeatures(
-    bool download_file_has_koly_signature) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload."
-      "DownloadFileWithoutDiskImageExtensionHasKolySignature",
-      download_file_has_koly_signature);
-  // Returns if DownloadItem was destroyed during parsing of file metadata.
-  if (item_ == nullptr)
-    return;
-  if (download_file_has_koly_signature)
-    StartExtractDmgFeatures();
-  else
-    StartExtractFileFeatures();
-}
-
-void CheckClientDownloadRequest::OnDmgAnalysisFinished(
-    const safe_browsing::ArchiveAnalyzerResults& results) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(ClientDownloadRequest::MAC_EXECUTABLE, type_);
-  if (item_ == nullptr) {
-    PostFinishTask(DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED);
-    return;
-  }
-  if (!service_)
-    return;
-
-  if (results.signature_blob.size() > 0) {
-    disk_image_signature_ =
-        std::make_unique<std::vector<uint8_t>>(results.signature_blob);
-  }
-
-  detached_code_signatures_.CopyFrom(results.detached_code_signatures);
-
-  // Even if !results.success, some of the DMG may have been parsed.
-  archive_is_valid_ =
-      (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
-  archived_executable_ = results.has_executable;
-  CopyArchivedBinaries(results.archived_binary, &archived_binaries_);
-
-  DVLOG(1) << "DMG analysis has finished for " << item_->GetFullPath().value()
-           << ", has_executable=" << results.has_executable
-           << ", success=" << results.success;
-
-  int64_t uma_file_type = FileTypePolicies::GetInstance()->UmaValueForFile(
-      item_->GetTargetFilePath());
-
-  if (results.success) {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileSuccessByType",
-                             uma_file_type);
-  } else {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileFailureByType",
-                             uma_file_type);
-    type_ = ClientDownloadRequest::MAC_ARCHIVE_FAILED_PARSING;
-  }
-
-  if (archived_executable_) {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileHasExecutableByType",
-                             uma_file_type);
-    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DmgFileArchivedBinariesCount",
-                            results.archived_binary.size());
-  } else {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileHasNoExecutableByType",
-                             uma_file_type);
-  }
-
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractDmgFeaturesTime",
-                      base::TimeTicks::Now() - dmg_analysis_start_time_);
-
-  OnFileFeatureExtractionDone();
-}
-#endif  // defined(OS_MACOSX)
 
 bool CheckClientDownloadRequest::ShouldSampleWhitelistedDownload() {
   // We currently sample 1% whitelisted downloads from users who opted
@@ -995,8 +677,9 @@ void CheckClientDownloadRequest::SendRequest() {
   }
 #endif
 
-  if (archive_is_valid_ != ArchiveValid::UNSET)
-    request->set_archive_valid(archive_is_valid_ == ArchiveValid::VALID);
+  if (archive_is_valid_ != FileAnalyzer::ArchiveValid::UNSET)
+    request->set_archive_valid(archive_is_valid_ ==
+                               FileAnalyzer::ArchiveValid::VALID);
   request->mutable_signature()->CopyFrom(signature_info_);
   if (image_headers_)
     request->set_allocated_image_headers(image_headers_.release());
