@@ -2,7 +2,7 @@ Simple test that the dragstart event contains the default data in the event.
 
 Select some text in this box and drag it.
 
-Drag the image.
+Drag the image. 
 
 Drag the link. Link
 

@@ -71,7 +71,7 @@ X
 
 Actual image:
 
-This test PASSES in DumpRenderTree. The role is AXRole: AXImage
+ This test PASSES in DumpRenderTree. The role is AXRole: AXImage
 
 
 

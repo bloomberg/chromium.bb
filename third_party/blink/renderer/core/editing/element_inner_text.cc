@@ -251,8 +251,22 @@ bool ElementInnerTextCollector::IsCollapsibleSpace(UChar code_point) {
 // static
 bool ElementInnerTextCollector::IsDisplayBlockLevel(const Node& node) {
   const LayoutObject* const layout_object = node.GetLayoutObject();
-  if (!layout_object || !layout_object->IsLayoutBlock())
+  if (!layout_object)
     return false;
+  if (!layout_object->IsLayoutBlock()) {
+    if (layout_object->IsTableSection()) {
+      // Note: |LayoutTableSeleciton::IsInline()| returns false, but it is not
+      // block-level.
+      return false;
+    }
+    // Note: Block-level replaced elements, e.g. <img style=display:block>,
+    // reach here. Unlike |LayoutBlockFlow::AddChild()|, innerText considers
+    // floats and absolutely-positioned elements as block-level node.
+    return !layout_object->IsInline();
+  }
+  // TODO(crbug.com/567964): Due by the issue, |IsAtomicInlineLevel()| is always
+  // true for replaced elements event if it has display:block, once it is fixed
+  // we should check at first.
   if (layout_object->IsAtomicInlineLevel())
     return false;
   if (layout_object->IsRubyText()) {
@@ -516,16 +530,17 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   if (IsDisplayBlockLevel(node))
     return ProcessChildrenWithRequiredLineBreaks(node, 1);
 
-  if (layout_object.IsLayoutBlock()) {
-    result_.FlushCollapsibleSpace();
-    ProcessChildrenWithRequiredLineBreaks(node, 0);
-    // We should not collapse white space after inline-block.
-    // e.g. abc <span style="display:inline-block"></span> def => "abc  def".
-    // See http://crbug.com/890020
-    result_.SetShouldCollapseWhitespace(false);
-    return;
-  }
-  ProcessChildren(node);
+  if (!layout_object.IsAtomicInlineLevel())
+    return ProcessChildren(node);
+
+  // We should emit a space before atomic inline item:
+  // abc <img> def => "abc  def" See http://crbug.com/894701
+  result_.FlushCollapsibleSpace();
+  ProcessChildrenWithRequiredLineBreaks(node, 0);
+  // We should not collapse white space after inline-block:
+  // abc <span style="display:inline-block"></span> def => "abc  def".
+  // See http://crbug.com/890020
+  result_.SetShouldCollapseWhitespace(false);
 }
 
 void ElementInnerTextCollector::ProcessOptionElement(
