@@ -20,12 +20,12 @@ class IdentityTestEnvironmentProfileAdaptor {
  public:
   // Creates and returns a TestingProfile that has been configured with the set
   // of testing factories that IdentityTestEnvironment requires.
-  static std::unique_ptr<content::BrowserContext>
+  static std::unique_ptr<TestingProfile>
   CreateProfileForIdentityTestEnvironment();
 
   // Like the above, but additionally configures the returned Profile with
   // |input_factories|.
-  static std::unique_ptr<content::BrowserContext>
+  static std::unique_ptr<TestingProfile>
   CreateProfileForIdentityTestEnvironment(
       const TestingProfile::TestingFactories& input_factories);
 

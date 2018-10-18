@@ -27,14 +27,14 @@ TestingProfile::TestingFactories GetIdentityTestEnvironmentFactories() {
 }  // namespace
 
 // static
-std::unique_ptr<content::BrowserContext> IdentityTestEnvironmentProfileAdaptor::
+std::unique_ptr<TestingProfile> IdentityTestEnvironmentProfileAdaptor::
     CreateProfileForIdentityTestEnvironment() {
   return CreateProfileForIdentityTestEnvironment(
       TestingProfile::TestingFactories());
 }
 
 // static
-std::unique_ptr<content::BrowserContext>
+std::unique_ptr<TestingProfile>
 IdentityTestEnvironmentProfileAdaptor::CreateProfileForIdentityTestEnvironment(
     const TestingProfile::TestingFactories& input_factories) {
   TestingProfile::Builder builder;
