@@ -19,8 +19,6 @@
 
 namespace explore_sites {
 namespace {
-const int kFaviconsPerCategoryImage = 4;
-
 // Ratio of icon size to the amount of padding between the icons.
 const int kIconPaddingScale = 8;
 }  // namespace

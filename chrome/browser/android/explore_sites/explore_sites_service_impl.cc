@@ -23,9 +23,6 @@ using chrome::android::explore_sites::ExploreSitesVariation;
 using chrome::android::explore_sites::GetExploreSitesVariation;
 
 namespace explore_sites {
-namespace {
-const int kFaviconsPerCategoryImage = 4;
-}
 
 ExploreSitesServiceImpl::ExploreSitesServiceImpl(
     std::unique_ptr<ExploreSitesStore> store,

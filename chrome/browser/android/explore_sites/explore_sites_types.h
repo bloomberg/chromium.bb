@@ -16,6 +16,8 @@
 #include "url/gurl.h"
 
 namespace explore_sites {
+constexpr int kFaviconsPerCategoryImage = 4;
+
 // The in-memory representation of a site in the ExploreSitesStore.
 // Image data is not represented here because it is requested separately from
 // the UI layer.
