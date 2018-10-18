@@ -391,15 +391,8 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
 
   DCHECK_EQ(effects_.size(), local_times_.size());
   for (size_t i = 0; i < effects_.size(); ++i) {
-    // TODO(crbug.com/756539): For now we use 0 as inherited time for compositor
-    // worklet animations. Will need to get the inherited time from worklet
-    // context.
-    double inherited_time_seconds = 0;
-
-    if (local_times_[i])
-      inherited_time_seconds = local_times_[i]->InSecondsF();
-
-    effects_[i]->UpdateInheritedTime(inherited_time_seconds, reason);
+    effects_[i]->UpdateInheritedTime(
+        local_times_[i] ? local_times_[i]->InSecondsF() : NullValue(), reason);
   }
 }
 

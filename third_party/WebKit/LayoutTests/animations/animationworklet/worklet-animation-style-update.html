@@ -47,10 +47,6 @@ runInAnimationWorklet(
 
   window.animStartTime = performance.now();
 
-  // TODO(crbug.com/756539): The expected values are based on assumption that
-  // worklet produced local time values are plumbed to main thread. This is
-  // currently not the case and 0 is used instead. As a result the expectation
-  // for the following checks to fail.
   const expectedValues = [
     // [time, element-id, property, expected-value, tolerance]
     [0.2, "box", "opacity",     0.5, 0.05],

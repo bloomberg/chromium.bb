@@ -5305,7 +5305,6 @@ crbug.com/887659 animations/animationworklet/animator-animate.html [ Failure ]
 crbug.com/887659 animations/animationworklet/animator-with-options.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-currentTime.html [ Failure ]
 crbug.com/887659 animations/animationworklet/worklet-animation-local-time-after-duration.html [ Failure ]
-crbug.com/887659 animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
 
 # Sheriff 2018-09-25
 crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
