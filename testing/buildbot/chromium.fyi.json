@@ -1617,6 +1617,18 @@
       },
       {
         "args": [
+          "--enable-features=NetworkService",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_interactive_ui_tests.filter"
+        ],
+        "name": "network_service_interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
           "--enable-features=SingleProcessMash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter"
         ],
