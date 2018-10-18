@@ -270,8 +270,17 @@ else()
   add_compiler_flag_if_supported("-Wunused")
   add_compiler_flag_if_supported("-Wvla")
 
-  add_c_flag_if_supported("-Wstack-usage=100000")
-  add_cxx_flag_if_supported("-Wstack-usage=240000")
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU" AND "${SANITIZE}" MATCHES
+     "address|undefined")
+
+    # This combination has more stack overhead, so we account for it by
+    # providing higher stack limit than usual.
+    add_c_flag_if_supported("-Wstack-usage=170000")
+    add_cxx_flag_if_supported("-Wstack-usage=270000")
+  else()
+    add_c_flag_if_supported("-Wstack-usage=100000")
+    add_cxx_flag_if_supported("-Wstack-usage=240000")
+  endif()
 
   # TODO(jzern): this could be added as a cxx flags for test/*.cc only, avoiding
   # third_party.
