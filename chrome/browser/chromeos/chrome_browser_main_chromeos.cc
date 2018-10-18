@@ -765,7 +765,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // loading the default profile).
   keyboard::InitializeKeyboardResources();
   chrome_keyboard_controller_client_ =
-      std::make_unique<ChromeKeyboardControllerClient>();
+      std::make_unique<ChromeKeyboardControllerClient>(
+          content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =

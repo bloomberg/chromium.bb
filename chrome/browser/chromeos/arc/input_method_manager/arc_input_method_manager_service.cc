@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/common/pref_names.h"
@@ -29,7 +29,6 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_observer.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace arc {
 
@@ -68,6 +67,16 @@ void SwitchImeToCallback(const std::string& ime_id,
     }
   }
   NOTREACHED() << "There is no enabled non-ARC IME.";
+}
+
+void SetKeyboardDisabled(bool disabled) {
+  if (disabled) {
+    ChromeKeyboardControllerClient::Get()->SetEnableFlag(
+        keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled);
+  } else {
+    ChromeKeyboardControllerClient::Get()->ClearEnableFlag(
+        keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled);
+  }
 }
 
 // Singleton factory for ArcInputMethodManagerService
@@ -408,24 +417,13 @@ void ArcInputMethodManagerService::InputMethodChanged(
     return;
   SwitchImeTo(state->GetCurrentInputMethod().id());
 
-  // ash::Shell is not created in the unit tests.
-  if (!ash::Shell::HasInstance())
-    return;
-  const bool was_enabled = keyboard::IsKeyboardEnabled();
   if (chromeos::extension_ime_util::IsArcIME(
           state->GetCurrentInputMethod().id())) {
     // Disable fallback virtual keyboard while Android IME is activated.
-    keyboard::SetKeyboardShowOverride(
-        keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
-    if (was_enabled)
-      ash::Shell::Get()->DisableKeyboard();
+    SetKeyboardDisabled(true);
   } else {
     // Stop overriding virtual keyboard availability.
-    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
-    // If the device is still in tablet mode, virtual keyboard may be enabled.
-    const bool is_enabled = keyboard::IsKeyboardEnabled();
-    if (!was_enabled && is_enabled)
-      ash::Shell::Get()->EnableKeyboard();
+    SetKeyboardDisabled(false);
   }
 }
 
