@@ -48,6 +48,7 @@ const char kSessionManagerLockScreen[] = "LockScreen";
 const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
 const char kSessionManagerHandleLockScreenDismissed[] =
     "HandleLockScreenDismissed";
+const char kSessionManagerIsScreenLocked[] = "IsScreenLocked";
 const char kSessionManagerSetFlagsForUser[] = "SetFlagsForUser";
 const char kSessionManagerGetServerBackedStateKeys[] =
     "GetServerBackedStateKeys";
