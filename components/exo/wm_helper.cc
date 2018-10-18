@@ -4,8 +4,6 @@
 
 #include "components/exo/wm_helper.h"
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/singleton.h"
@@ -54,15 +52,6 @@ bool WMHelper::HasInstance() {
   return !!g_instance;
 }
 
-void WMHelper::AddAccessibilityObserver(ash::AccessibilityObserver* observer) {
-  ash::Shell::Get()->accessibility_controller()->AddObserver(observer);
-}
-
-void WMHelper::RemoveAccessibilityObserver(
-    ash::AccessibilityObserver* observer) {
-  ash::Shell::Get()->accessibility_controller()->RemoveObserver(observer);
-}
-
 void WMHelper::AddActivationObserver(wm::ActivationChangeObserver* observer) {
   ash::Shell::Get()->activation_client()->AddObserver(observer);
 }
@@ -87,16 +76,6 @@ void WMHelper::AddTabletModeObserver(ash::TabletModeObserver* observer) {
 
 void WMHelper::RemoveTabletModeObserver(ash::TabletModeObserver* observer) {
   ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(observer);
-}
-
-void WMHelper::AddVirtualKeyboardControllerObserver(
-    ash::VirtualKeyboardControllerObserver* observer) {
-  ash::Shell::Get()->virtual_keyboard_controller()->AddObserver(observer);
-}
-
-void WMHelper::RemoveVirtualKeyboardControllerObserver(
-    ash::VirtualKeyboardControllerObserver* observer) {
-  ash::Shell::Get()->virtual_keyboard_controller()->RemoveObserver(observer);
 }
 
 void WMHelper::AddDisplayConfigurationObserver(
@@ -239,12 +218,6 @@ double WMHelper::GetDefaultDeviceScaleFactor() const {
       display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
   DCHECK(display_info.display_modes().size());
   return display_info.display_modes()[0].device_scale_factor();
-}
-
-bool WMHelper::IsAccessibilityKeyboardEnabled() const {
-  return ash::Shell::Get()
-      ->accessibility_controller()
-      ->IsVirtualKeyboardEnabled();
 }
 
 }  // namespace exo

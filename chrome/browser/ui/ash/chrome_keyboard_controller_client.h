@@ -48,11 +48,11 @@ class ChromeKeyboardControllerClient
   void OnGetInitialKeyboardConfig(keyboard::mojom::KeyboardConfigPtr config);
 
   // keyboard::mojom::KeyboardControllerObserver:
-  void OnKeyboardWindowDestroyed() override;
-  void OnKeyboardVisibilityChanged(bool visible) override;
-  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
+  void OnKeyboardEnabledChanged(bool enabled) override;
   void OnKeyboardConfigChanged(
       keyboard::mojom::KeyboardConfigPtr config) override;
+  void OnKeyboardVisibilityChanged(bool visible) override;
+  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
 
   ash::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
   mojo::AssociatedBinding<ash::mojom::KeyboardControllerObserver>

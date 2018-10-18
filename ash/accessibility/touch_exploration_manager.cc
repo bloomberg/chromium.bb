@@ -193,7 +193,7 @@ void TouchExplorationManager::OnKeyboardVisibleBoundsChanged(
   UpdateTouchExplorationState();
 }
 
-void TouchExplorationManager::OnKeyboardDisabled() {
+void TouchExplorationManager::OnKeyboardEnabledChanged(bool is_enabled) {
   UpdateTouchExplorationState();
 }
 

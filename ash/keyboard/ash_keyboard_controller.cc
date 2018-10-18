@@ -150,10 +150,11 @@ void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
   });
 }
 
-void AshKeyboardController::OnKeyboardDisabled() {
-  observers_.ForAllPtrs([](mojom::KeyboardControllerObserver* observer) {
-    observer->OnKeyboardWindowDestroyed();
-  });
+void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
+  observers_.ForAllPtrs(
+      [is_enabled](mojom::KeyboardControllerObserver* observer) {
+        observer->OnKeyboardEnabledChanged(is_enabled);
+      });
 }
 
 }  // namespace ash

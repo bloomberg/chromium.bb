@@ -751,7 +751,8 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter"
         ],
         "name": "single_process_mash_exo_unittests",
         "swarming": {
@@ -1456,7 +1457,8 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter"
         ],
         "name": "single_process_mash_exo_unittests",
         "swarming": {

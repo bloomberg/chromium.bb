@@ -100,32 +100,12 @@ void ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig(
   keyboard_controller_ptr_->AddObserver(std::move(ptr_info));
 }
 
-void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
-    const gfx::Rect& bounds) {
-  Profile* profile = GetProfile();
-  extensions::EventRouter* router = extensions::EventRouter::Get(profile);
-
-  if (!router->HasEventListener(
-          virtual_keyboard_private::OnBoundsChanged::kEventName)) {
+void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
+  if (enabled)
     return;
-  }
 
-  auto event_args = std::make_unique<base::ListValue>();
-  auto new_bounds = std::make_unique<base::DictionaryValue>();
-  new_bounds->SetInteger("left", bounds.x());
-  new_bounds->SetInteger("top", bounds.y());
-  new_bounds->SetInteger("width", bounds.width());
-  new_bounds->SetInteger("height", bounds.height());
-  event_args->Append(std::move(new_bounds));
+  // When the keyboard becomes disabled, send the onKeyboardClosed event.
 
-  auto event = std::make_unique<extensions::Event>(
-      extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
-      virtual_keyboard_private::OnBoundsChanged::kEventName,
-      std::move(event_args), profile);
-  router->BroadcastEvent(std::move(event));
-}
-
-void ChromeKeyboardControllerClient::OnKeyboardWindowDestroyed() {
   Profile* profile = GetProfile();
   extensions::EventRouter* router = extensions::EventRouter::Get(profile);
 
@@ -153,4 +133,29 @@ void ChromeKeyboardControllerClient::OnKeyboardConfigChanged(
 void ChromeKeyboardControllerClient::OnKeyboardVisibilityChanged(bool visible) {
   for (auto& observer : observers_)
     observer.OnKeyboardVisibilityChanged(visible);
+}
+
+void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
+    const gfx::Rect& bounds) {
+  Profile* profile = GetProfile();
+  extensions::EventRouter* router = extensions::EventRouter::Get(profile);
+
+  if (!router->HasEventListener(
+          virtual_keyboard_private::OnBoundsChanged::kEventName)) {
+    return;
+  }
+
+  auto event_args = std::make_unique<base::ListValue>();
+  auto new_bounds = std::make_unique<base::DictionaryValue>();
+  new_bounds->SetInteger("left", bounds.x());
+  new_bounds->SetInteger("top", bounds.y());
+  new_bounds->SetInteger("width", bounds.width());
+  new_bounds->SetInteger("height", bounds.height());
+  event_args->Append(std::move(new_bounds));
+
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
+      virtual_keyboard_private::OnBoundsChanged::kEventName,
+      std::move(event_args), profile);
+  router->BroadcastEvent(std::move(event));
 }
