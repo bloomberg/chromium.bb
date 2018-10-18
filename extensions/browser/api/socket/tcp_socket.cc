@@ -144,6 +144,9 @@ void TCPSocket::Connect(const net::AddressList& address,
 }
 
 void TCPSocket::Disconnect(bool socket_destroying) {
+  // Make sure that any outstanding callbacks from Connect or Listen are
+  // aborted.
+  weak_factory_.InvalidateWeakPtrs();
   is_connected_ = false;
   local_addr_ = base::nullopt;
   peer_addr_ = base::nullopt;
