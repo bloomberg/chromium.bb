@@ -30,6 +30,9 @@ namespace {
 const char kTypeRegisteredForInvalidation[] =
     "invalidation.registered_for_invalidation";
 
+const char kActiveRegistrationToken[] =
+    "invalidation.active_registration_token";
+
 const char kInvalidationRegistrationScope[] =
     "https://firebaseperusertopics-pa.googleapis.com";
 
@@ -76,6 +79,7 @@ static const net::BackoffEntry::Policy kBackoffPolicy = {
 void PerUserTopicRegistrationManager::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kTypeRegisteredForInvalidation);
+  registry->RegisterStringPref(kActiveRegistrationToken, std::string());
 }
 
 struct PerUserTopicRegistrationManager::RegistrationEntry {
@@ -168,8 +172,7 @@ void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_ = instance_id_token;
-  // TODO(melandory): On change of token registrations
-  // should be re-requested.
+  DropAllSavedRegistrationsOnTokenChange(instance_id_token);
   for (const auto& topic : topics) {
     // If id isn't registered, schedule the registration.
     if (topic_to_private_topic_.find(topic) == topic_to_private_topic_.end()) {
@@ -336,6 +339,26 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
       FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
       base::BindRepeating(&PerUserTopicRegistrationManager::RequestAccessToken,
                           base::Unretained(this)));
+}
+
+void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange(
+    const std::string& instance_id_token) {
+  std::string current_token = local_state_->GetString(kActiveRegistrationToken);
+  if (current_token.empty()) {
+    local_state_->SetString(kActiveRegistrationToken, instance_id_token);
+    return;
+  }
+  if (current_token == instance_id_token) {
+    return;
+  }
+  local_state_->SetString(kActiveRegistrationToken, instance_id_token);
+  DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+  for (const auto& topic : topic_to_private_topic_) {
+    update->RemoveKey(topic.first);
+  }
+  topic_to_private_topic_.clear();
+  // TODO(melandory): Figure out if the unsubscribe request should be
+  // sent with the old token.
 }
 
 }  // namespace syncer
