@@ -4500,6 +4500,63 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   return dr;
 }
 
+static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
+                          const TileInfo *const tile_info, int mi_row,
+                          int mi_col, int num_planes) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const int mib_size = cm->seq_params.mib_size;
+
+  // Delta-q modulation based on variance
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+
+  int offset_qindex;
+  if (DELTAQ_MODULATION == 1) {
+    const int block_wavelet_energy_level =
+        av1_block_wavelet_energy_level(cpi, x, sb_size);
+    x->sb_energy_level = block_wavelet_energy_level;
+    offset_qindex =
+        av1_compute_deltaq_from_energy_level(cpi, block_wavelet_energy_level);
+  } else {
+    const int block_var_level = av1_log_block_var(cpi, x, sb_size);
+    x->sb_energy_level = block_var_level;
+    offset_qindex = av1_compute_deltaq_from_energy_level(cpi, block_var_level);
+  }
+  const int qmask = ~(cm->delta_q_res - 1);
+  int current_qindex = clamp(cm->base_qindex + offset_qindex, cm->delta_q_res,
+                             256 - cm->delta_q_res);
+  current_qindex =
+      ((current_qindex - cm->base_qindex + cm->delta_q_res / 2) & qmask) +
+      cm->base_qindex;
+  assert(current_qindex > 0);
+
+  xd->delta_qindex = current_qindex - cm->base_qindex;
+  set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
+  xd->mi[0]->current_qindex = current_qindex;
+  av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
+  if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
+    const int lfmask = ~(cm->delta_lf_res - 1);
+    const int delta_lf_from_base =
+        ((offset_qindex / 2 + cm->delta_lf_res / 2) & lfmask);
+
+    // pre-set the delta lf for loop filter. Note that this value is set
+    // before mi is assigned for each block in current superblock
+    for (int j = 0; j < AOMMIN(mib_size, cm->mi_rows - mi_row); j++) {
+      for (int k = 0; k < AOMMIN(mib_size, cm->mi_cols - mi_col); k++) {
+        cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)].delta_lf_from_base =
+            clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
+        const int frame_lf_count =
+            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
+          cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)].delta_lf[lf_id] =
+              clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
+        }
+      }
+    }
+  }
+}
+
 static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, int mi_row,
                              TOKENEXTRA **tp) {
@@ -4573,58 +4630,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 
     x->sb_energy_level = 0;
-    if (cm->delta_q_present_flag) {
-      // Delta-q modulation based on variance
-      av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
-
-      int offset_qindex;
-      if (DELTAQ_MODULATION == 1) {
-        const int block_wavelet_energy_level =
-            av1_block_wavelet_energy_level(cpi, x, sb_size);
-        x->sb_energy_level = block_wavelet_energy_level;
-        offset_qindex = av1_compute_deltaq_from_energy_level(
-            cpi, block_wavelet_energy_level);
-      } else {
-        const int block_var_level = av1_log_block_var(cpi, x, sb_size);
-        x->sb_energy_level = block_var_level;
-        offset_qindex =
-            av1_compute_deltaq_from_energy_level(cpi, block_var_level);
-      }
-      const int qmask = ~(cm->delta_q_res - 1);
-      int current_qindex = clamp(cm->base_qindex + offset_qindex,
-                                 cm->delta_q_res, 256 - cm->delta_q_res);
-      current_qindex =
-          ((current_qindex - cm->base_qindex + cm->delta_q_res / 2) & qmask) +
-          cm->base_qindex;
-      assert(current_qindex > 0);
-
-      xd->delta_qindex = current_qindex - cm->base_qindex;
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
-      xd->mi[0]->current_qindex = current_qindex;
-      av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
-      if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
-        const int lfmask = ~(cm->delta_lf_res - 1);
-        const int delta_lf_from_base =
-            ((offset_qindex / 2 + cm->delta_lf_res / 2) & lfmask);
-
-        // pre-set the delta lf for loop filter. Note that this value is set
-        // before mi is assigned for each block in current superblock
-        for (int j = 0; j < AOMMIN(mib_size, cm->mi_rows - mi_row); j++) {
-          for (int k = 0; k < AOMMIN(mib_size, cm->mi_cols - mi_col); k++) {
-            cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
-                .delta_lf_from_base =
-                clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
-            const int frame_lf_count =
-                av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-            for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-              cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
-                  .delta_lf[lf_id] =
-                  clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
-            }
-          }
-        }
-      }
-    }
+    if (cm->delta_q_present_flag)
+      setup_delta_q(cpi, x, tile_info, mi_row, mi_col, num_planes);
 
     int dummy_rate;
     int64_t dummy_dist;
