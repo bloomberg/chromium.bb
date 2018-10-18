@@ -719,7 +719,7 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
         return nullptr;
       scoped_refptr<gl::GLImageSharedMemory> image(
           new gl::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format, handle.offset,
+      if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                              handle.stride)) {
         return nullptr;
       }
