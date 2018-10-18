@@ -33,10 +33,6 @@ struct CORE_EXPORT NGOutOfFlowPositionedDescendant {
       : node(node_param),
         static_position(static_position_param),
         inline_container(inline_container_param) {}
-
-  // This constructor is not meant to be called, but required so we can use
-  // Vector::resize(0).
-  NGOutOfFlowPositionedDescendant() : node(nullptr) {}
 };
 
 }  // namespace blink

@@ -725,8 +725,8 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 #endif
 
     // Reset any state that may have been modified in a previous pass.
-    positioned_floats.resize(0);
-    unpositioned_floats_.resize(0);
+    positioned_floats.Shrink(0);
+    unpositioned_floats_.Shrink(0);
     container_builder_.Reset();
     exclusion_space = initial_exclusion_space;
 
@@ -876,7 +876,7 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
       << "The floats BFC block offset should be known here";
 
   if (BreakToken() && BreakToken()->IgnoreFloats()) {
-    unpositioned_floats_.resize(0);
+    unpositioned_floats_.Shrink(0);
     return;
   }
 
@@ -896,7 +896,7 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
                  ConstraintSpace(), exclusion_space, &positioned_floats);
 
   positioned_floats_.AppendVector(positioned_floats);
-  unpositioned_floats_.resize(0);
+  unpositioned_floats_.Shrink(0);
 }
 
 void NGInlineLayoutAlgorithm::BidiReorder() {
