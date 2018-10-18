@@ -23,6 +23,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -1286,6 +1287,14 @@ void InterceptionJob::FollowRedirect(
 
   network::ResourceRequest* request = &create_loader_params_->request;
   const net::RedirectInfo& info = *response_metadata_->redirect_info;
+
+  bool clear_body = false;
+  net::RedirectUtil::UpdateHttpRequest(
+      request->url, request->method, info,
+      base::nullopt /* modified_request_headers */, &request->headers,
+      &clear_body);
+  if (clear_body)
+    request->request_body = nullptr;
   request->method = info.new_method;
   request->url = info.new_url;
   request->site_for_cookies = info.new_site_for_cookies;
