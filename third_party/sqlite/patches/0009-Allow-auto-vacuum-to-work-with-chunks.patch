@@ -1,4 +1,4 @@
-From 372956b4a2a6a318ccb86dfc3a80ca8dad808374 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 2 Mar 2017 15:23:09 -0800
 Subject: [PATCH 09/10] Allow auto-vacuum to work with chunks.
@@ -21,18 +21,18 @@ BUG=698010
  third_party/sqlite/src/src/btree.h          |  2 +
  third_party/sqlite/src/src/btreeInt.h       |  1 +
  third_party/sqlite/src/src/pragma.c         | 21 +++++
- third_party/sqlite/src/src/pragma.h         | 98 +++++++++++----------
+ third_party/sqlite/src/src/pragma.h         | 96 +++++++++++----------
  third_party/sqlite/src/tool/mkpragmatab.tcl |  4 +
- 6 files changed, 135 insertions(+), 47 deletions(-)
+ 6 files changed, 134 insertions(+), 46 deletions(-)
 
 diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
-index b5c35384d92c..86d11752db71 100644
+index b125859bf570..3fa8f88f1465 100644
 --- a/third_party/sqlite/src/src/btree.c
 +++ b/third_party/sqlite/src/src/btree.c
 @@ -2980,6 +2980,46 @@ static void setDefaultSyncFlag(BtShared *pBt, u8 safety_level){
  static int newDatabase(BtShared*);
- 
- 
+
+
 +/*
 +** Change the 'auto-vacuum-slack-pages' property of the database. If auto vacuum
 +** is enabled, this is the number of chunks of slack to allow before
@@ -76,14 +76,14 @@ index b5c35384d92c..86d11752db71 100644
  /*
  ** Get a reference to pPage1 of the database file.  This will
  ** also acquire a readlock on that file.
-@@ -3813,13 +3853,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
+@@ -3828,13 +3868,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
  */
  static int autoVacuumCommit(BtShared *pBt){
    int rc = SQLITE_OK;
 +  int bShouldVacuum = pBt->autoVacuum && !pBt->incrVacuum;
    Pager *pPager = pBt->pPager;
    VVA_ONLY( int nRef = sqlite3PagerRefcount(pPager); )
- 
+
    assert( sqlite3_mutex_held(pBt->mutex) );
    invalidateAllOverflowCache(pBt);
    assert(pBt->autoVacuum);
@@ -106,16 +106,16 @@ index b5c35384d92c..86d11752db71 100644
      Pgno nFree;        /* Number of pages on the freelist initially */
      Pgno iFree;        /* The next page to be freed */
 diff --git a/third_party/sqlite/src/src/btree.h b/third_party/sqlite/src/src/btree.h
-index 0d11457891d7..917d94879f8b 100644
+index e4bd09c7e727..b360be3f21de 100644
 --- a/third_party/sqlite/src/src/btree.h
 +++ b/third_party/sqlite/src/src/btree.h
 @@ -78,6 +78,8 @@ int sqlite3BtreeGetOptimalReserve(Btree*);
  int sqlite3BtreeGetReserveNoMutex(Btree *p);
  int sqlite3BtreeSetAutoVacuum(Btree *, int);
  int sqlite3BtreeGetAutoVacuum(Btree *);
-+int sqlite3BtreeSetAutoVacuumSlackPages(Btree *, int);
-+int sqlite3BtreeGetAutoVacuumSlackPages(Btree *);
- int sqlite3BtreeBeginTrans(Btree*,int);
++int sqlite3BtreeSetAutoVacuumSlackPages(Btree*, int);
++int sqlite3BtreeGetAutoVacuumSlackPages(Btree*);
+ int sqlite3BtreeBeginTrans(Btree*,int,int*);
  int sqlite3BtreeCommitPhaseOne(Btree*, const char *zMaster);
  int sqlite3BtreeCommitPhaseTwo(Btree*, int);
 diff --git a/third_party/sqlite/src/src/btreeInt.h b/third_party/sqlite/src/src/btreeInt.h
@@ -131,13 +131,13 @@ index 8fe8e280fe5f..88f3b437b8ea 100644
    u8 bDoTruncate;       /* True to truncate db on commit */
  #endif
 diff --git a/third_party/sqlite/src/src/pragma.c b/third_party/sqlite/src/src/pragma.c
-index 6b5f71f46acd..1d2a99d9ddd1 100644
+index 6e026557d561..472fca7ee699 100644
 --- a/third_party/sqlite/src/src/pragma.c
 +++ b/third_party/sqlite/src/src/pragma.c
 @@ -756,6 +756,27 @@ void sqlite3Pragma(
    }
  #endif
- 
+
 +  /*
 +  **  PRAGMA [schema.]auto_vacuum_slack_pages(N)
 +  **
@@ -163,7 +163,7 @@ index 6b5f71f46acd..1d2a99d9ddd1 100644
    /*
    **  PRAGMA [schema.]cache_size
 diff --git a/third_party/sqlite/src/src/pragma.h b/third_party/sqlite/src/src/pragma.h
-index 2c44bc1d0a75..aa0deec75146 100644
+index 826516202e41..970092f1cd8d 100644
 --- a/third_party/sqlite/src/src/pragma.h
 +++ b/third_party/sqlite/src/src/pragma.h
 @@ -7,51 +7,52 @@
@@ -261,7 +261,7 @@ index 2c44bc1d0a75..aa0deec75146 100644
 +#define PragTyp_LOCK_STATUS                   45
 +#define PragTyp_PARSER_TRACE                  46
 +#define PragTyp_STATS                         47
- 
+
  /* Property flags associated with various pragma. */
  #define PragFlg_NeedSchema 0x01 /* Force schema load before running */
 @@ -152,6 +153,11 @@ static const PragmaName aPragmaName[] = {
@@ -276,27 +276,21 @@ index 2c44bc1d0a75..aa0deec75146 100644
  #endif
  #if !defined(SQLITE_OMIT_FLAG_PRAGMAS)
  #if !defined(SQLITE_OMIT_AUTOMATIC_INDEX)
-@@ -646,4 +652,4 @@ static const PragmaName aPragmaName[] = {
-   /* iArg:      */ SQLITE_WriteSchema },
- #endif
- };
--/* Number of pragmas: 60 on by default, 77 total. */
-+/* Number of pragmas: 61 on by default, 78 total. */
 diff --git a/third_party/sqlite/src/tool/mkpragmatab.tcl b/third_party/sqlite/src/tool/mkpragmatab.tcl
-index f788eef425fc..0565c6699c20 100644
+index 83a85db9d6fd..6ed2dfc8e846 100644
 --- a/third_party/sqlite/src/tool/mkpragmatab.tcl
 +++ b/third_party/sqlite/src/tool/mkpragmatab.tcl
-@@ -382,6 +382,10 @@ set pragma_def {
- 
-   NAME: optimize
-   FLAG: Result1 NeedSchema
+@@ -387,6 +387,10 @@ set pragma_def {
+   TYPE: FLAG
+   ARG:  SQLITE_LegacyAlter
+   IF:   !defined(SQLITE_OMIT_FLAG_PRAGMAS)
 +
 +  NAME: auto_vacuum_slack_pages
 +  FLAG: NeedSchema Result0 SchemaReq NoColumns1
 +  IF:   !defined(SQLITE_OMIT_AUTOVACUUM)
  }
- 
+
  # Open the output file
--- 
-2.17.0
+--
+2.19.0
 

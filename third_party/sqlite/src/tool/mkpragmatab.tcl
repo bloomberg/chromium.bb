@@ -383,6 +383,11 @@ set pragma_def {
   NAME: optimize
   FLAG: Result1 NeedSchema
 
+  NAME: legacy_alter_table
+  TYPE: FLAG
+  ARG:  SQLITE_LegacyAlter
+  IF:   !defined(SQLITE_OMIT_FLAG_PRAGMAS)
+
   NAME: auto_vacuum_slack_pages
   FLAG: NeedSchema Result0 SchemaReq NoColumns1
   IF:   !defined(SQLITE_OMIT_AUTOVACUUM)
