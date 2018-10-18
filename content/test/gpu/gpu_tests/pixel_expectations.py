@@ -131,6 +131,11 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
 
+    # TODO(wangxianzhu): temporarily suppress these two tests until new
+    # reference images are generated.
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmap', bug=627683)
+    self.Fail('Pixel_OffscreenCanvasTransferToImageBitmapWorker', bug=627683)
+
     # Fails on Nexus 5, 6 and 6P
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=883500)
