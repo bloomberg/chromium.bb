@@ -83,6 +83,49 @@ Fragmented audio-only 44.1kHz FLAC in MP4 file, created using:
 ffmpeg -i sfx.flac -map 0:0 -acodec copy -strict -2 -movflags frag_keyframe+empty_moov+default_base_moof sfx-flac_frag.mp4
 ```
 
+### AV1
+
+#### bear.y4m
+Not an AV1 file, but all of the following commands rely on this file. It was
+created using vpxdec with the following command:
+```
+vpxdec path/to/chrome/src/media/test/data/bear-vp9.webm -o bear.y4m
+```
+
+#### bear-av1.mp4
+Created using FFmpeg with the following commands:
+```
+ffmpeg -i bear.y4m -vcodec libaom-av1 -strict -2 -y -f mp4 -b:v 50k \
+  bear-av1-slowstart.mp4
+ffmpeg -i bear-av1-slowstart.mp4 -vcodec copy -strict -2 -y -f mp4 \
+  -movflags frag_keyframe+empty_moov+default_base_moof+faststart bear-av1.mp4
+```
+
+#### bear-av1.webm
+Created using aomenc with the following command:
+```
+aomenc bear.y4m --lag-in-frames=0 --target-bitrate=50 --fps=30000/1001 \
+  --cpu-used=8 --test-decode=fatal -o bear-av1.webm
+```
+
+#### bear-av1-480x360.webm
+Created using FFmpeg and aomenc with the following commands:
+```
+ffmpeg -i bear.y4m -vf scale=-1:360 -f rawvideo bear_360P.yuv
+aomenc bear_360P.yuv -w 480 -h 360 --fps=30000/1001 --cpu-used=8 \
+  --lag-in-frames=0 --test-decode=fatal --target-bitrate=50 \
+  -o bear-av1-480x360.webm
+```
+
+#### bear-av1-640x480.webm
+Created using FFmpeg and aomenc with the following commands:
+```
+ffmpeg -i bear.y4m -vf scale=-1:480 -f rawvideo bear_480P.yuv
+aomenc bear_480P.yuv -w 640 -h 480 --fps=30000/1001 --cpu-used=8 \
+  --lag-in-frames=0 --test-decode=fatal --target-bitrate=50 \
+  -o bear-av1-640x480.webm
+```
+
 ### Alpha Channel
 
 #### bear-vp8a.webm
