@@ -56,6 +56,7 @@ import git_cache
 import git_common
 import git_footers
 import metrics
+import metrics_utils
 import owners
 import owners_finder
 import presubmit_support
@@ -5899,7 +5900,10 @@ def main(argv):
   settings = Settings()
 
   if not metrics.DISABLE_METRICS_COLLECTION:
-    metrics.collector.add('project_urls', [settings.GetViewVCUrl().strip('/+')])
+    project_url = settings.GetViewVCUrl().strip('/+')
+    if project_url in metrics_utils.KNOWN_PROJECT_URLS:
+      metrics.collector.add('project_urls', [project_url])
+
   colorize_CMDstatus_doc()
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
