@@ -24,7 +24,7 @@
    *     in the output; otherwise it's hard or impossible to determine
    *     from screen captures or print-to-PDFs.
    */
-  let cursorPositionUsed = -1;
+  let cursorPosition = -1;
 
   /**
    * Returns a simple object with information about how to display an
@@ -46,7 +46,7 @@
       /** @type {string} */
       this.header = header;
       /** @type {string} */
-      this.urlLabelForHeader = url;
+      this.url = url;
       /** @type {string} */
       this.propertyName = propertyName;
       /** @type {boolean} */
@@ -189,7 +189,7 @@
     // batch of results.
     if (omniboxInputs.$$('show-details').checked
         || omniboxInputs.$$('show-incomplete-results').checked) {
-      addParagraph(`cursor position = ${cursorPositionUsed}`);
+      addParagraph(`cursor position = ${cursorPosition}`);
       addParagraph(`inferred input type = ${result.type}`);
       addParagraph(`elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
       addParagraph(`all providers done = ${result.done}`);
@@ -304,10 +304,10 @@
     PROPERTY_OUTPUT_ORDER.forEach(property => {
       if (inDetailedMode || property.displayAlways) {
         let headerCell = document.createElement('th');
-        if (property.urlLabelForHeader !== '') {
+        if (property.url !== '') {
           // Wrap header text in URL.
           let linkNode = document.createElement('a');
-          linkNode.href = property.urlLabelForHeader;
+          linkNode.href = property.url;
           linkNode.textContent = property.header;
           headerCell.appendChild(linkNode);
         } else {
@@ -417,7 +417,7 @@
      * call handleNewAutocompleteResult as results come in.
      */
     makeRequest(inputString,
-                cursorPositionUsed,
+                cursorPosition,
                 preventInlineAutocomplete,
                 preferKeyword,
                 pageClassification) {
@@ -430,7 +430,7 @@
       // - fifth element: the value of page-classification
       this.pagehandlePtr_.startOmniboxQuery(
           inputString,
-          cursorPositionUsed,
+          cursorPosition,
           preventInlineAutocomplete,
           preferKeyword,
           pageClassification);
