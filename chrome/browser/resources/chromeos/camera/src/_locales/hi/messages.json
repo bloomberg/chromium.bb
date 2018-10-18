@@ -24,7 +24,7 @@
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ को दूसरी जगह नहीं ले जा सके.",
+    "message": "$file$ को एक्सपोर्ट (कहीं और भेजना) नहीं किया जा सका.",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -78,7 +78,7 @@
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
-    "message": "फ़ोटो खींचना बंद करें",
+    "message": "फ़ोटो न खींचें",
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
@@ -98,15 +98,15 @@
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "वीडियो रिकॉर्ड करने के लिए स्विच करें",
+    "message": "वीडियो रिकॉर्डिंग मोड पर जाएं",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "फ़ोटो खींचने के लिए स्विच करें",
+    "message": "फ़ोटो खींचने वाले मोड पर जाएं",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleMirrorButton": {
-    "message": "डुप्लीकेट सामग्री बनाना (मिररिंग) टॉगल करें",
+    "message": "स्क्रीन शेयर करने की सुविधा टॉगल करें",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleGridButton": {
@@ -146,7 +146,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "कैमरे से ली गई फ़ोटो और वीडियो 'डाउनलोड' फ़ोल्डर में ले जाए जाएंगे. आप 'फ़ाइल' में जाकर उन्हें एक्सेस कर सकते हैं.\n\nमेमोरी अनुमतियों वाले ऐप्लिकेशन आपकी फ़ोटो और वीडियो एक्सेस कर पाएंगे.",
+    "message": "कैमरे से ली गईं फ़ोटो और वीडियो 'डाउनलोड' फ़ोल्डर में ले जाए जाएंगे. आप 'फ़ाइल' में जाकर उन्हें एक्सेस कर सकते हैं.\n\nमेमोरी की अनुमतियों वाले ऐप्लिकेशन आपकी फ़ोटो और वीडियो एक्सेस कर पाएंगे.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }
