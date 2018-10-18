@@ -165,6 +165,10 @@ template("chrome_extra_paks") {
         "//ui/file_manager:resources",
       ]
     }
+    if (!is_android && !is_chromeos) {
+      sources += [ "$root_gen_dir/chrome/onboarding_welcome_resources.pak" ]
+      deps += [ "//chrome/browser/resources:onboarding_welcome_resources" ]
+    }
     if (enable_extensions) {
       sources += [
         "$root_gen_dir/chrome/extensions_resources.pak",

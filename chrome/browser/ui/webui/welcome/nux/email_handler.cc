@@ -132,20 +132,6 @@ void EmailHandler::AddSources(content::WebUIDataSource* html_source,
   html_source->AddLocalizedString("bookmarkReplaced",
                                   IDS_NUX_EMAIL_BOOKMARK_REPLACED);
 
-  // Add required resources.
-  html_source->AddResourcePath("email/nux_email.html", IDR_NUX_EMAIL_HTML);
-  html_source->AddResourcePath("email/nux_email.js", IDR_NUX_EMAIL_JS);
-
-  html_source->AddResourcePath("email/nux_email_proxy.html",
-                               IDR_NUX_EMAIL_PROXY_HTML);
-  html_source->AddResourcePath("email/nux_email_proxy.js",
-                               IDR_NUX_EMAIL_PROXY_JS);
-
-  html_source->AddResourcePath("email/email_chooser.html",
-                               IDR_NUX_EMAIL_CHOOSER_HTML);
-  html_source->AddResourcePath("email/email_chooser.js",
-                               IDR_NUX_EMAIL_CHOOSER_JS);
-
   // Add icons
   html_source->AddResourcePath("email/aol_1x.png", IDR_NUX_EMAIL_AOL_1X);
   html_source->AddResourcePath("email/aol_2x.png", IDR_NUX_EMAIL_AOL_2X);

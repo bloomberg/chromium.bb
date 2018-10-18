@@ -8,19 +8,12 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 
-namespace content {
-class WebUIDataSource;
-}  // namespace content
-
 namespace nux {
 
 class SetAsDefaultHandler : public settings::DefaultBrowserHandler {
  public:
   SetAsDefaultHandler();
   ~SetAsDefaultHandler() override;
-
-  // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source);
 
  protected:
   void RecordSetAsDefaultUMA() override;
