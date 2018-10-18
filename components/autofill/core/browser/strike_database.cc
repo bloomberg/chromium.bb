@@ -50,6 +50,16 @@ void StrikeDatabase::AddStrike(const std::string key,
                                          std::move(outer_callback), key));
 }
 
+void StrikeDatabase::ClearAllStrikes(
+    const ClearStrikesCallback& outer_callback) {
+  // For deleting all, filter method always returns true.
+  db_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<StrikeDataProto::KeyEntryVector>(),
+      base::BindRepeating([](const std::string& key) { return true; }),
+      base::BindRepeating(&StrikeDatabase::OnClearAllStrikes,
+                          base::Unretained(this), outer_callback));
+}
+
 void StrikeDatabase::ClearAllStrikesForKey(
     const std::string& key,
     const ClearStrikesCallback& outer_callback) {
@@ -134,9 +144,18 @@ void StrikeDatabase::OnAddStrikeComplete(StrikesCallback callback,
   }
 }
 
+void StrikeDatabase::OnClearAllStrikes(ClearStrikesCallback callback,
+                                       bool success) {
+  callback.Run(success);
+}
+
 void StrikeDatabase::OnClearAllStrikesForKey(ClearStrikesCallback callback,
                                              bool success) {
   callback.Run(success);
+}
+
+void StrikeDatabase::LoadKeys(const LoadKeysCallback& callback) {
+  db_->LoadKeys(callback);
 }
 
 std::string StrikeDatabase::CreateKey(const std::string& type_prefix,

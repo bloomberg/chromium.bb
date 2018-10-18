@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
@@ -43,6 +44,10 @@ class StrikeDatabase : public KeyedService {
 
   using SetValueCallback = base::RepeatingCallback<void(bool success)>;
 
+  using LoadKeysCallback =
+      base::RepeatingCallback<void(bool success,
+                                   std::unique_ptr<std::vector<std::string>>)>;
+
   using StrikeDataProto = leveldb_proto::ProtoDatabase<StrikeData>;
 
   explicit StrikeDatabase(const base::FilePath& database_dir);
@@ -61,6 +66,10 @@ class StrikeDatabase : public KeyedService {
   virtual void AddStrike(const std::string key,
                          const StrikesCallback& outer_callback);
 
+  // Removes all database entries, which implicitly resets all strike counts to
+  // 0.
+  virtual void ClearAllStrikes(const ClearStrikesCallback& outer_callback);
+
   // Removes database entry for |key|, which implicitly sets strike count to 0.
   virtual void ClearAllStrikesForKey(
       const std::string& key,
@@ -78,7 +87,10 @@ class StrikeDatabase : public KeyedService {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseTest, GetPrefixFromKey);
+  FRIEND_TEST_ALL_PREFIXES(ChromeBrowsingDataRemoverDelegateTest,
+                           StrikeDatabaseEmptyOnAutofillRemoveEverything);
   friend class StrikeDatabaseTest;
+  friend class StrikeDatabaseTester;
 
   void OnDatabaseInit(bool success);
 
@@ -109,8 +121,13 @@ class StrikeDatabase : public KeyedService {
                            std::string key,
                            bool success);
 
+  void OnClearAllStrikes(ClearStrikesCallback outer_callback, bool success);
+
   void OnClearAllStrikesForKey(ClearStrikesCallback outer_callback,
                                bool success);
+
+  // Exposed for testing purposes.
+  void LoadKeys(const LoadKeysCallback& callback);
 
   // Concatenates type prefix and identifier suffix to create a key.
   std::string CreateKey(const std::string& type_prefix,

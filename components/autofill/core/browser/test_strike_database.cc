@@ -31,6 +31,12 @@ void TestStrikeDatabase::AddStrike(const std::string key,
   outer_callback.Run(strike_data.num_strikes());
 }
 
+void TestStrikeDatabase::ClearAllStrikes(
+    const ClearStrikesCallback& outer_callback) {
+  db_.clear();
+  outer_callback.Run(/*success=*/true);
+}
+
 void TestStrikeDatabase::ClearAllStrikesForKey(
     const std::string& key,
     const ClearStrikesCallback& outer_callback) {

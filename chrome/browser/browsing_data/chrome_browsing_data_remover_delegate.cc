@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -62,6 +63,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browsing_data/core/features.h"
@@ -849,6 +851,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_end_);
       web_data_service->RemoveAutofillDataModifiedBetween(
           delete_begin_, delete_end_);
+
+      // Clear out the Autofill StrikeDatabase in its entirety.
+      // TODO(crbug.com/884817): Respect |delete_begin_| and |delete_end_| and
+      // only clear out entries whose last strikes were created in that
+      // timeframe.
+      autofill::StrikeDatabase* strike_database =
+          autofill::StrikeDatabaseFactory::GetForProfile(profile_);
+      if (strike_database)
+        strike_database->ClearAllStrikes(base::DoNothing());
+
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
           FROM_HERE, base::DoNothing(), CreatePendingTaskCompletionClosure());
