@@ -55,10 +55,10 @@ base::scoped_nsobject<NSMenuItem> BuildAppMenu(
                     .action(@selector(hide:)),
                 Item(IDS_HIDE_OTHERS_MAC)
                     .action(@selector(hideOtherApplications:))
-                    .remove_if(is_pwa),
+                    .key_equivalent(@"h", NSEventModifierFlagCommand |
+                                              NSEventModifierFlagOption),
                 Item(IDS_SHOW_ALL_MAC)
-                    .action(@selector(unhideAllApplications:))
-                    .remove_if(is_pwa),
+                    .action(@selector(unhideAllApplications:)),
                 Item().is_separator(),
                 Item(IDS_CONFIRM_TO_QUIT_OPTION)
                     .target(app_delegate)
