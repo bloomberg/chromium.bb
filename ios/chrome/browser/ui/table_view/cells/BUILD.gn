@@ -16,6 +16,8 @@ source_set("cells") {
     "table_view_header_footer_item.mm",
     "table_view_item.h",
     "table_view_item.mm",
+    "table_view_link_header_footer_item.h",
+    "table_view_link_header_footer_item.mm",
     "table_view_signin_promo_item.h",
     "table_view_signin_promo_item.mm",
     "table_view_text_button_item.h",
@@ -48,6 +50,7 @@ source_set("cells") {
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios:material_components_ios",
+    "//net",
     "//ui/base",
     "//url:url",
   ]
