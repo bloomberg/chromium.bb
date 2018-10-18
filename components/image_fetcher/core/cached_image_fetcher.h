@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
@@ -30,30 +31,12 @@ class ImageCache;
 class ImageFetcher;
 struct RequestMetadata;
 
-// Enum for the result of the fetch, reported through UMA Present in enums.xml
-// as CachedImageFetcherEvent. New values should be added at the end and things
-// should not be renumbered.
-enum class CachedImageFetcherEvent {
-  kImageRequest = 0,
-  kCacheHit = 1,
-  kCacheMiss = 2,
-  kCacheDecodingError = 3,
-  kTranscodingError = 4,
-  kFailure = 5,
-  kMaxValue = kFailure,
-};
-
-// TODO(wylieb): Transcode the image once it's downloaded.
 // TODO(wylieb): Consider creating a struct to encapsulate the request.
 // CachedImageFetcher takes care of fetching images from the network and caching
 // them. Has a read-only mode which doesn't perform write operations on the
 // cache.
 class CachedImageFetcher : public ImageFetcher {
  public:
-  // Report CachedImageFetcher events, used by sub-systems to report events (as
-  // well as CachedImageFetcher).
-  static void ReportEvent(CachedImageFetcherEvent event);
-
   CachedImageFetcher(std::unique_ptr<ImageFetcher> image_fetcher,
                      scoped_refptr<ImageCache> image_cache,
                      bool read_only);

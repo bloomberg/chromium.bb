@@ -4,6 +4,8 @@
 
 static_library("cache") {
   sources = [
+    "cached_image_fetcher_metrics_reporter.cc",
+    "cached_image_fetcher_metrics_reporter.h",
     "image_cache.cc",
     "image_cache.h",
     "image_data_store.h",
