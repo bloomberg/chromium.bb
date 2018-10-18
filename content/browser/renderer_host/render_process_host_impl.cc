@@ -29,6 +29,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
@@ -107,7 +108,6 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
-#include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -795,13 +795,6 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
   // of this BrowserContext.
   RenderProcessHost* host_ = nullptr;
 };
-
-void CreateMemoryCoordinatorHandleForRenderProcess(
-    int render_process_id,
-    mojom::MemoryCoordinatorHandleRequest request) {
-  MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
-                                                     std::move(request));
-}
 
 void CreateProcessResourceCoordinator(
     RenderProcessHostImpl* render_process_host,
@@ -2124,11 +2117,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&BroadcastChannelProvider::Connect,
                  base::Unretained(
                      storage_partition_impl_->GetBroadcastChannelProvider())));
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::Bind(&CreateMemoryCoordinatorHandleForRenderProcess, GetID()));
-  }
 
   AddUIThreadInterface(
       registry.get(),
