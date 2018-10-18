@@ -30,10 +30,9 @@ const base::Feature kMojoBlobURLs{"MojoBlobURLs",
 const base::Feature kNestedWorkers{"NestedWorkers",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Onion souping for all DOMStorage. Requires that kMojoSessionStorage is
-// enabled. https://crbug.com/781870
+// Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
