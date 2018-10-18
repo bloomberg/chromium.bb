@@ -879,6 +879,10 @@ void CancelKeyboardLock(WebContents* web_contents);
 // WebContents.
 bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page);
 
+// Returns the screen orientation provider that's been set via
+// WebContents::SetScreenOrientationDelegate(). May return null.
+ScreenOrientationDelegate* GetScreenOrientationDelegate();
+
 // Returns all the RenderWidgetHostViews inside the |web_contents| that are
 // registered in the RenderWidgetHostInputEventRouter.
 std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
