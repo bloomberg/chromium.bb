@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 
 // Avoid some ugly line-wrapping later.
 using base::StringAppendF;
@@ -234,11 +235,14 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   prefs_policy_.set_lid_closed_action(GetProtoAction(values.lid_closed_action));
   prefs_policy_.set_use_audio_activity(values.use_audio_activity);
   prefs_policy_.set_use_video_activity(values.use_video_activity);
-  if (values.ac_brightness_percent >= 0.0)
-    prefs_policy_.set_ac_brightness_percent(values.ac_brightness_percent);
-  if (values.battery_brightness_percent >= 0.0) {
-    prefs_policy_.set_battery_brightness_percent(
-        values.battery_brightness_percent);
+
+  if (!per_session_brightness_override_) {
+    if (values.ac_brightness_percent >= 0.0)
+      prefs_policy_.set_ac_brightness_percent(values.ac_brightness_percent);
+    if (values.battery_brightness_percent >= 0.0) {
+      prefs_policy_.set_battery_brightness_percent(
+          values.battery_brightness_percent);
+    }
   }
 
   // Screen-dim deferral in response to user activity predictions can
@@ -295,6 +299,17 @@ void PowerPolicyController::PowerManagerRestarted() {
   SendCurrentPolicy();
 }
 
+void PowerPolicyController::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  if (prefs_were_set_ &&
+      (prefs_policy_.has_ac_brightness_percent() ||
+       prefs_policy_.has_battery_brightness_percent()) &&
+      change.cause() ==
+          power_manager::BacklightBrightnessChange_Cause_USER_REQUEST) {
+    per_session_brightness_override_ = true;
+  }
+}
+
 void PowerPolicyController::NotifyChromeIsExiting() {
   if (chrome_is_exiting_)
     return;
@@ -311,13 +326,7 @@ void PowerPolicyController::SetEncryptionMigrationActive(bool active) {
 }
 
 PowerPolicyController::PowerPolicyController(PowerManagerClient* client)
-    : client_(client),
-      prefs_were_set_(false),
-      honor_wake_locks_(true),
-      honor_screen_wake_locks_(true),
-      next_wake_lock_id_(1),
-      chrome_is_exiting_(false),
-      encryption_migration_active_(false) {
+    : client_(client) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
