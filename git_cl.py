@@ -1951,7 +1951,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return self._rietveld_server
 
   def EnsureAuthenticated(self, force, refresh=False):
-    raise NotImplementedError
+    # No checks for Rietveld because we are deprecating Rietveld.
+    pass
 
   def EnsureCanUploadPatchset(self, force):
     # No checks for Rietveld because we are deprecating Rietveld.
@@ -1973,88 +1974,33 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     raise NotImplementedError()
 
   def GetIssueOwner(self):
-    return (self.GetIssueProperties() or {}).get('owner_email')
+    raise NotImplementedError()
 
   def GetReviewers(self):
-    return (self.GetIssueProperties() or {}).get('reviewers')
+    raise NotImplementedError()
 
   def AddComment(self, message, publish=None):
-    return self.RpcServer().add_comment(self.GetIssue(), message)
+    raise NotImplementedError()
 
-  def GetCommentsSummary(self, _readable=True):
-    summary = []
-    for message in self.GetIssueProperties().get('messages', []):
-      date = datetime.datetime.strptime(message['date'], '%Y-%m-%d %H:%M:%S.%f')
-      summary.append(_CommentSummary(
-        date=date,
-        disapproval=bool(message['disapproval']),
-        approval=bool(message['approval']),
-        sender=message['sender'],
-        message=message['text'],
-      ))
-    return summary
+  def GetCommentsSummary(self, readable=True):
+    raise NotImplementedError()
 
   def GetStatus(self):
-    """Applies a rough heuristic to give a simple summary of an issue's review
-    or CQ status, assuming adherence to a common workflow.
-
-    Returns None if no issue for this branch, or one of the following keywords:
-      * 'error'    - error from review tool (including deleted issues)
-      * 'unsent'   - not sent for review
-      * 'waiting'  - waiting for review
-      * 'reply'    - waiting for owner to reply to review
-      * 'not lgtm' - Code-Review label has been set negatively
-      * 'lgtm'     - LGTM from at least one approved reviewer
-      * 'commit'   - in the commit queue
-      * 'closed'   - closed
-    """
-    if not self.GetIssue():
-      return None
-
-    try:
-      props = self.GetIssueProperties()
-    except urllib2.HTTPError:
-      return 'error'
-
-    if props.get('closed'):
-      # Issue is closed.
-      return 'closed'
-    if props.get('commit') and not props.get('cq_dry_run', False):
-      # Issue is in the commit queue.
-      return 'commit'
-
-    messages = props.get('messages') or []
-    if not messages:
-      # No message was sent.
-      return 'unsent'
-
-    if get_approving_reviewers(props):
-      return 'lgtm'
-    elif get_approving_reviewers(props, disapproval=True):
-      return 'not lgtm'
-
-    # Skip CQ messages that don't require owner's action.
-    while messages and messages[-1]['sender'] == COMMIT_BOT_EMAIL:
-      if 'Dry run:' in messages[-1]['text']:
-        messages.pop()
-      elif 'The CQ bit was unchecked' in messages[-1]['text']:
-        # This message always follows prior messages from CQ,
-        # so skip this too.
-        messages.pop()
-      else:
-        # This is probably a CQ messages warranting user attention.
-        break
-
-    if messages[-1]['sender'] != props.get('owner_email'):
-      # Non-LGTM reply from non-owner and not CQ bot.
-      return 'reply'
-    return 'waiting'
+    print(
+      'WARNING! Rietveld is no longer supported.\n'
+      '\n'
+      'If you have old branches in your checkout, please archive/delete them.\n'
+      '  $ git cl archive --help\n'
+      '\n'
+      'See also PSA https://groups.google.com/a/chromium.org/'
+      'forum/#!topic/infra-dev/2DIVzM2wseo\n')
+    return 'rietveld-not-supported'
 
   def UpdateDescriptionRemote(self, description, force=False):
-    self.RpcServer().update_description(self.GetIssue(), description)
+    raise NotImplementedError()
 
   def CloseIssue(self):
-    return self.RpcServer().close_issue(self.GetIssue())
+    raise NotImplementedError()
 
   def SetFlag(self, flag, value):
     return self.SetFlags({flag: value})
@@ -4321,7 +4267,7 @@ def CMDarchive(parser, args):
   proposal = [(cl.GetBranch(),
                'git-cl-archived-%s-%s' % (cl.GetIssue(), cl.GetBranch()))
               for cl, status in statuses
-              if status == 'closed']
+              if status in ('closed', 'rietveld-not-supported')]
   proposal.sort()
 
   if not proposal:
