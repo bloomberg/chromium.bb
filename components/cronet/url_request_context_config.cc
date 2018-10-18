@@ -76,6 +76,7 @@ const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarlyV2[] = "migrate_sessions_early_v2";
 const char kQuicRetryOnAlternateNetworkBeforeHandshake[] =
     "retry_on_alternate_network_before_handshake";
+const char kQuicRaceStaleDNSOnConnection[] = "race_stale_dns_on_connection";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
 const char kQuicRaceCertVerification[] = "race_cert_verification";
@@ -441,6 +442,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
               &quic_retry_on_alternate_network_before_handshake)) {
         session_params->quic_retry_on_alternate_network_before_handshake =
             quic_retry_on_alternate_network_before_handshake;
+      }
+
+      bool quic_race_stale_dns_on_connection = false;
+      if (quic_args->GetBoolean(kQuicRaceStaleDNSOnConnection,
+                                &quic_race_stale_dns_on_connection)) {
+        session_params->quic_race_stale_dns_on_connection =
+            quic_race_stale_dns_on_connection;
       }
 
       bool quic_disable_bidirectional_streams = false;
