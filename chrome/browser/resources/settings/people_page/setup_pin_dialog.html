@@ -10,7 +10,11 @@
 
 <dom-module id="settings-setup-pin-dialog">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #pinKeyboardDiv {
+        justify-content: center;
+      }
+    </style>
     <cr-dialog id="dialog" on-close="close"
         close-text="$i18n{close}">
       <div slot="title">[[getTitleMessage_(isConfirmStep_)]]</div>
@@ -24,8 +28,7 @@
               on-set-pin-done="onSetPinDone_"
               set-modes="{{setModes}}"
               quick-unlock-private="[[quickUnlockPrivate]]"
-              write-uma="[[writeUma_]]"
-              enable-placeholder>
+              write-uma="[[writeUma_]]">
           </setup-pin-keyboard>
         </div>
       </div>

@@ -8,17 +8,7 @@
 }
 
 setup-pin-keyboard {
-  --cr-input-input: {
-    font-size: 28px;
-    letter-spacing: 28px;
-  };
-  --pin-keyboard-digit-button-letter: {
-    display: none;
-  };
-  --pin-keyboard-pin-input-style: {
-    width: 244px;
-  };
-  margin-top: 32px;
+  margin-top: 17px;
 }
 
 #done-illustration {
