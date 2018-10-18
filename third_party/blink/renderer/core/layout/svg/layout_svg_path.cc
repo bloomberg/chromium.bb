@@ -57,7 +57,7 @@ void LayoutSVGPath::UpdateShapeFromElement() {
 FloatRect LayoutSVGPath::HitTestStrokeBoundingBox() const {
   if (StyleRef().SvgStyle().HasStroke())
     return stroke_bounding_box_;
-  return ApproximateStrokeBoundingBox(fill_bounding_box_);
+  return ApproximateStrokeBoundingBox(fill_bounding_box_, kComplex);
 }
 
 void LayoutSVGPath::UpdateMarkers() {
