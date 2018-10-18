@@ -271,13 +271,22 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
 
 ModelTypeSyncBridge::StopSyncResponse
 ClientTagBasedModelTypeProcessor::ClearMetadataAndResetState() {
-  // Clear metadata.
-  std::unique_ptr<MetadataChangeList> change_list =
-      bridge_->CreateMetadataChangeList();
-  for (const auto& kv : entities_) {
-    change_list->ClearMetadata(kv.second->storage_key());
+  std::unique_ptr<MetadataChangeList> change_list;
+
+  // Clear metadata if MergeSyncData() was called before.
+  if (model_type_state_.initial_sync_done()) {
+    change_list = bridge_->CreateMetadataChangeList();
+    for (const auto& kv : entities_) {
+      change_list->ClearMetadata(kv.second->storage_key());
+    }
+    change_list->ClearModelTypeState();
+  } else {
+    // All changes before the initial sync is done are ignored and in fact they
+    // were never persisted by the bridge (prior to MergeSyncData), so we should
+    // be tracking no entities.
+    DCHECK(entities_.empty());
   }
-  change_list->ClearModelTypeState();
+
   const ModelTypeSyncBridge::StopSyncResponse response =
       bridge_->ApplyStopSyncChanges(std::move(change_list));
 
@@ -436,6 +445,7 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
   DCHECK(!client_tag_hash.empty());
   DCHECK(!storage_key.empty());
   DCHECK(!bridge_->SupportsGetStorageKey());
+  DCHECK(model_type_state_.initial_sync_done());
 
   ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
   DCHECK(entity);
@@ -452,6 +462,7 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
 void ClientTagBasedModelTypeProcessor::UntrackEntity(
     const EntityData& entity_data) {
   const std::string& client_tag_hash = entity_data.client_tag_hash;
+  DCHECK(model_type_state_.initial_sync_done());
   DCHECK(!client_tag_hash.empty());
   DCHECK(GetEntityForTagHash(client_tag_hash)->storage_key().empty());
   entities_.erase(client_tag_hash);
@@ -459,6 +470,8 @@ void ClientTagBasedModelTypeProcessor::UntrackEntity(
 
 void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
     const std::string& storage_key) {
+  DCHECK(model_type_state_.initial_sync_done());
+
   // Look-up the client tag hash.
   auto iter = storage_key_to_tag_hash_.find(storage_key);
   if (iter == storage_key_to_tag_hash_.end()) {

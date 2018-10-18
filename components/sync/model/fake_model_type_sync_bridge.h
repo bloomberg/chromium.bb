@@ -147,7 +147,8 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // Sets storage key which will be ignored by bridge.
   void SetKeyToIgnore(const std::string key);
 
-  const Store& db() { return *db_; }
+  const Store& db() const { return *db_; }
+  Store* mutable_db() { return db_.get(); }
 
  protected:
   // Contains all of the data and metadata state.
