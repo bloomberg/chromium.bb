@@ -62,6 +62,15 @@ Polymer({
       value: settings.SignInEnabledState.DISABLED,
     },
 
+    /**
+     * True if the user is allowed to enable Smart Lock sign-in.
+     * @private
+     */
+    smartLockSignInAllowed_: {
+      type: Boolean,
+      value: true,
+    },
+
     /** @private */
     showPasswordPromptDialog_: {
       type: Boolean,
@@ -85,8 +94,16 @@ Polymer({
         'smart-lock-signin-enabled-changed',
         this.updateSmartLockSignInEnabled_.bind(this));
 
+    this.addWebUIListener(
+        'smart-lock-signin-allowed-changed',
+        this.updateSmartLockSignInAllowed_.bind(this));
+
     this.browserProxy_.getSmartLockSignInEnabled().then(enabled => {
       this.updateSmartLockSignInEnabled_(enabled);
+    });
+
+    this.browserProxy_.getSmartLockSignInAllowed().then(allowed => {
+      this.updateSmartLockSignInAllowed_(allowed);
     });
   },
 
@@ -109,6 +126,15 @@ Polymer({
     this.smartLockSignInEnabled_ = enabled ?
         settings.SignInEnabledState.ENABLED :
         settings.SignInEnabledState.DISABLED;
+  },
+
+  /**
+   * Updates the Smart Lock 'sign-in enabled' toggle such that disallowing
+   * sign-in disables the toggle.
+   * @private
+   */
+  updateSmartLockSignInAllowed_: function(allowed) {
+    this.smartLockSignInAllowed_ = allowed;
   },
 
   /** @private */

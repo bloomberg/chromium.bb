@@ -69,6 +69,7 @@ class MultideviceHandler
   void HandleSetUpAndroidSms(const base::ListValue* args);
   void HandleGetSmartLockSignInEnabled(const base::ListValue* args);
   void HandleSetSmartLockSignInEnabled(const base::ListValue* args);
+  void HandleGetSmartLockSignInAllowed(const base::ListValue* args);
   void HandleGetAndroidSmsInfo(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
@@ -76,6 +77,7 @@ class MultideviceHandler
 
   void RegisterPrefChangeListeners();
   void NotifySmartLockSignInEnabledChanged();
+  void NotifySmartLockSignInAllowedChanged();
   // Generate android sms info dictionary containing the messages for web
   // content settings origin url and messages feature state.
   std::unique_ptr<base::DictionaryValue> GenerateAndroidSmsInfo();
