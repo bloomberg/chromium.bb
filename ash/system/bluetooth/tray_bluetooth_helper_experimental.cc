@@ -68,7 +68,7 @@ TrayBluetoothHelperExperimental::GetBluetoothState() {
 }
 
 void TrayBluetoothHelperExperimental::SetBluetoothEnabled(bool enabled) {
-  NOTIMPLEMENTED();
+  bluetooth_system_ptr_->SetPowered(enabled, base::DoNothing());
 }
 
 bool TrayBluetoothHelperExperimental::HasBluetoothDiscoverySession() {
