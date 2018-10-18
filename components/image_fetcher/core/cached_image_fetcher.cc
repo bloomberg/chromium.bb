@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/request_metadata.h"
@@ -20,13 +21,6 @@
 namespace image_fetcher {
 
 namespace {
-
-// Tracks the various forms of timing events.
-enum class LoadTimeType {
-  kLoadFromCache = 0,
-  kLoadFromNetwork = 1,
-  kLoadFromNetworkAfterCacheHit = 2
-};
 
 void DataCallbackIfPresent(ImageDataFetcherCallback data_callback,
                            const std::string& image_data,
@@ -60,30 +54,7 @@ bool EncodeSkBitmapToPNG(const SkBitmap& bitmap,
       std::vector<gfx::PNGCodec::Comment>(), dest);
 }
 
-void ReportLoadTime(LoadTimeType type, base::Time start_time) {
-  base::TimeDelta time_delta = base::Time::Now() - start_time;
-  switch (type) {
-    case LoadTimeType::kLoadFromCache:
-      UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromCacheTime",
-                          time_delta);
-      break;
-    case LoadTimeType::kLoadFromNetwork:
-      UMA_HISTOGRAM_TIMES("CachedImageFetcher.ImageLoadFromNetworkTime",
-                          time_delta);
-      break;
-    case LoadTimeType::kLoadFromNetworkAfterCacheHit:
-      UMA_HISTOGRAM_TIMES(
-          "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit", time_delta);
-      break;
-  }
-}
-
 }  // namespace
-
-// static
-void CachedImageFetcher::ReportEvent(CachedImageFetcherEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("CachedImageFetcher.Events", event);
-}
 
 CachedImageFetcher::CachedImageFetcher(
     std::unique_ptr<ImageFetcher> image_fetcher,
@@ -132,7 +103,8 @@ void CachedImageFetcher::FetchImageAndData(
                      image_url, std::move(data_callback),
                      std::move(image_callback), traffic_annotation));
 
-  ReportEvent(CachedImageFetcherEvent::kImageRequest);
+  CachedImageFetcherMetricsReporter::ReportEvent(
+      CachedImageFetcherEvent::kImageRequest);
 }
 
 void CachedImageFetcher::OnImageFetchedFromCache(
@@ -149,7 +121,8 @@ void CachedImageFetcher::OnImageFetchedFromCache(
                           std::move(data_callback), std::move(image_callback),
                           traffic_annotation);
 
-    ReportEvent(CachedImageFetcherEvent::kCacheMiss);
+    CachedImageFetcherMetricsReporter::ReportEvent(
+        CachedImageFetcherEvent::kCacheMiss);
   } else {
     DataCallbackIfPresent(std::move(data_callback), image_data,
                           RequestMetadata());
@@ -161,7 +134,8 @@ void CachedImageFetcher::OnImageFetchedFromCache(
                             image_url, base::Passed(std::move(data_callback)),
                             base::Passed(std::move(image_callback)),
                             traffic_annotation, image_data));
-    ReportEvent(CachedImageFetcherEvent::kCacheHit);
+    CachedImageFetcherMetricsReporter::ReportEvent(
+        CachedImageFetcherEvent::kCacheHit);
   }
 }
 
@@ -180,11 +154,13 @@ void CachedImageFetcher::OnImageDecodedFromCache(
                           std::move(data_callback), std::move(image_callback),
                           traffic_annotation);
 
-    ReportEvent(CachedImageFetcherEvent::kCacheDecodingError);
+    CachedImageFetcherMetricsReporter::ReportEvent(
+        CachedImageFetcherEvent::kCacheDecodingError);
   } else {
     ImageCallbackIfPresent(std::move(image_callback), id, image,
                            RequestMetadata());
-    ReportLoadTime(LoadTimeType::kLoadFromCache, start_time);
+    CachedImageFetcherMetricsReporter::ReportLoadTime(
+        LoadTimeType::kLoadFromCache, start_time);
   }
 }
 
@@ -224,13 +200,15 @@ void CachedImageFetcher::OnImageFetchedFromNetwork(
 
   // Report failure if the image is empty.
   if (image.IsEmpty()) {
-    ReportEvent(CachedImageFetcherEvent::kFailure);
+    CachedImageFetcherMetricsReporter::ReportEvent(
+        CachedImageFetcherEvent::kFailure);
   }
 
   // Report to different histograms depending upon if there was a cache hit.
-  ReportLoadTime(cache_hit ? LoadTimeType::kLoadFromNetworkAfterCacheHit
-                           : LoadTimeType::kLoadFromNetwork,
-                 start_time);
+  CachedImageFetcherMetricsReporter::ReportLoadTime(
+      cache_hit ? LoadTimeType::kLoadFromNetworkAfterCacheHit
+                : LoadTimeType::kLoadFromNetwork,
+      start_time);
 }
 
 void CachedImageFetcher::DecodeDataForCaching(
@@ -252,7 +230,8 @@ void CachedImageFetcher::EncodeDataAndCache(const GURL& image_url,
   // it.
   if (image.IsEmpty() ||
       !EncodeSkBitmapToPNG(*image.ToSkBitmap(), &encoded_data)) {
-    ReportEvent(CachedImageFetcherEvent::kTranscodingError);
+    CachedImageFetcherMetricsReporter::ReportEvent(
+        CachedImageFetcherEvent::kTranscodingError);
     image_cache_->DeleteImage(image_url.spec());
     return;
   }
