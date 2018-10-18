@@ -142,7 +142,7 @@ def calculate_roll(full_dir, dependency, gclient_dict, roll_to):
   return head, roll_to
 
 
-def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
+def gen_commit_msg(logs, cmdline, reviewers, bug):
   """Returns the final commit message."""
   commit_msg = ''
   if len(logs) > 1:
@@ -150,11 +150,11 @@ def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
   commit_msg += '\n\n'.join(logs)
   commit_msg += '\nCreated with:\n  ' + cmdline + '\n'
   commit_msg += 'R=%s\n' % ','.join(reviewers) if reviewers else ''
-  commit_msg += 'BUG=%s\n' % bug if bug else ''
+  commit_msg += '\nBug: %s\n' % bug if bug else ''
   return commit_msg
 
 
-def finalize(commit_msg, deps_path, deps_content, rolls, is_relative, root_dir):
+def finalize(commit_msg, deps_path, deps_content, rolls, root_dir):
   """Edits the DEPS file, commits it, then uploads a CL."""
   print('Commit message:')
   print('\n'.join('    ' + i for i in commit_msg.splitlines()))
@@ -254,8 +254,8 @@ def main():
 
     deps_content = gclient_eval.RenderDEPSFile(gclient_dict)
 
-    commit_msg = gen_commit_msg(logs, cmdline, rolls, reviewers, args.bug)
-    finalize(commit_msg, deps_path, deps_content, rolls, is_relative, root_dir)
+    commit_msg = gen_commit_msg(logs, cmdline, reviewers, args.bug)
+    finalize(commit_msg, deps_path, deps_content, rolls, root_dir)
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
     return 2 if isinstance(e, AlreadyRolledError) else 1
