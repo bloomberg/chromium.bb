@@ -22,45 +22,34 @@ class KeyboardUtilTest : public testing::Test {
   // Sets all flags controlling whether the keyboard should be shown to
   // their disabled state.
   void DisableAllFlags() {
-    ResetAllFlags();
     keyboard::SetAccessibilityKeyboardEnabled(false);
     keyboard::SetTouchKeyboardEnabled(false);
-    SetEnableFlag(mojom::KeyboardEnableFlag::kPolicyDisabled);
-    SetEnableFlag(mojom::KeyboardEnableFlag::kExtensionDisabled);
+    keyboard::SetKeyboardShowOverride(
+        keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
+    keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_DISABLED);
   }
 
   // Sets all flags controlling whether the keyboard should be shown to
-  // their enabled flag.
+  // their enabled state.
   void EnableAllFlags() {
-    ResetAllFlags();
     keyboard::SetAccessibilityKeyboardEnabled(true);
     keyboard::SetTouchKeyboardEnabled(true);
-    SetEnableFlag(mojom::KeyboardEnableFlag::kPolicyEnabled);
-    SetEnableFlag(mojom::KeyboardEnableFlag::kExtensionEnabled);
+    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED);
+    keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
   }
 
   // Sets all flags controlling whether the keyboard should be shown to
-  // their neutral flag.
+  // their neutral state.
   void ResetAllFlags() {
     keyboard::SetAccessibilityKeyboardEnabled(false);
     keyboard::SetTouchKeyboardEnabled(false);
-    ClearEnableFlag(mojom::KeyboardEnableFlag::kPolicyDisabled);
-    ClearEnableFlag(mojom::KeyboardEnableFlag::kExtensionDisabled);
-    ClearEnableFlag(mojom::KeyboardEnableFlag::kPolicyEnabled);
-    ClearEnableFlag(mojom::KeyboardEnableFlag::kExtensionEnabled);
+    keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
+    keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_AUTO);
   }
 
   void SetUp() override { ResetAllFlags(); }
 
  protected:
-  void SetEnableFlag(mojom::KeyboardEnableFlag flag) {
-    keyboard_controller_.SetEnableFlag(flag);
-  }
-
-  void ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
-    keyboard_controller_.ClearEnableFlag(flag);
-  }
-
   // Used indirectly by keyboard utils.
   KeyboardController keyboard_controller_;
 
@@ -85,7 +74,7 @@ TEST_F(KeyboardUtilTest, AlwaysShowIfPolicyEnabled) {
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
   // If policy is enabled, should ignore other flag values.
   DisableAllFlags();
-  SetEnableFlag(mojom::KeyboardEnableFlag::kPolicyEnabled);
+  keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 }
 
@@ -97,32 +86,32 @@ TEST_F(KeyboardUtilTest, HidesIfPolicyDisabled) {
   keyboard::SetAccessibilityKeyboardEnabled(false);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
   // Disable policy. Keyboard should be disabled.
-  SetEnableFlag(mojom::KeyboardEnableFlag::kPolicyDisabled);
+  keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
-// Tests that the keyboard shows when requested flag provided higher priority
+// Tests that the keyboard shows when requested state provided higher priority
 // flags have not been set.
 TEST_F(KeyboardUtilTest, ShowKeyboardWhenRequested) {
   DisableAllFlags();
   // Remove device policy, which has higher precedence than us.
-  ClearEnableFlag(mojom::KeyboardEnableFlag::kPolicyDisabled);
+  keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
   // Requested should have higher precedence than all the remaining flags.
-  SetEnableFlag(mojom::KeyboardEnableFlag::kExtensionEnabled);
+  keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 }
 
-// Tests that the touch keyboard is hidden when requested flag is disabled and
+// Tests that the touch keyboard is hidden when requested state is disabled and
 // higher priority flags have not been set.
 TEST_F(KeyboardUtilTest, HideKeyboardWhenRequested) {
   EnableAllFlags();
   // Remove higher precedence flags.
-  ClearEnableFlag(mojom::KeyboardEnableFlag::kPolicyEnabled);
+  keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
   keyboard::SetAccessibilityKeyboardEnabled(false);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  // Set requested flag to disable. Keyboard should disable.
-  SetEnableFlag(mojom::KeyboardEnableFlag::kExtensionDisabled);
+  // Set requested state to disable. Keyboard should disable.
+  keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_DISABLED);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 }
 
@@ -137,7 +126,7 @@ TEST_F(KeyboardUtilTest, HideKeyboardWhenTouchEnabled) {
 
 TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
   ResetAllFlags();
-  mojom::KeyboardConfig config = keyboard_controller_.keyboard_config();
+  auto config = keyboard_controller_.keyboard_config();
   EXPECT_TRUE(config.spell_check);
   EXPECT_FALSE(keyboard_controller_.UpdateKeyboardConfig(config));
 
@@ -158,16 +147,16 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   keyboard::SetTouchKeyboardEnabled(true);
   EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
-  // Set overscroll enabled flag.
-  mojom::KeyboardConfig config = keyboard_controller_.keyboard_config();
+  // Set overscroll enabled state.
+  auto config = keyboard::KeyboardController::Get()->keyboard_config();
   config.overscroll_behavior =
       keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
-  keyboard_controller_.UpdateKeyboardConfig(config);
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
   config.overscroll_behavior =
       keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
-  keyboard_controller_.UpdateKeyboardConfig(config);
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
   EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
   // Set keyboard_locked() to true.

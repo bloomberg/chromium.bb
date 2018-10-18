@@ -8,8 +8,9 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/event_router.h"
@@ -26,6 +27,13 @@ namespace {
 static ChromeKeyboardControllerClient* g_chrome_keyboard_controller_client =
     nullptr;
 
+Profile* GetProfile() {
+  // Always use the active profile for generating keyboard events so that any
+  // virtual keyboard extensions associated with the active user are notified.
+  // (Note: UI and associated extensions only exist for the active user).
+  return ProfileManager::GetActiveUserProfile();
+}
+
 }  // namespace
 
 // static
@@ -35,17 +43,13 @@ ChromeKeyboardControllerClient* ChromeKeyboardControllerClient::Get() {
   return g_chrome_keyboard_controller_client;
 }
 
-// static
-bool ChromeKeyboardControllerClient::HasInstance() {
-  return !!g_chrome_keyboard_controller_client;
-}
-
-ChromeKeyboardControllerClient::ChromeKeyboardControllerClient(
-    service_manager::Connector* connector) {
+ChromeKeyboardControllerClient::ChromeKeyboardControllerClient() {
   CHECK(!g_chrome_keyboard_controller_client);
   g_chrome_keyboard_controller_client = this;
 
-  connector->BindInterface(ash::mojom::kServiceName, &keyboard_controller_ptr_);
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &keyboard_controller_ptr_);
 
   // Request the configuration. This will be queued until the service is ready.
   keyboard_controller_ptr_->GetKeyboardConfig(base::BindOnce(
@@ -83,24 +87,6 @@ void ChromeKeyboardControllerClient::SetKeyboardConfig(
   keyboard_controller_ptr_->SetKeyboardConfig(cached_keyboard_config_.Clone());
 }
 
-void ChromeKeyboardControllerClient::SetEnableFlag(
-    const keyboard::mojom::KeyboardEnableFlag& flag) {
-  keyboard_controller_ptr_->SetEnableFlag(flag);
-}
-
-void ChromeKeyboardControllerClient::ClearEnableFlag(
-    const keyboard::mojom::KeyboardEnableFlag& flag) {
-  keyboard_controller_ptr_->ClearEnableFlag(flag);
-}
-
-void ChromeKeyboardControllerClient::ReloadKeyboard() {
-  keyboard_controller_ptr_->ReloadKeyboard();
-}
-
-void ChromeKeyboardControllerClient::FlushForTesting() {
-  keyboard_controller_ptr_.FlushForTesting();
-}
-
 void ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig(
     keyboard::mojom::KeyboardConfigPtr config) {
   // Only set the cached value if not already set by SetKeyboardConfig (the
@@ -112,26 +98,19 @@ void ChromeKeyboardControllerClient::OnGetInitialKeyboardConfig(
   ash::mojom::KeyboardControllerObserverAssociatedPtrInfo ptr_info;
   keyboard_controller_observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
   keyboard_controller_ptr_->AddObserver(std::move(ptr_info));
-
-  // Request the initial enabled state.
-  keyboard_controller_ptr_->IsKeyboardEnabled(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardEnabledChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
-  bool was_enabled = is_keyboard_enabled_;
-  is_keyboard_enabled_ = enabled;
-  if (enabled || !was_enabled)
+  if (enabled)
     return;
 
   // When the keyboard becomes disabled, send the onKeyboardClosed event.
 
   Profile* profile = GetProfile();
   extensions::EventRouter* router = extensions::EventRouter::Get(profile);
-  // |router| may be null in tests.
-  if (!router || !router->HasEventListener(
-                     virtual_keyboard_private::OnKeyboardClosed::kEventName)) {
+
+  if (!router->HasEventListener(
+          virtual_keyboard_private::OnKeyboardClosed::kEventName)) {
     return;
   }
 
@@ -160,9 +139,9 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& bounds) {
   Profile* profile = GetProfile();
   extensions::EventRouter* router = extensions::EventRouter::Get(profile);
-  // |router| may be null in tests.
-  if (!router || !router->HasEventListener(
-                     virtual_keyboard_private::OnBoundsChanged::kEventName)) {
+
+  if (!router->HasEventListener(
+          virtual_keyboard_private::OnBoundsChanged::kEventName)) {
     return;
   }
 
@@ -179,14 +158,4 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
       virtual_keyboard_private::OnBoundsChanged::kEventName,
       std::move(event_args), profile);
   router->BroadcastEvent(std::move(event));
-}
-
-Profile* ChromeKeyboardControllerClient::GetProfile() {
-  if (profile_for_test_)
-    return profile_for_test_;
-
-  // Always use the active profile for generating keyboard events so that any
-  // virtual keyboard extensions associated with the active user are notified.
-  // (Note: UI and associated extensions only exist for the active user).
-  return ProfileManager::GetActiveUserProfile();
 }

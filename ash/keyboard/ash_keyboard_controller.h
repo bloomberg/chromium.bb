@@ -57,15 +57,11 @@ class ASH_EXPORT AshKeyboardController
   void DestroyVirtualKeyboard();
 
   // mojom::KeyboardController:
+  void AddObserver(
+      mojom::KeyboardControllerObserverAssociatedPtrInfo observer) override;
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
   void SetKeyboardConfig(
       keyboard::mojom::KeyboardConfigPtr keyboard_config) override;
-  void IsKeyboardEnabled(IsKeyboardEnabledCallback callback) override;
-  void SetEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override;
-  void ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override;
-  void ReloadKeyboard() override;
-  void AddObserver(
-      mojom::KeyboardControllerObserverAssociatedPtrInfo observer) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
@@ -81,10 +77,6 @@ class ASH_EXPORT AshKeyboardController
  private:
   // Ensures that the keyboard controller is activated for the primary window.
   void ActivateKeyboard();
-
-  // Called whenever the enable flags may have changed the enabled state from
-  // |was_enabled|. If changed, enables or disables the keyboard.
-  void UpdateEnableFlag(bool was_enabled);
 
   // keyboard::KeyboardControllerObserver
   void OnKeyboardConfigChanged() override;
