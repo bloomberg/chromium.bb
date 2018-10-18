@@ -67,6 +67,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       public aura::WindowObserver,
       public aura::client::CaptureClientObserver {
  public:
+  enum class ConnectionType {
+    // This client is the result of an embedding, InitForEmbed() was called.
+    kEmbedding,
+
+    // This client is not the result of an embedding. More specifically
+    // InitFromFactory() was called. Generally this means the client first
+    // connected to mojom::WindowTreeFactory and then called
+    // mojom::WindowTreeFactory::CreateWindowTree().
+    kOther,
+  };
+
   WindowTree(WindowService* window_service,
              ClientSpecificId client_id,
              mojom::WindowTreeClient* client,
@@ -123,6 +134,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   const std::string& client_name() const { return client_name_; }
 
+  ConnectionType connection_type() const { return connection_type_; }
+
   // Returns true if at a compositor frame sink has been created for at least
   // one of the roots.
   bool HasAtLeastOneRootWithCompositorFrameSink();
@@ -148,17 +161,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   struct InFlightEvent;
 
   using ClientRoots = std::vector<std::unique_ptr<ClientRoot>>;
-
-  enum class ConnectionType {
-    // This client is the result of an embedding, InitForEmbed() was called.
-    kEmbedding,
-
-    // This client is not the result of an embedding. More specifically
-    // InitFromFactory() was called. Generally this means the client first
-    // connected to mojom::WindowTreeFactory and then called
-    // mojom::WindowTreeFactory::CreateWindowTree().
-    kOther,
-  };
 
   enum class DeleteClientRootReason {
     // The window is being destroyed.

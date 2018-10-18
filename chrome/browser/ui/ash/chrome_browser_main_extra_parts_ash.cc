@@ -206,12 +206,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (features::IsUsingWindowService())
     immersive_context_ = std::make_unique<ImmersiveContextMus>();
 
-  // TODO(estade): implement ScreenOrientationDelegateChromeos for Mash and
-  // remove this condition.
-  if (!features::IsUsingWindowService()) {
-    screen_orientation_delegate_ =
-        std::make_unique<ScreenOrientationDelegateChromeos>();
-  }
+  screen_orientation_delegate_ =
+      std::make_unique<ScreenOrientationDelegateChromeos>();
 
   app_list_client_ = std::make_unique<AppListClientImpl>();
 

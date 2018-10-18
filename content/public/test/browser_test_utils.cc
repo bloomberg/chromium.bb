@@ -48,6 +48,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -1987,6 +1988,10 @@ bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
 
   return outer_node->current_frame_host()->GetView() ==
          frame_connector->GetParentRenderWidgetHostView();
+}
+
+ScreenOrientationDelegate* GetScreenOrientationDelegate() {
+  return ScreenOrientationProvider::GetDelegateForTesting();
 }
 
 std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
