@@ -16,6 +16,7 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -235,7 +236,8 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  SafeBrowsingBlockingPageTest() {
+  SafeBrowsingBlockingPageTest()
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
     ResetUserResponse();
     // The safe browsing UI manager does not need a service for this test.
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
@@ -390,6 +392,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
   }
 
+  ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
 };
@@ -1028,7 +1031,8 @@ class SafeBrowsingBlockingQuietPageTest
   // The decision the user made.
   enum UserResponse { PENDING, OK, CANCEL };
 
-  SafeBrowsingBlockingQuietPageTest() {
+  SafeBrowsingBlockingQuietPageTest()
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
     // The safe browsing UI manager does not need a service for this test.
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
   }
@@ -1125,6 +1129,7 @@ class SafeBrowsingBlockingQuietPageTest
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
   }
 
+  ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingQuietPageFactory factory_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
@@ -1218,7 +1223,6 @@ TEST_F(TEST_CLASS_ExtendedReportingNotShownUnifiedConsent,
   // Fake sign in so unified consent can be given.
   SigninManagerFactory::GetForProfile(profile)->SetAuthenticatedAccountInfo(
       "gaia_id", "user");
-  TestingBrowserProcess::GetGlobal()->SetLocalState(profile->GetPrefs());
 
   // Give unified consent.
   UnifiedConsentServiceFactory::GetForProfile(profile)->SetUnifiedConsentGiven(
@@ -1244,7 +1248,6 @@ TEST_F(TEST_CLASS_ExtendedReportingNotShownUnifiedConsent,
   // The interstitial should be gone.
   EXPECT_EQ(CANCEL, user_response());
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
-  TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 }
 
 }  // namespace safe_browsing
