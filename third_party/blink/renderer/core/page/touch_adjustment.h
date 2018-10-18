@@ -43,7 +43,11 @@ bool FindBestContextMenuCandidate(Node*& target_node,
                                   const IntRect& touch_area,
                                   const HeapVector<Member<Node>>&);
 
-LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area);
+// Applies an upper bound to the touch area as the adjustment rect. The
+// touch_area is in root frame coordinates, which is in physical pixel when
+// zoom-for-dsf is enabled, otherwise in dip (when page scale is 1). 
+LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area,
+                                       float zoom_factor);
 
 struct TouchAdjustmentResult {
   uint32_t unique_event_id;
