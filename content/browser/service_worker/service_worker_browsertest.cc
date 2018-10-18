@@ -2071,7 +2071,9 @@ const std::string
         "            result => event.source.postMessage(result)));\n"
         "  });";
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkFallback) {
+// Flaky on various bots. https://crbug.com/896230
+IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
+                       DISABLED_NetworkFallback) {
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
   const char kPage[] = "<title>PASS</title>Hello world.";
