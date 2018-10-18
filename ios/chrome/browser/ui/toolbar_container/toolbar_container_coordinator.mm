@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_height_range.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -63,8 +64,11 @@
 #pragma mark - Public
 
 - (CGFloat)toolbarStackHeightForFullscreenProgress:(CGFloat)progress {
-  return [self.containerViewController
-      toolbarStackHeightForFullscreenProgress:progress];
+  if (!self.started)
+    return 0.0;
+  const toolbar_container::HeightRange& stackHeightRange =
+      self.containerViewController.heightRange;
+  return stackHeightRange.GetInterpolatedHeight(progress);
 }
 
 #pragma mark - ChromeCoordinator
