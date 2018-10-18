@@ -67,9 +67,6 @@ extern const char kAppBannersDescription[];
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
-extern const char kEnableBlinkHeapIncrementalMarkingName[];
-extern const char kEnableBlinkHeapIncrementalMarkingDescription[];
-
 extern const char kEnableBloatedRendererDetectionName[];
 extern const char kEnableBloatedRendererDetectionDescription[];
 

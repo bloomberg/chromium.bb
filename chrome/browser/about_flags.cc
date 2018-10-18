@@ -4172,11 +4172,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalUiDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalUi)},
 
-    {"enable-blink-heap-incremental-marking",
-     flag_descriptions::kEnableBlinkHeapIncrementalMarkingName,
-     flag_descriptions::kEnableBlinkHeapIncrementalMarkingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBlinkHeapIncrementalMarking)},
-
 #if defined(OS_ANDROID)
     {"enable-media-controls-expand-gesture",
      flag_descriptions::kEnableMediaControlsExpandGestureName,

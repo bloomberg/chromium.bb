@@ -56,7 +56,7 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 // Enable incremental marking for Blink's heap managed by the Oilpan garbage
 // collector.
 const base::Feature kBlinkHeapIncrementalMarking{
-    "BlinkHeapIncrementalMarking", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable bloated renderer detection.
 const base::Feature kBloatedRendererDetection{

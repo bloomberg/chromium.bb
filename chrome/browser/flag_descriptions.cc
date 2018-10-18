@@ -68,11 +68,6 @@ const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
     "creation pages.";
 
-const char kEnableBlinkHeapIncrementalMarkingName[] =
-    "Blink Heap Incremental Marking";
-const char kEnableBlinkHeapIncrementalMarkingDescription[] =
-    "Enable incremental marking in Blink";
-
 const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
 const char kEnableBloatedRendererDetectionDescription[] =
     "Enable bloated renderer detection";
