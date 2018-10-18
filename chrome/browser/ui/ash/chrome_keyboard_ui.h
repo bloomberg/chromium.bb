@@ -52,8 +52,8 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   void UpdateInsetsForWindow(aura::Window* window);
 
   // Overridden from KeyboardUI:
-  aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
-  aura::Window* GetKeyboardWindow() const override;
+  aura::Window* GetKeyboardWindow() override;
+  bool HasKeyboardWindow() const override;
   ui::InputMethod* GetInputMethod() override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& new_bounds) override;

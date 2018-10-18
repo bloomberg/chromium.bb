@@ -14,20 +14,17 @@
 namespace ash {
 
 TestKeyboardUI::TestKeyboardUI() = default;
-
 TestKeyboardUI::~TestKeyboardUI() = default;
 
-aura::Window* TestKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
-  DCHECK(!keyboard_window_);
-  keyboard_window_ = window_factory::NewWindow(&delegate_);
-  keyboard_window_->Init(ui::LAYER_NOT_DRAWN);
-
-  // TODO(https://crbug.com/849995): Call |callback| instead of having tests
-  // call |NotifyKeyboardWindowLoaded|.
-  return keyboard_window_.get();
+bool TestKeyboardUI::HasKeyboardWindow() const {
+  return !!keyboard_window_;
 }
 
-aura::Window* TestKeyboardUI::GetKeyboardWindow() const {
+aura::Window* TestKeyboardUI::GetKeyboardWindow() {
+  if (!keyboard_window_) {
+    keyboard_window_ = window_factory::NewWindow(&delegate_);
+    keyboard_window_->Init(ui::LAYER_NOT_DRAWN);
+  }
   return keyboard_window_.get();
 }
 

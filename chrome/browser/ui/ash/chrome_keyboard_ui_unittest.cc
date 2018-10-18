@@ -37,9 +37,8 @@ class ChromeKeyboardUITest : public ChromeRenderViewHostTestHarness {
 }  // namespace
 
 // Ensure ChromeKeyboardContentsDelegate is successfully constructed and has
-// a valid aura::Window after calling LoadKeyboardWindow().
+// a valid aura::Window when GetKeyboardWindow() is called.
 TEST_F(ChromeKeyboardUITest, ChromeKeyboardContentsDelegate) {
-  aura::Window* window =
-      chrome_keyboard_ui_->LoadKeyboardWindow(base::DoNothing());
-  EXPECT_TRUE(window);
+  aura::Window* window = chrome_keyboard_ui_->GetKeyboardWindow();
+  ASSERT_TRUE(window);
 }

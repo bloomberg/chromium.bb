@@ -20,6 +20,8 @@
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_resource_util.h"
 
 namespace {
 
@@ -122,9 +124,7 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
 
 ChromeKeyboardWebContents::ChromeKeyboardWebContents(
     content::BrowserContext* context,
-    const GURL& url,
-    LoadCallback callback)
-    : callback_(std::move(callback)) {
+    const GURL& url) {
   DCHECK(context);
   content::WebContents::CreateParams web_contents_params(
       context, content::SiteInstance::CreateForURL(context, url));
@@ -171,7 +171,9 @@ void ChromeKeyboardWebContents::RenderViewCreated(
 void ChromeKeyboardWebContents::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  std::move(callback_).Run();
+  // TODO(mash): Support virtual keyboard. https://crbug.com/843332.
+  if (!features::IsMultiProcessMash())
+    keyboard::KeyboardController::Get()->NotifyKeyboardWindowLoaded();
 }
 
 void ChromeKeyboardWebContents::LoadContents(const GURL& url) {
