@@ -251,6 +251,7 @@ cr.define('cr.login', function() {
         this.onHeadersReceived_.bind(this),
         {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
         ['responseHeaders']);
+    this.onBeforeSetHeadersSet_ = false;
   };
 
   /**
