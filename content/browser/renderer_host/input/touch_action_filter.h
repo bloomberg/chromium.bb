@@ -111,6 +111,9 @@ class CONTENT_EXPORT TouchActionFilter {
   // before GSE.
   bool gesture_sequence_in_progress_ = false;
 
+  // True if we're between a GSB and a GSE.
+  bool gesture_scroll_in_progress_ = false;
+
   // Increment at receiving ACK for touch start and decrement at touch end.
   int num_of_active_touches_ = 0;
 

@@ -113,8 +113,6 @@ target(link_target_type, "renderer") {
     "frame_blame_context.h",
     "frame_owner_properties.cc",
     "frame_owner_properties.h",
-    "gpu/actions_parser.cc",
-    "gpu/actions_parser.h",
     "gpu/compositor_dependencies.h",
     "gpu/frame_swap_message_queue.cc",
     "gpu/frame_swap_message_queue.h",
