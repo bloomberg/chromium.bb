@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -239,7 +240,8 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
-  base::FieldTrialList field_trial_list(nullptr);
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
 
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
@@ -282,6 +284,9 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   RecreateContextWithMockConfig();
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
@@ -404,7 +409,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
-    variation_params["warmup_url"] = warmup_url.spec();
+
+    test_context_->DisableWarmupURLFetchCallback();
 
     ASSERT_TRUE(variations::AssociateVariationParams(
         params::GetQuicFieldTrialName(), "Enabled", variation_params));
@@ -454,16 +460,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
       RunUntilIdle();
 
       if (test.data_reduction_proxy_enabled) {
-        histogram_tester.ExpectUniqueSample(
-            "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
-        histogram_tester.ExpectTotalCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent", 2);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            2 /* kProxyNotEnabledByUser */, 1);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            0 /* kFetchInitiated */, 1);
+        EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                         "DataReductionProxy.WarmupURL.FetchInitiated", 1));
       } else {
         histogram_tester.ExpectTotalCount(
             "DataReductionProxy.WarmupURL.FetchInitiated", 0);
@@ -485,14 +483,9 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
       if (test.data_reduction_proxy_enabled) {
         histogram_tester.ExpectTotalCount(
             "DataReductionProxy.WarmupURL.FetchInitiated", 0);
-        histogram_tester.ExpectTotalCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent", 2);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            1 /* kConnectionTypeNone */, 1);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            2 /* kProxyNotEnabledByUser */, 1);
+        EXPECT_LE(1, histogram_tester.GetBucketCount(
+                         "DataReductionProxy.WarmupURL.FetchAttemptEvent",
+                         1 /* kConnectionTypeNone */));
 
       } else {
         histogram_tester.ExpectTotalCount(
@@ -1059,6 +1052,9 @@ TEST_F(DataReductionProxyConfigTest,
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
   constexpr size_t kMaxWarmupURLFetchAttempts = 3;
 
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   base::HistogramTester histogram_tester;
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
@@ -1197,6 +1193,9 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
 
 // Tests the behavior when warmup URL fetcher times out.
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   base::HistogramTester histogram_tester;
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
@@ -1252,6 +1251,9 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
 
 TEST_F(DataReductionProxyConfigTest,
        HandleWarmupFetcherRetryWithConnectionChange) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   constexpr size_t kMaxWarmupURLFetchAttempts = 3;
 
   base::HistogramTester histogram_tester;

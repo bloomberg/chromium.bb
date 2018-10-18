@@ -53,18 +53,9 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
   }
   FetchResult success_response_last() const { return success_response_last_; }
 
-  static void InitExperiment(
-      base::test::ScopedFeatureList* scoped_feature_list) {
-    std::map<std::string, std::string> params;
-    params[params::GetWarmupCallbackParamName()] = "true";
-    scoped_feature_list->InitAndEnableFeatureWithParameters(
-        features::kDataReductionProxyRobustConnection, params);
-  }
-
   static void InitExperimentWithTimeout(
       base::test::ScopedFeatureList* scoped_feature_list) {
     std::map<std::string, std::string> params;
-    params["warmup_fetch_callback_enabled"] = "true";
     params["warmup_url_fetch_min_timeout_seconds"] = "10";
     params["warmup_url_fetch_max_timeout_seconds"] = "60";
     params["warmup_url_fetch_init_http_rtt_multiplier"] = "12";
@@ -77,7 +68,6 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
       base::TimeDelta first_retry,
       base::TimeDelta second_retry) {
     std::map<std::string, std::string> params;
-    params["warmup_fetch_callback_enabled"] = "true";
     params["warmup_url_fetch_wait_timer_first_retry_seconds"] =
         base::IntToString(first_retry.InSeconds());
     params["warmup_url_fetch_wait_timer_second_retry_seconds"] =
@@ -182,9 +172,6 @@ TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
-
   base::test::ScopedTaskEnvironment scoped_task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   auto test_shared_url_loader_factory =
@@ -235,9 +222,6 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
-
   base::test::ScopedTaskEnvironment scoped_task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   auto test_shared_url_loader_factory =
@@ -332,15 +316,12 @@ TEST(WarmupURLFetcherTest,
       util::ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT),
       1);
 
-  // The callback should not be run.
-  EXPECT_EQ(0u, warmup_url_fetcher.callback_received_count());
+  // The callback should be run.
+  EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
   warmup_url_fetcher.VerifyStateCleanedUp();
 }
 
 TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
-
   base::test::ScopedTaskEnvironment scoped_task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   auto test_shared_url_loader_factory =
@@ -385,9 +366,6 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
 }
 
 TEST(WarmupURLFetcherTest, TestFetchTimesout) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
-
   base::test::ScopedTaskEnvironment scoped_task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   auto test_shared_url_loader_factory =
@@ -425,9 +403,6 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
-
   base::test::ScopedTaskEnvironment scoped_task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   network::TestURLLoaderFactory test_url_loader_factory;
@@ -485,7 +460,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
 
 TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
   // Must remain in sync with warmup_url_fetcher.cc.
-  constexpr base::TimeDelta kMinTimeout = base::TimeDelta::FromSeconds(10);
+  constexpr base::TimeDelta kMinTimeout = base::TimeDelta::FromSeconds(30);
   constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(60);
 
   base::HistogramTester histogram_tester;
@@ -503,7 +478,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 
   base::TimeDelta http_rtt = base::TimeDelta::FromSeconds(2);
   warmup_url_fetcher.SetHttpRttOverride(http_rtt);
-  EXPECT_EQ(http_rtt * 12, warmup_url_fetcher.GetFetchTimeout());
+  EXPECT_EQ(kMinTimeout, warmup_url_fetcher.GetFetchTimeout());
 
   warmup_url_fetcher.FetchWarmupURL(1);
   EXPECT_EQ(http_rtt * 24, warmup_url_fetcher.GetFetchTimeout());

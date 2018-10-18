@@ -513,26 +513,25 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, ResponseWithBypassAndRetry) {
 
 TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithBypassAndRetry) {
   MockRead mock_reads_array[][3] = {
-      // First, get a redirect without a via header, which should be retried
+      // First, get a bypass which should be retried
       // using the fallback proxy.
       {
           MockRead("HTTP/1.1 302 Found\r\n"
+                   "Chrome-Proxy: bypass=0\r\n"
                    "Location: http://bar.com/\r\n\r\n"),
-          MockRead(""),
-          MockRead(net::SYNCHRONOUS, net::OK),
+          MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
       },
       // Same as before, but through the fallback proxy. Now both proxies are
       // bypassed, and the request should be retried over direct.
       {
           MockRead("HTTP/1.1 302 Found\r\n"
+                   "Chrome-Proxy: bypass=0\r\n"
                    "Location: http://baz.com/\r\n\r\n"),
-          MockRead(""),
-          MockRead(net::SYNCHRONOUS, net::OK),
+          MockRead(""), MockRead(net::SYNCHRONOUS, net::OK),
       },
       // Finally, a successful response is received.
       {
-          MockRead("HTTP/1.1 200 OK\r\n\r\n"),
-          MockRead(kBody.c_str()),
+          MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead(kBody.c_str()),
           MockRead(net::SYNCHRONOUS, net::OK),
       },
   };

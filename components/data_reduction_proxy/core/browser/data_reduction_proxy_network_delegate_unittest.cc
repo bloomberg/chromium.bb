@@ -862,6 +862,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return &ssl_socket_data_provider_;
   }
 
+  void DisableWarmupURLFetchCallback() {
+    test_context_->DisableWarmupURLFetchCallback();
+  }
+
  private:
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;
@@ -1878,6 +1882,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, SubResourceNoPageId) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectSharePid) {
+  // The test manually controls the fetch of warmup URL and the response.
+  DisableWarmupURLFetchCallback();
+
   // This is unaffacted by brotil and insecure proxy.
   Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
