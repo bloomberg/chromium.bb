@@ -83,7 +83,7 @@ void FlagWarningTray::UpdateButton() {
   }
 
   if (::features::IsSingleProcessMash()) {
-    button_->SetText(base::ASCIIToUTF16("a"));
+    button_->SetText(base::ASCIIToUTF16("SPM"));
     button_->SetTooltipText(
         base::ASCIIToUTF16("Running with feature SingleProcessMash"));
   } else if (::features::IsMultiProcessMash()) {
