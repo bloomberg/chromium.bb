@@ -1408,11 +1408,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4834526953114077364">Elimina los usuarios que más tiempo hace que no se utilizan y que no accedieron en los últimos tres meses hasta que se libere suficiente espacio.</translation>
 <translation id="4858735034935305895">Permitir el modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de entrada permitidos en una sesión de usuario</translation>
-<translation id="4869787217450099946">Permite especificar si se permiten los bloqueos de activación de pantalla. Los bloqueos de activación de pantalla pueden ser solicitados por extensiones mediante la API de extensión de administración de energía.
-
-          Si esta política se establece en Verdadero o si no se establece ninguna opción, los bloqueos de activación de pantalla serán válidos para la administración de energía.
-
-          Si esta política se establece en Falso, las solicitudes de bloqueo de activación de pantalla se ignorarán.</translation>
 <translation id="487460824085252184">Migra automáticamente y no solicita el consentimiento del usuario.</translation>
 <translation id="4874982543810021567">Bloquea WebUSB en estos sitios</translation>
 <translation id="4876805738539874299">Versión de SSL máxima habilitada</translation>

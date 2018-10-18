@@ -1410,11 +1410,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="4834526953114077364">Bude odstraněno tolik uživatelů, od jejichž posledního použití uplynula nejdelší doba, kolik bude potřeba k uvolnění dostatečného množství volného místa. Odstraněni budou pouze uživatelé, kteří se během posledních 3 měsíců nepřihlásili.</translation>
 <translation id="4858735034935305895">Povolení režimu celé obrazovky</translation>
 <translation id="4861767323695239729">Nakonfigurovat metody zadávání povolené v uživatelské relaci</translation>
-<translation id="4869787217450099946">Určuje, zda je povoleno uzamčení obrazovky při probuzení. Uzamčení obrazovky při probuzení mohou být rozšířeními vyžádána prostřednictvím rozhraní API pro správu napájení.
-
-          Pokud má tato zásada má hodnotu true nebo není nastavena, bude se správa napájení řídit nastavením uzamčení obrazovky při probuzení.
-
-          Pokud má tato zásada hodnotu false, budou požadavky na uzamčení obrazovky při probuzení ignorovány.</translation>
 <translation id="487460824085252184">Migrovat automaticky, nežádat uživatele o souhlas.</translation>
 <translation id="4874982543810021567">Blokovat rozhraní WebUSB na těchto webech</translation>
 <translation id="4876805738539874299">Maximální povolená verze SSL</translation>

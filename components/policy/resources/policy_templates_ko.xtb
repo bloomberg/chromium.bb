@@ -1454,11 +1454,6 @@
 <translation id="4834526953114077364">충분한 여유 공간을 확보할 때까지 지난 3개월 이내에 로그인하지 않은 사용자 중 가장 오래된 사용자가 삭제됩니다.</translation>
 <translation id="4858735034935305895">전체 화면 모드 허용</translation>
 <translation id="4861767323695239729">사용자 세션에서 허용되는 입력 수단을 구성합니다.</translation>
-<translation id="4869787217450099946">화면 잠금의 허용 여부를 지정합니다. 화면 잠금은 전원 관리 확장 API를 통한 확장 프로그램에서 요청할 수 있습니다.
-
-          정책이 True로 설정되거나 설정되지 않은 경우, 화면 잠금이 전원 관리에 적용됩니다.
-
-          정책이 False로 설정된 경우, 잠금 요청이 무시됩니다.</translation>
 <translation id="487460824085252184">사용자의 동의를 구하지 않고 자동으로 이전합니다.</translation>
 <translation id="4874982543810021567">이 사이트에서 WebUSB 차단</translation>
 <translation id="4876805738539874299">최대 SSL 버전 사용 설정됨</translation>

@@ -1451,11 +1451,6 @@
 <translation id="4834526953114077364">Inaalis ang mga user na pinakahindi nagagamit kamakailan na hindi nag-log in sa loob ng nakalipas na 3 buwan hangga't magkaroon ng sapat na libreng espasyo</translation>
 <translation id="4858735034935305895">Pinapayagan ang mode na fullscreen</translation>
 <translation id="4861767323695239729">I-configure ang mga pinapayagang pamamaraan ng pag-input sa isang session ng user</translation>
-<translation id="4869787217450099946">Tinutukoy kung pinapayagan ang mga lock ng pagpapagana ng screen. Mahihiling ng mga extension ang mga lock ng pagpapagana ng screen sa pamamagitan ng power management extension API.
-
-          Kung nakatakda sa true o iniwang hindi nakatakda ang patakarang ito, tatanggapin ang mga lock ng pagpapagana ng screen para sa pamamahala sa power.
-
-          Kung nakatakda sa false ang patakarang ito, babalewalain ang mga kahilingan sa lock ng pagpapagana ng screen.</translation>
 <translation id="487460824085252184">Awtomatikong nagma-migrate, hindi humihingi ng pahintulot mula sa user.</translation>
 <translation id="4874982543810021567">I-block ang WebUSB sa mga site na ito</translation>
 <translation id="4876805738539874299">Naka-enable ang maximum na bersyon ng SSL</translation>

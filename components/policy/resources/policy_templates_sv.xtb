@@ -1456,11 +1456,6 @@
 <translation id="4834526953114077364">De användare som använts minst nyligen och som inte har loggat in de senaste tre månaderna tas bort tills det finns tillräckligt med ledigt utrymme</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
 <translation id="4861767323695239729">Konfigurera tillåtna inmatningsmetoder i en användarsession</translation>
-<translation id="4869787217450099946">Anger om skärmaktiveringslåset är tillåtet. Skärmaktiveringslåset kan krävas av vissa tillägg via API:et för näthanteringstillägget.
-
-          Om denna policy har inställningen sant, eller inte har ställts in, kommer skärmaktiveringslåsen att användas för näthantering.
-
-          Om policyn har inställningen falskt kommer skärmaktiveringslåset att ignoreras.</translation>
 <translation id="487460824085252184">Migrera automatiskt utan att fråga efter användarens samtycke.</translation>
 <translation id="4874982543810021567">Blockera WebUSB på dessa webbplatser</translation>
 <translation id="4876805738539874299">Högsta SSL-version har aktiverats</translation>

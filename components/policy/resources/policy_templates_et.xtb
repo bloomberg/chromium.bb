@@ -1453,11 +1453,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="4834526953114077364">Kõige kauem aega tagasi kasutanud kasutajad, kes ei ole viimase 3 kuu jooksul sisse loginud, eemaldatakse, kuni on piisavalt vaba ruumi</translation>
 <translation id="4858735034935305895">Täisekraanrežiimi lubamine</translation>
 <translation id="4861767323695239729">Kasutajaseansis lubatud sisestusmeetodite seadistamine</translation>
-<translation id="4869787217450099946">Määrab, kas ekraani aktiveerimise lukustamine on lubatud. Ekraani aktiveerimise lukustamist saab taotleda laiendustega energiahalduse laienduse API kaudu.
-
-          Kui see reegli väärtuseks on seatud Tõene või on väärtus seadmata, kasutatakse energiahalduseks ekraani aktiveerimise lukustamist.
-
-          Kui reegli väärtuseks on seatud Väär, siis ekraani aktiveerimise lukustamise taotlust eiratakse.</translation>
 <translation id="487460824085252184">Üleviimine toimub automaatselt, kasutaja nõusolekut ei küsita.</translation>
 <translation id="4874982543810021567">Reegli WebUSB blokeerimine nendel saitidel</translation>
 <translation id="4876805738539874299">Maksimaalne lubatud SSL-i versioon</translation>

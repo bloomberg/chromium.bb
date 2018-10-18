@@ -1452,11 +1452,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4834526953114077364">Người dùng gần đây ít sử dụng nhất đã không đăng nhập trong 3 tháng qua và sẽ bị xóa cho tới khi đủ dung lượng trống</translation>
 <translation id="4858735034935305895">Cho phép chế độ toàn màn hình</translation>
 <translation id="4861767323695239729">Định cấu hình các phương thức nhập được phép trong phiên người dùng</translation>
-<translation id="4869787217450099946">Xác định xem khóa chế độ thức màn hình có được phép hay không. Khóa chế độ thức màn hình có thể được tiện ích yêu cầu qua API tiện ích quản lý công suất.
-
-          Nếu chính sách này được đặt thành true hoặc không được đặt, khóa chế độ thức màn hình sẽ được đặt để quản lý công suất.
-
-          Nếu chính sách này được đặt thành false, yêu cầu khóa chế độ thức màn hình sẽ bị bỏ qua.</translation>
 <translation id="487460824085252184">Tự động di chuyển, không cần yêu cầu sự chấp thuận của người dùng.</translation>
 <translation id="4874982543810021567">Chặn WebUSB trên các trang web này</translation>
 <translation id="4876805738539874299">Đã bật phiên bản SSL tối đa</translation>

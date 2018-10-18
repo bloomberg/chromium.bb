@@ -1434,11 +1434,6 @@ politikayı geçersiz kılamaz.
 <translation id="4834526953114077364">Yeterli boş alan sağlanıncaya kadar, son 3 ay içinde oturum açmayan ve en seyrek kullanılan kullanıcılar kaldırılır</translation>
 <translation id="4858735034935305895">Tam ekran moduna izin ver</translation>
 <translation id="4861767323695239729">Kullanıcı oturumunda izin verilen giriş yöntemlerini yapılandır</translation>
-<translation id="4869787217450099946">Ekran uyandırma kilitlerine izin verilip verilmeyeceğini belirtir. Ekran uyandırma kilitleri, güç yönetimi uzantı API'sı yoluyla uzantılar tarafından istenebilir.
-
-          Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa, güç yönetimi için ekran uyandırma kilitleri kullanılır.
-
-          Bu politika yanlış seçeneğine ayarlanırsa, ekran uyandırma kilitleri için yapılan istekler dikkate alınmaz.</translation>
 <translation id="487460824085252184">Otomatik olarak taşı, kullanıcıdan onay isteme.</translation>
 <translation id="4874982543810021567">Bu sitelerde WebUSB'yi engelle</translation>
 <translation id="4876805738539874299">Etkinleştirilen maksimum SSL sürümü</translation>

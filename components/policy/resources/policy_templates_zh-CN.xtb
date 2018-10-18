@@ -1368,11 +1368,6 @@
 <translation id="4834526953114077364">删除最近3个月内未登录且使用最少的用户，直到有足够的可用空间</translation>
 <translation id="4858735034935305895">允许全屏模式</translation>
 <translation id="4861767323695239729">配置可在用户会话中使用的输入法</translation>
-<translation id="4869787217450099946">指定是否允许使用屏幕唤醒锁定。扩展程序可通过 Power Management Extension API 请求使用屏幕唤醒锁定。
-
-          如果将此政策设为 true 或未进行设置，系统就会允许使用屏幕唤醒锁定，以便进行电源管理。
-
-          如果将此政策设为 false，系统就会忽略屏幕唤醒锁定请求。</translation>
 <translation id="487460824085252184">自动迁移，不询问用户是否同意。</translation>
 <translation id="4874982543810021567">禁止这些网站使用 WebUSB</translation>
 <translation id="4876805738539874299">启用最高 SSL 版本</translation>

@@ -1371,11 +1371,6 @@ Se la norma non viene impostata, il puntatore grande sarà inizialmente disattiv
 <translation id="4834526953114077364">Gli utenti utilizzati meno di recente che non hanno eseguito l'accesso negli ultimi tre mesi vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
 <translation id="4861767323695239729">Configura i metodi di immissione consentiti in una sessione utente</translation>
-<translation id="4869787217450099946">Specifica se sono consentiti i Wakelock dello schermo. I Wakelock dello schermo possono essere richiesti dalle estensioni tramite l'API dell'estensione di gestione dell'alimentazione.
-
-          Se questa norma è impostata su True o non è impostata, verranno rispettati i Wakelock dello schermo nella gestione dell'alimentazione.
-
-          Se questa norma è impostata su False, le richieste di Wakelock dello schermo verranno ignorate.</translation>
 <translation id="487460824085252184">Esegui automaticamente la migrazione senza chiedere il consenso dell'utente</translation>
 <translation id="4874982543810021567">Blocca WebUSB su questi siti</translation>
 <translation id="4876805738539874299">Versione SSL massima abilitata</translation>

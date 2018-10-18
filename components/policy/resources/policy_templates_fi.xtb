@@ -1416,11 +1416,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4834526953114077364">Kauimmin käyttämättä olleet käyttäjät, jotka eivät ole kirjautuneet sisään viimeisten kolmen kuukauden aikana, poistetaan, kunnes vapaata tilaa on riittävästi.</translation>
 <translation id="4858735034935305895">Salli koko ruudun tila</translation>
 <translation id="4861767323695239729">Määritä käyttökerran hyväksytyt syöttötavat</translation>
-<translation id="4869787217450099946">Määrittää, sallitaanko näytön herätyksen lukitus. Laajennus voi pyytää näytön herätyksen lukitusta virranhallintalaajennuksen sovellusliittymän kautta.
-
-          Jos käytännön asetus on tosi tai arvoa ei ole asetettu, virranhallinta noudattaa näytön herätyksen lukitusta.
-
-          Jos käytännön asetus on epätosi, näytön herätyksen lukituspyynnöt ohitetaan.</translation>
 <translation id="487460824085252184">Siirrä automaattisesti, älä kysy käyttäjältä</translation>
 <translation id="4874982543810021567">Estä WebUSB näillä sivustoilla</translation>
 <translation id="4876805738539874299">Uusin SSL-versio käytössä</translation>

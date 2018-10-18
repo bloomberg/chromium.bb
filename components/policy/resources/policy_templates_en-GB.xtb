@@ -24,6 +24,12 @@
       When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
 
       This policy affects users whose domain matches the device's enrolment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.</translation>
+<translation id="1035385378988781231">This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME" /> will use NTLM for authentication.
+
+      When this policy is set to True, NTLM will be used for authentication to SMB shares if necessary.
+      When this policy is set to False, NTLM authentication to SMB shares will be disabled.
+
+      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.</translation>
 <translation id="1040446814317236570">Enable PAC URL stripping (for https://)</translation>
 <translation id="1044878202534415707">Report hardware statistics such as CPU/RAM usage.
 
@@ -105,6 +111,13 @@
       Default is RollbackDisabled.</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="1223789468190631420">Safe Browsing enable state for trusted sources</translation>
+<translation id="122899932962115297">A whitelist controlling which quick unlock modes the user can configure and use to unlock the lock screen.
+
+          This value is a list of strings; valid list entries are: 'all', 'PIN', 'FINGERPRINT'. Adding 'all' to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
+
+          For example, to allow every quick unlock mode, use ['all']. To allow only PIN unlock, use ['PIN']. To allow PIN and fingerprint, use ['PIN', 'FINGERPRINT']. To disable all quick unlock modes, use [].
+
+          By default, no quick unlock modes are available for managed devices.</translation>
 <translation id="123081309365616809">Enable casting content to the device</translation>
 <translation id="1243570869342663665">Control SafeSites adult content filtering.</translation>
 <translation id="1257550411839719984">Set default download directory</translation>
@@ -654,6 +667,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is left not set, the default is not allowed for managed users and allowed for non-managed users.</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
+<translation id="2672012807430078509">Controls enabling NTLM as an authentication protocol for SMB mounts</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
           This policy is optional. If not set, the default will be used which is UTF-8.
@@ -999,6 +1013,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. However, users will still be able to facilitate IsolateOrigins manually.
       If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
       </translation>
+<translation id="3748900290998155147">Specifies whether wake locks are allowed. Wake locks can be requested by extensions via the power management extension API and by ARC apps.
+
+          If this policy is set to true or left not set, wake locks will be honoured for power management.
+
+          If this policy is set to false, wake lock requests will be ignored.</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758089716224084329">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -1032,6 +1051,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect and the toolbar icon would not be shown.</translation>
 <translation id="3788662722837364290">Power management settings when the user becomes idle</translation>
+<translation id="3790085888761753785">If this setting is enabled, users will be allowed to sign into their account with Smart Lock. This is more permissive than usual Smart Lock behaviour which only allows users to unlock their screen.
+
+      If this setting is disabled, users will not be allowed to use Smart Lock Sign-in.
+
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.</translation>
 <translation id="379602782757302612">Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once a disabled, blacklisted extension is removed, it will automatically get re-enabled.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
@@ -1135,6 +1159,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If not set or set to False, then users will be able to transfer files to Google Drive.</translation>
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
+<translation id="3925020515212192040">Specifies a list of preconfigued network file shares.
+
+      Each list item of the policy is an object with two members: 'share_url' and 'mode'. 'share_url' should be the URL of the share and 'mode' should be 'drop_down' which indicates that 'share_url' will be added to the share discovery drop-down.</translation>
 <translation id="3939893074578116847">Send network packets to the management server to monitor online status, to allow
       the server to detect if the device is offline.
 
@@ -1283,6 +1310,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
 <translation id="437791893267799639">Policy unset, disallow data migration and ARC</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
+<translation id="4408428864159735559">List of pre-configured network file shares.</translation>
 <translation id="4410236409016356088">Enable throttling network bandwidth</translation>
 <translation id="441217499641439905">Disable Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="4418726081189202489">Setting this policy to false stops <ph name="PRODUCT_NAME" /> from occasionally sending queries to a Google server to retrieve an accurate timestamp. These queries will be enabled if this policy is set to True or is not set.</translation>
@@ -1456,11 +1484,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4834526953114077364">Least recently used users who have not logged in within the last 3 months are removed until there is enough free space</translation>
 <translation id="4858735034935305895">Allow fullscreen mode</translation>
 <translation id="4861767323695239729">Configure the allowed input methods in a user session</translation>
-<translation id="4869787217450099946">Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
-
-          If this policy is set to true or left not set, screen wake locks will be honoured for power management.
-
-          If this policy is set to false, screen wake lock requests will be ignored.</translation>
 <translation id="487460824085252184">Migrate automatically, don’t ask for user consent.</translation>
 <translation id="4874982543810021567">Block WebUSB on these sites</translation>
 <translation id="4876805738539874299">Maximum SSL version enabled</translation>
@@ -2024,6 +2047,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       To control which websites are allowed to run Flash, see the 'DefaultPluginsSetting', 'PluginsAllowedForURLs' and 'PluginsBlockedForURLs' policies.
 
       If this setting is disabled or not set, Flash content from other origins or small content might be blocked.</translation>
+<translation id="6532769014584932288">Allow wake locks</translation>
 <translation id="653608967792832033">Specifies the length of time without user input after which the screen is locked when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> locks the screen.
@@ -2329,6 +2353,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="7167436895080860385">Allow users to show passwords in Password Manager (deprecated)</translation>
 <translation id="7173856672248996428">Ephemeral profile</translation>
 <translation id="717630378807352957">Allow all printers from the configuration file.</translation>
+<translation id="7176721759719212761">Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API and by ARC apps.
+
+          If this policy is set to true or left not set, screen wake locks will be honoured for power management, unless AllowWakeLocks is set to false.
+
+          If this policy is set to false, screen wake lock requests will be demoted to system wake lock requests.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
@@ -2342,6 +2371,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Automatic playback is only allowed for domains explicitly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> policy. If you want to enabled automatic playback for all sites, consider adding http://* and https://* to this list.
 
           If this policy is left not set, the user will be able to change this setting manually.</translation>
+<translation id="7229975860249300121">Contains a regular expression which is used to determine which Google accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME" /> (i.e. the account that is chosen during the Sync opt-in flow).
+
+      An appropriate error is displayed if a user tries to set a browser primary account with a username that does not match this pattern.
+
+      If this policy is left not set or blank, then the user can set any Google account as a browser primary account in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Set the minimum length of the lock screen PIN</translation>
 <translation id="7232816984286843471">If the policy is set to false, unaffiliated users will not be allowed to use Crostini.
 
@@ -2604,6 +2638,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
 <translation id="7763614521440615342">Show content suggestions on the New Tab page</translation>
+<translation id="7765879851993224640">Allow Smart Lock Sign-in to be used.</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="7775831859772431793">You can specify the URL of the proxy server here.
 
@@ -2717,6 +2752,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
       When this policy is not set on a managed device, the device is not allowed to run virtual machines.
       Unmanaged devices are allowed to run virtual machines.</translation>
+<translation id="8001701200415781021">Restrict which Google accounts are allowed to be set as browser primary accounts in <ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8033913082323846868">This policy is deprecated in M70, please use AutofillAddressEnabled and AutofillCreditCardEnabled instead.
 
@@ -2964,6 +3000,25 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If the policy is unset or set to true, all users are allowed to use ARC (unless ARC is disabled by other means).
 
       Changes to the policy will only be applied while ARC is not running, e.g. while Chrome OS is starting.</translation>
+<translation id="8615400197788843468">Enables <ph name="PRODUCT_NAME" />'s restricted login feature in G Suite and prevents users from changing this setting.
+
+      If you define this setting, the user will only be able to access Google
+      Apps using accounts from the specified domains (note that to allow
+      gmail.com/googlemail.com accounts, you should add 'consumer_accounts'
+      (without quotes) to the list of domains).
+
+      This setting will prevent the user from logging in, and adding a secondary
+      account, on a managed device that requires Google authentication, if that
+      account does not belong to the aforementioned list of allowed domains.
+
+      If you leave this setting empty/not configured, the user will be able to
+      access G Suite with any account.
+
+      This policy causes the X-GoogApps-Allowed-Domains header to be appended to
+      all HTTP and HTTPS requests to all google.com domains, as described in
+      https://support.google.com/a/answer/1668854.
+
+      Users cannot change or override this setting.</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.</translation>
 <translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.

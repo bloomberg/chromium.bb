@@ -1460,11 +1460,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4834526953114077364">Uporabniki, pri katerih je minilo največ časa, odkar so bili uporabljeni, in se niso prijavili v zadnjih treh mesecih, se odstranijo, dokler ni dovolj prostora</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
 <translation id="4861767323695239729">Konfiguriranje dovoljenih načinov vnosa v uporabniški seji</translation>
-<translation id="4869787217450099946">Določa, ali je dovoljeno zaklepanje preklopa zaslona iz mirovanja. Zaklepanje preklopa zaslona iz mirovanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje porabe.
-
-          Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
-
-          Če je ta pravilnik nastavljen na »False«, bodo zahteve za zaklepanje preklopa zaslona iz mirovanja prezrta.</translation>
 <translation id="487460824085252184">Samodejna selitev brez spraševanja za privolitev uporabnika.</translation>
 <translation id="4874982543810021567">Blokiranje WebUSB-ja na teh spletnih mestih</translation>
 <translation id="4876805738539874299">Najvišja omogočena različica protokola SSL</translation>

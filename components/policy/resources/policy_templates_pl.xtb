@@ -1416,11 +1416,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4834526953114077364">Najdłużej nieaktywni użytkownicy, którzy nie logowali się w ciągu ostatnich 3 miesięcy, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
 <translation id="4858735034935305895">Zezwalaj na tryb pełnoekranowy</translation>
 <translation id="4861767323695239729">Skonfiguruj metody wprowadzania dozwolone w sesji użytkownika</translation>
-<translation id="4869787217450099946">Określa, czy jest dozwolona blokada uśpienia ekranu. Blokady takie mogą być żądane przez rozszerzenia poprzez interfejs API zarządzania energią.
-
-          Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, blokada uśpienia ekranu będzie respektowana w celu zarządzania energią.
-
-          Jeśli ma ona ustawienie Fałsz, blokada uśpienia ekranu będzie ignorowana.</translation>
 <translation id="487460824085252184">Przenoś automatycznie bez pytania o zgodę użytkownika.</translation>
 <translation id="4874982543810021567">Blokuj WebUSB w tych witrynach</translation>
 <translation id="4876805738539874299">Najwyższa włączona wersja protokołu SSL</translation>

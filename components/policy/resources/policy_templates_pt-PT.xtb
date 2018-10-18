@@ -1425,11 +1425,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4834526953114077364">Os utilizadores menos utilizados recentemente que não tenham iniciado sessão nos últimos 3 meses são removidos até existir espaço livre suficiente</translation>
 <translation id="4858735034935305895">Permitir modo de ecrã inteiro</translation>
 <translation id="4861767323695239729">Configurar os métodos de introdução permitidos numa sessão de utilizador</translation>
-<translation id="4869787217450099946">Especifica se os bloqueios da ativação do ecrã são permitidos. Os bloqueios da ativação do ecrã podem ser solicitados por extensões através da API da extensão de gestão da alimentação.
-
-          Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios da ativação do ecrã serão cumpridos no que toca à gestão da alimentação.
-
-          Se esta política estiver definida como falsa, os pedidos de bloqueio da ativação do ecrã serão ignorados.</translation>
 <translation id="487460824085252184">Migrar automaticamente sem solicitar a autorização do utilizador</translation>
 <translation id="4874982543810021567">Bloquear WebUSB nestes sites</translation>
 <translation id="4876805738539874299">Versão SSL máxima ativada</translation>

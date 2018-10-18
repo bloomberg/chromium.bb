@@ -1431,11 +1431,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="4834526953114077364">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt og ikke pålogget de siste tre månedene»</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
 <translation id="4861767323695239729">Konfigurer tillatte inndatametoder i brukerøkter</translation>
-<translation id="4869787217450099946">Angir om det er tillatt med låser for skjermaktivering. Låser for skjermaktivering kan forespørres via utvidelses API-en for strømsparing.
-
-          Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.
-
-          Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
 <translation id="487460824085252184">Overfør automatisk. Ikke be om brukersamtykke.</translation>
 <translation id="4874982543810021567">Blokkér WebUSB på disse nettstedene</translation>
 <translation id="4876805738539874299">Høyeste SSL-versjon er slått på</translation>

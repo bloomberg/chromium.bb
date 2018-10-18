@@ -1438,11 +1438,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4834526953114077364">Pēdējie izmantotie lietotāji, kuri nav pieteikušies pēdējo 3 mēnešu laikā, tiek noņemti, līdz ir pietiekami daudz brīvas vietas.</translation>
 <translation id="4858735034935305895">Atļaut pilnekrāna režīmu</translation>
 <translation id="4861767323695239729">Konfigurēt lietotāja sesijā atļautās ievades metodes</translation>
-<translation id="4869787217450099946">Norāda, vai ir atļauta ekrāna aktivizēšanas bloķēšana. Izmantojot barošanas pārvaldības paplašinājuma API, ekrāna aktivizēšanas bloķēšanu var pieprasīt paplašinājumi.
-
-          Ja politikai ir iestatīta vērtība “true” vai politika nav iestatīta, barošanas pārvaldībā tiks veikta ekrāna aktivizēšanas bloķēšana.
-
-          Ja politikai ir iestatīta vērtība “false”, ekrāna aktivizēšanas bloķēšana tiks ignorēta.</translation>
 <translation id="487460824085252184">Migrē automātiski, nepieprasa lietotāja piekrišanu.</translation>
 <translation id="4874982543810021567">WebUSB bloķēšana šajās vietnēs</translation>
 <translation id="4876805738539874299">Maksimālā iespējotā SSL versija</translation>

@@ -1453,11 +1453,6 @@
 <translation id="4834526953114077364">Naudotojai, kurie jungėsi seniausiai ir kurie nebuvo prisijungę per paskutinius 3 mėnesius, šalinami, kol atsiras pakankamai laisvos vietos</translation>
 <translation id="4858735034935305895">Leisti viso ekrano režimą</translation>
 <translation id="4861767323695239729">Naudotojo sesijoje leidžiamų įvesties metodų konfigūravimas</translation>
-<translation id="4869787217450099946">Nurodoma, ar ekrano pažadinimo užraktai leidžiami. Ekrano pažadinimo užraktų užklausą gali pateikti plėtiniai, naudodami energijos tvarkymo plėtinio API.
-
-          Jei ši politika nustatyta kaip „Tiesa“ arba nenustatyta, ekrano pažadinimo užraktams leidžiama tvarkyti energiją.
-
-          Jei ši politika nustatyta kaip „Netiesa“, ekrano pažadinimo užraktų užklausų nepaisoma.</translation>
 <translation id="487460824085252184">Perkeliama automatiškai, neprašant naudotojo sutikimo.</translation>
 <translation id="4874982543810021567">„WebUSB“ blokavimas šiose svetainėse</translation>
 <translation id="4876805738539874299">Maksimali SSL versija įgalinta</translation>

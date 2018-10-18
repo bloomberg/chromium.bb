@@ -1399,11 +1399,6 @@
 <translation id="4834526953114077364">移除近期登入次數最少的使用者 (3 個月都未曾登入)，直到有足夠的可用空間</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
 <translation id="4861767323695239729">設定可在使用者工作階段中使用的輸入法</translation>
-<translation id="4869787217450099946">指定是否允許螢幕喚醒鎖定。擴充功能可透過 Power Management Extension API 要求螢幕喚醒鎖。
-
-          如果這項政策設為「True」或未設定，系統將啟用螢幕喚醒鎖，以強化電源管理效能。
-
-          如果這項政策設為「False」，則螢幕喚醒鎖要求會受到忽略。</translation>
 <translation id="487460824085252184">自動遷移，不要求使用者同意。</translation>
 <translation id="4874982543810021567">在這些網站上封鎖 WebUSB</translation>
 <translation id="4876805738539874299">已啟用 SSL 最高版本</translation>

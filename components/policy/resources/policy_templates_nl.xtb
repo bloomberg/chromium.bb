@@ -1451,11 +1451,6 @@
 <translation id="4834526953114077364">De gebruikers die het langst geleden gebruikt zijn en gedurende de laatste drie maanden niet zijn ingelogd, worden verwijderd totdat er voldoende vrije ruimte is</translation>
 <translation id="4858735034935305895">Modus voor volledig scherm toestaan</translation>
 <translation id="4861767323695239729">De toegestane invoermethoden in een gebruikerssessie configureren</translation>
-<translation id="4869787217450099946">Geeft aan of schermactiveringsvergrendeling is toegestaan. Deze kan worden aangevraagd door extensies via de API voor de stroombeheerextensie.
-
-          Als dit beleid is ingesteld als 'true' of als het niet is ingesteld, wordt schermactiveringsvergrendeling ingesteld voor stroombeheer.
-
-          Als dit beleid is ingesteld als 'false', worden verzoeken voor schermactiveringsvergrendeling genegeerd.</translation>
 <translation id="487460824085252184">Automatisch migreren, niet om toestemming van de gebruiker vragen.</translation>
 <translation id="4874982543810021567">WebUSB blokkeren op deze sites</translation>
 <translation id="4876805738539874299">Maximale SSL-versie ingeschakeld</translation>

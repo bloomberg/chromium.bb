@@ -1455,11 +1455,6 @@
 <translation id="4834526953114077364">Pengguna yang paling kurang penggunaan baru-baru ini serta tidak log masuk dalam tempoh 3 bulan yang lalu akan dialih keluar sehingga ada ruang kosong yang mencukupi</translation>
 <translation id="4858735034935305895">Benarkan mod skrin penuh</translation>
 <translation id="4861767323695239729">Konfigurasikan kaedah input yang dibenarkan dalam sesi pengguna</translation>
-<translation id="4869787217450099946">Menentukan sama ada kunci bangkit skrin dibenarkan. Kunci bangkit skrin boleh diminta oleh sambungan melalui API sambungan pengurusan kuasa.
-
-          Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, kunci bangkit skrin akan digunakan untuk pengurusan kuasa.
-
-          Jika dasar ini ditetapkan kepada palsu, permintaan kunci bangkit skrin akan diabaikan.</translation>
 <translation id="487460824085252184">Pindahkan secara automatik, jangan minta persetujuan pengguna.</translation>
 <translation id="4874982543810021567">Sekat WebUSB di tapak ini</translation>
 <translation id="4876805738539874299">Versi SSL maksimum didayakan</translation>

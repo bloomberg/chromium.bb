@@ -418,7 +418,7 @@
 <translation id="1598233202702788831">ผู้ดูแลระบบปิดใช้การอัปเดต</translation>
 <translation id="1600857548979126453">เข้าถึงแบ็คเอนด์เครื่องซ่อมแซมหน้าเว็บ</translation>
 <translation id="1601560923496285236">นำไปใช้</translation>
-<translation id="1603300902586586390">อนุญาตให้แอป Linux เปิดไฟล์ $1</translation>
+<translation id="1603300902586586390">อนุญาตให้แอป Linux เปิดไฟล์ $1 รายการ</translation>
 <translation id="1603914832182249871">(โหมดไม่ระบุตัวตน)</translation>
 <translation id="1607139524282324606">ล้างรายการ</translation>
 <translation id="1608626060424371292">ลบผู้ใช้รายนี้</translation>
@@ -3719,7 +3719,7 @@
 <translation id="656293578423618167">เส้นทางหรือชื่อของไฟล์ยาวเกินไป โปรดบันทึกด้วยชื่อที่สั้นกว่านี้หรือบันทึกลงในตำแหน่งอื่น</translation>
 <translation id="656398493051028875">กำลังลบ "<ph name="FILENAME" />"...</translation>
 <translation id="6567688344210276845">ไม่สามารถโหลดไอคอน "<ph name="ICON" />" เพื่อให้เกิดการทำงานบนหน้าเว็บ</translation>
-<translation id="6571979863037191371">ยกเลิกการเชื่อมต่อกับ Chromebook อุปกรณ์ทั้งสองจะไม่เชื่อมต่อกันโดยอัตโนมัติอีกต่อไป</translation>
+<translation id="6571979863037191371">ยกเลิกการเชื่อมต่อโทรศัพท์กับ Chromebook อุปกรณ์ทั้งสองจะไม่เชื่อมต่อกันโดยอัตโนมัติอีกต่อไป</translation>
 <translation id="657402800789773160">&amp;โหลดหน้านี้ใหม่</translation>
 <translation id="6577284282025554716">ยกเลิกการดาวน์โหลดแล้ว: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">เข้ารหัสลับรหัสผ่านที่ซิงค์ด้วยชื่อผู้ใช้และรหัสผ่าน Google ของคุณ</translation>
@@ -5218,7 +5218,7 @@
 <translation id="8846141544112579928">กำลังค้นหาแป้นพิมพ์...</translation>
 <translation id="8846319957959474018">เปิดแอปได้ง่ายๆ ด้วยบุ๊กมาร์ก</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">เมื่อคุณเชื่อมต่ออุปกรณ์ คุณยอมรับว่า Chromebook ทำสิ่งต่อไปนี้ได้</translation>
+<translation id="8848561196844274665">เมื่อเชื่อมต่ออุปกรณ์ คุณยอมรับว่า Chromebook ทำสิ่งต่อไปนี้ได้</translation>
 <translation id="8859057652521303089">เลือกภาษาที่ต้องการ:</translation>
 <translation id="8859174528519900719">เฟรมย่อย: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">สเปรดชีต Excel</translation>

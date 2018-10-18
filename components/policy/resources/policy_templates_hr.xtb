@@ -1402,11 +1402,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="4834526953114077364">Uklanjaju se korisnici koji najdulje nisu upotrebljavani, a koji se nisu prijavili u prethodna 3 mjeseca dok se ne oslobodi dovoljno prostora</translation>
 <translation id="4858735034935305895">Dopusti način punog zaslona</translation>
 <translation id="4861767323695239729">Konfiguriraj dopuštene načine unosa u korisničkoj sesiji</translation>
-<translation id="4869787217450099946">Određuje jesu li dopuštena blokiranja aktivacije zaslona. Ta blokiranja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem.
-
-          Ako je to pravilo postavljeno na točno ili ako nije postavljeno, blokiranja aktivacije zaslona primjenjivat će se radi upravljanja napajanjem.
-
-          Ako je to pravilo postavljeno na netočno, ti će se zahtjevi zanemarivati.</translation>
 <translation id="487460824085252184">Migrira automatski, bez traženja pristanka korisnika.</translation>
 <translation id="4874982543810021567">Blokiraj WebUSB na ovim web-lokacijama</translation>
 <translation id="4876805738539874299">Maksimalna verzija SSL-a omogućena</translation>

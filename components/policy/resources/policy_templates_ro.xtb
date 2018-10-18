@@ -1405,11 +1405,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4834526953114077364">Utilizatorii care nu s-au conectat în ultimele 3 luni sunt eliminați până când există suficient spațiu liber</translation>
 <translation id="4858735034935305895">Activează modul ecran complet</translation>
 <translation id="4861767323695239729">Configurează metodele de introducere a textului permise într-o sesiune a utilizatorului</translation>
-<translation id="4869787217450099946">Specifică dacă este permisă blocarea activării ecranului. Blocarea activării ecranului poate fi solicitată de extensii prin intermediul API-ului pentru extensiile de gestionare a consumului de energie.
-
-          Dacă această politică este activată sau nu este configurată, se va bloca activarea ecranului pentru gestionarea consumului de energie.
-
-          Dacă această politică este dezactivată, solicitările de blocare a activării ecranului vor fi ignorate.</translation>
 <translation id="487460824085252184">Migrează automat, nu cere consimțământul utilizatorului.</translation>
 <translation id="4874982543810021567">Blochează WebUSB de pe aceste site-uri</translation>
 <translation id="4876805738539874299">Versiunea maximă SSL a fost activată</translation>

@@ -1409,11 +1409,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4834526953114077364">A legrégebben használt, az utóbbi 3 hónapban nem bejelentkezett felhasználók eltávolítása, amíg elegendő szabad terület nem lesz</translation>
 <translation id="4858735034935305895">Teljes képernyős mód engedélyezése</translation>
 <translation id="4861767323695239729">A felhasználói munkamenetben engedélyezett beviteli módok konfigurálása</translation>
-<translation id="4869787217450099946">Meghatározza, hogy a képernyőébresztés zárolása kérhető legyen-e. A képernyőébresztés zárolására vonatkozó kérelmeket a bővítmények küldhetik az energiagazdálkodás bővítmény API-n keresztül.
-
-          Ha a házirend beállítása igaz, vagy nincs beállítva, akkor a képernyőébresztés zárolására vonatkozó kérelmeket figyelembe veszi a rendszer az energiatakarékosság érdekében.
-
-          Ha a házirend értéke hamis, a képernyőébresztés zárolására vonatkozó kérelmeket figyelmen kívül hagyja a rendszer.</translation>
 <translation id="487460824085252184">Automatikus áttelepítés, felhasználói beleegyezés kérése nélkül.</translation>
 <translation id="4874982543810021567">WebUSB letiltása ezeken a webhelyeken</translation>
 <translation id="4876805738539874299">Engedélyezi a legmagasabb SSL-verziót</translation>
@@ -2339,7 +2334,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       A házirend segítségével a rendszergazdák nyomtatókonfigurációkat
       biztosíthatnak a felhasználóknak.
 
-      A <ph name="PRINTER_DISPLAY_NAME" /> és a <ph name="PRINTER_DESCRIPTION" /> szabadon megadható karakterláncok, módosításukkal könnyíthető a nyomtatók kiválasztása. A <ph name="PRINTER_MANUFACTURER" /> és a <ph name="PRINTER_MODEL" /> a nyomtatók felhasználó általi azonosítását segíti. A nyomtató gyártóját és típusát jelzik. A <ph name="PRINTER_URI" /> olyan URL-cím, amely elérhető az ügyfélszámítógépről, és tartalmazza a következő elemeket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. Az <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha szerepel, a <ph name="ZEROCONF_DISCOVERY" /> nyomtatók duplikálásának megszüntetését segíti.
+      A <ph name="PRINTER_DISPLAY_NAME" /> és a <ph name="PRINTER_DESCRIPTION" /> szabadon megadható karakterláncok, módosításukkal könnyíthető a nyomtatók kiválasztása. A <ph name="PRINTER_MANUFACTURER" /> és a <ph name="PRINTER_MODEL" /> a nyomtatók felhasználó általi azonosítását segíti. A nyomtató gyártóját és típusát jelzik. A <ph name="PRINTER_URI" /> olyan URL-cím, amely elérhető az ügyfélszámítógépről, és tartalmazza a következő elemeket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. Az <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha meg van adva, a <ph name="ZEROCONF_DISCOVERY" /> nyomtatók duplikálásának megszüntetését segíti.
 
       Az <ph name="PRINTER_EFFECTIVE_MODEL" /> mező értékének <ph name="PRODUCT_NAME" /> által támogatott nyomtatót azonosító karakterlánccal kell egyeznie. Ezen a karakterláncon alapszik a nyomtatóhoz tartozó megfelelő PPD azonosítása és telepítése. További információ: https://support.google.com/chrome?p=noncloudprint.
 

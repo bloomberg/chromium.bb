@@ -1456,11 +1456,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4834526953114077364">Eliminar usuarios utilizados hace más tiempo que no hayan iniciado sesión en los tres últimos meses hasta que haya suficiente espacio libre</translation>
 <translation id="4858735034935305895">Permitir modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de introducción admitidos en una sesión de usuario</translation>
-<translation id="4869787217450099946">Especifica si se permiten los bloqueos de activación de pantalla. Los bloqueos de activación de pantalla pueden solicitarlos las extensiones a través de la API de extensión de administración de energía.
-
-          Si se utiliza el valor True para esta política o no se establece la política, los bloqueos de activación de pantalla serán válidos para la administración de energía.
-
-          Si se utiliza el valor False, se ignorarán las solicitudes de bloqueo de activación de pantalla.</translation>
 <translation id="487460824085252184">Migrar automáticamente sin solicitar el consentimiento de los usuarios.</translation>
 <translation id="4874982543810021567">Bloquear WebUSB en estos sitios web</translation>
 <translation id="4876805738539874299">Versión máxima de SSL habilitada</translation>

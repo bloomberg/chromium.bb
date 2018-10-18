@@ -1403,11 +1403,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4834526953114077364">Brugere, der ikke har logget ind i løbet af de seneste tre måneder, fjernes, indtil der er frigjort tilstrækkeligt med plads.</translation>
 <translation id="4858735034935305895">Tillad fuldskærmstilstand</translation>
 <translation id="4861767323695239729">Konfigurer tilladte indtastningsmetoder i en brugersession</translation>
-<translation id="4869787217450099946">Angiver om aktiveringslåse for skærm er tilladt. Der kan anmodes om aktiveringslåse vha. Power Management Extension API.
-
-          Hvis denne politik er angivet til sand eller ikke er angivet, indfries aktiveringslåse for skærm med strømstyring.
-
-          Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
 <translation id="487460824085252184">Migrer automatisk uden at bede om brugerens samtykke.</translation>
 <translation id="4874982543810021567">Bloker WebUSB på disse websites</translation>
 <translation id="4876805738539874299">Maksimalversion af SSL er aktiveret</translation>

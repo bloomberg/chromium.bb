@@ -1391,11 +1391,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4834526953114077364">Els usuaris utilitzats fa més temps i que no s'hagin utilitzat per iniciar la sessió en els últims tres mesos s'eliminen fins que hi hagi prou espai lliure.</translation>
 <translation id="4858735034935305895">Permet el mode de pantalla completa</translation>
 <translation id="4861767323695239729">Configura els mètodes d'entrada permesos en una sessió d'usuari</translation>
-<translation id="4869787217450099946">Especifica si es permeten els wake locks de la pantalla. Les extensions poden sol·licitar wake locks de la pantalla a través de l'API de l'extensió de gestió de l'alimentació.
-
-          Si aquesta aplicació es defineix com a vertadera o no es defineix, es compliran els wake locks de la pantalla per a la gestió d'alimentació.
-
-          Si es defineix com a falsa, les sol·licituds de wake lock de la pantalla es rebutjaran.</translation>
 <translation id="487460824085252184">Migra les dades automàticament sense demanar el consentiment de l'usuari.</translation>
 <translation id="4874982543810021567">Bloqueja WebUSB en aquests llocs web</translation>
 <translation id="4876805738539874299">Versió SSL màxima activada</translation>
