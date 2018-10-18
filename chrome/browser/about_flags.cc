@@ -4468,6 +4468,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaSessionAshMediaKeysDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMediaSessionAccelerators)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-blink-heap-unified-garbage-collection",
+     flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionName,
+     flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionDescription,
+     kOsAll, FEATURE_VALUE_TYPE(features::kBlinkHeapUnifiedGarbageCollection)},
+
 };
 
 class FlagsStateSingleton {
