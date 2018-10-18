@@ -2393,6 +2393,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  site_config.AddTemplate(
+      'cq_luci_slave',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      build_affinity=True,
+      luci_builder=config_lib.LUCI_BUILDER_CQ,
+  )
+
+
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
@@ -2584,18 +2592,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
   ])
 
-  _paladin_swarming = frozenset([
-      'amd64-generic',
-      'arm-generic',
-      'bob',
-      'elm',
-      'link',
-      'moblab-generic-vm',
-      'nyan_blaze',
-      'tael',
-      'tatl',
-  ])
-
   ### Master paladin (CQ builder).
   master_config = site_config.Add(
       'master-paladin',
@@ -2715,21 +2711,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       customizations.update(prebuilts=constants.PUBLIC)
 
     if board in _paladin_active:
-      if base_config.get('internal'):
-        customizations.update(active_waterfall=waterfall.WATERFALL_INTERNAL)
-      else:
-        customizations.update(active_waterfall=waterfall.WATERFALL_EXTERNAL)
+      customizations.update(
+          site_config.templates.cq_luci_slave,
+      )
 
     if board in _lakitu_boards:
       customizations.update(
           site_config.templates.lakitu_paladin_test_customizations)
-
-    if board in _paladin_swarming:
-      customizations.update(
-          active_waterfall=waterfall.WATERFALL_SWARMING,
-          build_affinity=True,
-          luci_builder=config_lib.LUCI_BUILDER_CQ,
-      )
 
     config = site_config.Add(
         config_name,
@@ -2816,8 +2804,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           'chell-nowithdebug-paladin',
           site_config.templates.paladin,
           site_config.templates.internal_nowithdebug_paladin,
+          site_config.templates.cq_luci_slave,
           boards=['chell'],
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ),
 
       site_config.Add(
@@ -2825,13 +2813,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.paladin,
           site_config.templates.internal_paladin,
           site_config.templates.no_hwtest_builder,
+          site_config.templates.cq_luci_slave,
           boards=['reef'],
           build_before_patching=True,
           prebuilts=False,
           compilecheck=True,
           unittests=False,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ),
   ])
 
@@ -2844,6 +2832,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.paladin,
           site_config.templates.no_hwtest_builder,
+          site_config.templates.cq_luci_slave,
           board_replace=True,
           chrome_sdk=False,
           compilecheck=True,
@@ -2853,7 +2842,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           unittests=False,
           upload_hw_test_artifacts=False,
           vm_tests=[],
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
 

@@ -18,7 +18,6 @@ from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failure_message_lib
 from chromite.lib import metrics
-from chromite.lib import tree_status
 
 
 BUILD_STATUS_URL = (
@@ -398,7 +397,7 @@ class SlaveBuilderStatus(object):
         return constants.BUILDER_STATUS_INFLIGHT
 
   # TODO(nxia): Buildbucket response returns luci-milo instead buildbot urls.
-  def _GetDashboardUrl(self, build_config, cidb_info_dict,
+  def _GetDashboardUrl(self, build_config, _cidb_info_dict,
                        buildbucket_info_dict):
     """Get dashboard url of a given build.
 
@@ -413,15 +412,7 @@ class SlaveBuilderStatus(object):
       Dashboard url of the given build. None if no entry found for this given
       build in CIDB and buildbucket_info_dict is None.
     """
-    site_config = config_lib.GetConfig()
-    if build_config in cidb_info_dict:
-      build_number = cidb_info_dict[build_config].build_number
-
-      return tree_status.ConstructDashboardURL(
-          site_config[build_config].active_waterfall,
-          build_config,
-          build_number)
-    elif buildbucket_info_dict is not None:
+    if buildbucket_info_dict is not None:
       # If no entry found in CIDB, get the buildbot url from Buildbucket.
       return buildbucket_info_dict[build_config].url
 
