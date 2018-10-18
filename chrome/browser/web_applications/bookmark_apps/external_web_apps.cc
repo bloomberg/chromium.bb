@@ -93,6 +93,7 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
 
   for (base::FilePath file = json_files.Next(); !file.empty();
        file = json_files.Next()) {
+    LOG(ERROR) << "Processing " << file;
     if (!file.MatchesExtension(extension)) {
       continue;
     }
@@ -103,11 +104,11 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
     std::unique_ptr<base::Value> value =
         deserializer.Deserialize(nullptr, &error_msg);
     if (!value) {
-      VLOG(2) << file.value() << " was not valid JSON: " << error_msg;
+      LOG(ERROR) << file.value() << " was not valid JSON: " << error_msg;
       continue;
     }
     if (value->type() != base::Value::Type::DICTIONARY) {
-      VLOG(2) << file.value() << " was not a dictionary as the top level";
+      LOG(ERROR) << file.value() << " was not a dictionary as the top level";
       continue;
     }
     std::unique_ptr<base::DictionaryValue> dict_value =
@@ -115,32 +116,37 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
 
     std::string feature_name;
     if (dict_value->GetString(kFeatureName, &feature_name)) {
-      if (!IsFeatureEnabled(feature_name))
+      LOG(ERROR) << file.value() << " checking feature " << feature_name;
+      if (!IsFeatureEnabled(feature_name)) {
+        LOG(ERROR) << file.value() << " feature not enabled";
         continue;
+      }
     }
 
     std::string app_url_str;
     if (!dict_value->GetString(kAppUrl, &app_url_str) || app_url_str.empty()) {
-      VLOG(2) << file.value() << " had an invalid " << kAppUrl;
+      LOG(ERROR) << file.value() << " had an invalid " << kAppUrl;
       continue;
     }
     GURL app_url(app_url_str);
     if (!app_url.is_valid()) {
-      VLOG(2) << file.value() << " had an invalid " << kAppUrl;
+      LOG(ERROR) << file.value() << " had an invalid " << kAppUrl;
       continue;
     }
+
+    LOG(ERROR) << "Launch URL is " << app_url.spec();
 
     bool create_shortcuts = false;
     if (dict_value->HasKey(kCreateShortcuts) &&
         !dict_value->GetBoolean(kCreateShortcuts, &create_shortcuts)) {
-      VLOG(2) << file.value() << " had an invalid " << kCreateShortcuts;
+      LOG(ERROR) << file.value() << " had an invalid " << kCreateShortcuts;
       continue;
     }
 
     auto launch_container = web_app::LaunchContainer::kTab;
     std::string launch_container_str;
     if (!dict_value->GetString(kLaunchContainer, &launch_container_str)) {
-      VLOG(2) << file.value() << " had an invalid " << kLaunchContainer;
+      LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
     if (launch_container_str == kLaunchContainerTab) {
@@ -148,7 +154,7 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
     } else if (launch_container_str == kLaunchContainerWindow) {
       launch_container = web_app::LaunchContainer::kWindow;
     } else {
-      VLOG(2) << file.value() << " had an invalid " << kLaunchContainer;
+      LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
 
@@ -167,6 +173,7 @@ base::FilePath DetermineScanDir(Profile* profile) {
   // chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS is only defined for OS_LINUX,
   // which includes OS_CHROMEOS.
 
+  LOG(ERROR) << "Determining directory";
   if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     // For manual testing, you can change s/STANDALONE/USER/, as writing to
     // "$HOME/.config/chromium/test-user/.config/chromium/External
@@ -197,6 +204,7 @@ void ScanForExternalWebApps(Profile* profile,
                             ScanForExternalWebAppsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::FilePath dir = DetermineScanDir(profile);
+  LOG(ERROR) << "Scanning " << dir;
   if (dir.empty()) {
     std::move(callback).Run(std::vector<web_app::PendingAppManager::AppInfo>());
     return;
