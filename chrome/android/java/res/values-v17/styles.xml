@@ -207,9 +207,6 @@
         <item name="android:paddingEnd">8dp</item>
     </style>
     <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
-    <style name="DeprecationWarningPreferenceTheme" parent="PreferencesTheme">
-        <item name="android:textAppearance">@style/BlackBodyDefault</item>
-    </style>
     <style name="PreferenceSpinnerItem">
         <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
