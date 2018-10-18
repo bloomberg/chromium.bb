@@ -631,4 +631,36 @@ TEST_F(CrostiniManagerRestartTest, MountForTerminaPenguin) {
   chromeos::disks::DiskMountManager::Shutdown();
 }
 
+TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
+  run_loop()->Run();
+
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  // Mount only performed for termina/penguin.
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(1, restart_crostini_callback_count_);
+
+  EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
+  EXPECT_TRUE(crostini_manager()->IsContainerRunning(kVmName, kContainerName));
+
+  // Now call StartTerminaVm again. The default response state is "STARTING",
+  // so no container should be considered running.
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  base::RunLoop run_loop2;
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
+      base::BindOnce(&CrostiniManagerTest::StartTerminaVmSuccessCallback,
+                     base::Unretained(this), run_loop2.QuitClosure()));
+  run_loop2.Run();
+  EXPECT_TRUE(crostini_manager()->IsVmRunning(kVmName));
+  EXPECT_FALSE(crostini_manager()->IsContainerRunning(kVmName, kContainerName));
+}
+
 }  // namespace crostini

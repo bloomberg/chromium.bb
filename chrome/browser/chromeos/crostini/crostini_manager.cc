@@ -236,7 +236,7 @@ class CrostiniManager::CrostiniRestarter
     if (is_aborted_)
       return;
     if (result != CrostiniResult::SUCCESS) {
-      LOG(ERROR) << "Failed to Start Termina VM.";
+      LOG(ERROR) << "Failed to Create Lxd Container.";
       FinishRestart(result);
       return;
     }
@@ -251,7 +251,7 @@ class CrostiniManager::CrostiniRestarter
     if (is_aborted_)
       return;
     if (result != CrostiniResult::SUCCESS) {
-      LOG(ERROR) << "Failed to Start Termina VM.";
+      LOG(ERROR) << "Failed to Start Lxd Container.";
       FinishRestart(result);
       return;
     }
@@ -270,7 +270,7 @@ class CrostiniManager::CrostiniRestarter
     if (is_aborted_)
       return;
     if (result != CrostiniResult::SUCCESS) {
-      LOG(ERROR) << "Failed to start container.";
+      LOG(ERROR) << "Failed to set up Lxd Container user.";
       FinishRestart(result);
       return;
     }
@@ -1230,6 +1230,9 @@ void CrostiniManager::OnStartTerminaVm(
   if (response.status() == vm_tools::concierge::VM_STATUS_FAILURE ||
       response.status() == vm_tools::concierge::VM_STATUS_UNKNOWN) {
     LOG(ERROR) << "Failed to start VM: " << response.failure_reason();
+    // If we thought vms and containers were running before, they aren't now.
+    running_vms_.erase(vm_name);
+    running_containers_.erase(vm_name);
     std::move(callback).Run(CrostiniResult::VM_START_FAILED);
     return;
   }
@@ -1249,6 +1252,9 @@ void CrostiniManager::OnStartTerminaVm(
           << vm_name;
   running_vms_[vm_name] =
       std::make_pair(VmState::STARTING, std::move(response.vm_info()));
+  // If we thought a container was running for this VM, we're wrong. This can
+  // happen if the vm was formerly running, then stopped via crosh.
+  running_containers_.erase(vm_name);
 
   tremplin_started_callbacks_.emplace(
       vm_name, base::BindOnce(&CrostiniManager::OnStartTremplin,
