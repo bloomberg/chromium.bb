@@ -85,7 +85,7 @@ constexpr int kOverflowButtonSize = 32;
 constexpr int kOverflowButtonCornerRadiusOldUi = 2;
 
 // The distance between the edge of the shelf and the status indicators.
-constexpr int kStatusIndicatorOffsetFromShelfEdge = 2;
+constexpr int kStatusIndicatorOffsetFromShelfEdge = 1;
 
 // The direction of the focus cycling.
 enum CycleDirection { CYCLE_FORWARD, CYCLE_BACKWARD };
