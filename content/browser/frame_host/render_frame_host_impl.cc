@@ -2297,13 +2297,9 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
         static_cast<base::TerminationStatus>(status);
   }
 
-  // Reset frame tree state associated with this process.  This must happen
-  // before RenderViewTerminated because observers expect the subframes of any
-  // affected frames to be cleared first.  Only do this if this is the current
-  // RenderFrameHost; if the process goes away for a pending delete or
-  // speculative RFH, we shouldn't remove subframes from the current RFH.
-  if (IsCurrent())
-    frame_tree_node_->ResetForNewProcess();
+  // When a frame's process dies, its RenderFrame no longer exists, which means
+  // that its child frames must be cleaned up as well.
+  ResetChildren();
 
   // Reset state for the current RenderFrameHost once the FrameTreeNode has been
   // reset.

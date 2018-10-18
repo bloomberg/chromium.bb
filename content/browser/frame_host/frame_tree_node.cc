@@ -176,10 +176,6 @@ bool FrameTreeNode::IsMainFrame() const {
   return frame_tree_->root() == this;
 }
 
-void FrameTreeNode::ResetForNewProcess() {
-  current_frame_host()->ResetChildren();
-}
-
 void FrameTreeNode::ResetForNavigation() {
   // Discard any CSP headers from the previous document.
   replication_state_.accumulated_csp_headers.clear();
