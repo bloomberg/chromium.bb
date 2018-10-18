@@ -220,14 +220,14 @@ bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
     QUIC_BUG << "Encryption not established so no outgoing stream created.";
     return false;
   }
-  if (!GetQuicFlag(FLAGS_quic_use_common_stream_check)) {
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check)) {
     if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
       VLOG(1) << "No more streams should be created. "
               << "Already " << GetNumOpenOutgoingStreams() << " open.";
       return false;
     }
   }
-  QUIC_FLAG_COUNT_N(quic_use_common_stream_check, 2, 2);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_common_stream_check, 2, 2);
   return CanOpenNextOutgoingStream();
 }
 

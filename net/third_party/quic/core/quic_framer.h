@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
@@ -364,6 +365,24 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   size_t BuildConnectivityProbingPacket(const QuicPacketHeader& header,
                                         char* buffer,
                                         size_t packet_length);
+
+  // Serialize a probing packet that uses IETF QUIC's PATH CHALLENGE frame. Also
+  // fills the packet with padding.
+  size_t BuildPaddedPathChallengePacket(const QuicPacketHeader& header,
+                                        char* buffer,
+                                        size_t packet_length,
+                                        QuicPathFrameBuffer* payload,
+                                        QuicRandom* randomizer);
+
+  // Serialize a probing response packet that uses IETF QUIC's PATH RESPONSE
+  // frame. Also fills the packet with padding if |is_padded| is
+  // true. |payloads| is always emptied, even if the packet can not be
+  // successfully built.
+  size_t BuildPathResponsePacket(const QuicPacketHeader& header,
+                                 char* buffer,
+                                 size_t packet_length,
+                                 const QuicDeque<QuicPathFrameBuffer>& payloads,
+                                 const bool is_padded);
 
   // Returns a new public reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(

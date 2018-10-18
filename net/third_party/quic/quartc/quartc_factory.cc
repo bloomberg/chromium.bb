@@ -5,6 +5,7 @@
 #include "net/third_party/quic/quartc/quartc_factory.h"
 
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/platform/api/quic_goog_cc_sender.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/quartc/quartc_session.h"
@@ -55,8 +56,31 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // Enable time-based loss detection.
   copt.push_back(kTIME);
 
-  // Use BBR for congestion control.
-  copt.push_back(kTBBR);
+  switch (quartc_session_config.congestion_control_type) {
+    case kBBR:
+      copt.push_back(kTBBR);
+      break;
+    case kGoogCC: {
+      QuicSentPacketManager& sent_packet_manager =
+          quic_connection->sent_packet_manager();
+      SendAlgorithmInterface* sender = CreateGoogCcSender(
+          clock_, sent_packet_manager.GetRttStats(),
+          &sent_packet_manager.unacked_packets(), GetRandomGenerator(),
+          /*stats=*/nullptr, sent_packet_manager.initial_congestion_window(),
+          kDefaultMaxCongestionWindowPackets);
+      sent_packet_manager.SetSendAlgorithm(sender);
+      break;
+    }
+    case kCubicBytes:
+      QUIC_LOG(FATAL) << "kCubicBytes is not supported";
+      break;
+    case kRenoBytes:
+      QUIC_LOG(FATAL) << "kRenoBytes is not supported";
+      break;
+    case kPCC:
+      QUIC_LOG(FATAL) << "kPCC is not supported";
+      break;
+  }
 
   // Note: flag settings have no effect for Exoblaze builds since
   // SetQuicReloadableFlag() gets stubbed out.

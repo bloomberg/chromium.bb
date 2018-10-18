@@ -244,6 +244,30 @@ class TestSession : public QuicSession {
 };
 
 class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
+ public:
+  // CheckMultiPathResponse validates that a written packet
+  // contains both expected path responses.
+  WriteResult CheckMultiPathResponse(const char* buffer,
+                                     size_t buf_len,
+                                     const QuicIpAddress& self_address,
+                                     const QuicSocketAddress& peer_address,
+                                     PerPacketOptions* options) {
+    QuicEncryptedPacket packet(buffer, buf_len);
+    // The packet should look like:
+    //  fd513039 39052a00  00000000 00000000  *.Q099.*.........*
+    //  0001fe62 a4c3d138  0ba93f42 82ec0f00  *...b...8..?B....*
+    //  01020304 0506070f  08090a0b 0c0d0e0f  *...
+    // The two PATH RESPONSE frames should be at offset
+    // 30 in the packet. We expect to see
+    //   0x0f 0 1 2 3 4 5 6 7
+    // and
+    //   0x0f 8 9 10 11 12 13 14 15
+    const unsigned char expected[] = {0x0f, 0, 1, 2,  3,  4,  5,  6,  7,
+                                      0x0f, 8, 9, 10, 11, 12, 13, 14, 15};
+    EXPECT_EQ(0, memcmp((buffer + 30), expected, sizeof(expected)));
+    return WriteResult(WRITE_STATUS_OK, 0);
+  }
+
  protected:
   explicit QuicSessionTestBase(Perspective perspective)
       : connection_(
@@ -788,7 +812,7 @@ TEST_P(QuicSessionTestServer, InvalidGoAway) {
 
 // Test that server session will send a connectivity probe in response to a
 // connectivity probe on the same path.
-TEST_P(QuicSessionTestServer, ServerReplyToConnecitivityProbe) {
+TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbe) {
   QuicSocketAddress old_peer_address =
       QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort);
   EXPECT_EQ(old_peer_address, session_.peer_address());
@@ -800,14 +824,51 @@ TEST_P(QuicSessionTestServer, ServerReplyToConnecitivityProbe) {
       QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, WritePacket(_, _, _, new_peer_address, _))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
-  EXPECT_CALL(*connection_,
-              SendConnectivityProbingPacket(nullptr, new_peer_address))
-      .WillOnce(
-          Invoke(connection_,
-                 &MockQuicConnection::ReallySendConnectivityProbingPacket));
+  EXPECT_CALL(*connection_, SendConnectivityProbingResponsePacket(_))
+      .WillOnce(Invoke(
+          connection_,
+          &MockQuicConnection::ReallySendConnectivityProbingResponsePacket));
+  if (transport_version() == QUIC_VERSION_99) {
+    // Need to explicitly do this to emulate the reception of a PathChallenge,
+    // which stores its payload for use in generating the response.
+    connection_->OnPathChallengeFrame(
+        QuicPathChallengeFrame(0, {{0, 1, 2, 3, 4, 5, 6, 7}}));
+  }
   session_.OnConnectivityProbeReceived(session_.self_address(),
                                        new_peer_address);
   EXPECT_EQ(old_peer_address, session_.peer_address());
+}
+
+// Same as above, but check that if there are two PATH_CHALLENGE frames in the
+// packet, the response has both of them AND we do not do migration.  This for
+// V99 only.
+TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbes) {
+  if (transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+  QuicSocketAddress old_peer_address =
+      QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort);
+  EXPECT_EQ(old_peer_address, session_.peer_address());
+
+  MockPacketWriter* writer = static_cast<MockPacketWriter*>(
+      QuicConnectionPeer::GetWriter(session_.connection()));
+  // CheckMultiPathResponse validates that the written packet
+  // contains both path responses.
+  EXPECT_CALL(*writer, WritePacket(_, _, _, old_peer_address, _))
+      .WillOnce(Invoke(this, &QuicSessionTestServer::CheckMultiPathResponse));
+
+  EXPECT_CALL(*connection_, SendConnectivityProbingResponsePacket(_))
+      .WillOnce(Invoke(
+          connection_,
+          &MockQuicConnection::ReallySendConnectivityProbingResponsePacket));
+  // Need to explicitly do this to emulate the reception of a PathChallenge,
+  // which stores its payload for use in generating the response.
+  connection_->OnPathChallengeFrame(
+      QuicPathChallengeFrame(0, {{0, 1, 2, 3, 4, 5, 6, 7}}));
+  connection_->OnPathChallengeFrame(
+      QuicPathChallengeFrame(0, {{8, 9, 10, 11, 12, 13, 14, 15}}));
+  session_.OnConnectivityProbeReceived(session_.self_address(),
+                                       old_peer_address);
 }
 
 TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {

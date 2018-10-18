@@ -142,13 +142,18 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
     }
     case 0x3: {  // CANCEL_PUSH
       // TODO(rch): Handle partial delivery.
-      CancelPushFrame frame;
-      if (!reader->ReadVarInt62(&frame.push_id)) {
-        RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");
-        return;
+      BufferFramePayload(reader);
+      if (remaining_frame_length_ == 0) {
+        CancelPushFrame frame;
+        QuicDataReader reader(buffer_.data(), current_frame_length_,
+                              NETWORK_BYTE_ORDER);
+        if (!reader.ReadVarInt62(&frame.push_id)) {
+          RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");
+          return;
+        }
+        visitor_->OnCancelPushFrame(frame);
+        state_ = STATE_READING_FRAME_LENGTH;
       }
-      visitor_->OnCancelPushFrame(frame);
-      state_ = STATE_READING_FRAME_LENGTH;
       return;
     }
     case 0x4: {  // SETTINGS
@@ -219,13 +224,18 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
 
     case 0xD: {  // MAX_PUSH_ID
       // TODO(rch): Handle partial delivery.
-      MaxPushIdFrame frame;
-      if (!reader->ReadVarInt62(&frame.push_id)) {
-        RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");
-        return;
+      BufferFramePayload(reader);
+      if (remaining_frame_length_ == 0) {
+        QuicDataReader reader(buffer_.data(), current_frame_length_,
+                              NETWORK_BYTE_ORDER);
+        MaxPushIdFrame frame;
+        if (!reader.ReadVarInt62(&frame.push_id)) {
+          RaiseError(QUIC_INTERNAL_ERROR, "Unable to read push_id");
+          return;
+        }
+        visitor_->OnMaxPushIdFrame(frame);
+        state_ = STATE_READING_FRAME_LENGTH;
       }
-      visitor_->OnMaxPushIdFrame(frame);
-      state_ = STATE_READING_FRAME_LENGTH;
       return;
     }
     // Reserved frame types.

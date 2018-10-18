@@ -575,6 +575,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // The largest stream id in |static_stream_map_|.
   QuicStreamId largest_static_stream_id_;
 
+  // Cached value of whether the crypto handshake has been confirmed.
+  bool is_handshake_confirmed_;
+
   // Whether a GoAway has been sent.
   bool goaway_sent_;
 

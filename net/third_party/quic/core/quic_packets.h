@@ -210,6 +210,16 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
                      bool owns_buffer,
                      int ttl,
                      bool ttl_valid);
+  QuicReceivedPacket(const char* buffer,
+                     size_t length,
+                     QuicTime receipt_time,
+                     bool owns_buffer,
+                     int ttl,
+                     bool ttl_valid,
+                     char* packet_headers,
+                     size_t headers_length,
+                     bool owns_header_buffer);
+  ~QuicReceivedPacket();
   QuicReceivedPacket(const QuicReceivedPacket&) = delete;
   QuicReceivedPacket& operator=(const QuicReceivedPacket&) = delete;
 
@@ -222,6 +232,12 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
   // This is the TTL of the packet, assuming ttl_vaild_ is true.
   int ttl() const { return ttl_; }
 
+  // Start of packet headers.
+  char* packet_headers() const { return packet_headers_; }
+
+  // Length of packet headers.
+  int headers_length() const { return headers_length_; }
+
   // By default, gtest prints the raw bytes of an object. The bool data
   // member (in the base class QuicData) causes this object to have padding
   // bytes, which causes the default gtest object printer to read
@@ -233,6 +249,12 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
  private:
   const QuicTime receipt_time_;
   int ttl_;
+  // Points to the start of packet headers.
+  char* packet_headers_;
+  // Length of packet headers.
+  int headers_length_;
+  // Whether owns the buffer for packet headers.
+  bool owns_header_buffer_;
 };
 
 struct QUIC_EXPORT_PRIVATE SerializedPacket {

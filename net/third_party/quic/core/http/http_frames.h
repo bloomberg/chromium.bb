@@ -9,6 +9,17 @@
 
 namespace quic {
 
+enum class HttpFrameType : uint8_t {
+  DATA = 0x0,
+  HEADERS = 0x1,
+  PRIORITY = 0X2,
+  CANCEL_PUSH = 0X3,
+  SETTINGS = 0x4,
+  PUSH_PROMISE = 0x5,
+  GOAWAY = 0x7,
+  MAX_PUSH_ID = 0xD
+};
+
 // 4.2.2.  DATA
 //
 //   DATA frames (type=0x0) convey arbitrary, variable-length sequences of
@@ -75,7 +86,7 @@ struct CancelPushFrame {
 //   on peer behavior
 
 using SettingsId = uint16_t;
-using SettingsMap = std::map<SettingsId, uint32_t>;
+using SettingsMap = std::map<SettingsId, uint64_t>;
 
 struct SettingsFrame {
   SettingsMap values;

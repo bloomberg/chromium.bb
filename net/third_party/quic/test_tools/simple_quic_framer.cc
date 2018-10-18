@@ -226,6 +226,12 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const std::vector<QuicPaddingFrame>& padding_frames() const {
     return padding_frames_;
   }
+  const std::vector<QuicPathChallengeFrame>& path_challenge_frames() const {
+    return path_challenge_frames_;
+  }
+  const std::vector<QuicPathResponseFrame>& path_response_frames() const {
+    return path_response_frames_;
+  }
   const QuicVersionNegotiationPacket* version_negotiation_packet() const {
     return version_negotiation_packet_.get();
   }
@@ -301,6 +307,7 @@ QuicFramer* SimpleQuicFramer::framer() {
 size_t SimpleQuicFramer::num_frames() const {
   return ack_frames().size() + goaway_frames().size() +
          rst_stream_frames().size() + stop_waiting_frames().size() +
+         path_challenge_frames().size() + path_response_frames().size() +
          stream_frames().size() + ping_frames().size() +
          connection_close_frames().size() + padding_frames().size();
 }
@@ -312,6 +319,15 @@ const std::vector<QuicAckFrame>& SimpleQuicFramer::ack_frames() const {
 const std::vector<QuicStopWaitingFrame>& SimpleQuicFramer::stop_waiting_frames()
     const {
   return visitor_->stop_waiting_frames();
+}
+
+const std::vector<QuicPathChallengeFrame>&
+SimpleQuicFramer::path_challenge_frames() const {
+  return visitor_->path_challenge_frames();
+}
+const std::vector<QuicPathResponseFrame>&
+SimpleQuicFramer::path_response_frames() const {
+  return visitor_->path_response_frames();
 }
 
 const std::vector<QuicPingFrame>& SimpleQuicFramer::ping_frames() const {

@@ -983,14 +983,25 @@ TEST_F(QuicPacketGeneratorTest, SetMaxPacketLength_MidpacketFlush) {
 TEST_F(QuicPacketGeneratorTest, GenerateConnectivityProbingPacket) {
   delegate_.SetCanWriteAnything();
 
-  OwningSerializedPacketPointer probing_packet(
-      generator_.SerializeConnectivityProbingPacket());
+  OwningSerializedPacketPointer probing_packet;
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    QuicPathFrameBuffer payload = {
+        {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xfe}};
+    probing_packet =
+        generator_.SerializePathChallengeConnectivityProbingPacket(&payload);
+  } else {
+    probing_packet = generator_.SerializeConnectivityProbingPacket();
+  }
 
   ASSERT_TRUE(simple_framer_.ProcessPacket(QuicEncryptedPacket(
       probing_packet->encrypted_buffer, probing_packet->encrypted_length)));
 
   EXPECT_EQ(2u, simple_framer_.num_frames());
-  EXPECT_EQ(1u, simple_framer_.ping_frames().size());
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    EXPECT_EQ(1u, simple_framer_.path_challenge_frames().size());
+  } else {
+    EXPECT_EQ(1u, simple_framer_.ping_frames().size());
+  }
   EXPECT_EQ(1u, simple_framer_.padding_frames().size());
 }
 

@@ -194,6 +194,8 @@ size_t QpackDecoder::ProgressiveDecoder::DoVarintResume(QuicStringPiece data) {
 
 void QpackDecoder::ProgressiveDecoder::DoVarintDone() {
   if (literal_name_) {
+    // TODO(bnc): Impose a sensible limit on length to avoid memory exhaustion
+    // attacks.
     name_length_ = varint_decoder_.value();
     name_.clear();
     name_.reserve(name_length_);
@@ -308,6 +310,8 @@ size_t QpackDecoder::ProgressiveDecoder::DoValueLengthResume(
 
 void QpackDecoder::ProgressiveDecoder::DoValueLengthDone() {
   value_.clear();
+  // TODO(bnc): Impose a sensible limit on length to avoid memory exhaustion
+  // attacks.
   value_length_ = varint_decoder_.value();
 
   // If value is empty, skip DoReadValue() and DoDecodeValue() and jump directly

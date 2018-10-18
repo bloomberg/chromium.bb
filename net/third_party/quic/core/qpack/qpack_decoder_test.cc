@@ -122,14 +122,14 @@ TEST_P(QpackDecoderTest, NameLenTooLarge) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Encoded integer too large.")));
 
-  Decode(QuicTextUtils::HexDecode("27ffffffffff"));
+  Decode(QuicTextUtils::HexDecode("27ffffffffffffffffffff"));
 }
 
 TEST_P(QpackDecoderTest, ValueLenTooLarge) {
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(QuicStringPiece("ValueLen too large.")));
 
-  Decode(QuicTextUtils::HexDecode("23666f6f7fffffffffff"));
+  Decode(QuicTextUtils::HexDecode("23666f6f7fffffffffffffffffffff"));
 }
 
 TEST_P(QpackDecoderTest, IncompleteHeaderBlock) {
@@ -213,50 +213,38 @@ TEST_P(QpackDecoderTest, StaticTable) {
   EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":method"),
                                         QuicStringPiece("POST")));
   EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":method"),
-                                        QuicStringPiece("CONNECT")));
+                                        QuicStringPiece("TRACE")));
 
   // A header name that has a single entry with non-empty value.
   EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("accept-encoding"),
-                                        QuicStringPiece("gzip, deflate")));
+                                        QuicStringPiece("gzip, deflate, br")));
   EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("accept-encoding"),
-                                        QuicStringPiece("brotli")));
+                                        QuicStringPiece("compress")));
   EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("accept-encoding"),
                                         QuicStringPiece("")));
 
   // A header name that has a single entry with empty value.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("cache-control"),
+  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("location"),
                                         QuicStringPiece("")));
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("cache-control"),
+  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("location"),
                                         QuicStringPiece("foo")));
 
   EXPECT_CALL(handler_, OnDecodingCompleted());
 
   Decode(QuicTextUtils::HexDecode(
-      "c2c35207434f4e4e454354d05f010662726f746c695f0100d85f0903666f6f"));
-}
-
-TEST_P(QpackDecoderTest, TooLowStaticTableIndex) {
-  // This is the first entry in the static table with index 1.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":authority"),
-                                        QuicStringPiece("")));
-
-  // Addressing entry 0 should trigger an error.
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Invalid static table index.")));
-
-  Decode(QuicTextUtils::HexDecode("c1c0"));
+      "d1dfccd45f108621e9aec2a11f5c8294e75f000554524143455f1000"));
 }
 
 TEST_P(QpackDecoderTest, TooHighStaticTableIndex) {
-  // This is the last entry in the static table with index 61.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("www-authenticate"),
-                                        QuicStringPiece("")));
+  // This is the last entry in the static table with index 98.
+  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("x-frame-options"),
+                                        QuicStringPiece("sameorigin")));
 
-  // Addressing entry 62 should trigger an error.
+  // Addressing entry 99 should trigger an error.
   EXPECT_CALL(handler_, OnDecodingErrorDetected(
                             QuicStringPiece("Invalid static table index.")));
 
-  Decode(QuicTextUtils::HexDecode("fdfe"));
+  Decode(QuicTextUtils::HexDecode("ff23ff24"));
 }
 }  // namespace
 }  // namespace test

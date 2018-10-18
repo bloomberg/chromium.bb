@@ -480,6 +480,8 @@ class MockQuicConnection : public QuicConnection {
   MOCK_METHOD2(SendWindowUpdate,
                void(QuicStreamId id, QuicStreamOffset byte_offset));
   MOCK_METHOD0(OnCanWrite, void());
+  MOCK_METHOD1(SendConnectivityProbingResponsePacket,
+               void(const QuicSocketAddress& peer_address));
   MOCK_METHOD2(SendConnectivityProbingPacket,
                bool(QuicPacketWriter* probing_writer,
                     const QuicSocketAddress& peer_address));
@@ -516,6 +518,12 @@ class MockQuicConnection : public QuicConnection {
     return QuicConnection::SendConnectivityProbingPacket(probing_writer,
                                                          peer_address);
   }
+
+  void ReallySendConnectivityProbingResponsePacket(
+      const QuicSocketAddress& peer_address) {
+    QuicConnection::SendConnectivityProbingResponsePacket(peer_address);
+  }
+  MOCK_METHOD1(OnPathResponseFrame, bool(const QuicPathResponseFrame&));
 };
 
 class PacketSavingConnection : public MockQuicConnection {
@@ -875,11 +883,12 @@ class MockLossAlgorithm : public LossDetectionInterface {
   ~MockLossAlgorithm() override;
 
   MOCK_CONST_METHOD0(GetLossDetectionType, LossDetectionType());
-  MOCK_METHOD5(DetectLosses,
+  MOCK_METHOD6(DetectLosses,
                void(const QuicUnackedPacketMap& unacked_packets,
                     QuicTime time,
                     const RttStats& rtt_stats,
                     QuicPacketNumber largest_recently_acked,
+                    const AckedPacketVector& packets_acked,
                     LostPacketVector* packets_lost));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
   MOCK_METHOD4(SpuriousRetransmitDetected,

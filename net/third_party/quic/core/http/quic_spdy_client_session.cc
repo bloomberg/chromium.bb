@@ -47,7 +47,7 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
   }
-  if (!GetQuicFlag(FLAGS_quic_use_common_stream_check)) {
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check)) {
     if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
       QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                       << "Already " << GetNumOpenOutgoingStreams() << " open.";
@@ -65,7 +65,7 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
                     << "Already received goaway.";
     return false;
   }
-  QUIC_FLAG_COUNT_N(quic_use_common_stream_check, 1, 2);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_common_stream_check, 1, 2);
   return CanOpenNextOutgoingStream();
 }
 
