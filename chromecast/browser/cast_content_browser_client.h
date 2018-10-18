@@ -221,6 +221,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       GURL requesting_url,
       const std::string& session_id,
       int render_process_id,
+      int render_frame_id,
       scoped_refptr<base::SequencedTaskRunner> original_runner,
       const base::Callback<void(scoped_refptr<net::X509Certificate>,
                                 scoped_refptr<net::SSLPrivateKey>)>&

@@ -613,6 +613,7 @@ void CastContentBrowserClient::SelectClientCertificate(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
           base::Unretained(this), requesting_url, session_id,
           web_contents->GetMainFrame()->GetProcess()->GetID(),
+          web_contents->GetMainFrame()->GetRoutingID(),
           base::SequencedTaskRunnerHandle::Get(),
           base::Bind(
               &content::ClientCertificateDelegate::ContinueWithCertificate,
@@ -623,6 +624,7 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
     GURL requesting_url,
     const std::string& session_id,
     int render_process_id,
+    int render_frame_id,
     scoped_refptr<base::SequencedTaskRunner> original_runner,
     const base::Callback<void(scoped_refptr<net::X509Certificate>,
                               scoped_refptr<net::SSLPrivateKey>)>&
@@ -631,7 +633,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
   CastNetworkDelegate* network_delegate =
       url_request_context_factory_->app_network_delegate();
   if (network_delegate->IsWhitelisted(requesting_url, session_id,
-                                      render_process_id, false)) {
+                                      render_process_id, render_frame_id,
+                                      false)) {
     original_runner->PostTask(
         FROM_HERE,
         base::BindOnce(continue_callback, DeviceCert(), DeviceKey()));
@@ -639,7 +642,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "
                << requesting_url.host()
-               << " with render_process_id: " << render_process_id;
+               << " with render_process_id: " << render_process_id
+               << " and render_frame_id: " << render_frame_id;
   }
   original_runner->PostTask(
       FROM_HERE, base::BindOnce(continue_callback, nullptr, nullptr));
