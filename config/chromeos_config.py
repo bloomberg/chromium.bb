@@ -2594,17 +2594,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_paladin,
       boards=[],
       master=True,
-      slave_configs=[],
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       description='Commit Queue master (all others are slaves)',
-
-      # This name should remain synced with with the name used in
-      # build_internals/masters/master.chromeos/board_config.py.
-      # TODO(mtennant): Fix this.  There should be some amount of auto-
-      # configuration in the board_config.py code.
       auto_reboot=True,  # TODO(dgarrett): Disable chroot.img stable.
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 2m interval',
   )
 
   ### Other paladins (CQ builders).

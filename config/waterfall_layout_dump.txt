@@ -1,6 +1,3 @@
-== chromeos ==
-master-paladin (gce_beefy)
-
 == chromeos_release ==
 grunt-android-pi-pre-flight-branch (gce_beefy)
 reef-android-nyc-pre-flight-branch (gce_beefy)
@@ -2062,6 +2059,7 @@ master-mst-android-pfq (gce_beefy)
 master-mst-android-pfq-tryjob (gce_beefy)
 master-nyc-android-pfq (gce_beefy)
 master-nyc-android-pfq-tryjob (gce_beefy)
+master-paladin (gce_beefy)
 master-paladin-tryjob (gce_beefy)
 master-pi-android-pfq (gce_beefy)
 master-pi-android-pfq-tryjob (gce_beefy)
