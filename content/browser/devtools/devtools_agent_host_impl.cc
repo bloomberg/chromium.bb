@@ -183,7 +183,7 @@ bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
   if (!AttachSession(session.get(), registry))
     return false;
   renderer_channel_.AttachSession(session.get());
-  sessions_.insert(session.get());
+  sessions_.push_back(session.get());
   session_by_client_[client] = std::move(session);
   if (sessions_.size() == 1)
     NotifyAttached();
@@ -240,7 +240,8 @@ void DevToolsAgentHostImpl::InnerDetachClient(DevToolsAgentHostClient* client) {
       std::move(session_by_client_[client]);
   // Make sure we dispose session prior to reporting it to the host.
   session->Dispose();
-  sessions_.erase(session.get());
+  sessions_.erase(
+      std::remove(sessions_.begin(), sessions_.end(), session.get()));
   session_by_client_.erase(client);
   DetachSession(session.get());
   DevToolsManager* manager = DevToolsManager::GetInstance();
