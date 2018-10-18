@@ -12,8 +12,16 @@ import sys
 from third_party import colorama
 
 
+# Current version of metrics recording.
+# When we add new metrics, the version number will be increased, we display the
+# user what has changed, and ask the user to agree again.
+CURRENT_VERSION = 0
+
 APP_URL = 'https://cit-cli-metrics.appspot.com'
 
+EMPTY_LINE = (
+  '*                                                   *'
+)
 NOTICE_COUNTDOWN_HEADER = (
   '*****************************************************\n'
   '*  METRICS COLLECTION WILL START IN %2d EXECUTIONS   *'
@@ -22,13 +30,22 @@ NOTICE_COLLECTION_HEADER = (
   '*****************************************************\n'
   '*      METRICS COLLECTION IS TAKING PLACE           *'
 )
+NOTICE_VERSION_CHANGE_HEADER = (
+  '*****************************************************\n'
+  '*       WE ARE COLLECTING ADDITIONAL METRICS        *'
+)
 NOTICE_FOOTER = (
-  '*                                                   *\n'
   '* For more information, and for how to disable this *\n'
   '* message, please see metrics.README.md in your     *\n'
   '* depot_tools checkout.                             *\n'
   '*****************************************************\n'
 )
+
+CHANGE_NOTICE = {
+  # No changes for version 0
+  0: '',
+}
+
 
 KNOWN_PROJECT_URLS = {
   'https://chrome-internal.googlesource.com/chrome/ios_internal',
@@ -105,9 +122,21 @@ def get_repo_timestamp(path_to_repo):
 def print_notice(countdown):
   """Print a notice to let the user know the status of metrics collection."""
   colorama.init()
-  print(colorama.Fore.RED + '\033[1m', file=sys.stderr)
+  print(colorama.Fore.RED + '\033[1m', file=sys.stderr, end='')
   if countdown:
     print(NOTICE_COUNTDOWN_HEADER % countdown, file=sys.stderr)
   else:
     print(NOTICE_COLLECTION_HEADER, file=sys.stderr)
+  print(EMPTY_LINE, file=sys.stderr)
   print(NOTICE_FOOTER + colorama.Style.RESET_ALL, file=sys.stderr)
+
+
+def print_version_change(config_version):
+  """Print a notice to let the user know we are collecting more metrics."""
+  colorama.init()
+  print(colorama.Fore.RED + '\033[1m', file=sys.stderr, end='')
+  print(NOTICE_VERSION_CHANGE_HEADER, file=sys.stderr)
+  print(EMPTY_LINE, file=sys.stderr)
+  for version in range(config_version + 1, CURRENT_VERSION + 1):
+    print(CHANGE_NOTICE[version], file=sys.stderr)
+    print(EMPTY_LINE, file=sys.stderr)

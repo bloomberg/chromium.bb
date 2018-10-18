@@ -48,6 +48,13 @@ The metrics we're collecting are:
   - Are you setting `use\_relative\_paths=True`?
   - Are you using `recursedeps`?
 
+## Why am I seeing this message *again*?
+
+We might want to collect additional metrics, and if so we will ask you for
+permission again.
+
+Opting in or out explicitly will stop the messages from being displayed.
+
 # How can I check if metrics are being collected?
 
 You can run `gclient metrics` and it will report if you have opted in, out, or
