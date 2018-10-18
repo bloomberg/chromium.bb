@@ -660,7 +660,7 @@ const base::Feature kShillSandboxing{"ShillSandboxing",
 // Enable showing a tab-modal dialog while a Web Authentication API request is
 // pending, to help guide the user through the flow of using their security key.
 const base::Feature kWebAuthenticationUI{"WebAuthenticationUI",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Allow capturing of WebRTC event logs, and uploading of those logs to Crash.

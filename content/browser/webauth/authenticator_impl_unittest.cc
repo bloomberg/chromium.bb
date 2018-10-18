@@ -400,6 +400,11 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     scoped_feature_list_->InitAndEnableFeature(feature);
   }
 
+  void DisableFeature(const base::Feature& feature) {
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitAndDisableFeature(feature);
+  }
+
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
@@ -834,22 +839,16 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
   auto authenticator = ConnectToAuthenticator();
-// On Windows caBLE should be disabled by default regardless of version.
-#if defined(OS_WIN)
-  EXPECT_FALSE(SupportsTransportProtocol(
-      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-// Otherwise, it should be enabled by default if BLE is supported.
-#else
+
+  // caBLE should be enabled by default if BLE is supported.
   EXPECT_EQ(
       device::BluetoothAdapterFactory::Get().IsLowEnergySupported(),
       SupportsTransportProtocol(
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
-#endif
 }
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithFlag) {
-  scoped_feature_list_.emplace();
-  scoped_feature_list_->InitAndDisableFeature(features::kWebAuthCable);
+  DisableFeature(features::kWebAuthCable);
 
   auto authenticator = ConnectToAuthenticator();
   EXPECT_FALSE(SupportsTransportProtocol(
@@ -1710,6 +1709,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalseIfFeatureFlagOff) {
   if (__builtin_available(macOS 10.12.2, *)) {
     // Touch ID is hardware-supported and embedder-enabled, but the flag is off.
+    DisableFeature(device::kWebAuthTouchId);
     device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
     touch_id_test_environment.SetTouchIdAvailable(true);
     test_client_.supports_touch_id = true;
