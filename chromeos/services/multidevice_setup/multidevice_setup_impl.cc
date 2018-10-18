@@ -21,6 +21,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/auth_token_validator.h"
+#include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 
 namespace chromeos {
 
@@ -56,6 +57,7 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
+    OobeCompletionTracker* oobe_completion_tracker,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -63,7 +65,7 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, auth_token_validator,
-      std::move(android_sms_app_helper_delegate),
+      oobe_completion_tracker, std::move(android_sms_app_helper_delegate),
       std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
 }
 
@@ -71,6 +73,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
+    OobeCompletionTracker* oobe_completion_tracker,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -115,6 +118,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               ->BuildInstance(host_status_provider_.get(),
                               pref_service,
                               host_device_timestamp_manager_.get(),
+                              oobe_completion_tracker,
                               base::DefaultClock::GetInstance())),
       device_reenroller_(DeviceReenroller::Factory::Get()->BuildInstance(
           device_sync_client,

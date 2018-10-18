@@ -43,6 +43,7 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
+    OobeCompletionTracker* oobe_completion_tracker,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -50,7 +51,7 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupInitializer(
       pref_service, device_sync_client, auth_token_validator,
-      std::move(android_sms_app_helper_delegate),
+      oobe_completion_tracker, std::move(android_sms_app_helper_delegate),
       std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
 }
 
@@ -73,6 +74,7 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
+    OobeCompletionTracker* oobe_completion_tracker,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
@@ -81,6 +83,7 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
       auth_token_validator_(auth_token_validator),
+      oobe_completion_tracker_(oobe_completion_tracker),
       android_sms_app_helper_delegate_(
           std::move(android_sms_app_helper_delegate)),
       android_sms_pairing_state_tracker_(
@@ -269,7 +272,7 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
 
   multidevice_setup_impl_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
       pref_service_, device_sync_client_, auth_token_validator_,
-      std::move(android_sms_app_helper_delegate_),
+      oobe_completion_tracker_, std::move(android_sms_app_helper_delegate_),
       std::move(android_sms_pairing_state_tracker_), gcm_device_info_provider_);
 
   if (pending_delegate_) {

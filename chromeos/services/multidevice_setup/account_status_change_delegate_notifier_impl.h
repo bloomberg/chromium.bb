@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier.h"
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
+#include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
 class PrefRegistrySimple;
@@ -31,7 +32,8 @@ class HostDeviceTimestampManager;
 // previous notifications.
 class AccountStatusChangeDelegateNotifierImpl
     : public AccountStatusChangeDelegateNotifier,
-      public HostStatusProvider::Observer {
+      public HostStatusProvider::Observer,
+      public OobeCompletionTracker::Observer {
  public:
   class Factory {
    public:
@@ -42,6 +44,7 @@ class AccountStatusChangeDelegateNotifierImpl
         HostStatusProvider* host_status_provider,
         PrefService* pref_service,
         HostDeviceTimestampManager* host_device_timestamp_manager,
+        OobeCompletionTracker* oobe_completion_tracker,
         base::Clock* clock);
 
    private:
@@ -62,6 +65,7 @@ class AccountStatusChangeDelegateNotifierImpl
   static const char kExistingUserHostSwitchedPrefName[];
   static const char kExistingUserChromebookAddedPrefName[];
 
+  static const char kOobeSetupFlowTimestampPrefName[];
   static const char
       kVerifiedHostDeviceIdFromMostRecentHostStatusUpdatePrefName[];
 
@@ -69,6 +73,7 @@ class AccountStatusChangeDelegateNotifierImpl
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       HostDeviceTimestampManager* host_device_timestamp_manager,
+      OobeCompletionTracker* oobe_completion_tracker,
       base::Clock* clock);
 
   // AccountStatusChangeDelegateNotifier:
@@ -77,6 +82,9 @@ class AccountStatusChangeDelegateNotifierImpl
   // HostStatusProvider::Observer:
   void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
                               host_status_with_device) override;
+
+  // OobeCompletionTracker::Observer:
+  void OnOobeCompleted() override;
 
   void CheckForMultiDeviceEvents(
       const HostStatusProvider::HostStatusWithDevice& host_status_with_device);
@@ -107,6 +115,7 @@ class AccountStatusChangeDelegateNotifierImpl
   HostStatusProvider* host_status_provider_;
   PrefService* pref_service_;
   HostDeviceTimestampManager* host_device_timestamp_manager_;
+  OobeCompletionTracker* oobe_completion_tracker_;
   base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountStatusChangeDelegateNotifierImpl);
