@@ -2402,11 +2402,14 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
   output_record.state = kAtProcessor;
   image_processor_bitstream_buffer_ids_.push(bitstream_buffer_id);
 
+  auto layout = VideoFrameLayout::Create(
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+      coded_size_);
+  if (!layout) {
+    return false;
+  }
   scoped_refptr<VideoFrame> input_frame = VideoFrame::WrapExternalDmabufs(
-      VideoFrameLayout(
-          V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-          coded_size_),
-      gfx::Rect(visible_size_), visible_size_,
+      *layout, gfx::Rect(visible_size_), visible_size_,
       DuplicateFDs(output_record.processor_input_fds), base::TimeDelta());
 
   if (!input_frame) {

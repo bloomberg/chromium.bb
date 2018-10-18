@@ -402,11 +402,13 @@ TEST(VideoFrame, WrapExternalDmabufs) {
     planes[i].offset = offsets[i];
   }
   auto timestamp = base::TimeDelta::FromMilliseconds(1);
-  VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, planes, buffer_sizes);
+  auto layout = VideoFrameLayout::CreateWithPlanes(
+      PIXEL_FORMAT_I420, coded_size, planes, buffer_sizes);
+  ASSERT_TRUE(layout);
   std::vector<base::ScopedFD> dmabuf_fds(3u);
-  auto frame =
-      VideoFrame::WrapExternalDmabufs(layout, visible_rect, visible_rect.size(),
-                                      std::move(dmabuf_fds), timestamp);
+  auto frame = VideoFrame::WrapExternalDmabufs(
+      *layout, visible_rect, visible_rect.size(), std::move(dmabuf_fds),
+      timestamp);
 
   EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_I420);
   EXPECT_EQ(frame->layout().coded_size(), coded_size);
