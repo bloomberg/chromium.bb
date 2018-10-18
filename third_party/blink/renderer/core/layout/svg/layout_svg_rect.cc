@@ -79,9 +79,7 @@ void LayoutSVGRect::UpdateShapeFromElement() {
   fill_bounding_box_ = FloatRect(
       length_context.ResolveLengthPair(svg_style.X(), svg_style.Y(), style),
       bounding_box_size);
-  stroke_bounding_box_ = fill_bounding_box_;
-  if (svg_style.HasStroke())
-    stroke_bounding_box_.Inflate(StrokeWidth() / 2);
+  stroke_bounding_box_ = CalculateStrokeBoundingBox(kSimple);
 }
 
 bool LayoutSVGRect::ShapeDependentStrokeContains(const FloatPoint& point) {

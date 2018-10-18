@@ -134,13 +134,24 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   virtual bool ShapeDependentFillContains(const FloatPoint&,
                                           const WindRule) const;
 
+  // Description of the geometry of the shape for stroking.
+  enum StrokeGeometryClass {
+    kComplex,  // We don't know anything about the geometry => use the generic
+               // approximation.
+    kSimple,   // We know that the geometry is convex and has no acute angles
+               // (rect, rounded rect, circle, ellipse) => use the simple
+               // approximation.
+  };
   // Compute an approximation of the bounding box that this stroke geometry
   // would generate when applied to a shape with the (tight-fitting) bounding
   // box |shape_bbox|.
-  FloatRect ApproximateStrokeBoundingBox(const FloatRect& shape_bbox) const;
+  FloatRect ApproximateStrokeBoundingBox(const FloatRect& shape_bbox,
+                                         StrokeGeometryClass) const;
+  FloatRect CalculateStrokeBoundingBox(StrokeGeometryClass) const;
 
   FloatRect fill_bounding_box_;
   FloatRect stroke_bounding_box_;
+
   LayoutSVGShapeRareData& EnsureRareData() const;
 
  private:
@@ -163,8 +174,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
                    HitTestAction) override;
 
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
-  FloatRect CalculateObjectBoundingBox() const;
-  FloatRect CalculateStrokeBoundingBox() const;
+  FloatRect CalculateNonScalingStrokeBoundingBox() const;
   void UpdateNonScalingStrokeData();
   bool UpdateLocalTransform();
 

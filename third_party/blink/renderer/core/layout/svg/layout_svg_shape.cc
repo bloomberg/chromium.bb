@@ -87,7 +87,7 @@ float LayoutSVGShape::DashScaleFactor() const {
 
 void LayoutSVGShape::UpdateShapeFromElement() {
   CreatePath();
-  fill_bounding_box_ = CalculateObjectBoundingBox();
+  fill_bounding_box_ = GetPath().BoundingRect();
 
   if (HasNonScalingStroke()) {
     // NonScalingStrokeTransform may depend on LocalTransform which in turn may
@@ -96,7 +96,7 @@ void LayoutSVGShape::UpdateShapeFromElement() {
     UpdateNonScalingStrokeData();
   }
 
-  stroke_bounding_box_ = CalculateStrokeBoundingBox();
+  stroke_bounding_box_ = CalculateStrokeBoundingBox(kComplex);
 }
 
 namespace {
@@ -111,7 +111,8 @@ bool HasSquareCapStyle(const SVGComputedStyle& svg_style) {
 }  // namespace
 
 FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
-    const FloatRect& shape_bbox) const {
+    const FloatRect& shape_bbox,
+    StrokeGeometryClass geometry_class) const {
   FloatRect stroke_box = shape_bbox;
 
   // Implementation of
@@ -122,18 +123,19 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
   if (stroke_width <= 0)
     return stroke_box;
 
-  const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
   float delta = stroke_width / 2;
-  if (affected_by_miter_ && HasMiterJoinStyle(svg_style)) {
-    const float miter = svg_style.StrokeMiterLimit();
-    if (miter < M_SQRT2 && HasSquareCapStyle(svg_style))
+  if (geometry_class != kSimple) {
+    const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
+    if (affected_by_miter_ && HasMiterJoinStyle(svg_style)) {
+      const float miter = svg_style.StrokeMiterLimit();
+      if (miter < M_SQRT2 && HasSquareCapStyle(svg_style))
+        delta *= M_SQRT2;
+      else
+        delta *= std::max(miter, 1.0f);
+    } else if (HasSquareCapStyle(svg_style)) {
       delta *= M_SQRT2;
-    else
-      delta *= std::max(miter, 1.0f);
-  } else if (HasSquareCapStyle(svg_style)) {
-    delta *= M_SQRT2;
+    }
   }
-
   stroke_box.Inflate(delta);
   return stroke_box;
 }
@@ -141,17 +143,7 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
 FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
   if (StyleRef().SvgStyle().HasStroke())
     return stroke_bounding_box_;
-
-  // Implementation of
-  // https://drafts.fxtf.org/css-masking/#compute-stroke-bounding-box
-  // for the <rect> / <ellipse> / <circle> case except that we ignore whether
-  // the stroke is none.
-
-  // TODO(fs): Fold this into ApproximateStrokeBoundingBox.
-  FloatRect box = fill_bounding_box_;
-  const float stroke_width = StrokeWidth();
-  box.Inflate(stroke_width / 2);
-  return box;
+  return ApproximateStrokeBoundingBox(fill_bounding_box_, kSimple);
 }
 
 bool LayoutSVGShape::ShapeDependentStrokeContains(const FloatPoint& point) {
@@ -407,33 +399,34 @@ bool LayoutSVGShape::NodeAtPointInternal(const HitTestRequest& request,
   return false;
 }
 
-FloatRect LayoutSVGShape::CalculateObjectBoundingBox() const {
-  return GetPath().BoundingRect();
+FloatRect LayoutSVGShape::CalculateStrokeBoundingBox(
+    StrokeGeometryClass geometry_class) const {
+  if (!StyleRef().SvgStyle().HasStroke() || IsShapeEmpty())
+    return fill_bounding_box_;
+  if (HasNonScalingStroke())
+    return CalculateNonScalingStrokeBoundingBox();
+  return ApproximateStrokeBoundingBox(fill_bounding_box_, geometry_class);
 }
 
-FloatRect LayoutSVGShape::CalculateStrokeBoundingBox() const {
+FloatRect LayoutSVGShape::CalculateNonScalingStrokeBoundingBox() const {
   DCHECK(path_);
+  DCHECK(StyleRef().SvgStyle().HasStroke());
+  DCHECK(HasNonScalingStroke());
+
+  StrokeData stroke_data;
+  SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(), *this,
+                                                 DashScaleFactor());
+
   FloatRect stroke_bounding_box = fill_bounding_box_;
-
-  if (StyleRef().SvgStyle().HasStroke()) {
-    StrokeData stroke_data;
-    SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(),
-                                                   *this, DashScaleFactor());
-    if (HasNonScalingStroke()) {
-      const auto& non_scaling_transform = NonScalingStrokeTransform();
-      if (non_scaling_transform.IsInvertible()) {
-        const auto& non_scaling_stroke = NonScalingStrokePath();
-        FloatRect stroke_bounding_rect =
-            non_scaling_stroke.StrokeBoundingRect(stroke_data);
-        stroke_bounding_rect =
-            non_scaling_transform.Inverse().MapRect(stroke_bounding_rect);
-        stroke_bounding_box.Unite(stroke_bounding_rect);
-      }
-    } else {
-      stroke_bounding_box = ApproximateStrokeBoundingBox(stroke_bounding_box);
-    }
+  const auto& non_scaling_transform = NonScalingStrokeTransform();
+  if (non_scaling_transform.IsInvertible()) {
+    const auto& non_scaling_stroke = NonScalingStrokePath();
+    FloatRect stroke_bounding_rect =
+        non_scaling_stroke.StrokeBoundingRect(stroke_data);
+    stroke_bounding_rect =
+        non_scaling_transform.Inverse().MapRect(stroke_bounding_rect);
+    stroke_bounding_box.Unite(stroke_bounding_rect);
   }
-
   return stroke_bounding_box;
 }
 
