@@ -4474,6 +4474,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionDescription,
      kOsAll, FEATURE_VALUE_TYPE(features::kBlinkHeapUnifiedGarbageCollection)},
 
+    {"enable-incognito-window-counter",
+     flag_descriptions::kEnableIncognitoWindowCounterName,
+     flag_descriptions::kEnableIncognitoWindowCounterDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kEnableIncognitoWindowCounter)},
 };
 
 class FlagsStateSingleton {
