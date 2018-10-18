@@ -276,12 +276,9 @@
 -AppWindowApiTest.OnRestoredEvent
 -BrowserActionApiTest.BrowserActionPopupWithIframe
 -FirstRunUIBrowserTest.ModalWindowDoesNotBlock
--LauncherPlatformAppBrowserTest.AltNumberAppsTabbing
 -LauncherPlatformAppBrowserTest.PackagedAppClickBehaviorInMinimizeMode
 -LoginWebDialogTest.CannotMinimize
 -LoginWebDialogTest.CloseDialogByAccelerator
--ShelfAppBrowserTest.AltNumberTabsTabbing
--ShelfAppBrowserTestNoDefaultBrowser.AltNumberBrowserTabbing
 -ShelfAppBrowserTestNoDefaultBrowser.BrowserShortcutLauncherItemController
 
 # Excluded from Mash because pointer events from EventGenerator aren't seen.
