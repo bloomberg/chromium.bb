@@ -144,6 +144,14 @@ ToolbarActionView::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight(this);
 }
 
+bool ToolbarActionView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_DOWN) {
+    ShowContextMenuForView(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
+    return true;
+  }
+  return MenuButton::OnKeyPressed(event);
+}
+
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
   return delegate_->GetCurrentWebContents();
 }
