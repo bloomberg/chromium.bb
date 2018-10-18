@@ -35,6 +35,27 @@ interface BluetoothSystem {
   };
 
   GetState() => (State state);
+
+  enum SetPoweredResult {
+    // Command successfully sent to BT Radio or ignored if the new state matches
+    // the current state. OnStateChanged call is imminent if the former.
+    kSuccess,
+    // Unknown failure when sending the command to the BT Radio.
+    kFailedUnknownReason,
+    // Can't use Bluetooth right now e.g. a BT radio is not present.
+    kBluetoothUnavailable,
+  };
+
+  // Attempts to change the state of the Bluetooth to `kPoweredOn` if |powered|
+  // and `kPoweredOff` otherwise . Callback is run with `kSuccess if the command
+  // was successfully sent to the BT Radio. Once the BT radio actually changes
+  // state BluetoothSystemClient::OnStateChanged will be called.
+  // TODO(https://crbug.com/896113): This function is missing two features:
+  //  1. The new state should be saved in the user's pref so that the next time
+  //     the machine turns off the state matches the user pref.
+  //  2. Support concurrent calls; currently BlueZ just drops other calls if
+  //     there is one in progress already.
+  SetPowered(bool powered) => (SetPoweredResult result);
 };
 
 // Interface used by clients of BluetoothSystem to get notified of events

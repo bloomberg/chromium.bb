@@ -86,6 +86,31 @@ void BluetoothSystem::GetState(GetStateCallback callback) {
   std::move(callback).Run(state_);
 }
 
+void BluetoothSystem::SetPowered(bool powered, SetPoweredCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+      std::move(callback).Run(SetPoweredResult::kBluetoothUnavailable);
+      return;
+    case State::kTransitioning:
+    case State::kPoweredOff:
+    case State::kPoweredOn:
+      break;
+  }
+
+  if ((state_ == State::kPoweredOn) == powered) {
+    std::move(callback).Run(SetPoweredResult::kSuccess);
+    return;
+  }
+
+  GetBluetoothAdapterClient()
+      ->GetProperties(active_adapter_.value())
+      ->powered.Set(powered,
+                    base::BindRepeating(&BluetoothSystem::OnSetPoweredFinished,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        base::Passed(&callback)));
+}
+
 bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
   // Use AlternateBluetoothAdapterClient to avoid interfering with users of the
   // regular BluetoothAdapterClient.
@@ -105,6 +130,12 @@ void BluetoothSystem::UpdateStateAndNotifyIfNecessary() {
 
   if (old_state != state_)
     client_ptr_->OnStateChanged(state_);
+}
+
+void BluetoothSystem::OnSetPoweredFinished(SetPoweredCallback callback,
+                                           bool succeeded) {
+  std::move(callback).Run(succeeded ? SetPoweredResult::kSuccess
+                                    : SetPoweredResult::kFailedUnknownReason);
 }
 
 }  // namespace device
