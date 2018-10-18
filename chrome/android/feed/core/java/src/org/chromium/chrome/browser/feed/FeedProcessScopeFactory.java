@@ -26,10 +26,9 @@ import java.util.concurrent.Executors;
 
 /** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
-    /** Lazily-initialized flag that tracks whether we've been disabled via enterprise policy. This
-     * is initialized in isFeedProcessScopeEnabled by checking the pref value directly, and updated
-     * via articlesEnabledPrefChange. */
-    private static Boolean sIsDisabledForPolicy;
+    /** Flag that tracks whether we've ever been disabled via enterprise policy. Should only be
+     * accessed through isFeedProcessScopeEnabled(). */
+    private static boolean sEverDisabledForPolicy = false;
     private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedAppLifecycle sFeedAppLifecycle;
     private static FeedProcessScope sFeedProcessScope;
@@ -90,12 +89,16 @@ public class FeedProcessScopeFactory {
      *         within the current session.
      */
     public static boolean isFeedProcessEnabled() {
-        if (sIsDisabledForPolicy == null) {
-            sIsDisabledForPolicy =
+        // Once true, sEverDisabledForPolicy will be true forever. If it isn't true yet, we need to
+        // check the pref every time. Two reasons for this. 1) We want to notice when we start in a
+        // disabled state, shouldn't allow Feed to enabled until a restart. 2) A different
+        // subscriber to  this pref change event might check in with this method, and we cannot
+        // assume who will be called first. See https://crbug.com/896468.
+        if (!sEverDisabledForPolicy) {
+            sEverDisabledForPolicy =
                     !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
         }
-
-        return !sIsDisabledForPolicy;
+        return !sEverDisabledForPolicy;
     }
 
     private static void initialize() {
@@ -152,8 +155,6 @@ public class FeedProcessScopeFactory {
             FeedAppLifecycle feedAppLifecycle, FeedAppLifecycleListener lifecycleListener,
             FeedLoggingBridge loggingBridge) {
         Configuration configHostApi = FeedConfiguration.createConfiguration();
-        // If you're using this, we presume that you want the Feed to be turned on.
-        sIsDisabledForPolicy = false;
 
         sFeedScheduler = feedScheduler;
         ApplicationInfo applicationInfo =
@@ -193,7 +194,7 @@ public class FeedProcessScopeFactory {
         // Should only be subscribed while it was enabled. A change should mean articles are now
         // disabled.
         assert !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
-        sIsDisabledForPolicy = true;
+        sEverDisabledForPolicy = true;
         destroy();
     }
 
