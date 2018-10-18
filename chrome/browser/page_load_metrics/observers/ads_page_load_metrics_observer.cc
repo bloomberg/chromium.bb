@@ -18,6 +18,7 @@
 #include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/download/download_stats.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
@@ -83,6 +84,26 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
   return url.host_piece() == "tpc.googlesyndication.com" &&
          base::StartsWith(url.path_piece(), "/safeframe",
                           base::CompareCase::SENSITIVE);
+}
+
+bool IsSubframeSameOriginToMainFrame(content::RenderFrameHost* sub_host,
+                                     bool use_parent_origin) {
+  DCHECK(sub_host);
+  content::RenderFrameHost* main_host =
+      content::WebContents::FromRenderFrameHost(sub_host)->GetMainFrame();
+  if (use_parent_origin)
+    sub_host = sub_host->GetParent();
+  url::Origin subframe_origin = sub_host->GetLastCommittedOrigin();
+  url::Origin mainframe_origin = main_host->GetLastCommittedOrigin();
+  return subframe_origin.IsSameOriginWith(mainframe_origin);
+}
+
+void RecordDownloadMetrics(blink::DownloadStats::FrameType frame_type,
+                           bool has_user_gesture) {
+  blink::DownloadStats::GestureType gesture_type =
+      has_user_gesture ? blink::DownloadStats::GestureType::kWithGesture
+                       : blink::DownloadStats::GestureType::kWithoutGesture;
+  blink::DownloadStats::Record(frame_type, gesture_type);
 }
 
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
@@ -182,13 +203,8 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   if (!ad_data && ad_types.any()) {
     AdOriginStatus origin_status = AdOriginStatus::kUnknown;
     if (ad_host) {
-      content::RenderFrameHost* main_host =
-          content::WebContents::FromRenderFrameHost(ad_host)->GetMainFrame();
       // For ads triggered on render, their origin is their parent's origin.
-      if (!frame_navigated)
-        ad_host = ad_host->GetParent();
-      origin_status = main_host->GetLastCommittedOrigin().IsSameOriginWith(
-                          ad_host->GetLastCommittedOrigin())
+      origin_status = IsSubframeSameOriginToMainFrame(ad_host, !frame_navigated)
                           ? AdOriginStatus::kSame
                           : AdOriginStatus::kCross;
     }
@@ -217,13 +233,35 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   FrameTreeNodeId frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
   AdTypes ad_types = DetectAds(navigation_handle);
+
   // NOTE: Frame look-up only used for determining cross-origin status, not
   // granting security permissions.
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
+  if (navigation_handle->IsDownload()) {
+    blink::DownloadStats::FrameType frame_type =
+        IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false)
+            ? ad_types.any()
+                  ? blink::DownloadStats::FrameType::kSameOriginAdSubframe
+                  : blink::DownloadStats::FrameType::kSameOriginNonAdSubframe
+            : ad_types.any()
+                  ? blink::DownloadStats::FrameType::kCrossOriginAdSubframe
+                  : blink::DownloadStats::FrameType::kCrossOriginNonAdSubframe;
+    RecordDownloadMetrics(frame_type, navigation_handle->HasUserGesture());
+  }
+
   RecordAdFrameData(frame_tree_node_id, ad_types, ad_host,
                     /*frame_navigated=*/true);
   ProcessOngoingNavigationResource(frame_tree_node_id);
+}
+
+void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
+    content::NavigationHandle* navigation_handle) {
+  // Main frame navigation
+  if (navigation_handle->IsDownload()) {
+    RecordDownloadMetrics(blink::DownloadStats::FrameType::kMainFrame,
+                          navigation_handle->HasUserGesture());
+  }
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
