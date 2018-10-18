@@ -1148,6 +1148,9 @@ util.getRootTypeLabel = function(locationInfo) {
     // By this reason, we return the label of the Team Drives grand root here.
     case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
       return str('DRIVE_TEAM_DRIVES_LABEL');
+    case VolumeManagerCommon.RootType.COMPUTER:
+    case VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT:
+      return str('DRIVE_COMPUTERS_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
       return str('DRIVE_OFFLINE_COLLECTION_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:

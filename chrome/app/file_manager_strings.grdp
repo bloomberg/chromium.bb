@@ -47,6 +47,9 @@
   <message name="IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL" desc="A label for the 'Team Drives' collection of Google Drive.">
     Team Drives
   </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_COMPUTERS_LABEL" desc="A label for the 'Computers' collection of Google Drive.">
+    Computers
+  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL" desc="A label for the 'shared with me' collection of Google Drive.">
     Shared with me
   </message>

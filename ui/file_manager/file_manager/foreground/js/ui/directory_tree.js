@@ -41,6 +41,9 @@ DirectoryItemTreeBaseMethods.getItemByEntry = function(entry) {
     if (util.isTeamDriveEntry(entry) && item instanceof DriveVolumeItem)
       return item.getItemByEntry(entry);
 
+    if (util.isComputersEntry(entry) && item instanceof DriveVolumeItem)
+      return item.getItemByEntry(entry);
+
     if (util.isDescendantEntry(item.entry, entry))
       return item.getItemByEntry(entry);
   }
@@ -66,6 +69,11 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
     // When we looking for an item in team drives, recursively search inside the
     // "Google Drive" root item.
     if (util.isTeamDriveEntry(entry) && item instanceof DriveVolumeItem) {
+      item.selectByEntry(entry);
+      return true;
+    }
+
+    if (util.isComputersEntry(entry) && item instanceof DriveVolumeItem) {
       item.selectByEntry(entry);
       return true;
     }
@@ -222,6 +230,9 @@ DirectoryItem.prototype = {
          locationInfo.rootType ===
              VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT ||
          locationInfo.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE ||
+         locationInfo.rootType ===
+             VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+         locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER ||
          locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
          locationInfo.rootType ===
              VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
@@ -1043,7 +1054,7 @@ DriveVolumeItem.prototype.handleClick = function(e) {
  * Since we don't currently support any functionality with just the grand root
  * (e.g. you can't create a new team drive from the root yet), remove/don't
  * create the grand root so it can't be reached via keyboard.
- * If there is at least one Team Drive, add/show the Team Drives trand root.
+ * If there is at least one Team Drive, add/show the Team Drives grand root.
  *
  * @return {!Promise<SubDirectoryItem>} Resolved with Team Drive Grand Root
  * SubDirectoryItem instance, or undefined when it shouldn't exist.
@@ -1072,7 +1083,7 @@ DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
       metrics.recordSmallCount('TeamDrivesCount', results.length);
       // Only create grand root if there is at least 1 child/result.
       if (results.length) {
-        if (index) {
+        if (index !== undefined) {
           this.items[index].hidden = false;
           resolve(this.items[index]);
           return;
@@ -1103,6 +1114,76 @@ DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
 };
 
 /**
+ * Creates Computers root if there is any computer. If there is no computer,
+ * then it removes the root.
+ *
+ * Since we don't currently support any functionality with just the grand root
+ * (e.g. you can't create a new computer from the root yet), remove/don't
+ * create the grand root so it can't be reached via keyboard.
+ * If there is at least one Computer, add/show the Computer grand root.
+ *
+ * @return {!Promise<SubDirectoryItem>} Resolved with Computer Grand Root
+ * SubDirectoryItem instance, or undefined when it shouldn't exist.
+ * @private
+ */
+DriveVolumeItem.prototype.createComputersGrandRoot_ = function() {
+  return new Promise(resolve => {
+    const computerGrandRoot = this.volumeInfo_.computersDisplayRoot;
+    if (!computerGrandRoot) {
+      // Computer is disabled.
+      resolve();
+      return;
+    }
+
+    let index;
+    for (let i = 0; i < this.items.length; i++) {
+      const entry = this.items[i] && this.items[i].entry;
+      if (entry && util.isSameEntry(entry, computerGrandRoot)) {
+        index = i;
+        break;
+      }
+    }
+
+    const reader = computerGrandRoot.createReader();
+    reader.readEntries((results) => {
+      metrics.recordSmallCount('ComputersCount', results.length);
+      // Only create grand root if there is at least 1 child/result.
+      if (results.length) {
+        if (index !== undefined) {
+          this.items[index].hidden = false;
+          resolve(this.items[index]);
+          return;
+        }
+
+        // Create if it doesn't exist yet.
+        const label = util.getEntryLabel(
+                          this.parentTree_.volumeManager_.getLocationInfo(
+                              computerGrandRoot),
+                          computerGrandRoot) ||
+            '';
+        const item = new SubDirectoryItem(
+            label, computerGrandRoot, this, this.parentTree_);
+        // We want to show "Computers" after "Team Drives", the
+        // computersIndexPosition_() helper function will work out the correct
+        // index to place "Computers" at.
+        const position = this.computersIndexPosition_();
+        this.addAt(item, position);
+        item.updateSubDirectories(false);
+        resolve(item);
+        return;
+      } else {
+        // When there is no computer, the grand root should be removed.
+        if (index && this.items[index].parentItem) {
+          this.items[index].parentItem.remove(this.items[index]);
+        }
+        resolve();
+        return;
+      }
+    });
+  });
+};
+
+/**
  * Retrieves the latest subdirectories and update them on the tree.
  * @param {boolean} recursive True if the update is recursively.
  * @override
@@ -1116,6 +1197,11 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
   var teamDrivesDisplayRoot = this.volumeInfo_.teamDriveDisplayRoot;
   if (!!teamDrivesDisplayRoot) {
     entries.push(teamDrivesDisplayRoot);
+  }
+
+  var computersDisplayRoot = this.volumeInfo_.computersDisplayRoot;
+  if (!!computersDisplayRoot) {
+    entries.push(computersDisplayRoot);
   }
 
   // Drive volume has children including fake entries (offline, recent, ...)
@@ -1137,6 +1223,8 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
     const entry = entries[i];
     if (entry === teamDrivesDisplayRoot) {
       this.createTeamDrivesGrandRoot_();
+    } else if (entry === computersDisplayRoot) {
+      this.createComputersGrandRoot_();
     } else {
       const label =
           util.getEntryLabel(
@@ -1162,21 +1250,30 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
  * @override
  */
 DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
-  // The first item is My Drive, and the second item is Team Drives.
-  // Keep in sync with |fixedEntries| in |updateSubDirectories|.
   const isTeamDriveChild = util.isTeamDriveEntry(changedDirectoryEntry);
-  const index = isTeamDriveChild ? 1 : 0;
 
   // If Team Drive grand root has been removed and we receive an update for an
   // team drive, we need to create the Team Drive grand root.
   if (isTeamDriveChild) {
-    this.createTeamDrivesGrandRoot_().then(teamDriveGranRootItem => {
-      if (teamDriveGranRootItem)
-        this.items[index].updateItemByEntry(changedDirectoryEntry);
+    this.createTeamDrivesGrandRoot_().then(teamDriveGrandRootItem => {
+      if (teamDriveGrandRootItem)
+        teamDriveGrandRootItem.updateItemByEntry(changedDirectoryEntry);
     });
-  } else {
-    this.items[index].updateItemByEntry(changedDirectoryEntry);
+    return;
   }
+
+  const isComputersChild = util.isComputersEntry(changedDirectoryEntry);
+  // If Computers grand root has been removed and we receive an update for an
+  // computer, we need to create the Computers grand root.
+  if (isComputersChild) {
+    this.createComputersGrandRoot_().then(computersGrandRootItem => {
+      if (computersGrandRootItem)
+        computersGrandRootItem.updateItemByEntry(changedDirectoryEntry);
+    });
+    return;
+  }
+  // Must be under "My Drive", which is always the first item.
+  this.items[0].updateItemByEntry(changedDirectoryEntry);
 };
 
 /**
@@ -1188,6 +1285,27 @@ DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
 DriveVolumeItem.prototype.selectByEntry = function(entry) {
   // Find the item to be selected among children.
   this.searchAndSelectByEntry(entry);
+};
+
+/**
+ * Return the index where we want to display the "Computers" root.
+ * @private
+ */
+DriveVolumeItem.prototype.computersIndexPosition_ = function() {
+  // We want the order to be
+  // - My Drive
+  // - Team Drives (if the user has any)
+  // - Computers (if the user has any)
+  // So if the user has team drives we want index position 2, otherwise index
+  // position 1.
+  for (let i = 0; i < this.items.length; i++) {
+    const item = this.items[i];
+    if (!item.entry)
+      continue;
+    if (util.isTeamDriveEntry(item.entry))
+      return 2;
+  }
+  return 1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
