@@ -109,10 +109,12 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
                                 const ResourceResponse& redirect_response,
                                 const FetchInitiatorInfo& initiator_info,
                                 ResourceType resource_type) {
-  // If the resource is not already marked as an ad, check if any executing
-  // script is an ad. If yes, mark this as an ad.
-  if (!request.IsAdResource() && IsAdScriptInStack())
+  // If the resource is not already marked as an ad, check if the document
+  // loading the resource is an ad or if any executing script is an ad.
+  if (!request.IsAdResource() &&
+      (IsKnownAdExecutionContext(execution_context) || IsAdScriptInStack())) {
     request.SetIsAdResource();
+  }
 
   // If it is a script marked as an ad and it's not in an ad context, append it
   // to the known ad script set. We don't need to keep track of ad scripts in ad
