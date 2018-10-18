@@ -23,9 +23,8 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   TestKeyboardUI();
   ~TestKeyboardUI() override;
 
-  // Overridden from KeyboardUI:
-  aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
-  aura::Window* GetKeyboardWindow() const override;
+  bool HasKeyboardWindow() const override;
+  aura::Window* GetKeyboardWindow() override;
 
  private:
   // Overridden from keyboard::KeyboardUI:

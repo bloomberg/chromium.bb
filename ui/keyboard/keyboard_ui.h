@@ -5,7 +5,6 @@
 #ifndef UI_KEYBOARD_KEYBOARD_UI_H_
 #define UI_KEYBOARD_KEYBOARD_UI_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/keyboard/keyboard_export.h"
@@ -27,21 +26,17 @@ class KeyboardController;
 // Interface representing a window containing virtual keyboard UI.
 class KEYBOARD_EXPORT KeyboardUI {
  public:
-  using LoadCallback = base::OnceCallback<void()>;
-
   KeyboardUI();
   virtual ~KeyboardUI();
 
-  // Begin loading the virtual keyboard window asynchronously.
-  // Returns a window immediately, but the UI within the window is not
-  // guaranteed to be fully loaded until |callback| is called.
-  // This function can only be called once.
-  virtual aura::Window* LoadKeyboardWindow(LoadCallback callback) = 0;
-
   // Gets the virtual keyboard window i.e. the WebContents window where
-  // keyboard extensions are loaded. Returns null if the window has not started
-  // loading.
-  virtual aura::Window* GetKeyboardWindow() const = 0;
+  // keyboard extensions are loaded. May return null if the window has not yet
+  // been created.
+  // This class owns the window.
+  virtual aura::Window* GetKeyboardWindow() = 0;
+
+  // Whether the keyboard window has been created.
+  virtual bool HasKeyboardWindow() const = 0;
 
   // Gets the InputMethod that will provide notifications about changes in the
   // text input context.

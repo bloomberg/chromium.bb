@@ -283,7 +283,7 @@ void KeyboardController::DeactivateKeyboard() {
 }
 
 aura::Window* KeyboardController::GetKeyboardWindow() const {
-  return ui_ ? ui_->GetKeyboardWindow() : nullptr;
+  return ui_ && ui_->HasKeyboardWindow() ? ui_->GetKeyboardWindow() : nullptr;
 }
 
 aura::Window* KeyboardController::GetRootWindow() {
@@ -717,13 +717,10 @@ void KeyboardController::PopulateKeyboardContent(
 
   if (parent_container_->children().empty()) {
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
-    // For now, using Unretained is safe here because the |ui_| is owned by
-    // |this| and the callback does not outlive |ui_|.
-    // TODO(https://crbug.com/845780): Use a weak ptr here in case this
-    // assumption changes.
-    aura::Window* keyboard_window = ui_->LoadKeyboardWindow(
-        base::BindOnce(&KeyboardController::NotifyKeyboardWindowLoaded,
-                       base::Unretained(this)));
+    // TODO(https://crbug.com/845780): This call will create and load the
+    // virtual keyboard window. Redesign the KeyboardUI interface so that
+    // loading is explicit.
+    aura::Window* keyboard_window = ui_->GetKeyboardWindow();
     keyboard_window->AddPreTargetHandler(&event_filter_);
     keyboard_window->AddObserver(this);
     parent_container_->AddChild(keyboard_window);

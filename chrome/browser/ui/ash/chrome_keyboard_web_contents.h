@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -21,15 +20,11 @@ class WebContents;
 // contents, manages the content::HostZoomMap, and informs the virtual
 // keyboard controller when the contents have loaded. It also provides a
 // WebContentsDelegate implementation.
+// TODO(mash): Remove keyboard::KeyboardController dependency to support
+// multi process mash.
 class ChromeKeyboardWebContents : public content::WebContentsObserver {
  public:
-  using LoadCallback = base::OnceCallback<void()>;
-
-  // Immediately starts loading |url| in a WebContents. |callback| is called
-  // when the WebContents finishes loading.
-  ChromeKeyboardWebContents(content::BrowserContext* context,
-                            const GURL& url,
-                            LoadCallback callback);
+  ChromeKeyboardWebContents(content::BrowserContext* context, const GURL& url);
   ~ChromeKeyboardWebContents() override;
 
   // Updates the keyboard URL if |url| does not match the existing url.
@@ -50,7 +45,6 @@ class ChromeKeyboardWebContents : public content::WebContentsObserver {
   void LoadContents(const GURL& url);
 
   std::unique_ptr<content::WebContents> web_contents_;
-  LoadCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardWebContents);
 };
