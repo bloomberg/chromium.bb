@@ -4930,7 +4930,7 @@ crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-step
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/week-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac10.13 ] http/tests/eventsource/workers/eventsource-cors-no-server.html [ Failure ]
 crbug.com/853360 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
-crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout ]
+crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout Failure ]
 crbug.com/853360 [ Mac ] paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 crbug.com/853360 [ Mac ] tables/mozilla/bugs/bug30692.html [ Failure ]
 crbug.com/853360 [ Mac ] virtual/new-remote-playback-pipeline/http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
