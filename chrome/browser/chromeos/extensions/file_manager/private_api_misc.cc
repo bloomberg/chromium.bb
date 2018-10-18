@@ -15,6 +15,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/i18n/encoding_detection.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -65,6 +66,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
+#include "net/base/hex_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -962,6 +964,19 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
 
   Respond(OneArgument(file_manager::util::ConvertEntryDefinitionListToListValue(
       *entry_definition_list)));
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateDetectCharacterEncodingFunction::Run() {
+  using extensions::api::file_manager_private::DetectCharacterEncoding::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::string input = net::HexDecode(params->bytes);
+  std::string encoding;
+  bool success = base::DetectEncoding(input, &encoding);
+  return RespondNow(OneArgument(
+      std::make_unique<base::Value>(success ? encoding : std::string())));
 }
 
 }  // namespace extensions
