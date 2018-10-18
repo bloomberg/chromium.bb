@@ -158,7 +158,8 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
     views::Widget* overlayWindow =
         constrained_window::ShowWebModalDialogWithOverlayViews(this,
                                                                web_contents);
-    [certificate_viewer_ showCertificateSheet:overlayWindow->GetNativeWindow()];
+    [certificate_viewer_ showCertificateSheet:overlayWindow->GetNativeWindow()
+                                                  .GetNativeNSWindow()];
     [certificate_viewer_ setOverlayWindow:overlayWindow];
   }
 

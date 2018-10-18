@@ -13,7 +13,7 @@ namespace {
 // This attempts to match OS X's native behavior, namely that a window
 // is only ever deminiaturized if ALL windows on ALL workspaces are
 // miniaturized.
-void FocusWindowSetHelper(const std::set<NSWindow*>& windows,
+void FocusWindowSetHelper(const std::set<gfx::NativeWindow>& windows,
                           bool allow_workspace_switch,
                           bool visible_windows_only) {
   NSArray* ordered_windows = [NSApp orderedWindows];
@@ -55,11 +55,11 @@ void FocusWindowSetHelper(const std::set<NSWindow*>& windows,
 
 }  // namespace
 
-void FocusWindowSet(const std::set<NSWindow*>& windows) {
+void FocusWindowSet(const std::set<gfx::NativeWindow>& windows) {
   FocusWindowSetHelper(windows, true, true);
 }
 
-void FocusWindowSetOnCurrentSpace(const std::set<NSWindow*>& windows) {
+void FocusWindowSetOnCurrentSpace(const std::set<gfx::NativeWindow>& windows) {
   // This callback runs before AppKit picks its own window to
   // deminiaturize, so we get to pick one from the right set. Limit to
   // the windows on the current workspace. Otherwise we jump spaces

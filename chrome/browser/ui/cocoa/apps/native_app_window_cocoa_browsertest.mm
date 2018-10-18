@@ -78,12 +78,13 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
 
   AppWindow* app_window = windows.front();
   extensions::NativeAppWindow* native_window = app_window->GetBaseWindow();
-  NSWindow* ns_window = native_window->GetNativeWindow();
+  NSWindow* ns_window = native_window->GetNativeWindow().GetNativeNSWindow();
 
   AppWindow* other_app_window = windows.back();
   extensions::NativeAppWindow* other_native_window =
       other_app_window->GetBaseWindow();
-  NSWindow* other_ns_window = other_native_window->GetNativeWindow();
+  NSWindow* other_ns_window =
+      other_native_window->GetNativeWindow().GetNativeNSWindow();
 
   // Normal Hide/Show.
   app_window->Hide();
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
 
   extensions::AppWindow* app_window = windows.front();
   extensions::NativeAppWindow* native_window = app_window->GetBaseWindow();
-  NSWindow* ns_window = native_window->GetNativeWindow();
+  NSWindow* ns_window = native_window->GetNativeWindow().GetNativeNSWindow();
 
   // HideWithApp.
   native_window->HideWithApp();
@@ -216,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   extensions::AppWindow* app_window =
       CreateTestAppWindow("{\"alwaysOnTop\": true }");
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
   base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
       [[NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
 
@@ -268,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Minimize) {
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
 
   NSRect initial_frame = [ns_window frame];
 
@@ -303,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Maximize) {
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
   base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
 
   gfx::Rect initial_restored_bounds = window->GetRestoredBounds();
@@ -359,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, MaximizeConstrained) {
   AppWindow* app_window = CreateTestAppWindow(
       "{\"outerBounds\": {\"maxWidth\":200, \"maxHeight\":300}}");
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
   base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
 
   gfx::Rect initial_restored_bounds = window->GetRestoredBounds();
@@ -395,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
   base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
 
   NSRect initial_frame = [ns_window frame];
@@ -445,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
   base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
   base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
       [[NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
@@ -502,8 +503,9 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
 // window.
 IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Frameless) {
   AppWindow* app_window = CreateTestAppWindow("{\"frame\": \"none\"}");
-  NSWindow* ns_window = app_window->GetNativeWindow();
-  NSView* web_contents = app_window->web_contents()->GetNativeView();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
+  NSView* web_contents =
+      app_window->web_contents()->GetNativeView().GetNativeNSView();
   EXPECT_TRUE(NSEqualSizes(NSMakeSize(512, 384), [web_contents frame].size));
   // Move and resize the window.
   NSRect new_frame = NSMakeRect(50, 50, 200, 200);
@@ -527,7 +529,7 @@ namespace {
 
 // Test that resize and fullscreen controls are correctly enabled/disabled.
 void TestControls(AppWindow* app_window) {
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
 
   // The window is resizable.
   EXPECT_TRUE([ns_window styleMask] & NSResizableWindowMask);
@@ -545,7 +547,8 @@ void TestControls(AppWindow* app_window) {
   app_window->SetContentSizeConstraints(gfx::Size(), gfx::Size(200, 201));
   EXPECT_EQ(200, [ns_window contentMaxSize].width);
   EXPECT_EQ(201, [ns_window contentMaxSize].height);
-  NSView* web_contents = app_window->web_contents()->GetNativeView();
+  NSView* web_contents =
+      app_window->web_contents()->GetNativeView().GetNativeNSView();
   EXPECT_EQ(200, [web_contents frame].size.width);
   EXPECT_EQ(201, [web_contents frame].size.height);
 
@@ -619,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, FrameColor) {
   // components are CGFloats in the range [0, 1].
   extensions::AppWindow* app_window = CreateTestAppWindow(
       "{\"frame\": {\"color\": \"#FF0000\", \"inactiveColor\": \"#0000FF\"}}");
-  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow().GetNativeNSWindow();
   // No color correction in the default case.
   [ns_window setColorSpace:[NSColorSpace sRGBColorSpace]];
 

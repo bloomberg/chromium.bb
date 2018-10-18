@@ -33,7 +33,7 @@ void WidgetTest::SimulateNativeActivate(Widget* widget) {
                           object:g_simulated_active_window_];
   }
 
-  g_simulated_active_window_ = widget->GetNativeWindow();
+  g_simulated_active_window_ = widget->GetNativeWindow().GetNativeNSWindow();
   DCHECK(g_simulated_active_window_);
 
   // For now, don't simulate main status or windows that can't activate.
@@ -44,7 +44,7 @@ void WidgetTest::SimulateNativeActivate(Widget* widget) {
 
 // static
 bool WidgetTest::IsNativeWindowVisible(gfx::NativeWindow window) {
-  return [window isVisible];
+  return [window.GetNativeNSWindow() isVisible];
 }
 
 // static
@@ -57,8 +57,8 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
   EXPECT_TRUE(below->IsVisible());
 
   // -[NSApplication orderedWindows] are ordered front-to-back.
-  NSWindow* first = above->GetNativeWindow();
-  NSWindow* second = below->GetNativeWindow();
+  NSWindow* first = above->GetNativeWindow().GetNativeNSWindow();
+  NSWindow* second = below->GetNativeWindow().GetNativeNSWindow();
 
   for (NSWindow* window in [NSApp orderedWindows]) {
     if (window == second)
@@ -71,7 +71,8 @@ bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
 }
 
 gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
-  return gfx::Size([widget->GetNativeWindow() contentMinSize]);
+  return gfx::Size(
+      [widget->GetNativeWindow().GetNativeNSWindow() contentMinSize]);
 }
 
 // static
@@ -88,7 +89,7 @@ ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
 
 // static
 bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
-  return ![window isOpaque];
+  return ![window.GetNativeNSWindow() isOpaque];
 }
 
 // static

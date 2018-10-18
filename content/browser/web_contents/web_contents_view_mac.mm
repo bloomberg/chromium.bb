@@ -202,8 +202,8 @@ void WebContentsViewMac::Focus() {
     delegate()->ResetStoredFocus();
 
   gfx::NativeView native_view = GetNativeViewForFocus();
-  NSWindow* window = [native_view window];
-  [window makeFirstResponder:native_view];
+  NSWindow* window = [native_view.GetNativeNSView() window];
+  [window makeFirstResponder:native_view.GetNativeNSView()];
 }
 
 void WebContentsViewMac::SetInitialFocus() {
@@ -376,7 +376,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   // with us. In case there are other siblings of the content area, we want
   // to make sure the content area is on the bottom so other things draw over
   // it.
-  NSView* view_view = view->GetNativeView();
+  NSView* view_view = view->GetNativeView().GetNativeNSView();
   [view_view setFrame:[cocoa_view_.get() bounds]];
   [view_view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   // Add the new view below all other views; this also keeps it below any

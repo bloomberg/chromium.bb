@@ -50,7 +50,8 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, Basic) {
   ASSERT_TRUE(cert.get());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  NSWindow* window = web_contents->GetTopLevelNativeWindow();
+  NSWindow* window =
+      web_contents->GetTopLevelNativeWindow().GetNativeNSWindow();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -74,7 +75,8 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerMacTest, HideShow) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  NSWindow* window = web_contents->GetTopLevelNativeWindow();
+  NSWindow* window =
+      web_contents->GetTopLevelNativeWindow().GetNativeNSWindow();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
 

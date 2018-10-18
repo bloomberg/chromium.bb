@@ -86,7 +86,7 @@ void MenuClosureAnimationMac::DisableAnimationsForTesting() {
 
 void MenuClosureAnimationMac::AnimationProgressed(
     const gfx::Animation* animation) {
-  NSWindow* window = menu_->GetWidget()->GetNativeWindow();
+  NSWindow* window = menu_->GetWidget()->GetNativeWindow().GetNativeNSWindow();
   [window setAlphaValue:animation->CurrentValueBetween(1.0, 0.0)];
 }
 

@@ -417,6 +417,7 @@ source_set("native_widget_types") {
   ]
 
   public_deps = [
+    ":gfx_export",
     "//base",
   ]
 }

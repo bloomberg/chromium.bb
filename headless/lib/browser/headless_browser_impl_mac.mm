@@ -75,7 +75,8 @@ void HeadlessBrowserImpl::PlatformStart() {
 
 void HeadlessBrowserImpl::PlatformInitializeWebContents(
     HeadlessWebContentsImpl* web_contents) {
-  NSView* web_view = web_contents->web_contents()->GetNativeView();
+  NSView* web_view =
+      web_contents->web_contents()->GetNativeView().GetNativeNSView();
   [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
   // TODO(eseckler): Support enabling BeginFrameControl on Mac. This is tricky
   // because it's a ui::Compositor startup setting and ui::Compositors are
@@ -85,7 +86,8 @@ void HeadlessBrowserImpl::PlatformInitializeWebContents(
 void HeadlessBrowserImpl::PlatformSetWebContentsBounds(
     HeadlessWebContentsImpl* web_contents,
     const gfx::Rect& bounds) {
-  NSView* web_view = web_contents->web_contents()->GetNativeView();
+  NSView* web_view =
+      web_contents->web_contents()->GetNativeView().GetNativeNSView();
   NSRect frame = gfx::ScreenRectToNSRect(bounds);
   [web_view setFrame:frame];
 }

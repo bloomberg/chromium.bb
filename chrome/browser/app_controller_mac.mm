@@ -635,12 +635,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // happened during a space change. Now that the change has
   // completed, raise browser windows.
   reopenTime_ = base::TimeTicks();
-  std::set<NSWindow*> browserWindows;
+  std::set<gfx::NativeWindow> browserWindows;
   for (auto* browser : *BrowserList::GetInstance())
     browserWindows.insert(browser->window()->GetNativeWindow());
-  if (!browserWindows.empty()) {
+  if (!browserWindows.empty())
     ui::FocusWindowSetOnCurrentSpace(browserWindows);
-  }
 }
 
 // Called when shutting down or logging out.
@@ -925,9 +924,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return YES;
 
   Browser* browser = chrome::GetLastActiveBrowser();
-  return browser &&
-         [[browser->window()->GetNativeWindow() attachedSheet]
-             isKindOfClass:[NSWindow class]];
+  return browser && [[browser->window()->GetNativeWindow().GetNativeNSWindow()
+                            attachedSheet] isKindOfClass:[NSWindow class]];
 }
 
 // Called to validate menu items when there are no key windows. All the
@@ -1175,7 +1173,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // If there are any, return here. Otherwise, the windows are panels or
   // notifications so we still need to open a new window.
   if (hasVisibleWindows) {
-    std::set<NSWindow*> browserWindows;
+    std::set<gfx::NativeWindow> browserWindows;
     for (auto* browser : *BrowserList::GetInstance()) {
       // When focusing Chrome, don't focus any browser windows associated with
       // a currently running app shim, so ignore them.

@@ -63,6 +63,6 @@ void WebContentsModalDialogHostCocoa::RemoveObserver(
 gfx::Size WebContentsModalDialogHostCocoa::GetMaximumDialogSize() {
   // The dialog should try to fit within the overlay for the web contents.
   // Note that, for things like print preview, this is just a suggested maximum.
-  return gfx::Size(
-      [sheet_controller_ overlayWindowSizeForParentView:GetHostView()]);
+  return gfx::Size([sheet_controller_
+      overlayWindowSizeForParentView:GetHostView().GetNativeNSView()]);
 }

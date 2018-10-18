@@ -188,10 +188,9 @@ class DragDropClientMacTest : public WidgetTest {
     gfx::Rect bounds(0, 0, 100, 100);
     widget_->SetBounds(bounds);
 
-    bridge_ = BridgedNativeWidgetImpl::GetFromNativeWindow(
-        widget_->GetNativeWindow());
     bridge_host_ = BridgedNativeWidgetHostImpl::GetFromNativeWindow(
         widget_->GetNativeWindow());
+    bridge_ = bridge_host_->bridge_impl();
     widget_->Show();
 
     target_ = new DragDropView();

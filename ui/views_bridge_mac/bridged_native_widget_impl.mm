@@ -219,16 +219,6 @@ gfx::Size BridgedNativeWidgetImpl::GetWindowSizeForClientSize(
 }
 
 // static
-BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromNativeWindow(
-    gfx::NativeWindow window) {
-  if (NativeWidgetMacNSWindow* widget_window =
-          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
-    return GetFromId([widget_window bridgedNativeWidgetId]);
-  }
-  return nullptr;  // Not created by NativeWidgetMac.
-}
-
-// static
 BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
     uint64_t bridged_native_widget_id) {
   auto found = GetIdToWidgetImplMap().find(bridged_native_widget_id);
@@ -1213,7 +1203,7 @@ void BridgedNativeWidgetImpl::UpdateWindowGeometry() {
 
 void BridgedNativeWidgetImpl::UpdateWindowDisplay() {
   host_->OnWindowDisplayChanged(
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window_));
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window_.get()));
 }
 
 bool BridgedNativeWidgetImpl::IsWindowModalSheet() const {

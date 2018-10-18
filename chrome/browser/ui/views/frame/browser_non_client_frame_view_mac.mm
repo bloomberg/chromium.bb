@@ -112,7 +112,7 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   CGFloat y_offset = TopUIFullscreenYOffset();
   if (y_offset > 0) {
     // When menubar shows up, we need to update mouse tracking area.
-    NSWindow* window = GetWidget()->GetNativeWindow();
+    NSWindow* window = GetWidget()->GetNativeWindow().GetNativeNSWindow();
     NSRect content_bounds = [[window contentView] bounds];
     // Backing bar tracking area uses native coordinates.
     CGFloat tracking_height =

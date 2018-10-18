@@ -129,7 +129,8 @@ ChromeWebContentsViewDelegateMac::CreateRenderViewContextMenu(
   gfx::NativeView parent_view =
       GetActiveRenderWidgetHostView()->GetNativeView();
 
-  return new RenderViewContextMenuMacCocoa(focused_frame, params, parent_view);
+  return new RenderViewContextMenuMacCocoa(focused_frame, params,
+                                           parent_view.GetNativeNSView());
 }
 
 content::RenderWidgetHostView*
@@ -141,5 +142,5 @@ ChromeWebContentsViewDelegateMac::GetActiveRenderWidgetHostView() const {
 
 NSWindow* ChromeWebContentsViewDelegateMac::GetNSWindowForFocusTracker() const {
   content::RenderWidgetHostView* rwhv = GetActiveRenderWidgetHostView();
-  return rwhv ? [rwhv->GetNativeView() window] : nil;
+  return rwhv ? [rwhv->GetNativeView().GetNativeNSView() window] : nil;
 }

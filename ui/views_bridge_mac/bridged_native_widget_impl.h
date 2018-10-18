@@ -66,10 +66,6 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
-  // Retrieves the bridge associated with the given NSWindow. Returns null if
-  // the supplied handle has no associated Widget.
-  static BridgedNativeWidgetImpl* GetFromNativeWindow(NSWindow* window);
-
   // Retrieve a BridgedNativeWidgetImpl* from its id.
   static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
 
