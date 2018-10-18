@@ -67,7 +67,7 @@ class ReadDataOperation : public ReadDataOperationBase {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       const base::Closure& on_done)
       : handle_(new WebDataConsumerHandleImpl(std::move(handle))),
-        main_thread_task_runner_(main_thread_task_runner),
+        main_thread_task_runner_(std::move(main_thread_task_runner)),
         on_done_(on_done) {}
 
   const std::string& result() const { return result_; }
@@ -128,7 +128,7 @@ class TwoPhaseReadDataOperation : public ReadDataOperationBase {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       const base::Closure& on_done)
       : handle_(new WebDataConsumerHandleImpl(std::move(handle))),
-        main_thread_task_runner_(main_thread_task_runner),
+        main_thread_task_runner_(std::move(main_thread_task_runner)),
         on_done_(on_done) {}
 
   const std::string& result() const { return result_; }
@@ -247,7 +247,8 @@ class WebDataConsumerHandleImplTest : public ::testing::Test {
 TEST_F(WebDataConsumerHandleImplTest, ReadData) {
   base::RunLoop run_loop;
   auto operation = std::make_unique<ReadDataOperation>(
-      std::move(consumer_), base::ThreadTaskRunnerHandle::Get(),
+      std::move(consumer_),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       run_loop.QuitClosure());
 
   base::Thread t("DataConsumerHandle test thread");
@@ -269,7 +270,8 @@ TEST_F(WebDataConsumerHandleImplTest, ReadData) {
 TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   base::RunLoop run_loop;
   auto operation = std::make_unique<TwoPhaseReadDataOperation>(
-      std::move(consumer_), base::ThreadTaskRunnerHandle::Get(),
+      std::move(consumer_),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       run_loop.QuitClosure());
 
   base::Thread t("DataConsumerHandle test thread");
