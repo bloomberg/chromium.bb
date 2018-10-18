@@ -670,7 +670,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       locale_notification_controller_(
           std::make_unique<LocaleNotificationController>()),
       login_screen_controller_(std::make_unique<LoginScreenController>()),
-      media_controller_(std::make_unique<MediaController>()),
+      media_controller_(std::make_unique<MediaController>(connector)),
       new_window_controller_(std::make_unique<NewWindowController>()),
       session_controller_(std::make_unique<SessionController>(connector)),
       note_taking_controller_(std::make_unique<NoteTakingController>()),

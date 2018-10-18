@@ -41,6 +41,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -842,25 +843,6 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-TEST_F(AcceleratorControllerTest, MediaGlobalAccelerators) {
-  TestMediaClient client;
-  Shell::Get()->media_controller()->SetClient(client.CreateAssociatedPtrInfo());
-  EXPECT_EQ(0, client.handle_media_next_track_count());
-  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, client.handle_media_next_track_count());
-
-  EXPECT_EQ(0, client.handle_media_play_pause_count());
-  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, client.handle_media_play_pause_count());
-
-  EXPECT_EQ(0, client.handle_media_prev_track_count());
-  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, client.handle_media_prev_track_count());
-}
-
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   ASSERT_EQ(0u, Shell::Get()->ime_controller()->available_imes().size());
 
@@ -1523,11 +1505,28 @@ class MediaSessionAcceleratorTest : public AcceleratorControllerTest,
     }
 
     AcceleratorControllerTest::SetUp();
+
+    client_ = std::make_unique<TestMediaClient>();
+    controller_ = std::make_unique<media_session::test::TestMediaController>();
+
+    MediaController* media_controller = Shell::Get()->media_controller();
+    media_controller->SetClient(client_->CreateAssociatedPtrInfo());
+    media_controller->SetMediaSessionControllerForTest(
+        controller_->CreateMediaControllerPtr());
+  }
+
+  TestMediaClient* client() const { return client_.get(); }
+
+  media_session::test::TestMediaController* controller() const {
+    return controller_.get();
   }
 
   bool service_enabled() const { return GetParam(); }
 
  private:
+  std::unique_ptr<TestMediaClient> client_;
+  std::unique_ptr<media_session::test::TestMediaController> controller_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionAcceleratorTest);
@@ -1569,6 +1568,40 @@ TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
       EXPECT_FALSE(press_key.stopped_propagation());
     }
   }
+}
+
+TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_NextTrack) {
+  EXPECT_EQ(0, client()->handle_media_next_track_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, client()->handle_media_next_track_count());
+}
+
+TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PlayPause) {
+  EXPECT_EQ(0, client()->handle_media_play_pause_count());
+  EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled()) {
+    EXPECT_EQ(0, client()->handle_media_play_pause_count());
+    EXPECT_EQ(1, controller()->toggle_suspend_resume_count());
+  } else {
+    EXPECT_EQ(1, client()->handle_media_play_pause_count());
+    EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+  }
+}
+
+TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PrevTrack) {
+  EXPECT_EQ(0, client()->handle_media_prev_track_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, client()->handle_media_prev_track_count());
 }
 
 }  // namespace ash
