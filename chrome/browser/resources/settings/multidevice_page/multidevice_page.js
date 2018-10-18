@@ -11,7 +11,11 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-page',
 
-  behaviors: [MultiDeviceFeatureBehavior, WebUIListenerBehavior],
+  behaviors: [
+    settings.RouteObserverBehavior,
+    MultiDeviceFeatureBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
@@ -84,6 +88,14 @@ Polymer({
 
     this.browserProxy_.getPageContentData().then(
         this.onPageContentDataChanged_.bind(this));
+  },
+
+  /**
+   * Overridden from settings.RouteObserverBehavior.
+   * @protected
+   */
+  currentRouteChanged: function() {
+    this.leaveNestedPageIfNoHostIsSet_();
   },
 
   /**
@@ -325,10 +337,31 @@ Polymer({
   },
 
   /**
+   * Checks if the user is in a nested page without a host set and, if so,
+   * navigates them back to the main page.
+   * @private
+   */
+  leaveNestedPageIfNoHostIsSet_: function() {
+    // Wait for data to arrive.
+    if (!this.pageContentData)
+      return;
+
+    // If the user gets to the a nested page without a host (e.g. by clicking a
+    // stale 'existing user' notifications after forgetting their host) we
+    // direct them back to the main settings page.
+    if (settings.routes.MULTIDEVICE != settings.getCurrentRoute() &&
+        settings.routes.MULTIDEVICE.contains(settings.getCurrentRoute()) &&
+        !this.isHostSet()) {
+      settings.navigateTo(settings.routes.MULTIDEVICE);
+    }
+  },
+
+  /**
    * @param {!MultiDevicePageContentData} newData
    * @private
    */
   onPageContentDataChanged_: function(newData) {
     this.pageContentData = newData;
+    this.leaveNestedPageIfNoHostIsSet_();
   },
 });
