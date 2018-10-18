@@ -20,7 +20,6 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
@@ -80,7 +79,6 @@
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/memory/swap_metrics_delegate_uma.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -1455,9 +1453,6 @@ bool BrowserMainLoop::UsingInProcessGpu() const {
 
 void BrowserMainLoop::InitializeMemoryManagementComponent() {
   memory_pressure_monitor_ = CreateMemoryPressureMonitor(parsed_command_line_);
-
-  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
-    MemoryCoordinatorImpl::GetInstance()->Start();
 
   std::unique_ptr<SwapMetricsDriver::Delegate> delegate(
       base::WrapUnique<SwapMetricsDriver::Delegate>(
