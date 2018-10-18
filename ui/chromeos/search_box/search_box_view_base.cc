@@ -490,8 +490,8 @@ void SearchBoxViewBase::UpdateButtonsVisisbility() {
   if (close_button_->visible() == should_show_close_button &&
       assistant_button_->visible() == should_show_assistant_button &&
       search_box_right_space_->visible() ==
-      should_show_search_box_right_space) {
-      return;
+          should_show_search_box_right_space) {
+    return;
   }
 
   close_button_->SetVisible(should_show_close_button);
@@ -507,7 +507,8 @@ void SearchBoxViewBase::ContentsChanged(views::Textfield* sender,
   search_box_->RequestFocus();
   UpdateModel(true);
   NotifyQueryChanged();
-  SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
+  if (!new_contents.empty())
+    SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
   UpdateButtonsVisisbility();
 }
 
