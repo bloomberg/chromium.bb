@@ -1177,35 +1177,35 @@ TEST_F(CompositedLayerMappingTest,
   // direction to compensate.  To make this a little clearer, for the first
   // example here the layer positions are calculated as:
   //
-  //   m_graphicsLayer x = left_pos - shadow_spread + shadow_x_offset
+  //   graphics_layer_ x = left_pos - shadow_spread + shadow_x_offset
   //                     = 50 - 10 - 10
   //                     = 30
   //
-  //   m_graphicsLayer y = top_pos - shadow_spread + shadow_y_offset
+  //   graphics_layer_ y = top_pos - shadow_spread + shadow_y_offset
   //                     = 50 - 10 + 0
   //                     = 40
   //
-  //   contents x = 50 - m_graphicsLayer x = 50 - 30 = 20
-  //   contents y = 50 - m_graphicsLayer y = 50 - 40 = 10
+  //   contents x = 50 - graphics_layer_ x = 50 - 30 = 20
+  //   contents y = 50 - graphics_layer_ y = 50 - 40 = 10
   //
   // The reason that perspective matters is that it affects which 'contents'
-  // layer is offset; m_childTransformLayer when using perspective, or
-  // m_scrollingLayer when there is no perspective.
+  // layer is offset; child_transform_layer_ when using perspective, or
+  // scrolling_layer_ when there is no perspective.
 
-  SetBodyInnerHTML(
-      "<div id='scroller' style='position: absolute; top: 50px; left: 50px; "
-      "width: 400px; height: 245px; overflow: auto; will-change: transform; "
-      "box-shadow: -10px 0 0 10px; perspective: 1px;'>"
-      "    <div style='position: absolute; top: 50px; bottom: 0; width: 200px; "
-      "height: 200px;'></div>"
-      "</div>"
-
-      "<div id='scroller2' style='position: absolute; top: 400px; left: 50px; "
-      "width: 400px; height: 245px; overflow: auto; will-change: transform; "
-      "box-shadow: -10px 0 0 10px;'>"
-      "    <div style='position: absolute; top: 50px; bottom: 0; width: 200px; "
-      "height: 200px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroller' style='position: absolute; top: 50px; left: 50px;
+        width: 400px; height: 245px; overflow: auto; will-change: transform;
+        box-shadow: -10px 0 0 10px; perspective: 1px;'>
+      <div style='position: absolute; top: 50px; bottom: 0; width: 200px;
+          height: 200px;'></div>
+      </div>
+    <div id='scroller2' style='position: absolute; top: 400px; left: 50px;
+        width: 400px; height: 245px; overflow: auto; will-change: transform;
+        box-shadow: -10px 0 0 10px;'>
+      <div style='position: absolute; top: 50px; bottom: 0; width: 200px;
+          height: 200px;'></div>
+    </div>
+  )HTML");
 
   CompositedLayerMapping* mapping =
       ToLayoutBlock(GetLayoutObjectByElementId("scroller"))

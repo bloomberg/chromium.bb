@@ -455,9 +455,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   Color LayoutObjectBackgroundColor() const;
   void UpdateBackgroundColor();
   void UpdateContentsRect();
-  void UpdateContentsOffsetInCompositingLayer(
-      const IntPoint& snapped_offset_from_composited_ancestor,
-      const IntPoint& graphics_layer_parent_location);
   void UpdateAfterPartResize();
   void UpdateCompositingReasons();
 
@@ -666,16 +663,12 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   LayoutRect composited_bounds_;
 
-  LayoutSize content_offset_in_compositing_layer_;
-
   // We keep track of the scrolling contents offset, so that when it changes we
   // can notify the ScrollingCoordinator, which passes on main-thread scrolling
   // updates to the compositor.
   DoubleSize scrolling_contents_offset_;
 
   const PaintLayer* clip_inheritance_ancestor_;
-
-  unsigned content_offset_in_compositing_layer_dirty_ : 1;
 
   unsigned pending_update_scope_ : 2;
   unsigned is_main_frame_layout_view_layer_ : 1;

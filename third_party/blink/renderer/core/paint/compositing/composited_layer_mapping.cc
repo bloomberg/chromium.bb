@@ -84,28 +84,20 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static IntRect ContentsRect(const LayoutObject& layout_object) {
+static LayoutRect ContentsRect(const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
-    return IntRect();
-  if (layout_object.IsCanvas()) {
-    return PixelSnappedIntRect(
-        ToLayoutHTMLCanvas(layout_object).ReplacedContentRect());
-  }
-  if (layout_object.IsVideo()) {
-    return PixelSnappedIntRect(
-        ToLayoutVideo(layout_object).ReplacedContentRect());
-  }
-
-  return PixelSnappedIntRect(
-      ToLayoutBox(layout_object).PhysicalContentBoxRect());
+    return LayoutRect();
+  if (layout_object.IsLayoutReplaced())
+    return ToLayoutReplaced(layout_object).ReplacedContentRect();
+  return ToLayoutBox(layout_object).PhysicalContentBoxRect();
 }
 
-static IntRect BackgroundRect(const LayoutObject& layout_object) {
+static LayoutRect BackgroundRect(const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
-    return IntRect();
+    return LayoutRect();
 
   const LayoutBox& box = ToLayoutBox(layout_object);
-  return PixelSnappedIntRect(box.PhysicalBackgroundRect(kBackgroundClipRect));
+  return box.PhysicalBackgroundRect(kBackgroundClipRect);
 }
 
 static inline bool IsTextureLayerCanvas(const LayoutObject& layout_object) {
@@ -198,7 +190,6 @@ static FloatPoint StickyPositionOffsetForLayer(PaintLayer& layer) {
 
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
-      content_offset_in_compositing_layer_dirty_(false),
       pending_update_scope_(kGraphicsLayerUpdateNone),
       is_main_frame_layout_view_layer_(false),
       scrolling_contents_are_empty_(false),
@@ -518,7 +509,6 @@ void CompositedLayerMapping::UpdateCompositedBounds() {
   // FIXME: if this is really needed for performance, it would be better to
   // store it on Layer.
   composited_bounds_ = owning_layer_.BoundingBoxForCompositing();
-  content_offset_in_compositing_layer_dirty_ = true;
 }
 
 GraphicsLayer* CompositedLayerMapping::FrameContentsGraphicsLayer() const {
@@ -565,7 +555,7 @@ void CompositedLayerMapping::UpdateAfterPartResize() {
           child_containment_layer_
               ? FloatPoint(child_containment_layer_->GetPosition())
               : FloatPoint();
-      document_layer->SetPosition(FloatPoint(FlooredIntPoint(
+      document_layer->SetPosition(FloatPoint(RoundedIntSize(
           FloatPoint(ContentsBox().Location()) - parent_position)));
     }
   }
@@ -1218,8 +1208,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateOverflowControlsHostLayerGeometry(compositing_stacking_context,
                                           compositing_container,
                                           graphics_layer_parent_location);
-  UpdateContentsOffsetInCompositingLayer(
-      snapped_offset_from_composited_ancestor, graphics_layer_parent_location);
   UpdateStickyConstraints(GetLayoutObject().StyleRef());
   UpdateSquashingLayerGeometry(
       graphics_layer_parent_location, compositing_container,
@@ -1606,16 +1594,13 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
 void CompositedLayerMapping::UpdateChildTransformLayerGeometry() {
   if (!child_transform_layer_)
     return;
-  const IntRect border_box =
-      ToLayoutBox(owning_layer_.GetLayoutObject())
-          .PixelSnappedBorderBoxRect(SubpixelAccumulation());
-  child_transform_layer_->SetSize(gfx::Size(border_box.Size()));
-  child_transform_layer_->SetOffsetFromLayoutObject(
-      ToIntSize(border_box.Location()));
-  IntPoint parent_location(
-      child_transform_layer_->Parent()->OffsetFromLayoutObject());
-  child_transform_layer_->SetPosition(
-      FloatPoint(border_box.Location() - parent_location));
+
+  LayoutRect border_box =
+      ToLayoutBox(owning_layer_.GetLayoutObject()).BorderBoxRect();
+  border_box.Move(ContentOffsetInCompositingLayer());
+  child_transform_layer_->SetSize(gfx::Size(border_box.PixelSnappedSize()));
+  child_transform_layer_->SetOffsetFromLayoutObject(IntSize());
+  child_transform_layer_->SetPosition(FloatPoint(border_box.Location()));
 }
 
 void CompositedLayerMapping::UpdateMaskLayerGeometry() {
@@ -1911,59 +1896,6 @@ void CompositedLayerMapping::UpdatePaintingPhases() {
 
 void CompositedLayerMapping::UpdateContentsRect() {
   graphics_layer_->SetContentsRect(PixelSnappedIntRect(ContentsBox()));
-}
-
-void CompositedLayerMapping::UpdateContentsOffsetInCompositingLayer(
-    const IntPoint& snapped_offset_from_composited_ancestor,
-    const IntPoint& graphics_layer_parent_location) {
-  // m_graphicsLayer is positioned relative to our compositing ancestor
-  // PaintLayer, but it's not positioned at the origin of m_owningLayer, it's
-  // offset by m_contentBounds.location(). This is what
-  // contentOffsetInCompositingLayer is meant to capture, roughly speaking
-  // (ignoring rounding and subpixel accumulation).
-  //
-  // Our ancestor graphics layers in this CLM (m_graphicsLayer and potentially
-  // m_ancestorClippingLayer) have pixel snapped, so if we don't adjust this
-  // offset, we'll see accumulated rounding errors due to that snapping.
-  //
-  // In order to ensure that we account for this rounding, we compute
-  // contentsOffsetInCompositingLayer in a somewhat roundabout way.
-  //
-  // our position = (desired position) - (inherited graphics layer offset).
-  //
-  // Precisely,
-  // Offset = snappedOffsetFromCompositedAncestor -
-  //          offsetDueToAncestorGraphicsLayers (See code below)
-  //        = snappedOffsetFromCompositedAncestor -
-  //          (m_graphicsLayer->position() + graphicsLayerParentLocation)
-  //        = snappedOffsetFromCompositedAncestor -
-  //          (relativeCompositingBounds.location() -
-  //              graphicsLayerParentLocation +
-  //              graphicsLayerParentLocation)
-  //          (See updateMainGraphicsLayerGeometry)
-  //        = snappedOffsetFromCompositedAncestor -
-  //          relativeCompositingBounds.location()
-  //        = snappedOffsetFromCompositedAncestor -
-  //          (pixelSnappedIntRect(contentBounds.location()) +
-  //              snappedOffsetFromCompositedAncestor)
-  //          (See computeBoundsOfOwningLayer)
-  //      = -pixelSnappedIntRect(contentBounds.location())
-  //
-  // As you can see, we've ended up at the same spot
-  // (-contentBounds.location()), but by subtracting off our ancestor graphics
-  // layers positions, we can be sure we've accounted correctly for any pixel
-  // snapping due to ancestor graphics layers.
-  //
-  // And drawing of composited children takes into account the subpixel
-  // accumulation of this CLM already (through its own
-  // graphicsLayerParentLocation it appears).
-  FloatPoint offset_due_to_ancestor_graphics_layers =
-      FloatPoint(graphics_layer_->GetPosition()) +
-      graphics_layer_parent_location;
-  content_offset_in_compositing_layer_ =
-      LayoutSize(snapped_offset_from_composited_ancestor -
-                 offset_due_to_ancestor_graphics_layers);
-  content_offset_in_compositing_layer_dirty_ = false;
 }
 
 void CompositedLayerMapping::UpdateDrawsContent() {
@@ -2958,12 +2890,12 @@ FloatPoint3D CompositedLayerMapping::ComputeTransformOrigin(
 // Return the offset from the top-left of this compositing layer at which the
 // LayoutObject's contents are painted.
 LayoutSize CompositedLayerMapping::ContentOffsetInCompositingLayer() const {
-  DCHECK(!content_offset_in_compositing_layer_dirty_);
-  return content_offset_in_compositing_layer_;
+  return owning_layer_.SubpixelAccumulation() -
+         LayoutSize(graphics_layer_->OffsetFromLayoutObject());
 }
 
 LayoutRect CompositedLayerMapping::ContentsBox() const {
-  LayoutRect contents_box = LayoutRect(ContentsRect(GetLayoutObject()));
+  LayoutRect contents_box = ContentsRect(GetLayoutObject());
   contents_box.Move(ContentOffsetInCompositingLayer());
   return contents_box;
 }
