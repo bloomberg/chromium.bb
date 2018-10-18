@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -111,7 +112,7 @@ void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const KURL& url,
                                                        const char* data,
                                                        size_t size) {
   Vector<uint8_t> meta_data;
-  meta_data.Append(data, size);
+  meta_data.Append(data, SafeCast<wtf_size_t>(size));
   service_worker_host_->SetCachedMetadata(url, meta_data);
 }
 

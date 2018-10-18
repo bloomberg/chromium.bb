@@ -178,7 +178,7 @@ String ParkableString::ToString() const {
   return impl_ ? impl_->ToString() : String();
 }
 
-unsigned ParkableString::CharactersSizeInBytes() const {
+wtf_size_t ParkableString::CharactersSizeInBytes() const {
   return impl_ ? impl_->CharactersSizeInBytes() : 0;
 }
 

@@ -147,13 +147,13 @@ std::vector<PictureInPictureControlInfo>
 HTMLVideoElementPictureInPicture::ToPictureInPictureControlInfoVector(
     const HeapVector<PictureInPictureControl>& controls) {
   std::vector<PictureInPictureControlInfo> converted_controls;
-  for (size_t i = 0; i < controls.size(); ++i) {
+  for (const PictureInPictureControl& control : controls) {
     PictureInPictureControlInfo current_converted_control;
-    HeapVector<MediaImage> current_icons = controls[i].icons();
+    HeapVector<MediaImage> current_icons = control.icons();
 
     // Only two icons are supported, so cap the loop at running that many times
     // to avoid potential problems.
-    for (size_t j = 0; j < current_icons.size() && j < 2; ++j) {
+    for (wtf_size_t j = 0; j < current_icons.size() && j < 2; ++j) {
       PictureInPictureControlInfo::Icon current_icon;
       current_icon.src = KURL(WebString(current_icons[j].src()));
 
@@ -168,8 +168,8 @@ HTMLVideoElementPictureInPicture::ToPictureInPictureControlInfoVector(
       current_converted_control.icons.push_back(current_icon);
     }
 
-    current_converted_control.id = WebString(controls[i].id()).Utf8();
-    current_converted_control.label = WebString(controls[i].label()).Utf8();
+    current_converted_control.id = WebString(control.id()).Utf8();
+    current_converted_control.label = WebString(control.label()).Utf8();
     converted_controls.push_back(current_converted_control);
   }
   return converted_controls;

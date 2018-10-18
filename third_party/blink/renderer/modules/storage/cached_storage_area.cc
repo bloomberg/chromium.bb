@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -451,8 +452,10 @@ void CachedStorageArea::EnsureLoaded() {
   // Track localStorage size, from 0-6MB. Note that the maximum size should be
   // 10MB, but we add some slop since we want to make sure the max size is
   // always above what we see in practice, since histograms can't change.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.MojoSizeInKB",
-                              local_storage_size_kb, 1, 6 * 1024, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "LocalStorage.MojoSizeInKB",
+      base::saturated_cast<base::Histogram::Sample>(local_storage_size_kb), 1,
+      6 * 1024, 50);
   if (local_storage_size_kb < 100) {
     UMA_HISTOGRAM_TIMES("LocalStorage.MojoTimeToPrimeForUnder100KB",
                         time_to_prime);
@@ -509,7 +512,7 @@ String CachedStorageArea::Uint8VectorToString(const Vector<uint8_t>& input,
                                               FormatOption format_option) {
   if (input.IsEmpty())
     return g_empty_string;
-  const size_t input_size = input.size();
+  const wtf_size_t input_size = input.size();
   String result;
   bool corrupt = false;
   switch (format_option) {
@@ -536,7 +539,7 @@ String CachedStorageArea::Uint8VectorToString(const Vector<uint8_t>& input,
     }
     case FormatOption::kLocalStorageDetectFormat: {
       StorageFormat format = static_cast<StorageFormat>(input[0]);
-      const size_t payload_size = input_size - 1;
+      const wtf_size_t payload_size = input_size - 1;
       switch (format) {
         case StorageFormat::UTF16: {
           if (payload_size % sizeof(UChar) != 0) {
@@ -604,7 +607,8 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
                 reinterpret_cast<char*>(buffer + buffer_vector.size()));
         // (length * 3) should be sufficient for any conversion
         DCHECK_NE(result, WTF::Unicode::kTargetExhausted);
-        buffer_vector.Shrink(buffer - buffer_vector.data());
+        buffer_vector.Shrink(
+            static_cast<wtf_size_t>(buffer - buffer_vector.data()));
         return buffer_vector;
       }
 

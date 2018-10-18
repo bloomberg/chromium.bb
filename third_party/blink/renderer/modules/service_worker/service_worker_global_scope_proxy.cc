@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace mojo {
 
@@ -144,10 +145,11 @@ struct TypeConverter<blink::mojom::blink::NotificationDataPtr,
   static blink::mojom::blink::NotificationDataPtr Convert(
       const blink::WebNotificationData& input) {
     Vector<int32_t> vibration_pattern;
-    vibration_pattern.Append(input.vibrate.Data(), input.vibrate.size());
+    vibration_pattern.Append(input.vibrate.Data(),
+                             SafeCast<wtf_size_t>(input.vibrate.size()));
 
     Vector<uint8_t> data;
-    data.Append(input.data.Data(), input.data.size());
+    data.Append(input.data.Data(), SafeCast<wtf_size_t>(input.data.size()));
 
     Vector<blink::mojom::blink::NotificationActionPtr> actions;
     for (const auto& web_action : input.actions) {

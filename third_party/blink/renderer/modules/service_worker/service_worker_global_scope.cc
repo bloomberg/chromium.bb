@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -219,13 +220,15 @@ void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, script_size_histogram,
       ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
-  script_size_histogram.Count(script_size);
+  script_size_histogram.Count(
+      base::saturated_cast<base::Histogram::Sample>(script_size));
 
   if (cached_metadata_size) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, script_cached_metadata_size_histogram,
         ("ServiceWorker.ScriptCachedMetadataSize", 1000, 50000000, 50));
-    script_cached_metadata_size_histogram.Count(cached_metadata_size);
+    script_cached_metadata_size_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(cached_metadata_size));
   }
 
   CountScriptInternal(script_size, cached_metadata_size);
@@ -253,16 +256,20 @@ void ServiceWorkerGlobalScope::DidEvaluateScript() {
   // if they're no longer used.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, script_count_histogram,
                                   ("ServiceWorker.ScriptCount", 1, 1000, 50));
-  script_count_histogram.Count(script_count_);
+  script_count_histogram.Count(
+      base::saturated_cast<base::Histogram::Sample>(script_count_));
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, script_total_size_histogram,
       ("ServiceWorker.ScriptTotalSize", 1000, 5000000, 50));
-  script_total_size_histogram.Count(script_total_size_);
+  script_total_size_histogram.Count(
+      base::saturated_cast<base::Histogram::Sample>(script_total_size_));
   if (script_cached_metadata_total_size_) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, cached_metadata_histogram,
         ("ServiceWorker.ScriptCachedMetadataTotalSize", 1000, 50000000, 50));
-    cached_metadata_histogram.Count(script_cached_metadata_total_size_);
+    cached_metadata_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(
+            script_cached_metadata_total_size_));
   }
 }
 
@@ -432,14 +439,16 @@ void ServiceWorkerGlobalScope::CountCacheStorageInstalledScript(
       CustomCountHistogram, script_size_histogram,
       ("ServiceWorker.CacheStorageInstalledScript.ScriptSize", 1000, 5000000,
        50));
-  script_size_histogram.Count(script_size);
+  script_size_histogram.Count(
+      base::saturated_cast<base::Histogram::Sample>(script_size));
 
   if (script_metadata_size) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, script_metadata_size_histogram,
         ("ServiceWorker.CacheStorageInstalledScript.CachedMetadataSize", 1000,
          50000000, 50));
-    script_metadata_size_histogram.Count(script_metadata_size);
+    script_metadata_size_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(script_metadata_size));
   }
 }
 
@@ -454,13 +463,15 @@ void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
       CustomCountHistogram, cache_storage_installed_script_count_histogram,
       ("ServiceWorker.CacheStorageInstalledScript.Count", 1, 1000, 50));
   cache_storage_installed_script_count_histogram.Count(
-      cache_storage_installed_script_count_);
+      base::saturated_cast<base::Histogram::Sample>(
+          cache_storage_installed_script_count_));
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, cache_storage_installed_script_total_size_histogram,
       ("ServiceWorker.CacheStorageInstalledScript.ScriptTotalSize", 1000,
        50000000, 50));
   cache_storage_installed_script_total_size_histogram.Count(
-      cache_storage_installed_script_total_size_);
+      base::saturated_cast<base::Histogram::Sample>(
+          cache_storage_installed_script_total_size_));
 
   if (cache_storage_installed_script_metadata_total_size_) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -469,7 +480,8 @@ void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
         ("ServiceWorker.CacheStorageInstalledScript.CachedMetadataTotalSize",
          1000, 50000000, 50));
     cache_storage_installed_script_metadata_total_size_histogram.Count(
-        cache_storage_installed_script_metadata_total_size_);
+        base::saturated_cast<base::Histogram::Sample>(
+            cache_storage_installed_script_metadata_total_size_));
   }
 }
 
