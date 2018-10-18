@@ -19,6 +19,9 @@ extern const char kSwitchValueFalse[];
 // Url to upload crash data to.
 extern const char kCrashServerUrl[];
 
+// Disable Crash Reporting
+extern const char kDisableCrashReporter[];
+
 // Content-implementation switches
 extern const char kEnableLocalFileAccesses[];
 
