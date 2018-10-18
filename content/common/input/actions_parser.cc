@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/actions_parser.h"
+#include "content/common/input/actions_parser.h"
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
