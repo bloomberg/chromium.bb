@@ -1385,10 +1385,8 @@ void MediaControlsImpl::UpdateSizingCSSClass() {
                sizing_class == MediaControlsSizingClass::kSmall);
   SetClass(kMediaControlsSizingMediumCSSClass,
            ShouldShowVideoControls() &&
-               sizing_class == MediaControlsSizingClass::kMedium);
-  SetClass(kMediaControlsSizingLargeCSSClass,
-           ShouldShowVideoControls() &&
-               sizing_class == MediaControlsSizingClass::kLarge);
+               (sizing_class == MediaControlsSizingClass::kMedium ||
+                sizing_class == MediaControlsSizingClass::kLarge));
 }
 
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
