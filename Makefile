@@ -4,9 +4,21 @@
 
 CHROME=google-chrome
 
+PROD_ICONS = \
+	src/images/camera_app_icons_128.png \
+	src/images/camera_app_icons_48.png \
+
+CANARY_ICONS = \
+	utils/canary/images/camera_app_icons_128.png \
+	utils/canary/images/camera_app_icons_48.png \
+
+DEV_ICONS = \
+	utils/dev/images/camera_app_icons_128.png \
+	utils/dev/images/camera_app_icons_48.png \
+
 # Include all resources of the Camera App to be copied to the target package,
-# but without the manifest files.
-SRC_RESOURCES= \
+# but without the manifest files and app icons (to be added later).
+RESOURCES = \
 	src/_locales/am/messages.json \
 	src/_locales/ar/messages.json \
 	src/_locales/bg/messages.json \
@@ -65,8 +77,6 @@ SRC_RESOURCES= \
 	src/images/browser_button_delete.svg \
 	src/images/browser_button_export.svg \
 	src/images/browser_button_print.svg \
-	src/images/camera_app_icons_128.png \
-	src/images/camera_app_icons_48.png \
 	src/images/camera_button_grid_off.svg \
 	src/images/camera_button_grid_on.svg \
 	src/images/camera_button_mic_off.svg \
@@ -117,8 +127,23 @@ SRC_RESOURCES= \
 	src/views/main.html \
 	src/LICENSE \
 
+# Resources for the Prod build.
+RESOURCES_PROD = $(RESOURCES) $(PROD_ICONS)
+
+# Resources for the Canary build.
+RESOURCES_CANARY = $(RESOURCES) $(CANARY_ICONS)
+
+# Resources for the Dev build.
+RESOURCES_DEV = $(RESOURCES) $(DEV_ICONS)
+
 # Path for the Camera resources. Relative, with a trailing slash.
 SRC_PATH=src/
+
+# Path for Canary-specific utility files. Relative, with a trailing slash.
+CANARY_UTILS_PATH=utils/canary/
+
+# Path for Dev-specific utility files. Relative, with a trailing slash.
+DEV_UTILS_PATH=utils/dev/
 
 # Manifest file for the camera.crx package.
 SRC_MANIFEST=src/manifest.json
@@ -127,10 +152,10 @@ SRC_MANIFEST=src/manifest.json
 all: build/camera.crx
 
 # Builds the release version.
-build/camera: $(SRC_RESOURCES) $(SRC_MANIFEST)
+build/camera: $(RESOURCES_PROD) $(SRC_MANIFEST)
 	mkdir -p build/camera
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
-	  $(SRC_RESOURCES)) ../build/camera
+	  $(RESOURCES_PROD)) ../build/camera
 	cp $(SRC_MANIFEST) build/camera/manifest.json
 
 # Builds the camera.crx package.
@@ -148,17 +173,19 @@ canary: build/camera-canary
 dev: build/camera-dev.crx
 
 # Builds the canary version.
-build/camera-canary: $(SRC_RESOURCES) $(SRC_MANIFEST)
+build/camera-canary: $(RESOURCES_CANARY) $(SRC_MANIFEST)
 	mkdir -p build/camera-canary
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
-	  $(SRC_RESOURCES)) ../build/camera-canary
+	  $(RESOURCES)) ../build/camera-canary
+	cp -r $(CANARY_UTILS_PATH)* build/camera-canary
 	utils/generate_manifest.py --canary
 
 # Builds the dev version.
-build/camera-dev: $(SRC_RESOURCES) $(SRC_MANIFEST)
+build/camera-dev: $(RESOURCES_DEV) $(SRC_MANIFEST)
 	mkdir -p build/camera-dev
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
-	  $(SRC_RESOURCES)) ../build/camera-dev
+	  $(RESOURCES)) ../build/camera-dev
+	cp -r $(DEV_UTILS_PATH)* build/camera-dev
 	utils/generate_manifest.py --dev
 
 # Builds the camera-dev.crx package.
