@@ -489,7 +489,6 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
   }
 
   // initial packet number of 0 is always invalid.
-  const int kInvalidPacketNumber = 0;
   if (header.packet_number == kInvalidPacketNumber) {
     return kFateTimeWait;
   }

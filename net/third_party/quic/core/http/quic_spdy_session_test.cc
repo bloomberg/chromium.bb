@@ -851,15 +851,14 @@ TEST_P(QuicSpdySessionTestServer, ServerReplyToConnecitivityProbe) {
   QuicSocketAddress new_peer_address =
       QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort + 1);
 
-  MockPacketWriter* writer = static_cast<MockPacketWriter*>(
-      QuicConnectionPeer::GetWriter(session_.connection()));
-  EXPECT_CALL(*writer, WritePacket(_, _, _, new_peer_address, _))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
   EXPECT_CALL(*connection_,
-              SendConnectivityProbingPacket(nullptr, new_peer_address))
-      .WillOnce(
-          Invoke(connection_,
-                 &MockQuicConnection::ReallySendConnectivityProbingPacket));
+              SendConnectivityProbingResponsePacket(new_peer_address));
+  if (transport_version() == QUIC_VERSION_99) {
+    // Need to explicitly do this to emulate the reception of a PathChallenge,
+    // which stores its payload for use in generating the response.
+    connection_->OnPathChallengeFrame(
+        QuicPathChallengeFrame(0, {{0, 1, 2, 3, 4, 5, 6, 7}}));
+  }
   session_.OnConnectivityProbeReceived(session_.self_address(),
                                        new_peer_address);
   EXPECT_EQ(old_peer_address, session_.peer_address());

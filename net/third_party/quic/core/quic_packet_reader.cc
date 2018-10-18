@@ -16,6 +16,8 @@
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
@@ -131,9 +133,16 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
     int ttl = 0;
     bool has_ttl =
         QuicSocketUtils::GetTtlFromMsghdr(&mmsg_hdr_[i].msg_hdr, &ttl);
+    char* headers = nullptr;
+    size_t headers_length = 0;
+    if (GetQuicReloadableFlag(quic_get_recv_headers)) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_get_recv_headers, 1, 3);
+      QuicSocketUtils::GetPacketHeadersFromMsghdr(&mmsg_hdr_[i].msg_hdr,
+                                                  &headers, &headers_length);
+    }
     QuicReceivedPacket packet(reinterpret_cast<char*>(packets_[i].iov.iov_base),
                               mmsg_hdr_[i].msg_len, timestamp, false, ttl,
-                              has_ttl);
+                              has_ttl, headers, headers_length, false);
     QuicSocketAddress server_address(server_ip, port);
     processor->ProcessPacket(server_address, client_address, packet);
   }

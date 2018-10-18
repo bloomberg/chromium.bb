@@ -322,6 +322,21 @@ QuicPacketGenerator::SerializeConnectivityProbingPacket() {
   return packet_creator_.SerializeConnectivityProbingPacket();
 }
 
+OwningSerializedPacketPointer
+QuicPacketGenerator::SerializePathChallengeConnectivityProbingPacket(
+    QuicPathFrameBuffer* payload) {
+  return packet_creator_.SerializePathChallengeConnectivityProbingPacket(
+      payload);
+}
+
+OwningSerializedPacketPointer
+QuicPacketGenerator::SerializePathResponseConnectivityProbingPacket(
+    const QuicDeque<QuicPathFrameBuffer>& payloads,
+    const bool is_padded) {
+  return packet_creator_.SerializePathResponseConnectivityProbingPacket(
+      payloads, is_padded);
+}
+
 void QuicPacketGenerator::ReserializeAllFrames(
     const QuicPendingRetransmission& retransmission,
     char* buffer,

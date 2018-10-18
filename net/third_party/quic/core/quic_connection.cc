@@ -801,7 +801,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     return false;
   }
 
-  // Initialize the current packet content stats.
+  // Initialize the current packet content state.
   current_packet_content_ = NO_FRAMES_RECEIVED;
   is_current_packet_connectivity_probing_ = false;
   current_effective_peer_migration_type_ = NO_CHANGE;
@@ -1156,10 +1156,26 @@ bool QuicConnection::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
 }
 
 bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
+  // Save the path challenge's payload, for later use in generating the
+  // response.
+  received_path_challenge_payloads_.push_back(frame.data_buffer);
+
+  // For VERSION 99 we define a "Padded PATH CHALLENGE" to be the same thing
+  // as a PADDED PING -- it will start a connectivity check and prevent
+  // connection migration. Insofar as the connectivity check and connection
+  // migration are concerned, logically the PATH CHALLENGE is the same as the
+  // PING, so as a stopgap, tell the FSM that determines whether we have a
+  // Padded PING or not that we received a PING.
+  UpdatePacketContent(FIRST_FRAME_IS_PING);
   return true;
 }
 
 bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
+  if (transmitted_connectivity_probe_payload_ != frame.data_buffer) {
+    // Is not for the probe we sent, ignore it.
+    return true;
+  }
+  UpdatePacketContent(FIRST_FRAME_IS_PING);
   return true;
 }
 
@@ -1315,6 +1331,8 @@ void QuicConnection::OnPacketComplete() {
     visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
                                           last_packet_source_address_);
   } else if (IsCurrentPacketConnectivityProbing()) {
+    // This node is not a client (is a server) AND the received packet was
+    // connectivity-probing, send an appropriate response.
     QUIC_DVLOG(1) << ENDPOINT << "Received a connectivity probing packet for "
                   << last_header_.destination_connection_id
                   << " from ip:port: " << last_packet_source_address_.ToString()
@@ -1323,6 +1341,21 @@ void QuicConnection::OnPacketComplete() {
     visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
                                           last_packet_source_address_);
   } else {
+    // This node is not a client (is a server) AND the received packet was
+    // NOT connectivity-probing. If the packet had PATH CHALLENGES, send
+    // appropriate RESPONSE. Then deal with possible peer migration.
+    if (transport_version() == QUIC_VERSION_99 &&
+        !received_path_challenge_payloads_.empty()) {
+      // If a PATH CHALLENGE was in a "Padded PING (or PATH CHALLENGE)"
+      // then it is taken care of above. This handles the case where a PATH
+      // CHALLENGE appeared someplace else (eg, the peer randomly added a PATH
+      // CHALLENGE frame to some other packet.
+      // There was at least one PATH CHALLENGE in the received packet,
+      // Generate the required PATH RESPONSE.
+      SendGenericPathProbePacket(nullptr, last_packet_source_address_,
+                                 /* is_response= */ true);
+    }
+
     if (last_header_.packet_number ==
         received_packet_manager_.GetLargestObserved()) {
       direct_peer_address_ = last_packet_source_address_;
@@ -2978,6 +3011,20 @@ void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
 bool QuicConnection::SendConnectivityProbingPacket(
     QuicPacketWriter* probing_writer,
     const QuicSocketAddress& peer_address) {
+  return SendGenericPathProbePacket(probing_writer, peer_address,
+                                    /* is_response= */ false);
+}
+
+void QuicConnection::SendConnectivityProbingResponsePacket(
+    const QuicSocketAddress& peer_address) {
+  SendGenericPathProbePacket(nullptr, peer_address,
+                             /* is_response= */ true);
+}
+
+bool QuicConnection::SendGenericPathProbePacket(
+    QuicPacketWriter* probing_writer,
+    const QuicSocketAddress& peer_address,
+    bool is_response) {
   DCHECK(peer_address.IsInitialized());
   if (!connected_) {
     QUIC_BUG << "Not sending connectivity probing packet as connection is "
@@ -2985,14 +3032,15 @@ bool QuicConnection::SendConnectivityProbingPacket(
     return false;
   }
   if (perspective_ == Perspective::IS_SERVER && probing_writer == nullptr) {
-    // Server can use default packet writer to write probing packet.
+    // Server can use default packet writer to write packet.
     probing_writer = writer_;
   }
   DCHECK(probing_writer);
 
   if (probing_writer->IsWriteBlocked()) {
-    QUIC_DLOG(INFO) << ENDPOINT
-                    << "Writer blocked when send connectivity probing packet.";
+    QUIC_DLOG(INFO)
+        << ENDPOINT
+        << "Writer blocked when sending connectivity probing packet.";
     if (probing_writer == writer_) {
       // Visitor should not be write blocked if the probing writer is not the
       // default packet writer.
@@ -3001,11 +3049,42 @@ bool QuicConnection::SendConnectivityProbingPacket(
     return true;
   }
 
-  QUIC_DLOG(INFO) << ENDPOINT << "Sending connectivity probing packet for "
-                  << "connection_id = " << connection_id_;
+  QUIC_DLOG(INFO) << ENDPOINT
+                  << "Sending path probe packet for connection_id = "
+                  << connection_id_;
 
-  OwningSerializedPacketPointer probing_packet(
-      packet_generator_.SerializeConnectivityProbingPacket());
+  OwningSerializedPacketPointer probing_packet;
+  if (transport_version() != QUIC_VERSION_99) {
+    // Non-IETF QUIC, generate a padded ping regardless of whether this is a
+    // request or a response.
+    probing_packet = packet_generator_.SerializeConnectivityProbingPacket();
+  } else {
+    if (is_response) {
+      // Respond using IETF QUIC PATH_RESPONSE frame
+      if (IsCurrentPacketConnectivityProbing()) {
+        // Pad the response if the request was a google connectivity probe
+        // (padded).
+        probing_packet =
+            packet_generator_.SerializePathResponseConnectivityProbingPacket(
+                received_path_challenge_payloads_, /* is_padded = */ true);
+        received_path_challenge_payloads_.clear();
+      } else {
+        // Do not pad the response if the path challenge was not a google
+        // connectivity probe.
+        probing_packet =
+            packet_generator_.SerializePathResponseConnectivityProbingPacket(
+                received_path_challenge_payloads_,
+                /* is_padded = */ false);
+        received_path_challenge_payloads_.clear();
+      }
+    } else {
+      // Request using IETF QUIC PATH_CHALLENGE frame
+      probing_packet =
+          packet_generator_.SerializePathChallengeConnectivityProbingPacket(
+              &transmitted_connectivity_probe_payload_);
+    }
+  }
+
   DCHECK_EQ(IsRetransmittable(*probing_packet), NO_RETRANSMITTABLE_DATA);
 
   const QuicTime packet_send_time = clock_->Now();
@@ -3215,19 +3294,23 @@ void QuicConnection::UpdatePacketContent(PacketContent type) {
     }
   }
 
-  if (type == SECOND_FRAME_IS_PADDING) {
-    if (current_packet_content_ == FIRST_FRAME_IS_PING) {
-      current_packet_content_ = SECOND_FRAME_IS_PADDING;
-      if (perspective_ == Perspective::IS_SERVER) {
-        is_current_packet_connectivity_probing_ =
-            current_effective_peer_migration_type_ != NO_CHANGE;
-      } else {
-        is_current_packet_connectivity_probing_ =
-            (last_packet_source_address_ != peer_address_) ||
-            (last_packet_destination_address_ != self_address_);
-      }
-      return;
+  // In Google QUIC we look for a packet with just a PING and PADDING.
+  // For IETF QUIC, the packet must consist of just a PATH_CHALLENGE frame,
+  // followed by PADDING. If the condition is met, mark things as
+  // connectivity-probing, causing later processing to generate the correct
+  // response.
+  if (type == SECOND_FRAME_IS_PADDING &&
+      current_packet_content_ == FIRST_FRAME_IS_PING) {
+    current_packet_content_ = SECOND_FRAME_IS_PADDING;
+    if (perspective_ == Perspective::IS_SERVER) {
+      is_current_packet_connectivity_probing_ =
+          current_effective_peer_migration_type_ != NO_CHANGE;
+    } else {
+      is_current_packet_connectivity_probing_ =
+          (last_packet_source_address_ != peer_address_) ||
+          (last_packet_destination_address_ != self_address_);
     }
+    return;
   }
 
   current_packet_content_ = NOT_PADDED_PING;

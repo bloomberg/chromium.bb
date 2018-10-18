@@ -967,6 +967,115 @@ size_t QuicFramer::BuildConnectivityProbingPacket(
   return writer.length();
 }
 
+size_t QuicFramer::BuildPaddedPathChallengePacket(
+    const QuicPacketHeader& header,
+    char* buffer,
+    size_t packet_length,
+    QuicPathFrameBuffer* payload,
+    QuicRandom* randomizer) {
+  QuicDataWriter writer(packet_length, buffer, endianness());
+  DCHECK_EQ(version_.transport_version, QUIC_VERSION_99)
+      << "Attempt to build a PATH_CHALLENGE Connectivity Probing packet and "
+         "not doing IETF QUIC";
+
+  if (!AppendPacketHeader(header, &writer)) {
+    QUIC_BUG << "AppendPacketHeader failed";
+    return 0;
+  }
+
+  // Write a PATH_CHALLENGE frame, which has a random 8-byte payload
+  randomizer->RandBytes(payload->data(), payload->size());
+
+  QuicPathChallengeFrame path_challenge_frame(0, *payload);
+  if (!AppendTypeByte(QuicFrame(&path_challenge_frame),
+                      /* last_frame_in_packet = */ false, &writer)) {
+    QUIC_BUG
+        << "AppendTypeByte failed for PATH_CHALLENGE frame in probing packet";
+    return 0;
+  }
+
+  if (!AppendPathChallengeFrame(path_challenge_frame, &writer)) {
+    QUIC_BUG << "AppendPathChallengeFrame failed for PATH_CHALLENGE frame in "
+                "probing packet";
+    return 0;
+  }
+
+  // Add padding to the rest of the packet in order to assess Path MTU
+  // characteristics.
+  QuicPaddingFrame padding_frame;
+  if (!AppendTypeByte(QuicFrame(padding_frame), true, &writer)) {
+    QUIC_BUG << "AppendTypeByte failed for padding frame in probing packet";
+    return 0;
+  }
+  if (!AppendPaddingFrame(padding_frame, &writer)) {
+    QUIC_BUG << "AppendPaddingFrame of " << padding_frame.num_padding_bytes
+             << " failed";
+    return 0;
+  }
+
+  return writer.length();
+}
+
+size_t QuicFramer::BuildPathResponsePacket(
+    const QuicPacketHeader& header,
+    char* buffer,
+    size_t packet_length,
+    const QuicDeque<QuicPathFrameBuffer>& payloads,
+    const bool is_padded) {
+  if (payloads.empty()) {
+    QUIC_BUG
+        << "Attempt to generate connectivity response with no request payloads";
+    return 0;
+  }
+
+  QuicDataWriter writer(packet_length, buffer, endianness());
+
+  DCHECK_EQ(version_.transport_version, QUIC_VERSION_99)
+      << "Attempt to build a PATH_RESPONSE Connectivity Probing packet and "
+         "not doing IETF QUIC";
+
+  if (!AppendPacketHeader(header, &writer)) {
+    QUIC_BUG << "AppendPacketHeader failed";
+    return 0;
+  }
+
+  // Write a set of PATH_RESPONSE frames to a single packet, each with the
+  // 8-byte payload of the corresponding PATH_REQUEST frame from a single
+  // received packet.
+  for (const QuicPathFrameBuffer& payload : payloads) {
+    // Note that the control frame ID can be 0 since this is not retransmitted.
+    QuicPathResponseFrame path_response_frame(0, payload);
+
+    if (!AppendTypeByte(QuicFrame(&path_response_frame), false, &writer)) {
+      QUIC_BUG
+          << "AppendTypeByte failed for PATH_RESPONSE frame in probing packet";
+      return 0;
+    }
+
+    if (!AppendPathResponseFrame(path_response_frame, &writer)) {
+      QUIC_BUG << "AppendPathChallengeFrame failed for PATH_CHALLENGE frame in "
+                  "probing packet";
+      return 0;
+    }
+  }
+
+  if (is_padded) {
+    // Add padding to the rest of the packet in order to assess Path MTU
+    // characteristics.
+    QuicPaddingFrame padding_frame;
+    if (!AppendTypeByte(QuicFrame(padding_frame), true, &writer)) {
+      QUIC_BUG << "AppendTypeByte failed for padding frame in probing packet";
+      return 0;
+    }
+    if (!AppendPaddingFrame(padding_frame, &writer)) {
+      QUIC_BUG << "AppendPaddingFrame of " << padding_frame.num_padding_bytes
+               << " failed";
+      return 0;
+    }
+  }
+  return writer.length();
+}
+
 // static
 std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
     const QuicPublicResetPacket& packet) {

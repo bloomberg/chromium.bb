@@ -74,6 +74,7 @@ QuicSession::QuicSession(QuicConnection* connection,
                        nullptr),
       currently_writing_stream_id_(0),
       largest_static_stream_id_(0),
+      is_handshake_confirmed_(false),
       goaway_sent_(false),
       goaway_received_(false),
       faster_get_stream_(GetQuicReloadableFlag(quic_session_faster_get_stream)),
@@ -258,7 +259,7 @@ void QuicSession::OnConnectivityProbeReceived(
   if (perspective() == Perspective::IS_SERVER) {
     // Server only sends back a connectivity probe after received a
     // connectivity probe from a new peer address.
-    connection_->SendConnectivityProbingPacket(nullptr, peer_address);
+    connection_->SendConnectivityProbingResponsePacket(peer_address);
   }
 }
 
@@ -622,6 +623,10 @@ void QuicSession::OnFinalByteOffsetReceived(
 }
 
 bool QuicSession::IsEncryptionEstablished() const {
+  // Once the handshake is confirmed, it never becomes un-confirmed.
+  if (is_handshake_confirmed_) {
+    return true;
+  }
   return GetCryptoStream()->encryption_established();
 }
 
@@ -794,6 +799,11 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
       NeuterUnencryptedData();
+      if (GetQuicReloadableFlag(quic_optimize_encryption_established)) {
+        QUIC_FLAG_COUNT(
+            quic_reloadable_flag_quic_optimize_encryption_established);
+        is_handshake_confirmed_ = true;
+      }
       break;
 
     default:
@@ -1240,7 +1250,7 @@ bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
 }
 
 bool QuicSession::HasUnackedCryptoData() const {
-  const QuicStream* crypto_stream = GetCryptoStream();
+  const QuicCryptoStream* crypto_stream = GetCryptoStream();
   if (crypto_stream->IsWaitingForAcks()) {
     return true;
   }

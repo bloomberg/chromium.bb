@@ -7987,6 +7987,266 @@ TEST_P(QuicFramerTest, BuildConnectivityProbingPacket) {
                                       data.length(), AsChars(p), packet_size);
 }
 
+// Test that the path challenge connectivity probing packet is serialized
+// correctly as a padded PATH CHALLENGE packet.
+TEST_P(QuicFramerTest, BuildPaddedPathChallengePacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+  QuicPathFrameBuffer payload;
+
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // Path Challenge Frame type
+    0x0e,
+    // 8 "random" bytes, MockRandom makes lots of r's
+    'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r',
+    // frame type (padding frame)
+    0x00,
+    0x00, 0x00, 0x00, 0x00
+  };
+  // clang-format on
+
+  std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
+  MockRandom randomizer;
+
+  size_t length = framer_.BuildPaddedPathChallengePacket(
+      header, buffer.get(), QUIC_ARRAYSIZE(packet), &payload, &randomizer);
+  EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
+
+  // Payload has the random bytes that were generated. Copy them into packet,
+  // above, before checking that the generated packet is correct.
+  EXPECT_EQ(kQuicPathFrameBufferSize, payload.size());
+
+  QuicPacket data(buffer.release(), length, true,
+                  header.destination_connection_id_length,
+                  header.source_connection_id_length, header.version_flag,
+                  header.nonce != nullptr, header.packet_number_length);
+
+  test::CompareCharArraysWithHexError("constructed packet", data.data(),
+                                      data.length(), AsChars(packet),
+                                      QUIC_ARRAYSIZE(packet));
+}
+
+// Several tests that the path response connectivity probing packet is
+// serialized correctly as either a padded and unpadded PATH RESPONSE
+// packet. Also generates packets with 1 and 3 PATH_RESPONSES in them to
+// exercised the single- and multiple- payload cases.
+TEST_P(QuicFramerTest, BuildPathResponsePacket1ResponseUnpadded) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+  QuicPathFrameBuffer payload0 = {
+      {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}};
+
+  // Build 1 PATH RESPONSE, not padded
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // Path Challenge Frame type
+    0x0f,
+    // 8 "random" bytes
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+  };
+  // clang-format on
+  std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
+  QuicDeque<QuicPathFrameBuffer> payloads;
+  payloads.push_back(payload0);
+  size_t length = framer_.BuildPathResponsePacket(
+      header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
+      /*is_padded=*/false);
+  EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
+  QuicPacket data(buffer.release(), length, true,
+                  header.destination_connection_id_length,
+                  header.source_connection_id_length, header.version_flag,
+                  header.nonce != nullptr, header.packet_number_length);
+
+  test::CompareCharArraysWithHexError("constructed packet", data.data(),
+                                      data.length(), AsChars(packet),
+                                      QUIC_ARRAYSIZE(packet));
+}
+
+TEST_P(QuicFramerTest, BuildPathResponsePacket1ResponsePadded) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+  QuicPathFrameBuffer payload0 = {
+      {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}};
+
+  // Build 1 PATH RESPONSE, padded
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // Path Challenge Frame type
+    0x0f,
+    // 8 "random" bytes
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    // Padding type and pad
+    0x00, 0x00, 0x00, 0x00, 0x00
+  };
+  // clang-format on
+  std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
+  QuicDeque<QuicPathFrameBuffer> payloads;
+  payloads.push_back(payload0);
+  size_t length = framer_.BuildPathResponsePacket(
+      header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
+      /*is_padded=*/true);
+  EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
+  QuicPacket data(buffer.release(), length, true,
+                  header.destination_connection_id_length,
+                  header.source_connection_id_length, header.version_flag,
+                  header.nonce != nullptr, header.packet_number_length);
+
+  test::CompareCharArraysWithHexError("constructed packet", data.data(),
+                                      data.length(), AsChars(packet),
+                                      QUIC_ARRAYSIZE(packet));
+}
+
+TEST_P(QuicFramerTest, BuildPathResponsePacket3ResponsesUnpadded) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+  QuicPathFrameBuffer payload0 = {
+      {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}};
+  QuicPathFrameBuffer payload1 = {
+      {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18}};
+  QuicPathFrameBuffer payload2 = {
+      {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28}};
+
+  // Build one packet with 3 PATH RESPONSES, no padding
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // 3 path challenge frames (type byte and payload)
+    0x0f, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x0f, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x0f, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+  };
+  // clang-format on
+
+  std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
+  QuicDeque<QuicPathFrameBuffer> payloads;
+  payloads.push_back(payload0);
+  payloads.push_back(payload1);
+  payloads.push_back(payload2);
+  size_t length = framer_.BuildPathResponsePacket(
+      header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
+      /*is_padded=*/false);
+  EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
+  QuicPacket data(buffer.release(), length, true,
+                  header.destination_connection_id_length,
+                  header.source_connection_id_length, header.version_flag,
+                  header.nonce != nullptr, header.packet_number_length);
+
+  test::CompareCharArraysWithHexError("constructed packet", data.data(),
+                                      data.length(), AsChars(packet),
+                                      QUIC_ARRAYSIZE(packet));
+}
+
+TEST_P(QuicFramerTest, BuildPathResponsePacket3ResponsesPadded) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+  QuicPathFrameBuffer payload0 = {
+      {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}};
+  QuicPathFrameBuffer payload1 = {
+      {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18}};
+  QuicPathFrameBuffer payload2 = {
+      {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28}};
+
+  // Build one packet with 3 PATH RESPONSES, with padding
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // 3 path challenge frames (type byte and payload)
+    0x0f, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x0f, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x0f, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+    // Padding
+    0x00, 0x00, 0x00, 0x00, 0x00
+  };
+  // clang-format on
+
+  std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
+  QuicDeque<QuicPathFrameBuffer> payloads;
+  payloads.push_back(payload0);
+  payloads.push_back(payload1);
+  payloads.push_back(payload2);
+  size_t length = framer_.BuildPathResponsePacket(
+      header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
+      /*is_padded=*/true);
+  EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
+  QuicPacket data(buffer.release(), length, true,
+                  header.destination_connection_id_length,
+                  header.source_connection_id_length, header.version_flag,
+                  header.nonce != nullptr, header.packet_number_length);
+
+  test::CompareCharArraysWithHexError("constructed packet", data.data(),
+                                      data.length(), AsChars(packet),
+                                      QUIC_ARRAYSIZE(packet));
+}
+
 // Test that the MTU discovery packet is serialized correctly as a PING packet.
 TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   QuicPacketHeader header;

@@ -168,8 +168,22 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
       bool ietf_quic,
       const ParsedQuicVersionVector& supported_versions);
 
-  // Creates a connectivity probing packet.
+  // Creates a connectivity probing packet for versions prior to version 99.
   OwningSerializedPacketPointer SerializeConnectivityProbingPacket();
+
+  // Create connectivity probing request and response packets using PATH
+  // CHALLENGE and PATH RESPONSE frames, respectively, for version 99/IETF QUIC.
+  // SerializePathChallengeConnectivityProbingPacket will pad the packet to be
+  // MTU bytes long.
+  OwningSerializedPacketPointer SerializePathChallengeConnectivityProbingPacket(
+      QuicPathFrameBuffer* payload);
+
+  // If |is_padded| is true then SerializePathResponseConnectivityProbingPacket
+  // will pad the packet to be MTU bytes long, else it will not pad the packet.
+  // |payloads| is cleared.
+  OwningSerializedPacketPointer SerializePathResponseConnectivityProbingPacket(
+      const QuicDeque<QuicPathFrameBuffer>& payloads,
+      const bool is_padded);
 
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();

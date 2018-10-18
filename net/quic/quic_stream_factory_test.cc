@@ -2242,10 +2242,14 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateOnNetworkMadeDefaultWithSynchronousWrite) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestMigrationOnNetworkMadeDefault(SYNCHRONOUS);
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateOnNetworkMadeDefaultWithAsyncWrite) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestMigrationOnNetworkMadeDefault(ASYNC);
 }
 
@@ -2428,6 +2432,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnNetworkMadeDefault(
 // successfully, the probing writer will be unblocked on the network level, it
 // will not attempt to write new packets until the socket level is unblocked.
 TEST_P(QuicStreamFactoryTest, MigratedToBlockedSocketAfterProbing) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -2608,6 +2614,8 @@ TEST_P(QuicStreamFactoryTest, MigratedToBlockedSocketAfterProbing) {
 //   comes up in the next kWaitTimeForNewNetworkSecs seonds.
 // - no new network is connected, migration times out. Session is closed.
 TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -2679,6 +2687,8 @@ TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
 // successfully probed path, any non-migratable stream will be reset. And if
 // the connection becomes idle then, close the connection.
 TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3272,6 +3282,8 @@ TEST_P(QuicStreamFactoryTest, NewNetworkConnectedAfterNoNetwork) {
 // connection being closed with INTERNAL_ERROR as pending ACK frame is not
 // allowed when processing a new packet.
 TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3434,6 +3446,8 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
 // early when path degrading is detected with an ASYNCHRONOUS write before
 // migration.
 TEST_P(QuicStreamFactoryTest, MigrateEarlyOnPathDegradingAysnc) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestMigrationOnPathDegrading(/*async_write_before_migration*/ true);
 }
 
@@ -3441,6 +3455,8 @@ TEST_P(QuicStreamFactoryTest, MigrateEarlyOnPathDegradingAysnc) {
 // early when path degrading is detected with a SYNCHRONOUS write before
 // migration.
 TEST_P(QuicStreamFactoryTest, MigrateEarlyOnPathDegradingSync) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestMigrationOnPathDegrading(/*async_write_before_migration*/ false);
 }
 
@@ -3815,6 +3831,8 @@ TEST_P(QuicStreamFactoryTest, DoNotMigrateToBadSocketOnPathDegrading) {
 // The first packet being written after migration is a synchrnous write, which
 // will cause a PING packet being sent.
 TEST_P(QuicStreamFactoryTest, MigrateSessionWithDrainingStreamSync) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestMigrateSessionWithDrainingStream(SYNCHRONOUS);
 }
 
@@ -3824,6 +3842,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionWithDrainingStreamSync) {
 // The first packet being written after migration is an asynchronous write, no
 // PING packet will be sent.
 TEST_P(QuicStreamFactoryTest, MigrateSessionWithDrainingStreamAsync) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestMigrateSessionWithDrainingStream(ASYNC);
 }
 
@@ -3995,6 +4015,8 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
 // This test verifies that the connection migrates to the alternate network
 // when the alternate network is connected after path has been degrading.
 TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -4362,6 +4384,8 @@ TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
 // alternate network on path degrading, and close the non-migratable streams
 // when probe is successful.
 TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -4656,6 +4680,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnAysncWriteError) {
 // - session attempts to migrate back to default network post migration;
 // - migration back to the default network is successful.
 TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -4916,11 +4942,15 @@ void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
 }
 
 TEST_P(QuicStreamFactoryTest, NewConnectionBeforeHandshakeAfterIdleTimeout) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QUIC_NETWORK_IDLE_TIMEOUT);
 }
 
 TEST_P(QuicStreamFactoryTest, NewConnectionAfterHandshakeTimeout) {
+  if (version_ == quic::QUIC_VERSION_99)
+    return;
   TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QUIC_HANDSHAKE_TIMEOUT);
 }

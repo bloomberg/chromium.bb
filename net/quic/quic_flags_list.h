@@ -244,12 +244,9 @@ QUIC_FLAG(bool,
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 
-// If true, use a common stream ID limit checking method.
-QUIC_FLAG(bool, FLAGS_quic_use_common_stream_check, false)
-
 // When true, don't arm the path degrading alarm on the server side and stop
 // using HasUnackedPackets to decide when to arm it.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_path_degrading_alarm, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_path_degrading_alarm, true)
 
 // When true, QUIC server push uses a unidirectional stream.
 QUIC_FLAG(bool,
@@ -266,10 +263,33 @@ QUIC_FLAG(bool,
 // wrong when getting proof asynchronously.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic,
-          false)
+          true)
 
 // If true, dispatcher passes in a single version when creating a server
 // connection, such that version negotiation is not supported in connection.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation,
           false)
+
+// If true, enable QUIC version 46 which adds CRYPTO frames.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_46, false)
+
+// When true, cache that encryption has been established to save CPU.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_optimize_encryption_established,
+          false)
+
+// When in STARTUP and recovery, do not add bytes_acked to QUIC BBR's CWND in
+// CalculateCongestionWindow()
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_bbr_no_bytes_acked_in_startup_recovery,
+    false)
+
+// If true, make GeneralLossAlgorithm::DetectLosses faster by never rescanning
+// the same packet in QuicUnackedPacketMap.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_detect_loss, false)
+
+// If true, use common code for checking whether a new stream ID may be
+// allocated.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)

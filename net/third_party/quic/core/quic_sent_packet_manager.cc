@@ -811,7 +811,8 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     largest_newly_acked_ = packets_acked_.back().packet_number;
   }
   loss_algorithm_->DetectLosses(unacked_packets_, time, rtt_stats_,
-                                largest_newly_acked_, &packets_lost_);
+                                largest_newly_acked_, packets_acked_,
+                                &packets_lost_);
   for (const LostPacket& packet : packets_lost_) {
     ++stats_->packets_lost;
     if (debug_delegate_ != nullptr) {

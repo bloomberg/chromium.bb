@@ -98,7 +98,7 @@ TEST_F(HttpDecoderTest, ReservedFramesLargePayload) {
 
 TEST_F(HttpDecoderTest, CancelPush) {
   char input[] = {// length
-                  0x2,
+                  0x1,
                   // type (CANCEL_PUSH)
                   0x03,
                   // Push Id
@@ -159,7 +159,7 @@ TEST_F(HttpDecoderTest, PushPromiseFrame) {
 
 TEST_F(HttpDecoderTest, MaxPushId) {
   char input[] = {// length
-                  0x2,
+                  0x1,
                   // type (MAX_PUSH_ID)
                   0x0D,
                   // Push Id

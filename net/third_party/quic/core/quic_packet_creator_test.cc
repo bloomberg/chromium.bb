@@ -733,8 +733,15 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
 
     creator_.set_encryption_level(level);
 
-    OwningSerializedPacketPointer encrypted(
-        creator_.SerializeConnectivityProbingPacket());
+    OwningSerializedPacketPointer encrypted;
+    if (GetParam().version.transport_version == QUIC_VERSION_99) {
+      QuicPathFrameBuffer payload = {
+          {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xfe}};
+      encrypted =
+          creator_.SerializePathChallengeConnectivityProbingPacket(&payload);
+    } else {
+      encrypted = creator_.SerializeConnectivityProbingPacket();
+    }
     {
       InSequence s;
       EXPECT_CALL(framer_visitor_, OnPacket());
@@ -742,11 +749,262 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
       EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
       EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-      EXPECT_CALL(framer_visitor_, OnPingFrame(_));
+      if (GetParam().version.transport_version == QUIC_VERSION_99) {
+        EXPECT_CALL(framer_visitor_, OnPathChallengeFrame(_));
+        EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
+      } else {
+        EXPECT_CALL(framer_visitor_, OnPingFrame(_));
+        EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
+      }
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    // QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest, SerializePathChallengeProbePacket) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+
+    creator_.set_encryption_level(level);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathChallengeConnectivityProbingPacket(&payload));
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathChallengeFrame(_));
       EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
       EXPECT_CALL(framer_visitor_, OnPacketComplete());
     }
     // QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest, SerializePathResponseProbePacket1PayloadPadded) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload0 = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+    creator_.set_encryption_level(level);
+
+    QuicDeque<QuicPathFrameBuffer> payloads;
+    payloads.push_back(payload0);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathResponseConnectivityProbingPacket(payloads,
+                                                                true));
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest,
+       SerializePathResponseProbePacket1PayloadUnPadded) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload0 = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+    creator_.set_encryption_level(level);
+
+    QuicDeque<QuicPathFrameBuffer> payloads;
+    payloads.push_back(payload0);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathResponseConnectivityProbingPacket(payloads,
+                                                                false));
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest, SerializePathResponseProbePacket2PayloadsPadded) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload0 = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+  QuicPathFrameBuffer payload1 = {
+      {0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee, 0xde}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+    creator_.set_encryption_level(level);
+
+    QuicDeque<QuicPathFrameBuffer> payloads;
+    payloads.push_back(payload0);
+    payloads.push_back(payload1);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathResponseConnectivityProbingPacket(payloads,
+                                                                true));
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(2);
+      EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest,
+       SerializePathResponseProbePacket2PayloadsUnPadded) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload0 = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+  QuicPathFrameBuffer payload1 = {
+      {0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee, 0xde}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+    creator_.set_encryption_level(level);
+
+    QuicDeque<QuicPathFrameBuffer> payloads;
+    payloads.push_back(payload0);
+    payloads.push_back(payload1);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathResponseConnectivityProbingPacket(payloads,
+                                                                false));
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(2);
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest, SerializePathResponseProbePacket3PayloadsPadded) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload0 = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+  QuicPathFrameBuffer payload1 = {
+      {0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee, 0xde}};
+  QuicPathFrameBuffer payload2 = {
+      {0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee, 0xde, 0xad}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+    creator_.set_encryption_level(level);
+
+    QuicDeque<QuicPathFrameBuffer> payloads;
+    payloads.push_back(payload0);
+    payloads.push_back(payload1);
+    payloads.push_back(payload2);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathResponseConnectivityProbingPacket(payloads,
+                                                                true));
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(3);
+      EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    server_framer_.ProcessPacket(QuicEncryptedPacket(
+        encrypted->encrypted_buffer, encrypted->encrypted_length));
+  }
+}
+
+TEST_P(QuicPacketCreatorTest,
+       SerializePathResponseProbePacket3PayloadsUnpadded) {
+  if (GetParam().version.transport_version != QUIC_VERSION_99) {
+    return;
+  }
+  QuicPathFrameBuffer payload0 = {
+      {0xde, 0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee}};
+  QuicPathFrameBuffer payload1 = {
+      {0xad, 0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee, 0xde}};
+  QuicPathFrameBuffer payload2 = {
+      {0xbe, 0xef, 0xba, 0xdc, 0x0f, 0xee, 0xde, 0xad}};
+
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+    creator_.set_encryption_level(level);
+
+    QuicDeque<QuicPathFrameBuffer> payloads;
+    payloads.push_back(payload0);
+    payloads.push_back(payload1);
+    payloads.push_back(payload2);
+
+    OwningSerializedPacketPointer encrypted(
+        creator_.SerializePathResponseConnectivityProbingPacket(payloads,
+                                                                false));
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnPathResponseFrame(_)).Times(3);
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+
     server_framer_.ProcessPacket(QuicEncryptedPacket(
         encrypted->encrypted_buffer, encrypted->encrypted_length));
   }

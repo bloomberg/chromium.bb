@@ -650,7 +650,7 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
   // so no call on OnSpuriousRetransmission is expected.
   {
     ExpectAck(1);
-    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
     manager_.OnAckFrameStart(1, QuicTime::Delta::Infinite(), clock_.Now());
     manager_.OnAckRange(1, 2);
     EXPECT_TRUE(manager_.OnAckFrameEnd(clock_.Now()));
@@ -661,7 +661,7 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
   // Ack 4, which causes 3 to be retransmitted.
   {
     ExpectAck(4);
-    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
     manager_.OnAckFrameStart(4, QuicTime::Delta::Infinite(), clock_.Now());
     manager_.OnAckRange(4, 5);
     manager_.OnAckRange(1, 2);
@@ -673,7 +673,7 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
   {
     QuicPacketNumber acked[] = {3};
     ExpectAcksAndLosses(false, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
-    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+    EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
     EXPECT_CALL(*loss_algorithm, SpuriousRetransmitDetected(_, _, _, 5));
     manager_.OnAckFrameStart(4, QuicTime::Delta::Infinite(), clock_.Now());
     manager_.OnAckRange(3, 5);
@@ -684,7 +684,7 @@ TEST_P(QuicSentPacketManagerTest, AckOriginalTransmission) {
       // 5 will cause 5 be considered as a spurious retransmission as no new
       // data gets acked.
       ExpectAck(5);
-      EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+      EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
       EXPECT_CALL(notifier_, OnFrameAcked(_, _)).WillOnce(Return(false));
       manager_.OnAckFrameStart(5, QuicTime::Delta::Infinite(), clock_.Now());
       manager_.OnAckRange(3, 6);
@@ -1911,7 +1911,7 @@ TEST_P(QuicSentPacketManagerTest, GetLossDelay) {
   // Handle an ack which causes the loss algorithm to be evaluated and
   // set the loss timeout.
   ExpectAck(2);
-  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
   manager_.OnAckFrameStart(2, QuicTime::Delta::Infinite(), clock_.Now());
   manager_.OnAckRange(2, 3);
   EXPECT_TRUE(manager_.OnAckFrameEnd(clock_.Now()));
@@ -1923,7 +1923,7 @@ TEST_P(QuicSentPacketManagerTest, GetLossDelay) {
 
   // Fire the retransmission timeout and ensure the loss detection algorithm
   // is invoked.
-  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
   manager_.OnRetransmissionTimeout();
 }
 

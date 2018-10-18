@@ -701,9 +701,17 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Sends a connectivity probing packet to |peer_address| with
   // |probing_writer|. If |probing_writer| is nullptr, will use default
   // packet writer to write the packet. Returns true if subsequent packets can
-  // be written to the probing writer.
+  // be written to the probing writer. If connection is V99, a padded IETF QUIC
+  // PATH_CHALLENGE packet is transmitted; if not V99, a Google QUIC padded PING
+  // packet is transmitted.
   virtual bool SendConnectivityProbingPacket(
       QuicPacketWriter* probing_writer,
+      const QuicSocketAddress& peer_address);
+
+  // Sends response to a connectivity probe. Sends either a Padded Ping
+  // or an IETF PATH_RESPONSE based on the version of the connection.
+  // Is the counterpart to SendConnectivityProbingPacket().
+  virtual void SendConnectivityProbingResponsePacket(
       const QuicSocketAddress& peer_address);
 
   // Sends an MTU discovery packet of size |mtu_discovery_target_| and updates
@@ -888,6 +896,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   enum PacketContent : uint8_t {
     NO_FRAMES_RECEIVED,
+    // TODO(fkastenholz): Change name when we get rid of padded ping/
+    // pre-version-99.
+    // Also PATH CHALLENGE and PATH RESPONSE.
     FIRST_FRAME_IS_PING,
     SECOND_FRAME_IS_PADDING,
     NOT_PADDED_PING,  // Set if the packet is not {PING, PADDING}.
@@ -999,7 +1010,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void CheckIfApplicationLimited();
 
   // Sets |current_packet_content_| to |type| if applicable. And
-  // starts effective peer miration if current packet is confirmed not a
+  // starts effective peer migration if current packet is confirmed not a
   // connectivity probe and |current_effective_peer_migration_type_| indicates
   // effective peer address change.
   void UpdatePacketContent(PacketContent type);
@@ -1019,6 +1030,14 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Updates the release time into the future.
   void UpdateReleaseTimeIntoFuture();
 
+  // Sends generic path probe packet to the peer. If we are not IETF QUIC, will
+  // always send a padded ping, regardless of whether this is a request or
+  // response. If version 99/ietf quic, will send a PATH_RESPONSE if
+  // |is_response| is true, a PATH_CHALLENGE if not.
+  bool SendGenericPathProbePacket(QuicPacketWriter* probing_writer,
+                                  const QuicSocketAddress& peer_address,
+                                  bool is_response);
+
   QuicFramer framer_;
 
   // Contents received in the current packet, especially used to identify
@@ -1029,6 +1048,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // true as soon as |current_packet_content_| is set to
   // SECOND_FRAME_IS_PADDING.
   bool is_current_packet_connectivity_probing_;
+
   // Caches the current effective peer migration type if a effective peer
   // migration might be initiated. As soon as the current packet is confirmed
   // not a connectivity probe, effective peer migration will start.
@@ -1340,6 +1360,18 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Latched value of quic_reloadable_flag_quic_decrypt_packets_on_key_change.
   const bool decrypt_packets_on_key_change_;
+
+  // Payload of most recently transmitted QUIC_VERSION_99 connectivity
+  // probe packet (the PATH_CHALLENGE payload). This implementation transmits
+  // only one PATH_CHALLENGE per connectivity probe, so only one
+  // QuicPathFrameBuffer is needed.
+  QuicPathFrameBuffer transmitted_connectivity_probe_payload_;
+
+  // Payloads that were received in the most recent probe. This needs to be a
+  // Deque because the peer might no be using this implementation, and others
+  // might send a packet with more than one PATH_CHALLENGE, so all need to be
+  // saved and responded to.
+  QuicDeque<QuicPathFrameBuffer> received_path_challenge_payloads_;
 };
 
 }  // namespace quic
