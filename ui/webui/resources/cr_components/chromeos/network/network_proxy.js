@@ -168,22 +168,23 @@ Polymer({
       proxy.Type = /** @type {!CrOnc.ProxySettingsType} */ (
           CrOnc.getActiveValue(proxySettings.Type));
       if (proxySettings.Manual) {
-        proxy.Manual.HTTPProxy =
-            /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getActiveProperties(proxySettings.Manual.HTTPProxy)) ||
+        proxy.Manual.HTTPProxy = /** @type {!CrOnc.ProxyLocation|undefined} */ (
+                                     CrOnc.getSimpleActiveProperties(
+                                         proxySettings.Manual.HTTPProxy)) ||
             {Host: '', Port: 80};
         proxy.Manual.SecureHTTPProxy =
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getActiveProperties(
+                CrOnc.getSimpleActiveProperties(
                     proxySettings.Manual.SecureHTTPProxy)) ||
             {Host: '', Port: 80};
         proxy.Manual.FTPProxy =
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getActiveProperties(proxySettings.Manual.FTPProxy)) ||
+                CrOnc.getSimpleActiveProperties(
+                    proxySettings.Manual.FTPProxy)) ||
             {Host: '', Port: 80};
         proxy.Manual.SOCKS =
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getActiveProperties(proxySettings.Manual.SOCKS)) ||
+                CrOnc.getSimpleActiveProperties(proxySettings.Manual.SOCKS)) ||
             {Host: '', Port: 80};
         var jsonHttp = proxy.Manual.HTTPProxy;
         this.useSameProxy_ =

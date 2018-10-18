@@ -15,12 +15,9 @@ Polymer({
   properties: {
     /**
      * Network property associated with the indicator.
-     * @type {?CrOnc.ManagedProperty|undefined}
+     * @type {!CrOnc.ManagedProperty|undefined}
      */
     property: Object,
-
-    /** Position of tooltip popup related to the policy indicator. */
-    tooltipPosition: String,
 
     /**
      * Recommended value for non enforced properties.
@@ -40,7 +37,7 @@ Polymer({
   /** @private */
   propertyChanged_: function() {
     var property = this.property;
-    if (property == null || !this.isControlled(property)) {
+    if (!this.isControlled(property)) {
       this.indicatorType = CrPolicyIndicatorType.NONE;
       return;
     }

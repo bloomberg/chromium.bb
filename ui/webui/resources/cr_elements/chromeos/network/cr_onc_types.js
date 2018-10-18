@@ -270,26 +270,14 @@ CrOnc.getStateOrActiveString = function(property) {
 };
 
 /**
- * Return if the property is simple, i.e. doesn't contain any nested
- * dictionaries.
- * @param property {!Object|undefined}
- * @return {boolean}
- */
-CrOnc.isSimpleProperty = function(property) {
-  for (var prop of ['Active', 'Effective', 'UserSetting', 'SharedSetting']) {
-    if (prop in property)
-      return true;
-  }
-  return false;
-};
-
-/**
  * Converts a managed ONC dictionary into an unmanaged dictionary (i.e. a
  * dictionary of active values).
+ * NOTE: This is not intended to be used with dictionaries that contain
+ * nested dictionaries. This will fail and return undefined in that case.
  * @param {!Object|undefined} properties A managed ONC dictionary
  * @return {!Object|undefined} An unmanaged version of |properties|.
  */
-CrOnc.getActiveProperties = function(properties) {
+CrOnc.getSimpleActiveProperties = function(properties) {
   'use strict';
   if (!properties)
     return undefined;
@@ -297,24 +285,14 @@ CrOnc.getActiveProperties = function(properties) {
   var keys = Object.keys(properties);
   for (var i = 0; i < keys.length; ++i) {
     var k = keys[i];
-    var property = properties[k];
-    // Skip policy properties with no effective value.
-    // TODO(nikitapodguzov@ / raleksandrov@): Remove this when crbug.com/888959
-    // providing dummy values for password fields will be fixed.
-    if ('Effective' in property && !(property.Effective in property))
-      continue;
-    var propertyValue;
-    if (CrOnc.isSimpleProperty(property))
-      propertyValue = CrOnc.getActiveValue(property);
-    else
-      propertyValue = CrOnc.getActiveProperties(property);
-    if (propertyValue == undefined) {
+    var prop = CrOnc.getActiveValue(properties[k]);
+    if (prop == undefined) {
       console.error(
-          'getActiveProperties called on invalid ONC object: ' +
+          'getSimpleActiveProperties called on invalid ONC object: ' +
           JSON.stringify(properties));
       return undefined;
     }
-    result[k] = propertyValue;
+    result[k] = prop;
   }
   return result;
 };
@@ -346,7 +324,7 @@ CrOnc.getIPConfigForType = function(properties, type) {
 
   var staticIpConfig =
       /** @type {!CrOnc.IPConfigProperties|undefined} */ (
-          CrOnc.getActiveProperties(properties.StaticIPConfig));
+          CrOnc.getSimpleActiveProperties(properties.StaticIPConfig));
   if (!staticIpConfig)
     return ipConfig;
 

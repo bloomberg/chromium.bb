@@ -69,9 +69,9 @@ Polymer({
      * The current properties if an existing network is being configured, or
      * a minimal subset for a new network. Note: network-config may modify
      * this (specifically .name).
-     * @private {!chrome.networkingPrivate.ManagedProperties}
+     * @private {!chrome.networkingPrivate.NetworkProperties}
      */
-    managedProperties_: Object,
+    networkProperties_: Object,
 
     /**
      * Set by network-config when a configuration error occurs.
@@ -88,12 +88,12 @@ Polymer({
     if (!dialog.open)
       dialog.showModal();
 
-    // Set managedProperties for new configurations and for existing
+    // Set networkProperties for new configurations and for existing
     // configurations until the current properties are loaded.
     assert(this.type && this.type != CrOnc.Type.ALL);
-    this.managedProperties_ = {
+    this.networkProperties_ = {
       GUID: this.guid,
-      Name: {Active: this.name},
+      Name: this.name,
       Type: this.type,
     };
     this.$.networkConfig.init();
@@ -120,11 +120,10 @@ Polymer({
    * @private
    */
   getDialogTitle_: function() {
-    const name = /** @type {string} */ (
-        CrOnc.getActiveValue(this.managedProperties_.Name));
+    const name = this.networkProperties_.Name;
     if (name)
       return this.i18n('internetConfigName', HTMLEscape(name));
-    const type = this.i18n('OncType' + this.managedProperties_.Type);
+    const type = this.i18n('OncType' + this.networkProperties_.Type);
     return this.i18n('internetJoinType', type);
   },
 

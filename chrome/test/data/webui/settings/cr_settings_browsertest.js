@@ -1391,7 +1391,6 @@ CrSettingsInternetPageTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
-    '../chromeos/cr_onc_strings.js',
     'internet_page_tests.js',
   ]),
 };
@@ -1420,7 +1419,6 @@ CrSettingsInternetDetailPageTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/util.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
-    '../chromeos/cr_onc_strings.js',
     'internet_detail_page_tests.js',
   ]),
 };
