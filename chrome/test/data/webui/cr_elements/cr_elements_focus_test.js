@@ -124,7 +124,7 @@ CrElementsInputTest.prototype = {
 };
 
 // This test is flaky on ChromeOS. See https://crbug.com/895832.
-GEN('#if defined(CHROME_OS)');
+GEN('#if defined(OS_CHROMEOS)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
