@@ -36,11 +36,13 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
       HWND parent_window);
 
-  // Returns true if there's an output on the current adapter that can
-  // use overlays.
+  // Returns true if hardware overlays are supported, and DirectComposition
+  // surface and layers should be used.  Overridden with
+  // --enable-direct-composition-layers and --disable-direct-composition-layers.
   static bool AreOverlaysSupported();
 
-  // Returns a list of supported overlay formats for GPUInfo.
+  // Returns a list of supported overlay formats for GPUInfo.  This does not
+  // depend on finch features or command line flags.
   static OverlayCapabilities GetOverlayCapabilities();
 
   // Returns true if there is an HDR capable display connected.
@@ -57,7 +59,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.
-  using GLSurfaceEGL::Initialize;
+  using GLSurface::Initialize;
   bool Initialize(gl::GLSurfaceFormat format) override;
   void Destroy() override;
   gfx::Size GetSize() override;
