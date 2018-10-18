@@ -1328,6 +1328,25 @@
             ]
         }
     ],
+    "DataReductionProxyBrotliHoldback": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DataReductionProxyBrotliHoldback"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataReductionProxyFREPromo": [
         {
             "platforms": [
