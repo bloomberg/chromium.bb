@@ -685,6 +685,15 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
           kUnavailableSuiteDisabled:
         return BETTER_TOGETHER_SUITE_DISABLED;
       case chromeos::multidevice_setup::mojom::FeatureState::
+          kUnavailableNoVerifiedHost:
+        // Note that because of the early return above after
+        // !HasSyncedTetherHosts, if this point is hit, there are synced tether
+        // hosts available, but the multidevice state is unverified. This switch
+        // case can only occur for legacy Magic Tether hosts, in which case the
+        // service should be enabled.
+        // TODO(crbug.com/894585): Remove this legacy special case after M71.
+        return ENABLED;
+      case chromeos::multidevice_setup::mojom::FeatureState::
           kNotSupportedByChromebook:
         // CryptAuth may not yet know that this device supports
         // MAGIC_TETHER_CLIENT (and the local device metadata is reflecting
@@ -694,10 +703,6 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
         FALLTHROUGH;
       case chromeos::multidevice_setup::mojom::FeatureState::
           kNotSupportedByPhone:
-        FALLTHROUGH;
-      case chromeos::multidevice_setup::mojom::FeatureState::
-          kUnavailableNoVerifiedHost:
-        no_available_hosts_false_positive_encountered_ = true;
         return NO_AVAILABLE_HOSTS;
       default:
         // Other FeatureStates:
