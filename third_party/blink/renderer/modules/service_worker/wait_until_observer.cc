@@ -269,7 +269,7 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleFetchEvent(event_id_, status, event_dispatch_time_);
       break;
     case kInstall:
-      ToServiceWorkerGlobalScope(execution_context_)->SetIsInstalling(false);
+      To<ServiceWorkerGlobalScope>(*execution_context_).SetIsInstalling(false);
       client->DidHandleInstallEvent(event_id_, status, event_dispatch_time_);
       break;
     case kMessage:

@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -192,11 +192,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   mojom::blink::CacheStoragePtrInfo cache_storage_info_;
 };
 
-DEFINE_TYPE_CASTS(ServiceWorkerGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsServiceWorkerGlobalScope(),
-                  context.IsServiceWorkerGlobalScope());
+template <>
+struct DowncastTraits<ServiceWorkerGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsServiceWorkerGlobalScope();
+  }
+};
 
 }  // namespace blink
 

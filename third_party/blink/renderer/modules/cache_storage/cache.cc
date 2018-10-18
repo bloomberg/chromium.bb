@@ -65,9 +65,10 @@ bool VaryHeaderContainsAsterisk(const Response* response) {
 bool ShouldGenerateV8CodeCache(ScriptState* script_state,
                                const Response* response) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  if (!context->IsServiceWorkerGlobalScope())
+  auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context);
+  if (!global_scope)
     return false;
-  if (!ToServiceWorkerGlobalScope(context)->IsInstalling())
+  if (!global_scope->IsInstalling())
     return false;
   if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
           response->InternalMIMEType())) {
@@ -273,10 +274,9 @@ class Cache::BarrierCallbackForPut final
   // execution context and it's in installation phase.
   void MaybeReportInstalledScripts() {
     ExecutionContext* context = resolver_->GetExecutionContext();
-    if (!context || !context->IsServiceWorkerGlobalScope())
+    auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context);
+    if (!global_scope)
       return;
-    ServiceWorkerGlobalScope* global_scope =
-        ToServiceWorkerGlobalScope(context);
     if (!global_scope->IsInstalling())
       return;
 

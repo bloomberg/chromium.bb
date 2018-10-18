@@ -157,9 +157,8 @@ ServiceWorker* ServiceWorker::From(ExecutionContext* context,
   if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
     return nullptr;
 
-  if (context->IsServiceWorkerGlobalScope()) {
-    return ToServiceWorkerGlobalScope(context)->GetOrCreateServiceWorker(
-        std::move(info));
+  if (auto* scope = DynamicTo<ServiceWorkerGlobalScope>(context)) {
+    return scope->GetOrCreateServiceWorker(std::move(info));
   }
 
   return ServiceWorkerContainerClient::From(To<Document>(context))
