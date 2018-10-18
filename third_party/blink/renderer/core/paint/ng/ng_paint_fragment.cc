@@ -470,24 +470,8 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
 }
 
 void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
-  if (child->IsInline()) {
-    LayoutBlockFlow* const block = child->ContainingNGBlockFlow();
-    if (block && block->PaintFragment())
-      MarkLineBoxesDirtyFor(*child);
-  }
-  if (!child->IsInLayoutNGInlineFormattingContext())
-    return;
-  // We should rest first inline fragment for following tests:
-  //  * fast/dom/HTMLObjectElement/fallback-content-behaviour.html
-  //  * fast/dom/shadow/exposed-object-within-shadow.html
-  //  * fast/lists/inline-before-content-after-list-marker.html
-  //  * fast/lists/list-with-image-display-changed.html
-  for (LayoutObject* runner = child; runner;
-       runner = runner->NextInPreOrder(child)) {
-    if (!runner->IsInLayoutNGInlineFormattingContext())
-      continue;
-    runner->SetFirstInlineFragment(nullptr);
-  }
+  if (child->IsInline())
+    MarkLineBoxesDirtyFor(*child);
 }
 
 bool NGPaintFragment::FlippedLocalVisualRectFor(
