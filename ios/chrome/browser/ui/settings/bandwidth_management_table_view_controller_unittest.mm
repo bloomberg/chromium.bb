@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/bandwidth_management_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 
 #include <memory>
 
@@ -16,8 +16,9 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
@@ -32,14 +33,14 @@
 
 namespace {
 
-class BandwidthManagementCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class BandwidthManagementTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  public:
-  BandwidthManagementCollectionViewControllerTest() {}
+  BandwidthManagementTableViewControllerTest() {}
 
  protected:
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
 
     sync_preferences::PrefServiceMockFactory factory;
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
@@ -56,11 +57,11 @@ class BandwidthManagementCollectionViewControllerTest
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
-    CollectionViewControllerTest::TearDown();
+    ChromeTableViewControllerTest::TearDown();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[BandwidthManagementCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[BandwidthManagementTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
@@ -71,12 +72,11 @@ class BandwidthManagementCollectionViewControllerTest
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
-TEST_F(BandwidthManagementCollectionViewControllerTest, TestModel) {
+TEST_F(BandwidthManagementTableViewControllerTest, TestModel) {
   CheckController();
-  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(1, NumberOfSections());
 
-  const NSInteger action_section = 0;
-  EXPECT_EQ(1, NumberOfItemsInSection(action_section));
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
   // Preload webpages item.
   NSString* expected_title =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
@@ -84,8 +84,8 @@ TEST_F(BandwidthManagementCollectionViewControllerTest, TestModel) {
       currentLabelForPreference:chrome_browser_state_->GetPrefs()
                        basePref:prefs::kNetworkPredictionEnabled
                        wifiPref:prefs::kNetworkPredictionWifiOnly];
-  CheckTextCellTitleAndSubtitle(expected_title, expected_subtitle,
-                                action_section, 0);
+  CheckTextCellTextAndDetailText(expected_title, expected_subtitle, 0, 0);
+  EXPECT_NE(nil, [controller().tableViewModel footerForSection:0]);
 }
 
 }  // namespace

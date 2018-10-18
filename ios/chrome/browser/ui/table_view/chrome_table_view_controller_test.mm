@@ -56,7 +56,6 @@ void ChromeTableViewControllerTest::CheckController() {
   EXPECT_TRUE([controller_ view]);
   EXPECT_TRUE([controller_ tableView]);
   EXPECT_TRUE([controller_ tableViewModel]);
-  EXPECT_EQ(controller_, [controller_ tableView].dataSource);
   EXPECT_EQ(controller_, [controller_ tableView].delegate);
 }
 

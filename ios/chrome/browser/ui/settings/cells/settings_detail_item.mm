@@ -48,6 +48,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [SettingsDetailCell class];
+    _cellBackgroundColor = [UIColor whiteColor];
   }
   return self;
 }
