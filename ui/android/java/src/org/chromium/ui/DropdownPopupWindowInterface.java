@@ -72,7 +72,8 @@ public interface DropdownPopupWindowInterface {
 
     /**
      * Adds a non-scrolling View beneath the list. This View will be separated from the main list
-     * by a single divider. Passing null will remove any existing footer.
+     * by a single divider.
+     * TODO(crbug.com/896349): This currently only works when called before show().
      */
     void setFooterView(View footerView);
 
