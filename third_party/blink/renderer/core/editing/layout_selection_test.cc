@@ -902,9 +902,9 @@ static const NGPaintFragment* FindNGPaintFragmentInternal(
     const LayoutObject* layout_object) {
   if (paint->GetLayoutObject() == layout_object)
     return paint;
-  for (const auto& child : paint->Children()) {
+  for (const NGPaintFragment* child : paint->Children()) {
     if (const NGPaintFragment* child_fragment =
-            FindNGPaintFragmentInternal(child.get(), layout_object))
+            FindNGPaintFragmentInternal(child, layout_object))
       return child_fragment;
   }
   return nullptr;
