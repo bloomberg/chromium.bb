@@ -739,9 +739,6 @@ extern const char kNewRemotePlaybackPipelineDescription[];
 extern const char kUseSurfaceLayerForVideoName[];
 extern const char kUseSurfaceLayerForVideoDescription[];
 
-extern const char kUseSurfaceLayerForVideoMSName[];
-extern const char kUseSurfaceLayerForVideoMSDescription[];
-
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 

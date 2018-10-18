@@ -71,6 +71,9 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   double CurrentTime() const override { return 0.0; }
   NetworkState GetNetworkState() const override { return kNetworkStateEmpty; }
   ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
+  SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
+    return SurfaceLayerMode::kNever;
+  }
   blink::WebString GetErrorMessage() const override {
     return blink::WebString();
   }

@@ -398,8 +398,8 @@ class WebMediaPlayerImplTest : public testing::Test {
                        base::Unretained(this)),
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)
-            ? WebMediaPlayerParams::SurfaceLayerMode::kAlways
-            : WebMediaPlayerParams::SurfaceLayerMode::kNever);
+            ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
+            : blink::WebMediaPlayer::SurfaceLayerMode::kNever);
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -1449,6 +1449,9 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 
 // Tests delegate methods are called when Picture-in-Picture is triggered.
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
+
   InitializeWebMediaPlayerImpl();
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
