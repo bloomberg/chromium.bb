@@ -98,6 +98,10 @@ constexpr int kTrayIconSize = 16;
 extern const SkColor kTrayIconColor;
 extern const SkColor kOobeTrayIconColor;
 
+// The padding around network tray icon in dip.
+constexpr int kTrayNetworkIconPadding = 2;
+constexpr int kUnifiedTrayNetworkIconPadding = 4;
+
 // The total visual padding at the start and end of the icon/label section
 // of the tray.
 constexpr int kTrayEdgePadding = 6;
@@ -169,6 +173,7 @@ constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 constexpr int kUnifiedMenuVerticalPadding = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 20;
+constexpr int kUnifiedTraySpacingBetweenIcons = 2;
 constexpr int kUnifiedTrayCornerRadius = 20;
 constexpr int kUnifiedTrayContentPadding = 5;
 constexpr int kUnifiedTopShortcutSpacing = 16;
