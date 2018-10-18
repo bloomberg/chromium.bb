@@ -125,7 +125,6 @@ aomenc bear_480P.yuv -w 640 -h 480 --fps=30000/1001 --cpu-used=8 \
   --lag-in-frames=0 --test-decode=fatal --target-bitrate=50 \
   -o bear-av1-640x480.webm
 ```
-
 ### Alpha Channel
 
 #### bear-vp8a.webm
@@ -403,6 +402,21 @@ bear-320x240-audio-only.webm encrypted using key ID [1] and key [2].
 #### frame_size_change-av_enc-v.webm
 third_party/WebKit/LayoutTests/media/resources/frame_size_change.webm encrypted
 using key ID [1] and key [2].
+
+### AV1
+
+#### bear-av1-cenc.mp4
+Encrypted version of bear-av1.mp4. Encrypted by [Shaka Packager] built locally
+at commit 53aa775ea488c0ffd3a2e1cb78ad000154e414e1 using key ID [1] and key [2].
+```
+packager in=bear-av1.mp4,stream=video,output=bear-av1-cenc.mp4
+         --enable_raw_key_encryption --protection_scheme cenc --clear_lead 0
+         --keys label=:key_id=30313233343536373839303132333435:key=ebdd62f16814d27b68ef122afce4ae3c
+         --pssh 000000327073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000121210303132333435363738393031323334350000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000
+```
+
+#### bear-av1-cenc.webm
+Same as bear-av1-cenc.mp4, except that the output name is bear-av1-cenc.webm.
 
 ### Encryption Scheme Test
 

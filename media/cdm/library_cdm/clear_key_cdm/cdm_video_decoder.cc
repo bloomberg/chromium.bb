@@ -24,14 +24,19 @@
 #include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/media_buildflags.h"
+#include "third_party/libaom/av1_buildflags.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
-
-#if BUILDFLAG(ENABLE_FFMPEG)
-#include "media/filters/ffmpeg_video_decoder.h"
-#endif
 
 #if BUILDFLAG(ENABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+#include "media/filters/aom_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_FFMPEG)
+#include "media/filters/ffmpeg_video_decoder.h"
 #endif
 
 namespace media {
@@ -294,6 +299,11 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #if BUILDFLAG(ENABLE_LIBVPX)
   if (config.codec == cdm::kCodecVp8 || config.codec == cdm::kCodecVp9)
     video_decoder.reset(new VpxVideoDecoder());
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (config.codec == cdm::kCodecAv1)
+    video_decoder.reset(new AomVideoDecoder(null_media_log.get()));
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG)
