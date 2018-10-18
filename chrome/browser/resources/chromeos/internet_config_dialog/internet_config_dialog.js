@@ -55,9 +55,9 @@ Polymer({
      * The current properties if an existing network is being configured, or
      * a minimal subset for a new network. Note: network-config may modify
      * this (specifically .name).
-     * @type {!chrome.networkingPrivate.ManagedProperties}
+     * @type {!chrome.networkingPrivate.NetworkProperties}
      */
-    managedProperties_: Object,
+    networkProperties_: Object,
 
     /**
      * Set by network-config when a configuration error occurs.
@@ -85,9 +85,9 @@ Polymer({
       this.guid_ = params.get('guid') || '';
     }
 
-    this.managedProperties_ = {
+    this.networkProperties_ = {
       GUID: this.guid_,
-      Name: {Active: ''},
+      Name: '',
       Type: /** @type {chrome.networkingPrivate.NetworkType} */ (type),
     };
 
@@ -110,7 +110,7 @@ Polymer({
    * @private
    */
   getDialogTitle_: function() {
-    var type = this.i18n('OncType' + this.managedProperties_.Type);
+    var type = this.i18n('OncType' + this.networkProperties_.Type);
     return this.i18n('internetJoinType', type);
   },
 
