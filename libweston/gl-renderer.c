@@ -2845,7 +2845,7 @@ log_extensions(const char *name, const char *extensions)
 }
 
 static void
-log_egl_gl_info(EGLDisplay egldpy)
+log_egl_info(EGLDisplay egldpy)
 {
 	const char *str;
 
@@ -2860,6 +2860,12 @@ log_egl_gl_info(EGLDisplay egldpy)
 
 	str = eglQueryString(egldpy, EGL_EXTENSIONS);
 	log_extensions("EGL extensions", str ? str : "(null)");
+}
+
+static void
+log_gl_info(void)
+{
+	const char *str;
 
 	str = (char *)glGetString(GL_VERSION);
 	weston_log("GL version: %s\n", str ? str : "(null)");
@@ -3735,7 +3741,8 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		gr->gl_version = GR_GL_VERSION(2, 0);
 	}
 
-	log_egl_gl_info(gr->egl_display);
+	log_egl_info(gr->egl_display);
+	log_gl_info();
 
 	gr->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
