@@ -307,7 +307,6 @@ crypto_headers = [
   "src/include/openssl/hmac.h",
   "src/include/openssl/is_boringssl.h",
   "src/include/openssl/lhash.h",
-  "src/include/openssl/lhash_macros.h",
   "src/include/openssl/md4.h",
   "src/include/openssl/md5.h",
   "src/include/openssl/mem.h",
@@ -331,7 +330,6 @@ crypto_headers = [
   "src/include/openssl/safestack.h",
   "src/include/openssl/sha.h",
   "src/include/openssl/span.h",
-  "src/include/openssl/srtp.h",
   "src/include/openssl/stack.h",
   "src/include/openssl/thread.h",
   "src/include/openssl/type_check.h",
@@ -382,6 +380,7 @@ ssl_sources = [
 
 ssl_headers = [
   "src/include/openssl/dtls1.h",
+  "src/include/openssl/srtp.h",
   "src/include/openssl/ssl.h",
   "src/include/openssl/ssl3.h",
   "src/include/openssl/tls1.h",
