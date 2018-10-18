@@ -93,12 +93,18 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
   return selected_index;
 }
 
-void TabStripModelOrderController::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  content::WebContents* old_opener = NULL;
+void TabStripModelOrderController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (!selection.active_tab_changed() || tab_strip_model->empty())
+    return;
+
+  content::WebContents* old_contents = selection.old_contents;
+  content::WebContents* new_contents = selection.new_contents;
+  content::WebContents* old_opener = nullptr;
+  int reason = selection.reason;
+
   if (old_contents) {
     int index = tabstrip_->GetIndexOfWebContents(old_contents);
     if (index != TabStripModel::kNoTab) {
@@ -110,13 +116,14 @@ void TabStripModelOrderController::ActiveTabChanged(
         tabstrip_->ForgetGroup(old_contents);
     }
   }
-  content::WebContents* new_opener = tabstrip_->GetOpenerOfWebContentsAt(index);
+  content::WebContents* new_opener =
+      tabstrip_->GetOpenerOfWebContentsAt(selection.new_model.active());
 
   if ((reason & CHANGE_REASON_USER_GESTURE) && new_opener != old_opener &&
-      ((old_contents == NULL && new_opener == NULL) ||
-          new_opener != old_contents) &&
-      ((new_contents == NULL && old_opener == NULL) ||
-          old_opener != new_contents)) {
+      ((old_contents == nullptr && new_opener == nullptr) ||
+       new_opener != old_contents) &&
+      ((new_contents == nullptr && old_opener == nullptr) ||
+       old_opener != new_contents)) {
     tabstrip_->ForgetAllOpeners();
   }
 }

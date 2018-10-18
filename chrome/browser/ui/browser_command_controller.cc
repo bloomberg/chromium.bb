@@ -739,25 +739,32 @@ void BrowserCommandController::OnSigninAllowedPrefChange() {
 
 // BrowserCommandController, TabStripModelObserver implementation:
 
-void BrowserCommandController::TabInsertedAt(TabStripModel* tab_strip_model,
-                                             WebContents* contents,
-                                             int index,
-                                             bool foreground) {
-  AddInterstitialObservers(contents);
-}
+void BrowserCommandController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted &&
+      change.type() != TabStripModelChange::kReplaced &&
+      change.type() != TabStripModelChange::kRemoved)
+    return;
 
-void BrowserCommandController::TabDetachedAt(WebContents* contents,
-                                             int index,
-                                             bool was_active) {
-  RemoveInterstitialObservers(contents);
-}
+  for (const auto& delta : change.deltas()) {
+    content::WebContents* new_contents = nullptr;
+    content::WebContents* old_contents = nullptr;
+    if (change.type() == TabStripModelChange::kInserted) {
+      new_contents = delta.insert.contents;
+    } else if (change.type() == TabStripModelChange::kReplaced) {
+      new_contents = delta.replace.new_contents;
+      old_contents = delta.replace.old_contents;
+    } else {
+      old_contents = delta.remove.contents;
+    }
 
-void BrowserCommandController::TabReplacedAt(TabStripModel* tab_strip_model,
-                                             WebContents* old_contents,
-                                             WebContents* new_contents,
-                                             int index) {
-  RemoveInterstitialObservers(old_contents);
-  AddInterstitialObservers(new_contents);
+    if (old_contents)
+      RemoveInterstitialObservers(old_contents);
+    if (new_contents)
+      AddInterstitialObservers(new_contents);
+  }
 }
 
 void BrowserCommandController::TabBlockedStateChanged(
