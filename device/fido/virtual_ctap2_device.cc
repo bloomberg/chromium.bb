@@ -267,8 +267,17 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   AttestedCredentialData attested_credential_data(
       aaguid, sha256_length, key_handle, ConstructECPublicKey(public_key));
 
+  base::Optional<cbor::CBORValue> extensions;
+  if (request->hmac_secret()) {
+    cbor::CBORValue::MapValue extensions_map;
+    extensions_map.emplace(cbor::CBORValue(kExtensionHmacSecret),
+                           cbor::CBORValue(true));
+    extensions = cbor::CBORValue(std::move(extensions_map));
+  }
+
   auto authenticator_data = ConstructAuthenticatorData(
-      rp_id_hash, 01ul, std::move(attested_credential_data));
+      rp_id_hash, 01ul, std::move(attested_credential_data),
+      std::move(extensions));
   auto sign_buffer =
       ConstructSignatureBuffer(authenticator_data, request->client_data_hash());
 
@@ -342,8 +351,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
 
   found_data->counter++;
-  auto authenticator_data =
-      ConstructAuthenticatorData(rp_id_hash, found_data->counter);
+  auto authenticator_data = ConstructAuthenticatorData(
+      rp_id_hash, found_data->counter, base::nullopt, base::nullopt);
   auto signature_buffer =
       ConstructSignatureBuffer(authenticator_data, request->client_data_hash());
 
@@ -367,7 +376,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnAuthenticatorGetInfo(
 AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
     base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
     uint32_t current_signature_count,
-    base::Optional<AttestedCredentialData> attested_credential_data) {
+    base::Optional<AttestedCredentialData> attested_credential_data,
+    base::Optional<cbor::CBORValue> extensions) {
   uint8_t flag =
       base::strict_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
   std::array<uint8_t, kSignCounterLength> signature_counter;
@@ -375,6 +385,10 @@ AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
   // Constructing AuthenticatorData for registration operation.
   if (attested_credential_data)
     flag |= base::strict_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
+  if (extensions) {
+    flag |= base::strict_cast<uint8_t>(
+        AuthenticatorData::Flag::kExtensionDataIncluded);
+  }
 
   signature_counter[0] = (current_signature_count >> 24) & 0xff;
   signature_counter[1] = (current_signature_count >> 16) & 0xff;
@@ -382,7 +396,8 @@ AuthenticatorData VirtualCtap2Device::ConstructAuthenticatorData(
   signature_counter[3] = (current_signature_count)&0xff;
 
   return AuthenticatorData(rp_id_hash, flag, signature_counter,
-                           std::move(attested_credential_data));
+                           std::move(attested_credential_data),
+                           std::move(extensions));
 }
 
 }  // namespace device

@@ -437,6 +437,9 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
         mojo_options->cable_registration_data = std::move(mojo_cable);
       }
     }
+    if (extensions.hasHmacCreateSecret()) {
+      mojo_options->hmac_create_secret = extensions.hmacCreateSecret();
+    }
   }
 
   return mojo_options;
