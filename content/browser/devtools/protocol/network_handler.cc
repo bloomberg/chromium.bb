@@ -1938,7 +1938,8 @@ std::string NetworkHandler::ExtractFragment(const GURL& url,
 // static
 std::unique_ptr<Network::Request>
 NetworkHandler::CreateRequestFromResourceRequest(
-    const network::ResourceRequest& request) {
+    const network::ResourceRequest& request,
+    const std::string& cookie_line) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
@@ -1946,6 +1947,9 @@ NetworkHandler::CreateRequestFromResourceRequest(
     headers_dict->setString(net::HttpRequestHeaders::kReferer,
                             request.referrer.spec());
   }
+  if (!cookie_line.empty())
+    headers_dict->setString(net::HttpRequestHeaders::kCookie, cookie_line);
+
   std::string url_fragment;
   std::unique_ptr<protocol::Network::Request> request_object =
       Network::Request::Create()

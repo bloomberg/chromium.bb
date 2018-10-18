@@ -177,7 +177,8 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   static std::string ExtractFragment(const GURL& url, std::string* fragment);
   static std::unique_ptr<Network::Request> CreateRequestFromResourceRequest(
-      const network::ResourceRequest& request);
+      const network::ResourceRequest& request,
+      const std::string& cookie_line);
   static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(
       const net::URLRequest* request,
       const std::string& cookie);
