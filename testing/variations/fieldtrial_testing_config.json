@@ -2151,8 +2151,7 @@
     "ImprovedRecoveryComponent": [
         {
             "platforms": [
-                "windows",
-                "mac"
+                "windows"
             ],
             "experiments": [
                 {
