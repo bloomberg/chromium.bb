@@ -108,6 +108,7 @@ PowerPolicyController::PrefValues::PrefValues()
       use_video_activity(true),
       ac_brightness_percent(-1.0),
       battery_brightness_percent(-1.0),
+      allow_wake_locks(true),
       allow_screen_wake_locks(true),
       enable_auto_screen_lock(false),
       presentation_screen_dim_delay_factor(1.0),
@@ -260,7 +261,9 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   prefs_policy_.set_force_nonzero_brightness_for_user_activity(
       values.force_nonzero_brightness_for_user_activity);
 
-  honor_screen_wake_locks_ = values.allow_screen_wake_locks;
+  honor_wake_locks_ = values.allow_wake_locks;
+  honor_screen_wake_locks_ =
+      honor_wake_locks_ && values.allow_screen_wake_locks;
 
   prefs_were_set_ = true;
   SendCurrentPolicy();
@@ -310,6 +313,7 @@ void PowerPolicyController::SetEncryptionMigrationActive(bool active) {
 PowerPolicyController::PowerPolicyController(PowerManagerClient* client)
     : client_(client),
       prefs_were_set_(false),
+      honor_wake_locks_(true),
       honor_screen_wake_locks_(true),
       next_wake_lock_id_(1),
       chrome_is_exiting_(false),
@@ -346,44 +350,47 @@ void PowerPolicyController::SendCurrentPolicy() {
   if (prefs_were_set_)
     causes = kPrefsReason;
 
-  bool have_screen_wake_locks = false;
-  bool have_dim_wake_locks = false;
-  bool have_system_wake_locks = false;
-  for (const auto& it : wake_locks_) {
-    // Skip audio and video locks that should be ignored due to policy.
-    if (!IsWakeLockReasonHonored(it.second.reason, policy.use_audio_activity(),
-                                 policy.use_video_activity()))
-      continue;
+  if (honor_wake_locks_) {
+    bool have_screen_wake_locks = false;
+    bool have_dim_wake_locks = false;
+    bool have_system_wake_locks = false;
+    for (const auto& it : wake_locks_) {
+      // Skip audio and video locks that should be ignored due to policy.
+      if (!IsWakeLockReasonHonored(it.second.reason,
+                                   policy.use_audio_activity(),
+                                   policy.use_video_activity()))
+        continue;
 
-    switch (it.second.type) {
-      case WakeLock::TYPE_SCREEN:
-        have_screen_wake_locks = true;
-        break;
-      case WakeLock::TYPE_DIM:
-        have_dim_wake_locks = true;
-        break;
-      case WakeLock::TYPE_SYSTEM:
-        have_system_wake_locks = true;
-        break;
+      switch (it.second.type) {
+        case WakeLock::TYPE_SCREEN:
+          have_screen_wake_locks = true;
+          break;
+        case WakeLock::TYPE_DIM:
+          have_dim_wake_locks = true;
+          break;
+        case WakeLock::TYPE_SYSTEM:
+          have_system_wake_locks = true;
+          break;
+      }
+      causes += (causes.empty() ? "" : ", ") + it.second.description;
     }
-    causes += (causes.empty() ? "" : ", ") + it.second.description;
-  }
 
-  // Downgrade full-brightness and dimmed-brightness locks to system locks if
-  // wake locks aren't allowed to keep the screen on.
-  if (!honor_screen_wake_locks_ &&
-      (have_screen_wake_locks || have_dim_wake_locks)) {
-    have_system_wake_locks = true;
-    have_screen_wake_locks = false;
-    have_dim_wake_locks = false;
-  }
+    // Downgrade full-brightness and dimmed-brightness locks to system locks if
+    // wake locks aren't allowed to keep the screen on.
+    if (!honor_screen_wake_locks_ &&
+        (have_screen_wake_locks || have_dim_wake_locks)) {
+      have_system_wake_locks = true;
+      have_screen_wake_locks = false;
+      have_dim_wake_locks = false;
+    }
 
-  if (have_screen_wake_locks)
-    policy.set_screen_wake_lock(true);
-  if (have_dim_wake_locks)
-    policy.set_dim_wake_lock(true);
-  if (have_system_wake_locks)
-    policy.set_system_wake_lock(true);
+    if (have_screen_wake_locks)
+      policy.set_screen_wake_lock(true);
+    if (have_dim_wake_locks)
+      policy.set_dim_wake_lock(true);
+    if (have_system_wake_locks)
+      policy.set_system_wake_lock(true);
+  }
 
   if (encryption_migration_active_ &&
       policy.lid_closed_action() !=

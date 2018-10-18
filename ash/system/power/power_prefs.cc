@@ -93,6 +93,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
                                 PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kPowerUseVideoActivity, true,
                                 PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kPowerAllowWakeLocks, true,
+                                PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kPowerAllowScreenWakeLocks, true,
                                 PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(prefs::kPowerPresentationScreenDimDelayFactor,
@@ -244,6 +246,7 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
       GetPowerPolicyAction(prefs, prefs::kPowerLidClosedAction);
   values.use_audio_activity = prefs->GetBoolean(prefs::kPowerUseAudioActivity);
   values.use_video_activity = prefs->GetBoolean(prefs::kPowerUseVideoActivity);
+  values.allow_wake_locks = prefs->GetBoolean(prefs::kPowerAllowWakeLocks);
   values.allow_screen_wake_locks =
       prefs->GetBoolean(prefs::kPowerAllowScreenWakeLocks);
   values.enable_auto_screen_lock =
@@ -293,6 +296,7 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_->Add(prefs::kPowerLidClosedAction, update_callback);
   pref_change_registrar_->Add(prefs::kPowerUseAudioActivity, update_callback);
   pref_change_registrar_->Add(prefs::kPowerUseVideoActivity, update_callback);
+  pref_change_registrar_->Add(prefs::kPowerAllowWakeLocks, update_callback);
   pref_change_registrar_->Add(prefs::kPowerAllowScreenWakeLocks,
                               update_callback);
   pref_change_registrar_->Add(prefs::kEnableAutoScreenLock, update_callback);

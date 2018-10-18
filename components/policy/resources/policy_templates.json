@@ -560,6 +560,7 @@
         'PowerManagementUsesVideoActivity',
         'PresentationIdleDelayScale',
         'PresentationScreenDimDelayScale',
+        'AllowWakeLocks',
         'AllowScreenWakeLocks',
         'UserActivityScreenDimDelayScale',
         'WaitForInitialUserActivity',
@@ -8080,6 +8081,25 @@
           The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.''',
     },
     {
+      'name': 'AllowWakeLocks',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 491,
+      'caption': '''Allow wake locks''',
+      'tags': [],
+      'desc': '''Specifies whether wake locks are allowed. Wake locks can be requested by extensions via the power management extension API and by ARC apps.
+
+          If this policy is set to true or left not set, wake locks will be honored for power management.
+
+          If this policy is set to false, wake lock requests will get ignored.''',
+    },
+    {
       'name': 'AllowScreenWakeLocks',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -8092,11 +8112,11 @@
       'id': 203,
       'caption': '''Allow screen wake locks''',
       'tags': [],
-      'desc': '''Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
+      'desc': '''Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API and by ARC apps.
 
-          If this policy is set to true or left not set, screen wake locks will be honored for power management.
+          If this policy is set to true or left not set, screen wake locks will be honored for power management, unless AllowWakeLocks is set to false.
 
-          If this policy is set to false, screen wake lock requests will get ignored.''',
+          If this policy is set to false, screen wake lock requests will be demoted to system wake lock requests.''',
     },
     {
       'name': 'UserActivityScreenDimDelayScale',
@@ -13648,5 +13668,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 490
+  'highest_id_currently_used': 491
 }
