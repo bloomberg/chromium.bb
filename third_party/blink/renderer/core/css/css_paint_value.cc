@@ -61,8 +61,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   if (!ParseInputArguments(document))
     return nullptr;
 
-  return generator_->Paint(client, RoundedIntSize(target_size),
-                           parsed_input_arguments_);
+  return generator_->Paint(client, target_size, parsed_input_arguments_);
 }
 
 bool CSSPaintValue::ParseInputArguments(const Document& document) {
