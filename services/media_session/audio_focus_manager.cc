@@ -83,6 +83,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) override {
     session_info_ = std::move(info);
+    owner_->DidChangeFocus();
   }
 
   void GetRequestId(GetRequestIdCallback callback) override {
@@ -346,9 +347,13 @@ void AudioFocusManager::EnforceAudioFocusAbandon(mojom::AudioFocusType type) {
 }
 
 void AudioFocusManager::DidChangeFocus() {
-  active_media_controller_.SetMediaSession(
-      audio_focus_stack_.empty() ? nullptr
-                                 : audio_focus_stack_.back()->session());
+  if (audio_focus_stack_.empty()) {
+    active_media_controller_.ClearMediaSession();
+  } else {
+    active_media_controller_.SetMediaSession(
+        audio_focus_stack_.back()->session(),
+        audio_focus_stack_.back()->info()->state);
+  }
 }
 
 AudioFocusManager::AudioFocusManager() {

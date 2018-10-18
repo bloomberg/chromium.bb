@@ -49,7 +49,6 @@ void MockMediaSession::Suspend(SuspendType suspend_type) {
 }
 
 void MockMediaSession::Resume(SuspendType suspend_type) {
-  DCHECK_EQ(SuspendType::kSystem, suspend_type);
   SetState(mojom::MediaSessionInfo::SessionState::kActive);
 }
 
@@ -81,6 +80,10 @@ void MockMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
   debug_info->state = "state";
 
   std::move(callback).Run(std::move(debug_info));
+}
+
+void MockMediaSession::Stop() {
+  SetState(mojom::MediaSessionInfo::SessionState::kInactive);
 }
 
 void MockMediaSession::AbandonAudioFocusFromClient() {

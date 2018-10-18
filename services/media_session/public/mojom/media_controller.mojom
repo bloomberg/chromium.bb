@@ -10,4 +10,11 @@ module media_session.mojom;
 interface MediaController {
   // Suspend the media session.
   Suspend();
+
+  // Resume the media session.
+  Resume();
+
+  // This will either suspend or resume the media session based on the
+  // playback state.
+  ToggleSuspendResume();
 };
