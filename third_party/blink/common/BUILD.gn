@@ -27,6 +27,7 @@ jumbo_source_set("common") {
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
     "dom_storage/session_storage_namespace_id.cc",
+    "download/download_stats.cc",
     "experiments/memory_ablation_experiment.cc",
     "feature_policy/feature_policy.cc",
     "features.cc",
