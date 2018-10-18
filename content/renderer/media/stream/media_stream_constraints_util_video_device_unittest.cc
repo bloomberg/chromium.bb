@@ -34,13 +34,13 @@ const char kGroupID5[] = "fake_group_5";
 void CheckTrackAdapterSettingsEqualsResolution(
     const VideoCaptureSettings& settings) {
   EXPECT_EQ(settings.Format().frame_size.width(),
-            settings.track_adapter_settings().max_width);
+            settings.track_adapter_settings().target_width());
   EXPECT_EQ(settings.Format().frame_size.height(),
-            settings.track_adapter_settings().max_height);
+            settings.track_adapter_settings().target_height());
   EXPECT_EQ(1.0 / settings.Format().frame_size.height(),
-            settings.track_adapter_settings().min_aspect_ratio);
+            settings.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(settings.Format().frame_size.width(),
-            settings.track_adapter_settings().max_aspect_ratio);
+            settings.track_adapter_settings().max_aspect_ratio());
 }
 
 void CheckTrackAdapterSettingsEqualsFrameRate(
@@ -48,7 +48,7 @@ void CheckTrackAdapterSettingsEqualsFrameRate(
     double value = 0.0) {
   if (value >= settings.FrameRate())
     value = 0.0;
-  EXPECT_EQ(value, settings.track_adapter_settings().max_frame_rate);
+  EXPECT_EQ(value, settings.track_adapter_settings().max_frame_rate());
 }
 
 void CheckTrackAdapterSettingsEqualsFormat(
@@ -519,7 +519,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactHeight) {
   // which is the low-res device.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kHeight, result.Height());
-  EXPECT_EQ(kHeight, result.track_adapter_settings().max_height);
+  EXPECT_EQ(kHeight, result.track_adapter_settings().target_height());
 
   const int kLargeHeight = 1500;
   constraint_factory_.basic().height.SetExact(kLargeHeight);
@@ -529,9 +529,9 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactHeight) {
   // height, even if not natively.
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
-  EXPECT_EQ(kLargeHeight, result.track_adapter_settings().max_height);
+  EXPECT_EQ(kLargeHeight, result.track_adapter_settings().target_height());
   EXPECT_EQ(std::round(kLargeHeight * AspectRatio(*high_res_highest_format_)),
-            result.track_adapter_settings().max_width);
+            result.track_adapter_settings().target_width());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
@@ -544,12 +544,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
   // algorithm should prefer the default device.
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_LE(kHeight, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
   EXPECT_EQ(static_cast<double>(result.Width()) / kHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(1.0 / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kLargeHeight = 1500;
@@ -561,12 +561,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
   EXPECT_LE(kHeight, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
   EXPECT_EQ(static_cast<double>(result.Width()) / kLargeHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(1.0 / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -581,12 +581,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxHeight) {
   // maximum by the lowest amount. In this case it is the low-res device.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(low_res_device_->formats[0], result.Format());
-  EXPECT_EQ(kLowHeight, result.track_adapter_settings().max_height);
+  EXPECT_EQ(kLowHeight, result.track_adapter_settings().target_height());
   EXPECT_EQ(std::round(kLowHeight * AspectRatio(result.Format())),
-            result.track_adapter_settings().max_width);
+            result.track_adapter_settings().target_width());
   EXPECT_EQ(static_cast<double>(result.Width()),
-            result.track_adapter_settings().max_aspect_ratio);
-  EXPECT_EQ(1.0 / kLowHeight, result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
+  EXPECT_EQ(1.0 / kLowHeight,
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -607,12 +608,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     // range.
     EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -631,12 +632,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -655,12 +656,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
@@ -692,12 +693,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     EXPECT_EQ(*default_closest_format_, result.Format());
     // The track is cropped to the ideal height, maintaining the source aspect
     // ratio.
-    EXPECT_EQ(kIdealHeight, result.track_adapter_settings().max_height);
+    EXPECT_EQ(kIdealHeight, result.track_adapter_settings().target_height());
     EXPECT_EQ(std::round(kIdealHeight * AspectRatio(result.Format())),
-              result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -712,12 +714,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
-    EXPECT_EQ(kIdealHeight, result.track_adapter_settings().max_height);
+    EXPECT_EQ(kIdealHeight, result.track_adapter_settings().target_height());
     EXPECT_EQ(std::round(kIdealHeight * AspectRatio(result.Format())),
-              result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -730,12 +733,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealHeight) {
     // which is the high-res device at the highest resolution.
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
-    EXPECT_EQ(kIdealHeight, result.track_adapter_settings().max_height);
+    EXPECT_EQ(kIdealHeight, result.track_adapter_settings().target_height());
     EXPECT_EQ(std::round(kIdealHeight * AspectRatio(result.Format())),
-              result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
@@ -752,11 +756,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactWidth) {
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kWidth, result.Width());
   EXPECT_EQ(std::round(kWidth / AspectRatio(result.Format())),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(kWidth, result.track_adapter_settings().max_width);
-  EXPECT_EQ(kWidth, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(kWidth, result.track_adapter_settings().target_width());
+  EXPECT_EQ(kWidth, result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kWidth) / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kLargeWidth = 2000;
@@ -769,11 +773,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactWidth) {
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
   EXPECT_EQ(std::round(kLargeWidth / AspectRatio(result.Format())),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(kLargeWidth, result.track_adapter_settings().max_width);
-  EXPECT_EQ(kLargeWidth, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(kLargeWidth, result.track_adapter_settings().target_width());
+  EXPECT_EQ(kLargeWidth, result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kLargeWidth) / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -790,11 +794,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinWidth) {
   EXPECT_LE(kWidth, result.Width());
   EXPECT_EQ(1000, result.Width());
   EXPECT_EQ(1000, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kWidth) / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kLargeWidth = 2000;
@@ -806,11 +810,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinWidth) {
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_LE(kLargeWidth, result.Width());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kLargeWidth) / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -828,11 +832,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxWidth) {
   EXPECT_EQ(low_res_device_->formats[0], result.Format());
   // The track is cropped to kLowWidth and keeps the source aspect ratio.
   EXPECT_EQ(std::round(kLowWidth / AspectRatio(result.Format())),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(kLowWidth, result.track_adapter_settings().max_width);
-  EXPECT_EQ(kLowWidth, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(kLowWidth, result.track_adapter_settings().target_width());
+  EXPECT_EQ(kLowWidth, result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(1.0 / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -853,11 +857,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(1000, result.Width());
     EXPECT_EQ(1000, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMinWidth) / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -876,11 +881,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMinWidth) / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -899,11 +905,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMinWidth) / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
@@ -920,11 +927,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(kIdealWidth, result.Width());
     EXPECT_EQ(std::round(kIdealWidth / AspectRatio(result.Format())),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().max_width);
-    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().target_width());
+    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -941,11 +948,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     EXPECT_EQ(480, result.Width());
     // The track is cropped to kIdealWidth and keeps the source aspect ratio.
     EXPECT_EQ(std::round(kIdealWidth / AspectRatio(result.Format())),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -959,11 +967,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     EXPECT_EQ(*high_res_highest_format_, result.Format());
     // The track is cropped to kIdealWidth and keeps the source aspect ratio.
     EXPECT_EQ(std::round(kIdealWidth / AspectRatio(result.Format())),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1266,10 +1275,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
   EXPECT_EQ(std::round(result.Width() / kAspectRatio),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kMinWidth = 500;
@@ -1295,10 +1304,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
   EXPECT_EQ(std::round(result.Width() / kAspectRatio),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kMinHeight = 480;
@@ -1327,10 +1336,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   EXPECT_EQ(std::round(result.Width() / kAspectRatio),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1354,10 +1363,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinAspectRatio) {
   // Adjust the track resolution to use the minimum aspect ratio, which is
   // greater than the source's aspect ratio.
   EXPECT_EQ(std::round(result.Width() / kAspectRatio),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kMinWidth = 500;
@@ -1386,10 +1395,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinAspectRatio) {
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
   // The source's native aspect ratio equals the minimum aspect ratio.
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(max_aspect_ratio, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(max_aspect_ratio,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1412,11 +1422,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxAspectRatio) {
   EXPECT_EQ(*default_closest_format_, result.Format());
   // The track's aspect ratio is adjusted to the maximum, which is lower than
   // the source's native aspect ratio.
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
   EXPECT_EQ(std::round(result.Height() * kAspectRatio),
-            result.track_adapter_settings().max_width);
-  EXPECT_EQ(min_aspect_ratio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_width());
+  EXPECT_EQ(min_aspect_ratio,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   const int kExactWidth = 360;
@@ -1445,11 +1456,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxAspectRatio) {
   EXPECT_EQ(720, result.Height());
   // The track's aspect ratio is adjusted to the maximum, which is lower than
   // the source's native aspect ratio.
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
   EXPECT_EQ(std::round(result.Height() * kAspectRatio),
-            result.track_adapter_settings().max_width);
-  EXPECT_EQ(min_aspect_ratio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_width());
+  EXPECT_EQ(min_aspect_ratio,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1480,12 +1492,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryAspectRatioRange) {
     EXPECT_EQ(*default_closest_format_, result.Format());
     // The source's aspect ratio matches the maximum aspect ratio. No adjustment
     // is required.
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1517,12 +1529,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryAspectRatioRange) {
     EXPECT_EQ(1080, result.Height());
     // The track is cropped to support the minimum aspect ratio.
     EXPECT_EQ(std::round(result.Width() / kMinAspectRatio),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
@@ -1548,13 +1560,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
     // The track is cropped to support the ideal aspect ratio.
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
     EXPECT_EQ(std::round(result.Height() * kIdealAspectRatio),
-              result.track_adapter_settings().max_width);
+              result.track_adapter_settings().target_width());
     EXPECT_EQ(min_aspect_ratio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(max_aspect_ratio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1574,11 +1586,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     // resulting low value for height. For more typical resolution values,
     // the at-most 1-pixel error caused by rounding is not an issue.
     EXPECT_EQ(std::round(result.Width() / kIdealAspectRatio),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1592,11 +1605,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
     EXPECT_EQ(std::round(result.Width() / kIdealAspectRatio),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1610,11 +1624,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(*high_res_highest_format_, result.Format());
     // In this case there is no rounding error.
-    EXPECT_EQ(1, result.track_adapter_settings().max_height);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(1, result.track_adapter_settings().target_height());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(1.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1631,13 +1646,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
-    EXPECT_EQ(kExactHeight, result.track_adapter_settings().max_height);
+    EXPECT_EQ(kExactHeight, result.track_adapter_settings().target_height());
     EXPECT_EQ(kExactHeight * kIdealAspectRatio,
-              result.track_adapter_settings().max_width);
+              result.track_adapter_settings().target_width());
     EXPECT_EQ(1.0 / kExactHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(result.Width()) / kExactHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1654,13 +1669,13 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
-    EXPECT_EQ(kExactHeight, result.track_adapter_settings().max_height);
+    EXPECT_EQ(kExactHeight, result.track_adapter_settings().target_height());
     EXPECT_EQ(kExactHeight * kIdealAspectRatio,
-              result.track_adapter_settings().max_width);
+              result.track_adapter_settings().target_width());
     EXPECT_EQ(1.0 / kExactHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(result.Width()) / kExactHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
@@ -1694,10 +1709,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 
   blink::WebMediaTrackConstraintSet& advanced3 =
@@ -1710,10 +1725,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
 
   blink::WebMediaTrackConstraintSet& advanced4 =
@@ -1727,10 +1742,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
 
   constraint_factory_.basic().width.SetIdeal(100);
@@ -1750,10 +1765,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(320, result.Width());
   EXPECT_EQ(240, result.Height());
-  EXPECT_EQ(320, result.track_adapter_settings().max_width);
-  EXPECT_EQ(240, result.track_adapter_settings().max_height);
-  EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(320, result.track_adapter_settings().target_width());
+  EXPECT_EQ(240, result.track_adapter_settings().target_height());
+  EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
 
   constraint_factory_.basic().width.SetIdeal(2000);
@@ -1765,10 +1780,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(640, result.track_adapter_settings().max_width);
-  EXPECT_EQ(480, result.track_adapter_settings().max_height);
-  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(640, result.track_adapter_settings().target_width());
+  EXPECT_EQ(480, result.track_adapter_settings().target_height());
+  EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
 }
 
@@ -1796,10 +1811,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(1920, result.Width());
   EXPECT_EQ(1080, result.Height());
   EXPECT_EQ(60.0, result.FrameRate());
-  EXPECT_EQ(1920, result.track_adapter_settings().max_width);
-  EXPECT_EQ(1080, result.track_adapter_settings().max_height);
-  EXPECT_EQ(1920.0 / 1080.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(1920.0 / 1080.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(1920, result.track_adapter_settings().target_width());
+  EXPECT_EQ(1080, result.track_adapter_settings().target_height());
+  EXPECT_EQ(1920.0 / 1080.0,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(1920.0 / 1080.0,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 60.0);
 }
 
@@ -1820,12 +1837,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedNoiseReduction) {
   EXPECT_LE(1920, result.Width());
   EXPECT_LE(1080, result.Height());
   EXPECT_TRUE(result.noise_reduction() && !*result.noise_reduction());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
   EXPECT_EQ(1920.0 / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(result.Width() / 1080.0,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1852,12 +1869,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     EXPECT_LE(640, result.Width());
     EXPECT_LE(480, result.Height());
     EXPECT_TRUE(result.noise_reduction() && *result.noise_reduction());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
     EXPECT_EQ(640.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(result.Width() / 480.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 
@@ -1880,12 +1897,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     EXPECT_LE(1080, result.Height());
     // Should select default noise reduction setting.
     EXPECT_TRUE(!result.noise_reduction());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
     EXPECT_EQ(1920.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(result.Width() / 1080.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
@@ -1909,10 +1926,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1938,11 +1955,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(200, result.Width());
   EXPECT_EQ(200, result.Height());
   EXPECT_EQ(40, result.FrameRate());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
   EXPECT_EQ(1.0 / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1968,12 +1985,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(1000, result.Width());
   EXPECT_EQ(1000, result.Height());
   EXPECT_EQ(20, result.FrameRate());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
   EXPECT_EQ(800.0 / result.Height(),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(result.Width() / 600.0,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -1994,11 +2011,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
   // The track is cropped to support the exact aspect ratio.
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
   EXPECT_EQ(std::round(result.Height() / 2300.0),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(2300.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(2300.0, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(2300.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(2300.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -2019,11 +2036,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
   // The track is cropped to support the min aspect ratio.
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
   EXPECT_EQ(std::round(result.Height() / 2300.0),
-            result.track_adapter_settings().max_height);
-  EXPECT_EQ(2300.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().target_height());
+  EXPECT_EQ(2300.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
 }
 
@@ -2205,9 +2222,9 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set, but the third set must be applied.
   EXPECT_EQ(result.device_id(), low_res_device_->device_id);
   EXPECT_EQ(result.Width(), 800);
-  EXPECT_EQ(result.track_adapter_settings().max_width, 800);
+  EXPECT_EQ(result.track_adapter_settings().target_width(), 800);
   EXPECT_EQ(result.Height(), 600);
-  EXPECT_EQ(result.track_adapter_settings().max_height, 600);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), 600);
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -2250,11 +2267,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     // selected.
     EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
     EXPECT_EQ(std::round(result.Width() / 17.0),
-              result.track_adapter_settings().max_height);
-    EXPECT_EQ(17, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().target_height());
+    EXPECT_EQ(17, result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(result.Width(),
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
 }
