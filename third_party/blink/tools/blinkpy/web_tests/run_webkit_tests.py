@@ -544,7 +544,7 @@ def _set_up_derived_options(port, options, args):
             'WEBKIT_TEST_MAX_LOCKED_SHARDS', str(port.default_max_locked_shards())))
 
     if not options.configuration:
-        options.configuration = 'Release'
+        options.configuration = port.default_configuration()
 
     if not options.time_out_ms:
         options.time_out_ms = str(port.default_timeout_ms())

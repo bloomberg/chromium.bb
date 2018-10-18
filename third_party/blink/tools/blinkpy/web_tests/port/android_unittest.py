@@ -94,8 +94,7 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     def test_check_build(self):
         host = MockSystemHost()
-        port = self.make_port(host=host, options=optparse.Values(
-            {'child_processes': 1, 'target': 'Release'}))
+        port = self.make_port(host=host, options=optparse.Values({'child_processes': 1}))
         # Checking the devices is not tested in this unit test.
         port._check_devices = lambda _: None
         host.filesystem.exists = lambda p: True
@@ -108,14 +107,12 @@ class AndroidPortTest(port_testcase.PortTestCase):
     # Test that content_shell currently is the only supported driver.
     def test_non_content_shell_driver(self):
         with self.assertRaises(Exception):
-          self.make_port(options=optparse.Values({'driver_name': 'foobar', 'target': 'Release'}))
+            self.make_port(options=optparse.Values({'driver_name': 'foobar'}))
 
     # Test that the number of child processes to create depends on the devices.
     def test_default_child_processes(self):
         port_default = self.make_port(device_count=5)
-        port_fixed_device = self.make_port(
-            device_count=5,
-            options=optparse.Values({'adb_devices': ['123456789ABCDEF9'], 'target': 'Release'}))
+        port_fixed_device = self.make_port(device_count=5, options=optparse.Values({'adb_devices': ['123456789ABCDEF9']}))
 
         self.assertEquals(6, port_default.default_child_processes())
         self.assertEquals(1, port_fixed_device.default_child_processes())
@@ -126,8 +123,8 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     # Tests the default timeouts for Android, which are different than the rest of Chromium.
     def test_default_timeout_ms(self):
-        self.assertEqual(self.make_port(options=optparse.Values({'target': 'Release'})).default_timeout_ms(), 10000)
-        self.assertEqual(self.make_port(options=optparse.Values({'target': 'Debug'})).default_timeout_ms(), 10000)
+        self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(), 10000)
+        self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Debug'})).default_timeout_ms(), 10000)
 
     def test_path_to_apache_config_file(self):
         port = self.make_port()
@@ -152,9 +149,7 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
             'devil.android.perf.perf_control.PerfControl')
         self._mock_perf_control.start()
 
-        self._port = android.AndroidPort(
-            MockSystemHost(executive=MockExecutive()), 'android',
-            options=optparse.Values({'target': 'Release'}))
+        self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         self._driver = android.ChromiumAndroidDriver(
             self._port,
             worker_number=0,
@@ -204,8 +199,7 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
         self._mock_perf_control.stop()
 
     def test_two_drivers(self):
-        options = optparse.Values({'target': 'Release'})
-        port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android', options=options)
+        port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         driver0 = android.ChromiumAndroidDriver(port, worker_number=0,
                                                 driver_details=android.ContentShellDriverDetails(), android_devices=port._devices)
         driver1 = android.ChromiumAndroidDriver(port, worker_number=1,
@@ -241,12 +235,10 @@ class ChromiumAndroidTwoPortsTest(unittest.TestCase):
     def test_options_with_two_ports(self):
         port0 = android.AndroidPort(
             MockSystemHost(executive=MockExecutive()), 'android',
-            options=optparse.Values(
-                {'additional_driver_flag': ['--foo=bar'], 'target': 'Release'}))
+            options=optparse.Values({'additional_driver_flag': ['--foo=bar']}))
         port1 = android.AndroidPort(
             MockSystemHost(executive=MockExecutive()), 'android',
-            options=optparse.Values(
-                {'driver_name': 'content_shell', 'target': 'Release'}))
+            options=optparse.Values({'driver_name': 'content_shell'}))
 
         self.assertEqual(1, port0.driver_cmd_line().count('--foo=bar'))
         self.assertEqual(0, port1.driver_cmd_line().count('--create-stdin-fifo'))
@@ -266,9 +258,7 @@ class ChromiumAndroidDriverTombstoneTest(unittest.TestCase):
             return_value={'level': 100})
         self._mock_battery.start()
 
-        self._port = android.AndroidPort(
-            MockSystemHost(executive=MockExecutive()), 'android',
-            options=optparse.Values({'target': 'Release'}))
+        self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         self._driver = android.ChromiumAndroidDriver(
             self._port,
             worker_number=0,

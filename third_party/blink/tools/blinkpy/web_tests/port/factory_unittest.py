@@ -45,7 +45,7 @@ class FactoryTest(unittest.TestCase):
     # instead of passing generic "options".
 
     def setUp(self):
-      self.webkit_options = optparse.Values({'pixel_tests': False, 'configuration': 'Release'})
+        self.webkit_options = optparse.Values({'pixel_tests': False})
 
     def assert_port(self, port_name=None, os_name=None, os_version=None, options=None, cls=None):
         host = MockHost(os_name=os_name, os_version=os_version)
@@ -98,35 +98,32 @@ class FactoryTest(unittest.TestCase):
         return factory.PortFactory(host).get(options=options)
 
     def test_default_target_and_configuration(self):
-        # Generate a fake 'content shell' binary in 'Debug' target
-        temp_port = self.get_port(target='Debug', configuration='Debug')
-        path_to_fake_driver = temp_port._path_to_driver()
-        port = self.get_port(files={path_to_fake_driver: 'blah'})
-        self.assertEqual(port._options.configuration, 'Debug')
-        self.assertEqual(port._options.target, 'Debug')
+        port = self.get_port()
+        self.assertEqual(port._options.configuration, 'Release')
+        self.assertEqual(port._options.target, 'Release')
 
     def test_debug_configuration(self):
-        port = self.get_port(target='Debug', configuration='Debug')
+        port = self.get_port(configuration='Debug')
         self.assertEqual(port._options.configuration, 'Debug')
         self.assertEqual(port._options.target, 'Debug')
 
     def test_release_configuration(self):
-        port = self.get_port(target='Release', configuration='Release')
+        port = self.get_port(configuration='Release')
         self.assertEqual(port._options.configuration, 'Release')
         self.assertEqual(port._options.target, 'Release')
 
     def test_debug_target(self):
-        port = self.get_port(target='Debug', configuration='Debug')
+        port = self.get_port(target='Debug')
         self.assertEqual(port._options.configuration, 'Debug')
         self.assertEqual(port._options.target, 'Debug')
 
     def test_debug_x64_target(self):
-        port = self.get_port(target='Debug_x64', configuration='Debug')
+        port = self.get_port(target='Debug_x64')
         self.assertEqual(port._options.configuration, 'Debug')
         self.assertEqual(port._options.target, 'Debug_x64')
 
     def test_release_x64_target(self):
-        port = self.get_port(target='Release_x64', configuration='Release')
+        port = self.get_port(target='Release_x64')
         self.assertEqual(port._options.configuration, 'Release')
         self.assertEqual(port._options.target, 'Release_x64')
 
@@ -161,7 +158,7 @@ class FactoryTest(unittest.TestCase):
 
     def test_unknown_dir(self):
         with self.assertRaises(ValueError):
-            self.get_port(target='unknown', configuration='Debug')
+            self.get_port(target='unknown')
 
     def test_both_configuration_and_target_is_an_error(self):
         with self.assertRaises(ValueError):

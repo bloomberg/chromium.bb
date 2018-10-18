@@ -58,7 +58,6 @@ from blinkpy.web_tests.models.test_run_results import TestRunException
 from blinkpy.web_tests.port import driver
 from blinkpy.web_tests.port import server_process
 from blinkpy.web_tests.port.factory import PortFactory
-from blinkpy.web_tests.port.factory import check_configuration_and_target
 from blinkpy.web_tests.servers import apache_http
 from blinkpy.web_tests.servers import pywebsocket
 from blinkpy.web_tests.servers import wptserve
@@ -218,10 +217,11 @@ class Port(object):
         self.server_process_constructor = server_process.ServerProcess  # This can be overridden for testing.
         self._http_lock = None  # FIXME: Why does this live on the port object?
         self._dump_reader = None
-        if not hasattr(options, 'target') or not options.target:
-            self.set_option_default('target', self.default_target())
-        self.check_configuration_and_target()
 
+        if not hasattr(options, 'configuration') or not options.configuration:
+            self.set_option_default('configuration', self.default_configuration())
+        if not hasattr(options, 'target') or not options.target:
+            self.set_option_default('target', self._options.configuration)
         self._test_configuration = None
         self._reftest_list = {}
         self._results_directory = None
@@ -1448,25 +1448,8 @@ class Port(object):
         """Returns the repository path for the chromium code base."""
         return self._path_from_chromium_base('build')
 
-    def default_target(self):
-      runnable_targets = []
-      for possible_target in ('Release', 'Default', 'Debug'):
-          if self._filesystem.exists(self._path_to_driver(possible_target)):
-              runnable_targets.append(possible_target)
-      if len(runnable_targets) == 0:
-          _log.error('Driver cannot be found in common build directories.')
-          sys.exit(1)
-      elif len(runnable_targets) == 1:
-          _log.info('Automatically picked a target: %s', runnable_targets[0])
-          return runnable_targets[0]
-      else:
-          _log.error('Multiple runnable targets are found: %s. '
-                     'Specify the exact target with --target flag.',
-                     ', '.join(repr(runnable_targets)))
-          sys.exit(1)
-
-    def check_configuration_and_target(self):
-      check_configuration_and_target(self._filesystem, self._options)
+    def default_configuration(self):
+        return 'Release'
 
     def clobber_old_port_specific_results(self):
         pass
@@ -1770,10 +1753,7 @@ class Port(object):
 
     def _build_path(self, *comps):
         """Returns a path from the build directory."""
-        target = None
-        if 'target' in comps:
-          target = comps.pop('target')
-        return self._build_path_with_target(target, *comps)
+        return self._build_path_with_target(self._options.target, *comps)
 
     def _build_path_with_target(self, target, *comps):
         target = target or self.get_option('target')
