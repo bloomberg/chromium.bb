@@ -30245,6 +30245,7 @@ from previous Chrome versions.
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
+  <int value="731779469" label="BlinkHeapUnifiedGarbageCollection:enabled"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="734900932" label="RecurrentInterstitialFeature:enabled"/>
   <int value="736911267" label="ExperimentalCrostiniUI:disabled"/>
@@ -30627,6 +30628,7 @@ from previous Chrome versions.
   <int value="1442830837" label="MemoryAblation:disabled"/>
   <int value="1444320426" label="VizHitTestDrawQuad:enabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
+  <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>
   <int value="1454363479" label="disable-storage-manager"/>
   <int value="1454527518" label="ArcNativeBridgeExperiment:enabled"/>

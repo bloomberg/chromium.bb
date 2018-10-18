@@ -68,6 +68,11 @@ const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
     "creation pages.";
 
+const char kEnableBlinkHeapUnifiedGarbageCollectionName[] =
+    "Blink Heap Unified Garbage Collection";
+const char kEnableBlinkHeapUnifiedGarbageCollectionDescription[] =
+    "Enable unified garbage collection in Blink";
+
 const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
 const char kEnableBloatedRendererDetectionDescription[] =
     "Enable bloated renderer detection";

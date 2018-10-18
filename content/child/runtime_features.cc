@@ -120,6 +120,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(
       base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking));
 
+  WebRuntimeFeatures::EnableBlinkHeapUnifiedGarbageCollection(
+      base::FeatureList::IsEnabled(
+          features::kBlinkHeapUnifiedGarbageCollection));
+
   if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
     WebRuntimeFeatures::EnableBloatedRendererDetection(true);
 
