@@ -144,39 +144,80 @@ bool IsColorGrayscale(SkColor color) {
 
 // ThemeService::BrowserThemeProvider -----------------------------------------
 
+// Creates a temporary scope where all |theme_service_| property getters return
+// uncustomized default values if |theme_provider_.use_default_| is enabled.
+class ThemeService::BrowserThemeProvider::DefaultScope {
+ public:
+  explicit DefaultScope(const BrowserThemeProvider& theme_provider)
+      : theme_provider_(theme_provider) {
+    if (theme_provider_.use_default_) {
+      // Mutations to |theme_provider_| are undone in the destructor making it
+      // effectively const over the entire duration of this object's scope.
+      theme_supplier_ =
+          std::move(const_cast<ThemeService&>(theme_provider_.theme_service_)
+                        .theme_supplier_);
+      DCHECK(!theme_provider_.theme_service_.theme_supplier_);
+    }
+  }
+
+  ~DefaultScope() {
+    if (theme_provider_.use_default_) {
+      const_cast<ThemeService&>(theme_provider_.theme_service_)
+          .theme_supplier_ = std::move(theme_supplier_);
+    }
+    DCHECK(!theme_supplier_);
+  }
+
+ private:
+  const BrowserThemeProvider& theme_provider_;
+  scoped_refptr<CustomThemeSupplier> theme_supplier_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultScope);
+};
+
 ThemeService::BrowserThemeProvider::BrowserThemeProvider(
     const ThemeService& theme_service,
-    bool incognito)
-    : theme_service_(theme_service), incognito_(incognito) {}
+    bool incognito,
+    bool use_default)
+    : theme_service_(theme_service),
+      incognito_(incognito),
+      use_default_(use_default) {}
 
 ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
 
 gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
     int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetImageSkiaNamed(id, incognito_);
 }
 
 SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetColor(id, incognito_);
 }
 
 color_utils::HSL ThemeService::BrowserThemeProvider::GetTint(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetTint(id, incognito_);
 }
 
 int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetDisplayProperty(id);
 }
 
 bool ThemeService::BrowserThemeProvider::ShouldUseNativeFrame() const {
+  DefaultScope scope(*this);
   return theme_service_.ShouldUseNativeFrame();
 }
 
 bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.HasCustomImage(id);
 }
 
 bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
+  DefaultScope scope(*this);
   bool has_custom_color = false;
   theme_service_.GetColor(id, incognito_, &has_custom_color);
   return has_custom_color;
@@ -185,6 +226,7 @@ bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
 base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
     int id,
     ui::ScaleFactor scale_factor) const {
+  DefaultScope scope(*this);
   return theme_service_.GetRawData(id, scale_factor);
 }
 
@@ -271,8 +313,9 @@ ThemeService::ThemeService()
       profile_(nullptr),
       installed_pending_load_id_(kDefaultThemeID),
       number_of_infobars_(0),
-      original_theme_provider_(*this, false),
-      incognito_theme_provider_(*this, true),
+      original_theme_provider_(*this, false, false),
+      incognito_theme_provider_(*this, true, false),
+      default_theme_provider_(*this, false, true),
       weak_ptr_factory_(this) {}
 
 ThemeService::~ThemeService() {
@@ -438,6 +481,14 @@ const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
   bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
   return incognito ? service->incognito_theme_provider_
                    : service->original_theme_provider_;
+}
+
+// static
+const ui::ThemeProvider& ThemeService::GetDefaultThemeProviderForProfile(
+    Profile* profile) {
+  DCHECK_NE(profile->GetProfileType(), Profile::INCOGNITO_PROFILE)
+      << "Incognito default theme access not implemented, add if needed.";
+  return ThemeServiceFactory::GetForProfile(profile)->default_theme_provider_;
 }
 
 void ThemeService::SetCustomDefaultTheme(
