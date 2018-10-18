@@ -4557,6 +4557,78 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   }
 }
 
+// First pass of partition search only considers square partition block sizes.
+// The results will be used in the second partition search pass to prune
+// unlikely partition candidates.
+static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
+                                        TileDataEnc *tile_data, int mi_row,
+                                        int mi_col, TOKENEXTRA **tp) {
+  MACROBLOCK *const x = &td->mb;
+  x->cb_partition_scan = 1;
+
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  // Reset the stats tables.
+  if (sf->mode_pruning_based_on_two_pass_partition_search)
+    av1_zero(x->first_partition_pass_stats);
+
+  AV1_COMMON *const cm = &cpi->common;
+  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const int mib_size_log2 = cm->seq_params.mib_size_log2;
+  PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
+  RD_STATS dummy_rdc;
+  rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                        &dummy_rdc, INT64_MAX, pc_root, NULL);
+  x->cb_partition_scan = 0;
+
+  x->source_variance = UINT_MAX;
+  if (sf->adaptive_pred_interp_filter) {
+    const int leaf_nodes = 256;
+    for (int i = 0; i < leaf_nodes; ++i) {
+      td->pc_tree[i].vertical[0].pred_interp_filter = SWITCHABLE;
+      td->pc_tree[i].vertical[1].pred_interp_filter = SWITCHABLE;
+      td->pc_tree[i].horizontal[0].pred_interp_filter = SWITCHABLE;
+      td->pc_tree[i].horizontal[1].pred_interp_filter = SWITCHABLE;
+    }
+  }
+
+  x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
+  av1_zero(x->txb_rd_record_8X8);
+  av1_zero(x->txb_rd_record_16X16);
+  av1_zero(x->txb_rd_record_32X32);
+  av1_zero(x->txb_rd_record_64X64);
+  av1_zero(x->txb_rd_record_intra);
+  av1_zero(x->pred_mv);
+  pc_root->index = 0;
+
+  for (int idy = 0; idy < mi_size_high[sb_size]; ++idy) {
+    for (int idx = 0; idx < mi_size_wide[sb_size]; ++idx) {
+      const int offset = cm->mi_stride * (mi_row + idy) + (mi_col + idx);
+      cm->mi_grid_visible[offset] = 0;
+    }
+  }
+
+  x->use_cb_search_range = 1;
+
+  if (sf->mode_pruning_based_on_two_pass_partition_search) {
+    for (int i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
+      FIRST_PARTITION_PASS_STATS *const stat =
+          &x->first_partition_pass_stats[i];
+      if (stat->sample_counts < FIRST_PARTITION_PASS_MIN_SAMPLES) {
+        // If there are not enough samples collected, make all available.
+        memset(stat->ref0_counts, 0xff, sizeof(stat->ref0_counts));
+        memset(stat->ref1_counts, 0xff, sizeof(stat->ref1_counts));
+      } else if (sf->selective_ref_frame < 2) {
+        // ALTREF2_FRAME and BWDREF_FRAME may be skipped during the
+        // initial partition scan, so we don't eliminate them.
+        stat->ref0_counts[ALTREF2_FRAME] = 0xff;
+        stat->ref1_counts[ALTREF2_FRAME] = 0xff;
+        stat->ref0_counts[BWDREF_FRAME] = 0xff;
+        stat->ref1_counts[BWDREF_FRAME] = 0xff;
+      }
+    }
+  }
+}
+
 static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, int mi_row,
                              TOKENEXTRA **tp) {
@@ -4653,11 +4725,11 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                        &dummy_rate, &dummy_dist, 1, pc_root);
     } else {
-      int orig_rdmult = cpi->rd.RDMULT;
+      const int orig_rdmult = cpi->rd.RDMULT;
       x->cb_rdmult = orig_rdmult;
       if (cpi->twopass.gf_group.index > 0 && cpi->oxcf.enable_tpl_model &&
           cpi->oxcf.aq_mode == NO_AQ && cpi->oxcf.deltaq_mode == 0) {
-        int dr =
+        const int dr =
             get_rdmult_delta(cpi, BLOCK_128X128, mi_row, mi_col, orig_rdmult);
 
         x->cb_rdmult = dr;
@@ -4680,60 +4752,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
           mi_row + mi_size_high[sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[sb_size] < cm->mi_cols &&
           cm->frame_type != KEY_FRAME) {
-        x->cb_partition_scan = 1;
-        // Reset the stats tables.
-        if (sf->mode_pruning_based_on_two_pass_partition_search)
-          av1_zero(x->first_partition_pass_stats);
-        rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
-                              &dummy_rdc, INT64_MAX, pc_root, NULL);
-        x->cb_partition_scan = 0;
-
-        x->source_variance = UINT_MAX;
-        if (sf->adaptive_pred_interp_filter) {
-          for (int i = 0; i < leaf_nodes; ++i) {
-            td->pc_tree[i].vertical[0].pred_interp_filter = SWITCHABLE;
-            td->pc_tree[i].vertical[1].pred_interp_filter = SWITCHABLE;
-            td->pc_tree[i].horizontal[0].pred_interp_filter = SWITCHABLE;
-            td->pc_tree[i].horizontal[1].pred_interp_filter = SWITCHABLE;
-          }
-        }
-
-        x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
-        av1_zero(x->txb_rd_record_8X8);
-        av1_zero(x->txb_rd_record_16X16);
-        av1_zero(x->txb_rd_record_32X32);
-        av1_zero(x->txb_rd_record_64X64);
-        av1_zero(x->txb_rd_record_intra);
-        av1_zero(x->pred_mv);
-        pc_root->index = 0;
-
-        for (int idy = 0; idy < mi_size_high[sb_size]; ++idy) {
-          for (int idx = 0; idx < mi_size_wide[sb_size]; ++idx) {
-            const int offset = cm->mi_stride * (mi_row + idy) + (mi_col + idx);
-            cm->mi_grid_visible[offset] = 0;
-          }
-        }
-
-        x->use_cb_search_range = 1;
-
-        if (sf->mode_pruning_based_on_two_pass_partition_search) {
-          for (int i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
-            FIRST_PARTITION_PASS_STATS *const stat =
-                &x->first_partition_pass_stats[i];
-            if (stat->sample_counts < FIRST_PARTITION_PASS_MIN_SAMPLES) {
-              // If there are not enough samples collected, make all available.
-              memset(stat->ref0_counts, 0xff, sizeof(stat->ref0_counts));
-              memset(stat->ref1_counts, 0xff, sizeof(stat->ref1_counts));
-            } else if (sf->selective_ref_frame < 2) {
-              // ALTREF2_FRAME and BWDREF_FRAME may be skipped during the
-              // initial partition scan, so we don't eliminate them.
-              stat->ref0_counts[ALTREF2_FRAME] = 0xff;
-              stat->ref1_counts[ALTREF2_FRAME] = 0xff;
-              stat->ref0_counts[BWDREF_FRAME] = 0xff;
-              stat->ref1_counts[BWDREF_FRAME] = 0xff;
-            }
-          }
-        }
+        first_partition_search_pass(cpi, td, tile_data, mi_row, mi_col, tp);
       }
 
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
