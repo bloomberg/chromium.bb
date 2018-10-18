@@ -1721,6 +1721,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/services/assistant/public/mojom",
       "//chromeos/services/assistant/public/proto:proto",
       "//chromeos/services/multidevice_setup/public/cpp:cpp",
+      "//chromeos/services/multidevice_setup/public/cpp:prefs",
       "//chromeos/services/multidevice_setup/public/cpp:url_provider",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/strings",
