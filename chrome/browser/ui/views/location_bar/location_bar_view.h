@@ -262,6 +262,8 @@ class LocationBarView : public LocationBar,
   // |is_hovering| should be true when mouse is in omnibox; false when exited.
   void OnOmniboxHovered(bool is_hovering);
 
+  Browser* browser() { return browser_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
@@ -357,6 +359,8 @@ class LocationBarView : public LocationBar,
   // views::View:
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
   void OnFocus() override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 

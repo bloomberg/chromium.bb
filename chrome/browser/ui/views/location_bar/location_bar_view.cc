@@ -1149,11 +1149,18 @@ const char* LocationBarView::GetClassName() const {
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  RefreshBackground();
+  RefreshFocusRing();
+}
+
+bool LocationBarView::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void LocationBarView::OnVisibleBoundsChanged() {
   OmniboxPopupView* popup = GetOmniboxPopupView();
   if (popup->IsOpen())
     popup->UpdatePopupAppearance();
-  RefreshBackground();
-  RefreshFocusRing();
 }
 
 void LocationBarView::OnFocus() {
