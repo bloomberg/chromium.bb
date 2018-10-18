@@ -105,7 +105,7 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
       logging.info('Installing ' + os.path.basename(next_package_path) + '.')
 
       # Copy the package archive.
-      install_path = os.path.join('/data', os.path.basename(next_package_path))
+      install_path = os.path.join('/tmp', os.path.basename(next_package_path))
       target.PutFile(next_package_path, install_path)
 
       # Install the package.
