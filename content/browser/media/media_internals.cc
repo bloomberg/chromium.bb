@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,13 +31,16 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "media/filters/gpu_video_decoder.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/sandbox/features.h"
 
 #if !defined(OS_ANDROID)
 #include "media/filters/decrypting_video_decoder.h"
@@ -699,6 +703,27 @@ void MediaInternals::SendHistoricalMediaEvents() {
   }
   // Do not clear the map/list here so that refreshing the UI or opening a
   // second UI still works nicely!
+}
+
+void MediaInternals::SendGeneralAudioInformation() {
+  base::DictionaryValue audio_info_data;
+
+  // Audio feature information.
+  auto set_feature_data = [&](auto& feature) {
+    audio_info_data.SetKey(
+        feature.name,
+        base::Value(base::FeatureList::IsEnabled(feature) ? "Enabled"
+                                                          : "Disabled"));
+  };
+  set_feature_data(features::kAudioServiceAudioStreams);
+  set_feature_data(features::kAudioServiceOutOfProcess);
+  set_feature_data(features::kAudioServiceLaunchOnStartup);
+  set_feature_data(service_manager::features::kAudioServiceSandbox);
+  set_feature_data(features::kWebRtcApmInAudioService);
+
+  base::string16 audio_info_update =
+      SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);
+  SendUpdate(audio_info_update);
 }
 
 void MediaInternals::SendAudioStreamData() {
