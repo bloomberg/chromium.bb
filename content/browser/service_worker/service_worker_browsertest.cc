@@ -2071,9 +2071,7 @@ const std::string
         "            result => event.source.postMessage(result)));\n"
         "  });";
 
-// Flaky on various bots. https://crbug.com/896230
-IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
-                       DISABLED_NetworkFallback) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkFallback) {
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
   const char kPage[] = "<title>PASS</title>Hello world.";
@@ -2101,21 +2099,28 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   const int request_count = GetRequestCount(kPageUrl);
   ASSERT_TRUE(request_count == 1 || request_count == 2 || request_count == 3)
       << request_count;
-  if (request_count == 1) {
-    // Fallback request.
-    EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
-  } else {
-    // Navigation preload request.
-    ASSERT_TRUE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
-    EXPECT_EQ("true", GetNavigationPreloadHeader(request_log_[kPageUrl][0]));
-    // Fallback request.
-    EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][1]));
 
-    // Additional fallback request when the HttpCache reissues a network
-    // request.
-    if (request_count == 3)
-      EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][2]));
+  // So we have the following constraints:
+  // [A] At most one navigation preload request.
+  // [B] At least one and at most two fallback requests.
+  // [C] Fallback requests must occur after the navigation preload request.
+  int preload_count = 0;
+  int fallback_count = 0;
+  const auto& requests = request_log_[kPageUrl];
+  for (int i = 0; i < request_count; i++) {
+    if (HasNavigationPreloadHeader(requests[i])) {
+      // [C]
+      EXPECT_EQ(0, fallback_count);
+      EXPECT_EQ("true", GetNavigationPreloadHeader(requests[i]));
+      preload_count++;
+    } else {
+      fallback_count++;
+    }
   }
+  // [A]
+  EXPECT_TRUE(preload_count == 0 || preload_count == 1) << preload_count;
+  // [B]
+  EXPECT_TRUE(fallback_count == 1 || fallback_count == 2) << fallback_count;
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
