@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/net_http/service/url_loader_impl.h"
+#include "webrunner/net_http/url_loader_impl.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/message_loop/message_loop_current.h"
@@ -12,7 +12,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 
-namespace net {
+namespace net_http {
 
 namespace oldhttp = ::fuchsia::net::oldhttp;
 
@@ -21,7 +21,11 @@ namespace {
 // server responses.
 const size_t kReadCapacity = 1024;
 
-// Converts |buffer| into a URLBody with the body set to a buffer.
+// The number of active requests. Used for testing.
+int g_active_requests = 0;
+
+// Converts |buffer| into a URLBody with the body set to a buffer. Returns
+// nullptr when an error occurs.
 oldhttp::URLBodyPtr CreateURLBodyFromBuffer(net::GrowableIOBuffer* buffer) {
   oldhttp::URLBodyPtr body = oldhttp::URLBody::New();
 
@@ -31,7 +35,13 @@ oldhttp::URLBodyPtr CreateURLBodyFromBuffer(net::GrowableIOBuffer* buffer) {
   ::fuchsia::mem::Buffer mem_buffer;
   mem_buffer.size = total_size;
   zx_status_t result =
-      mem_buffer.vmo.write(buffer->StartOfBuffer(), 0, total_size);
+      zx::vmo::create(total_size, ZX_VMO_NON_RESIZABLE, &mem_buffer.vmo);
+  if (result != ZX_OK) {
+    ZX_DLOG(WARNING, result) << "zx_vmo_create";
+    return nullptr;
+  }
+
+  result = mem_buffer.vmo.write(buffer->StartOfBuffer(), 0, total_size);
   if (result != ZX_OK) {
     ZX_DLOG(WARNING, result) << "zx_vmo_write";
     return nullptr;
@@ -48,7 +58,7 @@ int NetErrorToHttpError(int net_error) {
 }
 
 oldhttp::HttpErrorPtr BuildError(int net_error) {
-  if (net_error == OK) {
+  if (net_error == net::OK) {
     return nullptr;
   }
 
@@ -58,11 +68,11 @@ oldhttp::HttpErrorPtr BuildError(int net_error) {
   return error;
 }
 
-std::unique_ptr<UploadDataStream> UploadDataStreamFromZxSocket(
+std::unique_ptr<net::UploadDataStream> UploadDataStreamFromZxSocket(
     zx::socket stream) {
   // TODO(http://crbug.com/875534): Write a ZxStreamUploadStream class.
-  std::unique_ptr<ChunkedUploadDataStream> upload_stream =
-      std::make_unique<ChunkedUploadDataStream>(0);
+  std::unique_ptr<net::ChunkedUploadDataStream> upload_stream =
+      std::make_unique<net::ChunkedUploadDataStream>(0);
   char buffer[kReadCapacity];
   size_t size = 0;
   zx_status_t result = ZX_OK;
@@ -82,10 +92,10 @@ std::unique_ptr<UploadDataStream> UploadDataStreamFromZxSocket(
   return upload_stream;
 }
 
-std::unique_ptr<UploadDataStream> UploadDataStreamFromMemBuffer(
+std::unique_ptr<net::UploadDataStream> UploadDataStreamFromMemBuffer(
     fuchsia::mem::Buffer mem_buffer) {
   // TODO(http://crbug.com/875534): Write a ZxMemBufferUploadStream class.
-  std::unique_ptr<ChunkedUploadDataStream> upload_stream =
+  std::unique_ptr<net::ChunkedUploadDataStream> upload_stream =
       std::make_unique<net::ChunkedUploadDataStream>(0);
 
   char buffer[kReadCapacity];
@@ -108,29 +118,36 @@ std::unique_ptr<UploadDataStream> UploadDataStreamFromMemBuffer(
 
 }  // namespace
 
-URLLoaderImpl::URLLoaderImpl(std::unique_ptr<URLRequestContext> context,
+URLLoaderImpl::URLLoaderImpl(std::unique_ptr<net::URLRequestContext> context,
                              fidl::InterfaceRequest<oldhttp::URLLoader> request)
     : binding_(this, std::move(request)),
       context_(std::move(context)),
-      buffer_(new GrowableIOBuffer()),
+      buffer_(new net::GrowableIOBuffer()),
       write_watch_(FROM_HERE) {
   binding_.set_error_handler([this] { delete this; });
+  g_active_requests++;
 }
 
-URLLoaderImpl::~URLLoaderImpl() = default;
+URLLoaderImpl::~URLLoaderImpl() {
+  g_active_requests--;
+}
+
+int URLLoaderImpl::GetNumActiveRequestsForTests() {
+  return g_active_requests;
+}
 
 void URLLoaderImpl::Start(oldhttp::URLRequest request, Callback callback) {
   if (net_request_) {
-    callback(BuildResponse(ERR_IO_PENDING));
+    callback(BuildResponse(net::ERR_IO_PENDING));
     return;
   }
 
   done_callback_ = std::move(callback);
-  net_error_ = OK;
+  net_error_ = net::OK;
 
   // Create the URLRequest and set this object as the delegate.
   net_request_ = context_->CreateRequest(GURL(request.url.get()),
-                                         RequestPriority::MEDIUM, this);
+                                         net::RequestPriority::MEDIUM, this);
   net_request_->set_method(request.method);
 
   // Set extra headers.
@@ -145,7 +162,7 @@ void URLLoaderImpl::Start(oldhttp::URLRequest request, Callback callback) {
                                               false);
   }
 
-  std::unique_ptr<UploadDataStream> upload_stream;
+  std::unique_ptr<net::UploadDataStream> upload_stream;
   // Set body.
   if (request.body) {
     if (request.body->is_stream()) {
@@ -157,7 +174,7 @@ void URLLoaderImpl::Start(oldhttp::URLRequest request, Callback callback) {
     }
 
     if (!upload_stream) {
-      std::move(done_callback_)(BuildResponse(ERR_ACCESS_DENIED));
+      std::move(done_callback_)(BuildResponse(net::ERR_ACCESS_DENIED));
       return;
     }
     net_request_->set_upload(std::move(upload_stream));
@@ -173,7 +190,7 @@ void URLLoaderImpl::Start(oldhttp::URLRequest request, Callback callback) {
 void URLLoaderImpl::FollowRedirect(Callback callback) {
   if (!net_request_ || auto_follow_redirects_ ||
       !net_request_->is_redirecting()) {
-    callback(BuildResponse(ERR_INVALID_HANDLE));
+    callback(BuildResponse(net::ERR_INVALID_HANDLE));
   }
 
   done_callback_ = std::move(callback);
@@ -195,15 +212,15 @@ void URLLoaderImpl::QueryStatus(QueryStatusCallback callback) {
   callback(std::move(status));
 }
 
-void URLLoaderImpl::OnReceivedRedirect(URLRequest* request,
-                                       const RedirectInfo& redirect_info,
+void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* request,
+                                       const net::RedirectInfo& redirect_info,
                                        bool* defer_redirect) {
   DCHECK_EQ(net_request_.get(), request);
   // Follow redirect depending on policy.
   *defer_redirect = !auto_follow_redirects_;
 
   if (!auto_follow_redirects_) {
-    oldhttp::URLResponse response = BuildResponse(OK);
+    oldhttp::URLResponse response = BuildResponse(net::OK);
     response.redirect_method = redirect_info.new_method;
     response.redirect_url = redirect_info.new_url.spec();
     response.redirect_referrer = redirect_info.new_referrer;
@@ -211,35 +228,35 @@ void URLLoaderImpl::OnReceivedRedirect(URLRequest* request,
   }
 }
 
-void URLLoaderImpl::OnAuthRequired(URLRequest* request,
-                                   AuthChallengeInfo* auth_info) {
+void URLLoaderImpl::OnAuthRequired(net::URLRequest* request,
+                                   net::AuthChallengeInfo* auth_info) {
   NOTIMPLEMENTED();
   DCHECK_EQ(net_request_.get(), request);
   request->CancelAuth();
 }
 
 void URLLoaderImpl::OnCertificateRequested(
-    URLRequest* request,
-    SSLCertRequestInfo* cert_request_info) {
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_request_info) {
   NOTIMPLEMENTED();
   DCHECK_EQ(net_request_.get(), request);
   request->ContinueWithCertificate(nullptr, nullptr);
 }
 
-void URLLoaderImpl::OnSSLCertificateError(URLRequest* request,
-                                          const SSLInfo& ssl_info,
+void URLLoaderImpl::OnSSLCertificateError(net::URLRequest* request,
+                                          const net::SSLInfo& ssl_info,
                                           bool fatal) {
   NOTIMPLEMENTED();
   DCHECK_EQ(net_request_.get(), request);
   request->Cancel();
 }
 
-void URLLoaderImpl::OnResponseStarted(URLRequest* request, int net_error) {
+void URLLoaderImpl::OnResponseStarted(net::URLRequest* request, int net_error) {
   DCHECK_EQ(net_request_.get(), request);
   net_error_ = net_error;
 
   // Return early if the request failed.
-  if (net_error_ != OK) {
+  if (net_error_ != net::OK) {
     std::move(done_callback_)(BuildResponse(net_error_));
     return;
   }
@@ -251,10 +268,10 @@ void URLLoaderImpl::OnResponseStarted(URLRequest* request, int net_error) {
     zx_status_t result = zx::socket::create(0, &read_socket, &write_socket_);
     if (result != ZX_OK) {
       ZX_DLOG(WARNING, result) << "zx_socket_create";
-      std::move(done_callback_)(BuildResponse(ERR_INSUFFICIENT_RESOURCES));
+      std::move(done_callback_)(BuildResponse(net::ERR_INSUFFICIENT_RESOURCES));
       return;
     }
-    oldhttp::URLResponse response = BuildResponse(OK);
+    oldhttp::URLResponse response = BuildResponse(net::OK);
     response.body = oldhttp::URLBody::New();
     response.body->set_stream(std::move(read_socket));
     std::move(done_callback_)(std::move(response));
@@ -267,7 +284,7 @@ void URLLoaderImpl::OnResponseStarted(URLRequest* request, int net_error) {
   ReadNextBuffer();
 }
 
-void URLLoaderImpl::OnReadCompleted(URLRequest* request, int bytes_read) {
+void URLLoaderImpl::OnReadCompleted(net::URLRequest* request, int bytes_read) {
   DCHECK_EQ(net_request_.get(), request);
   if (WriteResponseBytes(bytes_read)) {
     ReadNextBuffer();
@@ -293,7 +310,7 @@ void URLLoaderImpl::ReadNextBuffer() {
   int net_result;
   do {
     net_result = net_request_->Read(buffer_.get(), kReadCapacity);
-    if (net_result == ERR_IO_PENDING) {
+    if (net_result == net::ERR_IO_PENDING) {
       return;
     }
   } while (WriteResponseBytes(net_result));
@@ -330,11 +347,12 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
       // In buffer mode, build the response and call the callback.
       oldhttp::URLBodyPtr body = CreateURLBodyFromBuffer(buffer_.get());
       if (body) {
-        oldhttp::URLResponse response = BuildResponse(result);
+        oldhttp::URLResponse response = BuildResponse(net::OK);
         response.body = std::move(body);
         std::move(done_callback_)(std::move(response));
       } else {
-        std::move(done_callback_)(BuildResponse(ERR_INSUFFICIENT_RESOURCES));
+        std::move(done_callback_)(
+            BuildResponse(net::ERR_INSUFFICIENT_RESOURCES));
       }
     }
     return false;
@@ -345,9 +363,9 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
     DCHECK(response_body_mode_ == oldhttp::ResponseBodyMode::STREAM ||
            response_body_mode_ == oldhttp::ResponseBodyMode::BUFFER_OR_STREAM);
     // In socket mode, attempt to write to the socket.
-    zx_status_t zx_result =
+    zx_status_t status =
         write_socket_.write(0, buffer_->data(), result, nullptr);
-    if (zx_result == ZX_ERR_SHOULD_WAIT) {
+    if (status == ZX_ERR_SHOULD_WAIT) {
       // Wait until the socket is writable again.
       buffered_bytes_ = result;
       base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
@@ -355,9 +373,9 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
           ZX_SOCKET_WRITABLE | ZX_SOCKET_PEER_CLOSED, &write_watch_, this);
       return false;
     }
-    if (result != ZX_OK) {
+    if (status != ZX_OK) {
       // Something went wrong, attempt to shut down the socket and close it.
-      ZX_DLOG(WARNING, result) << "zx_socket_write";
+      ZX_DLOG(WARNING, status) << "zx_socket_write";
       write_socket_ = zx::socket();
       return false;
     }
@@ -411,4 +429,4 @@ oldhttp::URLResponse URLLoaderImpl::BuildResponse(int net_error) {
   return response;
 }
 
-}  // namespace net
+}  // namespace net_http
