@@ -21,6 +21,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cors.mojom.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -102,8 +103,9 @@ class CorsOriginAccessListBrowserTest
                     const std::string& host,
                     bool allow_subdomains) {
     std::vector<network::mojom::CorsOriginPatternPtr> list1;
-    list1.push_back(
-        network::mojom::CorsOriginPattern::New(scheme, host, allow_subdomains));
+    list1.push_back(network::mojom::CorsOriginPattern::New(
+        scheme, host, allow_subdomains,
+        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority));
     bool first_list_done = false;
     BrowserContext::SetCorsOriginAccessListsForOrigin(
         shell()->web_contents()->GetBrowserContext(),
@@ -113,8 +115,9 @@ class CorsOriginAccessListBrowserTest
                        base::Unretained(&first_list_done)));
 
     std::vector<network::mojom::CorsOriginPatternPtr> list2;
-    list2.push_back(
-        network::mojom::CorsOriginPattern::New(scheme, host, allow_subdomains));
+    list2.push_back(network::mojom::CorsOriginPattern::New(
+        scheme, host, allow_subdomains,
+        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority));
     bool second_list_done = false;
     BrowserContext::SetCorsOriginAccessListsForOrigin(
         shell()->web_contents()->GetBrowserContext(),

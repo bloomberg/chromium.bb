@@ -32,6 +32,7 @@
 
 #include <stdint.h>
 
+#include "services/network/public/mojom/cors.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -348,16 +349,108 @@ TEST_F(SecurityOriginTest, CanRequest) {
   }
 }
 
-TEST_F(SecurityOriginTest, CanRequestWithWhitelistedAccess) {
+TEST_F(SecurityOriginTest, CanRequestWithAllowListedAccess) {
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://chromium.org");
   const blink::KURL url("https://example.com");
 
   EXPECT_FALSE(origin->CanRequest(url));
-  // Adding the url to the access whitelist should allow the request.
-  SecurityPolicy::AddOriginAccessAllowListEntry(*origin, "https", "example.com",
-                                                false);
+  // Adding the url to the access allowlist should allow the request.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "example.com", false,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
   EXPECT_TRUE(origin->CanRequest(url));
+}
+
+TEST_F(SecurityOriginTest, CannotRequestWithBlockListedAccess) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL allowed_url("https://test.example.com");
+  const blink::KURL blocked_url("https://example.com");
+
+  // BlockList that is more or same specificity wins.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "example.com", true,
+      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "example.com", false,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  // Block since example.com is on the allowlist & blocklist.
+  EXPECT_FALSE(origin->CanRequest(blocked_url));
+  // Allow since *.example.com is on the allowlist but not the blocklist.
+  EXPECT_TRUE(origin->CanRequest(allowed_url));
+}
+
+TEST_F(SecurityOriginTest, CanRequestWithMoreSpecificAllowList) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL allowed_url("https://test.example.com");
+  const blink::KURL blocked_url("https://example.com");
+
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "test.example.com", true,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "example.com", true,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  // Allow since test.example.com (allowlist) has a higher priority than
+  // *.example.com (blocklist).
+  EXPECT_TRUE(origin->CanRequest(allowed_url));
+  // Block since example.com isn't on the allowlist.
+  EXPECT_FALSE(origin->CanRequest(blocked_url));
+}
+
+TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL unicode_url("https://☃.net/");
+  const blink::KURL punycode_url("https://xn--n3h.net/");
+
+  // Sanity check: Origin blocked by default.
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify unicode origin can not be allowlisted.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "☃.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify punycode allowlist only affects punycode URLs.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "xn--n3h.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+  EXPECT_TRUE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Clear enterprise policy allowlist.
+  SecurityPolicy::ClearOriginAccessAllowListForOrigin(*origin);
+
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Simulate <all_urls> being in the extension permissions.
+  SecurityPolicy::AddOriginAccessAllowListEntry(
+      *origin, "https", "", true,
+      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+
+  EXPECT_TRUE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify unicode origin can not be blocklisted.
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "☃.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  EXPECT_TRUE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
+
+  // Verify punycode blocklist only affects punycode URLs.
+  SecurityPolicy::AddOriginAccessBlockListEntry(
+      *origin, "https", "xn--n3h.net", true,
+      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+  EXPECT_FALSE(origin->CanRequest(punycode_url));
+  EXPECT_FALSE(origin->CanRequest(unicode_url));
 }
 
 TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {

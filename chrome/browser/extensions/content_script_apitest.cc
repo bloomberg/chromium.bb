@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
 }
 
-// Verifies wildcard can be used for effecitve TLD.
+// Verifies wildcard can NOT be used for effective TLD.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
                        ContentScriptPolicyWildcard) {
   // Set enterprise policy to block injection to policy specified hosts.
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
     pref.AddPolicyBlockedHost("*", "*://example.*");
   }
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
+  ASSERT_FALSE(RunExtensionTest("content_scripts/policy")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,

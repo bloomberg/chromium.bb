@@ -41,9 +41,11 @@
 namespace content {
 namespace {
 
+#ifndef STATIC_ASSERT_ENUM
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
+#endif
 
 STATIC_ASSERT_ENUM(network::mojom::ResolverType::kResolverTypeFail,
                    net::RuleBasedHostResolverProc::Rule::kResolverTypeFail);

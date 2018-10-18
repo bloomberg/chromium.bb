@@ -100,6 +100,7 @@
 #include "extensions/renderer/worker_thread_dispatcher.h"
 #include "gin/converter.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
+#include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -1102,6 +1103,16 @@ void Dispatcher::OnUpdateDefaultPolicyHostRestrictions(
     const ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params& params) {
   PermissionsData::SetDefaultPolicyHostRestrictions(
       params.default_policy_blocked_hosts, params.default_policy_allowed_hosts);
+  // Update blink host permission allowlist exceptions for all loaded
+  // extensions.
+  for (const std::string& extension_id :
+       RendererExtensionRegistry::Get()->GetIDs()) {
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(extension_id);
+    if (extension->permissions_data()->UsesDefaultPolicyHostRestrictions()) {
+      UpdateOriginPermissions(*extension);
+    }
+  }
   UpdateBindings(std::string());
 }
 
@@ -1111,6 +1122,13 @@ void Dispatcher::OnUpdatePermissions(
       RendererExtensionRegistry::Get()->GetByID(params.extension_id);
   if (!extension)
     return;
+
+  if (params.uses_default_policy_host_restrictions) {
+    extension->permissions_data()->SetUsesDefaultHostRestrictions();
+  } else {
+    extension->permissions_data()->SetPolicyHostRestrictions(
+        params.policy_blocked_hosts, params.policy_allowed_hosts);
+  }
 
   std::unique_ptr<const PermissionSet> active =
       params.active_permissions.ToPermissionSet();
@@ -1186,14 +1204,6 @@ void Dispatcher::UpdateActiveExtensions() {
 }
 
 void Dispatcher::InitOriginPermissions(const Extension* extension) {
-  const GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
-  WebSecurityPolicy::AddOriginAccessBlockListEntry(
-      extension->url(), WebString::FromUTF8(webstore_launch_url.scheme()),
-      WebString::FromUTF8(webstore_launch_url.host()), true);
-
-  // TODO(devlin): Should we also block the webstore update URL here? See
-  // https://crbug.com/826946 for a related instance.
-
   UpdateOriginPermissions(*extension);
 }
 
@@ -1211,24 +1221,61 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
   };
 
   // Remove all old patterns associated with this extension.
-  WebSecurityPolicy::ClearOriginAccessAllowListForOrigin(extension.url());
+  WebSecurityPolicy::ClearOriginAccessListForOrigin(extension.url());
 
   delegate_->AddOriginAccessPermissions(extension,
                                         IsExtensionActive(extension.id()));
 
-  URLPatternSet patterns =
+  URLPatternSet origin_permissions =
       extension.permissions_data()->GetEffectiveHostPermissions();
 
-  for (size_t i = 0; i < arraysize(kSchemes); ++i) {
-    const char* scheme = kSchemes[i];
-    for (const auto& pattern : patterns) {
-      if (pattern.MatchesScheme(scheme)) {
+  // Permissions declared by the extension.
+  for (const URLPattern& pattern : origin_permissions) {
+    for (const char* scheme : kSchemes) {
+      if (pattern.MatchesScheme(scheme))
         WebSecurityPolicy::AddOriginAccessAllowListEntry(
             extension.url(), WebString::FromUTF8(scheme),
-            WebString::FromUTF8(pattern.host()), pattern.match_subdomains());
-      }
+            WebString::FromUTF8(pattern.host()), pattern.match_subdomains(),
+            network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
     }
   }
+
+  // Hosts blocked by enterprise policy.
+  for (const URLPattern& pattern :
+       extension.permissions_data()->policy_blocked_hosts()) {
+    for (const char* scheme : kSchemes) {
+      if (pattern.MatchesScheme(scheme))
+        WebSecurityPolicy::AddOriginAccessBlockListEntry(
+            extension.url(), WebString::FromUTF8(scheme),
+            WebString::FromUTF8(pattern.host()), pattern.match_subdomains(),
+            network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+    }
+  }
+
+  // Hosts exempted from the enterprise policy blocklist.
+  // This set intersection is necessary to prevent an enterprise policy from
+  // granting a host permission the extension didn't ask for.
+  URLPatternSet overlap = URLPatternSet::CreateIntersection(
+      extension.permissions_data()->policy_allowed_hosts(), origin_permissions,
+      URLPatternSet::IntersectionBehavior::kDetailed);
+  for (const URLPattern& pattern : overlap) {
+    for (const char* scheme : kSchemes) {
+      if (pattern.MatchesScheme(scheme))
+        WebSecurityPolicy::AddOriginAccessAllowListEntry(
+            extension.url(), WebString::FromUTF8(scheme),
+            WebString::FromUTF8(pattern.host()), pattern.match_subdomains(),
+            network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+    }
+  };
+
+  const GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
+  WebSecurityPolicy::AddOriginAccessBlockListEntry(
+      extension.url(), WebString::FromUTF8(webstore_launch_url.scheme()),
+      WebString::FromUTF8(webstore_launch_url.host()), true,
+      network::mojom::CORSOriginAccessMatchPriority::kHighPriority);
+
+  // TODO(devlin): Should we also block the webstore update URL here? See
+  // https://crbug.com/826946 for a related instance.
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {

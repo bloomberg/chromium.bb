@@ -38,6 +38,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -2126,7 +2127,8 @@ void TestRunner::AddOriginAccessAllowListEntry(
   blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
       url, blink::WebString::FromUTF8(destination_protocol),
       blink::WebString::FromUTF8(destination_host),
-      allow_destination_subdomains);
+      allow_destination_subdomains,
+      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
 }
 
 void TestRunner::SetTextSubpixelPositioning(bool value) {
