@@ -432,8 +432,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInOverviewMode) {
 }
 
 TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
-  auto create_widget = [this](
-                           NonClientFrameViewAshTestWidgetDelegate* delegate) {
+  auto create_widget = [](NonClientFrameViewAshTestWidgetDelegate* delegate) {
     std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
     // Windows need to be resizable and maximizable to be used in splitview.
     widget->GetNativeWindow()->SetProperty(
