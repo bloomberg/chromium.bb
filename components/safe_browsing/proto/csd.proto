@@ -660,6 +660,11 @@ message ReferrerChainEntry {
     // chain is empty or partially missing, we will add/append recent navigation
     // events to this list. RECENT_NAVIGATION type is set for these cases.
     RECENT_NAVIGATION = 6;
+
+    // The REFERRER type is used for entries that recede the LANDING_REFERRER in
+    // the referrer chain, when more than two gestures are included in the
+    // referrer chain.
+    REFERRER = 7;
   }
 
   enum NavigationInitiation {
