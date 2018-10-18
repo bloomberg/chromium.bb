@@ -5,7 +5,11 @@
 #ifndef SERVICES_MEDIA_SESSION_MOCK_MEDIA_SESSION_H_
 #define SERVICES_MEDIA_SESSION_MOCK_MEDIA_SESSION_H_
 
+#include "base/optional.h"
+#include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
@@ -15,6 +19,25 @@ class UnguessableToken;
 
 namespace media_session {
 namespace test {
+
+// A mock MediaSessionObsever that can be used for waiting for state changes.
+class MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
+ public:
+  explicit MockMediaSessionMojoObserver(mojom::MediaSession& media_session);
+  ~MockMediaSessionMojoObserver() override;
+
+  // mojom::MediaSessionObserver overrides.
+  void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr session) override;
+
+  void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
+
+ private:
+  mojom::MediaSessionInfoPtr session_info_;
+  base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
+  base::RunLoop run_loop_;
+
+  mojo::Binding<mojom::MediaSessionObserver> binding_;
+};
 
 // A mock MediaSession that can be used for interacting with the Media Session
 // service during tests.
@@ -62,6 +85,8 @@ class MockMediaSession : public mojom::MediaSession {
       mojom::MediaSessionInfo::SessionState::kInactive;
 
   mojo::BindingSet<mojom::MediaSession> bindings_;
+
+  mojo::InterfacePtrSet<mojom::MediaSessionObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
 };

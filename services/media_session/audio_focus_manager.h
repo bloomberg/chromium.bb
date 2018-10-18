@@ -14,7 +14,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/media_session/media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace base {
 class UnguessableToken;
@@ -25,6 +27,8 @@ namespace media_session {
 namespace test {
 class MockMediaSession;
 }  // namespace test
+
+class MediaController;
 
 class AudioFocusManager : public mojom::AudioFocusManager,
                           public mojom::AudioFocusManagerDebug {
@@ -55,12 +59,12 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // Bind to a mojom::AudioFocusManagerDebugRequest.
   void BindToDebugInterface(mojom::AudioFocusManagerDebugRequest request);
 
-  // This will close all Mojo bindings and interface pointers. This should be
-  // called by the MediaSession service before it is destroyed.
-  void CloseAllMojoObjects();
+  // Bind to a mojom::MediaControllerRequest.
+  void BindToActiveControllerInterface(mojom::MediaControllerRequest request);
 
  private:
   friend class AudioFocusManagerTest;
+  friend class MediaControllerTest;
   friend class test::MockMediaSession;
 
   // StackRow is an AudioFocusRequestClient and allows a media session to
@@ -84,6 +88,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void AbandonAudioFocusInternal(RequestId);
   void EnforceAudioFocusAbandon(mojom::AudioFocusType);
 
+  // Called when the active media session with audio focus changes.
+  void DidChangeFocus();
+
   std::unique_ptr<StackRow> RemoveFocusEntryIfPresent(RequestId id);
 
   // Returns the source name of the binding currently accessing the Audio
@@ -92,6 +99,10 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   bool IsSessionOnTopOfAudioFocusStack(RequestId id,
                                        mojom::AudioFocusType type) const;
+
+  // This |MediaController| acts as a proxy for controlling the active
+  // |MediaSession| over mojo.
+  MediaController active_media_controller_;
 
   // Holds mojo bindings for the Audio Focus Manager API.
   mojo::BindingSet<mojom::AudioFocusManager, std::unique_ptr<BindingContext>>
