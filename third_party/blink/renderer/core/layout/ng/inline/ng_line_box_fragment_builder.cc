@@ -130,21 +130,22 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   WritingMode line_writing_mode(ToLineWritingMode(GetWritingMode()));
   NGPhysicalSize physical_size = Size().ConvertToPhysical(line_writing_mode);
 
+  Vector<NGLink> children;
+  if (!children_.IsEmpty())
+    children.ReserveInitialCapacity(children_.size());
+
   DCHECK_EQ(children_.size(), offsets_.size());
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     auto& child = children_[i];
-    child.offset_ = offsets_[i].ConvertToPhysical(
-        line_writing_mode, Direction(), physical_size, child->Size());
+    children.emplace_back(
+        std::move(children_[i]),
+        offsets_[i].ConvertToPhysical(line_writing_mode, Direction(),
+                                      physical_size, child->Size()));
   }
-
-  // Because this vector will be long-lived, make sure to not waaste space.
-  // (We reserve an initial capacity when adding the first child)
-  if (children_.size())
-    children_.ShrinkToReasonableCapacity();
 
   scoped_refptr<const NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
-          Style(), style_variant_, physical_size, children_, metrics_,
+          Style(), style_variant_, physical_size, children, metrics_,
           base_direction_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));

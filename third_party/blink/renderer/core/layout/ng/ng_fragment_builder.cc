@@ -237,11 +237,16 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
 
   NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
 
+  Vector<NGLink> children;
+  children.ReserveInitialCapacity(children_.size());
+
   DCHECK_EQ(children_.size(), offsets_.size());
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     auto& child = children_[i];
-    child.offset_ = offsets_[i].ConvertToPhysical(
-        block_or_line_writing_mode, Direction(), physical_size, child->Size());
+    children.emplace_back(
+        std::move(children_[i]),
+        offsets_[i].ConvertToPhysical(block_or_line_writing_mode, Direction(),
+                                      physical_size, child->Size()));
   }
 
   scoped_refptr<NGBreakToken> break_token;
@@ -263,13 +268,9 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment(
     }
   }
 
-  // Because this vector will be long-lived, make sure to not waste space.
-  // (We reserve an initial capacity when adding the first child)
-  if (children_.size())
-    children_.ShrinkToReasonableCapacity();
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), style_variant_, physical_size, children_,
+          layout_object_, Style(), style_variant_, physical_size, children,
           borders_.ConvertToPhysical(GetWritingMode(), Direction()),
           padding_.ConvertToPhysical(GetWritingMode(), Direction()), baselines_,
           BoxType(), is_fieldset_container_, is_rendered_legend,
