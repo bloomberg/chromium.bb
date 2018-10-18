@@ -219,6 +219,7 @@ _CONFIG = [
             'cssvalue::.+',
             'encoding::.+',
             'event_handling_util::.+',
+            'event_util::.+',
             'scheduler::.+',
             'touch_action_util::.+',
             'xpath::.+',

@@ -419,13 +419,13 @@ void EventTarget::AddedEventListener(
         UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
       else if (event_type == EventTypeNames::appinstalled)
         UseCounter::Count(*document, WebFeature::kAppInstalledEventAddListener);
-      else if (EventUtil::IsPointerEventType(event_type))
+      else if (event_util::IsPointerEventType(event_type))
         UseCounter::Count(*document, WebFeature::kPointerEventAddListenerCount);
       else if (event_type == EventTypeNames::slotchange)
         UseCounter::Count(*document, WebFeature::kSlotChangeEventAddListener);
     }
   }
-  if (EventUtil::IsDOMMutationEventType(event_type)) {
+  if (event_util::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
       String message_text = String::Format(
           "Added synchronous DOM mutation listener to a '%s' event. "
