@@ -162,7 +162,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kFirstRunPrivate, "firstRunPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
-    {APIPermission::kInlineInstallPrivate, "inlineInstallPrivate"},
     {APIPermission::kSettingsPrivate, "settingsPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutofillPrivate, "autofillPrivate",
