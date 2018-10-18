@@ -20,6 +20,8 @@ source_set("search_engines") {
   sources = [
     "search_engine_observer_bridge.h",
     "search_engine_observer_bridge.mm",
+    "search_engine_tab_helper.h",
+    "search_engine_tab_helper.mm",
     "search_engines_util.cc",
     "search_engines_util.h",
     "template_url_fetcher_factory.cc",
