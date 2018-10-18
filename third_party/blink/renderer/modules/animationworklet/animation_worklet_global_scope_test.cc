@@ -57,16 +57,11 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   AnimationWorkletGlobalScopeTest() = default;
 
   void SetUp() override {
-    AnimationWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
-  }
-
-  void TearDown() override {
-    AnimationWorkletThread::ClearSharedBackingThread();
   }
 
   std::unique_ptr<AnimationWorkletThread> CreateAnimationWorkletThread(

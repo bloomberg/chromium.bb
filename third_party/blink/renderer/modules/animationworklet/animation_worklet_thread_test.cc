@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
@@ -48,16 +49,11 @@ class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
 class AnimationWorkletThreadTest : public PageTestBase {
  public:
   void SetUp() override {
-    AnimationWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
-  }
-
-  void TearDown() override {
-    AnimationWorkletThread::ClearSharedBackingThread();
   }
 
   std::unique_ptr<AnimationWorkletThread> CreateAnimationWorkletThread() {
@@ -161,8 +157,8 @@ TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
   second_worklet->WaitForShutdownForTesting();
 }
 
-// Tests that a new WebThread is created if all existing worklets are
-// terminated before a new worklet is created.
+// Tests that the WebThread is reused if all existing worklets are terminated
+// before a new worklet is created, as long as the worklets are not destructed.
 TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worklet, wait until it is initialized, and terminate it.
   std::unique_ptr<AnimationWorkletThread> worklet =
@@ -214,6 +210,44 @@ TEST_F(AnimationWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
   CheckWorkletCanExecuteScript(second_worklet.get());
   second_worklet->Terminate();
   second_worklet->WaitForShutdownForTesting();
+}
+
+// Tests that the backing thread is correctly created, torn down, and recreated
+// as AnimationWorkletThreads are created and destroyed.
+TEST_F(AnimationWorkletThreadTest, WorkletThreadHolderIsRefCountedProperly) {
+  EXPECT_FALSE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+
+  std::unique_ptr<AnimationWorkletThread> worklet =
+      CreateAnimationWorkletThread();
+  ASSERT_TRUE(worklet.get());
+  WorkletThreadHolder<AnimationWorkletThread>* holder =
+      AnimationWorkletThread::GetWorkletThreadHolderForTesting();
+  EXPECT_TRUE(holder);
+
+  std::unique_ptr<AnimationWorkletThread> worklet2 =
+      CreateAnimationWorkletThread();
+  ASSERT_TRUE(worklet2.get());
+  WorkletThreadHolder<AnimationWorkletThread>* holder2 =
+      AnimationWorkletThread::GetWorkletThreadHolderForTesting();
+  EXPECT_EQ(holder, holder2);
+
+  worklet->Terminate();
+  worklet->WaitForShutdownForTesting();
+  worklet.reset();
+  EXPECT_TRUE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+
+  worklet2->Terminate();
+  worklet2->WaitForShutdownForTesting();
+  worklet2.reset();
+  EXPECT_FALSE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+
+  std::unique_ptr<AnimationWorkletThread> worklet3 =
+      CreateAnimationWorkletThread();
+  ASSERT_TRUE(worklet3.get());
+  EXPECT_TRUE(AnimationWorkletThread::GetWorkletThreadHolderForTesting());
+
+  worklet3->Terminate();
+  worklet3->WaitForShutdownForTesting();
 }
 
 }  // namespace blink
