@@ -223,6 +223,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
 
   make_credential_param.SetExcludeList(std::move(exclude_list));
   make_credential_param.SetIsIndividualAttestation(is_individual_attestation);
+  make_credential_param.SetHmacSecret(options->hmac_create_secret);
   return make_credential_param;
 }
 
@@ -374,6 +375,20 @@ CreateMakeCredentialResponse(
   for (auto transport : transports) {
     response->transports.push_back(
         mojo::ConvertTo<blink::mojom::AuthenticatorTransport>(transport));
+  }
+
+  const base::Optional<cbor::CBORValue>& maybe_extensions =
+      response_data.attestation_object().authenticator_data().extensions();
+  if (maybe_extensions) {
+    DCHECK(maybe_extensions->is_map());
+    const cbor::CBORValue::MapValue& extensions = maybe_extensions->GetMap();
+    const auto hmac_secret_it =
+        extensions.find(cbor::CBORValue(device::kExtensionHmacSecret));
+    if (hmac_secret_it != extensions.end() &&
+        hmac_secret_it->second.is_bool()) {
+      response->echo_hmac_create_secret = true;
+      response->hmac_create_secret = hmac_secret_it->second.GetBool();
+    }
   }
 
   if (!preserve_attestation) {

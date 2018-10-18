@@ -32,6 +32,7 @@
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/fake_fido_discovery.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/scoped_virtual_fido_device.h"
@@ -2038,6 +2039,62 @@ TEST_F(AuthenticatorImplTest, Transports) {
     // VirtualFidoDevice generates an attestation certificate that asserts NFC
     // support via an extension.
     EXPECT_EQ(blink::mojom::AuthenticatorTransport::NFC, transports[1]);
+  }
+}
+
+TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (const bool include_extension : {false, true}) {
+    SCOPED_TRACE(include_extension);
+
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    scoped_virtual_device.SetSupportedProtocol(device::ProtocolVersion::kCtap);
+
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->hmac_create_secret = include_extension;
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    base::Optional<CBORValue> attestation_value =
+        CBORReader::Read(callback_receiver.value()->attestation_object);
+    ASSERT_TRUE(attestation_value);
+    ASSERT_TRUE(attestation_value->is_map());
+    const auto& attestation = attestation_value->GetMap();
+
+    const auto auth_data_it = attestation.find(CBORValue(device::kAuthDataKey));
+    ASSERT_TRUE(auth_data_it != attestation.end());
+    ASSERT_TRUE(auth_data_it->second.is_bytestring());
+    const std::vector<uint8_t>& auth_data =
+        auth_data_it->second.GetBytestring();
+    base::Optional<device::AuthenticatorData> parsed_auth_data =
+        device::AuthenticatorData::DecodeAuthenticatorData(auth_data);
+
+    // The virtual CTAP2 device always echos the hmac-secret extension on
+    // registrations. Therefore, if |hmac_secret| was set above it should be
+    // serialised in the CBOR and correctly passed all the way back around to
+    // the reply's authenticator data.
+    bool has_hmac_secret = false;
+    const auto& extensions = parsed_auth_data->extensions();
+    if (extensions) {
+      CHECK(extensions->is_map());
+      const cbor::CBORValue::MapValue& extensions_map = extensions->GetMap();
+      const auto hmac_secret_it =
+          extensions_map.find(cbor::CBORValue(device::kExtensionHmacSecret));
+      if (hmac_secret_it != extensions_map.end()) {
+        ASSERT_TRUE(hmac_secret_it->second.is_bool());
+        EXPECT_TRUE(hmac_secret_it->second.GetBool());
+        has_hmac_secret = true;
+      }
+    }
+
+    EXPECT_EQ(include_extension, has_hmac_secret);
   }
 }
 

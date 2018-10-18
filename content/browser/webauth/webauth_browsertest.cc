@@ -402,7 +402,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         std::move(rp), std::move(user), kTestChallenge, std::move(parameters),
         base::TimeDelta::FromSeconds(30),
         std::vector<blink::mojom::PublicKeyCredentialDescriptorPtr>(), nullptr,
-        blink::mojom::AttestationConveyancePreference::NONE, nullptr);
+        blink::mojom::AttestationConveyancePreference::NONE, nullptr,
+        false /* no hmac_secret */);
 
     return mojo_options;
   }

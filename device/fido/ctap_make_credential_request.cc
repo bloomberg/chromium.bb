@@ -83,6 +83,13 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
     cbor_map[cbor::CBORValue(5)] =
         cbor::CBORValue(std::move(exclude_list_array));
   }
+
+  if (hmac_secret_) {
+    cbor::CBORValue::MapValue extensions;
+    extensions[cbor::CBORValue(kExtensionHmacSecret)] = cbor::CBORValue(true);
+    cbor_map[cbor::CBORValue(6)] = cbor::CBORValue(std::move(extensions));
+  }
+
   if (pin_auth_) {
     cbor_map[cbor::CBORValue(8)] = cbor::CBORValue(*pin_auth_);
   }
@@ -158,6 +165,12 @@ CtapMakeCredentialRequest::SetIsIndividualAttestation(
   return *this;
 }
 
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetHmacSecret(
+    bool hmac_secret) {
+  hmac_secret_ = hmac_secret;
+  return *this;
+}
+
 base::Optional<CtapMakeCredentialRequest> ParseCtapMakeCredentialRequest(
     base::span<const uint8_t> request_bytes) {
   const auto& cbor_request = cbor::CBORReader::Read(request_bytes);
@@ -225,6 +238,23 @@ base::Optional<CtapMakeCredentialRequest> ParseCtapMakeCredentialRequest(
       exclude_list.push_back(std::move(*excluded_credential));
     }
     request.SetExcludeList(std::move(exclude_list));
+  }
+
+  const auto extensions_it = request_map.find(cbor::CBORValue(6));
+  if (extensions_it != request_map.end()) {
+    if (!extensions_it->second.is_map()) {
+      return base::nullopt;
+    }
+
+    const auto& extensions = extensions_it->second.GetMap();
+    const auto hmac_secret_it =
+        extensions.find(cbor::CBORValue(kExtensionHmacSecret));
+    if (hmac_secret_it != extensions.end()) {
+      if (!hmac_secret_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      request.SetHmacSecret(hmac_secret_it->second.GetBool());
+    }
   }
 
   const auto option_it = request_map.find(cbor::CBORValue(7));

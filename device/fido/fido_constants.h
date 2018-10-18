@@ -373,6 +373,8 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableClientHelloMessage[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCtap2Version[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kU2fVersion[];
 
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FIDO_CONSTANTS_H_
