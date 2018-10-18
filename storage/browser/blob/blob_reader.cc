@@ -547,8 +547,6 @@ BlobReader::Status BlobReader::ReadFileItem(FileStreamReader* reader,
       << "Can't begin IO while another IO operation is pending.";
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
   DCHECK(reader);
-  TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
-                           blob_data_->uuid());
   const int result = reader->Read(
       read_buf_.get(), bytes_to_read,
       base::Bind(&BlobReader::DidReadFile, weak_factory_.GetWeakPtr()));
@@ -557,6 +555,8 @@ BlobReader::Status BlobReader::ReadFileItem(FileStreamReader* reader,
     return Status::DONE;
   }
   if (result == net::ERR_IO_PENDING) {
+    TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
+                             blob_data_->uuid());
     io_pending_ = true;
     return Status::IO_PENDING;
   }
@@ -597,8 +597,6 @@ BlobReader::Status BlobReader::ReadDiskCacheEntryItem(const BlobDataItem& item,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!io_pending_)
       << "Can't begin IO while another IO operation is pending.";
-  TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadDiskCacheItem", this,
-                           "uuid", blob_data_->uuid());
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
 
   if (!item.disk_cache_entry())
@@ -613,6 +611,8 @@ BlobReader::Status BlobReader::ReadDiskCacheEntryItem(const BlobDataItem& item,
     return Status::DONE;
   }
   if (result == net::ERR_IO_PENDING) {
+    TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadDiskCacheItem", this,
+                             "uuid", blob_data_->uuid());
     io_pending_ = true;
     return Status::IO_PENDING;
   }
