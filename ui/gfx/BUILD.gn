@@ -492,7 +492,6 @@ jumbo_source_set("memory_buffer_sources") {
     "ca_layer_params.cc",
     "ca_layer_params.h",
     "client_native_pixmap.h",
-    "client_native_pixmap_factory.cc",
     "client_native_pixmap_factory.h",
     "generic_shared_memory_id.cc",
     "generic_shared_memory_id.h",
