@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
@@ -234,6 +235,9 @@ class FormSuggestionControllerTest : public PlatformTest {
 
   // Accessory view controller.
   FormInputAccessoryMediator* accessory_mediator_;
+
+  // The associated test Web Threads.
+  web::TestWebThreadBundle thread_bundle_;
 
   // The fake WebState to simulate navigation and JavaScript events.
   web::TestWebState test_web_state_;

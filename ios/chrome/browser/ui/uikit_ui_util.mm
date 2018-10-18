@@ -12,6 +12,7 @@
 #import <UIKit/UIKit.h>
 #include <cmath>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/numerics/math_constants.h"
@@ -600,19 +601,21 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 
 UIResponder* GetFirstResponder() {
-  if (!base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    DCHECK(!gFirstResponder);
-    [[UIApplication sharedApplication]
-        sendAction:@selector(cr_markSelfCurrentFirstResponder)
-                to:nil
-              from:nil
-          forEvent:nil];
-    UIResponder* firstResponder = gFirstResponder;
-    gFirstResponder = nil;
-    return firstResponder;
+  UIApplication* application = [UIApplication sharedApplication];
+  if (base::ios::IsRunningOnIOS11OrLater() &&
+      base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
+    return GetFirstResponderSubview(application.keyWindow);
   }
-  return GetFirstResponderSubview([UIApplication sharedApplication].keyWindow);
+
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK(!gFirstResponder);
+  [application sendAction:@selector(cr_markSelfCurrentFirstResponder)
+                       to:nil
+                     from:nil
+                 forEvent:nil];
+  UIResponder* firstResponder = gFirstResponder;
+  gFirstResponder = nil;
+  return firstResponder;
 }
 
 // Trigger a haptic vibration for the user selecting an action. This is a no-op
