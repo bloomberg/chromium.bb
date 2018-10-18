@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -51,6 +52,7 @@ using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
 using blink::WebIDBMetadata;
+using blink::WebIDBNameAndVersion;
 using blink::WebIDBValue;
 using blink::WebVector;
 
@@ -85,6 +87,12 @@ void WebIDBCallbacksImpl::OnError(const WebIDBDatabaseError& error) {
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
   request_->HandleResponse(DOMException::Create(
       static_cast<DOMExceptionCode>(error.Code()), error.Message()));
+}
+
+void WebIDBCallbacksImpl::OnSuccess(
+    const WebVector<WebIDBNameAndVersion>& web_name_and_version_list) {
+  // Only implemented in idb_factory.cc for the promise-based databases() call.
+  NOTREACHED();
 }
 
 void WebIDBCallbacksImpl::OnSuccess(

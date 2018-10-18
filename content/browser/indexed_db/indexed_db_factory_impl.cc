@@ -399,6 +399,50 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(const Origin& origin,
   }
 }
 
+void IndexedDBFactoryImpl::GetDatabaseInfo(
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    const Origin& origin,
+    const base::FilePath& data_directory) {
+  IDB_TRACE("IndexedDBFactoryImpl::GetDatabaseInfo");
+  // TODO(dmurph): Plumb data_loss back to script eventually?
+  IndexedDBDataLossInfo data_loss_info;
+  bool disk_full;
+  leveldb::Status s;
+  // TODO(dmurph): Handle this error
+  scoped_refptr<IndexedDBBackingStore> backing_store =
+      OpenBackingStore(origin, data_directory, &data_loss_info, &disk_full, &s);
+  if (!backing_store.get()) {
+    IndexedDBDatabaseError error(
+        blink::kWebIDBDatabaseExceptionUnknownError,
+        ASCIIToUTF16("Internal error opening backing store for "
+                     "indexedDB.databases()."));
+    callbacks->OnError(error);
+    if (s.IsCorruption())
+      HandleBackingStoreCorruption(origin, error);
+    return;
+  }
+
+  IndexedDBMetadataCoding metadata_coding;
+  std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions;
+  s = metadata_coding.ReadDatabaseNamesAndVersions(
+      backing_store->db(), backing_store->origin_identifier(),
+      &names_and_versions);
+  if (!s.ok()) {
+    DLOG(ERROR) << "Internal error getting database info";
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Internal error opening backing store for "
+                                 "indexedDB.databases().");
+    callbacks->OnError(error);
+    backing_store = nullptr;
+    if (s.IsCorruption())
+      HandleBackingStoreCorruption(origin, error);
+    return;
+  }
+  callbacks->OnSuccess(std::move(names_and_versions));
+  backing_store = nullptr;
+  ReleaseBackingStore(origin, false /* immediate */);
+}
+
 void IndexedDBFactoryImpl::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const Origin& origin,
