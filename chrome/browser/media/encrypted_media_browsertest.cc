@@ -31,6 +31,7 @@
 #include "media/cdm/supported_cdm_versions.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
+#include "third_party/libaom/av1_buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -88,6 +89,10 @@ const char kMp4Vp9VideoOnly[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 const char kMp4Vp9Profile2VideoOnly[] =
     "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+const char kWebMAv1VideoOnly[] = "video/webm; codecs=\"av01.0.04M.08\"";
+const char kMp4Av1VideoOnly[] = "video/mp4; codecs=\"av01.0.04M.08\"";
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 #endif
@@ -559,18 +564,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Profile2Video_WebM) {
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
-    return;
-  }
-#endif
-  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
-                     kWebMVp9Profile2VideoOnly);
-}
-
 // TODO(xhwang): Test is flaky. https://crbug.com/890124.
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        DISABLED_Playback_Multiple_VideoAudio_WebM) {
@@ -599,6 +592,19 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4", kMp4Vp9VideoOnly);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_VideoOnly_WebM_VP9Profile2) {
+#if BUILDFLAG(ENABLE_WIDEVINE)
+  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
+  if (IsWidevine(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
+    return;
+  }
+#endif
+  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
+                     kWebMVp9Profile2VideoOnly);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
@@ -615,6 +621,35 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
                      kMp4Vp9Profile2VideoOnly);
 }
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1) {
+#if BUILDFLAG(ENABLE_WIDEVINE)
+  // TODO(crbug.com/884845): Update Widevine CDM to support AV1.
+  if (IsWidevine(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Widevine CDM does not support AV1";
+    return;
+  }
+#endif
+  TestSimplePlayback("bear-av1-cenc.webm", kWebMAv1VideoOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+#if BUILDFLAG(ENABLE_WIDEVINE)
+  // TODO(crbug.com/884845): Update Widevine CDM to support AV1.
+  if (IsWidevine(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Widevine CDM does not support AV1";
+    return;
+  }
+#endif
+  TestSimplePlayback("bear-av1-cenc.mp4", kMp4Av1VideoOnly);
+}
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
   RunInvalidResponseTest();

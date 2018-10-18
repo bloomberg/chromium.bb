@@ -18,6 +18,7 @@
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
+#include "third_party/libaom/av1_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -67,6 +68,11 @@ const char kWebMVp9Profile2VideoOnly[] =
 const char kMp4Vp9Profile2VideoOnly[] =
     "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
 #endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+const char kWebMAv1VideoOnly[] = "video/webm; codecs=\"av01.0.04M.08\"";
+const char kMp4Av1VideoOnly[] = "video/mp4; codecs=\"av01.0.04M.08\"";
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 // EME-specific test results and errors.
 const char kEmeKeyError[] = "KEYERROR";
@@ -281,14 +287,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMOpusAudioVp9Video);
 }
 
-// TODO(crbug.com/707127): Decide when it's supported on Android.
-#if !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VP9Profile2Video_WebM) {
-  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
-                     kWebMVp9Profile2VideoOnly);
-}
-#endif
-
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
   RunMultipleFileTest(std::string(), std::string(), "bear-flac-cenc.mp4",
                       kMp4FlacAudioOnly, media::kEnded);
@@ -305,6 +303,12 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
 
 // TODO(crbug.com/707127): Decide when it's supported on Android.
 #if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_VideoOnly_WebM_VP9Profile2) {
+  TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm",
+                     kWebMVp9Profile2VideoOnly);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
@@ -314,7 +318,22 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4",
                      kMp4Vp9Profile2VideoOnly);
 }
-#endif
+#endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1) {
+  TestSimplePlayback("bear-av1-cenc.webm", kWebMAv1VideoOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-av1-cenc.mp4", kMp4Av1VideoOnly);
+}
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 // Strictly speaking this is not an "encrypted" media test. Keep it here for
 // completeness.
