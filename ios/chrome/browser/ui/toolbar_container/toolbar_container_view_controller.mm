@@ -4,11 +4,15 @@
 
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_view_controller.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/toolbar_container/collapsing_toolbar_height_constraint.h"
+#import "ios/chrome/browser/ui/toolbar_container/collapsing_toolbar_height_constraint_delegate.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_view.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_height_range.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -16,13 +20,31 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarContainerViewController ()
+using toolbar_container::HeightRange;
+
+@interface ToolbarContainerViewController ()<
+    CollapsingToolbarHeightConstraintDelegate> {
+  // Backing variables for properties of same name.
+  HeightRange _heightRange;
+  std::vector<CGFloat> _toolbarExpansionStartProgresses;
+}
+
 // The constraint managing the height of the container.
 @property(nonatomic, strong, readonly) NSLayoutConstraint* heightConstraint;
 // The height constraints for the toolbar views.
 @property(nonatomic, strong, readonly)
     NSMutableArray<CollapsingToolbarHeightConstraint*>*
         toolbarHeightConstraints;
+// The fullscreen progresses at which the toolbars begin expanding.  As the
+// fullscreen progress goes from 0.0 to 1.0, the toolbars are expanded in the
+// reverse of order of self.toolbars so that the toolbar closest to the page
+// content is expanded first for scroll events.  Each toolbar is expanded for a
+// portion of the [0.0, 1.0] progress range proportional to its height delta
+// relative to the overall height delta of the toolbar stack.  This creates the
+// effect of the overall stack height adjusting linearly while each individual
+// toolbar's height is adjusted sequentially.
+@property(nonatomic, assign, readonly)
+    std::vector<CGFloat>& toolbarExpansionStartProgresses;
 // Returns the height constraint for the first toolbar in self.toolbars.
 @property(nonatomic, readonly)
     CollapsingToolbarHeightConstraint* firstToolbarHeightConstraint;
@@ -40,6 +62,16 @@
 
 #pragma mark - Accessors
 
+- (const HeightRange&)heightRange {
+  // Custom getter is needed to support the C++ reference type.
+  return _heightRange;
+}
+
+- (std::vector<CGFloat>&)toolbarExpansionStartProgresses {
+  // Custom getter is needed to support the C++ reference type.
+  return _toolbarExpansionStartProgresses;
+}
+
 - (CollapsingToolbarHeightConstraint*)firstToolbarHeightConstraint {
   if (!self.viewLoaded || !self.toolbars.count)
     return nil;
@@ -49,35 +81,57 @@
 }
 
 - (void)setAdditionalStackHeight:(CGFloat)additionalStackHeight {
+  DCHECK_GE(additionalStackHeight, 0.0);
   if (AreCGFloatsEqual(_additionalStackHeight, additionalStackHeight))
     return;
   _additionalStackHeight = additionalStackHeight;
   self.firstToolbarHeightConstraint.additionalHeight = _additionalStackHeight;
-  [self updateHeightConstraint];
 }
 
-#pragma mark - Public
+#pragma mark - CollapsingToolbarHeightConstraintDelegate
 
-- (CGFloat)toolbarStackHeightForFullscreenProgress:(CGFloat)progress {
-  CGFloat height = 0.0;
-  for (CollapsingToolbarHeightConstraint* constraint in self
-           .toolbarHeightConstraints) {
-    height += [constraint toolbarHeightForProgress:progress];
-  }
-  return height;
+- (void)collapsingHeightConstraint:
+            (CollapsingToolbarHeightConstraint*)constraint
+          didUpdateFromHeightRange:
+              (const toolbar_container::HeightRange&)oldHeightRange {
+  [self updateHeightRangeWithRange:self.heightRange + constraint.heightRange -
+                                   oldHeightRange];
 }
 
 #pragma mark - FullscreenUIElement
 
 - (void)updateForFullscreenProgress:(CGFloat)progress {
-  for (CollapsingToolbarHeightConstraint* heightConstraint in self
-           .toolbarHeightConstraints) {
-    heightConstraint.progress = progress;
+  // No changes are needed if there are no collapsing toolbars.
+  CGFloat stackHeightDelta = self.heightRange.delta();
+  if (!self.viewLoaded || AreCGFloatsEqual(stackHeightDelta, 0.0) ||
+      !self.toolbars.count) {
+    return;
+  }
+
+  for (NSUInteger i = 0; i < self.toolbars.count; ++i) {
+    CollapsingToolbarHeightConstraint* constraint =
+        self.toolbarHeightConstraints[i];
+    // Calculate the progress range for the toolbar.  |startProgress| is pre-
+    // calculated and stored in self.toolbarExpansionStartProgresses.  The end
+    // progress is calculated by adding the proportion of the overall stack
+    // height delta created by this toolbar.
+    CGFloat startProgress = self.toolbarExpansionStartProgresses[i];
+    CGFloat endProgress =
+        startProgress + constraint.heightRange.delta() / stackHeightDelta;
+    // CollapsingToolbarHeightConstraint clamps its progress value between 0.0
+    // and 1.0, so |constraint|'s progress value will be set:
+    // -  0.0 when |progress| <= |startProgress|,
+    // -  1.0 when |progress| >= |endProgress|, and
+    // -  scaled linearly from 0.0 to 1.0 for |progress| values within that
+    //    range.
+    constraint.progress =
+        (progress - startProgress) / (endProgress - startProgress);
   }
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
-  [self updateForFullscreenProgress:1.0];
+  if (!enabled)
+    [self updateForFullscreenProgress:1.0];
 }
 
 - (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
@@ -103,7 +157,8 @@
   if (_collapsesSafeArea == collapsesSafeArea)
     return;
   _collapsesSafeArea = collapsesSafeArea;
-  self.firstToolbarHeightConstraint.collapsesAdditionalHeight = YES;
+  self.firstToolbarHeightConstraint.collapsesAdditionalHeight =
+      _collapsesSafeArea;
 }
 
 - (void)setToolbars:(NSArray<UIViewController*>*)toolbars {
@@ -111,6 +166,7 @@
     return;
   [self removeToolbars];
   _toolbars = toolbars;
+  self.toolbarExpansionStartProgresses.resize(_toolbars.count);
   [self setUpToolbarStack];
 }
 
@@ -161,7 +217,7 @@
   }
   [self createToolbarHeightConstraints];
   [self updateForSafeArea];
-  [self updateHeightConstraint];
+  [self calculateToolbarExpansionStartProgresses];
 }
 
 // Removes all the toolbars from the view.
@@ -178,8 +234,7 @@
 - (void)addToolbarAtIndex:(NSUInteger)index {
   DCHECK_LT(index, self.toolbars.count);
   UIViewController* toolbar = self.toolbars[index];
-  if (toolbar.parentViewController == self)
-    return;
+  DCHECK(!toolbar.parentViewController);
 
   // Add the toolbar and its view controller.
   UIView* toolbarView = toolbar.view;
@@ -215,9 +270,15 @@
 
 // Deactivates the toolbar height constraints and resets the property.
 - (void)resetToolbarHeightConstraints {
-  if (_toolbarHeightConstraints.count)
+  if (_toolbarHeightConstraints.count) {
     [NSLayoutConstraint deactivateConstraints:_toolbarHeightConstraints];
+    for (CollapsingToolbarHeightConstraint* constraint in
+             _toolbarHeightConstraints) {
+      constraint.delegate = nil;
+    }
+  }
   _toolbarHeightConstraints = nil;
+  _heightRange = HeightRange();
 }
 
 // Creates and activates height constriants for the toolbars and adds them to
@@ -226,6 +287,7 @@
 - (void)createToolbarHeightConstraints {
   [self resetToolbarHeightConstraints];
   _toolbarHeightConstraints = [NSMutableArray array];
+  HeightRange heightRange;
   for (NSUInteger i = 0; i < self.toolbars.count; ++i) {
     UIView* toolbarView = self.toolbars[i].view;
     CollapsingToolbarHeightConstraint* heightConstraint =
@@ -236,11 +298,49 @@
       heightConstraint.additionalHeight = self.additionalStackHeight;
       heightConstraint.collapsesAdditionalHeight = self.collapsesSafeArea;
     }
+    // Set as delegate to receive notifications of height range updates.
+    heightConstraint.delegate = self;
+    // Add the height range values.
+    heightRange += heightConstraint.heightRange;
     [_toolbarHeightConstraints addObject:heightConstraint];
   }
+  [self updateHeightRangeWithRange:heightRange];
 }
 
-// Updates the height of the first toolbar to account for the safe area.
+// Updates the height range of the stack with |range|.
+- (void)updateHeightRangeWithRange:(const HeightRange&)range {
+  if (_heightRange == range)
+    return;
+  BOOL maxHeightUpdated =
+      !AreCGFloatsEqual(_heightRange.max_height(), range.max_height());
+  BOOL deltaUpdated = !AreCGFloatsEqual(_heightRange.delta(), range.delta());
+  _heightRange = range;
+  if (maxHeightUpdated)
+    self.heightConstraint.constant = _heightRange.max_height();
+  if (deltaUpdated)
+    [self calculateToolbarExpansionStartProgresses];
+}
+
+// Calculates the fullscreen progress values at which the toolbars should start
+// expanding.  See comments for self.toolbarExpansionStartProgresses for more
+// details.
+- (void)calculateToolbarExpansionStartProgresses {
+  DCHECK_EQ(self.toolbarExpansionStartProgresses.size(), self.toolbars.count);
+  if (!self.toolbars.count)
+    return;
+  CGFloat startProgress = 0.0;
+  for (NSUInteger i = self.toolbars.count - 1; i > 0; --i) {
+    self.toolbarExpansionStartProgresses[i] = startProgress;
+    CGFloat delta = self.heightRange.delta();
+    if (delta > 0.0) {
+      startProgress +=
+          self.toolbarHeightConstraints[i].heightRange.delta() / delta;
+    }
+  }
+  self.toolbarExpansionStartProgresses[0] = startProgress;
+}
+
+// Adds additional height to the first toolbar to account for the safe area.
 - (void)updateForSafeArea {
   if (@available(iOS 11, *)) {
     if (self.orientation == ToolbarContainerOrientation::kTopToBottom) {
@@ -255,21 +355,6 @@
       self.additionalStackHeight = self.bottomLayoutGuide.length;
     }
   }
-}
-
-// Updates the height constraint's constant to the cumulative expanded height of
-// all the toolbars.
-- (void)updateHeightConstraint {
-  if (!self.viewLoaded)
-    return;
-  // Calculate the cumulative expanded toolbar height.
-  CGFloat cumulativeExpandedHeight = 0.0;
-  for (CollapsingToolbarHeightConstraint* constraint in self
-           .toolbarHeightConstraints) {
-    cumulativeExpandedHeight +=
-        constraint.expandedHeight + constraint.additionalHeight;
-  }
-  self.heightConstraint.constant = cumulativeExpandedHeight;
 }
 
 @end

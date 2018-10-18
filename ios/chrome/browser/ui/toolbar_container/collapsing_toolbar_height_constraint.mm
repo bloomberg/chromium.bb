@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#import "ios/chrome/browser/ui/toolbar_container/collapsing_toolbar_height_constraint_delegate.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
@@ -21,20 +22,29 @@ const CGFloat kMinProgress = 0.0;
 const CGFloat kMaxProgress = 1.0;
 }  // namespace
 
-@interface CollapsingToolbarHeightConstraint ()
-// Redefine as readwrite.
-@property(nonatomic, readwrite) CGFloat collapsedHeight;
-@property(nonatomic, readwrite) CGFloat expandedHeight;
+using toolbar_container::HeightRange;
+
+@interface CollapsingToolbarHeightConstraint () {
+  // Backing variable for property of same name.
+  HeightRange _heightRange;
+}
+// The height values extracted from the constrained view.  If the view conforms
+// to ToolbarCollapsing, these will be the values from that protocol, and will
+// be updated using KVO if those values change.  Otherwise, they will both be
+// equal to the intrinsic height of the view.
+@property(nonatomic, readwrite) CGFloat collapsedToolbarHeight;
+@property(nonatomic, readwrite) CGFloat expandedToolbarHeight;
 // The collapsing toolbar whose height range is being observed.
 @property(nonatomic, weak) UIView<ToolbarCollapsing>* collapsingToolbar;
 @end
 
 @implementation CollapsingToolbarHeightConstraint
-@synthesize collapsedHeight = _collapsedHeight;
-@synthesize expandedHeight = _expandedHeight;
+@synthesize collapsedToolbarHeight = _collapsedToolbarHeight;
+@synthesize expandedToolbarHeight = _expandedToolbarHeight;
 @synthesize additionalHeight = _additionalHeight;
 @synthesize collapsesAdditionalHeight = _collapsesAdditionalHeight;
 @synthesize progress = _progress;
+@synthesize delegate = _delegate;
 @synthesize collapsingToolbar = _collapsingToolbar;
 
 + (instancetype)constraintWithView:(UIView*)view {
@@ -52,11 +62,11 @@ const CGFloat kMaxProgress = 1.0;
         static_cast<UIView<ToolbarCollapsing>*>(view);
   } else {
     CGFloat intrinsicHeight = view.intrinsicContentSize.height;
-    constraint.collapsedHeight = intrinsicHeight;
-    constraint.expandedHeight = intrinsicHeight;
+    constraint.collapsedToolbarHeight = intrinsicHeight;
+    constraint.expandedToolbarHeight = intrinsicHeight;
+    [constraint updateToolbarHeightRange];
   }
   constraint.progress = 1.0;
-  [constraint updateHeight];
 
   return constraint;
 }
@@ -71,32 +81,23 @@ const CGFloat kMaxProgress = 1.0;
     [self stopObservingCollapsingToolbar];
 }
 
-- (void)setCollapsedHeight:(CGFloat)collapsedHeight {
-  if (AreCGFloatsEqual(_collapsedHeight, collapsedHeight))
-    return;
-  _collapsedHeight = collapsedHeight;
-  [self updateHeight];
-}
-
-- (void)setExpandedHeight:(CGFloat)expandedHeight {
-  if (AreCGFloatsEqual(_expandedHeight, expandedHeight))
-    return;
-  _expandedHeight = expandedHeight;
-  [self updateHeight];
-}
-
 - (void)setAdditionalHeight:(CGFloat)additionalHeight {
   if (AreCGFloatsEqual(_additionalHeight, additionalHeight))
     return;
   _additionalHeight = additionalHeight;
-  [self updateHeight];
+  [self updateToolbarHeightRange];
 }
 
 - (void)setCollapsesAdditionalHeight:(BOOL)collapsesAdditionalHeight {
   if (_collapsesAdditionalHeight == collapsesAdditionalHeight)
     return;
   _collapsesAdditionalHeight = collapsesAdditionalHeight;
-  [self updateHeight];
+  [self updateToolbarHeightRange];
+}
+
+- (const HeightRange&)heightRange {
+  // Custom getter is needed to support the C++ reference type.
+  return _heightRange;
 }
 
 - (void)setProgress:(CGFloat)progress {
@@ -104,16 +105,15 @@ const CGFloat kMaxProgress = 1.0;
   if (AreCGFloatsEqual(_progress, progress))
     return;
   _progress = progress;
-  [self updateHeight];
+  [self updateHeightConstant];
 }
 
 - (void)setCollapsingToolbar:(UIView<ToolbarCollapsing>*)collapsingToolbar {
   if (_collapsingToolbar == collapsingToolbar)
     return;
-
   [self stopObservingCollapsingToolbar];
   _collapsingToolbar = collapsingToolbar;
-  [self updateToolbarHeightRange];
+  [self updateCollapsingToolbarHeights];
   if (self.active)
     [self startObservingCollapsingToolbar];
 }
@@ -122,8 +122,8 @@ const CGFloat kMaxProgress = 1.0;
 
 - (CGFloat)toolbarHeightForProgress:(CGFloat)progress {
   progress = base::ClampToRange(progress, kMinProgress, kMaxProgress);
-  CGFloat base = self.collapsedHeight;
-  CGFloat range = self.expandedHeight - self.collapsedHeight;
+  CGFloat base = self.collapsedToolbarHeight;
+  CGFloat range = self.expandedToolbarHeight - self.collapsedToolbarHeight;
   if (self.collapsesAdditionalHeight) {
     range += self.additionalHeight;
   } else {
@@ -138,7 +138,7 @@ const CGFloat kMaxProgress = 1.0;
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  [self updateToolbarHeightRange];
+  [self updateCollapsingToolbarHeights];
 }
 
 #pragma mark - KVO Helpers
@@ -166,15 +166,32 @@ const CGFloat kMaxProgress = 1.0;
 
 #pragma mark - Private
 
-// Updates the constraint using the collapsing toolbar's height range.
+// Upates the collapsed and expanded heights from self.collapsingToolbar.
+- (void)updateCollapsingToolbarHeights {
+  self.collapsedToolbarHeight = self.collapsingToolbar.collapsedToolbarHeight;
+  self.expandedToolbarHeight = self.collapsingToolbar.expandedToolbarHeight;
+  [self updateToolbarHeightRange];
+}
+
+// Updates the height range using the current collapsing toolbar height values
+// and additional height behavior.
 - (void)updateToolbarHeightRange {
-  self.collapsedHeight = self.collapsingToolbar.collapsedToolbarHeight;
-  self.expandedHeight = self.collapsingToolbar.expandedToolbarHeight;
+  HeightRange oldHeightRange = self.heightRange;
+  CGFloat minHeight =
+      self.collapsedToolbarHeight +
+      (self.collapsesAdditionalHeight ? 0.0 : self.additionalHeight);
+  CGFloat maxHeight = self.expandedToolbarHeight + self.additionalHeight;
+  _heightRange = HeightRange(minHeight, maxHeight);
+  if (_heightRange == oldHeightRange)
+    return;
+  [self updateHeightConstant];
+  [self.delegate collapsingHeightConstraint:self
+                   didUpdateFromHeightRange:oldHeightRange];
 }
 
 // Updates the constraint's constant
-- (void)updateHeight {
-  self.constant = [self toolbarHeightForProgress:self.progress];
+- (void)updateHeightConstant {
+  self.constant = self.heightRange.GetInterpolatedHeight(self.progress);
 }
 
 @end

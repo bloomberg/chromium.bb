@@ -41,10 +41,13 @@ source_set("ui") {
   sources = [
     "collapsing_toolbar_height_constraint.h",
     "collapsing_toolbar_height_constraint.mm",
+    "collapsing_toolbar_height_constraint_delegate.h",
     "toolbar_container_view.h",
     "toolbar_container_view.mm",
     "toolbar_container_view_controller.h",
     "toolbar_container_view_controller.mm",
+    "toolbar_height_range.h",
+    "toolbar_height_range.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -63,6 +66,7 @@ source_set("unit_tests") {
   sources = [
     "collapsing_toolbar_height_constraint_unittest.mm",
     "toolbar_container_view_controller_unittest.mm",
+    "toolbar_height_range_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

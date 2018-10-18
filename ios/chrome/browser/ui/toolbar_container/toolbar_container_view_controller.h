@@ -9,6 +9,10 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 
+namespace toolbar_container {
+class HeightRange;
+}  // namespace toolbar_container
+
 // The layout orientation for a toolbar container.
 enum class ToolbarContainerOrientation { kTopToBottom, kBottomToTop };
 
@@ -26,9 +30,10 @@ enum class ToolbarContainerOrientation { kTopToBottom, kBottomToTop };
 // The toolbar view controllers being managed by this container.
 @property(nonatomic, strong) NSArray<UIViewController*>* toolbars;
 
-// Returns the height of the toolbar views managed by this container at
-// |progress|.
-- (CGFloat)toolbarStackHeightForFullscreenProgress:(CGFloat)progress;
+// The height range of the overall stack.  It is calculated using the collapsed
+// and expanded heights of the views managed by |toolbars|.
+@property(nonatomic, readonly)
+    const toolbar_container::HeightRange& heightRange;
 
 @end
 

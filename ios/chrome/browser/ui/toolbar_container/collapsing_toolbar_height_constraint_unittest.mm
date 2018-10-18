@@ -78,48 +78,6 @@ class CollapsingToolbarHeightConstraintTest : public PlatformTest {
   NSMutableArray<NSLayoutConstraint*>* constraints_ = nil;
 };
 
-// Tests that |-toolbarHeightForProgress:| returns the expected values.
-TEST_F(CollapsingToolbarHeightConstraintTest, ToolbarHeightForProgress) {
-  CollapsingView* view = [[CollapsingView alloc] initWithFrame:CGRectZero];
-  view.expandedToolbarHeight = 100.0;
-  view.collapsedToolbarHeight = 50.0;
-  CollapsingToolbarHeightConstraint* constraint = AddViewToContainer(view);
-
-  // Test collapsing toolbar.
-  EXPECT_EQ([constraint toolbarHeightForProgress:1.0], 100.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.5], 75.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.0], 50.0);
-  // Tests with collapsing additional height.
-  constraint.additionalHeight = 100.0;
-  constraint.collapsesAdditionalHeight = YES;
-  EXPECT_EQ([constraint toolbarHeightForProgress:1.0], 200.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.5], 125.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.0], 50.0);
-  // Tests with non-collapsing additional height.
-  constraint.collapsesAdditionalHeight = NO;
-  EXPECT_EQ([constraint toolbarHeightForProgress:1.0], 200.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.5], 175.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.0], 150.0);
-
-  // Test non-collapsing toolbar.
-  constraint.additionalHeight = 0.0;
-  view.collapsedToolbarHeight = 100.0;
-  EXPECT_EQ([constraint toolbarHeightForProgress:1.0], 100.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.5], 100.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.0], 100.0);
-  // Tests with collapsing additional height.
-  constraint.additionalHeight = 100.0;
-  constraint.collapsesAdditionalHeight = YES;
-  EXPECT_EQ([constraint toolbarHeightForProgress:1.0], 200.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.5], 150.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.0], 100.0);
-  // Tests with non-collapsing additional height.
-  constraint.collapsesAdditionalHeight = NO;
-  EXPECT_EQ([constraint toolbarHeightForProgress:1.0], 200.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.5], 200.0);
-  EXPECT_EQ([constraint toolbarHeightForProgress:0.0], 200.0);
-}
-
 // Tests interpolating the height value of a collapsing view.
 TEST_F(CollapsingToolbarHeightConstraintTest, CollapsingConstraint) {
   CollapsingView* view = [[CollapsingView alloc] initWithFrame:CGRectZero];

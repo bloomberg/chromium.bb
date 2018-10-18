@@ -4,52 +4,87 @@
 
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_view_controller.h"
 
+#include <algorithm>
+#include <vector>
+
+#include "base/stl_util.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_height_range.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "testing/platform_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using toolbar_container::HeightRange;
+
 namespace {
 // The container view width.
 const CGFloat kContainerViewWidth = 300.0;
-// The expanded height of the collapsing toolbar.
-const CGFloat kExpandedToolbarHeight = 100.0;
-// The collapsed height of the collapsing toolbar.
+// The number of toolbars to add.
+const size_t kToolbarCount = 2;
+// The collapsed and expanded heights of the toolbars.
 const CGFloat kCollapsedToolbarHeight = 50.0;
-// The height of the non-collapsing toolbar.
+const CGFloat kExpandedToolbarHeight = 150.0;
+// The non-collapsing toolbar height.
 const CGFloat kNonCollapsingToolbarHeight = 75.0;
+// The inset into the stack for the safe area.
+const CGFloat kSafeAreaStackInset = 100.0;
+// The progress values to check.
+const CGFloat kStackProgressValues[] = {0.0, 0.25, 0.5, 0.75, 1.0};
+// Parameters used for the test fixtures.
+typedef NS_ENUM(NSUInteger, ToolbarContainerTestConfig) {
+  kEmptyConfig = 0,
+  kTopToBottom = 1 << 0,
+  kCollapsingToolbars = 1 << 1,
+  kCollapsingSafeInset = 1 << 2,
+  kToolbarContainerConfigMax = 1 << 3,
+};
+// Returns a string version of |frame| to use for error printing.
+std::string GetFrameString(CGRect frame) {
+  return base::SysNSStringToUTF8(NSStringFromCGRect(frame));
+}
 }  // namespace
 
 // Test toolbar view.
-@interface TestToolbarView : UIView<ToolbarCollapsing>
-// Redefine ToolbarCollapsing properies as readwrite.
-@property(nonatomic, assign, readwrite) CGFloat expandedToolbarHeight;
-@property(nonatomic, assign, readwrite) CGFloat collapsedToolbarHeight;
+@interface TestToolbarView : UIView<ToolbarCollapsing> {
+  HeightRange _heightRange;
+}
+- (instancetype)initWithHeightRange:(const HeightRange&)heightRange;
 @end
 
 @implementation TestToolbarView
-@synthesize expandedToolbarHeight = _expandedToolbarHeight;
-@synthesize collapsedToolbarHeight = _collapsedToolbarHeight;
+- (instancetype)initWithHeightRange:(const HeightRange&)heightRange {
+  if (self = [super init])
+    _heightRange = heightRange;
+  return self;
+}
+- (CGFloat)expandedToolbarHeight {
+  return _heightRange.max_height();
+}
+- (CGFloat)collapsedToolbarHeight {
+  return _heightRange.min_height();
+}
 @end
 
 // Test toolbar view controller.
-@interface TestToolbarViewController : UIViewController
+@interface TestToolbarViewController : UIViewController {
+  HeightRange _heightRange;
+}
 @property(nonatomic, strong, readonly) TestToolbarView* toolbarView;
-@property(nonatomic, assign) CGFloat expandedToolbarHeight;
-@property(nonatomic, assign) CGFloat collapsedToolbarHeight;
+- (instancetype)initWithHeightRange:(const HeightRange&)heightRange;
 @end
 
 @implementation TestToolbarViewController
-@synthesize expandedToolbarHeight = _expandedToolbarHeight;
-@synthesize collapsedToolbarHeight = _collapsedToolbarHeight;
+- (instancetype)initWithHeightRange:(const HeightRange&)heightRange {
+  if (self = [super init])
+    _heightRange = heightRange;
+  return self;
+}
 - (void)loadView {
-  TestToolbarView* view = [[TestToolbarView alloc] initWithFrame:CGRectZero];
-  view.expandedToolbarHeight = self.expandedToolbarHeight;
-  view.collapsedToolbarHeight = self.collapsedToolbarHeight;
-  self.view = view;
+  self.view = [[TestToolbarView alloc] initWithHeightRange:_heightRange];
 }
 - (TestToolbarView*)toolbarView {
   return static_cast<TestToolbarView*>(self.view);
@@ -57,28 +92,21 @@ const CGFloat kNonCollapsingToolbarHeight = 75.0;
 @end
 
 // Test fixture for ToolbarContainerViewController.
-class ToolbarContainerViewControllerTest : public PlatformTest {
+class ToolbarContainerViewControllerTest
+    : public ::testing::TestWithParam<ToolbarContainerTestConfig> {
  public:
   ToolbarContainerViewControllerTest()
-      : PlatformTest(),
-        window_([[UIWindow alloc] init]),
-        view_controller_([[ToolbarContainerViewController alloc] init]),
-        collapsing_toolbar_([[TestToolbarViewController alloc] init]),
-        non_collapsing_toolbar_([[TestToolbarViewController alloc] init]) {
-    collapsing_toolbar_.expandedToolbarHeight = kExpandedToolbarHeight;
-    collapsing_toolbar_.collapsedToolbarHeight = kCollapsedToolbarHeight;
-    non_collapsing_toolbar_.expandedToolbarHeight = kNonCollapsingToolbarHeight;
-    non_collapsing_toolbar_.collapsedToolbarHeight =
-        kNonCollapsingToolbarHeight;
-    [container_view().widthAnchor constraintEqualToConstant:kContainerViewWidth]
-        .active = YES;
+      : window_([[UIWindow alloc] init]),
+        view_controller_([[ToolbarContainerViewController alloc] init]) {
+    // Resize the window and add the container view such that it hugs the
+    // leading/trailing edges.
     window_.frame = CGRectMake(0.0, 0.0, kContainerViewWidth, 1000);
     [window_ addSubview:container_view()];
     AddSameConstraintsToSides(window_, container_view(),
                               LayoutSides::kLeading | LayoutSides::kTrailing);
-    SetOrientation(ToolbarContainerOrientation::kTopToBottom);
-    view_controller_.toolbars =
-        @[ non_collapsing_toolbar_, collapsing_toolbar_ ];
+    UpdateForOrientationConfig();
+    UpdateForToolbarCollapsingConfig();
+    UpdateForSafeInsetCollapsingConfig();
     ForceLayout();
   }
 
@@ -86,76 +114,102 @@ class ToolbarContainerViewControllerTest : public PlatformTest {
     view_controller_.toolbars = nil;
   }
 
-  // Returns the additional stack height created by the safe area insets.
-  CGFloat GetAdditionalStackHeight() {
-    CGFloat additional_height = 0.0;
-    bool top_to_bottom = view_controller_.orientation ==
-                         ToolbarContainerOrientation::kTopToBottom;
+  // Convenience getters for each of the config option flags.
+  bool IsTopToBottom() { return (GetParam() & kTopToBottom) == kTopToBottom; }
+  bool HasCollapsingToolbars() {
+    return (GetParam() & kCollapsingToolbars) == kCollapsingToolbars;
+  }
+  bool HasCollapsingSafeInset() {
+    return (GetParam() & kCollapsingSafeInset) == kCollapsingSafeInset;
+  }
+
+  // Sets the orientation of the container and constraints its view to the top
+  // or bottom of the window.
+  void UpdateForOrientationConfig() {
+    view_controller_.orientation =
+        IsTopToBottom() ? ToolbarContainerOrientation::kTopToBottom
+                        : ToolbarContainerOrientation::kBottomToTop;
     if (@available(iOS 11, *)) {
-      additional_height = top_to_bottom
-                              ? container_view().safeAreaInsets.top
-                              : container_view().safeAreaInsets.bottom;
-    } else if (top_to_bottom) {
-      additional_height = view_controller_.topLayoutGuide.length;
-    }
-    return additional_height;
-  }
-
-  // Returns the expected height of the container.
-  CGFloat GetExpectedContainerHeight() {
-    return kNonCollapsingToolbarHeight + kExpandedToolbarHeight +
-           GetAdditionalStackHeight();
-  }
-
-  // Expand or collapse the toolbars.
-  void SetExpanded(bool expanded) {
-    [view_controller_ updateForFullscreenProgress:expanded ? 1.0 : 0.0];
-    ForceLayout();
-  }
-
-  // Sets the container orientation.
-  void SetOrientation(ToolbarContainerOrientation orientation) {
-    container_positioning_constraint_.active = NO;
-    view_controller_.orientation = orientation;
-    if (orientation == ToolbarContainerOrientation::kTopToBottom) {
-      container_positioning_constraint_ = [container_view().topAnchor
-          constraintEqualToAnchor:window_.topAnchor];
+      UIEdgeInsets safe_insets = container_view().safeAreaInsets;
+      if (IsTopToBottom())
+        safe_insets.top = kSafeAreaStackInset - safe_insets.top;
+      else
+        safe_insets.bottom = kSafeAreaStackInset - safe_insets.bottom;
+      view_controller_.additionalSafeAreaInsets = safe_insets;
     } else {
-      container_positioning_constraint_ = [container_view().bottomAnchor
-          constraintEqualToAnchor:window_.bottomAnchor];
-    }
-    container_positioning_constraint_.active = YES;
-    ForceLayout();
-  }
-
-  // Sets whether the safe area should be collapsed.
-  void SetCollapsesSafeArea(bool collapses_safe_area) {
-    view_controller_.collapsesSafeArea = collapses_safe_area;
-  }
-
-  // Sets the safe area insets or top layout guide for the container and forces
-  // a layout.
-  void SetSafeAreaInsets(UIEdgeInsets insets) {
-    if (@available(iOS 11, *)) {
-      view_controller_.additionalSafeAreaInsets = insets;
-    } else {
-      // Deactivate all pre-existing constraints for the layout guides' heights.
+      // Deactivate all pre-existing constraints for the |guide|'s height.
       // They are added by UIKit at the maximum priority, so must be removed to
-      // update the lengths of the layout guides.
+      // update |guide|'s length.
+      id<UILayoutSupport> guide = IsTopToBottom()
+                                      ? view_controller_.topLayoutGuide
+                                      : view_controller_.bottomLayoutGuide;
       for (NSLayoutConstraint* constraint in container_view().constraints) {
-        if (constraint.firstAttribute == NSLayoutAttributeHeight &&
-            (constraint.firstItem == view_controller_.topLayoutGuide ||
-             constraint.firstItem == view_controller_.bottomLayoutGuide)) {
+        if (constraint.firstItem == guide &&
+            constraint.firstAttribute == NSLayoutAttributeHeight) {
           constraint.active = NO;
         }
       }
-      [view_controller_.topLayoutGuide.heightAnchor
-          constraintEqualToConstant:insets.top]
-          .active = YES;
-      [view_controller_.bottomLayoutGuide.heightAnchor
-          constraintEqualToConstant:insets.bottom]
+      [guide.heightAnchor constraintEqualToConstant:kSafeAreaStackInset]
           .active = YES;
     }
+  }
+
+  // Adds collapsible or non-collapsible toolbars to the container, depending on
+  // the config flag.
+  void UpdateForToolbarCollapsingConfig() {
+    // Calculate the height range for the toolbars.
+    HeightRange toolbar_height_range;
+    if (HasCollapsingToolbars()) {
+      toolbar_height_range =
+          HeightRange(kCollapsedToolbarHeight, kExpandedToolbarHeight);
+    } else {
+      toolbar_height_range =
+          HeightRange(kNonCollapsingToolbarHeight, kNonCollapsingToolbarHeight);
+    }
+    // Add kToolbarCount toolbars with |toolbar_height_range|.
+    height_ranges_ =
+        std::vector<HeightRange>(kToolbarCount, toolbar_height_range);
+    NSMutableArray* toolbars = [NSMutableArray array];
+    for (const HeightRange& height_range : height_ranges_) {
+      TestToolbarViewController* toolbar =
+          [[TestToolbarViewController alloc] initWithHeightRange:height_range];
+      [toolbars addObject:toolbar];
+    }
+    view_controller_.toolbars = toolbars;
+  }
+
+  // Updates the view controller safe inset collapsing behavior based on the
+  // config.
+  void UpdateForSafeInsetCollapsingConfig() {
+    view_controller_.collapsesSafeArea = HasCollapsingSafeInset();
+  }
+
+  // Returns the total height range for the toolbar view at |index|, accounting
+  // for both the toolbar expansion and the collapsing safe area inset.
+  HeightRange GetTotalToolbarHeightRange(NSUInteger index) {
+    HeightRange height_range = height_ranges_[index];
+    if (index == 0) {
+      bool collapses_safe_area = view_controller_.collapsesSafeArea;
+      HeightRange safe_area_height_range = HeightRange(
+          collapses_safe_area ? 0.0 : kSafeAreaStackInset, kSafeAreaStackInset);
+      height_range += safe_area_height_range;
+    }
+    return height_range;
+  }
+
+  // Returns the expected height of the toolbar stack.
+  CGFloat GetExpectedStackHeight() {
+    CGFloat expected_stack_height = 0.0;
+    for (NSUInteger index = 0; index < kToolbarCount; ++index) {
+      expected_stack_height += GetTotalToolbarHeightRange(index).max_height();
+    }
+    return expected_stack_height;
+  }
+
+  // Set the stack progress.
+  void SetStackProgress(CGFloat progress) {
+    stack_progress_ = progress;
+    [view_controller_ updateForFullscreenProgress:progress];
     ForceLayout();
   }
 
@@ -165,186 +219,105 @@ class ToolbarContainerViewControllerTest : public PlatformTest {
     [window_ layoutIfNeeded];
     [container_view() setNeedsLayout];
     [container_view() layoutIfNeeded];
+    stack_height_delta_ = 0.0;
+    for (NSUInteger index = 0; index < kToolbarCount; ++index) {
+      stack_height_delta_ += GetTotalToolbarHeightRange(index).delta();
+    }
   }
 
-  // The views.
-  UIView* container_view() { return view_controller_.view; }
-  TestToolbarView* collapsing_toolbar_view() {
-    return collapsing_toolbar_.toolbarView;
-  }
-  TestToolbarView* non_collapsing_toolbar_view() {
-    return non_collapsing_toolbar_.toolbarView;
-  }
-  TestToolbarView* first_toolbar_view() {
-    return static_cast<TestToolbarViewController*>(view_controller_.toolbars[0])
+  // Returns the toolbar view at |index|.
+  TestToolbarView* GetToolbarView(NSUInteger index) {
+    return static_cast<TestToolbarViewController*>(
+               view_controller_.toolbars[index])
         .toolbarView;
   }
+
+  // Returns the progress value for the toolbar at |index| for the current stack
+  // progress.
+  CGFloat GetToolbarProgress(NSUInteger index) {
+    // Calculate the start progress.
+    CGFloat start_progress = 0.0;
+    for (NSUInteger i = kToolbarCount - 1; i > index; --i) {
+      if (stack_height_delta_ > 0.0) {
+        start_progress +=
+            GetTotalToolbarHeightRange(i).delta() / stack_height_delta_;
+      }
+    }
+    // Get the individual toolbar progress.
+    HeightRange height_range = GetTotalToolbarHeightRange(index);
+    CGFloat end_progress =
+        start_progress + height_range.delta() / stack_height_delta_;
+    CGFloat progress =
+        (stack_progress_ - start_progress) / (end_progress - start_progress);
+    progress = std::min(static_cast<CGFloat>(1.0), progress);
+    progress = std::max(static_cast<CGFloat>(0.0), progress);
+    return progress;
+  }
+
+  // Returns the expected frame for the toolbar at |index| at the current stack
+  // progress.
+  CGRect GetExpectedToolbarFrame(NSUInteger index) {
+    const HeightRange& height_range = GetTotalToolbarHeightRange(index);
+    CGSize size = CGSizeMake(
+        kContainerViewWidth,
+        height_range.GetInterpolatedHeight(GetToolbarProgress(index)));
+    CGFloat origin_y = 0.0;
+    bool is_first_toolbar = index == 0;
+    if (IsTopToBottom()) {
+      origin_y = is_first_toolbar
+                     ? 0.0
+                     : CGRectGetMaxY(GetExpectedToolbarFrame(index - 1));
+    } else {
+      CGFloat bottom_edge =
+          is_first_toolbar ? CGRectGetMaxY(container_view().bounds)
+                           : CGRectGetMinY(GetExpectedToolbarFrame(index - 1));
+      origin_y = bottom_edge - size.height;
+    }
+    return CGRectMake(0.0, origin_y, size.width, size.height);
+  }
+
+  // Checks that the frames of the toolbar views are expected for the current
+  // stack progress.
+  void CheckToolbarFrames() {
+    for (NSUInteger index = 0; index < kToolbarCount; ++index) {
+      CGRect toolbar_frame = GetToolbarView(index).frame;
+      CGRect expected_toolbar_frame = GetExpectedToolbarFrame(index);
+      EXPECT_TRUE(CGRectEqualToRect(toolbar_frame, expected_toolbar_frame)) <<
+          "IsTopToBottom          : " << IsTopToBottom() << "\n"
+          "HasCollapsingToolbars  : " << HasCollapsingToolbars() << "\n"
+          "HasCollapsingSafeInset : " << HasCollapsingSafeInset() << "\n"
+          "Stack Progress         : " << stack_progress_ << "\n"
+          "Toolbar Index          : " << index << "\n"
+          "toolbar_frame          : " << GetFrameString(toolbar_frame) << "\n"
+          "expected_toolbar_frame : " << GetFrameString(expected_toolbar_frame);
+    }
+  }
+
+  // The view.
+  UIView* container_view() { return view_controller_.view; }
 
  private:
   __strong UIWindow* window_ = nil;
   __strong ToolbarContainerViewController* view_controller_ = nil;
-  __strong NSLayoutConstraint* container_positioning_constraint_ = nil;
-  __strong TestToolbarViewController* collapsing_toolbar_ = nil;
-  __strong TestToolbarViewController* non_collapsing_toolbar_ = nil;
+  std::vector<HeightRange> height_ranges_;
+  CGFloat stack_progress_ = 1.0;
+  CGFloat stack_height_delta_ = 0.0;
 };
 
-// Tests the layout of the toolbar views in when oriented from top to bottom
-// and the toolbars are fully expanded.
-TEST_F(ToolbarContainerViewControllerTest, TopToBottomExpanded) {
-  SetOrientation(ToolbarContainerOrientation::kTopToBottom);
-  SetExpanded(true);
-  EXPECT_EQ(GetExpectedContainerHeight(),
-            CGRectGetHeight(container_view().bounds));
-  CGRect non_collapsing_toolbar_frame =
-      CGRectMake(0.0, 0.0, kContainerViewWidth,
-                 kNonCollapsingToolbarHeight + GetAdditionalStackHeight());
-  EXPECT_TRUE(CGRectEqualToRect(non_collapsing_toolbar_frame,
-                                non_collapsing_toolbar_view().frame));
-  CGRect collapsing_toolbar_frame =
-      CGRectMake(0.0, CGRectGetMaxY(non_collapsing_toolbar_frame),
-                 kContainerViewWidth, kExpandedToolbarHeight);
-  EXPECT_TRUE(CGRectEqualToRect(collapsing_toolbar_frame,
-                                collapsing_toolbar_view().frame));
+// Tests the layout of the toolbar stack configured using the
+// ToolbarContainerTestConfig test fixture parameter.
+TEST_P(ToolbarContainerViewControllerTest, VerifyStackLayoutForProgresses) {
+  // Check that the container height is as expected.
+  EXPECT_EQ(CGRectGetHeight(container_view().bounds), GetExpectedStackHeight());
+  // Set the stack progress to the progress values in kStackProgressValues and
+  // verify the toolbar frames for each of these stack progress values.
+  for (size_t index = 0; index < base::size(kStackProgressValues); ++index) {
+    SetStackProgress(kStackProgressValues[index]);
+    CheckToolbarFrames();
+  }
 }
 
-// Tests the layout of the toolbar views in when oriented from top to bottom
-// and the toolbars are fully collapsed.
-TEST_F(ToolbarContainerViewControllerTest, TopToBottomCollapsed) {
-  SetOrientation(ToolbarContainerOrientation::kTopToBottom);
-  SetExpanded(false);
-  EXPECT_EQ(GetExpectedContainerHeight(),
-            CGRectGetHeight(container_view().bounds));
-  CGRect non_collapsing_toolbar_frame =
-      CGRectMake(0.0, 0.0, kContainerViewWidth,
-                 kNonCollapsingToolbarHeight + GetAdditionalStackHeight());
-  EXPECT_TRUE(CGRectEqualToRect(non_collapsing_toolbar_frame,
-                                non_collapsing_toolbar_view().frame));
-  CGRect collapsing_toolbar_frame =
-      CGRectMake(0.0, CGRectGetMaxY(non_collapsing_toolbar_frame),
-                 kContainerViewWidth, kCollapsedToolbarHeight);
-  EXPECT_TRUE(CGRectEqualToRect(collapsing_toolbar_frame,
-                                collapsing_toolbar_view().frame));
-}
-
-// Tests the layout of the toolbar views in when oriented from bottom to top
-// and the toolbars are fully expanded.
-// TODO(crbug.com/895766): reenable these tests on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_BottomToTopExpanded BottomToTopExpanded
-#else
-#define MAYBE_BottomToTopExpanded DISABLED_BottomToTopExpanded
-#endif
-TEST_F(ToolbarContainerViewControllerTest, MAYBE_BottomToTopExpanded) {
-  SetOrientation(ToolbarContainerOrientation::kBottomToTop);
-  SetExpanded(true);
-  CGFloat container_height = CGRectGetHeight(container_view().bounds);
-  EXPECT_EQ(GetExpectedContainerHeight(), container_height);
-  CGRect non_collapsing_toolbar_frame = CGRectMake(
-      0.0, container_height - kNonCollapsingToolbarHeight, kContainerViewWidth,
-      kNonCollapsingToolbarHeight + GetAdditionalStackHeight());
-  EXPECT_TRUE(CGRectEqualToRect(non_collapsing_toolbar_frame,
-                                non_collapsing_toolbar_view().frame));
-  CGRect collapsing_toolbar_frame = CGRectMake(
-      0.0, CGRectGetMinY(non_collapsing_toolbar_frame) - kExpandedToolbarHeight,
-      kContainerViewWidth, kExpandedToolbarHeight);
-  EXPECT_TRUE(CGRectEqualToRect(collapsing_toolbar_frame,
-                                collapsing_toolbar_view().frame));
-}
-
-// Tests the layout of the toolbar views in when oriented from bottom to top
-// and the toolbars are fully collapsed.
-// TODO(crbug.com/895766): reenable these tests on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_BottomToTopCollapsed BottomToTopCollapsed
-#else
-#define MAYBE_BottomToTopCollapsed DISABLED_BottomToTopCollapsed
-#endif
-TEST_F(ToolbarContainerViewControllerTest, MAYBE_BottomToTopCollapsed) {
-  SetOrientation(ToolbarContainerOrientation::kBottomToTop);
-  SetExpanded(false);
-  CGFloat container_height = CGRectGetHeight(container_view().bounds);
-  EXPECT_EQ(GetExpectedContainerHeight(), container_height);
-  CGRect non_collapsing_toolbar_frame = CGRectMake(
-      0.0, container_height - kNonCollapsingToolbarHeight, kContainerViewWidth,
-      kNonCollapsingToolbarHeight + GetAdditionalStackHeight());
-  EXPECT_TRUE(CGRectEqualToRect(non_collapsing_toolbar_frame,
-                                non_collapsing_toolbar_view().frame));
-  CGRect collapsing_toolbar_frame = CGRectMake(
-      0.0,
-      CGRectGetMinY(non_collapsing_toolbar_frame) - kCollapsedToolbarHeight,
-      kContainerViewWidth, kCollapsedToolbarHeight);
-  EXPECT_TRUE(CGRectEqualToRect(collapsing_toolbar_frame,
-                                collapsing_toolbar_view().frame));
-}
-
-// Tests that the container and the top toolbar's height accounts for the non-
-// collapsing safe area.
-TEST_F(ToolbarContainerViewControllerTest, NonCollapsingTopSafeArea) {
-  const UIEdgeInsets kSafeInsets = UIEdgeInsetsMake(100.0, 0.0, 0.0, 0.0);
-  SetCollapsesSafeArea(false);
-  SetSafeAreaInsets(kSafeInsets);
-  SetOrientation(ToolbarContainerOrientation::kTopToBottom);
-  EXPECT_EQ(GetExpectedContainerHeight(),
-            CGRectGetHeight(container_view().bounds));
-  SetExpanded(true);
-  TestToolbarView* toolbar_view = first_toolbar_view();
-  EXPECT_EQ(toolbar_view.expandedToolbarHeight + GetAdditionalStackHeight(),
-            CGRectGetHeight(toolbar_view.frame));
-  SetExpanded(false);
-  EXPECT_EQ(toolbar_view.collapsedToolbarHeight + GetAdditionalStackHeight(),
-            CGRectGetHeight(toolbar_view.frame));
-}
-
-// Tests that the container and the bottom toolbar's height accounts for the
-// non-collapsing safe area.
-TEST_F(ToolbarContainerViewControllerTest, NonCollapsingBottomSafeArea) {
-  const UIEdgeInsets kSafeInsets = UIEdgeInsetsMake(100.0, 0.0, 0.0, 0.0);
-  SetCollapsesSafeArea(false);
-  SetSafeAreaInsets(kSafeInsets);
-  SetOrientation(ToolbarContainerOrientation::kBottomToTop);
-  EXPECT_EQ(GetExpectedContainerHeight(),
-            CGRectGetHeight(container_view().bounds));
-  SetExpanded(true);
-  TestToolbarView* toolbar_view = first_toolbar_view();
-  EXPECT_EQ(toolbar_view.expandedToolbarHeight + GetAdditionalStackHeight(),
-            CGRectGetHeight(toolbar_view.frame));
-  SetExpanded(false);
-  EXPECT_EQ(toolbar_view.collapsedToolbarHeight + GetAdditionalStackHeight(),
-            CGRectGetHeight(toolbar_view.frame));
-}
-
-// Tests that the container and the top toolbar's height accounts for the
-// collapsing safe area.
-TEST_F(ToolbarContainerViewControllerTest, CollapsingTopSafeArea) {
-  const UIEdgeInsets kSafeInsets = UIEdgeInsetsMake(100.0, 0.0, 0.0, 0.0);
-  SetCollapsesSafeArea(true);
-  SetSafeAreaInsets(kSafeInsets);
-  SetOrientation(ToolbarContainerOrientation::kTopToBottom);
-  EXPECT_EQ(GetExpectedContainerHeight(),
-            CGRectGetHeight(container_view().bounds));
-  SetExpanded(true);
-  TestToolbarView* toolbar_view = first_toolbar_view();
-  EXPECT_EQ(toolbar_view.expandedToolbarHeight + GetAdditionalStackHeight(),
-            CGRectGetHeight(toolbar_view.frame));
-  SetExpanded(false);
-  EXPECT_EQ(toolbar_view.collapsedToolbarHeight,
-            CGRectGetHeight(toolbar_view.frame));
-}
-
-// Tests that the container and the bottom toolbar's height accounts for the
-// collapsing safe area.
-TEST_F(ToolbarContainerViewControllerTest, CollapsingBottomSafeArea) {
-  const UIEdgeInsets kSafeInsets = UIEdgeInsetsMake(100.0, 0.0, 0.0, 0.0);
-  SetCollapsesSafeArea(true);
-  SetSafeAreaInsets(kSafeInsets);
-  SetOrientation(ToolbarContainerOrientation::kBottomToTop);
-  EXPECT_EQ(GetExpectedContainerHeight(),
-            CGRectGetHeight(container_view().bounds));
-  SetExpanded(true);
-  TestToolbarView* toolbar_view = first_toolbar_view();
-  EXPECT_EQ(toolbar_view.expandedToolbarHeight + GetAdditionalStackHeight(),
-            CGRectGetHeight(toolbar_view.frame));
-  SetExpanded(false);
-  EXPECT_EQ(toolbar_view.collapsedToolbarHeight,
-            CGRectGetHeight(toolbar_view.frame));
-}
+INSTANTIATE_TEST_CASE_P(,
+                        ToolbarContainerViewControllerTest,
+                        ::testing::Range(kEmptyConfig,
+                                         kToolbarContainerConfigMax));
