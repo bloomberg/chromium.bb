@@ -129,7 +129,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   // Creates the audio output stream. This must be called before Play(). Returns
   // true if successful, and Play() may commence.
-  bool Create(bool is_for_device_change);
+  bool CreateStream();
 
   // Starts the playback of this audio output stream.
   void Play();
@@ -189,6 +189,13 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   enum { kPowerMeasurementTimeConstantMillis = 10 };
 
  private:
+  // Possible reasons for calling RecreateStream().
+  enum class RecreateReason : int8_t {
+    INITIAL_STREAM = 0,
+    DEVICE_CHANGE = 1,
+    LOCAL_OUTPUT_TOGGLE = 2,
+  };
+
   // Used to store various stats about a stream. The lifetime of this object is
   // from play until pause. The underlying physical stream may be changed when
   // resuming playback, hence separate stats are logged for each play/pause
@@ -218,6 +225,15 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
     base::OneShotTimer wedge_timer_;
   };
 
+  // Helper to call RecreateStream(), but with a scoped "CreateTime" UMA timing
+  // measurement surrounding the call.
+  void RecreateStreamWithTimingUMA(RecreateReason reason);
+
+  // Closes the current stream and re-creates a new one via the AudioManager. If
+  // reason is LOCAL_OUTPUT_TOGGLE, the new stream will be a fake one and UMA
+  // counts will not be incremented.
+  void RecreateStream(RecreateReason reason);
+
   // Notifies the EventHandler that an error has occurred.
   void ReportError();
 
@@ -233,6 +249,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   // Log the current average power level measured by power_monitor_.
   void LogAudioPowerLevel(const char* call_name);
+
+  // Helper called by StartMuting() and StopMuting() to execute the stream
+  // change.
+  void ToggleLocalOutput();
 
   media::AudioManager* const audio_manager_;
   const media::AudioParameters params_;

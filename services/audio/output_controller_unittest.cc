@@ -344,7 +344,7 @@ class OutputControllerTest : public ::testing::Test {
   }
 
   void Create() {
-    controller_->Create(false);
+    controller_->CreateStream();
     controller_->SetVolume(kTestVolume);
   }
 
