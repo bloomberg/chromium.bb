@@ -203,6 +203,10 @@ extern const char kOutOfWebFullscreenDescription[];
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
+// Title and description for the flag to ignore viewport scale limits.
+extern const char kIgnoresViewportScaleLimitsName[];
+extern const char kIgnoresViewportScaleLimitsDescription[];
+
 // Title and description for the flag to enable WKBackForwardList based
 // navigation manager.
 extern const char kSlimNavigationManagerName[];
