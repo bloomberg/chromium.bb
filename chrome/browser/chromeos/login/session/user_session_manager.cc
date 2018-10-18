@@ -1935,7 +1935,8 @@ void UserSessionManager::OnEasyUnlockKeyOpsFinished(const std::string& user_id,
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
       AccountId::FromUserEmail(user_id));
   EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
-  easy_unlock_service->CheckCryptohomeKeysAndMaybeHardlock();
+  if (easy_unlock_service)
+    easy_unlock_service->CheckCryptohomeKeysAndMaybeHardlock();
 
   NotifyEasyUnlockKeyOpsFinished();
 }
