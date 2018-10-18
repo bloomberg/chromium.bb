@@ -155,6 +155,19 @@ class TastTest(RemoteTest):
     return self._suite_name
 
   def build_test_command(self):
+    if '--gtest_filter=%s' % self.suite_name in self._additional_args:
+      logging.info(
+          'GTest filtering not supported for tast tests. The '
+          '--gtest_filter arg will be ignored.')
+      self._additional_args.remove('--gtest_filter=%s' % self.suite_name)
+    if any(arg.startswith('--gtest_repeat') for arg in self._additional_args):
+      logging.info(
+          '--gtest_repeat not supported for tast tests. The arg will be '
+          'ignored.')
+      self._additional_args = [
+          arg for arg in self._additional_args if not arg.startswith(
+              '--gtest_repeat')]
+
     if self._additional_args:
       raise TestFormatError(
           'Tast tests should not have additional args: %s' % (
@@ -332,6 +345,13 @@ class BrowserSanityTest(RemoteTest):
           'GTest filtering not supported for the sanity test. The '
           '--gtest_filter arg will be ignored.')
       self._additional_args.remove('--gtest_filter=%s' % SANITY_TEST_TARGET)
+    if any(arg.startswith('--gtest_repeat') for arg in self._additional_args):
+      logging.info(
+          '--gtest_repeat not supported for sanity test. The arg will be '
+          'ignored.')
+      self._additional_args = [
+          arg for arg in self._additional_args if not arg.startswith(
+              '--gtest_repeat')]
 
     if self._additional_args:
       raise TestFormatError(
