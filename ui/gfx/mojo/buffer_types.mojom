@@ -4,6 +4,8 @@
 
 module gfx.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
+
 // gfx::BufferFormat
 enum BufferFormat {
   R_8,
@@ -95,7 +97,7 @@ struct GpuMemoryBufferHandle {
   // desired platform.
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;
-  handle<shared_buffer>? shared_memory_handle;
+  mojo_base.mojom.UnsafeSharedMemoryRegion? shared_memory_handle;
   uint32 offset;
   uint32 stride;
   NativePixmapHandle? native_pixmap_handle;

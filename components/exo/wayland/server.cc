@@ -712,9 +712,17 @@ void shm_create_pool(wl_client* client,
                      uint32_t id,
                      int fd,
                      int32_t size) {
+  static const auto kMode =
+      base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+  auto fd_pair = base::subtle::ScopedFDPair(base::ScopedFD(fd),
+                                            base::ScopedFD() /* readonly_fd */);
+  auto guid = base::UnguessableToken::Create();
+  auto platform_shared_memory = base::subtle::PlatformSharedMemoryRegion::Take(
+      std::move(fd_pair), kMode, size, guid);
   std::unique_ptr<SharedMemory> shared_memory =
       GetUserDataAs<Display>(resource)->CreateSharedMemory(
-          base::SharedMemoryHandle::ImportHandle(fd, size), size);
+          base::UnsafeSharedMemoryRegion::Deserialize(
+              std::move(platform_shared_memory)));
   if (!shared_memory) {
     wl_resource_post_no_memory(resource);
     return;

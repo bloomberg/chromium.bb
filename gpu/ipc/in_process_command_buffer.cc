@@ -1063,7 +1063,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
       }
       scoped_refptr<gl::GLImageSharedMemory> image(
           new gl::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format, handle.offset,
+      if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                              handle.stride)) {
         LOG(ERROR) << "Failed to initialize image.";
         return;

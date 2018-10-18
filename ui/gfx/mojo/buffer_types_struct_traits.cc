@@ -5,6 +5,7 @@
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
 
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/shared_memory_mojom_traits.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_ANDROID)
@@ -60,15 +61,13 @@ bool StructTraits<
 #endif
 }
 
-mojo::ScopedSharedBufferHandle
+base::UnsafeSharedMemoryRegion
 StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
              gfx::GpuMemoryBufferHandle>::
-    shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
+    shared_memory_handle(gfx::GpuMemoryBufferHandle& handle) {
   if (handle.type != gfx::SHARED_MEMORY_BUFFER)
-    return mojo::ScopedSharedBufferHandle();
-  return mojo::WrapSharedMemoryHandle(
-      handle.handle, handle.handle.GetSize(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+    return base::UnsafeSharedMemoryRegion();
+  return std::move(handle.region);
 }
 
 const gfx::NativePixmapHandle&
@@ -143,13 +142,8 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     return false;
 
   if (out->type == gfx::SHARED_MEMORY_BUFFER) {
-    mojo::ScopedSharedBufferHandle handle = data.TakeSharedMemoryHandle();
-    if (handle.is_valid()) {
-      MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
-          std::move(handle), &out->handle, nullptr, nullptr);
-      if (unwrap_result != MOJO_RESULT_OK)
-        return false;
-    }
+    if (!data.ReadSharedMemoryHandle(&out->region))
+      return false;
 
     out->offset = data.offset();
     out->stride = data.stride();
