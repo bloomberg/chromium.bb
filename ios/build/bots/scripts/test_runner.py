@@ -1032,7 +1032,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
   def set_up(self):
     '''Performs setup actions which must occur prior to every test launch.'''
     super(WprProxySimulatorTestRunner, self).set_up()
-    self.download_replays()
 
     cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
 
@@ -1210,8 +1209,8 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     '''Starts tsproxy and routes the machine's traffic through tsproxy.'''
 
     # Stops any straggling instances of WPRgo that may hog ports 8080/8081
-    subprocess.check_call('lsof -ti:8080 | xargs kill -9')
-    subprocess.check_call('lsof -ti:8081| xargs kill -9')
+    subprocess.check_call('lsof -ti:8080 | xargs kill -9', shell=True)
+    subprocess.check_call('lsof -ti:8081| xargs kill -9', shell=True)
 
     # We route all network adapters through the proxy, since it is easier than
     # determining which network adapter is being used currently.
@@ -1267,7 +1266,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     '''
     self.wprgo_process = subprocess.Popen(
         [
-          'wpr', 'run', 'src/wpr.go', 'replay', '--http_port=8080',
+          './wpr', 'replay', '--http_port=8080',
           '--https_port=8081', replay_path
         ],
         cwd='{}/web_page_replay_go/'.format(self.wpr_tools_path),
@@ -1280,21 +1279,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     '''Stops serving website replays using WprGo.'''
     if self.wprgo_process != None:
       os.kill(self.wprgo_process.pid, signal.SIGINT)
-
-  def download_replays(self):
-    '''Downloads the replay files from GCS to the replay path folder.
-
-    We store the website replays in GCS due to size; sha1 files in the
-    replay path folder correspond to each of these replays, and running this
-    script will populate those replay files.'''
-
-    subprocess.check_call(
-      [
-        'download_from_google_storage.py',
-        '--bucket', 'chrome-test-web-page-replay-captures/autofill',
-        '--directory', self.replay_path
-      ],
-      cwd=self.wpr_tools_path)
 
 
 class DeviceTestRunner(TestRunner):
