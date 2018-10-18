@@ -18,7 +18,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   memcpy(packet->data(), data, size);
   base::Optional<net::DnsQuery> query;
   query.emplace(packet);
-  if (!query->Parse()) {
+  if (!query->Parse(size)) {
     return 0;
   }
   net::DnsResponse response(query->id(), true /* is_authoritative */,

@@ -27,7 +27,7 @@ bool ParseAndCreateDnsQueryFromRawPacket(const uint8_t* data,
   auto packet = base::MakeRefCounted<IOBufferWithSize>(length);
   memcpy(packet->data(), data, length);
   out->reset(new DnsQuery(packet));
-  return (*out)->Parse();
+  return (*out)->Parse(length);
 }
 
 // This includes \0 at the end.

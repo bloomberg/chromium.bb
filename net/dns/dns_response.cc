@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
@@ -227,6 +229,9 @@ DnsResponse::DnsResponse(
     io_buffer_size_ = 0;
     return;
   }
+  // Ensure we don't have any remaining uninitialized bytes in the buffer.
+  DCHECK(!writer.remaining());
+  memset(writer.ptr(), 0, writer.remaining());
   if (has_query) {
     InitParse(io_buffer_size_, query.value());
   } else {
@@ -257,7 +262,7 @@ DnsResponse::~DnsResponse() = default;
 
 bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
   // Response includes query, it should be at least that size.
-  if (nbytes < static_cast<size_t>(query.io_buffer()->size()) ||
+  if (nbytes < base::checked_cast<size_t>(query.io_buffer()->size()) ||
       nbytes > io_buffer_size_) {
     return false;
   }

@@ -732,7 +732,7 @@ TEST(DnsResponseWriteTest,
   // buf contains 10 extra zero bytes.
   base::Optional<DnsQuery> query;
   query.emplace(buf);
-  query->Parse();
+  query->Parse(buf_size);
   net::DnsResourceRecord answer;
   answer.name = dotted_name;
   answer.type = dns_protocol::kTypeA;
