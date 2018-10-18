@@ -27,11 +27,15 @@ js_library("closure_compile_externs") {
 }
 
 js_library("cast_extension_discoverer") {
+  deps = [
+    "..:error_util",
+  ]
 }
 
 js_library("cast_video_element") {
   deps = [
     ":media_manager",
+    "..:error_util",
     "..:video_player_metrics",
     "//ui/webui/resources/js/cr:event_target",
   ]

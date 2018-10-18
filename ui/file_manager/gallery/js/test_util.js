@@ -3,6 +3,17 @@
 // found in the LICENSE file.
 
 /**
+ * This variable is checked in SelectFileDialogExtensionBrowserTest.
+ * @type {number}
+ */
+window.JSErrorCount = 0;
+
+/**
+ * Counts uncaught exceptions.
+ */
+window.onerror = function() { window.JSErrorCount++; };
+
+/**
  * Opens the gallery window and waits until it is ready.
  *
  * @param {Array<string>} urls URLs to be opened.

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <include src="../../base/js/error_counter.js">
 // <include src="../../../webui/resources/js/cr.js">
 // <include src="../../../webui/resources/js/cr/event_target.js">
 // <include src="../../../webui/resources/js/cr/ui/array_data_model.js">

@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":audio_player",
     ":background",
     ":closure_compile_externs",
+    ":error_util",
     ":metadata_worker",
   ]
 }
@@ -40,6 +41,9 @@ js_library("background") {
     "../../file_manager/common/js:file_type",
     "../../file_manager/common/js:util",
   ]
+}
+
+js_library("error_util") {
 }
 
 js_library("metadata_worker") {

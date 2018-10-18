@@ -10,7 +10,6 @@
  * Note that adding a script in this file results in being loaded in each app.
  */
 
-// <include src="../../../base/js/error_counter.js">
 // <include src="../../common/js/async_util.js">
 // <include src="../../common/js/file_type.js">
 // <include src="../../common/js/metrics_base.js">
