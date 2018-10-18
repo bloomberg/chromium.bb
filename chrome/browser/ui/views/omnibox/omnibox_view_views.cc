@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -314,6 +315,15 @@ void OmniboxViewViews::RevertAll() {
 }
 
 void OmniboxViewViews::SetFocus() {
+  // Temporarily reveal the top-of-window views (if not already revealed) so
+  // that the location bar view is visible and is considered focusable. When it
+  // actually receives focus, ImmersiveFocusWatcher will add another lock to
+  // keep it revealed.
+  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+      BrowserView::GetBrowserViewForBrowser(location_bar_view_->browser())
+          ->immersive_mode_controller()
+          ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
+
   RequestFocus();
   // Restore caret visibility if focus is explicitly requested. This is
   // necessary because if we already have invisible focus, the RequestFocus()
