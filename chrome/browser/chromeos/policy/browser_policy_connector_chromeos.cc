@@ -246,6 +246,11 @@ bool BrowserPolicyConnectorChromeOS::IsEnterpriseManaged() const {
   return chromeos::InstallAttributes::Get()->IsEnterpriseManaged();
 }
 
+bool BrowserPolicyConnectorChromeOS::HasMachineLevelPolicies() {
+  NOTREACHED() << "This method is only defined for desktop Chrome";
+  return false;
+}
+
 bool BrowserPolicyConnectorChromeOS::IsCloudManaged() const {
   return chromeos::InstallAttributes::Get()->IsCloudManaged();
 }
