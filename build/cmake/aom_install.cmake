@@ -32,8 +32,8 @@ macro(setup_aom_install_targets)
     set(AOM_PKG_CONFIG_FILE "${AOM_CONFIG_DIR}/aom.pc")
 
     # Create a dummy library target for creating aom.pc.
+    create_dummy_source_file(aom_pc c AOM_PKG_CONFIG_SOURCES)
     add_library(aom_pc ${AOM_PKG_CONFIG_SOURCES})
-    add_dummy_source_file_to_target(aom_pc c)
 
     # Setup a rule to generate aom.pc.
     add_custom_command(OUTPUT "${AOM_PKG_CONFIG_FILE}"
