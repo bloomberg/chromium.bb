@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,6 +75,10 @@ void TryLaunchFirstRunDialog(Profile* profile) {
     LaunchDialogForProfile(profile);
     return;
   }
+
+  // TabletModeClient does not exist in some tests.
+  if (TabletModeClient::Get() && TabletModeClient::Get()->tablet_mode_enabled())
+    return;
 
   if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
           ->IsManaged())
