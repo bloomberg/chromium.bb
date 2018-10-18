@@ -103,15 +103,21 @@ void UiControllerAndroid::UpdateScripts(
     const std::vector<ScriptHandle>& scripts) {
   std::vector<std::string> script_paths;
   std::vector<std::string> script_names;
-  for (const auto& script : scripts) {
+  bool* script_highlights = new bool[scripts.size()];
+  for (size_t i = 0; i < scripts.size(); ++i) {
+    const auto& script = scripts[i];
     script_paths.emplace_back(script.path);
     script_names.emplace_back(script.name);
+    script_highlights[i] = script.highlight;
   }
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onUpdateScripts(
       env, java_autofill_assistant_ui_controller_,
       base::android::ToJavaArrayOfStrings(env, script_names),
-      base::android::ToJavaArrayOfStrings(env, script_paths));
+      base::android::ToJavaArrayOfStrings(env, script_paths),
+      base::android::ToJavaBooleanArray(env, script_highlights,
+                                        scripts.size()));
+  delete[] script_highlights;
 }
 
 void UiControllerAndroid::OnScriptSelected(

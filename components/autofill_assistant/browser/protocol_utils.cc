@@ -84,6 +84,7 @@ bool ProtocolUtils::ParseScripts(
     script->handle.name = presentation.name();
     script->handle.autostart = presentation.autostart();
     script->handle.initial_prompt = presentation.initial_prompt();
+    script->handle.highlight = presentation.highlight();
     script->precondition = ScriptPrecondition::FromProto(
         script_proto.path(), presentation.precondition());
     script->priority = presentation.priority();

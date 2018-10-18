@@ -58,6 +58,9 @@ message SupportedScriptProto {
     // priority 1.
     optional int32 priority = 5;
 
+    // Whether the script should be highlighted.
+    optional bool highlight = 7;
+
     // When set to true this script can be run in 'autostart mode'. Script won't
     // be shown.
     optional bool autostart = 8;
