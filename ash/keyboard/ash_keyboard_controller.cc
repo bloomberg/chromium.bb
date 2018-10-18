@@ -63,8 +63,8 @@ void AshKeyboardController::EnableKeyboard() {
   std::unique_ptr<keyboard::KeyboardUI> keyboard_ui =
       Shell::Get()->shell_delegate()->CreateKeyboardUI();
   DCHECK(keyboard_ui);
-  keyboard_controller_->EnableKeyboard(
-      std::move(keyboard_ui), Shell::Get()->virtual_keyboard_controller());
+  keyboard_controller_->EnableKeyboard(std::move(keyboard_ui),
+                                       virtual_keyboard_controller_.get());
   ActivateKeyboard();
 }
 
@@ -75,6 +75,14 @@ void AshKeyboardController::DisableKeyboard() {
   }
 
   keyboard_controller_->DisableKeyboard();
+}
+
+void AshKeyboardController::CreateVirtualKeyboard() {
+  virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
+}
+
+void AshKeyboardController::DestroyVirtualKeyboard() {
+  virtual_keyboard_controller_.reset();
 }
 
 void AshKeyboardController::AddObserver(

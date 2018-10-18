@@ -26,6 +26,7 @@ class KeyboardController;
 namespace ash {
 
 class SessionController;
+class VirtualKeyboardController;
 
 // Contains and observes a keyboard::KeyboardController instance. Ash specific
 // behavior, including implementing the mojo interface, is implemented in this
@@ -49,6 +50,12 @@ class ASH_EXPORT AshKeyboardController
   // Disables the keyboard.
   void DisableKeyboard();
 
+  // Create or destroy the virtual keyboard. Called from Shell. TODO(stevenjb):
+  // Fix dependencies so that the virtual keyboard can be created with the
+  // keyboard controller.
+  void CreateVirtualKeyboard();
+  void DestroyVirtualKeyboard();
+
   // mojom::KeyboardController:
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
   void SetKeyboardConfig(
@@ -67,6 +74,10 @@ class ASH_EXPORT AshKeyboardController
     return keyboard_controller_.get();
   }
 
+  VirtualKeyboardController* virtual_keyboard_controller() {
+    return virtual_keyboard_controller_.get();
+  }
+
  private:
   // Ensures that the keyboard controller is activated for the primary window.
   void ActivateKeyboard();
@@ -83,6 +94,7 @@ class ASH_EXPORT AshKeyboardController
 
   SessionController* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
+  std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   mojo::BindingSet<mojom::KeyboardController> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::KeyboardControllerObserver> observers_;
 

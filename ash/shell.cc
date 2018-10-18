@@ -56,7 +56,6 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_focus_handler.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
-#include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
@@ -755,7 +754,7 @@ Shell::~Shell() {
   // Destroy the virtual keyboard controller before the tablet mode controller
   // since the latters destructor triggers events that the former is listening
   // to but no longer cares about.
-  virtual_keyboard_controller_.reset();
+  ash_keyboard_controller_->DestroyVirtualKeyboard();
 
   // Depends on |tablet_mode_controller_|.
   shelf_controller_->Shutdown();
@@ -1227,9 +1226,7 @@ void Shell::Init(
                               ? std::make_unique<AssistantController>()
                               : nullptr;
 
-  // Needs to be created after InitDisplays() since it may cause the virtual
-  // keyboard to be deployed.
-  virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
+  ash_keyboard_controller_->CreateVirtualKeyboard();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);

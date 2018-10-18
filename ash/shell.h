@@ -187,7 +187,6 @@ class ToastManager;
 class TouchDevicesController;
 class TrayAction;
 class TrayBluetoothHelper;
-class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
 class VoiceInteractionController;
@@ -531,9 +530,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
-  VirtualKeyboardController* virtual_keyboard_controller() {
-    return virtual_keyboard_controller_.get();
-  }
   VoiceInteractionController* voice_interaction_controller() {
     return voice_interaction_controller_.get();
   }
@@ -830,7 +826,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
   std::unique_ptr<AshKeyboardController> ash_keyboard_controller_;
-  std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   // Controls video output device state.
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
   std::unique_ptr<DisplayOutputProtection> display_output_protection_;
