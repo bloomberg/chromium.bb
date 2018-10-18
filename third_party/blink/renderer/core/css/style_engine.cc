@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -842,6 +843,24 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
                                                          element);
 }
 
+namespace {
+
+bool HasAttributeDependentGeneratedContent(const Element& element) {
+  if (PseudoElement* before = element.GetPseudoElement(kPseudoIdBefore)) {
+    const ComputedStyle* style = before->GetComputedStyle();
+    if (style && style->HasAttrContent())
+      return true;
+  }
+  if (PseudoElement* after = element.GetPseudoElement(kPseudoIdAfter)) {
+    const ComputedStyle* style = after->GetComputedStyle();
+    if (style && style->HasAttrContent())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 void StyleEngine::AttributeChangedForElement(
     const QualifiedName& attribute_name,
     Element& element) {
@@ -853,6 +872,13 @@ void StyleEngine::AttributeChangedForElement(
       invalidation_lists, element, attribute_name);
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          element);
+
+  if (!element.NeedsStyleRecalc() &&
+      HasAttributeDependentGeneratedContent(element)) {
+    element.SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::FromAttribute(attribute_name));
+  }
 }
 
 void StyleEngine::IdChangedForElement(const AtomicString& old_id,
