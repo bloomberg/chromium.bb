@@ -191,6 +191,10 @@ bool FakeDownloadItem::IsParallelDownload() const {
   return is_parallel_download_;
 }
 
+download::DownloadItem::DownloadType FakeDownloadItem::GetDownloadType() const {
+  return download::DownloadItem::DownloadType::TYPE_ACTIVE_DOWNLOAD;
+}
+
 void FakeDownloadItem::SetIsDone(bool is_done) {
   is_done_ = is_done;
 }

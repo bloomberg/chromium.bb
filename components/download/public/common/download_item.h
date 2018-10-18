@@ -442,6 +442,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // parallelizable.
   virtual bool IsParallelDownload() const = 0;
 
+  // Gets the DownloadType of this item.
+  virtual DownloadType GetDownloadType() const = 0;
+
   // External state transitions/setters ----------------------------------------
 
   // TODO(rdsmith): These should all be removed; the download item should

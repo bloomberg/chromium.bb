@@ -973,6 +973,10 @@ bool DownloadItemImpl::IsParallelDownload() const {
   return is_parallelizable && download::IsParallelDownloadEnabled();
 }
 
+DownloadItem::DownloadType DownloadItemImpl::GetDownloadType() const {
+  return download_type_;
+}
+
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
                                                DownloadInterruptReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1283,6 +1287,7 @@ void DownloadItemImpl::Init(bool active,
                             DownloadItem::DownloadType download_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  download_type_ = download_type;
   std::string file_name;
   if (download_type == TYPE_HISTORY_IMPORT) {
     // target_path_ works for History and Save As versions.

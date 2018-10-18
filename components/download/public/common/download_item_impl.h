@@ -276,6 +276,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   base::Time GetLastAccessTime() const override;
   bool IsTransient() const override;
   bool IsParallelDownload() const override;
+  DownloadType GetDownloadType() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type,
                                DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;
@@ -769,6 +770,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Source of the download, used in metrics.
   DownloadSource download_source_ = DownloadSource::UNKNOWN;
+
+  DownloadType download_type_ = DownloadType::TYPE_ACTIVE_DOWNLOAD;
 
   THREAD_CHECKER(thread_checker_);
 
