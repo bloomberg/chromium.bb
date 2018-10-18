@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.Gravity;
@@ -27,6 +28,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 
@@ -71,14 +73,24 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
         mDialog.setOnDismissListener(dismissListener);
         mDialog.addContentView(mFullContainer,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-
         Window dialogWindow = mDialog.getWindow();
         dialogWindow.setGravity(Gravity.CENTER);
         dialogWindow.setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        setVisibleStatusBarIconColor(dialogWindow);
 
         mAnimatorTranslation =
                 activity.getResources().getDimensionPixelSize(R.dimen.payments_ui_translation);
+    }
+
+    /**
+     * Makes sure that the color of the icons in the status bar makes the icons visible.
+     * @param window The window whose status bar icon color is being set.
+     */
+    /* package */ static void setVisibleStatusBarIconColor(Window window) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        ApiCompatibilityUtils.setStatusBarIconColor(window.getDecorView().getRootView(),
+                !ColorUtils.shouldUseLightForegroundOnBackground(window.getStatusBarColor()));
     }
 
     /** @param bottomSheetView The view to show in the bottom sheet. */
