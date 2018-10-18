@@ -18,7 +18,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -5385,93 +5384,6 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEventsHandled) {
   ui::KeyEvent key_event2(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   view_->OnKeyEvent(&key_event2);
   EXPECT_FALSE(key_event2.handled());
-}
-
-TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncHandled) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  bool async_callback_run = false;
-  bool async_callback_result = false;
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::KeyEvent::KeyDispatcherApi(&key_event1)
-      .set_async_callback(base::BindLambdaForTesting([&](bool handled) {
-        async_callback_result = handled;
-        async_callback_run = true;
-      }));
-  view_->OnKeyEvent(&key_event1);
-  // Normally event should be handled.
-  EXPECT_TRUE(key_event1.handled());
-  // The async-callback should have been obtained, but not run yet.
-  EXPECT_FALSE(key_event1.HasAsyncCallback());
-  EXPECT_FALSE(async_callback_run);
-  widget_host_->FlushForTesting();
-
-  // Run the event callback, which should result in running the callback
-  // attached to the event.
-  MockWidgetInputHandler::MessageVector events =
-      GetAndResetDispatchedMessages();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_EQ("RawKeyDown", GetMessageNames(events));
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_TRUE(async_callback_run);
-  EXPECT_TRUE(async_callback_result);
-}
-
-TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncUnhandled) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  bool async_callback_run = false;
-  bool async_callback_result = false;
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::KeyEvent::KeyDispatcherApi(&key_event1)
-      .set_async_callback(base::BindLambdaForTesting([&](bool handled) {
-        async_callback_result = handled;
-        async_callback_run = true;
-      }));
-  view_->OnKeyEvent(&key_event1);
-  // Normally event should be handled.
-  EXPECT_TRUE(key_event1.handled());
-  // The async-callback should have been obtained, but not run yet.
-  EXPECT_FALSE(key_event1.HasAsyncCallback());
-  EXPECT_FALSE(async_callback_run);
-  widget_host_->FlushForTesting();
-
-  // Run the event callback, which should result in running the callback
-  // attached to the event.
-  MockWidgetInputHandler::MessageVector events =
-      GetAndResetDispatchedMessages();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_EQ("RawKeyDown", GetMessageNames(events));
-  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_TRUE(async_callback_run);
-  EXPECT_FALSE(async_callback_result);
-}
-
-TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncNotifiedWhenRouterChanges) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-  bool async_callback_run = false;
-  bool async_callback_result = false;
-  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::KeyEvent::KeyDispatcherApi(&key_event1)
-      .set_async_callback(base::BindLambdaForTesting([&](bool handled) {
-        async_callback_result = handled;
-        async_callback_run = true;
-      }));
-  view_->OnKeyEvent(&key_event1);
-  // Normally event should be handled.
-  EXPECT_TRUE(key_event1.handled());
-  // The async-callback should have been obtained, but not run yet.
-  EXPECT_FALSE(key_event1.HasAsyncCallback());
-  EXPECT_FALSE(async_callback_run);
-
-  // RendererExited() should result in running the callback.
-  widget_host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_TRUE(async_callback_run);
-  EXPECT_FALSE(async_callback_result);
-
-  // RendererExited() results in destroying the view.
-  view_ = nullptr;
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
