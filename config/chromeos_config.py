@@ -151,17 +151,6 @@ def GeneralTemplates(site_config, ge_build_config):
   """
   is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
   hw_test_list = HWTestList(ge_build_config)
-
-  # TryjobMirrors uses hw_tests_override to ensure that tryjobs run all suites
-  # rather than just the ones that are assigned to the board being used. Add
-  # bvt-tast-cq here since it includes system, Chrome, and Android tests.
-  site_config.AddTemplate(
-      'default_hw_tests_override',
-      hw_tests_override=hw_test_list.DefaultList(
-          pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False),
-  )
-
   # Config parameters for builders that do not run tests on the builder.
   site_config.AddTemplate(
       'no_unittest_builder',
@@ -186,7 +175,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'full',
-      site_config.templates.default_hw_tests_override,
       # Full builds are test builds to show that we can build from scratch,
       # so use settings to build from scratch, and archive the results.
       usepkg_build_packages=False,
@@ -236,7 +224,6 @@ def GeneralTemplates(site_config, ge_build_config):
   # For that reason, they don't uprev.
   site_config.AddTemplate(
       'incremental',
-      site_config.templates.default_hw_tests_override,
       display_label=config_lib.DISPLAY_LABEL_INCREMENATAL,
       build_type=constants.INCREMENTAL_TYPE,
       chroot_replace=False,
@@ -415,7 +402,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'asan',
-      site_config.templates.default_hw_tests_override,
       profile='asan',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='16gb-rootfs',
@@ -432,7 +418,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'ubsan',
-      site_config.templates.default_hw_tests_override,
       profile='ubsan',
       # Need larger rootfs for ubsan builds.
       disk_layout='16gb-rootfs',
@@ -445,9 +430,7 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'fuzzer',
-      site_config.templates.default_hw_tests_override,
       site_config.templates.full,
-      site_config.templates.no_hwtest_builder,
       display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       profile='fuzzer',
       chrome_sdk=False,
@@ -463,7 +446,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'telemetry',
-      site_config.templates.default_hw_tests_override,
       display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
       build_type=constants.INCREMENTAL_TYPE,
       uprev=False,
@@ -477,7 +459,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'external_chromium_pfq',
-      site_config.templates.default_hw_tests_override,
       build_type=constants.CHROME_PFQ_TYPE,
       uprev=False,
       # Increase the master timeout to 6 hours crbug.com/611139.
@@ -639,7 +620,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'test_ap',
       site_config.templates.internal,
       site_config.templates.no_vmtest_builder,
-      site_config.templates.default_hw_tests_override,
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.INCREMENTAL_TYPE,
       description='WiFi AP images used in testing',
@@ -667,7 +647,6 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.full,
       site_config.templates.official,
       site_config.templates.internal,
-      site_config.templates.default_hw_tests_override,
       display_label=config_lib.DISPLAY_LABEL_RELEASE,
       build_type=constants.CANARY_TYPE,
       chroot_use_image=False,
@@ -734,11 +713,6 @@ def GeneralTemplates(site_config, ge_build_config):
       afdo_update_ebuild=True,
 
       hw_tests=[hw_test_list.AFDORecordTest()],
-      hw_tests_override=[hw_test_list.AFDORecordTest(
-          pool=constants.HWTEST_TRYBOT_POOL,
-          file_bugs=False,
-          priority=constants.HWTEST_DEFAULT_PRIORITY,
-      )],
   )
 
   site_config.AddTemplate(
@@ -1400,24 +1374,17 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
-def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
-  """Create all build configs associated with the Android PFQ.
+def AndroidTemplates(site_config):
+  """Apply Android specific config to site_config
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
-    boards_dict: A dict mapping board types to board name collections.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-  hw_test_list = HWTestList(ge_build_config)
-
   # Generic template shared by all Android versions.
   site_config.AddTemplate(
       'generic_android_pfq',
       site_config.templates.no_vmtest_builder,
-      site_config.templates.default_hw_tests_override,
       build_type=constants.ANDROID_PFQ_TYPE,
       uprev=False,
       overlays=constants.BOTH_OVERLAYS,
@@ -1466,6 +1433,21 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       master=True,
       push_overlays=constants.BOTH_OVERLAYS,
   )
+
+
+def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
+  """Create all build configs associated with the Android PFQ.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    boards_dict: A dict mapping board types to board name collections.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  board_configs = CreateInternalBoardConfigs(
+      site_config, boards_dict, ge_build_config)
+  hw_test_list = HWTestList(ge_build_config)
+
 
   # Android PFQ masters.
   # Any additions of Android PFQ masters should be reflected by a
@@ -3731,6 +3713,8 @@ def GetConfig():
 
   GeneralTemplates(site_config, ge_build_config)
 
+  chromeos_test.GeneralTemplates(site_config, ge_build_config)
+
   ToolchainBuilders(site_config, boards_dict, ge_build_config)
 
   ReleaseBuilders(site_config, boards_dict, ge_build_config)
@@ -3752,6 +3736,10 @@ def GetConfig():
   FirmwareBuilders(site_config, boards_dict, ge_build_config)
 
   FactoryBuilders(site_config, boards_dict, ge_build_config)
+
+  AndroidTemplates(site_config)
+
+  chromeos_test.AndroidTemplates(site_config)
 
   AndroidPfqBuilders(site_config, boards_dict, ge_build_config)
 

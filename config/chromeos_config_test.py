@@ -645,6 +645,156 @@ def IncrementalBuilders(site_config):
   )
 
 
+def GeneralTemplates(site_config, ge_build_config):
+  """Apply test config to general templates
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  hw_test_list = HWTestList(ge_build_config)
+
+  # TryjobMirrors uses hw_tests_override to ensure that tryjobs run all suites
+  # rather than just the ones that are assigned to the board being used. Add
+  # bvt-tast-cq here since it includes system, Chrome, and Android tests.
+  site_config.AddTemplate(
+      'default_hw_tests_override',
+      hw_tests_override=hw_test_list.DefaultList(
+          pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False,
+      ),
+  )
+
+  site_config.templates.full.apply(
+      site_config.templates.default_hw_tests_override,
+      image_test=True,
+  )
+
+  site_config.templates.fuzzer.apply(
+      site_config.templates.default_hw_tests_override,
+      site_config.templates.no_hwtest_builder,
+      image_test=True,
+  )
+
+  # BEGIN asan
+  site_config.templates.asan.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.tot_asan_informational.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+  # END asan
+
+  # BEGIN Incremental
+  site_config.templates.incremental.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.internal_incremental.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+  # END Incremental
+
+  site_config.templates.telemetry.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  # BEGIN Chrome PFQ
+  site_config.templates.chrome_pfq.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.chrome_pfq_cheets_informational.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.chrome_pfq_informational.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.chrome_perf.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+  # END Chrome PFQ
+
+  # BEGIN Chromium PFQ
+  site_config.templates.chromium_pfq.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.chromium_pfq_informational.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+  # END Chromium PFQ
+
+  # BEGIN Release
+  site_config.templates.release.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.moblab_release.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.release_afdo.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.release_afdo_generate.apply(
+      site_config.templates.default_hw_tests_override,
+      hw_tests_override=[hw_test_list.AFDORecordTest(
+          pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False,
+          priority=constants.HWTEST_DEFAULT_PRIORITY,
+      )],
+  )
+
+  site_config.templates.release_afdo_use.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+  # END Release
+
+  site_config.templates.test_ap.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  # BEGIN Ubsan
+  site_config.templates.tot_ubsan_informational.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.ubsan.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+  # END Ubsan
+
+
+def AndroidTemplates(site_config):
+  """Apply test config to Android specific templates
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+  """
+  site_config.templates.generic_android_pfq.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.mst_android_pfq.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.nyc_android_pfq.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+  site_config.templates.pi_android_pfq.apply(
+      site_config.templates.default_hw_tests_override,
+  )
+
+
 def ApplyConfig(site_config, boards_dict, ge_build_config):
   """Apply test specific config to site_config
 
