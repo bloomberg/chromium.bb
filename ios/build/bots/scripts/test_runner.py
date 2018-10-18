@@ -1106,9 +1106,9 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
           for test_arg in self.test_args:
             recipe_cmd.extend(['-c', test_arg])
 
-          cmd.append(self.app_path)
+          recipe_cmd.append(self.app_path)
           if self.xctest_path:
-            cmd.append(self.xctest_path)
+            recipe_cmd.append(self.xctest_path)
 
           proc = subprocess.Popen(
               recipe_cmd,
