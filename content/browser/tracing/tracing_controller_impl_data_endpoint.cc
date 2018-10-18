@@ -90,7 +90,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   }
 
   bool OpenFileIfNeededOnBlockingThread() {
-    base::AssertBlockingAllowed();
+    base::AssertBlockingAllowedDeprecated();
     if (file_ != nullptr)
       return true;
     file_ = base::OpenFile(file_path_, "w");

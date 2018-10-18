@@ -102,7 +102,7 @@ std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
 
 // Return Volume UUID property of disk mounted as "/".
 std::string GetVolumeUUID() {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   std::string result;
   std::string bsd_name = FindBSDNameOfSystemDisk();
@@ -163,7 +163,7 @@ class MacAddressProcessor {
 
 std::string GetMacAddress(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   mach_port_t master_port;
   kern_return_t kr = IOMasterPort(MACH_PORT_NULL, &master_port);
@@ -213,7 +213,7 @@ std::string GetMacAddress(
 
 void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
                         const DeviceId::IdCallback& callback) {
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   std::string raw_device_id;
   std::string mac_address = GetMacAddress(is_valid_mac_address);

@@ -163,36 +163,30 @@ class ThreadTestHelper;
   {}
 #endif
 
+// TODO(etiennep): Add a meta-comment which collapses all of the comments below.
+
 // A "blocking call" refers to any call that causes the calling thread to wait
 // off-CPU. It includes but is not limited to calls that wait on synchronous
 // file I/O operations: read or write a file from disk, interact with a pipe or
 // a socket, rename or delete a file, enumerate files in a directory, etc.
 // Acquiring a low contention lock is not considered a blocking call.
 
-// Asserts that blocking calls are allowed in the current scope. Prefer using
-// ScopedBlockingCall instead, which also serves as a precise annotation of the
-// scope that may/will block.
-//
-// Style tip: It's best if you put AssertBlockingAllowed() checks as close to
-// the blocking call as possible. For example:
-//
-// void ReadFile() {
-//   PreWork();
-//
-//   base::AssertBlockingAllowed();
-//   fopen(...);
-//
-//   PostWork();
-// }
-//
-// void Bar() {
-//   ReadFile();
-// }
-//
-// void Foo() {
-//   Bar();
-// }
+namespace internal {
+
+// Asserts that blocking calls are allowed in the current scope. This is an
+// internal call, external code should use ScopedBlockingCall instead, which
+// serves as a precise annotation of the scope that may/will block.
 INLINE_IF_DCHECK_IS_OFF void AssertBlockingAllowed()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+}  // namespace internal
+
+// Asserts that blocking calls are allowed in the current scope.
+//
+// DEPRECATED: Use ScopedBlockingCall, which serves as a precise annotation of
+// the scope that may/will block.
+// TODO(etiennep): Complete migration and delete this method.
+INLINE_IF_DCHECK_IS_OFF void AssertBlockingAllowedDeprecated()
     EMPTY_BODY_IF_DCHECK_IS_OFF;
 
 // Disallows blocking on the current thread.
