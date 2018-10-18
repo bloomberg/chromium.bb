@@ -494,6 +494,13 @@
       'linux-win_cross-rel', # https://crbug.com/762167
     ],
   },
+  'extensions_browsertests': {
+    'modifications': {
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100, # https://crbug.com/876615
+      },
+    },
+  },
   'gin_unittests': {
     'remove_from': [
       # chromium.clang
