@@ -6,6 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -397,8 +398,10 @@ void ImeMenuTray::ShowKeyboardWithKeyset(
     chromeos::input_method::mojom::ImeKeyset keyset) {
   CloseBubble();
 
-  Shell::Get()->virtual_keyboard_controller()->ForceShowKeyboardWithKeyset(
-      keyset);
+  Shell::Get()
+      ->ash_keyboard_controller()
+      ->virtual_keyboard_controller()
+      ->ForceShowKeyboardWithKeyset(keyset);
 }
 
 bool ImeMenuTray::ShouldShowBottomButtons() {
