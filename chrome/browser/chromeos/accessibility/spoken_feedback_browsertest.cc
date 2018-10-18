@@ -32,6 +32,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
+#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -78,6 +79,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     AccessibilityManager::SetBrailleControllerForTest(nullptr);
+    AutomationManagerAura::GetInstance()->Disable();
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
