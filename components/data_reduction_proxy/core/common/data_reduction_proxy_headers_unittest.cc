@@ -603,6 +603,9 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
 }
 
 TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
+  const char kWarmupFetchCallbackEnabledParam[] =
+      "warmup_fetch_callback_enabled";
+
   const struct {
     const char* headers;
     std::map<std::string, std::string> feature_parameters;
@@ -611,7 +614,7 @@ TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
       {
           "HTTP/1.1 200 OK\n",
           {
-              {params::GetWarmupCallbackParamName(), "true"},
+              {kWarmupFetchCallbackEnabledParam, "true"},
               {params::GetMissingViaBypassParamName(), "true"},
           },
           BYPASS_EVENT_TYPE_MAX,
@@ -619,7 +622,7 @@ TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
       {
           "HTTP/1.1 200 OK\n",
           {
-              {params::GetWarmupCallbackParamName(), "true"},
+              {kWarmupFetchCallbackEnabledParam, "true"},
               {params::GetMissingViaBypassParamName(), "false"},
           },
           BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
@@ -627,7 +630,7 @@ TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
       {
           "HTTP/1.1 200 OK\n",
           {
-              {params::GetWarmupCallbackParamName(), "false"},
+              {kWarmupFetchCallbackEnabledParam, "false"},
               {params::GetMissingViaBypassParamName(), "false"},
           },
           BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
@@ -656,123 +659,121 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;
      DataReductionProxyBypassType expected_result;
-  } tests[] = {
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=0\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MEDIUM,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=1\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_SHORT,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=59\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_SHORT,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=60\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MEDIUM,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=300\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MEDIUM,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=301\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_LONG,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: block-once\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_CURRENT,
-      },
-      {
-          "HTTP/1.1 500 Internal Server Error\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR,
-      },
-      {
-          "HTTP/1.1 501 Not Implemented\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 502 Bad Gateway\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY,
-      },
-      {
-          "HTTP/1.1 503 Service Unavailable\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE,
-      },
-      {
-          "HTTP/1.1 504 Gateway Timeout\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 505 HTTP Version Not Supported\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 304 Not Modified\n", BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n", BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-      },
-      {
-          "HTTP/1.1 200 OK\n"
-          "Chrome-Proxy: bypass=59\n",
-          BYPASS_EVENT_TYPE_SHORT,
-      },
-      {
-          "HTTP/1.1 502 Bad Gateway\n",
-          BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY,
-      },
-      {
-          "HTTP/1.1 502 Bad Gateway\n"
-          "Chrome-Proxy: bypass=59\n",
-          BYPASS_EVENT_TYPE_SHORT,
-      },
-      {
-          "HTTP/1.1 502 Bad Gateway\n"
-          "Chrome-Proxy: bypass=59\n",
-          BYPASS_EVENT_TYPE_SHORT,
-      },
-      {
-          "HTTP/1.1 414 Request-URI Too Long\n",
-          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX,
-      },
-      {
-          "HTTP/1.1 414 Request-URI Too Long\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 407 Proxy Authentication Required\n",
-          BYPASS_EVENT_TYPE_MALFORMED_407,
-      },
-      {
-          "HTTP/1.1 407 Proxy Authentication Required\n"
-          "Proxy-Authenticate: Basic\n"
-          "Via: 1.1 Chrome-Compression-Proxy\n",
-          BYPASS_EVENT_TYPE_MAX,
-      }};
+  } tests[] = {{
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=0\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MEDIUM,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=1\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_SHORT,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=59\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_SHORT,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=60\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MEDIUM,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=300\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MEDIUM,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=301\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_LONG,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: block-once\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_CURRENT,
+               },
+               {
+                   "HTTP/1.1 500 Internal Server Error\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR,
+               },
+               {
+                   "HTTP/1.1 501 Not Implemented\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 502 Bad Gateway\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY,
+               },
+               {
+                   "HTTP/1.1 503 Service Unavailable\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE,
+               },
+               {
+                   "HTTP/1.1 504 Gateway Timeout\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 505 HTTP Version Not Supported\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 304 Not Modified\n", BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 200 OK\n", BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 200 OK\n"
+                   "Chrome-Proxy: bypass=59\n",
+                   BYPASS_EVENT_TYPE_SHORT,
+               },
+               {
+                   "HTTP/1.1 502 Bad Gateway\n",
+                   BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY,
+               },
+               {
+                   "HTTP/1.1 502 Bad Gateway\n"
+                   "Chrome-Proxy: bypass=59\n",
+                   BYPASS_EVENT_TYPE_SHORT,
+               },
+               {
+                   "HTTP/1.1 502 Bad Gateway\n"
+                   "Chrome-Proxy: bypass=59\n",
+                   BYPASS_EVENT_TYPE_SHORT,
+               },
+               {
+                   "HTTP/1.1 414 Request-URI Too Long\n", BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 414 Request-URI Too Long\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MAX,
+               },
+               {
+                   "HTTP/1.1 407 Proxy Authentication Required\n",
+                   BYPASS_EVENT_TYPE_MALFORMED_407,
+               },
+               {
+                   "HTTP/1.1 407 Proxy Authentication Required\n"
+                   "Proxy-Authenticate: Basic\n"
+                   "Via: 1.1 Chrome-Compression-Proxy\n",
+                   BYPASS_EVENT_TYPE_MAX,
+               }};
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);

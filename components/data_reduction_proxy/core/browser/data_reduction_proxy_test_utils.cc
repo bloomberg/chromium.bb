@@ -702,6 +702,11 @@ void DataReductionProxyTestContext::DisableWarmupURLFetch() {
       switches::kDisableDataReductionProxyWarmupURLFetch);
 }
 
+void DataReductionProxyTestContext::DisableWarmupURLFetchCallback() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableDataReductionProxyWarmupURLFetchCallback);
+}
+
 MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()
     const {
   DCHECK(test_context_flags_ & USE_MOCK_CONFIG);

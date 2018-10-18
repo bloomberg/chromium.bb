@@ -204,9 +204,7 @@ void WarmupURLFetcher::OnURLLoadComplete(
         PROXY_SCHEME_MAX);
   }
 
-  if (!GetFieldTrialParamByFeatureAsBool(
-          features::kDataReductionProxyRobustConnection,
-          params::GetWarmupCallbackParamName(), false)) {
+  if (!params::IsWarmupURLFetchCallbackEnabled()) {
     CleanupAfterFetch();
     return;
   }
@@ -245,7 +243,7 @@ base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
   const base::TimeDelta min_timeout =
       base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
           features::kDataReductionProxyRobustConnection,
-          "warmup_url_fetch_min_timeout_seconds", 10));
+          "warmup_url_fetch_min_timeout_seconds", 30));
   const base::TimeDelta max_timeout =
       base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
           features::kDataReductionProxyRobustConnection,
@@ -296,9 +294,7 @@ void WarmupURLFetcher::OnFetchTimeout() {
   base::UmaHistogramSparse("DataReductionProxy.WarmupURL.HttpResponseCode",
                            std::abs(kInvalidResponseCode));
 
-  if (!GetFieldTrialParamByFeatureAsBool(
-          features::kDataReductionProxyRobustConnection,
-          params::GetWarmupCallbackParamName(), false)) {
+  if (!params::IsWarmupURLFetchCallbackEnabled()) {
     // Running the callback is not enabled.
     CleanupAfterFetch();
     return;

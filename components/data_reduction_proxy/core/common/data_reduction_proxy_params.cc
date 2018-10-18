@@ -124,10 +124,6 @@ const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
 }
 
-const char* GetWarmupCallbackParamName() {
-  return kWarmupFetchCallbackEnabledParam;
-}
-
 const char* GetMissingViaBypassParamName() {
   return kMissingViaBypassDisabledParam;
 }
@@ -168,6 +164,21 @@ GURL GetWarmupURL() {
   variations::GetVariationParams(GetQuicFieldTrialName(), &params);
   return GURL(GetStringValueForVariationParamWithDefaultValue(
       params, "warmup_url", kDefaultWarmupUrl));
+}
+
+bool IsWarmupURLFetchCallbackEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::
+              kDisableDataReductionProxyWarmupURLFetchCallback)) {
+    return false;
+  }
+
+  if (!GetFieldTrialParamByFeatureAsBool(
+          features::kDataReductionProxyRobustConnection,
+          kWarmupFetchCallbackEnabledParam, true)) {
+    return false;
+  }
+  return true;
 }
 
 bool IsWarmupURL(const GURL& url) {

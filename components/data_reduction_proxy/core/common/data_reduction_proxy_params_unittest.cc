@@ -249,6 +249,7 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
                 params::GetWarmupURL());
     }
     EXPECT_TRUE(params::FetchWarmupProbeURLEnabled());
+    EXPECT_TRUE(params::IsWarmupURLFetchCallbackEnabled());
   }
 }
 

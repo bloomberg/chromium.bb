@@ -20,10 +20,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -102,6 +104,7 @@ class DataReductionProxyProtocolEmbeddedServerTest : public testing::Test {
     test_context_ = DataReductionProxyTestContext::Builder()
                         .SkipSettingsInitialization()
                         .Build();
+    test_context_->DisableWarmupURLFetch();
     // Since some of the tests fetch a webpage from the embedded server running
     // on localhost, the adding of default bypass rules is disabled. This allows
     // Chrome to fetch webpages using data saver proxy.
@@ -625,6 +628,9 @@ TEST_F(DataReductionProxyProtocolTest, BypassRetryOnPostConnectionErrors) {
 // was indicated. In both the single and double bypass cases, if the request
 // was idempotent, it will be retried over a direct connection.
 TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   const struct {
     const char* method;
     const char* first_response;
