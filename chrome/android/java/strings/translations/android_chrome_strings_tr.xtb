@@ -195,7 +195,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="2414672073755873541">Burada içerik yok</translation>
 <translation id="2414886740292270097">Koyu</translation>
 <translation id="2416359993254398973">Chrome'un bu sitede kameranıza erişmesi için izin gerekiyor.</translation>
-<translation id="24241740415720680">Google tarafından sunulan basit sayfa</translation>
 <translation id="2426805022920575512">Başka hesap seç</translation>
 <translation id="2433507940547922241">Görünüm</translation>
 <translation id="2434158240863470628">İndirme işlemi tamamlandı <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
-<translation id="3860879523841717702">Google tarafından sunulan basit sayfa. Sayfanın orijinalini yüklemek için dokunun.</translation>
 <translation id="3868004864571585162">Çerezler, medya lisansları ve site verileri</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
@@ -492,7 +490,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4913169188695071480">Yenilemeyi durdur</translation>
 <translation id="4915549754973153784">Cihazlar taranırken <ph name="BEGIN_LINK" />yardım alın<ph name="END_LINK" />…</translation>
 <translation id="4943872375798546930">Sonuç yok</translation>
-<translation id="4956867391417827202">Araya giren veya yanıltıcı reklamlar gösteren sitelerden reklamları engelle</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşıyor</translation>
 <translation id="4961334780091921942">Tüm cihazlardaki şifreleriniz, geçmişiniz ve diğer öğeler</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
@@ -809,13 +806,11 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="723171743924126238">Resim seç</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
-<translation id="7251326866581677552">Bazı sitelerde engellendi</translation>
 <translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
 <translation id="729975465115245577">Cihazınızda şifreler dosyasını depolayacak bir uygulama yok.</translation>
 <translation id="7302081693174882195">Ayrıntılar: Tasarruf edilen veri miktarına göre sıralı</translation>
 <translation id="7333031090786104871">Önceki siteyi ekleme işlemi devam ediyor.</translation>
-<translation id="7335671571918306053">Google tarafından sunulan basit sayfa. Sayfanın orijinalini yüklemek için orijinali yükle düğmesine dokunun.</translation>
 <translation id="7352939065658542140">VİDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 seçili öğeyi paylaş}other{# seçili öğeyi paylaş}}</translation>
 <translation id="7359002509206457351">Ödeme yöntemlerine erişme</translation>

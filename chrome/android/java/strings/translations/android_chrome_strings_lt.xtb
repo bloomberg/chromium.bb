@@ -195,7 +195,6 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="2414672073755873541">Čia nėra jokio turinio</translation>
 <translation id="2414886740292270097">Tamsi</translation>
 <translation id="2416359993254398973">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų fotoaparatą šioje svetainėje.</translation>
-<translation id="24241740415720680">Supaprastintasis puslapis, kurį teikia „Google“</translation>
 <translation id="2426805022920575512">Pasirinkti kitą paskyrą</translation>
 <translation id="2433507940547922241">Išvaizda</translation>
 <translation id="2434158240863470628">Atsisiųsta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="3822502789641063741">Išvalyti svet. saugyklą?</translation>
 <translation id="385051799172605136">Grįžti</translation>
 <translation id="3859306556332390985">Eiti pirmyn</translation>
-<translation id="3860879523841717702">Supaprastintasis puslapis, kurį teikia „Google“. Palieskite, kad būtų įkeltas pradinis puslapis.</translation>
 <translation id="3868004864571585162">Slapukai, medijos licencijos ir svetainių duomenys</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
@@ -492,7 +490,6 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4913169188695071480">Sustabdyti atnaujinimą</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" />, kol ieškoma įrenginių…</translation>
 <translation id="4943872375798546930">Rezultatų nėra</translation>
-<translation id="4956867391417827202">Blokuojami skelbimai iš svetainių, kuriose rodomi nepageidaujami arba klaidinantys skelbimai</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> bendrina jūsų ekrano vaizdą</translation>
 <translation id="4961334780091921942">Slaptažodžiai, istorija ir daugiau visuose jūsų įrenginiuose</translation>
 <translation id="4961700429721424617">Atsijungiate nuo paskyros, kurią tvarko „<ph name="MANAGED_DOMAIN" />“. „Chrome“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>
@@ -809,13 +806,11 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="723171743924126238">Pasirinkti vaizdus</translation>
 <translation id="7243308994586599757">Parinktys pasiekiamos netoli ekrano apačios</translation>
 <translation id="7250468141469952378">Pasirinkta: <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Užblokuota iš kelių svetainių</translation>
 <translation id="7253272406652746122">Pridėkite „Google“ paskyrą iš įrenginio Nustatymų programos puslapio „Paskyros“.</translation>
 <translation id="7274013316676448362">Užblokuota svetainė</translation>
 <translation id="729975465115245577">Įrenginyje nėra slaptažodžių failo saugojimo programos.</translation>
 <translation id="7302081693174882195">Išsami informacija: surūšiuota pagal išsaugotų duomenų kiekį</translation>
 <translation id="7333031090786104871">Vis dar pridedama ankstesnė svetainė</translation>
-<translation id="7335671571918306053">Supaprastintasis puslapis, kurį teikia „Google“. Palieskite mygtuką „Įkelti pradinį“, kad būtų įkeltas pradinis puslapis.</translation>
 <translation id="7352939065658542140">VAIZDO ĮRAŠAS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bendrinti 1 pasirinktą elementą}one{Bendrinti # pasirinktą elementą}few{Bendrinti # pasirinktus elementus}many{Bendrinti # pasirinkto elemento}other{Bendrinti # pasirinktų elementų}}</translation>
 <translation id="7359002509206457351">Prieiga prie mokėjimo metodų</translation>

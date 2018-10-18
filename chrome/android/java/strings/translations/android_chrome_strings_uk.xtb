@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">Немає вмісту</translation>
 <translation id="2414886740292270097">Темна</translation>
 <translation id="2416359993254398973">Chrome потрібні дозволи, щоб використовувати камеру на цьому сайті.</translation>
-<translation id="24241740415720680">Спрощена сторінка, показана Google</translation>
 <translation id="2426805022920575512">Вибрати інший обліковий запис</translation>
 <translation id="2433507940547922241">Зовнішній вигляд</translation>
 <translation id="2434158240863470628">Завантажено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Далі</translation>
-<translation id="3860879523841717702">Спрощена сторінка, показана Google. Натисніть, щоб завантажити оригінал.</translation>
 <translation id="3868004864571585162">Файли сookie, ліцензії медіа-вмісту й дані із сайтів</translation>
 <translation id="3894427358181296146">Додати папку</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
@@ -492,7 +490,6 @@
 <translation id="4913169188695071480">Припинити оновлення</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /> під час пошуку пристроїв…</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
-<translation id="4956867391417827202">Блокувати рекламу на сайтах, які показують нав’язливі чи оманливі оголошення</translation>
 <translation id="4958708863221495346">Сторінка <ph name="URL_OF_THE_CURRENT_TAB" /> показує ваш екран</translation>
 <translation id="4961334780091921942">Ваші паролі, історія тощо на всіх пристроях</translation>
 <translation id="4961700429721424617">Ви виходите з облікового запису, зареєстрованого в домені <ph name="MANAGED_DOMAIN" />. Дані Chrome буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
@@ -809,13 +806,11 @@
 <translation id="723171743924126238">Вибрати зображення</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Заблоковано на деяких сайтах</translation>
 <translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
 <translation id="7302081693174882195">Деталі: відсортовано за кількістю заощадженого трафіку</translation>
 <translation id="7333031090786104871">Попередній сайт ще додається</translation>
-<translation id="7335671571918306053">Спрощена сторінка, показана Google. Натисніть відповідну кнопку, щоб завантажити оригінал.</translation>
 <translation id="7352939065658542140">ВІДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поділитись 1 вибраним елементом}one{Поділитися # вибраним елементом}few{Поділитися # вибраними елементами}many{Поділитися # вибраними елементами}other{Поділитися # вибраного елемента}}</translation>
 <translation id="7359002509206457351">Отримати доступ до способів оплати</translation>

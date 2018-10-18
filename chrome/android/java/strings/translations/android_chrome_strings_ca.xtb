@@ -195,7 +195,6 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="2414672073755873541">No hi ha contingut</translation>
 <translation id="2414886740292270097">Fosc</translation>
 <translation id="2416359993254398973">Per visitar aquest lloc web, Chrome necessita permís per accedir a la teva càmera.</translation>
-<translation id="24241740415720680">Pàgina en mode bàsic oferida per Google</translation>
 <translation id="2426805022920575512">Tria un altre compte</translation>
 <translation id="2433507940547922241">Aparença</translation>
 <translation id="2434158240863470628">Baixada finalitzada <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="3822502789641063741">Esborrar emmagatz. lloc?</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3859306556332390985">Avança</translation>
-<translation id="3860879523841717702">Pàgina en mode bàsic oferida per Google. Toca per carregar l'original.</translation>
 <translation id="3868004864571585162">Galetes, llicències per a recursos multimèdia i dades de llocs web</translation>
 <translation id="3894427358181296146">Afegiu una carpeta</translation>
 <translation id="3895926599014793903">Força l'activació del zoom</translation>
@@ -492,7 +490,6 @@ Per ajustar el terme de cerca, mantén-lo premut per seleccionar-lo. Per definir
 <translation id="4913169188695071480">Deixa d'actualitzar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtén ajuda<ph name="END_LINK" /> mentre se cerquen dispositius…</translation>
 <translation id="4943872375798546930">No hi ha resultats</translation>
-<translation id="4956867391417827202">Bloqueja els anuncis de llocs web que mostren publicitat intrusiva o enganyosa</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> comparteix la teva pantalla</translation>
 <translation id="4961334780091921942">Les contrasenyes, l'historial i altres elements en tots els dispositius</translation>
 <translation id="4961700429721424617">Estàs tancant la sessió d'un compte gestionat per <ph name="MANAGED_DOMAIN" />. Se suprimiran les teves dades de Chrome en aquest dispositiu, però continuaran al teu compte de Google.</translation>
@@ -809,13 +806,11 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="723171743924126238">Selecciona imatges</translation>
 <translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elements seleccionats</translation>
-<translation id="7251326866581677552">S'ha bloquejat en alguns llocs web</translation>
 <translation id="7253272406652746122">Afegeix un compte de Google des de la pàgina Comptes de l'aplicació Configuració del dispositiu.</translation>
 <translation id="7274013316676448362">Lloc bloquejat</translation>
 <translation id="729975465115245577">El dispositiu no té cap aplicació per emmagatzemar el fitxer de contrasenyes.</translation>
 <translation id="7302081693174882195">Detalls: files ordenades per quantitat de dades estalviades</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>
-<translation id="7335671571918306053">Pàgina en mode bàsic oferida per Google. Toca el botó Carrega la versió original per carregar la pàgina original.</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparteix 1 element seleccionat}other{Comparteix # elements seleccionats}}</translation>
 <translation id="7359002509206457351">Accedeix a les formes de pagament</translation>

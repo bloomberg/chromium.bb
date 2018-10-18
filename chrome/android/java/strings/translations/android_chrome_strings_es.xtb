@@ -195,7 +195,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="2414672073755873541">No hay contenido</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2416359993254398973">Chrome necesita permiso para acceder a la cámara en este sitio web.</translation>
-<translation id="24241740415720680">Página básica ofrecida por Google</translation>
 <translation id="2426805022920575512">Elegir otra cuenta</translation>
 <translation id="2433507940547922241">Aspecto</translation>
 <translation id="2434158240863470628">Descarga completa <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
-<translation id="3860879523841717702">Página básica ofrecida por Google. Toca para cargar la original.</translation>
 <translation id="3868004864571585162">Cookies, licencias de contenido multimedia y datos de sitios web</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="3895926599014793903">Forzar zoom</translation>
@@ -492,7 +490,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4913169188695071480">Dejar de actualizar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /> mientras se buscan dispositivos…</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
-<translation id="4956867391417827202">Bloquea anuncios invasivos o engañosos de los sitios web que los muestran</translation>
 <translation id="4958708863221495346">Estás compartiendo tu pantalla a través de <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4961334780091921942">Tus contraseñas, tu historial y mucho más en todos tus dispositivos</translation>
 <translation id="4961700429721424617">Estás cerrando sesión en una cuenta gestionada por <ph name="MANAGED_DOMAIN" />. Tus datos de Chrome se eliminarán de este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
@@ -809,13 +806,11 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Bloqueados en algunos sitios web</translation>
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>
-<translation id="7335671571918306053">Página básica ofrecida por Google. Si quieres ver la original, toca el botón para cargarla.</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceso a métodos de pago</translation>

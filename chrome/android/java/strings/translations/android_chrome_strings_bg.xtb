@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">Тук няма съдържание</translation>
 <translation id="2414886740292270097">Тъмно</translation>
 <translation id="2416359993254398973">Chrome се нуждае от разрешение за достъп до камерата ви за този сайт.</translation>
-<translation id="24241740415720680">Олекотена страница, предоставена от Google</translation>
 <translation id="2426805022920575512">Избиране на друг профил</translation>
 <translation id="2433507940547922241">Облик</translation>
 <translation id="2434158240863470628">Изтеглянето завърши <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@
 <translation id="3822502789641063741">Изчистване на данните?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
-<translation id="3860879523841717702">Олекотена страница, предоставена от Google. Докоснете за зареждане на оригиналната.</translation>
 <translation id="3868004864571585162">„Бисквитки“, лицензи за мултимедия и данни за сайтове</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
@@ -492,7 +490,6 @@
 <translation id="4913169188695071480">Спиране на опресняването</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" />, докато се сканира за устройства…</translation>
 <translation id="4943872375798546930">Няма резултати</translation>
-<translation id="4956867391417827202">Блокиране на рекламите от сайтове, на които се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> споделя екрана ви</translation>
 <translation id="4961334780091921942">Вашите пароли, история и др. на всички устройства</translation>
 <translation id="4961700429721424617">Излизате от профил, управляван от <ph name="MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
@@ -810,13 +807,11 @@
 <translation id="723171743924126238">Избиране на изображения</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7250468141469952378">Избрани: <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Блокиране за някои сайтове</translation>
 <translation id="7253272406652746122">Добавете профил в Google от страницата „Профили“ в приложението Настройки на устройството ви.</translation>
 <translation id="7274013316676448362">Блокиран сайт</translation>
 <translation id="729975465115245577">На устройството ви няма приложение за съхраняване на файла с паролите.</translation>
 <translation id="7302081693174882195">Подробности: сортирани по количество спестени данни</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>
-<translation id="7335671571918306053">Олекотена страница, предоставена от Google. Докоснете съответния бутон за зареждане на оригиналната.</translation>
 <translation id="7352939065658542140">ВИДЕОКЛИП</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
 <translation id="7359002509206457351">Достъп до начините на плащане</translation>

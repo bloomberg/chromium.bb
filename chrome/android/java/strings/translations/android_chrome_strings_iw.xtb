@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">אין כאן תוכן</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
-<translation id="24241740415720680">‏גרסת Lite של הדף נוצרה על ידי Google</translation>
 <translation id="2426805022920575512">בחירת חשבון אחר</translation>
 <translation id="2433507940547922241">מראה</translation>
 <translation id="2434158240863470628">ההורדה הושלמה <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>
-<translation id="3860879523841717702">‏גרסת Lite של הדף נוצרה על ידי Google. אפשר להקיש כדי לטעון את הגרסה המקורית.</translation>
 <translation id="3868004864571585162">‏קובצי Cookie, רישיונות מדיה ונתוני אתרים</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">אלץ הפעלת שינוי מרחק מתצוגה</translation>
@@ -492,7 +490,6 @@
 <translation id="4913169188695071480">הפסק לרענן</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /> בזמן חיפוש התקנים…</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
-<translation id="4956867391417827202">חסימת מודעות מאתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> משתף את המסך שלך</translation>
 <translation id="4961334780091921942">גישה אל הסיסמאות, ההיסטוריה ונתונים נוספים בכל המכשירים</translation>
 <translation id="4961700429721424617">‏אתה יוצא מחשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" />. פעולה זו תמחק את הנתונים שלך ב-Chrome מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
@@ -809,13 +806,11 @@
 <translation id="723171743924126238">בחר תמונות</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">חסומות באתרים מסוימים</translation>
 <translation id="7253272406652746122">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר.</translation>
 <translation id="7274013316676448362">אתר חסום</translation>
 <translation id="729975465115245577">אין במכשיר אפליקציה לאחסון קובץ הסיסמאות.</translation>
 <translation id="7302081693174882195">פרטים: מיון לפי נפח הנתונים שנחסכו</translation>
 <translation id="7333031090786104871">עדיין מוסיף את האתר הקודם</translation>
-<translation id="7335671571918306053">‏גרסת Lite של הדף נוצרה על ידי Google. אפשר להקיש על לחצן טעינת המקור כדי לטעון את הדף המקורי.</translation>
 <translation id="7352939065658542140">סרטון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
 <translation id="7359002509206457351">גישה לאמצעי תשלום</translation>

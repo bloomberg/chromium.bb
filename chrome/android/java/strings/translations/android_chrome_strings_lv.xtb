@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">Nav satura</translation>
 <translation id="2414886740292270097">Tumšs</translation>
 <translation id="2416359993254398973">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu kamerai šajā vietnē.</translation>
-<translation id="24241740415720680">Vienkāršota lapa, ko nodrošina Google</translation>
 <translation id="2426805022920575512">Izvēlēties citu kontu</translation>
 <translation id="2433507940547922241">Izskats</translation>
 <translation id="2434158240863470628">Lejupielāde pabeigta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@
 <translation id="3822502789641063741">Vai notīrīt vietnes krātuvi?</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3859306556332390985">Pārtīt uz priekšu</translation>
-<translation id="3860879523841717702">Vienkāršota lapa, ko nodrošina Google. Pieskarieties, lai ielādētu sākotnējo lapu.</translation>
 <translation id="3868004864571585162">Sīkfaili, multivides licences un vietņu dati</translation>
 <translation id="3894427358181296146">Mapes pievienošana</translation>
 <translation id="3895926599014793903">Tālummaiņas piespiedu iespējošana</translation>
@@ -492,7 +490,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4913169188695071480">Pārtraukt atsvaidzināšanu</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Saņemiet palīdzību<ph name="END_LINK" />, meklējot ierīces…</translation>
 <translation id="4943872375798546930">Nav rezultātu</translation>
-<translation id="4956867391417827202">Bloķēt reklāmas no vietnēm, kurās tiek rādītas traucējošas vai maldinošas reklāmas</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> kopīgo jūsu ekrānu</translation>
 <translation id="4961334780091921942">Jūsu paroles, vēstures un cita informācijas sinhronizēšana visās jūsu ierīcēs</translation>
 <translation id="4961700429721424617">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="MANAGED_DOMAIN" />. Izrakstoties jūsu Chrome dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>
@@ -809,13 +806,11 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="723171743924126238">Atlasīt attēlus</translation>
 <translation id="7243308994586599757">Opcijas, kas pieejamas ekrāna apakšējā daļā</translation>
 <translation id="7250468141469952378">Atlasīti vienumi: <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Bloķētas dažās vietnēs.</translation>
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>
-<translation id="7335671571918306053">Vienkāršota lapa, ko nodrošina Google. Pieskarieties pogai Ielādēt sākotnējo, lai ielādētu sākotnējo lapu.</translation>
 <translation id="7352939065658542140">VIDEOKLIPS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kopīgot 1 atlasīto vienumu}zero{Kopīgot # atlasītos vienumus}one{Kopīgot # atlasīto vienumu}other{Kopīgot # atlasītos vienumus}}</translation>
 <translation id="7359002509206457351">Piekļuve maksājumu veidiem</translation>

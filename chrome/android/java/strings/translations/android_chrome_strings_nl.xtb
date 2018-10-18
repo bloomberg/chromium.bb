@@ -195,7 +195,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2414672073755873541">Geen content hier</translation>
 <translation id="2414886740292270097">Donker</translation>
 <translation id="2416359993254398973">Chrome heeft toegangsrechten voor je camera nodig voor deze site.</translation>
-<translation id="24241740415720680">Lite-pagina geleverd door Google</translation>
 <translation id="2426805022920575512">Een ander account kiezen</translation>
 <translation id="2433507940547922241">Vormgeving</translation>
 <translation id="2434158240863470628">Download voltooid <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
-<translation id="3860879523841717702">Lite-pagina geleverd door Google. Tik om de originele pagina te laden.</translation>
 <translation id="3868004864571585162">Cookies, medialicenties en sitegegevens</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="3895926599014793903">Zoom inschakelen forceren</translation>
@@ -492,7 +490,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4913169188695071480">Vernieuwen stopzetten</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hulp<ph name="END_LINK" /> bij het zoeken naar apparaten…</translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
-<translation id="4956867391417827202">Advertenties blokkeren van sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> heeft toegang tot je scherm</translation>
 <translation id="4961334780091921942">Je wachtwoorden, geschiedenis en meer op al je apparaten</translation>
 <translation id="4961700429721424617">Je logt uit van een account dat wordt beheerd door <ph name="MANAGED_DOMAIN" />. Hierdoor worden je Chrome-gegevens verwijderd van dit apparaat. Je gegevens blijven echter opgeslagen in je Google-account.</translation>
@@ -809,13 +806,11 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="723171743924126238">Afbeeldingen selecteren</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> geselecteerd</translation>
-<translation id="7251326866581677552">Geblokkeerd voor bepaalde sites</translation>
 <translation id="7253272406652746122">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
-<translation id="7335671571918306053">Lite-pagina geleverd door Google. Tik om de knop 'Origineel laden' om de originele pagina te laden.</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 geselecteerd item delen}other{# geselecteerde items delen}}</translation>
 <translation id="7359002509206457351">Toegang tot betaalmethoden</translation>

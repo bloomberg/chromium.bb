@@ -195,7 +195,6 @@
 <translation id="2414672073755873541">ไม่มีเนื้อหาที่นี่</translation>
 <translation id="2414886740292270097">มืด</translation>
 <translation id="2416359993254398973">Chrome ต้องการสิทธิ์เข้าถึงกล้องถ่ายรูปของคุณสำหรับไซต์นี้</translation>
-<translation id="24241740415720680">หน้าเวอร์ชัน Lite แสดงโดย Google</translation>
 <translation id="2426805022920575512">เลือกบัญชีอื่น</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
 <translation id="2434158240863470628">ดาวน์โหลดเสร็จสมบูรณ์ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
-<translation id="3860879523841717702">หน้าเวอร์ชัน Lite แสดงโดย Google แตะเพื่อโหลดต้นฉบับ</translation>
 <translation id="3868004864571585162">คุกกี้ ใบอนุญาตสื่อ และข้อมูลเว็บไซต์</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
@@ -492,7 +490,6 @@
 <translation id="4913169188695071480">หยุดรีเฟรช</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />รับความช่วยเหลือ<ph name="END_LINK" />ระหว่างการค้นหาอุปกรณ์…</translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
-<translation id="4956867391417827202">บล็อกโฆษณาในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="4961334780091921942">รหัสผ่าน ประวัติการเข้าชม และอื่นๆ ในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="4961700429721424617">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chrome ออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
@@ -809,13 +806,11 @@
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7250468141469952378">เลือกไว้ <ph name="ITEM_COUNT" /> รายการ</translation>
-<translation id="7251326866581677552">บล็อกจากบางไซต์</translation>
 <translation id="7253272406652746122">เพิ่มบัญชี Google จากหน้า "บัญชี" ในแอปการตั้งค่าของอุปกรณ์</translation>
 <translation id="7274013316676448362">เว็บไซต์ที่ถูกบล็อก</translation>
 <translation id="729975465115245577">อุปกรณ์ของคุณไม่มีแอปไว้จัดเก็บไฟล์รหัสผ่าน</translation>
 <translation id="7302081693174882195">รายละเอียด: จัดเรียงตามปริมาณเน็ตมือถือที่ประหยัดได้</translation>
 <translation id="7333031090786104871">ยังเพิ่มไซต์ก่อนหน้าอยู่</translation>
-<translation id="7335671571918306053">หน้าเวอร์ชัน Lite แสดงโดย Google แตะปุ่มโหลดต้นฉบับเพื่อโหลดหน้าต้นฉบับ</translation>
 <translation id="7352939065658542140">วิดีโอ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{แชร์ 1 รายการที่เลือก}other{แชร์ # รายการที่เลือก}}</translation>
 <translation id="7359002509206457351">เข้าถึงวิธีการชำระเงิน</translation>

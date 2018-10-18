@@ -195,7 +195,6 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="2414672073755873541">Zde není žádný obsah</translation>
 <translation id="2414886740292270097">Tmavé</translation>
 <translation id="2416359993254398973">Chrome pro tento web potřebuje oprávnění k přístupu k fotoaparátu.</translation>
-<translation id="24241740415720680">Zjednodušená stránka poskytnutá společností Google</translation>
 <translation id="2426805022920575512">Vybrat jiný účet</translation>
 <translation id="2433507940547922241">Vzhled</translation>
 <translation id="2434158240863470628">Stažení bylo dokončeno <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Nejste však neviditelní. Soukromý režim neskryje vaši aktivitu před zaměs
 <translation id="3822502789641063741">Vymazat úložiště webů?</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3859306556332390985">Přetočit dopředu</translation>
-<translation id="3860879523841717702">Zjednodušená stránka poskytnutá společností Google. Klepnutím načtete původní stránku.</translation>
 <translation id="3868004864571585162">Cookies, licence k médiím a data webů</translation>
 <translation id="3894427358181296146">Přidat složku</translation>
 <translation id="3895926599014793903">Vynutit aktivaci přiblížení</translation>
@@ -492,7 +490,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4913169188695071480">Zastavit obnovování</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Nápověda<ph name="END_LINK" /> k vyhledávání zařízení…</translation>
 <translation id="4943872375798546930">Žádné výsledky</translation>
-<translation id="4956867391417827202">Blokovat reklamy na webech, které zobrazují rušivé nebo zavádějící reklamy</translation>
 <translation id="4958708863221495346">Stránka <ph name="URL_OF_THE_CURRENT_TAB" /> sdílí vaši obrazovku</translation>
 <translation id="4961334780091921942">Vaše hesla, historie a další údaje na všech zařízeních</translation>
 <translation id="4961700429721424617">Odhlašujete se z účtu, který je spravován doménou <ph name="MANAGED_DOMAIN" />. Touto akcí svá data prohlížeče Chrome smažete z tohoto zařízení, ve vašem účtu Google však zůstanou.</translation>
@@ -809,13 +806,11 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="723171743924126238">Vyberte fotky</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
 <translation id="7250468141469952378">Vybráno: <ph name="ITEM_COUNT" /></translation>
-<translation id="7251326866581677552">Blokováno na všech webech</translation>
 <translation id="7253272406652746122">Přidejte účet Google ze stránky Účty v aplikaci Nastavení svého zařízení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
 <translation id="729975465115245577">V zařízení není žádná aplikace, pomocí které by soubor s hesly bylo možné uložit.</translation>
 <translation id="7302081693174882195">Podrobnosti: Seřazeno podle množství uspořených dat</translation>
 <translation id="7333031090786104871">Předchozí web se stále přidává</translation>
-<translation id="7335671571918306053">Zjednodušená stránka poskytnutá společností Google. Původní stránku načtete klepnutím na tlačítko k načtení původní verze.</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Sdílet 1 vybranou položku}few{Sdílet # vybrané položky}many{Sdílet # vybrané položky}other{Sdílet # vybraných položek}}</translation>
 <translation id="7359002509206457351">Poskytnout přístup k platební metodám</translation>

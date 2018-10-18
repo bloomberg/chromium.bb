@@ -195,7 +195,6 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="2414672073755873541">Itt nincs semmi</translation>
 <translation id="2414886740292270097">Sötét</translation>
 <translation id="2416359993254398973">A Chrome számára engedély szükséges, hogy hozzáférjen a kamerához ennél a webhelynél.</translation>
-<translation id="24241740415720680">Egyszerű oldal a Google-tól</translation>
 <translation id="2426805022920575512">Másik fiók választása</translation>
 <translation id="2433507940547922241">Megjelenés</translation>
 <translation id="2434158240863470628">Letöltés befejezve <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -353,7 +352,6 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3859306556332390985">Ugrás előre</translation>
-<translation id="3860879523841717702">Egyszerű oldal a Google-tól. Koppintással betöltheti az eredetit.</translation>
 <translation id="3868004864571585162">Cookie-k, médialicencek és webhelyadatok</translation>
 <translation id="3894427358181296146">Mappa hozzáadása</translation>
 <translation id="3895926599014793903">Nagyítás/kicsinyítés kényszerített engedélyezése</translation>
@@ -492,7 +490,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4913169188695071480">Frissítés leállítása</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" />, miközben eszközöket keresünk…</translation>
 <translation id="4943872375798546930">Nincs találat</translation>
-<translation id="4956867391417827202">Hirdetések letiltása a tolakodó és félrevezető hirdetéseket megjelenítő webhelyeken</translation>
 <translation id="4958708863221495346">A(z) <ph name="URL_OF_THE_CURRENT_TAB" /> webhely megosztja az Ön képernyőjét</translation>
 <translation id="4961334780091921942">Jelszavai, előzményei (és még sok más) valamennyi eszközén</translation>
 <translation id="4961700429721424617">Kijelentkezik egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chrome-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
@@ -809,13 +806,11 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="723171743924126238">Képek kiválasztása</translation>
 <translation id="7243308994586599757">A beállítások a képernyő alsó részén találhatók</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elem kiválasztva</translation>
-<translation id="7251326866581677552">Letiltva egyes webhelyeknél</translation>
 <translation id="7253272406652746122">Adjon hozzá Google-fiókot az eszköz Beállítások alkalmazásának Fiókok oldalán.</translation>
 <translation id="7274013316676448362">Letiltott oldal</translation>
 <translation id="729975465115245577">Az eszközön nincs olyan alkalmazás, amely tárolni tudja a jelszavakat tartalmazó fájlt.</translation>
 <translation id="7302081693174882195">Részletek: Megtakarított adatmennyiség szerinti rendezés</translation>
 <translation id="7333031090786104871">Az előző webhely hozzáadása még folyamatban van</translation>
-<translation id="7335671571918306053">Egyszerű oldal a Google-tól. Az Eredeti betöltése gombra koppintva betöltheti az eredeti oldalt.</translation>
 <translation id="7352939065658542140">VIDEÓ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7359002509206457351">Hozzáférés a fizetési módokhoz</translation>
