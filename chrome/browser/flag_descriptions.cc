@@ -840,6 +840,11 @@ const char kEnableImageCaptureAPIDescription[] =
     "Enables the Web Platform Image Capture API: takePhoto(), "
     "getPhotoCapabilities(), etc.";
 
+const char kEnableIncognitoWindowCounterName[] = "Incognito Window Counter";
+const char kEnableIncognitoWindowCounterDescription[] =
+    "Shows the count of Incognito windows next to the Incognito icon on the "
+    "toolbar.";
+
 const char kEnableZeroSuggestRedirectToChromeName[] =
     "Experimental contextual omnibox suggestion";
 const char kEnableZeroSuggestRedirectToChromeDescription[] =

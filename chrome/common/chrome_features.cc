@@ -243,6 +243,11 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Show the number of open incognito windows besides incognito icon on the
+// toolbar.
+const base::Feature kEnableIncognitoWindowCounter{
+    "EnableIncognitoWindowCounter", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experimental way of showing app banners, which has modal banners and gives
 // developers more control over when to show them.
 const base::Feature kExperimentalAppBanners {
