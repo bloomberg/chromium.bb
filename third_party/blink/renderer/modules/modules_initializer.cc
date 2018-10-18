@@ -101,9 +101,8 @@ namespace blink {
 void ModulesInitializer::Initialize() {
   // Strings must be initialized before calling CoreInitializer::init().
   const unsigned kModulesStaticStringsCount =
-      EventNames::EventModulesNamesCount +
-      EventTargetNames::EventTargetModulesNamesCount +
-      IndexedDBNames::IndexedDBNamesCount;
+      EventNames::kModulesNamesCount + EventTargetNames::kModulesNamesCount +
+      IndexedDBNames::kNamesCount;
   StringImpl::ReserveStaticStringsCapacityForSize(kModulesStaticStringsCount);
 
   EventNames::initModules();

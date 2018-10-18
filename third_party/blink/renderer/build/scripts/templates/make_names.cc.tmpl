@@ -10,7 +10,7 @@
 namespace blink {
 namespace {{namespace}}Names {
 
-void* {{suffix}}NamesStorage[{{namespace}}{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
+void* {{suffix}}NamesStorage[k{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
 
 {% for entry in entries|sort(attribute='name', case_sensitive=True) %}
 const AtomicString& {{entry|symbol}} = reinterpret_cast<AtomicString*>(&{{suffix}}NamesStorage)[{{loop.index0}}];

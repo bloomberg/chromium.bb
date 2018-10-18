@@ -89,24 +89,18 @@ void CoreInitializer::Initialize() {
   // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings
   // initialization code.
   const unsigned kQualifiedNamesCount =
-      HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount +
-      MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount +
-      SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount +
-      XLinkNames::XLinkAttrsCount + XMLNSNames::XMLNSAttrsCount +
-      XMLNames::XMLAttrsCount;
+      HTMLNames::kTagsCount + HTMLNames::kAttrsCount + MathMLNames::kTagsCount +
+      MathMLNames::kAttrsCount + SVGNames::kTagsCount + SVGNames::kAttrsCount +
+      XLinkNames::kAttrsCount + XMLNSNames::kAttrsCount + XMLNames::kAttrsCount;
 
   const unsigned kCoreStaticStringsCount =
-      kQualifiedNamesCount + EventNames::EventNamesCount +
-      EventTargetNames::EventTargetNamesCount +
-      EventTypeNames::EventTypeNamesCount +
-      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount +
-      FontFamilyNames::FontFamilyNamesCount +
-      HTMLTokenizerNames::HTMLTokenizerNamesCount + HTTPNames::HTTPNamesCount +
-      InputModeNames::InputModeNamesCount +
-      InputTypeNames::InputTypeNamesCount +
-      MediaFeatureNames::MediaFeatureNamesCount +
-      MediaTypeNames::MediaTypeNamesCount +
-      PerformanceEntryNames::PerformanceEntryNamesCount;
+      kQualifiedNamesCount + EventNames::kNamesCount +
+      EventTargetNames::kNamesCount + EventTypeNames::kNamesCount +
+      FetchInitiatorTypeNames::kNamesCount + FontFamilyNames::kNamesCount +
+      HTMLTokenizerNames::kNamesCount + HTTPNames::kNamesCount +
+      InputModeNames::kNamesCount + InputTypeNames::kNamesCount +
+      MediaFeatureNames::kNamesCount + MediaTypeNames::kNamesCount +
+      PerformanceEntryNames::kNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());

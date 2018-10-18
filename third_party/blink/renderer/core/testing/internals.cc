@@ -1947,10 +1947,10 @@ AtomicString Internals::htmlNamespace() {
 }
 
 Vector<AtomicString> Internals::htmlTags() {
-  Vector<AtomicString> tags(HTMLNames::HTMLTagsCount);
+  Vector<AtomicString> tags(HTMLNames::kTagsCount);
   std::unique_ptr<const HTMLQualifiedName* []> qualified_names =
-      HTMLNames::getHTMLTags();
-  for (wtf_size_t i = 0; i < HTMLNames::HTMLTagsCount; ++i)
+      HTMLNames::GetTags();
+  for (wtf_size_t i = 0; i < HTMLNames::kTagsCount; ++i)
     tags[i] = qualified_names[i]->LocalName();
   return tags;
 }
@@ -1960,10 +1960,10 @@ AtomicString Internals::svgNamespace() {
 }
 
 Vector<AtomicString> Internals::svgTags() {
-  Vector<AtomicString> tags(SVGNames::SVGTagsCount);
+  Vector<AtomicString> tags(SVGNames::kTagsCount);
   std::unique_ptr<const SVGQualifiedName* []> qualified_names =
-      SVGNames::getSVGTags();
-  for (wtf_size_t i = 0; i < SVGNames::SVGTagsCount; ++i)
+      SVGNames::GetTags();
+  for (wtf_size_t i = 0; i < SVGNames::kTagsCount; ++i)
     tags[i] = qualified_names[i]->LocalName();
   return tags;
 }
