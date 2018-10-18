@@ -49,9 +49,8 @@ def DownloadCoverageToolsIfNeeded():
       clang_revision_str, clang_sub_revision_str = package_version.split('-')
       return int(clang_revision_str), int(clang_sub_revision_str)
 
-  llvm_bin_dir = os.path.join(clang_update.LLVM_BUILD_DIR, 'bin')
-  cov_path = os.path.join(llvm_bin_dir, 'llvm-cov')
-  profdata_path = os.path.join(llvm_bin_dir, 'llvm-profdata')
+  cov_path = os.path.join(clang_update.LLVM_BUILD_DIR, 'llvm-cov')
+  profdata_path = os.path.join(clang_update.LLVM_BUILD_DIR, 'llvm-profdata')
 
   host_platform = coverage_utils.GetHostPlatform()
   clang_revision, clang_sub_revision = _GetRevisionFromStampFile(
@@ -85,7 +84,8 @@ def DownloadCoverageToolsIfNeeded():
     coverage_tools_url = (clang_update.CDS_URL + '/Win/' + coverage_tools_file)
 
   try:
-    clang_update.DownloadAndUnpack(coverage_tools_url, llvm_bin_dir)
+    clang_update.DownloadAndUnpack(
+        coverage_tools_url, clang_update.LLVM_BUILD_DIR)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
       file_handle.write('%s,%s' % (package_version, host_platform))
       file_handle.write('\n')
