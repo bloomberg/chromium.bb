@@ -581,15 +581,17 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
   if (parent.IsInline() && !parent.IsAtomicInlineLevel())
     return MarkLineBoxesDirtyFor(parent);
 
-  if (!parent.IsLayoutNGMixin())
-    return;
-  const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
-  if (!block.PaintFragment()) {
-    // We have not yet layout.
-    return;
+  // The |layout_object| is inserted into an empty block.
+  // Mark the first line box dirty.
+  if (parent.IsLayoutNGMixin()) {
+    const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
+    if (NGPaintFragment* paint_fragment = block.PaintFragment()) {
+      if (NGPaintFragment* first_line = paint_fragment->FirstLineBox()) {
+        first_line->is_dirty_inline_ = true;
+        return;
+      }
+    }
   }
-  // We inserted |layout_object| into empty block.
-  block.PaintFragment()->FirstLineBox()->is_dirty_inline_ = true;
 }
 
 void NGPaintFragment::MarkLineBoxDirty() {
