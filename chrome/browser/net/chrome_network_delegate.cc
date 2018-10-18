@@ -345,10 +345,6 @@ void ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(bool enabled) {
   g_access_to_all_files_enabled = enabled;
 }
 
-bool ChromeNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
-  return experimental_web_platform_features_enabled_;
-}
-
 bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const net::URLRequest& request,
     const GURL& target_url,
