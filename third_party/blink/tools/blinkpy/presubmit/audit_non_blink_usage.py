@@ -217,6 +217,7 @@ _CONFIG = [
 
             # Nested namespaces under the blink namespace
             'cssvalue::.+',
+            'encoding::.+',
             'event_handling_util::.+',
             'scheduler::.+',
             'touch_action_util::.+',
