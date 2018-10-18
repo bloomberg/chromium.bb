@@ -206,10 +206,9 @@ void DocumentMarkerController::AddSuggestionMarker(
     const EphemeralRange& range,
     const SuggestionMarkerProperties& properties) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
-  AddMarkerInternal(
-      range, [this, &properties](int start_offset, int end_offset) {
-        return new SuggestionMarker(start_offset, end_offset, properties);
-      });
+  AddMarkerInternal(range, [&properties](int start_offset, int end_offset) {
+    return new SuggestionMarker(start_offset, end_offset, properties);
+  });
 }
 
 void DocumentMarkerController::PrepareForDestruction() {
