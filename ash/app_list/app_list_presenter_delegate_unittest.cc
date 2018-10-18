@@ -1486,6 +1486,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, WallpaperContextMenu) {
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Long press on the app list to open the context menu.
+  // TODO(ginko) look into a way to populate an apps grid, then get a point
+  // between these apps so that clicks/taps between apps can be tested
   const gfx::Point onscreen_point(GetPointOutsideSearchbox());
   ui::test::EventGenerator* generator = GetEventGenerator();
   ui::GestureEvent long_press(
