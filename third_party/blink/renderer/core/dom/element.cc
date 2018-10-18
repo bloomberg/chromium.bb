@@ -3723,14 +3723,10 @@ void Element::DidEndCustomizedScrollPhase() {
 
 ScriptPromise Element::acquireDisplayLock(ScriptState* script_state,
                                           V8DisplayLockCallback* callback) {
-  // For now, just invoke the callback, and resolve the promise immediately.
-  // TODO(vmpstr): Finish implementation.
-  callback->InvokeAndReportException(nullptr, new DisplayLockContext);
-
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
-  const auto& promise = resolver->Promise();
-  resolver->Resolve();
-  return promise;
+  auto* context =
+      EnsureElementRareData().EnsureDisplayLockContext(GetExecutionContext());
+  context->ScheduleTask(callback, script_state);
+  return context->Promise();
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
