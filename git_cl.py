@@ -5041,23 +5041,11 @@ def CMDland(parser, args):
 
   In case of Gerrit, uses Gerrit REST api to "submit" the issue, which pushes
   upstream and closes the issue automatically and atomically.
-
-  Otherwise (in case of Rietveld):
-    Squashes branch into a single commit.
-    Updates commit message with metadata (e.g. pointer to review).
-    Pushes the code upstream.
-    Updates review and closes.
   """
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
-  parser.add_option('-m', dest='message',
-                    help="override review description")
   parser.add_option('-f', '--force', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
-  parser.add_option('-c', dest='contributor',
-                    help="external contributor for patch (appended to " +
-                         "description and used as author for git). Should be " +
-                         "formatted as 'First Last <email@example.com>'")
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
@@ -5070,98 +5058,12 @@ def CMDland(parser, args):
   if not cl.IsGerrit():
     parser.error('rietveld is not supported')
 
-  if options.message:
-    # This could be implemented, but it requires sending a new patch to
-    # Gerrit, as Gerrit unlike Rietveld versions messages with patchsets.
-    # Besides, Gerrit has the ability to change the commit message on submit
-    # automatically, thus there is no need to support this option (so far?).
-    parser.error('-m MESSAGE option is not supported for Gerrit.')
-  if options.contributor:
-    parser.error(
-        '-c CONTRIBUTOR option is not supported for Gerrit.\n'
-        'Before uploading a commit to Gerrit, ensure it\'s author field is '
-        'the contributor\'s "name <email>". If you can\'t upload such a '
-        'commit for review, contact your repository admin and request'
-        '"Forge-Author" permission.')
   if not cl.GetIssue():
     DieWithError('You must upload the change first to Gerrit.\n'
                  '  If you would rather have `git cl land` upload '
                  'automatically for you, see http://crbug.com/642759')
   return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
                                      options.verbose, options.parallel)
-
-
-def PushToGitWithAutoRebase(remote, branch, original_description,
-                            git_numberer_enabled, max_attempts=3):
-  """Pushes current HEAD commit on top of remote's branch.
-
-  Attempts to fetch and autorebase on push failures.
-  Adds git number footers on the fly.
-
-  Returns integer code from last command.
-  """
-  cherry = RunGit(['rev-parse', 'HEAD']).strip()
-  code = 0
-  attempts_left = max_attempts
-  while attempts_left:
-    attempts_left -= 1
-    print('Attempt %d of %d' % (max_attempts - attempts_left, max_attempts))
-
-    # Fetch remote/branch into local cherry_pick_branch, overriding the latter.
-    # If fetch fails, retry.
-    print('Fetching %s/%s...' % (remote, branch))
-    code, out = RunGitWithCode(
-        ['retry', 'fetch', remote,
-         '+%s:refs/heads/%s' % (branch, CHERRY_PICK_BRANCH)])
-    if code:
-      print('Fetch failed with exit code %d.' % code)
-      print(out.strip())
-      continue
-
-    print('Cherry-picking commit on top of latest %s' % branch)
-    RunGitWithCode(['checkout', 'refs/heads/%s' % CHERRY_PICK_BRANCH],
-                   suppress_stderr=True)
-    parent_hash = RunGit(['rev-parse', 'HEAD']).strip()
-    code, out = RunGitWithCode(['cherry-pick', cherry])
-    if code:
-      print('Your patch doesn\'t apply cleanly to \'%s\' HEAD @ %s, '
-            'the following files have merge conflicts:' %
-            (branch, parent_hash))
-      print(RunGit(['-c', 'core.quotePath=false', 'diff',
-                    '--name-status', '--diff-filter=U']).strip())
-      print('Please rebase your patch and try again.')
-      RunGitWithCode(['cherry-pick', '--abort'])
-      break
-
-    commit_desc = ChangeDescription(original_description)
-    if git_numberer_enabled:
-      logging.debug('Adding git number footers')
-      parent_msg = RunGit(['show', '-s', '--format=%B', parent_hash]).strip()
-      commit_desc.update_with_git_number_footers(parent_hash, parent_msg,
-                                                 branch)
-      # Ensure timestamps are monotonically increasing.
-      timestamp = max(1 + _get_committer_timestamp(parent_hash),
-                      _get_committer_timestamp('HEAD'))
-      _git_amend_head(commit_desc.description, timestamp)
-
-    code, out = RunGitWithCode(
-        ['push', '--porcelain', remote, 'HEAD:%s' % branch])
-    print(out)
-    if code == 0:
-      break
-    if IsFatalPushFailure(out):
-      print('Fatal push error. Make sure your .netrc credentials and git '
-            'user.email are correct and you have push access to the repo.\n'
-            'Hint: run command below to diangose common Git/Gerrit credential '
-            'problems:\n'
-            '  git cl creds-check\n')
-      break
-  return code
-
-
-def IsFatalPushFailure(push_stdout):
-  """True if retrying push won't help."""
-  return '(prohibited by Gerrit)' in push_stdout
 
 
 @subcommand.usage('<patch url or issue id or issue url>')
