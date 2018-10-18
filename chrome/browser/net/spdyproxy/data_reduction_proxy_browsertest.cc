@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -446,11 +448,14 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyResourceTypeBrowsertest,
 }
 
 class DataReductionProxyWarmupURLBrowsertest
-    : public DataReductionProxyBrowsertestBase,
-      public testing::WithParamInterface<ProxyServer_ProxyScheme> {
+    : public ::testing::WithParamInterface<
+          std::tuple<ProxyServer_ProxyScheme, bool>>,
+      public DataReductionProxyBrowsertestBase {
  public:
   DataReductionProxyWarmupURLBrowsertest()
-      : primary_server_(GetTestServerType()),
+      : via_header_(std::get<1>(GetParam()) ? "1.1 Chrome-Compression-Proxy"
+                                            : "bad"),
+        primary_server_(GetTestServerType()),
         secondary_server_(GetTestServerType()) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -463,12 +468,34 @@ class DataReductionProxyWarmupURLBrowsertest
     net::HostPortPair secondary_host_port_pair =
         secondary_server_.host_port_pair();
     std::string config = EncodeConfig(CreateConfig(
-        kSessionKey, 1000, 0, GetParam(), primary_host_port_pair.host(),
-        primary_host_port_pair.port(), ProxyServer::UNSPECIFIED_TYPE,
-        GetParam(), secondary_host_port_pair.host(),
-        secondary_host_port_pair.port(), ProxyServer::CORE, 0.5f, false));
+        kSessionKey, 1000, 0, std::get<0>(GetParam()),
+        primary_host_port_pair.host(), primary_host_port_pair.port(),
+        ProxyServer::UNSPECIFIED_TYPE, std::get<0>(GetParam()),
+        secondary_host_port_pair.host(), secondary_host_port_pair.port(),
+        ProxyServer::CORE, 0.5f, false));
     command_line->AppendSwitchASCII(
         switches::kDataReductionProxyServerClientConfig, config);
+  }
+
+  // Retries fetching |histogram_name| until it contains at least |count|
+  // samples.
+  void RetryForHistogramUntilCountReached(
+      base::HistogramTester* histogram_tester,
+      const std::string& histogram_name,
+      size_t count) {
+    base::RunLoop().RunUntilIdle();
+    for (size_t attempt = 0; attempt < 3; ++attempt) {
+      const std::vector<base::Bucket> buckets =
+          histogram_tester->GetAllSamples(histogram_name);
+      size_t total_count = 0;
+      for (const auto& bucket : buckets)
+        total_count += bucket.count;
+      if (total_count >= count)
+        return;
+      content::FetchHistogramsFromChildProcesses();
+      SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   void SetUpOnMainThread() override {
@@ -487,12 +514,11 @@ class DataReductionProxyWarmupURLBrowsertest
     DataReductionProxyBrowsertestBase::SetUpOnMainThread();
   }
 
-  void SetViaHeader(const std::string& via_header) { via_header_ = via_header; }
-
   std::string GetHistogramName(ProxyServer::ProxyType type) {
     return base::StrCat(
         {"DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch.",
-         GetParam() == ProxyServer_ProxyScheme_HTTP ? "Insecure" : "Secure",
+         std::get<0>(GetParam()) == ProxyServer_ProxyScheme_HTTP ? "Insecure"
+                                                                 : "Secure",
          "Proxy.", type == ProxyServer::CORE ? "Core" : "NonCore"});
   }
 
@@ -502,7 +528,7 @@ class DataReductionProxyWarmupURLBrowsertest
 
  private:
   net::EmbeddedTestServer::Type GetTestServerType() {
-    if (GetParam() == ProxyServer_ProxyScheme_HTTP)
+    if (std::get<0>(GetParam()) == ProxyServer_ProxyScheme_HTTP)
       return net::EmbeddedTestServer::TYPE_HTTP;
     return net::EmbeddedTestServer::TYPE_HTTPS;
   }
@@ -520,39 +546,37 @@ class DataReductionProxyWarmupURLBrowsertest
     return response;
   }
 
-  std::string via_header_;
+  const std::string via_header_;
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
 };
 
 IN_PROC_BROWSER_TEST_P(DataReductionProxyWarmupURLBrowsertest,
                        WarmupURLsFetchedForEachProxy) {
-  SetViaHeader("1.1 Chrome-Compression-Proxy");
   primary_server_loop_->Run();
   secondary_server_loop_->Run();
 
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  RetryForHistogramUntilCountReached(
+      &histogram_tester_, GetHistogramName(ProxyServer::UNSPECIFIED_TYPE), 1);
+  RetryForHistogramUntilCountReached(&histogram_tester_,
+                                     GetHistogramName(ProxyServer::CORE), 1);
+
   histogram_tester_.ExpectUniqueSample(
-      GetHistogramName(ProxyServer::UNSPECIFIED_TYPE), true, 1);
+      GetHistogramName(ProxyServer::UNSPECIFIED_TYPE), std::get<1>(GetParam()),
+      1);
   histogram_tester_.ExpectUniqueSample(GetHistogramName(ProxyServer::CORE),
-                                       true, 1);
+                                       std::get<1>(GetParam()), 1);
 }
 
-IN_PROC_BROWSER_TEST_P(DataReductionProxyWarmupURLBrowsertest, WarmupURLsFail) {
-  SetViaHeader("bad");
-  primary_server_loop_->Run();
-  secondary_server_loop_->Run();
-
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester_.ExpectUniqueSample(
-      GetHistogramName(ProxyServer::UNSPECIFIED_TYPE), false, 1);
-  histogram_tester_.ExpectUniqueSample(GetHistogramName(ProxyServer::CORE),
-                                       false, 1);
-}
-
-INSTANTIATE_TEST_CASE_P(,
-                        DataReductionProxyWarmupURLBrowsertest,
-                        testing::Values(ProxyServer_ProxyScheme_HTTP,
-                                        ProxyServer_ProxyScheme_HTTPS));
+// First parameter indicate proxy scheme for proxies that are being tested.
+// Second parameter is true if the test proxy server should set via header
+// correctly on the response headers.
+INSTANTIATE_TEST_CASE_P(
+    ,
+    DataReductionProxyWarmupURLBrowsertest,
+    ::testing::Combine(testing::Values(ProxyServer_ProxyScheme_HTTP,
+                                       ProxyServer_ProxyScheme_HTTPS),
+                       ::testing::Bool()));
 
 }  // namespace data_reduction_proxy
