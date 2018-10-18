@@ -157,7 +157,7 @@ TEST_F(PaintWorkletTest, PaintWithNullPaintArguments) {
   ImageResourceObserver* observer = GetImageResourceObserver();
   ASSERT_TRUE(observer);
 
-  const IntSize container_size(100, 100);
+  const FloatSize container_size(100, 100);
   scoped_refptr<Image> image =
       definition->Paint(*observer, container_size, nullptr);
   EXPECT_NE(image, nullptr);

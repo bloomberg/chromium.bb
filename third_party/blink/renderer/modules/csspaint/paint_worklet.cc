@@ -88,7 +88,7 @@ size_t PaintWorklet::SelectNewGlobalScope() {
 
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
-                                         const IntSize& container_size,
+                                         const FloatSize& container_size,
                                          const CSSStyleValueVector* data) {
   if (!document_definition_map_.Contains(name))
     return nullptr;
