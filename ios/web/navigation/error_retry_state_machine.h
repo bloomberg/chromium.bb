@@ -84,6 +84,9 @@ class ErrorRetryStateMachine {
   // Transitions the state machine to kDisplayingNativeErrorForFailedNavigation.
   void SetDisplayingNativeError();
 
+  // Transitions the state machine to kDisplayingWebErrorForFailedNavigation.
+  void SetDisplayingWebError();
+
   // Runs state transitions upon a failed provisional navigation.
   ErrorRetryCommand DidFailProvisionalNavigation(const GURL& web_view_url,
                                                  const GURL& error_url);

@@ -3893,7 +3893,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
         self.navigationManagerImpl, context->GetNavigationItemUniqueID());
     if (item && item->error_retry_state_machine().state() ==
                     web::ErrorRetryState::kRetryFailedNavigationItem) {
-      item->error_retry_state_machine().SetDisplayingNativeError();
+      if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+        item->error_retry_state_machine().SetDisplayingWebError();
+      } else {
+        item->error_retry_state_machine().SetDisplayingNativeError();
+      }
     }
   }
 
