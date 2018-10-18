@@ -239,7 +239,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   void ExpectDiscoveryWithScanCallback() {
     EXPECT_CALL(*this, StartDiscoverySessionWithFilterRaw(_, _, _))
         .WillOnce(::testing::WithArg<1>(
-            [this](const auto& callback) { callback.Run(nullptr); }));
+            [](const auto& callback) { callback.Run(nullptr); }));
   }
 
   void ExpectDiscoveryWithScanCallback(
