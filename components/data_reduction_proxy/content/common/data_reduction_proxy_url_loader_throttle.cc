@@ -27,6 +27,9 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
       request->url, static_cast<content::ResourceType>(request->resource_type),
       request->previews_state, &request->custom_proxy_pre_cache_headers);
   request->custom_proxy_post_cache_headers = post_cache_headers_;
+
+  if (request->resource_type == content::RESOURCE_TYPE_MEDIA)
+    request->custom_proxy_use_alternate_proxy_list = true;
 }
 
 }  // namespace data_reduction_proxy

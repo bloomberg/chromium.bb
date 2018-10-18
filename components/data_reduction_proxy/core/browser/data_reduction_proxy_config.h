@@ -182,13 +182,13 @@ class DataReductionProxyConfig
   // Returns the current HTTP RTT estimate.
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
 
- protected:
-  virtual base::TimeTicks GetTicksNow() const;
-
   // Updates the Data Reduction Proxy configurator with the current config.
   void UpdateConfigForTesting(bool enabled,
                               bool secure_proxies_allowed,
                               bool insecure_proxies_allowed);
+
+ protected:
+  virtual base::TimeTicks GetTicksNow() const;
 
   // Returns true if the default bypass rules should be added. Virtualized for
   // testing.

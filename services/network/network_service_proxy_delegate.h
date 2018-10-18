@@ -6,6 +6,7 @@
 #define SERVICES_NETWORK_NETWORK_SERVICE_PROXY_DELEGATE_H_
 
 #include "base/component_export.h"
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/proxy_delegate.h"
@@ -55,12 +56,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
                         const GURL& url,
                         const std::string& method) const;
 
+  // Get the proxy rules that apply to |url|.
+  net::ProxyConfig::ProxyRules GetProxyRulesForURL(const GURL& url) const;
+
   // mojom::CustomProxyConfigClient implementation:
   void OnCustomProxyConfigUpdated(
       mojom::CustomProxyConfigPtr proxy_config) override;
 
   mojom::CustomProxyConfigPtr proxy_config_;
   mojo::Binding<mojom::CustomProxyConfigClient> binding_;
+
+  base::MRUCache<std::string, bool> should_use_alternate_proxy_list_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceProxyDelegate);
 };

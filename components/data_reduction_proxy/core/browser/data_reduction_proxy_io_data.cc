@@ -364,8 +364,24 @@ void DataReductionProxyIOData::OnProxyConfigUpdated() {
   if (!proxy_config_client_)
     return;
 
+  const auto proxies_for_http = config_->GetProxiesForHttp();
+
   auto config = network::mojom::CustomProxyConfig::New();
-  config->rules = configurator_->GetProxyConfig().proxy_rules();
+  config->rules =
+      configurator_
+          ->CreateProxyConfig(false /* probe_url_config */,
+                              config_->GetNetworkPropertiesManager(),
+                              proxies_for_http)
+          .proxy_rules();
+
+  // Set an alternate proxy list to be used for media requests which only
+  // contains proxies supporting the media resource type.
+  net::ProxyList media_proxies;
+  for (const auto& proxy : proxies_for_http) {
+    if (proxy.SupportsResourceType(ResourceTypeProvider::CONTENT_TYPE_MEDIA))
+      media_proxies.AddProxyServer(proxy.proxy_server());
+  }
+  config->alternate_proxy_list = media_proxies;
 
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {

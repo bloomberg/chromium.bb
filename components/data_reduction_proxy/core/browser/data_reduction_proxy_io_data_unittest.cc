@@ -13,7 +13,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -37,6 +40,7 @@
 #include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace data_reduction_proxy {
 namespace {
 // Used only to verify that a wrapped network delegate gets called.
 class CountingNetworkDelegate : public net::NetworkDelegateImpl {
@@ -62,9 +66,25 @@ class CountingNetworkDelegate : public net::NetworkDelegateImpl {
   int created_requests_;
 };
 
+std::string CreateEncodedConfig(
+    const std::vector<DataReductionProxyServer> proxy_servers) {
+  ClientConfig config;
+  config.set_session_key("session");
+  for (const auto& proxy_server : proxy_servers) {
+    ProxyServer* config_proxy =
+        config.mutable_proxy_config()->add_http_proxy_servers();
+    net::HostPortPair host_port_pair =
+        proxy_server.proxy_server().host_port_pair();
+    config_proxy->set_scheme(ProxyServer_ProxyScheme_HTTP);
+    config_proxy->set_host(host_port_pair.host());
+    config_proxy->set_port(host_port_pair.port());
+    config_proxy->set_type(proxy_server.IsCoreProxy()
+                               ? ProxyServer_ProxyType_CORE
+                               : ProxyServer_ProxyType_UNSPECIFIED_TYPE);
+  }
+  return EncodeConfig(config);
+}
 }  // namespace
-
-namespace data_reduction_proxy {
 
 class DataReductionProxyIODataTest : public testing::Test {
  public:
@@ -247,6 +267,8 @@ TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigClient) {
       client.config->post_cache_headers.HasHeader(chrome_proxy_header()));
   EXPECT_TRUE(
       client.config->pre_cache_headers.HasHeader(chrome_proxy_ect_header()));
+  // Alternate proxy list should be empty because there are no core proxies.
+  EXPECT_TRUE(client.config->alternate_proxy_list.IsEmpty());
 }
 
 TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigUpdatedOnECTChange) {
@@ -308,6 +330,8 @@ TEST_F(DataReductionProxyIODataTest,
 
 TEST_F(DataReductionProxyIODataTest,
        TestCustomProxyConfigUpdatedOnProxyChange) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableDataReductionProxyWarmupURLFetch);
   DataReductionProxyIOData io_data(
       Client::UNKNOWN, prefs(),
       network::TestNetworkConnectionTracker::GetInstance(),
@@ -317,21 +341,61 @@ TEST_F(DataReductionProxyIODataTest,
   NetworkPropertiesManager network_properties_manager(
       base::DefaultClock::GetInstance(), prefs(),
       scoped_task_environment_.GetMainThreadTaskRunner());
-  auto proxy_server = net::ProxyServer::FromPacString("PROXY foo");
-  io_data.configurator()->Enable(
-      network_properties_manager,
-      {DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE)});
+  io_data.config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+  io_data.config()->UpdateConfigForTesting(true, true, true);
+
+  auto proxy_server1 = net::ProxyServer::FromPacString("PROXY foo");
+  io_data.config_client()->ApplySerializedConfig(CreateEncodedConfig(
+      {DataReductionProxyServer(proxy_server1, ProxyServer_ProxyType_CORE)}));
 
   network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
   TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
   io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server);
+  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server1);
 
-  io_data.configurator()->Disable();
+  auto proxy_server2 = net::ProxyServer::FromPacString("PROXY bar");
+  io_data.config_client()->SetRemoteConfigAppliedForTesting(false);
+  io_data.config_client()->ApplySerializedConfig(CreateEncodedConfig(
+      {DataReductionProxyServer(proxy_server2, ProxyServer_ProxyType_CORE)}));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(client.config->rules.proxies_for_http.IsEmpty());
+
+  EXPECT_EQ(client.config->rules.proxies_for_http.Get(), proxy_server2);
+}
+
+TEST_F(DataReductionProxyIODataTest,
+       TestCustomProxyConfigHasAlternateProxyListOfCoreProxies) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableDataReductionProxyWarmupURLFetch);
+  DataReductionProxyIOData io_data(
+      Client::UNKNOWN, prefs(),
+      network::TestNetworkConnectionTracker::GetInstance(),
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,
+      std::string() /* user_agent */, std::string() /* channel */);
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), prefs(),
+      scoped_task_environment_.GetMainThreadTaskRunner());
+  io_data.config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+  io_data.config()->UpdateConfigForTesting(true, true, true);
+
+  auto core_proxy_server = net::ProxyServer::FromPacString("PROXY foo");
+  io_data.config_client()->ApplySerializedConfig(CreateEncodedConfig(
+      {DataReductionProxyServer(core_proxy_server, ProxyServer_ProxyType_CORE),
+       DataReductionProxyServer(net::ProxyServer::FromPacString("PROXY bar"),
+                                ProxyServer_ProxyType_UNSPECIFIED_TYPE)}));
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  net::ProxyList expected_proxy_list;
+  expected_proxy_list.SetSingleProxyServer(core_proxy_server);
+  EXPECT_TRUE(client.config->alternate_proxy_list.Equals(expected_proxy_list));
 }
 
 }  // namespace data_reduction_proxy
