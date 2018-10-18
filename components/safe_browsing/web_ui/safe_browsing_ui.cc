@@ -376,6 +376,9 @@ base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
     case ReferrerChainEntry::RECENT_NAVIGATION:
       url_type = "RECENT_NAVIGATION";
       break;
+    case ReferrerChainEntry::REFERRER:
+      url_type = "REFERRER";
+      break;
   }
   referrer_dict.SetKey("type", base::Value(url_type));
 

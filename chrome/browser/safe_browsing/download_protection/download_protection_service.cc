@@ -44,6 +44,7 @@ const double kWhitelistDownloadSampleRate = 0.01;
 
 // The number of user gestures we trace back for download attribution.
 const int kDownloadAttributionUserGestureLimit = 2;
+const int kDownloadAttributionUserGestureLimitForExtendedReporting = 5;
 
 void AddEventUrlToReferrerChain(const download::DownloadItem& item,
                                 ReferrerChain* out_referrer_chain) {
@@ -72,6 +73,26 @@ bool MatchesEnterpriseWhitelist(const Profile* profile,
       return true;
   }
   return false;
+}
+
+int GetDownloadAttributionUserGestureLimit(const download::DownloadItem& item) {
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(
+          const_cast<download::DownloadItem*>(&item));
+  if (!web_contents)
+    return kDownloadAttributionUserGestureLimit;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return kDownloadAttributionUserGestureLimit;
+
+  const PrefService* prefs = profile->GetPrefs();
+  if (!prefs)
+    return kDownloadAttributionUserGestureLimit;
+  if (!IsExtendedReportingEnabled(*prefs))
+    return kDownloadAttributionUserGestureLimit;
+  return kDownloadAttributionUserGestureLimitForExtendedReporting;
 }
 
 }  // namespace
@@ -426,8 +447,8 @@ DownloadProtectionService::IdentifyReferrerChain(
   // We look for the referrer chain that leads to the download url first.
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainByEventURL(
-          item.GetURL(), download_tab_id, kDownloadAttributionUserGestureLimit,
-          referrer_chain.get());
+          item.GetURL(), download_tab_id,
+          GetDownloadAttributionUserGestureLimit(item), referrer_chain.get());
 
   // If no navigation event is found, this download is not triggered by regular
   // navigation (e.g. html5 file apis, etc). We look for the referrer chain
@@ -437,7 +458,7 @@ DownloadProtectionService::IdentifyReferrerChain(
       web_contents && web_contents->GetLastCommittedURL().is_valid()) {
     AddEventUrlToReferrerChain(item, referrer_chain.get());
     result = navigation_observer_manager_->IdentifyReferrerChainByWebContents(
-        web_contents, kDownloadAttributionUserGestureLimit,
+        web_contents, GetDownloadAttributionUserGestureLimit(item),
         referrer_chain.get());
   }
 

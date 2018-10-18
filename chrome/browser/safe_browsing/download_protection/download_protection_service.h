@@ -194,12 +194,14 @@ class DownloadProtectionService {
                            PPAPIDownloadRequest_InvalidResponse);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            PPAPIDownloadRequest_Timeout);
-  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
-                           VerifyReferrerChainWithEmptyNavigationHistory);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceFlagTest,
                            CheckClientDownloadOverridenByFlag);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            VerifyMaybeSendDangerousDownloadOpenedReport);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           VerifyReferrerChainWithEmptyNavigationHistory);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           VerifyReferrerChainLengthForExtendedReporting);
 
   static const void* const kDownloadPingTokenKey;
 
