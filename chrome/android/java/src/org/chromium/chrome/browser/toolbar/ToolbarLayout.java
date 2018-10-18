@@ -61,11 +61,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     private final int[] mTempPosition = new int[2];
 
     /**
-     * The ImageButton view that represents the menu button.
+     * The app menu button.
      */
     protected AppCompatImageButton mMenuButton;
     private ImageView mMenuBadge;
-    private View mMenuButtonWrapper;
+    private MenuButton mMenuButtonWrapper;
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
@@ -814,6 +814,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     @Override
     public void showAppMenuUpdateBadge() {
         mShowMenuBadge = true;
+        mMenuButtonWrapper.updateImageResources();
     }
 
     @Override
@@ -826,10 +827,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mMenuBadge == null) return;
         boolean wasShowingMenuBadge = mShowMenuBadge;
         mShowMenuBadge = false;
-        setMenuButtonContentDescription(false);
+        setMenuButtonContentDescription();
 
         if (!animate || !wasShowingMenuBadge) {
-            mMenuBadge.setVisibility(View.GONE);
+            mMenuButtonWrapper.setUpdateBadgeVisibilityIfValidState(false);
             return;
         }
 
@@ -889,10 +890,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * bitmap.
      */
     protected void setAppMenuUpdateBadgeToVisible(boolean animate) {
-        if (mMenuBadge == null || mMenuButton == null) return;
-        setMenuButtonContentDescription(true);
+        if (mMenuBadge == null || mMenuButton == null || mMenuButtonWrapper == null) return;
+        setMenuButtonContentDescription();
         if (!animate || mIsMenuBadgeAnimationRunning) {
-            mMenuBadge.setVisibility(View.VISIBLE);
+            mMenuButtonWrapper.setUpdateBadgeVisibilityIfValidState(true);
             return;
         }
 
@@ -934,9 +935,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param useLightDrawable Whether the light drawable should be used.
      */
     protected void setAppMenuUpdateBadgeDrawable(boolean useLightDrawable) {
-        if (mMenuBadge == null) return;
-        mMenuBadge.setImageResource(useLightDrawable ? R.drawable.badge_update_light
-                : R.drawable.badge_update_dark);
+        if (mMenuButtonWrapper == null) return;
+        mMenuButtonWrapper.setUseLightDrawables(useLightDrawable);
     }
 
     /**
@@ -965,17 +965,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     /**
      * Sets the content description for the menu button.
-     * @param isUpdateBadgeVisible Whether the update menu badge is visible.
      */
-    protected void setMenuButtonContentDescription(boolean isUpdateBadgeVisible) {
-        if (mMenuButton == null) return;
-        if (isUpdateBadgeVisible) {
-            mMenuButton.setContentDescription(getResources().getString(
-                    R.string.accessibility_toolbar_btn_menu_update));
-        } else {
-            mMenuButton.setContentDescription(getResources().getString(
-                    R.string.accessibility_toolbar_btn_menu));
-        }
+    protected void setMenuButtonContentDescription() {
+        if (mMenuButtonWrapper == null) return;
+        mMenuButtonWrapper.updateContentDescription();
     }
 
     @Override

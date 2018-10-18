@@ -153,14 +153,14 @@ public class BottomToolbarCoordinator {
      * Show the update badge over the bottom toolbar's app menu.
      */
     public void showAppMenuUpdateBadge() {
-        mMenuButton.setUpdateBadgeVisibility(true);
+        mMenuButton.setUpdateBadgeVisibilityIfValidState(true);
     }
 
     /**
      * Remove the update badge.
      */
     public void removeAppMenuUpdateBadge() {
-        mMenuButton.setUpdateBadgeVisibility(false);
+        mMenuButton.setUpdateBadgeVisibilityIfValidState(false);
     }
 
     /**
@@ -179,8 +179,11 @@ public class BottomToolbarCoordinator {
         mMediator.setToolbarSwipeLayout(layout);
     }
 
-    public View getMenuButton() {
-        return mMenuButton.getMenuButton();
+    /**
+     * @return The wrapper for the app menu button.
+     */
+    public MenuButton getMenuButtonWrapper() {
+        return mMenuButton;
     }
 
     public void setIncognito(boolean isIncognito) {
@@ -189,6 +192,7 @@ public class BottomToolbarCoordinator {
         final ColorStateList tint = isIncognito ? mLightModeTint : mDarkModeTint;
         mTabSwitcherButtonCoordinator.setTint(tint);
         mMenuButton.setTint(tint);
+        mMenuButton.setUseLightDrawables(isIncognito);
     }
 
     /**
