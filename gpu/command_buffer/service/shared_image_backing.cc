@@ -30,4 +30,9 @@ SharedImageBacking::ProduceGLTexture(SharedImageManager* manager) {
   return nullptr;
 }
 
+std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+SharedImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager) {
+  return nullptr;
+}
+
 }  // namespace gpu

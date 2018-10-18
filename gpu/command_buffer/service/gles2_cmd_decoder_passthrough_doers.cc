@@ -9,6 +9,8 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_version_info.h"
@@ -998,6 +1000,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
       // Deleted when unreferenced
       resources_->texture_id_map.RemoveClientID(client_id);
       resources_->texture_object_map.RemoveClientID(client_id);
+      resources_->texture_shared_image_map.erase(client_id);
       UpdateTextureBinding(texture->target(), client_id, nullptr);
     }
   }
@@ -4073,11 +4076,38 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
 
 error::Error
 GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
-    GLuint client_id,
+    GLuint texture_client_id,
     GLenum internal_format,
     const volatile GLbyte* mailbox) {
-  // TODO(ericrk): Implement this.
-  NOTIMPLEMENTED();
+  if (!texture_client_id ||
+      resources_->texture_id_map.HasClientID(texture_client_id)) {
+    InsertError(GL_INVALID_OPERATION, "Invalid texture ID");
+    return error::kNoError;
+  }
+
+  const Mailbox& mb = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox));
+  auto shared_image =
+      group_->shared_image_manager()->ProduceGLTexturePassthrough(mb);
+  if (shared_image == nullptr) {
+    // Create texture to handle invalid mailbox (see http://crbug.com/472465 and
+    // http://crbug.com/851878).
+    DoGenTextures(1, &texture_client_id);
+    InsertError(GL_INVALID_OPERATION, "Invalid mailbox name.");
+    return error::kNoError;
+  }
+
+  auto texture = shared_image->GetTexturePassthrough();
+
+  // Update id mappings
+  resources_->texture_id_map.RemoveClientID(texture_client_id);
+  resources_->texture_id_map.SetIDMapping(texture_client_id,
+                                          texture->service_id());
+  resources_->texture_object_map.RemoveClientID(texture_client_id);
+  resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
+  resources_->texture_shared_image_map[texture_client_id] =
+      std::move(shared_image);
+
   return error::kNoError;
 }
 

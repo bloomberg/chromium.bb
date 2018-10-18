@@ -2581,6 +2581,10 @@ void GLES2DecoderPassthroughTestBase::DoTexImage2D(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderPassthroughTestBase::DoDeleteTexture(GLuint client_id) {
+  GenHelper<cmds::DeleteTexturesImmediate>(client_id);
+}
+
 void GLES2DecoderPassthroughTestBase::DoBindFramebuffer(GLenum target,
                                                         GLuint client_id) {
   cmds::BindFramebuffer cmd;

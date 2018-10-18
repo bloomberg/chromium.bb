@@ -44,6 +44,27 @@ class SharedImageRepresentationGLTextureImpl
   gles2::Texture* texture_;
 };
 
+// Representation of a SharedImageBackingGLTexturePassthrough as a GL
+// TexturePassthrough.
+class SharedImageRepresentationGLTexturePassthroughImpl
+    : public SharedImageRepresentationGLTexturePassthrough {
+ public:
+  SharedImageRepresentationGLTexturePassthroughImpl(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      scoped_refptr<gles2::TexturePassthrough> texture_passthrough)
+      : SharedImageRepresentationGLTexturePassthrough(manager, backing),
+        texture_passthrough_(std::move(texture_passthrough)) {}
+
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
+      override {
+    return texture_passthrough_;
+  }
+
+ private:
+  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
+};
+
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
 // as a gles2::Texture. Can be used with the legacy mailbox implementation.
 class SharedImageBackingGLTexture : public SharedImageBacking {
@@ -152,10 +173,10 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
   }
 
  protected:
-  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager) override {
-    // TODO(ericrk): Add support.
-    return nullptr;
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager) override {
+    return std::make_unique<SharedImageRepresentationGLTexturePassthroughImpl>(
+        manager, this, passthrough_texture_);
   }
 
  private:
