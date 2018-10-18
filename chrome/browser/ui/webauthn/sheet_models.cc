@@ -14,8 +14,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/text_utils.h"
+#include "url/gurl.h"
 
 // AuthenticatorSheetModelBase ------------------------------------------------
 
@@ -87,8 +90,18 @@ void AuthenticatorSheetModelBase::OnCancel() {
 }
 
 base::string16 AuthenticatorSheetModelBase::GetRelyingPartyIdString() const {
-  DCHECK(!dialog_model()->transport_availability()->rp_id.empty());
-  return base::UTF8ToUTF16(dialog_model()->transport_availability()->rp_id);
+  static constexpr char kRpIdUrlPrefix[] = "https://";
+  // The preferred width of medium snap point modal dialog view is 448 dp, but
+  // we leave some room for padding between the text and the modal views.
+  static constexpr int kDialogWidth = 300;
+  const auto& rp_id = dialog_model()->transport_availability()->rp_id;
+  DCHECK(!rp_id.empty());
+  GURL rp_id_url(kRpIdUrlPrefix + rp_id);
+  auto max_static_string_length = gfx::GetStringWidthF(
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_GENERIC_TITLE), gfx::FontList(),
+      gfx::Typesetter::DEFAULT);
+  return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
+                                  kDialogWidth - max_static_string_length);
 }
 
 void AuthenticatorSheetModelBase::OnModelDestroyed() {
