@@ -281,8 +281,7 @@ class BaseIsolatedScriptArgsAdapter(object):
     del retry_limit  # unused
     raise RuntimeError('this method is not yet implemented')
 
-  def generate_test_also_run_disabled_tests_args(self, also_run_disabled_tests):
-    del also_run_disabled_tests  # unused
+  def generate_test_also_run_disabled_tests_args(self):
     raise RuntimeError('this method is not yet implemented')
 
   def generate_sharding_args(self, total_shard, shard_index):
@@ -312,8 +311,7 @@ class BaseIsolatedScriptArgsAdapter(object):
 
     # Augment test also run disable tests args if needed
     if self.options.isolated_script_test_also_run_disabled_tests:
-      isolated_script_cmd += self.generate_test_also_run_disabled_tests_args(
-          self.options.isolated_script_test_also_run_disabled_tests)
+      isolated_script_cmd += self.generate_test_also_run_disabled_tests_args()
 
     # Augment shard args if needed
     env = os.environ.copy()

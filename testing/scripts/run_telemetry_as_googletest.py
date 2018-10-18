@@ -41,6 +41,9 @@ class TelemetryUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
   def generate_test_output_args(self, output):
     return ['--write-full-results-to', output]
 
+  def generate_test_also_run_disabled_tests_args(self):
+    return ['--also-run-disabled-tests']
+
   def generate_test_filter_args(self, test_filter_str):
     return ['--test-filter', test_filter_str]
 
