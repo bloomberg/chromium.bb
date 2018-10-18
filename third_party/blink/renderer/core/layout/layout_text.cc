@@ -751,10 +751,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
     ShouldAffinityBeDownstream should_affinity_be_downstream) {
   DCHECK(box);
   DCHECK_GE(offset, 0);
-
-  // TODO(layout-dev): Stop passing out-of-range |offset|.
-  if (static_cast<unsigned>(offset) > box->Len())
-    offset = box->Len();
+  DCHECK_LE(static_cast<unsigned>(offset), box->Len());
 
   if (offset && static_cast<unsigned>(offset) < box->Len()) {
     return CreatePositionWithAffinityForBox(box, box->Start() + offset,
@@ -822,8 +819,7 @@ PositionWithAffinity LayoutText::PositionForPoint(
     return CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
         last_box,
         last_box->OffsetForPosition(point_line_direction, IncludePartialGlyphs,
-                                    BreakGlyphs) +
-            last_box->Start(),
+                                    BreakGlyphs),
         should_affinity_be_downstream);
   }
   return CreatePositionWithAffinity(0);
