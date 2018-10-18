@@ -318,7 +318,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   // Layout constants from the spec.
   constexpr gfx::Insets kDialogInsets(60, 64, 32, 64);
   constexpr int kDialogSpacingVertical = 32;
-  constexpr gfx::Size kLogoImageSize(32, 32);
+  constexpr gfx::Size kLogoImageSize(48, 48);
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
