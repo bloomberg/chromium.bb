@@ -103,6 +103,7 @@
 
 # https://crbug.com/721403
 -ContextMenuBrowserTest.DataSaverOpenOrigImageInNewTab
+-DataReductionProxyBrowsertest.UMAMetricsRecorded
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedOn500Status
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBlockHeaderSent
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBlockZeroHeaderSent
