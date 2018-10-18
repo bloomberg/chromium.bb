@@ -171,7 +171,7 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   // The descendant may be a "position: absolute" which contains a "position:
   // fixed" for example. (This fragment isn't the containing block for the
   // fixed descendant).
-  oof_positioned_candidates_.resize(0);
+  oof_positioned_candidates_.Shrink(0);
 }
 
 void NGContainerFragmentBuilder::MoveOutOfFlowDescendantCandidatesToDescendants(
