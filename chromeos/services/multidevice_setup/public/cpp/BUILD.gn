@@ -78,6 +78,18 @@ source_set("first_run_field_trial") {
   ]
 }
 
+source_set("oobe_completion_tracker") {
+  sources = [
+    "oobe_completion_tracker.cc",
+    "oobe_completion_tracker.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+  ]
+}
+
 source_set("url_provider") {
   sources = [
     "url_provider.cc",

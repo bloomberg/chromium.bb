@@ -31,6 +31,7 @@ class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 class MultiDeviceSetupBase;
 class PrivilegedHostDeviceSetterBase;
+class OobeCompletionTracker;
 
 // Service which provides an implementation for mojom::MultiDeviceSetup. This
 // service creates one implementation and shares it among all connection
@@ -41,6 +42,7 @@ class MultiDeviceSetupService : public service_manager::Service {
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
+      OobeCompletionTracker* oobe_completion_tracker,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
       std::unique_ptr<AndroidSmsPairingStateTracker>

@@ -33,6 +33,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
+#include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -368,11 +369,13 @@ class FakeAccountStatusChangeDelegateNotifierFactory
       sync_preferences::TestingPrefServiceSyncable*
           expected_testing_pref_service,
       FakeHostDeviceTimestampManagerFactory*
-          fake_host_device_timestamp_manager_factory)
+          fake_host_device_timestamp_manager_factory,
+      OobeCompletionTracker* expected_oobe_completion_tracker)
       : fake_host_status_provider_factory_(fake_host_status_provider_factory),
         expected_testing_pref_service_(expected_testing_pref_service),
         fake_host_device_timestamp_manager_factory_(
-            fake_host_device_timestamp_manager_factory) {}
+            fake_host_device_timestamp_manager_factory),
+        expected_oobe_completion_tracker_(expected_oobe_completion_tracker) {}
 
   ~FakeAccountStatusChangeDelegateNotifierFactory() override = default;
 
@@ -384,6 +387,7 @@ class FakeAccountStatusChangeDelegateNotifierFactory
       HostStatusProvider* host_status_provider,
       PrefService* pref_service,
       HostDeviceTimestampManager* host_device_timestamp_manager,
+      OobeCompletionTracker* oobe_completion_tracker,
       base::Clock* clock) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_host_status_provider_factory_->instance(),
@@ -391,6 +395,7 @@ class FakeAccountStatusChangeDelegateNotifierFactory
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
     EXPECT_EQ(fake_host_device_timestamp_manager_factory_->instance(),
               host_device_timestamp_manager);
+    EXPECT_EQ(expected_oobe_completion_tracker_, oobe_completion_tracker);
 
     auto instance = std::make_unique<FakeAccountStatusChangeDelegateNotifier>();
     instance_ = instance.get();
@@ -401,6 +406,7 @@ class FakeAccountStatusChangeDelegateNotifierFactory
   sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
   FakeHostDeviceTimestampManagerFactory*
       fake_host_device_timestamp_manager_factory_;
+  OobeCompletionTracker* expected_oobe_completion_tracker_;
 
   FakeAccountStatusChangeDelegateNotifier* instance_ = nullptr;
 
@@ -494,6 +500,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
     fake_auth_token_validator_ = std::make_unique<FakeAuthTokenValidator>();
     fake_auth_token_validator_->set_expected_auth_token(kValidAuthToken);
 
+    fake_oobe_completion_tracker_ = std::make_unique<OobeCompletionTracker>();
+
     auto fake_android_sms_app_helper_delegate =
         std::make_unique<FakeAndroidSmsAppHelperDelegate>();
 
@@ -557,7 +565,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
     fake_account_status_change_delegate_notifier_factory_ =
         std::make_unique<FakeAccountStatusChangeDelegateNotifierFactory>(
             fake_host_status_provider_factory_.get(), test_pref_service_.get(),
-            fake_host_device_timestamp_manager_factory_.get());
+            fake_host_device_timestamp_manager_factory_.get(),
+            fake_oobe_completion_tracker_.get());
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         fake_account_status_change_delegate_notifier_factory_.get());
 
@@ -578,7 +587,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
     multidevice_setup_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
         test_pref_service_.get(), fake_device_sync_client_.get(),
-        fake_auth_token_validator_.get(),
+        fake_auth_token_validator_.get(), fake_oobe_completion_tracker_.get(),
         std::move(fake_android_sms_app_helper_delegate),
         std::move(fake_android_sms_pairing_state_tracker),
         fake_gcm_device_info_provider_.get());
@@ -859,6 +868,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
       test_pref_service_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
+  std::unique_ptr<OobeCompletionTracker> fake_oobe_completion_tracker_;
   std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
 
