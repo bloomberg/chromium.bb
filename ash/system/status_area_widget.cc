@@ -269,4 +269,16 @@ void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
   overview_button_tray_->UpdateShelfItemBackground(color);
 }
 
+void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+  views::Widget::OnMouseEvent(event);
+}
+
+void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN)
+    keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+  views::Widget::OnGestureEvent(event);
+}
+
 }  // namespace ash
