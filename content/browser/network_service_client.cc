@@ -489,4 +489,12 @@ void NetworkServiceClient::OnApplicationStateChange(
 }
 #endif
 
+void NetworkServiceClient::OnDataUseUpdate(
+    int32_t network_traffic_annotation_id_hash,
+    int64_t recv_bytes,
+    int64_t sent_bytes) {
+  GetContentClient()->browser()->OnNetworkServiceDataUseUpdate(
+      network_traffic_annotation_id_hash, recv_bytes, sent_bytes);
+}
+
 }  // namespace content

@@ -7,14 +7,18 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/features.h"
 
 namespace data_use_measurement {
 
@@ -27,8 +31,9 @@ void UpdateMetricsUsagePrefs(int64_t total_bytes,
   // case it's fine to skip the update.
   auto* metrics_service = g_browser_process->metrics_service();
   if (metrics_service) {
-    metrics_service->UpdateMetricsUsagePrefs(total_bytes, is_cellular,
-                                             is_metrics_service_usage);
+    metrics_service->UpdateMetricsUsagePrefs(
+        base::saturated_cast<int>(total_bytes), is_cellular,
+        is_metrics_service_usage);
   }
 }
 
@@ -47,10 +52,27 @@ void UpdateMetricsUsagePrefsOnUIThread(int64_t total_bytes,
 }
 }  // namespace
 
+// static
+std::unique_ptr<ChromeDataUseMeasurement>
+ChromeDataUseMeasurement::CreateForNetworkService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Do not create when NetworkService is disabled, since data use of URLLoader
+  // is reported via the network delegate callbacks.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return nullptr;
+
+  return std::make_unique<ChromeDataUseMeasurement>(
+      nullptr, nullptr, content::GetNetworkConnectionTracker());
+}
+
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
     std::unique_ptr<URLRequestClassifier> url_request_classifier,
-    DataUseAscriber* ascriber)
-    : DataUseMeasurement(std::move(url_request_classifier), ascriber) {}
+    DataUseAscriber* ascriber,
+    network::NetworkConnectionTracker* network_connection_tracker)
+    : DataUseMeasurement(std::move(url_request_classifier),
+                         ascriber,
+                         network_connection_tracker) {}
 
 void ChromeDataUseMeasurement::UpdateDataUseToMetricsService(
     int64_t total_bytes,
@@ -60,6 +82,34 @@ void ChromeDataUseMeasurement::UpdateDataUseToMetricsService(
   // metrics services data use.
   UpdateMetricsUsagePrefsOnUIThread(total_bytes, is_cellular,
                                     is_metrics_service_usage);
+}
+
+void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
+    int32_t network_traffic_annotation_id_hash,
+    int64_t recv_bytes,
+    int64_t sent_bytes) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  // Negative byte numbres is not a critical problem (i.e. should have no security implications) but
+  // is not expected. TODO(rajendrant): remove these DCHECKs or consider using uint in Mojo instead.
+  DCHECK_GE(recv_bytes, 0);
+  DCHECK_GE(sent_bytes, 0);
+
+  UpdateMetricsUsagePrefs(
+      recv_bytes, IsCurrentNetworkCellular(),
+      IsMetricsServiceRequest(network_traffic_annotation_id_hash));
+  UpdateMetricsUsagePrefs(
+      sent_bytes, IsCurrentNetworkCellular(),
+      IsMetricsServiceRequest(network_traffic_annotation_id_hash));
+  if (!DataUseMeasurement::IsUserRequest(network_traffic_annotation_id_hash)) {
+    ReportDataUsageServices(network_traffic_annotation_id_hash, UPSTREAM,
+                            CurrentAppState(), sent_bytes);
+    ReportDataUsageServices(network_traffic_annotation_id_hash, DOWNSTREAM,
+                            CurrentAppState(), recv_bytes);
+  }
+#if defined(OS_ANDROID)
+  MaybeRecordNetworkBytesOS();
+#endif
 }
 
 }  // namespace data_use_measurement
