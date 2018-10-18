@@ -544,7 +544,15 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges_.line_left,
                          border_edges_.line_right);
 
-    if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
+    if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
+        ToLayoutTableCell(layout_box).Table()->ShouldCollapseBorders()) {
+      // We have to clip here because the background would paint on top of the
+      // collapsed table borders otherwise, since this is a self-painting layer.
+      LayoutRect clip_rect = paint_rect;
+      clip_rect.Expand(ToLayoutTableCell(layout_box).BorderInsets());
+      state_saver.Save();
+      paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
+    } else if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
       FloatRoundedRect border = style.GetRoundedBorderFor(
           paint_rect, border_edges_.line_left, border_edges_.line_right);
