@@ -221,6 +221,9 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
   visual_bounds_in_screen_ = gfx::Rect();
   time_of_last_blur_ = base::Time::UnixEpoch();
   UpdateInputMethodObserver();
+
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardEnabledChanged(true);
 }
 
 void KeyboardController::DisableKeyboard() {
@@ -244,7 +247,7 @@ void KeyboardController::DisableKeyboard() {
 
   ime_observer_.RemoveAll();
   for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardDisabled();
+    observer.OnKeyboardEnabledChanged(false);
   ui_->SetController(nullptr);
   ui_.reset();
 }

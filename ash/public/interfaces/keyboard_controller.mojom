@@ -8,16 +8,17 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/keyboard/public/keyboard_config.mojom";
 
 interface KeyboardControllerObserver {
-  // Called when the virtual keyboard window is destroyed, e.g. a change from
-  // tablet mode to laptop mode. This is not called when the keyboard is hidden.
-  OnKeyboardWindowDestroyed();
+  // Called when the keyboard is enabled or disabled. If the keyboard is enabled
+  // while already enabled, this will be called twice, once when the keyboard is
+  // disabled and again when it is re-enabled.
+  OnKeyboardEnabledChanged(bool is_enabled);
+
+  // Called when the virtual keyboard configuration changes.
+  OnKeyboardConfigChanged(keyboard.mojom.KeyboardConfig config);
 
   // Called when the visibility of the virtual keyboard changes, e.g. an input
   // field is focused or blurred, or the user hides the keyboard.
   OnKeyboardVisibilityChanged(bool visible);
-
-  // Called when the virtual keyboard configuration changes.
-  OnKeyboardConfigChanged(keyboard.mojom.KeyboardConfig config);
 
   // Called when the keyboard bounds change.
   OnKeyboardVisibleBoundsChanged(gfx.mojom.Rect new_bounds);

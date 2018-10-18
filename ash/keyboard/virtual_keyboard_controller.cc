@@ -257,8 +257,6 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
   } else {
     Shell::Get()->DisableKeyboard();
   }
-  for (VirtualKeyboardControllerObserver& observer : observers_)
-    observer.OnVirtualKeyboardStateChanged(is_enabled);
 }
 
 void VirtualKeyboardController::ForceShowKeyboard() {
@@ -276,9 +274,13 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   keyboard_controller->ShowKeyboard(false);
 }
 
-void VirtualKeyboardController::OnKeyboardDisabled() {
-  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
+void VirtualKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
+  if (!is_enabled) {
+    // TODO(shend/shuchen): Consider moving this logic to ImeController.
+    // https://crbug.com/896284.
+    Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+        chromeos::input_method::mojom::ImeKeyset::kNone);
+  }
 }
 
 void VirtualKeyboardController::OnKeyboardHidden(bool is_temporary_hide) {
@@ -297,16 +299,6 @@ void VirtualKeyboardController::OnActiveUserSessionChanged(
   // Force on-screen keyboard to reset.
   if (keyboard::IsKeyboardEnabled())
     Shell::Get()->EnableKeyboard();
-}
-
-void VirtualKeyboardController::AddObserver(
-    VirtualKeyboardControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void VirtualKeyboardController::RemoveObserver(
-    VirtualKeyboardControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void VirtualKeyboardController::UpdateBluetoothDevice(

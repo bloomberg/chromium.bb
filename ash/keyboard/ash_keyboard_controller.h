@@ -71,7 +71,7 @@ class ASH_EXPORT AshKeyboardController
   void OnKeyboardConfigChanged() override;
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
-  void OnKeyboardDisabled() override;
+  void OnKeyboardEnabledChanged(bool is_enabled) override;
 
   SessionController* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;

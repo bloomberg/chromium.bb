@@ -18,6 +18,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -112,7 +113,7 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
 }
 
 bool IsVirtualKeyboardEnabled() {
-  return WMHelper::GetInstance()->IsAccessibilityKeyboardEnabled() ||
+  return keyboard::GetAccessibilityKeyboardEnabled() ||
          keyboard::GetTouchKeyboardEnabled();
 }
 
@@ -156,11 +157,9 @@ Keyboard::Keyboard(KeyboardDelegate* delegate, Seat* seat)
       expiration_delay_for_pending_key_acks_(base::TimeDelta::FromMilliseconds(
           kExpirationDelayForPendingKeyAcksMs)),
       weak_ptr_factory_(this) {
-  auto* helper = WMHelper::GetInstance();
   AddEventHandler();
   seat_->AddObserver(this);
-  helper->AddAccessibilityObserver(this);
-  helper->AddVirtualKeyboardControllerObserver(this);
+  keyboard::KeyboardController::Get()->AddObserver(this);
   OnSurfaceFocused(seat_->GetFocusedSurface());
 }
 
@@ -169,11 +168,9 @@ Keyboard::~Keyboard() {
     observer.OnKeyboardDestroying(this);
   if (focus_)
     focus_->RemoveSurfaceObserver(this);
-  auto* helper = WMHelper::GetInstance();
   RemoveEventHandler();
   seat_->RemoveObserver(this);
-  helper->RemoveVirtualKeyboardControllerObserver(this);
-  helper->RemoveAccessibilityObserver(this);
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
 }
 
 bool Keyboard::HasDeviceConfigurationDelegate() const {
@@ -183,7 +180,7 @@ bool Keyboard::HasDeviceConfigurationDelegate() const {
 void Keyboard::SetDeviceConfigurationDelegate(
     KeyboardDeviceConfigurationDelegate* delegate) {
   device_configuration_delegate_ = delegate;
-  OnAccessibilityStatusChanged();
+  OnKeyboardEnabledChanged(IsVirtualKeyboardEnabled());
 }
 
 void Keyboard::AddObserver(KeyboardObserver* observer) {
@@ -336,19 +333,9 @@ void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AccessibilityObserver overrides:
+// keyboard::KeyboardControllerObserver overrides:
 
-void Keyboard::OnAccessibilityStatusChanged() {
-  if (device_configuration_delegate_) {
-    device_configuration_delegate_->OnKeyboardTypeChanged(
-        !IsVirtualKeyboardEnabled());
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// VirtualKeyboardController::Observer overrides:
-
-void Keyboard::OnVirtualKeyboardStateChanged(bool enabled) {
+void Keyboard::OnKeyboardEnabledChanged(bool enabled) {
   if (device_configuration_delegate_)
     device_configuration_delegate_->OnKeyboardTypeChanged(!enabled);
 }

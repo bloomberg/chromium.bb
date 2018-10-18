@@ -393,7 +393,6 @@ component("ash") {
     "keyboard/virtual_keyboard_container_layout_manager.h",
     "keyboard/virtual_keyboard_controller.cc",
     "keyboard/virtual_keyboard_controller.h",
-    "keyboard/virtual_keyboard_controller_observer.h",
     "laser/laser_pointer_controller.cc",
     "laser/laser_pointer_controller.h",
     "laser/laser_pointer_view.cc",
