@@ -40,6 +40,16 @@ void TranslateFrame(UIView* view, UIOffset offset);
 // to avoid spelling mistakes.
 UIFont* GetUIFont(int fontFace, bool isBold, CGFloat fontSize);
 
+// Sets dynamic font for the given |font| on iOS 11+ on the givel |label| or
+// |textField|. Use |maybe| versions to keep code short when dynamic types are
+// not in use yet.
+void SetUILabelScaledFont(UILabel* label, UIFont* font);
+void MaybeSetUILabelScaledFont(BOOL maybe, UILabel* label, UIFont* font);
+void SetUITextFieldScaledFont(UITextField* textField, UIFont* font);
+void MaybeSetUITextFieldScaledFont(BOOL maybe,
+                                   UITextField* textField,
+                                   UIFont* font);
+
 // Adds a border shadow around |view|.
 void AddBorderShadow(UIView* view, CGFloat offset, UIColor* color);
 

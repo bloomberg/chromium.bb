@@ -112,6 +112,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
         *_paymentRequest, *billingProfile);
     item.complete = _paymentRequest->profile_comparator()->IsShippingComplete(
         billingProfile);
+    item.useScaledFont = YES;
     if (self.selectedBillingProfile == billingProfile)
       _selectedItemIndex = index;
 

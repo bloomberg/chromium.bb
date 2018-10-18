@@ -134,6 +134,7 @@ using ::payment_request_util::GetShippingSectionTitle;
     item.address = GetShippingAddressLabelFromAutofillProfile(*profile);
     item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.useScaledFont = YES;
     return item;
   }
 
@@ -255,6 +256,7 @@ using ::payment_request_util::GetShippingSectionTitle;
     if (self.paymentRequest->request_payer_email())
       item.email = GetEmailLabelFromAutofillProfile(*profile);
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.useScaledFont = YES;
     return item;
   }
 
@@ -273,6 +275,7 @@ using ::payment_request_util::GetShippingSectionTitle;
 
 - (CollectionViewFooterItem*)footerItem {
   CollectionViewFooterItem* item = [[CollectionViewFooterItem alloc] init];
+  item.useScaledFont = YES;
 
   // If no transaction has been completed so far, choose which string to display
   // as a function of the profile's signed in state. Otherwise, always show the

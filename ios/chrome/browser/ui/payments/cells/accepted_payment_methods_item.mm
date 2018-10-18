@@ -94,7 +94,7 @@ const CGFloat kHorizontalSpacingBetweenIcons = 4.5;
 
 // Set default font and text colors for labels.
 - (void)setDefaultViewStyling {
-  _messageLabel.font = [MDCTypography body2Font];
+  SetUILabelScaledFont(_messageLabel, [MDCTypography body2Font]);
   _messageLabel.textColor = [[MDCPalette greyPalette] tint600];
   _messageLabel.numberOfLines = 0;
   _messageLabel.lineBreakMode = NSLineBreakByWordWrapping;

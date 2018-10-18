@@ -127,6 +127,7 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
         *_paymentRequest, *shippingAddress);
     item.complete = _paymentRequest->profile_comparator()->IsShippingComplete(
         shippingAddress);
+    item.useScaledFont = YES;
     if (_paymentRequest->selected_shipping_profile() == shippingAddress)
       _selectedItemIndex = index;
 

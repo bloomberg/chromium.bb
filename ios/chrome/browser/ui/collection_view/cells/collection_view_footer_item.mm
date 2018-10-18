@@ -36,8 +36,10 @@ const CGFloat kVerticalPadding = 16;
 - (void)setLabelLinkURL:(const GURL&)URL
           withCellStyle:(CollectionViewCellStyle)cellStyle;
 
-// Updates the cell's fonts and colors for the given |cellStyle|.
-- (void)updateForStyle:(CollectionViewCellStyle)cellStyle;
+// Updates the cell's fonts and colors for the given |cellStyle| and uses
+// dynamic types if they are available (iOS 11+).
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle
+       withFontScaling:(BOOL)withFontScaling;
 
 @end
 
@@ -48,6 +50,7 @@ const CGFloat kVerticalPadding = 16;
 @synthesize linkDelegate = _linkDelegate;
 @synthesize image = _image;
 @synthesize cellStyle = _cellStyle;
+@synthesize useScaledFont = _useScaledFont;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -65,7 +68,7 @@ const CGFloat kVerticalPadding = 16;
   [super configureCell:cell];
 
   // Update fonts and colors before setting the link label URL.
-  [cell updateForStyle:_cellStyle];
+  [cell updateForStyle:_cellStyle withFontScaling:_useScaledFont];
   cell.textLabel.text = _text;
   [cell setLabelLinkURL:_linkURL withCellStyle:_cellStyle];
   cell.linkDelegate = _linkDelegate;
@@ -152,15 +155,17 @@ const CGFloat kVerticalPadding = 16;
   }
 }
 
-- (void)updateForStyle:(CollectionViewCellStyle)cellStyle {
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle
+       withFontScaling:(BOOL)withFontScaling {
   if (cellStyle == CollectionViewCellStyle::kUIKit) {
     self.textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
     self.textLabel.textColor = UIColorFromRGB(kUIKitFooterTextColor);
   } else {
     self.textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
     self.textLabel.shadowColor = [UIColor whiteColor];
-    self.textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
     self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
+                              [[MDCTypography fontLoader] mediumFontOfSize:14]);
   }
 }
 

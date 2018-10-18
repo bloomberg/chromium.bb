@@ -28,8 +28,10 @@ const CGFloat kLabelAndFieldGap = 5;
 }  // namespace
 
 @interface AutofillEditCell ()
-// Updates the cell's fonts and colors for the given |cellStyle|.
-- (void)updateForStyle:(CollectionViewCellStyle)cellStyle;
+// Updates the cell's fonts and colors for the given |cellStyle| and uses
+// dynamic font types if they are available (iOS 11+).
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle
+       withFontScaling:(BOOL)withFontScaling;
 @end
 
 @implementation AutofillEditItem
@@ -45,6 +47,7 @@ const CGFloat kLabelAndFieldGap = 5;
 @synthesize returnKeyType = _returnKeyType;
 @synthesize keyboardType = _keyboardType;
 @synthesize autoCapitalizationType = _autoCapitalizationType;
+@synthesize useScaledFont = _useScaledFont;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -64,7 +67,7 @@ const CGFloat kLabelAndFieldGap = 5;
   [super configureCell:cell];
 
   // Update fonts and colors before changing anything else.
-  [cell updateForStyle:self.cellStyle];
+  [cell updateForStyle:self.cellStyle withFontScaling:self.useScaledFont];
 
   NSString* textLabelFormat = self.required ? @"%@*" : @"%@";
   cell.textLabel.text =
@@ -169,16 +172,20 @@ const CGFloat kLabelAndFieldGap = 5;
   return self;
 }
 
-- (void)updateForStyle:(CollectionViewCellStyle)cellStyle {
+- (void)updateForStyle:(CollectionViewCellStyle)cellStyle
+       withFontScaling:(BOOL)withFontScaling {
   if (cellStyle == CollectionViewCellStyle::kUIKit) {
     self.textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
     self.textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     self.textField.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
     self.textField.textColor = [UIColor grayColor];
   } else {
-    self.textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
+                              [[MDCTypography fontLoader] mediumFontOfSize:14]);
     self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    self.textField.font = [[MDCTypography fontLoader] lightFontOfSize:16];
+    MaybeSetUITextFieldScaledFont(
+        withFontScaling, self.textField,
+        [[MDCTypography fontLoader] lightFontOfSize:16]);
     self.textField.textColor = [[MDCPalette greyPalette] tint500];
   }
 }
