@@ -138,6 +138,14 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideUp) {
   auto window = CreateWindowForTesting();
   ASSERT_TRUE(window->IsVisible());
 
+  // Tests that flinging down in this mode will keep the window visible.
+  DoPress(Mode::kSlideUpToShow);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300), nullptr);
+  ASSERT_TRUE(window->IsVisible());
+
+  // Tests that flinging up in this mode will hide the window and show the
+  // home launcher.
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300), nullptr);
@@ -153,6 +161,13 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideDown) {
   wm::GetWindowState(window.get())->Minimize();
   ASSERT_FALSE(window->IsVisible());
 
+  // Tests that flinging up in this mode will not show the mru window.
+  DoPress(Mode::kSlideDownToHide);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), -10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100), nullptr);
+  ASSERT_FALSE(window->IsVisible());
+
+  // Tests that flinging down in this mode will show the mru window.
   DoPress(Mode::kSlideDownToHide);
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100), nullptr);
