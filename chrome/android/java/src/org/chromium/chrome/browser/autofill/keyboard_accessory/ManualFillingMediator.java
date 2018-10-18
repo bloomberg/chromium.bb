@@ -435,8 +435,13 @@ class ManualFillingMediator
      */
     private void updateInfobarState(boolean shouldBeHidden) {
         if (mActiveBrowserTab == null) return;
-        if (InfoBarContainer.get(mActiveBrowserTab) == null) return;
-        InfoBarContainer.get(mActiveBrowserTab).setHidden(shouldBeHidden);
+        InfoBarContainer infobarContainer = InfoBarContainer.get(mActiveBrowserTab);
+        if (infobarContainer == null) return;
+        boolean suppressedByKeyboardOrAccessory = shouldBeHidden;
+        ViewGroup contentView = getContentView();
+        suppressedByKeyboardOrAccessory |= contentView != null
+                && mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(mActivity, contentView);
+        infobarContainer.setHidden(suppressedByKeyboardOrAccessory);
     }
 
     @VisibleForTesting

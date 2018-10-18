@@ -345,29 +345,56 @@ public class ManualFillingIntegrationTest {
 
     @Test
     @SmallTest
+    public void testInfobarStaysHiddenWhileChangingFieldsWithOpenKeybaord()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+
+        InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
+        mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
+        final String kInfoBarText = "SomeInfoBar";
+        ThreadUtils.runOnUiThread(() -> {
+            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
+                    InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
+                    false);
+        });
+        listener.addInfoBarAnimationFinished("InfoBar not added.");
+
+        mHelper.createTestTab();
+        whenDisplayed(withText(kInfoBarText));
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
+
+        // Clicking another field hides the accessory, but the InfoBar should remain invisible.
+        mHelper.clickEmailField(false);
+        assertThat(mActivityTestRule.getInfoBarContainer().getVisibility(), is(not(View.VISIBLE)));
+
+        // Close the keyboard to bring back the InfoBar.
+        mActivityTestRule.getKeyboardDelegate().hideKeyboard(null);
+
+        mHelper.waitForKeyboardToDisappear();
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
+
+        whenDisplayed(withText(kInfoBarText));
+    }
+
+    @Test
+    @SmallTest
     public void testInfobarStaysHiddenWhenOpeningSheet()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
-        // TODO Create an infobar
-        InfoBarTestAnimationListener mListener = new InfoBarTestAnimationListener();
-        mActivityTestRule.getInfoBarContainer().addAnimationListener(mListener);
-        final SimpleConfirmInfoBarBuilder.Listener testListener =
-                new SimpleConfirmInfoBarBuilder.Listener() {
-                    @Override
-                    public void onInfoBarDismissed() {}
-                    @Override
-                    public boolean onInfoBarButtonClicked(boolean isPrimary) {
-                        return false;
-                    }
-                };
+        InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
+        mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
         ThreadUtils.runOnUiThread(() -> {
             SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
-                    testListener, InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, 0,
-                    kInfoBarText, null, null, false);
+                    InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
+                    false);
         });
-        mListener.addInfoBarAnimationFinished("InfoBar not added.");
+        listener.addInfoBarAnimationFinished("InfoBar not added.");
 
         mHelper.createTestTab();
         whenDisplayed(withText(kInfoBarText));
