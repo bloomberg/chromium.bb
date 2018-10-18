@@ -257,6 +257,10 @@ bool Surface::QueueFrame(
         FrameData(std::move(frame), frame_index, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
+    // Ask SurfaceDependencyTracker to inform |this| when it is embedded.
+    if (block_activation)
+      surface_manager_->dependency_tracker()->TrackEmbedding(this);
+
     // If the deadline is in the past, then the CompositorFrame will activate
     // immediately.
     if (deadline_->Set(ResolveFrameDeadline(frame))) {

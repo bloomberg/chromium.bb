@@ -65,28 +65,6 @@ CompositorFrame MakeCompositorFrame(
 
 }  // namespace
 
-class FakeExternalBeginFrameSourceClient
-    : public FakeExternalBeginFrameSource::Client {
- public:
-  FakeExternalBeginFrameSourceClient() = default;
-  ~FakeExternalBeginFrameSourceClient() = default;
-
-  bool has_observers() const { return observer_count_ > 0; }
-
-  // FakeExternalBeginFrameSource::Client implementation:
-  void OnAddObserver(BeginFrameObserver* obs) override { ++observer_count_; }
-
-  void OnRemoveObserver(BeginFrameObserver* obs) override {
-    DCHECK_GT(observer_count_, 0);
-    --observer_count_;
-  }
-
- private:
-  int observer_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeExternalBeginFrameSourceClient);
-};
-
 class SurfaceSynchronizationTest : public testing::Test {
  public:
   SurfaceSynchronizationTest()
@@ -186,6 +164,11 @@ class SurfaceSynchronizationTest : public testing::Test {
     return FrameDeadline(Now(), 4u, BeginFrameArgs::DefaultInterval(), false);
   }
 
+  FrameDeadline MakeDeadline(uint32_t deadline_in_frames) {
+    return FrameDeadline(Now(), deadline_in_frames,
+                         BeginFrameArgs::DefaultInterval(), false);
+  }
+
   void SendNextBeginFrame() {
     // Creep the time forward so that any BeginFrameArgs is not equal to the
     // last one otherwise we violate the BeginFrameSource contract.
@@ -212,7 +195,6 @@ class SurfaceSynchronizationTest : public testing::Test {
 
     begin_frame_source_ =
         std::make_unique<FakeExternalBeginFrameSource>(0.f, false);
-    begin_frame_source_->SetClient(&begin_frame_source_client_);
     now_src_ = std::make_unique<base::SimpleTestTickClock>();
     frame_sink_manager_.surface_manager()->SetTickClockForTesting(
         now_src_.get());
@@ -270,7 +252,6 @@ class SurfaceSynchronizationTest : public testing::Test {
   ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl frame_sink_manager_;
   FakeSurfaceObserver surface_observer_;
-  FakeExternalBeginFrameSourceClient begin_frame_source_client_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::unordered_map<FrameSinkId,
                      std::unique_ptr<CompositorFrameSinkSupport>,
@@ -2954,6 +2935,46 @@ TEST_F(SurfaceSynchronizationTest, ChildBlockedOnParentActivatesAfterDeadline) {
   EXPECT_FALSE(child_surface2->has_deadline());
 }
 
+// This test verifies that if a child-initiated synchronization is initiated
+// with a deadline in the past, then the frame will immediately activate and
+// be marked as having a dependent frame so that it does not block again in
+// the future.
+TEST_F(SurfaceSynchronizationTest, ChildBlockedOnParentDeadlineInPast) {
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
+
+  // |child_id1| Surface should immediately activate.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* child_surface1 = GetSurfaceForId(child_id1);
+  ASSERT_NE(nullptr, child_surface1);
+  EXPECT_FALSE(child_surface1->HasPendingFrame());
+  EXPECT_TRUE(child_surface1->HasActiveFrame());
+  EXPECT_FALSE(child_surface1->HasDependentFrame());
+  EXPECT_FALSE(child_surface1->has_deadline());
+
+  // Pick a deadline in the near future.
+  FrameDeadline deadline = MakeDeadline(1u);
+
+  // Advance time beyond the |deadline| above.
+  SendLateBeginFrame();
+
+  // |child_id2| Surface should activate because it was submitted with a
+  // deadline in the past.
+  child_support1().SubmitCompositorFrame(
+      child_id2.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(), deadline));
+  Surface* child_surface2 = GetSurfaceForId(child_id2);
+  ASSERT_NE(nullptr, child_surface2);
+  EXPECT_FALSE(child_surface2->HasPendingFrame());
+  EXPECT_TRUE(child_surface2->HasActiveFrame());
+  EXPECT_FALSE(child_surface2->has_deadline());
+
+  // This failed before the latest change.
+  EXPECT_TRUE(child_surface2->HasDependentFrame());
+}
+
 // A child may submit CompositorFrame corresponding to a child-initiated
 // synchronization event followed by a CompositorFrame corresponding to a
 // parent-initiated synchronization event.
@@ -2981,6 +3002,7 @@ TEST_F(SurfaceSynchronizationTest,
   ASSERT_NE(nullptr, child_surface2);
   EXPECT_TRUE(child_surface2->HasPendingFrame());
   EXPECT_FALSE(child_surface2->HasActiveFrame());
+  EXPECT_TRUE(child_surface2->has_deadline());
 
   // |child_id3| Surface should activate immediately because it corresponds to a
   // parent-initiated synchronization event. |child_surface3| activating

@@ -30,6 +30,9 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   explicit SurfaceDependencyTracker(SurfaceManager* surface_manager);
   ~SurfaceDependencyTracker();
 
+  // Called when |surface| wishes to track when it is embedded.
+  void TrackEmbedding(Surface* surface);
+
   // Called when |surface| has a pending CompositorFrame and it wishes to be
   // informed when that surface's dependencies are resolved.
   void RequestSurfaceResolution(Surface* surface);
