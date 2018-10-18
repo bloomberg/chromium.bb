@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
@@ -58,8 +59,8 @@ KURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {
   // remote-playback://<encoded-data> where |encoded-data| is base64 URL
   // encoded string representation of the source URL.
   std::string source_string = source.GetString().Utf8();
-  String encoded_source =
-      WTF::Base64URLEncode(source_string.data(), source_string.length());
+  String encoded_source = WTF::Base64URLEncode(
+      source_string.data(), SafeCast<unsigned>(source_string.length()));
 
   return KURL("remote-playback://" + encoded_source);
 }

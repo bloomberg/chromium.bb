@@ -2412,7 +2412,7 @@ void WebGLRenderingContextBase::deleteTexture(WebGLTexture* texture) {
     return;
 
   int max_bound_texture_index = -1;
-  for (size_t i = 0; i < one_plus_max_non_default_texture_unit_; ++i) {
+  for (wtf_size_t i = 0; i < one_plus_max_non_default_texture_unit_; ++i) {
     if (texture == texture_units_[i].texture2d_binding_) {
       texture_units_[i].texture2d_binding_ = nullptr;
       max_bound_texture_index = i;
@@ -2950,8 +2950,7 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
   WebGLExtension* extension = nullptr;
 
   if (!isContextLost()) {
-    for (size_t i = 0; i < extensions_.size(); ++i) {
-      ExtensionTracker* tracker = extensions_[i];
+    for (ExtensionTracker* tracker : extensions_) {
       if (tracker->MatchesNameWithPrefixes(name)) {
         if (ExtensionSupportedAndAllowed(tracker)) {
           extension = tracker->GetExtension(this);
@@ -3550,8 +3549,7 @@ WebGLRenderingContextBase::getSupportedExtensions() {
 
   Vector<String> result;
 
-  for (size_t i = 0; i < extensions_.size(); ++i) {
-    ExtensionTracker* tracker = extensions_[i].Get();
+  for (ExtensionTracker* tracker : extensions_) {
     if (ExtensionSupportedAndAllowed(tracker)) {
       const char* const* prefixes = tracker->Prefixes();
       for (; *prefixes; ++prefixes) {
@@ -4296,7 +4294,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
                                                  GLenum format,
                                                  GLenum type,
                                                  DOMArrayBufferView* pixels,
-                                                 GLuint offset) {
+                                                 long long offset) {
   if (isContextLost())
     return;
   // Due to WebGL's same-origin restrictions, it is not possible to
@@ -6461,12 +6459,11 @@ void WebGLRenderingContextBase::LoseContextImpl(
   auto_recovery_method_ = auto_recovery_method;
 
   // Lose all the extensions.
-  for (size_t i = 0; i < extensions_.size(); ++i) {
-    ExtensionTracker* tracker = extensions_[i];
+  for (ExtensionTracker* tracker : extensions_) {
     tracker->LoseExtension(false);
   }
 
-  for (size_t i = 0; i < kWebGLExtensionNameCount; ++i)
+  for (wtf_size_t i = 0; i < kWebGLExtensionNameCount; ++i)
     extension_enabled_[i] = false;
 
   RemoveAllCompressedTextureFormats();
@@ -6846,7 +6843,7 @@ bool WebGLRenderingContextBase::ValidateSize(const char* function_name,
 
 bool WebGLRenderingContextBase::ValidateString(const char* function_name,
                                                const String& string) {
-  for (size_t i = 0; i < string.length(); ++i) {
+  for (wtf_size_t i = 0; i < string.length(); ++i) {
     if (!ValidateCharacter(string[i])) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "string not ASCII");
       return false;
@@ -6856,7 +6853,7 @@ bool WebGLRenderingContextBase::ValidateString(const char* function_name,
 }
 
 bool WebGLRenderingContextBase::ValidateShaderSource(const String& string) {
-  for (size_t i = 0; i < string.length(); ++i) {
+  for (wtf_size_t i = 0; i < string.length(); ++i) {
     // line-continuation character \ is supported in WebGL 2.0.
     if (IsWebGL2OrHigher() && string[i] == '\\') {
       continue;
@@ -7771,13 +7768,13 @@ String WebGLRenderingContextBase::EnsureNotNull(const String& text) const {
 }
 
 WebGLRenderingContextBase::LRUCanvasResourceProviderCache::
-    LRUCanvasResourceProviderCache(size_t capacity)
+    LRUCanvasResourceProviderCache(wtf_size_t capacity)
     : resource_providers_(capacity) {}
 
 CanvasResourceProvider* WebGLRenderingContextBase::
     LRUCanvasResourceProviderCache::GetCanvasResourceProvider(
         const IntSize& size) {
-  size_t i;
+  wtf_size_t i;
   for (i = 0; i < resource_providers_.size(); ++i) {
     CanvasResourceProvider* resource_provider = resource_providers_[i].get();
     if (!resource_provider)
@@ -7797,7 +7794,7 @@ CanvasResourceProvider* WebGLRenderingContextBase::
       nullptr));  // canvas_resource_dispatcher
   if (!temp)
     return nullptr;
-  i = std::min(static_cast<size_t>(resource_providers_.size() - 1), i);
+  i = std::min(resource_providers_.size() - 1, i);
   resource_providers_[i] = std::move(temp);
 
   CanvasResourceProvider* resource_provider = resource_providers_[i].get();
@@ -7806,8 +7803,8 @@ CanvasResourceProvider* WebGLRenderingContextBase::
 }
 
 void WebGLRenderingContextBase::LRUCanvasResourceProviderCache::BubbleToFront(
-    size_t idx) {
-  for (size_t i = idx; i > 0; --i)
+    wtf_size_t idx) {
+  for (wtf_size_t i = idx; i > 0; --i)
     resource_providers_[i].swap(resource_providers_[i - 1]);
 }
 

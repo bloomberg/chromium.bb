@@ -232,7 +232,7 @@ ScriptPromise Permissions::requestAll(
   Vector<PermissionDescriptorPtr> internal_permissions;
   Vector<int> caller_index_to_internal_index;
   caller_index_to_internal_index.resize(raw_permissions.size());
-  for (size_t i = 0; i < raw_permissions.size(); ++i) {
+  for (wtf_size_t i = 0; i < raw_permissions.size(); ++i) {
     const ScriptValue& raw_permission = raw_permissions[i];
 
     auto descriptor =
@@ -241,8 +241,8 @@ ScriptPromise Permissions::requestAll(
       return ScriptPromise();
 
     // Only append permissions types that are not already present in the vector.
-    size_t internal_index = kNotFound;
-    for (size_t j = 0; j < internal_permissions.size(); ++j) {
+    wtf_size_t internal_index = kNotFound;
+    for (wtf_size_t j = 0; j < internal_permissions.size(); ++j) {
       if (internal_permissions[j]->name == descriptor->name) {
         internal_index = j;
         break;
