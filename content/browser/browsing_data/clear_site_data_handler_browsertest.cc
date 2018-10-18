@@ -936,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
 // Disabled due to flakiness. See https://crbug.com/894572.
 // Integration test for the deletion of cache entries.
 IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
-                       Disabled_CacheIntegrationTest) {
+                       DISABLED_CacheIntegrationTest) {
   GURL url1 = GetURLForHTTPSHost1("/cachetime/foo");
   GURL url2 = GetURLForHTTPSHost1("/cachetime/bar");
   GURL url3 = GetURLForHTTPSHost2("/cachetime/foo");
