@@ -9,13 +9,13 @@
 #include "base/ios/block_types.h"
 #include "ios/chrome/browser/infobars/infobar_container_delegate_ios.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
-#include "ios/chrome/browser/infobars/infobar_container_view.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#include "ios/chrome/browser/ui/infobars/infobar_container_view.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
@@ -41,6 +41,9 @@
 }
 @property(nonatomic, assign) TabModel* tabModel;
 
+// UIView that contains Infobars.
+@property(nonatomic, strong) InfoBarContainerView* containerView;
+
 @end
 
 @implementation InfobarCoordinator
@@ -54,20 +57,23 @@
   if (self) {
     _tabModel = tabModel;
     [_tabModel addObserver:self];
+    _containerView = [[InfoBarContainerView alloc] init];
+    [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                        UIViewAutoresizingFlexibleTopMargin];
     _infoBarContainerDelegate.reset(new InfoBarContainerDelegateIOS(self));
-    _infoBarContainer.reset(
-        new InfoBarContainerIOS(_infoBarContainerDelegate.get()));
+    _infoBarContainer.reset(new InfoBarContainerIOS(
+        _infoBarContainerDelegate.get(), _containerView));
   }
   return self;
 }
 
 - (void)start {
-  [self.baseViewController.view insertSubview:_infoBarContainer->view()
+  [self.baseViewController.view insertSubview:self.containerView
                                  aboveSubview:self.positioner.parentView];
   CGRect infoBarFrame = self.positioner.parentView.frame;
   infoBarFrame.origin.y = CGRectGetMaxY(infoBarFrame);
   infoBarFrame.size.height = 0;
-  [_infoBarContainer->view() setFrame:infoBarFrame];
+  [self.containerView setFrame:infoBarFrame];
 
   infobars::InfoBarManager* infoBarManager = nullptr;
   if (self.tabModel.currentTab) {
@@ -89,15 +95,15 @@
 #pragma mark - Public Interface
 
 - (UIView*)view {
-  return _infoBarContainer->view();
+  return self.containerView;
 }
 
 - (void)restoreInfobars {
-  _infoBarContainer->RestoreInfobars();
+  [self.containerView animateInfoBarContainerToAlpha:1];
 }
 
 - (void)suspendInfobars {
-  _infoBarContainer->SuspendInfobars();
+  [self.containerView animateInfoBarContainerToAlpha:0];
 }
 
 
@@ -117,7 +123,7 @@
 #pragma mark - InfobarContainerStateDelegate
 
 - (void)infoBarContainerStateDidChangeAnimated:(BOOL)animated {
-  InfoBarContainerView* infoBarContainerView = _infoBarContainer->view();
+  InfoBarContainerView* infoBarContainerView = self.containerView;
   DCHECK(infoBarContainerView);
   CGRect containerFrame = infoBarContainerView.frame;
   CGFloat height = [infoBarContainerView topmostVisibleInfoBarHeight];
