@@ -832,7 +832,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
                        kUnitTestSuccess);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MessageTypeTest) {
+// Intermittent leaks on ASan/LSan runs: crbug.com/889923
+#if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_MessageTypeTest DISABLED_MessageTypeTest
+#else
+#define MAYBE_MessageTypeTest MessageTypeTest
+#endif
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
   TestPlaybackCase(kExternalClearKeyMessageTypeTestKeySystem, kNoSessionToLoad,
                    media::kEnded);
 
