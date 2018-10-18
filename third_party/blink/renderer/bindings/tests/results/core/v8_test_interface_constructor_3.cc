@@ -61,7 +61,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceConstructor3V8Internal {
+namespace test_interface_constructor_3_v8_internal {
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_ConstructorCallback");
@@ -82,7 +82,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, wrapper);
 }
 
-} // namespace TestInterfaceConstructor3V8Internal
+}  // namespace test_interface_constructor_3_v8_internal
 
 void V8TestInterfaceConstructor3::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_Constructor");
@@ -97,7 +97,7 @@ void V8TestInterfaceConstructor3::constructorCallback(const v8::FunctionCallback
     return;
   }
 
-  TestInterfaceConstructor3V8Internal::constructor(info);
+  test_interface_constructor_3_v8_internal::constructor(info);
 }
 
 static void installV8TestInterfaceConstructor3Template(

@@ -65,7 +65,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceNodeV8Internal {
+namespace test_interface_node_v8_internal {
 
 static void nodeNameAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -283,12 +283,12 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
   V8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument));
 }
 
-} // namespace TestInterfaceNodeV8Internal
+}  // namespace test_interface_node_v8_internal
 
 void V8TestInterfaceNode::nodeNameAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_nodeName_Getter");
 
-  TestInterfaceNodeV8Internal::nodeNameAttributeGetter(info);
+  test_interface_node_v8_internal::nodeNameAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::nodeNameAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -296,13 +296,13 @@ void V8TestInterfaceNode::nodeNameAttributeSetterCallback(const v8::FunctionCall
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestInterfaceNodeV8Internal::nodeNameAttributeSetter(v8Value, info);
+  test_interface_node_v8_internal::nodeNameAttributeSetter(v8Value, info);
 }
 
 void V8TestInterfaceNode::stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_stringAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::stringAttributeAttributeGetter(info);
+  test_interface_node_v8_internal::stringAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -310,19 +310,19 @@ void V8TestInterfaceNode::stringAttributeAttributeSetterCallback(const v8::Funct
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestInterfaceNodeV8Internal::stringAttributeAttributeSetter(v8Value, info);
+  test_interface_node_v8_internal::stringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterfaceNode::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_readonlyTestInterfaceEmptyAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetter(info);
+  test_interface_node_v8_internal::readonlyTestInterfaceEmptyAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::eventHandlerAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_eventHandlerAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::eventHandlerAttributeAttributeGetter(info);
+  test_interface_node_v8_internal::eventHandlerAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::eventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -330,25 +330,25 @@ void V8TestInterfaceNode::eventHandlerAttributeAttributeSetterCallback(const v8:
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestInterfaceNodeV8Internal::eventHandlerAttributeAttributeSetter(v8Value, info);
+  test_interface_node_v8_internal::eventHandlerAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterfaceNode::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_perWorldBindingsReadonlyTestInterfaceEmptyAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(info);
+  test_interface_node_v8_internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_perWorldBindingsReadonlyTestInterfaceEmptyAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterForMainWorld(info);
+  test_interface_node_v8_internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterForMainWorld(info);
 }
 
 void V8TestInterfaceNode::reflectStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_reflectStringAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::reflectStringAttributeAttributeGetter(info);
+  test_interface_node_v8_internal::reflectStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::reflectStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -356,13 +356,13 @@ void V8TestInterfaceNode::reflectStringAttributeAttributeSetterCallback(const v8
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestInterfaceNodeV8Internal::reflectStringAttributeAttributeSetter(v8Value, info);
+  test_interface_node_v8_internal::reflectStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterfaceNode::reflectUrlStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_reflectUrlStringAttribute_Getter");
 
-  TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeGetter(info);
+  test_interface_node_v8_internal::reflectUrlStringAttributeAttributeGetter(info);
 }
 
 void V8TestInterfaceNode::reflectUrlStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -370,37 +370,37 @@ void V8TestInterfaceNode::reflectUrlStringAttributeAttributeSetterCallback(const
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetter(v8Value, info);
+  test_interface_node_v8_internal::reflectUrlStringAttributeAttributeSetter(v8Value, info);
 }
 
 void V8TestInterfaceNode::testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_testInterfaceEmptyMethod");
 
-  TestInterfaceNodeV8Internal::testInterfaceEmptyMethodMethod(info);
+  test_interface_node_v8_internal::testInterfaceEmptyMethodMethod(info);
 }
 
 void V8TestInterfaceNode::perWorldBindingsTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_perWorldBindingsTestInterfaceEmptyMethod");
 
-  TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodMethod(info);
+  test_interface_node_v8_internal::perWorldBindingsTestInterfaceEmptyMethodMethod(info);
 }
 
 void V8TestInterfaceNode::perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_perWorldBindingsTestInterfaceEmptyMethod");
 
-  TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodMethodForMainWorld(info);
+  test_interface_node_v8_internal::perWorldBindingsTestInterfaceEmptyMethodMethodForMainWorld(info);
 }
 
 void V8TestInterfaceNode::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg");
 
-  TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(info);
+  test_interface_node_v8_internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(info);
 }
 
 void V8TestInterfaceNode::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNode_perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg");
 
-  TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(info);
+  test_interface_node_v8_internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceNodeAccessors[] = {

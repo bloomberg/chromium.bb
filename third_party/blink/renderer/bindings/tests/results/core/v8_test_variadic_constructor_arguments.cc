@@ -61,7 +61,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestVariadicConstructorArgumentsV8Internal {
+namespace test_variadic_constructor_arguments_v8_internal {
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestVariadicConstructorArguments_ConstructorCallback");
@@ -79,7 +79,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   V8SetReturnValue(info, wrapper);
 }
 
-} // namespace TestVariadicConstructorArgumentsV8Internal
+}  // namespace test_variadic_constructor_arguments_v8_internal
 
 void V8TestVariadicConstructorArguments::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestVariadicConstructorArguments_Constructor");
@@ -94,7 +94,7 @@ void V8TestVariadicConstructorArguments::constructorCallback(const v8::FunctionC
     return;
   }
 
-  TestVariadicConstructorArgumentsV8Internal::constructor(info);
+  test_variadic_constructor_arguments_v8_internal::constructor(info);
 }
 
 static void installV8TestVariadicConstructorArgumentsTemplate(

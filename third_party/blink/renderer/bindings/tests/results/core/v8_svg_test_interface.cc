@@ -63,7 +63,7 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace SVGTestInterfaceV8Internal {
+namespace svg_test_interface_v8_internal {
 
 static void typeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -92,12 +92,12 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
   impl->setAttribute(SVGNames::typeAttr, cppValue);
 }
 
-} // namespace SVGTestInterfaceV8Internal
+}  // namespace svg_test_interface_v8_internal
 
 void V8SVGTestInterface::typeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_SVGTestInterface_type_Getter");
 
-  SVGTestInterfaceV8Internal::typeAttributeGetter(info);
+  svg_test_interface_v8_internal::typeAttributeGetter(info);
 }
 
 void V8SVGTestInterface::typeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -105,7 +105,7 @@ void V8SVGTestInterface::typeAttributeSetterCallback(const v8::FunctionCallbackI
 
   v8::Local<v8::Value> v8Value = info[0];
 
-  SVGTestInterfaceV8Internal::typeAttributeSetter(v8Value, info);
+  svg_test_interface_v8_internal::typeAttributeSetter(v8Value, info);
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8SVGTestInterfaceAccessors[] = {

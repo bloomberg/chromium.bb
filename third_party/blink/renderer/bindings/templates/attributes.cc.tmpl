@@ -272,7 +272,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.has_custom_getter %}
   {{v8_class}}::{{attribute.name}}AttributeGetterCustom(info);
   {% else %}
-  {{cpp_class_or_partial}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
+  {{internal_namespace}}::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
   {% endif %}
 }
 {% endmacro %}
@@ -503,9 +503,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.has_custom_setter %}
   {{v8_class}}::{{attribute.name}}AttributeSetterCustom(v8Value, info);
   {% elif attribute.has_cross_origin_setter %}
-  {{cpp_class_or_partial}}V8Internal::{{attribute.name}}AttributeSetter(v8Value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+  {{internal_namespace}}::{{attribute.name}}AttributeSetter(v8Value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
   {% else %}
-  {{cpp_class_or_partial}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
+  {{internal_namespace}}::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
   {% endif %}
   {% endif %}{# attribute.is_lenient_setter #}
 }

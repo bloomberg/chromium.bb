@@ -58,9 +58,9 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceEmptyV8Internal {
+namespace test_interface_empty_v8_internal {
 
-} // namespace TestInterfaceEmptyV8Internal
+}  // namespace test_interface_empty_v8_internal
 
 static void installV8TestInterfaceEmptyTemplate(
     v8::Isolate* isolate,
