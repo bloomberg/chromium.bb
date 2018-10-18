@@ -63,6 +63,11 @@ struct WebPoint;
 
 class WebWidget {
  public:
+  // Called during set up of the WebWidget to declare the WebLayerTreeView for
+  // the widget to use. This does not pass ownership, but the caller must keep
+  // the pointer valid until Close() is called.
+  virtual void SetLayerTreeView(WebLayerTreeView*) = 0;
+
   // This method closes and deletes the WebWidget.
   virtual void Close() {}
 

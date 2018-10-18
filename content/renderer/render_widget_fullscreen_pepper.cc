@@ -137,6 +137,11 @@ class PepperWidget : public WebWidget {
   virtual ~PepperWidget() {}
 
   // WebWidget API
+  void SetLayerTreeView(blink::WebLayerTreeView*) override {
+    // Does nothing, as the LayerTreeView can be accessed from the RenderWidget
+    // directly.
+  }
+
   void Close() override { delete this; }
 
   WebSize Size() override { return size_; }
@@ -341,8 +346,6 @@ void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
       layer_tree_view()->ClearRootLayer();
     return;
   }
-  if (!layer_tree_view())
-    InitializeLayerTreeView();
   UpdateLayerBounds();
   layer_->SetIsDrawable(true);
   layer_tree_view()->SetRootLayer(layer_);

@@ -102,12 +102,6 @@ void WebWidgetTestClient::StartDragging(blink::WebReferrerPolicy policy,
   web_widget_test_proxy_base_->event_sender()->DoDragDrop(data, mask);
 }
 
-blink::WebLayerTreeView* WebWidgetTestClient::InitializeLayerTreeView() {
-  // This call should go to the production client, not here.
-  NOTREACHED();
-  return nullptr;
-}
-
 bool WebWidgetTestClient::AllowsBrokenNullLayerTreeView() const {
   // This call should go to the production client, not here.
   NOTREACHED();

@@ -503,9 +503,12 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
+  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
-  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+  LayerTreeView* layer_tree_view = InitializeLayerTreeView();
+  web_widget->SetLayerTreeView(layer_tree_view);
 
   blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
   if (render_thread_impl)
@@ -1401,47 +1404,6 @@ void RenderWidget::SetScreenRects(const gfx::Rect& widget_screen_rect,
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
 
-blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
-  DCHECK(!host_closing_);
-
-  layer_tree_view_ = std::make_unique<LayerTreeView>(
-      this, compositor_deps_->GetCompositorMainThreadTaskRunner(),
-      compositor_deps_->GetCompositorImplThreadTaskRunner(),
-      compositor_deps_->GetTaskGraphRunner(),
-      compositor_deps_->GetWebMainThreadScheduler());
-  layer_tree_view_->Initialize(
-      GenerateLayerTreeSettings(compositor_deps_, for_oopif_,
-                                screen_info_.rect.size(),
-                                screen_info_.device_scale_factor),
-      compositor_deps_->CreateUkmRecorderFactory());
-
-  UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
-                             compositor_viewport_pixel_size_, screen_info_);
-  layer_tree_view_->SetRasterColorSpace(
-      screen_info_.color_space.GetRasterColorSpace());
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
-  // For background pages and certain tests, we don't want to trigger
-  // LayerTreeFrameSink creation.
-  bool should_generate_frame_sink =
-      !compositor_never_visible_ && RenderThreadImpl::current();
-  if (!should_generate_frame_sink)
-    layer_tree_view_->SetNeverVisible();
-
-  StartCompositor();
-  DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  layer_tree_view_->SetFrameSinkId(
-      viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
-
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread) {
-    input_event_queue_ = new MainThreadEventQueue(
-        this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
-        render_thread->GetWebMainThreadScheduler(), should_generate_frame_sink);
-  }
-
-  return layer_tree_view_.get();
-}
-
 void RenderWidget::IntrinsicSizingInfoChanged(
     const blink::WebIntrinsicSizingInfo& sizing_info) {
   Send(new WidgetHostMsg_IntrinsicSizingInfoChanged(routing_id_, sizing_info));
@@ -1559,6 +1521,48 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
   // that's okay.  It'll be ignored if as_popup is false, or the browser
   // process will impose a default position otherwise.
   SetPendingWindowRect(initial_rect_);
+}
+
+LayerTreeView* RenderWidget::InitializeLayerTreeView() {
+  TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
+  DCHECK(!host_closing_);
+
+  layer_tree_view_ = std::make_unique<LayerTreeView>(
+      this, compositor_deps_->GetCompositorMainThreadTaskRunner(),
+      compositor_deps_->GetCompositorImplThreadTaskRunner(),
+      compositor_deps_->GetTaskGraphRunner(),
+      compositor_deps_->GetWebMainThreadScheduler());
+  layer_tree_view_->Initialize(
+      GenerateLayerTreeSettings(compositor_deps_, for_oopif_,
+                                screen_info_.rect.size(),
+                                screen_info_.device_scale_factor),
+      compositor_deps_->CreateUkmRecorderFactory());
+
+  UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
+                             compositor_viewport_pixel_size_, screen_info_);
+  layer_tree_view_->SetRasterColorSpace(
+      screen_info_.color_space.GetRasterColorSpace());
+  layer_tree_view_->SetContentSourceId(current_content_source_id_);
+  // For background pages and certain tests, we don't want to trigger
+  // LayerTreeFrameSink creation.
+  bool should_generate_frame_sink =
+      !compositor_never_visible_ && RenderThreadImpl::current();
+  if (!should_generate_frame_sink)
+    layer_tree_view_->SetNeverVisible();
+
+  StartCompositor();
+  DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
+  layer_tree_view_->SetFrameSinkId(
+      viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread) {
+    input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
+        this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
+        render_thread->GetWebMainThreadScheduler(), should_generate_frame_sink);
+  }
+
+  return layer_tree_view_.get();
 }
 
 void RenderWidget::DoDeferredClose() {

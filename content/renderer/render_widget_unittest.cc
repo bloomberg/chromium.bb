@@ -131,6 +131,7 @@ class MockHandledEventCallback {
 
 class StubWebWidget : public blink::WebWidget {
  public:
+  void SetLayerTreeView(blink::WebLayerTreeView*) override {}
   blink::WebURL GetURLForDebugTrace() override { return {}; }
 };
 
@@ -361,8 +362,6 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
 // Tests that if a RenderWidget is auto-resized, it requests a new
 // viz::LocalSurfaceId to be allocated on the impl thread.
 TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
-  widget()->InitializeLayerTreeView();
-
   viz::ParentLocalSurfaceIdAllocator allocator;
 
   // Enable auto-resize.
