@@ -77,8 +77,8 @@ import java.util.regex.Pattern;
 /**
  * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
  */
-public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
-        View.OnLongClickListener {
+public class CustomTabToolbar
+        extends ToolbarLayout implements LocationBar, View.OnLongClickListener {
     private static final Object ORIGIN_SPAN = new Object();
 
     /**

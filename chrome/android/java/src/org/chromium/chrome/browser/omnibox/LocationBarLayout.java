@@ -4,20 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import static org.chromium.chrome.browser.toolbar.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
-
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
@@ -33,9 +24,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
@@ -56,12 +45,12 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
+import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList;
-import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -72,15 +61,12 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,7 +76,8 @@ import java.util.List;
  */
 public class LocationBarLayout extends FrameLayout
         implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
-                   ScrimView.ScrimObserver, LocationBarVoiceRecognitionHandler.Delegate {
+                   ScrimView.ScrimObserver, LocationBarVoiceRecognitionHandler.Delegate,
+                   StatusViewCoordinator.Delegate {
     private static final String TAG = "cr_LocationBar";
 
     private final int mLightScrimColor;
@@ -98,9 +85,6 @@ public class LocationBarLayout extends FrameLayout
     /** Params that control how the location bar interacts with the scrim. */
     private ScrimParams mScrimParams;
 
-    protected ImageView mNavigationButton;
-    protected AppCompatImageButton mSecurityButton;
-    protected TextView mVerboseStatusTextView;
     protected AppCompatImageButton mDeleteButton;
     protected AppCompatImageButton mMicButton;
     protected View mUrlBar;
@@ -119,12 +103,7 @@ public class LocationBarLayout extends FrameLayout
 
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
 
-    // The type of the navigation button currently showing.
-    private @NavigationButtonType int mNavigationButtonType;
-
-    // The type of the security icon currently active.
-    @DrawableRes
-    private int mSecurityIconResource;
+    protected StatusViewCoordinator mStatusViewCoordiantor;
 
     private String mOriginalUrl = "";
 
@@ -139,12 +118,6 @@ public class LocationBarLayout extends FrameLayout
     private boolean mUrlFocusedWithoutAnimations;
 
     private boolean mVoiceSearchEnabled;
-
-    @LocationBarButtonType private int mLocationBarButtonType;
-
-    private AnimatorSet mLocationBarIconActiveAnimator;
-    private AnimatorSet mSecurityButtonShowAnimator;
-    private AnimatorSet mNavigationIconShowAnimator;
 
     private OmniboxPrerender mOmniboxPrerender;
 
@@ -186,31 +159,6 @@ public class LocationBarLayout extends FrameLayout
             return false;
         }
     }
-
-    /**
-     * Specifies the types of buttons shown to signify different types of navigation elements.
-     */
-    @IntDef({NavigationButtonType.PAGE, NavigationButtonType.MAGNIFIER, NavigationButtonType.EMPTY})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface NavigationButtonType {
-        int PAGE = 0;
-        int MAGNIFIER = 1;
-        int EMPTY = 2;
-    }
-
-    /** Specifies which button should be shown in location bar, if any. */
-    @IntDef({LocationBarButtonType.NONE, LocationBarButtonType.SECURITY_ICON,
-            LocationBarButtonType.NAVIGATION_ICON})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface LocationBarButtonType {
-        /** No button should be shown. */
-        int NONE = 0;
-        /** Security button should be shown (includes offline icon). */
-        int SECURITY_ICON = 1;
-        /** Navigation button should be shown. */
-        int NAVIGATION_ICON = 2;
-    }
-
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
     }
@@ -222,15 +170,7 @@ public class LocationBarLayout extends FrameLayout
 
         mLightScrimColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.omnibox_focused_fading_background_color_light);
-        mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
-        assert mNavigationButton != null : "Missing navigation type view.";
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
-        mNavigationButtonType = mIsTablet ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
-
-        mSecurityButton = (AppCompatImageButton) findViewById(R.id.security_button);
-        mSecurityIconResource = 0;
-
-        mVerboseStatusTextView = (TextView) findViewById(R.id.location_bar_verbose_status);
 
         mDeleteButton = (AppCompatImageButton) findViewById(R.id.delete_button);
 
@@ -290,45 +230,9 @@ public class LocationBarLayout extends FrameLayout
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mLocationBarButtonType = LocationBarButtonType.NONE;
-        mNavigationButton.setVisibility(INVISIBLE);
-        mSecurityButton.setVisibility(INVISIBLE);
-
         setLayoutTransition(null);
 
-        AnimatorListenerAdapter iconChangeAnimatorListener = new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (animation == mSecurityButtonShowAnimator) {
-                    mNavigationButton.setVisibility(INVISIBLE);
-                } else if (animation == mNavigationIconShowAnimator) {
-                    mSecurityButton.setVisibility(INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onAnimationStart(Animator animation) {
-                if (animation == mSecurityButtonShowAnimator) {
-                    mSecurityButton.setVisibility(VISIBLE);
-                } else if (animation == mNavigationIconShowAnimator) {
-                    mNavigationButton.setVisibility(VISIBLE);
-                }
-            }
-        };
-
-        mSecurityButtonShowAnimator = new AnimatorSet();
-        mSecurityButtonShowAnimator.playTogether(
-                ObjectAnimator.ofFloat(mNavigationButton, ALPHA, 0),
-                ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1));
-        mSecurityButtonShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        mSecurityButtonShowAnimator.addListener(iconChangeAnimatorListener);
-
-        mNavigationIconShowAnimator = new AnimatorSet();
-        mNavigationIconShowAnimator.playTogether(
-                ObjectAnimator.ofFloat(mNavigationButton, ALPHA, 1),
-                ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 0));
-        mNavigationIconShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        mNavigationIconShowAnimator.addListener(iconChangeAnimatorListener);
+        mStatusViewCoordiantor = new StatusViewCoordinator(mIsTablet, this, this);
 
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());
 
@@ -379,6 +283,7 @@ public class LocationBarLayout extends FrameLayout
         mWindowAndroid = windowAndroid;
 
         mUrlCoordinator.setWindowDelegate(windowDelegate);
+        mStatusViewCoordiantor.setWindowAndroid(windowAndroid);
     }
 
     /**
@@ -410,9 +315,7 @@ public class LocationBarLayout extends FrameLayout
         mNativeInitialized = true;
 
         mAutocompleteCoordinator.onNativeInitialized();
-        mSecurityButton.setOnClickListener(this);
-        mNavigationButton.setOnClickListener(this);
-        mVerboseStatusTextView.setOnClickListener(this);
+        mStatusViewCoordiantor.onNativeInitialized();
         updateMicButtonState();
         mDeleteButton.setOnClickListener(this);
         mMicButton.setOnClickListener(this);
@@ -431,10 +334,8 @@ public class LocationBarLayout extends FrameLayout
         updateMicButtonVisibility(mUrlFocusChangePercent);
     }
 
-    /**
-     * @return Whether or not to animate icon changes.
-     */
-    protected boolean shouldAnimateIconChanges() {
+    @Override
+    public boolean shouldAnimateIconChanges() {
         return mUrlHasFocus;
     }
 
@@ -451,52 +352,6 @@ public class LocationBarLayout extends FrameLayout
                 : "Setting Autocomplete Profile before native side initialized";
         mAutocompleteCoordinator.setAutocompleteProfile(profile);
         mOmniboxPrerender.initializeForProfile(profile);
-    }
-
-    @LocationBarButtonType private int getLocationBarButtonToShow() {
-        // The navigation icon type is only applicable on tablets.  While smaller form factors do
-        // not have an icon visible to the user when the URL is focused, BUTTON_TYPE_NONE is not
-        // returned as it will trigger an undesired jump during the animation as it attempts to
-        // hide the icon.
-        if (mUrlHasFocus && mIsTablet) return LocationBarButtonType.NAVIGATION_ICON;
-
-        return mToolbarDataProvider.getSecurityIconResource(mIsTablet) != 0
-                ? LocationBarButtonType.SECURITY_ICON
-                : LocationBarButtonType.NONE;
-    }
-
-    private void changeLocationBarIcon() {
-        if (mLocationBarIconActiveAnimator != null && mLocationBarIconActiveAnimator.isRunning()) {
-            mLocationBarIconActiveAnimator.cancel();
-        }
-
-        mLocationBarButtonType = getLocationBarButtonToShow();
-
-        View viewToBeShown = null;
-        switch (mLocationBarButtonType) {
-            case LocationBarButtonType.SECURITY_ICON:
-                viewToBeShown = mSecurityButton;
-                mLocationBarIconActiveAnimator = mSecurityButtonShowAnimator;
-                break;
-            case LocationBarButtonType.NAVIGATION_ICON:
-                viewToBeShown = mNavigationButton;
-                mLocationBarIconActiveAnimator = mNavigationIconShowAnimator;
-                break;
-            case LocationBarButtonType.NONE:
-            default:
-                mLocationBarIconActiveAnimator = null;
-                return;
-        }
-
-        if (viewToBeShown.getVisibility() == VISIBLE && viewToBeShown.getAlpha() == 1) {
-            return;
-        }
-        if (shouldAnimateIconChanges()) {
-            mLocationBarIconActiveAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        } else {
-            mLocationBarIconActiveAnimator.setDuration(0);
-        }
-        mLocationBarIconActiveAnimator.start();
     }
 
     /** Focuses the current page. */
@@ -604,9 +459,7 @@ public class LocationBarLayout extends FrameLayout
 
         if (mToolbarDataProvider.isUsingBrandColor()) updateVisualsForState();
 
-        changeLocationBarIcon();
-        updateVerboseStatusVisibility();
-        updateLocationBarIconContainerVisibility();
+        mStatusViewCoordiantor.onUrlFocusChange(mUrlHasFocus);
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
 
@@ -704,6 +557,7 @@ public class LocationBarLayout extends FrameLayout
         updateButtonVisibility();
 
         mAutocompleteCoordinator.setToolbarDataProvider(toolbarDataProvider);
+        mStatusViewCoordiantor.setToolbarDataProvider(toolbarDataProvider);
         mUrlCoordinator.setOnFocusChangedCallback(this::onUrlFocusChange);
     }
 
@@ -727,28 +581,28 @@ public class LocationBarLayout extends FrameLayout
         return mToolbarDataProvider;
     }
 
-    private static @NavigationButtonType int suggestionTypeToNavigationButtonType(
-            OmniboxSuggestion suggestion) {
+    private static @StatusViewCoordinator.NavigationButtonType
+    int suggestionTypeToNavigationButtonType(OmniboxSuggestion suggestion) {
         if (suggestion.isUrlSuggestion()) {
-            return NavigationButtonType.PAGE;
+            return StatusViewCoordinator.NavigationButtonType.PAGE;
         } else {
-            return NavigationButtonType.MAGNIFIER;
+            return StatusViewCoordinator.NavigationButtonType.MAGNIFIER;
         }
     }
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
-        @NavigationButtonType
-        int type = NavigationButtonType.EMPTY;
+        @StatusViewCoordinator.NavigationButtonType
+        int type = StatusViewCoordinator.NavigationButtonType.EMPTY;
         if (mIsTablet && mAutocompleteCoordinator.getSuggestionCount() > 0) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mAutocompleteCoordinator.getSuggestionAt(0));
         } else if (mIsTablet) {
-            type = NavigationButtonType.PAGE;
+            type = StatusViewCoordinator.NavigationButtonType.PAGE;
         }
 
-        if (type != mNavigationButtonType) setNavigationButtonType(type);
+        mStatusViewCoordiantor.setNavigationButtonType(type);
     }
 
     /**
@@ -756,127 +610,9 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateSecurityIcon() {
-        @DrawableRes
-        int id = mToolbarDataProvider.getSecurityIconResource(mIsTablet);
-        if (id == 0) {
-            mSecurityButton.setImageDrawable(null);
-        } else {
-            // ImageView#setImageResource is no-op if given resource is the current one.
-            mSecurityButton.setImageResource(id);
-            ApiCompatibilityUtils.setImageTintList(
-                    mSecurityButton, mToolbarDataProvider.getSecurityIconColorStateList());
-        }
-
-        int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
-        String contentDescription = getContext().getString(contentDescriptionId);
-        mSecurityButton.setContentDescription(contentDescription);
-
-        updateVerboseStatusVisibility();
-
-        if (mSecurityIconResource == id && mLocationBarButtonType == getLocationBarButtonToShow()) {
-            return;
-        }
-        mSecurityIconResource = id;
-
-        changeLocationBarIcon();
-        updateLocationBarIconContainerVisibility();
-
+        mStatusViewCoordiantor.updateSecurityIcon();
         // Update the URL in case the scheme change triggers a URL emphasis change.
         setUrlToPageUrl();
-    }
-
-    /**
-     * @return Whether the security button is currently being displayed.
-     */
-    @VisibleForTesting
-    public boolean isSecurityButtonShown() {
-        return mLocationBarButtonType == LocationBarButtonType.SECURITY_ICON;
-    }
-
-    /**
-     * @return The ID of the drawable currently shown in the security icon.
-     */
-    @VisibleForTesting
-    @DrawableRes
-    int getSecurityIconResourceId() {
-        return mSecurityIconResource;
-    }
-
-    /**
-     * Sets the type of the current navigation type and updates the UI to match it.
-     * @param buttonType The type of navigation button to be shown.
-     */
-    private void setNavigationButtonType(@NavigationButtonType int buttonType) {
-        if (!mIsTablet) return;
-        switch (buttonType) {
-            case NavigationButtonType.PAGE:
-                Drawable page = TintedDrawable.constructTintedDrawable(getContext(),
-                        R.drawable.ic_omnibox_page,
-                        mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-                mNavigationButton.setImageDrawable(page);
-                break;
-            case NavigationButtonType.MAGNIFIER:
-                Drawable search = TintedDrawable.constructTintedDrawable(getContext(),
-                        R.drawable.omnibox_search,
-                        mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-                mNavigationButton.setImageDrawable(search);
-                break;
-            case NavigationButtonType.EMPTY:
-                mNavigationButton.setImageDrawable(null);
-                break;
-            default:
-                assert false;
-        }
-
-        if (mNavigationButton.getVisibility() != VISIBLE) {
-            mNavigationButton.setVisibility(VISIBLE);
-        }
-        mNavigationButtonType = buttonType;
-
-        updateLocationBarIconContainerVisibility();
-    }
-
-    /**
-     * Update visibility of the verbose status based on the button type and focus state of the
-     * omnibox.
-     */
-    private void updateVerboseStatusVisibility() {
-        boolean verboseStatusVisible =
-                !mUrlHasFocus && mToolbarDataProvider.shouldShowVerboseStatus();
-
-        int verboseStatusVisibility = verboseStatusVisible ? VISIBLE : GONE;
-
-        mVerboseStatusTextView.setVisibility(verboseStatusVisibility);
-
-        View separator = findViewById(R.id.location_bar_verbose_status_separator);
-        separator.setVisibility(verboseStatusVisibility);
-
-        findViewById(R.id.location_bar_verbose_status_extra_space)
-                .setVisibility(verboseStatusVisibility);
-
-        if (!verboseStatusVisible) {
-            // Return early since everything past here requires the verbose status to be visible
-            // and able to be populated with content.
-            return;
-        }
-
-        mVerboseStatusTextView.setText(mToolbarDataProvider.getVerboseStatusString());
-        mVerboseStatusTextView.setTextColor(
-                mToolbarDataProvider.getVerboseStatusTextColor(getResources(), mUseDarkColors));
-
-        separator.setBackgroundColor(mToolbarDataProvider.getVerboseStatusSeparatorColor(
-                getResources(), mUseDarkColors));
-    }
-
-    /**
-     * Update the visibility of the location bar icon container based on the state of the
-     * security and navigation icons.
-     */
-    protected void updateLocationBarIconContainerVisibility() {
-        @LocationBarButtonType
-        int buttonToShow = getLocationBarButtonToShow();
-        findViewById(R.id.location_bar_icon)
-                .setVisibility(buttonToShow != LocationBarButtonType.NONE ? VISIBLE : GONE);
     }
 
     /**
@@ -1094,13 +830,6 @@ public class LocationBarLayout extends FrameLayout
         });
     }
 
-    /**
-     * Whether {@code v} is a view (location icon, verbose status, ...) which can be clicked to
-     * show the Page Info popup.
-     */
-    private boolean shouldShowPageInfoForView(View v) {
-        return v == mSecurityButton || v == mNavigationButton || v == mVerboseStatusTextView;
-    }
 
     @Override
     public void onClick(View v) {
@@ -1114,15 +843,6 @@ public class LocationBarLayout extends FrameLayout
             mAutocompleteCoordinator.startZeroSuggest();
             RecordUserAction.record("MobileOmniboxDeleteUrl");
             return;
-        } else if (!mUrlHasFocus && shouldShowPageInfoForView(v)) {
-            if (mToolbarDataProvider.hasTab() && getCurrentTab().getWebContents() != null
-                    && mWindowAndroid != null) {
-                Activity activity = mWindowAndroid.getActivity().get();
-                if (activity != null) {
-                    PageInfoController.show(activity, getCurrentTab(), null,
-                            PageInfoController.OpenedFromSource.TOOLBAR);
-                }
-            }
         } else if (v == mMicButton && mVoiceRecognitionHandler != null) {
             RecordUserAction.record("MobileOmniboxVoiceSearch");
             mVoiceRecognitionHandler.startVoiceRecognition(
@@ -1287,7 +1007,7 @@ public class LocationBarLayout extends FrameLayout
     public void updateLoadingState(boolean updateUrl) {
         if (updateUrl) setUrlToPageUrl();
         updateNavigationButton();
-        updateSecurityIcon();
+        mStatusViewCoordiantor.updateSecurityIcon();
     }
 
     /** @return The current active {@link Tab}. */
@@ -1430,13 +1150,11 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateVisualsForState() {
-        if (updateUseDarkColors()) updateSecurityIcon();
+        if (updateUseDarkColors()) mStatusViewCoordiantor.setUseDarkColors(mUseDarkColors);
         int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
         ApiCompatibilityUtils.setImageTintList(mDeleteButton, colorStateList);
-
-        setNavigationButtonType(mNavigationButtonType);
 
         // If the URL changed colors and is not focused, update the URL to account for the new
         // color scheme.
@@ -1480,7 +1198,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public View getSecurityIconView() {
-        return mSecurityButton;
+        return mStatusViewCoordiantor.getSecurityIconView();
     }
 
     @Override
@@ -1492,5 +1210,10 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public WindowAndroid getWindowAndroid() {
         return mWindowAndroid;
+    }
+
+    @VisibleForTesting
+    public StatusViewCoordinator getStatusViewCoordinatorForTesting() {
+        return mStatusViewCoordiantor;
     }
 }
