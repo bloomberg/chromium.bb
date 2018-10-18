@@ -65,6 +65,9 @@ class LookalikeUrlNavigationObserverBrowserTest
     } else if (GetParam() == FeatureTestState::kEnabledWithUI) {
       feature_list_.InitAndEnableFeature(
           features::kLookalikeUrlNavigationSuggestions);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kLookalikeUrlNavigationSuggestions);
     }
     InProcessBrowserTest::SetUp();
   }
