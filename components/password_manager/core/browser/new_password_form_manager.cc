@@ -101,10 +101,12 @@ NewPasswordFormManager::NewPasswordFormManager(
     const base::WeakPtr<PasswordManagerDriver>& driver,
     const FormData& observed_form,
     FormFetcher* form_fetcher,
-    std::unique_ptr<FormSaver> form_saver)
+    std::unique_ptr<FormSaver> form_saver,
+    scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder)
     : client_(client),
       driver_(driver),
       observed_form_(observed_form),
+      metrics_recorder_(metrics_recorder),
       owned_form_fetcher_(
           form_fetcher ? nullptr
                        : std::make_unique<FormFetcherImpl>(
@@ -118,8 +120,10 @@ NewPasswordFormManager::NewPasswordFormManager(
       // |is_possible_change_password_form| in |votes_uploader_| constructor
       votes_uploader_(client, false /* is_possible_change_password_form */),
       weak_ptr_factory_(this) {
-  metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-      client_->IsMainFrameSecure(), client_->GetUkmSourceId());
+  if (!metrics_recorder_) {
+    metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        client_->IsMainFrameSecure(), client_->GetUkmSourceId());
+  }
   metrics_recorder_->RecordFormSignature(CalculateFormSignature(observed_form));
 
   if (owned_form_fetcher_)
@@ -379,9 +383,7 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   // blacklisting entry if needed.
   auto result = std::make_unique<NewPasswordFormManager>(
       client_, base::WeakPtr<PasswordManagerDriver>(), observed_form_,
-      fetcher.get(), form_saver_->Clone());
-
-  result->metrics_recorder_ = metrics_recorder_;
+      fetcher.get(), form_saver_->Clone(), metrics_recorder_);
 
   // The constructor only can take a weak pointer to the fetcher, so moving the
   // owning one needs to happen explicitly.
