@@ -162,6 +162,7 @@ class WebViewPlugin : public blink::WebPlugin,
     bool AcceptsLoadDrops() override;
     bool CanHandleGestureEvent() override;
     bool CanUpdateLayout() override;
+    blink::WebScreenInfo GetScreenInfo() override;
     blink::WebWidgetClient* WidgetClient() override;
 
     // WebWidgetClient methods:

@@ -108,10 +108,6 @@ class WebWidgetClient {
   // Called when a tooltip should be shown at the current cursor position.
   virtual void SetToolTipText(const WebString&, WebTextDirection hint) {}
 
-  // Called to query information about the screen where this widget is
-  // displayed.
-  virtual WebScreenInfo GetScreenInfo() { return WebScreenInfo(); }
-
   // Requests to lock the mouse cursor. If true is returned, the success
   // result will be asynchronously returned via a single call to
   // WebWidget::didAcquirePointerLock() or

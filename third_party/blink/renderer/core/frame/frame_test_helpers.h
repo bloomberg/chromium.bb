@@ -205,6 +205,7 @@ class TestWebViewClient : public WebViewClient, public WebWidgetClient {
   bool CanHandleGestureEvent() override { return true; }
   bool CanUpdateLayout() override { return true; }
   WebWidgetClient* WidgetClient() override { return this; }
+  blink::WebScreenInfo GetScreenInfo() override { return {}; }
 
   bool AnimationScheduled() { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }

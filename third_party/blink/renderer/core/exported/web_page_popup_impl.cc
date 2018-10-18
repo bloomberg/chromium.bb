@@ -153,9 +153,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   WebScreenInfo GetScreenInfo() const override {
-    return popup_->web_view_->Client()
-               ? popup_->web_view_->WidgetClient()->GetScreenInfo()
-               : WebScreenInfo();
+    return popup_->web_view_->Client()->GetScreenInfo();
   }
 
   WebViewImpl* GetWebView() const override { return popup_->web_view_; }

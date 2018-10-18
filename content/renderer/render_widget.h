@@ -315,7 +315,6 @@ class CONTENT_EXPORT RenderWidget
   void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override;
   void SetWindowRect(const blink::WebRect&) override;
-  blink::WebScreenInfo GetScreenInfo() override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
   void DidOverscroll(const blink::WebFloatSize& overscrollDelta,

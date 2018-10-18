@@ -44,6 +44,7 @@ class WebViewTestClient : public blink::WebViewClient {
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;
   bool CanUpdateLayout() override;
+  blink::WebScreenInfo GetScreenInfo() override;
   blink::WebWidgetClient* WidgetClient() override;
 
  private:

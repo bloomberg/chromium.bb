@@ -105,7 +105,6 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget,
                   content::RenderViewImpl* render_view_for_local_root);
 
   // WebWidgetClient implementation.
-  blink::WebScreenInfo GetScreenInfo() override;
   void ScheduleAnimation() override;
   bool RequestPointerLock() override;
   void RequestPointerUnlock() override;

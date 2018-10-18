@@ -2084,6 +2084,43 @@ void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
   }
 }
 
+blink::WebScreenInfo RenderViewImpl::GetScreenInfo() {
+  const ScreenInfo& info = GetWidget()->screen_info();
+
+  blink::WebScreenInfo web_screen_info;
+  web_screen_info.device_scale_factor = info.device_scale_factor;
+  web_screen_info.color_space = info.color_space;
+  web_screen_info.depth = info.depth;
+  web_screen_info.depth_per_component = info.depth_per_component;
+  web_screen_info.is_monochrome = info.is_monochrome;
+  web_screen_info.rect = blink::WebRect(info.rect);
+  web_screen_info.available_rect = blink::WebRect(info.available_rect);
+  switch (info.orientation_type) {
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationPortraitPrimary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationPortraitSecondary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationLandscapePrimary;
+      break;
+    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
+      web_screen_info.orientation_type =
+          blink::kWebScreenOrientationLandscapeSecondary;
+      break;
+    default:
+      web_screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
+      break;
+  }
+  web_screen_info.orientation_angle = info.orientation_angle;
+
+  return web_screen_info;
+}
+
 #if defined(OS_ANDROID)
 bool RenderViewImpl::OpenDateTimeChooser(
     const blink::WebDateTimeChooserParams& params,

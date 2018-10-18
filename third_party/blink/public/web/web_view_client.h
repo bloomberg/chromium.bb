@@ -172,6 +172,10 @@ class WebViewClient {
   // Called when the View acquires focus.
   virtual void DidFocus(WebLocalFrame* calling_frame) {}
 
+  // Returns information about the screen where this view's widgets are being
+  // displayed.
+  virtual WebScreenInfo GetScreenInfo() = 0;
+
   // Session history -----------------------------------------------------
 
   // Tells the embedder to navigate back or forward in session history by

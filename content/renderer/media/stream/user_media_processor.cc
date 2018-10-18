@@ -36,7 +36,7 @@
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_widget.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capture_types.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -762,8 +762,7 @@ void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
 gfx::Size UserMediaProcessor::GetScreenSize() {
   gfx::Size screen_size(kDefaultScreenCastWidth, kDefaultScreenCastHeight);
   if (render_frame_) {  // Can be null in tests.
-    blink::WebScreenInfo info =
-        render_frame_->GetRenderWidget()->GetScreenInfo();
+    blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
     screen_size = gfx::Size(info.rect.width, info.rect.height);
   }
   return screen_size;

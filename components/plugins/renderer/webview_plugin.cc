@@ -287,6 +287,12 @@ bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
   return true;
 }
 
+blink::WebScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
+  // TODO(danakj): This should probably return the screen info for the
+  // RenderView.
+  return blink::WebScreenInfo();
+}
+
 blink::WebWidgetClient* WebViewPlugin::WebViewHelper::WidgetClient() {
   return this;
 }
