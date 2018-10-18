@@ -22,8 +22,7 @@ InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
   base::AssertBlockingAllowedDeprecated();
   std::string event_node = path.BaseName().value();
   if (event_node.empty() ||
-      !base::StartsWith(event_node, "event",
-                        base::CompareCase::INSENSITIVE_ASCII))
+      !base::StartsWith(event_node, "event", base::CompareCase::SENSITIVE))
     return InputDeviceType::INPUT_DEVICE_UNKNOWN;
 
   base::FilePath sysfs_path = GetInputPathInSys(path);
