@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task/task_scheduler/task_scheduler.h"
-#include "webrunner/net_http/service/http_service_impl.h"
+#include "webrunner/net_http/http_service_impl.h"
 
 int main(int argc, char** argv) {
   // Instantiate various global structures.
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   // publish the HTTP service into it.
   base::fuchsia::ServiceDirectory* directory =
       base::fuchsia::ServiceDirectory::GetDefault();
-  net::HttpServiceImpl http_service;
+  net_http::HttpServiceImpl http_service;
   base::fuchsia::ScopedServiceBinding<::fuchsia::net::oldhttp::HttpService>
       binding(directory, &http_service);
 

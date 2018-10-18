@@ -749,6 +749,7 @@ group("gn_all") {
       "//webrunner:archive_sources",
       "//webrunner:webrunner_unittests",
       "//webrunner/net_http:http_pkg",
+      "//webrunner/net_http:http_service_tests",
     ]
   }
 

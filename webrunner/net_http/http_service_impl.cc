@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/net_http/service/http_service_impl.h"
+#include "webrunner/net_http/http_service_impl.h"
 
 #include "net/url_request/url_request_context_builder.h"
-#include "webrunner/net_http/service/url_loader_impl.h"
+#include "webrunner/net_http/url_loader_impl.h"
 
-namespace net {
+namespace net_http {
 
 HttpServiceImpl::HttpServiceImpl() {
   // TODO: Set the right options in the URLRequestContextBuilder.
@@ -19,8 +19,8 @@ void HttpServiceImpl::CreateURLLoader(
     fidl::InterfaceRequest<fuchsia::net::oldhttp::URLLoader> request) {
   // The URLLoaderImpl objects lifespan is tied to their binding, which is set
   // in their constructor.
-  URLRequestContextBuilder builder;
+  net::URLRequestContextBuilder builder;
   new URLLoaderImpl(builder.Build(), std::move(request));
 }
 
-}  // namespace net
+}  // namespace net_http

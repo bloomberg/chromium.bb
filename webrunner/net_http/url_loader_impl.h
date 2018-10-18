@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_NET_HTTP_SERVICE_URL_LOADER_IMPL_H_
-#define WEBRUNNER_NET_HTTP_SERVICE_URL_LOADER_IMPL_H_
+#ifndef WEBRUNNER_NET_HTTP_URL_LOADER_IMPL_H_
+#define WEBRUNNER_NET_HTTP_URL_LOADER_IMPL_H_
 
 #include <fuchsia/net/oldhttp/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
@@ -15,7 +15,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
-namespace net {
+namespace net_http {
 
 // URLLoader implementation. This class manages one network request per
 // instance. Internally, this class uses a |net::URLRequest| object to handle
@@ -23,15 +23,18 @@ namespace net {
 // |binding_|.
 // TODO(https://crbug.com/875532): Implement cache-mode.
 class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
-                      public URLRequest::Delegate,
+                      public net::URLRequest::Delegate,
                       base::MessagePumpForIO::ZxHandleWatcher {
  public:
   using Callback = ::fuchsia::net::oldhttp::URLLoader::StartCallback;
 
   URLLoaderImpl(
-      std::unique_ptr<URLRequestContext> context,
+      std::unique_ptr<net::URLRequestContext> context,
       ::fidl::InterfaceRequest<::fuchsia::net::oldhttp::URLLoader> request);
   ~URLLoaderImpl() override;
+
+  // Returns the number of active requests. Used for testing.
+  static int GetNumActiveRequestsForTests();
 
  private:
   // URLLoader methods:
@@ -42,18 +45,19 @@ class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
                        callback) override;
 
   // URLRequest::Delegate methods:
-  void OnReceivedRedirect(URLRequest* request,
-                          const RedirectInfo& redirect_info,
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
-  void OnAuthRequired(URLRequest* request,
-                      AuthChallengeInfo* auth_info) override;
-  void OnCertificateRequested(URLRequest* request,
-                              SSLCertRequestInfo* cert_request_info) override;
-  void OnSSLCertificateError(URLRequest* request,
-                             const SSLInfo& ssl_info,
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* auth_info) override;
+  void OnCertificateRequested(
+      net::URLRequest* request,
+      net::SSLCertRequestInfo* cert_request_info) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& ssl_info,
                              bool fatal) override;
-  void OnResponseStarted(URLRequest* request, int net_error) override;
-  void OnReadCompleted(URLRequest* request, int bytes_read) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   // MessagePumpForIO::ZxHandleWatcher method:
   void OnZxHandleSignalled(zx_handle_t handle, zx_signals_t signals) override;
@@ -77,10 +81,10 @@ class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
   ::fidl::Binding<::fuchsia::net::oldhttp::URLLoader> binding_;
 
   // Holds the net::URLRequestContext associated with the |net_request_|
-  std::unique_ptr<URLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
 
   // Holds the net::URLRequest used to perform the network operation.
-  std::unique_ptr<URLRequest> net_request_;
+  std::unique_ptr<net::URLRequest> net_request_;
 
   // Callback from a Start or FollowRedirect call.
   Callback done_callback_;
@@ -116,6 +120,6 @@ class URLLoaderImpl : public ::fuchsia::net::oldhttp::URLLoader,
   DISALLOW_COPY_AND_ASSIGN(URLLoaderImpl);
 };
 
-}  // namespace net
+}  // namespace net_http
 
-#endif  // WEBRUNNER_NET_HTTP_SERVICE_URL_LOADER_IMPL_H_
+#endif  // WEBRUNNER_NET_HTTP_URL_LOADER_IMPL_H_
