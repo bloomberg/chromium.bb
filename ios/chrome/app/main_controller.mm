@@ -1138,21 +1138,18 @@ enum class ShowTabSwitcherSnapshotResult {
 }
 
 - (void)initializeMailtoHandling {
-  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-    __weak __typeof(self) weakSelf = self;
-    [[DeferredInitializationRunner sharedInstance]
-        enqueueBlockNamed:kMailtoHandlingInitialization
-                    block:^{
-                      __strong __typeof(weakSelf) strongSelf = weakSelf;
-                      if (!strongSelf || !strongSelf->_mainBrowserState) {
-                        return;
-                      }
-                      ios::GetChromeBrowserProvider()
-                          ->GetMailtoHandlerProvider()
-                          ->PrepareMailtoHandling(
-                              strongSelf->_mainBrowserState);
-                    }];
-  }
+  __weak __typeof(self) weakSelf = self;
+  [[DeferredInitializationRunner sharedInstance]
+      enqueueBlockNamed:kMailtoHandlingInitialization
+                  block:^{
+                    __strong __typeof(weakSelf) strongSelf = weakSelf;
+                    if (!strongSelf || !strongSelf->_mainBrowserState) {
+                      return;
+                    }
+                    ios::GetChromeBrowserProvider()
+                        ->GetMailtoHandlerProvider()
+                        ->PrepareMailtoHandling(strongSelf->_mainBrowserState);
+                  }];
 }
 
 - (void)startFreeMemoryMonitoring {
@@ -1178,8 +1175,10 @@ enum class ShowTabSwitcherSnapshotResult {
   [self scheduleStartupAttemptReset];
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
-  [self scheduleCheckForFirstPartyApps];
-  [self initializeMailtoHandling];
+  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI))
+    [self initializeMailtoHandling];
+  else
+    [self scheduleCheckForFirstPartyApps];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
