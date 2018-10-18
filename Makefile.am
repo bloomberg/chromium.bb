@@ -22,6 +22,7 @@ unstable_protocols =								\
 	unstable/input-timestamps/input-timestamps-unstable-v1.xml	\
 	unstable/xdg-decoration/xdg-decoration-unstable-v1.xml	\
 	unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml \
+	unstable/primary-selection/primary-selection-unstable-v1.xml		\
 	$(NULL)
 
 stable_protocols =								\
