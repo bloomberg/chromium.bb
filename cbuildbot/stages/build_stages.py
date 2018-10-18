@@ -484,18 +484,15 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
-    # We need to run chroot updates on most builders because they uprev after
-    # the InitSDK stage. For the SDK builder, we can skip updates because uprev
-    # is run prior to InitSDK. This is not just an optimization: It helps
-    # workaround https://crbug.com/225509
+    # Ensure we don't run on SDK builder. https://crbug.com/225509
     if self._run.config.build_type != constants.CHROOT_BUILDER_TYPE:
+      # Setup board's toolchain.
       usepkg_toolchain = (self._run.config.usepkg_toolchain and
                           not self._latest_toolchain)
-      commands.UpdateChroot(
-          self._build_root, toolchain_boards=[self._current_board],
-          usepkg=usepkg_toolchain, extra_env=self._portage_extra_env)
+      commands.SetupToolchains(self._build_root, usepkg=usepkg_toolchain,
+                               targets='boards', boards=self._current_board)
 
-    # Always update the board.
+    # Update the board.
     usepkg = self._run.config.usepkg_build_packages
     commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,

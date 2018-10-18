@@ -139,6 +139,9 @@ class UpdateSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
 class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Test building the board"""
 
+  def setUp(self):
+    self.setup_toolchains_mock = self.PatchObject(commands, 'SetupToolchains')
+
   def ConstructStage(self):
     return build_stages.SetupBoardStage(self._run, self._current_board)
 
@@ -165,6 +168,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   def _RunBin(self, dir_exists):
     """Helper for testing a binary builder."""
     self._Run(dir_exists)
+    self.assertTrue(self.setup_toolchains_mock.called)
     self.assertCommandContains(['./setup_board'])
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd)

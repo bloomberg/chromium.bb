@@ -307,6 +307,44 @@ def SetupBoard(buildroot, board, usepkg,
                  chroot_args=chroot_args)
 
 
+def SetupToolchains(buildroot, usepkg=True, create_packages=False, targets=None,
+                    sysroot=None, boards=None, output_dir=None, **kwargs):
+  """Install or update toolchains.
+
+  See cros_setup_toolchains for more documentation about the arguments other
+  than buildroot.
+
+  Args:
+    buildroot: str - The buildroot of the current build.
+    usepkg: bool - Whether to use prebuilt packages.
+    create_packages: bool - Whether to build redistributable packages.
+    targets: str - Type of target for the toolchain install, e.g. 'boards'.
+    sysroot: str - The sysroot in which to install the toolchains.
+    boards: str|list - The board(s) whose toolchain should be installed.
+    output_dir: str - The output directory.
+  """
+  kwargs.setdefault('chromite_cmd', True)
+  kwargs.setdefault('enter_chroot', True)
+  kwargs.setdefault('sudo', True)
+
+  cmd = ['cros_setup_toolchains']
+  if not usepkg:
+    cmd.append('--nousepkg')
+  if create_packages:
+    cmd.append('--create-packages')
+  if targets:
+    cmd += ['--targets', targets]
+  if sysroot:
+    cmd += ['--sysroot', sysroot]
+  if boards:
+    boards_str = boards if isinstance(boards, basestring) else ','.join(boards)
+    cmd += ['--include-boards', boards_str]
+  if output_dir:
+    cmd += ['--output-dir', output_dir]
+
+  RunBuildScript(buildroot, cmd, **kwargs)
+
+
 class MissingBinpkg(failures_lib.StepFailure):
   """Error class for when we are missing an essential binpkg."""
 
