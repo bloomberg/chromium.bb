@@ -44,12 +44,15 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // |this| creates an instance of it itself (meant for production code). Once
   // the fetcher is shared between PasswordFormManager instances, it will be
   // required that |form_fetcher| is not null. |form_saver| is used to
-  // save/update the form.
-  NewPasswordFormManager(PasswordManagerClient* client,
-                         const base::WeakPtr<PasswordManagerDriver>& driver,
-                         const autofill::FormData& observed_form,
-                         FormFetcher* form_fetcher,
-                         std::unique_ptr<FormSaver> form_saver);
+  // save/update the form. |metrics_recorder| records metrics for |*this|. If
+  // null a new instance will be created.
+  NewPasswordFormManager(
+      PasswordManagerClient* client,
+      const base::WeakPtr<PasswordManagerDriver>& driver,
+      const autofill::FormData& observed_form,
+      FormFetcher* form_fetcher,
+      std::unique_ptr<FormSaver> form_saver,
+      scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder);
 
   ~NewPasswordFormManager() override;
 

@@ -253,7 +253,7 @@ class NewPasswordFormManagerTest : public testing::Test {
     fetcher_->Fetch();
     form_manager_.reset(new NewPasswordFormManager(
         &client_, driver_.AsWeakPtr(), observed_form, fetcher_.get(),
-        std::make_unique<NiceMock<MockFormSaver>>()));
+        std::make_unique<NiceMock<MockFormSaver>>(), nullptr));
   }
 };
 
