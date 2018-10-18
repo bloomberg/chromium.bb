@@ -463,9 +463,8 @@ static void AdjustSVGTagNameCase(AtomicHTMLToken* token) {
   static PrefixedNameToQualifiedNameMap* case_map = nullptr;
   if (!case_map) {
     case_map = new PrefixedNameToQualifiedNameMap;
-    std::unique_ptr<const SVGQualifiedName* []> svg_tags =
-        SVGNames::getSVGTags();
-    MapLoweredLocalNameToName(case_map, svg_tags.get(), SVGNames::SVGTagsCount);
+    std::unique_ptr<const SVGQualifiedName* []> svg_tags = SVGNames::GetTags();
+    MapLoweredLocalNameToName(case_map, svg_tags.get(), SVGNames::kTagsCount);
   }
 
   const QualifiedName& cased_name = case_map->at(token->GetName());
@@ -492,13 +491,12 @@ static void AdjustAttributes(AtomicHTMLToken* token) {
 
 // https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes
 static void AdjustSVGAttributes(AtomicHTMLToken* token) {
-  AdjustAttributes<SVGNames::getSVGAttrs, SVGNames::SVGAttrsCount>(token);
+  AdjustAttributes<SVGNames::GetAttrs, SVGNames::kAttrsCount>(token);
 }
 
 // https://html.spec.whatwg.org/multipage/parsing.html#adjust-mathml-attributes
 static void AdjustMathMLAttributes(AtomicHTMLToken* token) {
-  AdjustAttributes<MathMLNames::getMathMLAttrs, MathMLNames::MathMLAttrsCount>(
-      token);
+  AdjustAttributes<MathMLNames::GetAttrs, MathMLNames::kAttrsCount>(token);
 }
 
 static void AddNamesWithPrefix(PrefixedNameToQualifiedNameMap* map,
@@ -519,15 +517,11 @@ static void AdjustForeignAttributes(AtomicHTMLToken* token) {
   if (!map) {
     map = new PrefixedNameToQualifiedNameMap;
 
-    std::unique_ptr<const QualifiedName* []> attrs =
-        XLinkNames::getXLinkAttrs();
-    AddNamesWithPrefix(map, g_xlink_atom, attrs.get(),
-                       XLinkNames::XLinkAttrsCount);
+    std::unique_ptr<const QualifiedName* []> attrs = XLinkNames::GetAttrs();
+    AddNamesWithPrefix(map, g_xlink_atom, attrs.get(), XLinkNames::kAttrsCount);
 
-    std::unique_ptr<const QualifiedName* []> xml_attrs =
-        XMLNames::getXMLAttrs();
-    AddNamesWithPrefix(map, g_xml_atom, xml_attrs.get(),
-                       XMLNames::XMLAttrsCount);
+    std::unique_ptr<const QualifiedName* []> xml_attrs = XMLNames::GetAttrs();
+    AddNamesWithPrefix(map, g_xml_atom, xml_attrs.get(), XMLNames::kAttrsCount);
 
     map->insert(WTF::g_xmlns_atom, XMLNSNames::xmlnsAttr);
     map->insert("xmlns:xlink", QualifiedName(g_xmlns_atom, g_xlink_atom,
