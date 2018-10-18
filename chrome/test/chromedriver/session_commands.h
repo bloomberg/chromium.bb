@@ -43,8 +43,6 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities);
 Status ProcessCapabilities(const base::DictionaryValue& params,
                            base::DictionaryValue* result_capabilities);
 
-std::string WebViewIdToWindowHandle(const std::string& web_view_id);
-
 // Initializes a session.
 Status ExecuteInitSession(const InitSessionParams& bound_params,
                           Session* session,
@@ -59,6 +57,11 @@ Status ExecuteQuit(bool allow_detach,
 
 // Gets the capabilities of a particular session.
 Status ExecuteGetSessionCapabilities(Session* session,
+                                     const base::DictionaryValue& params,
+                                     std::unique_ptr<base::Value>* value);
+
+// Retrieve the handle of the target window.
+Status ExecuteGetCurrentWindowHandle(Session* session,
                                      const base::DictionaryValue& params,
                                      std::unique_ptr<base::Value>* value);
 
