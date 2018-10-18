@@ -289,6 +289,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
       BackgroundTracingConfigImpl::BENCHMARK_MEMORY_LIGHT,
       BackgroundTracingConfigImpl::BENCHMARK_EXECUTION_METRIC,
       BackgroundTracingConfigImpl::BENCHMARK_NAVIGATION,
+      BackgroundTracingConfigImpl::BENCHMARK_RENDERERS,
       BackgroundTracingConfigImpl::BLINK_STYLE,
   };
 
@@ -302,6 +303,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
                                     "BENCHMARK_MEMORY_LIGHT",
                                     "BENCHMARK_EXECUTION_METRIC",
                                     "BENCHMARK_NAVIGATION",
+                                    "BENCHMARK_RENDERERS",
                                     "BLINK_STYLE"};
   for (size_t i = 0;
        i <
