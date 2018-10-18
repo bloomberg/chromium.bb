@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_DATA_STORE_DISK_H_
-#define COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_DATA_STORE_DISK_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_DATA_STORE_DISK_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_DATA_STORE_DISK_H_
 
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/image_fetcher/core/storage/image_data_store.h"
-#include "components/image_fetcher/core/storage/image_store_types.h"
+#include "components/image_fetcher/core/cache/image_data_store.h"
+#include "components/image_fetcher/core/cache/image_store_types.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -57,4 +57,4 @@ class ImageDataStoreDisk : public ImageDataStore {
 };
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_DATA_STORE_DISK_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_DATA_STORE_DISK_H_

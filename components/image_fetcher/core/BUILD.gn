@@ -19,7 +19,7 @@ static_library("core") {
     "request_metadata.h",
   ]
   deps = [
-    "storage",
+    "cache",
   ]
   public_deps = [
     "//base",
@@ -63,9 +63,9 @@ source_set("unit_tests") {
   deps = [
     ":core",
     ":test_support",
-    "storage",
-    "storage:storage_unit_tests",
-    "storage/proto",
+    "cache",
+    "cache:cache_unit_tests",
+    "cache/proto",
     "//components/leveldb_proto:test_support",
     "//components/prefs:test_support",
     "//net",
