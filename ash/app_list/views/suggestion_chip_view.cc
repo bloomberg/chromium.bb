@@ -67,37 +67,27 @@ SuggestionChipView::SuggestionChipView(const Params& params,
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
 
-  // Set background blur for the chip and use mask layer to clip it into
-  // rounded rect.
-  if (!assistant_style_)
-    SetBackgroundBlurEnabled(false);
+  if (!assistant_style_) {
+    // Set background blur for the chip and use mask layer to clip it into
+    // rounded rect.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetBackgroundBlur(kBlurRadius);
+    SetRoundedRectMaskLayer(kPreferredHeightDip / 2);
+  }
 
   InitLayout(params);
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
 
-void SuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
-  DCHECK(!assistant_style_);
-
-  // Background blur is enabled if and only if layer exists.
-  if (!!layer() == enabled)
-    return;
-
-  if (!enabled) {
-    DestroyLayer();
-    return;
-  }
-
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetBackgroundBlur(kBlurRadius);
-  SetRoundedRectMaskLayer(kPreferredHeightDip / 2);
-}
-
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();
-  return gfx::Size(preferred_width, kPreferredHeightDip);
+  return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
+}
+
+int SuggestionChipView::GetHeightForWidth(int width) const {
+  return kPreferredHeightDip;
 }
 
 void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
@@ -233,7 +223,7 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
 void SuggestionChipView::SetText(const base::string16& text) {
   text_view_->SetText(text);
   if (!assistant_style_) {
-    gfx::Size size = text_view_->CalculatePreferredSize();
+    gfx::Size size = text_view_->GetPreferredSize();
     size.set_width(std::min(kAppListMaxTextWidth, size.width()));
     text_view_->SetPreferredSize(size);
   }

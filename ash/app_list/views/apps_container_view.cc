@@ -209,12 +209,6 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
   }
 }
 
-void AppsContainerView::OnTabletModeChanged(bool started) {
-  if (suggestion_chip_container_view_)
-    suggestion_chip_container_view_->OnTabletModeChanged(started);
-  apps_grid_view_->OnTabletModeChanged(started);
-}
-
 gfx::Size AppsContainerView::CalculatePreferredSize() const {
   if (is_new_style_launcher_enabled_)
     return contents_view_->GetPreferredSize();

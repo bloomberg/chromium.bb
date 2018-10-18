@@ -138,8 +138,7 @@ class AppListItemView::IconImageView : public views::ImageView {
     std::unique_ptr<ui::Layer> old_layer = views::View::RecreateLayer();
 
     // ui::Layer::Clone() does not copy mask layer, so set it explicitly here.
-    if (mask_corner_radius_ != 0 || !mask_insets_.IsEmpty())
-      SetRoundedRectMaskLayer(mask_corner_radius_, mask_insets_);
+    SetRoundedRectMaskLayer(mask_corner_radius_, mask_insets_);
     return old_layer;
   }
 
@@ -163,7 +162,7 @@ class AppListItemView::IconImageView : public views::ImageView {
   std::unique_ptr<ui::LayerOwner> icon_mask_;
 
   // The corner radius of mask layer.
-  int mask_corner_radius_ = 0;
+  int mask_corner_radius_;
 
   // The insets of the mask layer.
   gfx::Insets mask_insets_;
@@ -199,10 +198,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 
   if (is_new_style_launcher_enabled_ && is_folder_) {
     // Set background blur for folder icon and use mask layer to clip it into
-    // circle. Note that blur is only enabled in tablet mode to improve dragging
-    // smoothness.
-    if (apps_grid_view_->IsTabletMode())
-      SetBackgroundBlurEnabled(true);
+    // circle.
+    icon_->layer()->SetBackgroundBlur(AppListConfig::instance().blur_radius());
     icon_->SetRoundedRectMaskLayer(
         AppListConfig::instance().folder_icon_radius(),
         gfx::Insets(AppListConfig::instance().folder_icon_insets()));
@@ -746,12 +743,6 @@ void AppListItemView::OnDraggedViewExit() {
 
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Hide();
-}
-
-void AppListItemView::SetBackgroundBlurEnabled(bool enabled) {
-  DCHECK(is_folder_);
-  icon_->layer()->SetBackgroundBlur(
-      enabled ? AppListConfig::instance().blur_radius() : 0);
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
