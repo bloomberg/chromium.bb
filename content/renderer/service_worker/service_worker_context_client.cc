@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -994,8 +995,17 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // Changed DCHECK to CHECK temporary: https://crbug.com/889567.
-  CHECK(base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id));
+
+  // These CHECKs are for debugging: https://crbug.com/889567.
+  CHECK(context_);
+  if (!base::ContainsKey(context_->fetch_response_callbacks, fetch_event_id)) {
+    bool does_exist_fetch_event_callback =
+        base::ContainsKey(context_->fetch_event_callbacks, fetch_event_id);
+    base::debug::Alias(&does_exist_fetch_event_callback);
+    CHECK(false);
+    return;
+  }
+
   blink::mojom::FetchAPIResponsePtr response(
       GetFetchAPIResponseFromWebResponse(web_response));
   const blink::mojom::ServiceWorkerFetchResponseCallbackPtr& response_callback =
