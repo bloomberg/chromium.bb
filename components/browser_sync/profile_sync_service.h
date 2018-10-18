@@ -364,7 +364,7 @@ class ProfileSyncService : public syncer::SyncService,
   void ReconfigureDatatypeManager();
 
   syncer::PassphraseRequiredReason passphrase_required_reason_for_test() const {
-    return crypto_->passphrase_required_reason();
+    return crypto_.passphrase_required_reason();
   }
 
   // Record stats on various events.
@@ -460,7 +460,7 @@ class ProfileSyncService : public syncer::SyncService,
   base::MessageLoop* GetSyncLoopForTest() const;
 
   // Some tests rely on injecting calls to the encryption observer.
-  syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest() const;
+  syncer::SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
 
   // Calls sync engine to send ClearServerDataMessage to server. This is used
   // to start accounts with a clean slate when performing end to end testing.
@@ -486,9 +486,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Callback for StartupController.
   bool ShouldStartEngine(bool bypass_first_setup_check) const;
-
-  // Destroys the |crypto_| object and creates a new one with fresh state.
-  void ResetCryptoState();
 
   enum UnrecoverableErrorReason {
     ERROR_REASON_UNSET,
@@ -631,9 +628,8 @@ class ProfileSyncService : public syncer::SyncService,
   // being bundled with the TYPED_URLS model type.
   const bool user_events_separate_pref_group_;
 
-  // A utility object containing logic and state relating to encryption. It is
-  // never null.
-  std::unique_ptr<syncer::SyncServiceCrypto> crypto_;
+  // A utility object containing logic and state relating to encryption.
+  syncer::SyncServiceCrypto crypto_;
 
   // The thread where all the sync operations happen. This thread is kept alive
   // until browser shutdown and reused if sync is turned off and on again. It is

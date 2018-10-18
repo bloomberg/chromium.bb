@@ -179,6 +179,12 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                                     init_params.channel)),
       user_events_separate_pref_group_(
           init_params.user_events_separate_pref_group),
+      crypto_(
+          base::BindRepeating(&ProfileSyncService::NotifyObservers,
+                              base::Unretained(this)),
+          base::BindRepeating(&ProfileSyncService::ReconfigureDueToPassphrase,
+                              base::Unretained(this)),
+          &sync_prefs_),
       signin_scoped_device_id_callback_(
           init_params.signin_scoped_device_id_callback),
       network_time_update_callback_(
@@ -207,8 +213,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't be instantiated.
   DCHECK(IsSyncAllowedByFlag());
-
-  ResetCryptoState();
 
   std::string last_version = sync_prefs_.GetLastRunVersion();
   std::string current_version = PRODUCT_VERSION;
@@ -322,7 +326,7 @@ void ProfileSyncService::StartSyncingWithServer() {
                               syncer::CLEAR_SERVER_DATA_RETRIED,
                               syncer::CLEAR_SERVER_DATA_MAX);
 
-    crypto_->BeginConfigureCatchUpBeforeClear();
+    crypto_.BeginConfigureCatchUpBeforeClear();
     return;
   }
 
@@ -451,15 +455,6 @@ bool ProfileSyncService::ShouldStartEngine(
   return bypass_first_setup_check || IsFirstSetupComplete();
 }
 
-void ProfileSyncService::ResetCryptoState() {
-  crypto_ = std::make_unique<syncer::SyncServiceCrypto>(
-      base::BindRepeating(&ProfileSyncService::NotifyObservers,
-                          base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::ReconfigureDueToPassphrase,
-                          base::Unretained(this)),
-      &sync_prefs_);
-}
-
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
   if (encryption_pending())
     return true;
@@ -557,7 +552,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       debug_identifier_,
       base::BindRepeating(&syncer::SyncClient::CreateModelWorkerForGroup,
                           base::Unretained(sync_client_.get())));
-  params.encryption_observer_proxy = crypto_->GetEncryptionObserverProxy();
+  params.encryption_observer_proxy = crypto_.GetEncryptionObserverProxy();
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url();
@@ -586,7 +581,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function =
       base::BindRepeating(syncer::ReportUnrecoverableError, channel_);
-  params.saved_nigori_state = crypto_->TakeSavedNigoriState();
+  params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.short_poll_interval = sync_prefs_.GetShortPollInterval();
   if (params.short_poll_interval.is_zero()) {
@@ -695,7 +690,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   }
 
   // Clear various state.
-  ResetCryptoState();
+  crypto_.Reset();
   expect_sync_configuration_aborted_ = false;
   engine_initialized_ = false;
   last_snapshot_ = syncer::SyncCycleSnapshot();
@@ -981,7 +976,7 @@ void ProfileSyncService::OnEngineInitialized(
           initial_types, debug_info_listener, &data_type_controllers_, this,
           engine_.get(), this);
 
-  crypto_->SetSyncEngine(engine_.get());
+  crypto_.SetSyncEngine(engine_.get());
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
@@ -1236,7 +1231,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // This must be done before we start syncing with the server to avoid
   // sending unencrypted data up on a first time sync.
-  if (crypto_->encryption_pending())
+  if (crypto_.encryption_pending())
     engine_->EnableEncryptEverything();
   NotifyObservers();
 
@@ -1331,7 +1326,7 @@ bool ProfileSyncService::IsSignedIn() const {
 
 bool ProfileSyncService::IsPassphraseRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->passphrase_required_reason() !=
+  return crypto_.passphrase_required_reason() !=
          syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
@@ -1500,7 +1495,7 @@ syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->IsUsingSecondaryPassphrase();
+  return crypto_.IsUsingSecondaryPassphrase();
 }
 
 std::string ProfileSyncService::GetCustomPassphraseKey() const {
@@ -1513,12 +1508,12 @@ std::string ProfileSyncService::GetCustomPassphraseKey() const {
 
 syncer::PassphraseType ProfileSyncService::GetPassphraseType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->GetPassphraseType();
+  return crypto_.GetPassphraseType();
 }
 
 base::Time ProfileSyncService::GetExplicitPassphraseTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->GetExplicitPassphraseTime();
+  return crypto_.GetExplicitPassphraseTime();
 }
 
 bool ProfileSyncService::IsCryptographerReady(
@@ -1723,7 +1718,7 @@ void ProfileSyncService::SetEncryptionPassphrase(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_type_manager_);
   DCHECK(data_type_manager_->IsNigoriEnabled());
-  crypto_->SetEncryptionPassphrase(passphrase);
+  crypto_.SetEncryptionPassphrase(passphrase);
 }
 
 bool ProfileSyncService::SetDecryptionPassphrase(
@@ -1735,7 +1730,7 @@ bool ProfileSyncService::SetDecryptionPassphrase(
 
     DVLOG(1) << "Setting passphrase for decryption.";
 
-    bool result = crypto_->SetDecryptionPassphrase(passphrase);
+    bool result = crypto_.SetDecryptionPassphrase(passphrase);
     UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
     return result;
   }
@@ -1746,17 +1741,17 @@ bool ProfileSyncService::SetDecryptionPassphrase(
 
 bool ProfileSyncService::IsEncryptEverythingAllowed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->IsEncryptEverythingAllowed();
+  return crypto_.IsEncryptEverythingAllowed();
 }
 
 void ProfileSyncService::SetEncryptEverythingAllowed(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  crypto_->SetEncryptEverythingAllowed(allowed);
+  crypto_.SetEncryptEverythingAllowed(allowed);
 }
 
 void ProfileSyncService::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  crypto_->EnableEncryptEverything();
+  crypto_.EnableEncryptEverything();
 }
 
 bool ProfileSyncService::encryption_pending() const {
@@ -1764,17 +1759,17 @@ bool ProfileSyncService::encryption_pending() const {
   // We may be called during the setup process before we're
   // initialized (via IsEncryptedDatatypeEnabled and
   // IsPassphraseRequiredForDecryption).
-  return crypto_->encryption_pending();
+  return crypto_.encryption_pending();
 }
 
 bool ProfileSyncService::IsEncryptEverythingEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->IsEncryptEverythingEnabled();
+  return crypto_.IsEncryptEverythingEnabled();
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_->GetEncryptedDataTypes();
+  return crypto_.GetEncryptedDataTypes();
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
@@ -2181,8 +2176,8 @@ base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
 }
 
 syncer::SyncEncryptionHandler::Observer*
-ProfileSyncService::GetEncryptionObserverForTest() const {
-  return crypto_.get();
+ProfileSyncService::GetEncryptionObserverForTest() {
+  return &crypto_;
 }
 
 void ProfileSyncService::RemoveClientFromServer() const {
