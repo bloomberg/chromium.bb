@@ -189,17 +189,21 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(sk_surface_);
+  base::TimeTicks swap_start, swap_end;
   if (!gpu_service_->is_using_vulkan()) {
     if (!gl_context_->MakeCurrent(gl_surface_.get())) {
       LOG(FATAL) << "Failed to make current.";
       // TODO(penghuang): Handle the failure.
     }
+    swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
     gl_surface_->SwapBuffers(frame.need_presentation_feedback
                                  ? buffer_presented_callback_
                                  : base::DoNothing());
+    swap_end = base::TimeTicks::Now();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
+    swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
     auto backend = sk_surface_->getBackendRenderTarget(
         SkSurface::kFlushRead_BackendHandleAccess);
@@ -216,9 +220,16 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     DidSwapBuffersComplete(params);
 
     CreateSkSurfaceForVulkan();
+    swap_end = base::TimeTicks::Now();
 #else
     NOTREACHED();
 #endif
+  }
+  for (auto& latency : frame.latency_info) {
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, swap_start, 1);
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_end, 1);
   }
 }
 
