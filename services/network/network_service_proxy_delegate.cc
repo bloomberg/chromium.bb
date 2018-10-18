@@ -12,6 +12,10 @@
 namespace network {
 namespace {
 
+// The maximum size of the cache that contains the GURLs that should use
+// alternate proxy list.
+constexpr size_t kMaxCacheSize = 15;
+
 void GetAlternativeProxy(const GURL& url,
                          const net::ProxyRetryInfoMap& proxy_retry_info,
                          net::ProxyInfo* result) {
@@ -61,7 +65,8 @@ bool CheckProxyList(const net::ProxyList& proxy_list,
 
 NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
     mojom::CustomProxyConfigClientRequest config_client_request)
-    : binding_(this, std::move(config_client_request)) {}
+    : binding_(this, std::move(config_client_request)),
+      should_use_alternate_proxy_list_cache_(kMaxCacheSize) {}
 
 void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
@@ -73,6 +78,9 @@ void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
 
   auto* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
+    if (url_loader->custom_proxy_use_alternate_proxy_list()) {
+      should_use_alternate_proxy_list_cache_.Put(request->url().spec(), true);
+    }
     headers->MergeFrom(url_loader->custom_proxy_pre_cache_headers());
   }
 }
@@ -115,8 +123,8 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
     return;
 
   net::ProxyInfo proxy_info;
-  if (ApplyProxyConfigToProxyInfo(proxy_config_->rules, proxy_retry_info, url,
-                                  &proxy_info)) {
+  if (ApplyProxyConfigToProxyInfo(GetProxyRulesForURL(url), proxy_retry_info,
+                                  url, &proxy_info)) {
     DCHECK(!proxy_info.is_empty() && !proxy_info.is_direct());
     result->OverrideProxyList(proxy_info.proxy_list());
     GetAlternativeProxy(url, proxy_retry_info, result);
@@ -152,6 +160,17 @@ bool NetworkServiceProxyDelegate::EligibleForProxy(
     const std::string& method) const {
   return proxy_info.is_direct() && proxy_info.proxy_list().size() == 1 &&
          MayProxyURL(url) && net::HttpUtil::IsMethodIdempotent(method);
+}
+
+net::ProxyConfig::ProxyRules NetworkServiceProxyDelegate::GetProxyRulesForURL(
+    const GURL& url) const {
+  net::ProxyConfig::ProxyRules rules = proxy_config_->rules;
+  const auto iter = should_use_alternate_proxy_list_cache_.Peek(url.spec());
+  if (iter == should_use_alternate_proxy_list_cache_.end())
+    return rules;
+
+  rules.proxies_for_http = proxy_config_->alternate_proxy_list;
+  return rules;
 }
 
 }  // namespace network

@@ -3869,6 +3869,16 @@ class NetworkContextMockHostTest : public NetworkContextTest {
     EXPECT_TRUE(base_url.is_valid()) << base_url.possibly_invalid_spec();
     return base_url.Resolve(relative_url);
   }
+
+  net::ProxyServer ConvertToProxyServer(const net::EmbeddedTestServer& server) {
+    std::string base_url = server.base_url().spec();
+    // Remove slash from URL.
+    base_url.pop_back();
+    auto proxy_server =
+        net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP);
+    EXPECT_TRUE(proxy_server.is_valid()) << base_url;
+    return proxy_server;
+  }
 };
 
 TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
@@ -3887,10 +3897,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
       CreateContextWithParams(std::move(context_params));
 
   auto config = mojom::CustomProxyConfig::New();
-  std::string base_url = proxy_test_server.base_url().spec();
-  // Remove slash from URL.
-  base_url.pop_back();
-  config->rules.ParseFromString("http=" + base_url);
+  net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
+  config->rules.ParseFromString("http=" + proxy_server.ToURI());
   config->pre_cache_headers.SetHeader("pre_foo", "pre_foo_value");
   config->post_cache_headers.SetHeader("post_foo", "post_foo_value");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
@@ -3911,8 +3919,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
   EXPECT_EQ(response, base::JoinString({"post_bar_value", "post_foo_value",
                                         "pre_bar_value", "pre_foo_value"},
                                        "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
 }
 
 TEST_F(NetworkContextMockHostTest,
@@ -3932,10 +3939,8 @@ TEST_F(NetworkContextMockHostTest,
       CreateContextWithParams(std::move(context_params));
 
   auto config = mojom::CustomProxyConfig::New();
-  std::string base_url = proxy_test_server.base_url().spec();
-  // Remove slash from URL.
-  base_url.pop_back();
-  config->rules.ParseFromString("http=" + base_url);
+  net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
+  config->rules.ParseFromString("http=" + proxy_server.ToURI());
   config->pre_cache_headers.SetHeader("foo", "bad");
   config->post_cache_headers.SetHeader("bar", "bad");
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
@@ -3952,8 +3957,7 @@ TEST_F(NetworkContextMockHostTest,
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
 }
 
 TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
@@ -3972,10 +3976,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
       CreateContextWithParams(std::move(context_params));
 
   auto config = mojom::CustomProxyConfig::New();
-  std::string base_url = proxy_test_server.base_url().spec();
-  // Remove slash from URL.
-  base_url.pop_back();
-  config->rules.ParseFromString("http=" + base_url);
+  net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
+  config->rules.ParseFromString("http=" + proxy_server.ToURI());
   config->pre_cache_headers.SetHeader("foo", "foo_value");
   config->post_cache_headers.SetHeader("bar", "bar_value");
   proxy_config_client->OnCustomProxyConfigUpdated(config->Clone());
@@ -3990,8 +3992,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
   EXPECT_FALSE(client->response_head().was_fetched_via_cache);
 
   // post_cache_headers should not break caching.
@@ -4016,8 +4017,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"new_bar", "new_foo"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
   EXPECT_FALSE(client->response_head().was_fetched_via_cache);
 }
 
@@ -4037,10 +4037,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
       CreateContextWithParams(std::move(context_params));
 
   auto config = mojom::CustomProxyConfig::New();
-  std::string base_url = proxy_test_server.base_url().spec();
-  // Remove slash from URL.
-  base_url.pop_back();
-  config->rules.ParseFromString("http=" + base_url);
+  net::ProxyServer proxy_server = ConvertToProxyServer(proxy_test_server);
+  config->rules.ParseFromString("http=" + proxy_server.ToURI());
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
   scoped_task_environment_.RunUntilIdle();
 
@@ -4055,8 +4053,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"bar_value", "foo_value"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
   EXPECT_FALSE(client->response_head().was_fetched_via_cache);
 
   // custom_proxy_post_cache_headers should not break caching.
@@ -4077,8 +4074,7 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
 
   EXPECT_EQ(response, base::JoinString({"new_bar", "new_foo"}, "\n"));
-  EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_EQ(client->response_head().proxy_server, proxy_server);
   EXPECT_FALSE(client->response_head().was_fetched_via_cache);
 }
 
@@ -4128,10 +4124,8 @@ TEST_F(NetworkContextMockHostTest,
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   // Set up a proxy to be used by the proxy config service.
   net::ProxyConfig proxy_config;
-  std::string base_url = proxy_test_server.base_url().spec();
-  // Remove slash from URL.
-  base_url.pop_back();
-  proxy_config.proxy_rules().ParseFromString("http=" + base_url);
+  proxy_config.proxy_rules().ParseFromString(
+      "http=" + ConvertToProxyServer(proxy_test_server).ToURI());
   context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
       proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -4160,7 +4154,46 @@ TEST_F(NetworkContextMockHostTest,
 
   EXPECT_EQ(response, base::JoinString({"None", "None", "None", "None"}, "\n"));
   EXPECT_EQ(client->response_head().proxy_server,
-            net::ProxyServer::FromURI(base_url, net::ProxyServer::SCHEME_HTTP));
+            ConvertToProxyServer(proxy_test_server));
+}
+
+TEST_F(NetworkContextMockHostTest, CustomProxyUsesAlternateProxyList) {
+  net::EmbeddedTestServer invalid_server;
+  ASSERT_TRUE(invalid_server.Start());
+
+  net::EmbeddedTestServer proxy_test_server;
+  net::test_server::RegisterDefaultHandlers(&proxy_test_server);
+  ASSERT_TRUE(proxy_test_server.Start());
+
+  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->custom_proxy_config_client_request =
+      mojo::MakeRequest(&proxy_config_client);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  auto config = mojom::CustomProxyConfig::New();
+  config->rules.ParseFromString("http=" +
+                                ConvertToProxyServer(invalid_server).ToURI());
+
+  config->alternate_proxy_list.AddProxyServer(
+      ConvertToProxyServer(proxy_test_server));
+  proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
+  scoped_task_environment_.RunUntilIdle();
+
+  ResourceRequest request;
+  request.url = GURL("http://does.not.resolve/echo");
+  request.custom_proxy_use_alternate_proxy_list = true;
+  std::unique_ptr<TestURLLoaderClient> client =
+      FetchRequest(request, network_context.get());
+  std::string response;
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
+
+  // |invalid_server| has no handlers set up so would return an empty response.
+  EXPECT_EQ(response, "Echo");
+  EXPECT_EQ(client->response_head().proxy_server,
+            ConvertToProxyServer(proxy_test_server));
 }
 
 }  // namespace

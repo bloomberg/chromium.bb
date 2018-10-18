@@ -43,6 +43,10 @@ struct CustomProxyConfig {
   // http requests.
   ProxyRules rules;
 
+  // List of proxies that will be used if
+  // ResourceRequest::custom_proxy_use_alternate_proxy_list is set.
+  ProxyList alternate_proxy_list;
+
   // The custom proxy can set these headers in this config which will be added
   // to all requests using the proxy. This allows setting headers that may be
   // privacy/security sensitive which we don't want to send to the renderer.

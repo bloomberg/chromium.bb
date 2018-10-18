@@ -237,6 +237,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // that match the custom proxy config, and would otherwise be made direct.
   net::HttpRequestHeaders custom_proxy_pre_cache_headers;
   net::HttpRequestHeaders custom_proxy_post_cache_headers;
+
+  // Whether to use the alternate proxies set in the custom proxy config.
+  bool custom_proxy_use_alternate_proxy_list = false;
 };
 
 }  // namespace network

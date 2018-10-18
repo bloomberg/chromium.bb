@@ -62,4 +62,28 @@ TEST(DataReductionProxyURLLoaderThrottleTest,
   EXPECT_EQ(value, "bar");
 }
 
+TEST(DataReductionProxyURLLoaderThrottleTest, UseAlternateProxyList) {
+  DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()));
+  network::ResourceRequest request;
+  request.resource_type = content::RESOURCE_TYPE_MEDIA;
+  request.url = GURL("http://example.com");
+  bool defer = false;
+
+  throttle.WillStartRequest(&request, &defer);
+
+  EXPECT_TRUE(request.custom_proxy_use_alternate_proxy_list);
+}
+
+TEST(DataReductionProxyURLLoaderThrottleTest, DontUseAlternateProxyList) {
+  DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()));
+  network::ResourceRequest request;
+  request.resource_type = content::RESOURCE_TYPE_MAIN_FRAME;
+  request.url = GURL("http://example.com");
+  bool defer = false;
+
+  throttle.WillStartRequest(&request, &defer);
+
+  EXPECT_FALSE(request.custom_proxy_use_alternate_proxy_list);
+}
+
 }  // namespace data_reduction_proxy

@@ -111,6 +111,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     return custom_proxy_post_cache_headers_;
   }
 
+  bool custom_proxy_use_alternate_proxy_list() const {
+    return custom_proxy_use_alternate_proxy_list_;
+  }
+
   // Gets the URLLoader associated with this request.
   static URLLoader* ForRequest(const net::URLRequest& request);
 
@@ -265,6 +269,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   net::HttpRequestHeaders custom_proxy_pre_cache_headers_;
   net::HttpRequestHeaders custom_proxy_post_cache_headers_;
+  bool custom_proxy_use_alternate_proxy_list_ = false;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

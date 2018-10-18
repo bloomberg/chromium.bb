@@ -122,6 +122,10 @@ class DataReductionProxyConfigServiceClient
       const net::ProxyServer& proxy_server,
       const net::LoadTimingInfo& load_timing_info);
 
+  void SetRemoteConfigAppliedForTesting(bool remote_config_applied) {
+    remote_config_applied_ = remote_config_applied;
+  }
+
  protected:
   // Retrieves the backoff entry object being used to throttle request failures.
   // Virtual for testing.

@@ -108,7 +108,6 @@
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBlockZeroHeaderSent
 -DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBypassHeaderSent
 -DataReductionProxyFallbackBrowsertest.NoProxyUsedWhenBlockOnceHeaderSent
--DataReductionProxyResourceTypeBrowsertest.CoreProxyUsedForMedia
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
