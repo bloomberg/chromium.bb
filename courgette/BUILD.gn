@@ -188,17 +188,19 @@ if (!is_ios) {
 
       courgette64_out_dir = get_label_info(courgette64_label, "root_out_dir")
 
-      copy("copy_courgette_pdb") {
-        visibility = [ ":copy_courgette_binaries" ]
-        sources = [
-          "$courgette64_out_dir/courgette64.exe.pdb",
-        ]
-        outputs = [
-          "$root_out_dir/{{source_file_part}}",
-        ]
-        deps = [
-          courgette64_label,
-        ]
+      if (symbol_level > 0) {
+        copy("copy_courgette_pdb") {
+          visibility = [ ":copy_courgette_binaries" ]
+          sources = [
+            "$courgette64_out_dir/courgette64.exe.pdb",
+          ]
+          outputs = [
+            "$root_out_dir/{{source_file_part}}",
+          ]
+          deps = [
+            courgette64_label,
+          ]
+        }
       }
 
       copy("copy_courgette_binaries") {
