@@ -207,6 +207,11 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
       {"chrome://dino/dino.css", false},
       {"ftp://example.com/bla.js", true},
       {"ftp://example.com/bla.txt", false},
+
+      {"file://home/potato.txt", false},
+      {"file://home/potato.js", true},
+      {"file://home/potato.mjs", true},
+      {"chrome://dino/dino.mjs", true},
   };
 
   for (auto& testcase : data) {

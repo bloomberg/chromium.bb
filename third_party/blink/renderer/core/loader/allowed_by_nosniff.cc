@@ -131,7 +131,8 @@ bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
   bool is_http_family_or_data = response.Url().ProtocolIsInHTTPFamily() ||
                                 response.Url().ProtocolIsData();
   if (!is_http_family_or_data &&
-      response.Url().LastPathComponent().EndsWith(".js")) {
+      (response.Url().LastPathComponent().EndsWith(".js") ||
+       response.Url().LastPathComponent().EndsWith(".mjs"))) {
     return true;
   }
 
