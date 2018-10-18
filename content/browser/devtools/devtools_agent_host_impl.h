@@ -97,7 +97,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   DevToolsIOContext* GetIOContext() { return &io_context_; }
   DevToolsRendererChannel* GetRendererChannel() { return &renderer_channel_; }
 
-  base::flat_set<DevToolsSession*>& sessions() { return sessions_; }
+  const std::vector<DevToolsSession*>& sessions() const { return sessions_; }
 
  private:
   friend class DevToolsAgentHost;  // for static methods
@@ -117,7 +117,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
                              TargetRegistry* registry);
 
   const std::string id_;
-  base::flat_set<DevToolsSession*> sessions_;
+  std::vector<DevToolsSession*> sessions_;
   base::flat_map<DevToolsAgentHostClient*, std::unique_ptr<DevToolsSession>>
       session_by_client_;
   DevToolsIOContext io_context_;
