@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_CACHE_H_
-#define COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_CACHE_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_CACHE_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_CACHE_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/image_fetcher/core/storage/image_store_types.h"
+#include "components/image_fetcher/core/cache/image_store_types.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -111,4 +111,4 @@ class ImageCache : public base::RefCounted<ImageCache> {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_CACHE_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_CACHE_H_

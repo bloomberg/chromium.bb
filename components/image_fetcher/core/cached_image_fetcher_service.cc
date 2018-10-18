@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/time/clock.h"
+#include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/cached_image_fetcher.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
-#include "components/image_fetcher/core/storage/image_cache.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace image_fetcher {

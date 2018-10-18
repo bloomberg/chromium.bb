@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/core/storage/image_metadata_store_leveldb.h"
+#include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
 
 #include <map>
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
-#include "components/image_fetcher/core/storage/image_store_types.h"
-#include "components/image_fetcher/core/storage/proto/cached_image_metadata.pb.h"
+#include "components/image_fetcher/core/cache/image_store_types.h"
+#include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

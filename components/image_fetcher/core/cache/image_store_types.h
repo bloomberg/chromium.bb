@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_STORE_TYPES_H_
-#define COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_STORE_TYPES_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_STORE_TYPES_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_STORE_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -31,4 +31,4 @@ using KeysCallback = base::OnceCallback<void(std::vector<std::string>)>;
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_STORE_TYPES_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_STORE_TYPES_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_METADATA_STORE_LEVELDB_H_
-#define COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_METADATA_STORE_LEVELDB_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_METADATA_STORE_LEVELDB_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_METADATA_STORE_LEVELDB_H_
 
 #include <memory>
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/image_fetcher/core/storage/image_metadata_store.h"
-#include "components/image_fetcher/core/storage/image_store_types.h"
+#include "components/image_fetcher/core/cache/image_metadata_store.h"
+#include "components/image_fetcher/core/cache/image_store_types.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace base {
@@ -94,4 +94,4 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_CORE_STORAGE_IMAGE_METADATA_STORE_LEVELDB_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_CACHE_IMAGE_METADATA_STORE_LEVELDB_H_

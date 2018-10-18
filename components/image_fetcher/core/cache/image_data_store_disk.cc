@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/core/storage/image_data_store_disk.h"
+#include "components/image_fetcher/core/cache/image_data_store_disk.h"
 
 #include <utility>
 #include <vector>

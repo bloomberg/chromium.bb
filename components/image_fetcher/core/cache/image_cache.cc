@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/core/storage/image_cache.h"
+#include "components/image_fetcher/core/cache/image_cache.h"
 
 #include <algorithm>
 #include <utility>
@@ -15,8 +15,8 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/base32/base32.h"
-#include "components/image_fetcher/core/storage/image_data_store.h"
-#include "components/image_fetcher/core/storage/image_metadata_store.h"
+#include "components/image_fetcher/core/cache/image_data_store.h"
+#include "components/image_fetcher/core/cache/image_metadata_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -129,7 +129,7 @@ void ImageCache::OnDependencyInitialized() {
   queued_requests_.clear();
 
   // TODO(wylieb): Consider delaying eviction as new requests come in via
-  // seperate weak pointers.
+  // separate weak pointers.
   // TODO(wylieb): Log UMA data about starting GC eviction here, then again
   // when it's finished.
   // Once all the queued requests are taken care of, run eviction.

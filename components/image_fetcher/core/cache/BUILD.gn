@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("storage") {
+static_library("cache") {
   sources = [
     "image_cache.cc",
     "image_cache.h",
@@ -26,7 +26,7 @@ static_library("storage") {
   ]
 }
 
-source_set("storage_unit_tests") {
+source_set("cache_unit_tests") {
   testonly = true
   sources = [
     "image_cache_unittest.cc",
@@ -34,7 +34,7 @@ source_set("storage_unit_tests") {
     "image_metadata_store_leveldb_unittest.cc",
   ]
   deps = [
-    ":storage",
+    ":cache",
     "proto",
     "//base",
     "//base/test:test_support",

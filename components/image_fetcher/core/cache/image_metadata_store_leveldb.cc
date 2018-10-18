@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/core/storage/image_metadata_store_leveldb.h"
+#include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
 
 #include <algorithm>
 #include <utility>
@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/image_fetcher/core/storage/proto/cached_image_metadata.pb.h"
+#include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 
 using image_fetcher::CachedImageMetadataProto;
