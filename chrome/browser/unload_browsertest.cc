@@ -795,9 +795,13 @@ class FastTabCloseTabStripModelObserver : public TabStripModelObserver {
   }
 
   // TabStripModelObserver:
-  void TabDetachedAt(content::WebContents* contents,
-                     int index,
-                     bool was_active) override {
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kRemoved)
+      return;
+
     run_loop_->Quit();
   }
 

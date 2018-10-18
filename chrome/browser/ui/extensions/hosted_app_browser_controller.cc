@@ -336,16 +336,24 @@ void HostedAppBrowserController::OnEngagementEvent(
                             SiteEngagementService::ENGAGEMENT_LAST);
 }
 
-void HostedAppBrowserController::TabInsertedAt(TabStripModel* tab_strip_model,
-                                               content::WebContents* contents,
-                                               int index,
-                                               bool foreground) {
+void HostedAppBrowserController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas())
+      OnTabInserted(delta.insert.contents);
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    for (const auto& delta : change.deltas())
+      OnTabRemoved(delta.remove.contents);
+  }
+}
+
+void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
   HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
 }
 
-void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
-                                               int index,
-                                               bool was_active) {
+void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
   auto* rvh = contents->GetRenderViewHost();
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
