@@ -1937,6 +1937,60 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerIframe) {
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
+// Tests that if we have multiple valid candidates for implicit promotion, we
+// don't promote either.
+TEST_F(ImplicitRootScrollerSimTest, DontPromoteWhenMultipleAreValid) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container"
+                  srcdoc="<!DOCTYPE html><style>html {height: 300%;}</style>">
+          </iframe>
+          <iframe id="container2"
+                  srcdoc="<!DOCTYPE html><style>html {height: 300%;}</style>">
+          </iframe>
+      )HTML");
+  // srcdoc iframe loads via posted tasks.
+  RunPendingTasks();
+  Compositor().BeginFrame();
+
+  // Since both iframes are valid candidates, neither should be promoted.
+  ASSERT_EQ(&GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // Now make the second one invalid, that should cause the first to be
+  // promoted.
+  Element* container2 = GetDocument().getElementById("container2");
+  container2->style()->setProperty(&GetDocument(), "height", "95%", String(),
+                                   ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
+
 // Test that when a valid iframe becomes loaded and thus should be promoted, it
 // becomes the root scroller, without needing an intervening layout.
 TEST_F(ImplicitRootScrollerSimTest, IframeLoadedWithoutLayout) {

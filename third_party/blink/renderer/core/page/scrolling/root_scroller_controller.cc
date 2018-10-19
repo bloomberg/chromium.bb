@@ -393,8 +393,7 @@ void RootScrollerController::ProcessImplicitCandidates() {
   if (ScrollsVerticalOverflow(*document_->GetLayoutView()))
     return;
 
-  Element* highest_z_element = nullptr;
-  bool highest_is_ambiguous = false;
+  bool multiple_matches = false;
 
   HeapHashSet<WeakMember<Element>> copy(implicit_candidates_);
   for (auto& element : copy) {
@@ -404,25 +403,15 @@ void RootScrollerController::ProcessImplicitCandidates() {
       continue;
     }
 
-    if (!highest_z_element) {
-      highest_z_element = element;
-    } else {
-      int element_z = element->GetLayoutObject()->Style()->ZIndex();
-      int highest_z = highest_z_element->GetLayoutObject()->Style()->ZIndex();
+    if (implicit_root_scroller_)
+      multiple_matches = true;
 
-      if (element_z > highest_z) {
-        highest_z_element = element;
-        highest_is_ambiguous = false;
-      } else if (element_z == highest_z) {
-        highest_is_ambiguous = true;
-      }
-    }
+    implicit_root_scroller_ = element;
   }
 
-  if (highest_is_ambiguous)
+  // Only promote an implicit root scroller if we have a unique match.
+  if (multiple_matches)
     implicit_root_scroller_ = nullptr;
-  else
-    implicit_root_scroller_ = highest_z_element;
 }
 
 PaintLayer* RootScrollerController::RootScrollerPaintLayer() const {
