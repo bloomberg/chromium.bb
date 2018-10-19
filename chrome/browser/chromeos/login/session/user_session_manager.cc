@@ -88,7 +88,6 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -641,10 +640,9 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(user_profile);
 
-  const SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(user_profile);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(user_profile);
   const bool account_id_valid =
-      signin_manager && !signin_manager->GetAuthenticatedAccountId().empty();
+      identity_manager && !identity_manager->GetPrimaryAccountId().empty();
   if (!account_id_valid)
     LOG(ERROR) << "No account is associated with sign-in manager on restore.";
   UMA_HISTOGRAM_BOOLEAN("UserSessionManager.RestoreOnCrash.AccountIdValid",
@@ -1261,9 +1259,10 @@ void UserSessionManager::InitProfilePreferences(
     AccountTrackerService* account_tracker =
         AccountTrackerServiceFactory::GetForProfile(profile);
     account_tracker->SetIsChildAccount(account_id, is_child);
-    VLOG(1) << "Seed IdentityManager and SigninManagerBase with the "
-            << "authenticated account info, success="
-            << SigninManagerFactory::GetForProfile(profile)->IsAuthenticated();
+    VLOG(1)
+        << "Seed IdentityManager and SigninManagerBase with the "
+        << "authenticated account info, success="
+        << IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount();
 
     if (IsOnlineSignin(user_context)) {
       account_tracker->SetIsAdvancedProtectionAccount(
