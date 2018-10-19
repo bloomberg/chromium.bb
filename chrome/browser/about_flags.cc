@@ -1096,33 +1096,6 @@ const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
      cc::switches::kDisableCheckerImaging, ""},
 };
 
-const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-#if defined(OS_ANDROID)
-    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android0.json"},
-    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android1.json"},
-    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android2.json"},
-    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android3.json"},
-    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android4.json"},
-#else
-    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop0.json"},
-    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop1.json"},
-    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop2.json"},
-    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop3.json"},
-    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop4.json"},
-#endif  // defined(OS_ANDROID)
-};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::Choice kThirdPartyDoodlesChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1133,6 +1106,20 @@ const FeatureEntry::Choice kThirdPartyDoodlesChoices[] = {
      search_provider_logos::switches::kThirdPartyDoodleURL,
      "https://www.gstatic.com/chrome/ntp/doodle_test/"
      "third_party_animated.json"},
+};
+
+const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android0.json"},
+    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android1.json"},
+    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android2.json"},
+    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android3.json"},
+    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android4.json"},
 };
 #endif  // defined(OS_ANDROID)
 
@@ -3512,11 +3499,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfBlinkCORSDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCORS)},
 
+#if defined(OS_ANDROID)
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, kOsAll,
      MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},
 
-#if defined(OS_ANDROID)
     {"spannable-inline-autocomplete",
      flag_descriptions::kSpannableInlineAutocompleteName,
      flag_descriptions::kSpannableInlineAutocompleteDescription, kOsAndroid,
