@@ -189,7 +189,9 @@ void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
 }
 
 void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
+  // Blur only if the background is visible.
   const bool should_blur_background =
+      opaque_background_.visible() &&
       shelf_widget_->shelf_layout_manager()->ShouldBlurShelfBackground();
   if (should_blur_background == background_is_currently_blurred_)
     return;
@@ -207,6 +209,19 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const Shelf* shelf = shelf_widget_->shelf();
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
+
+  // If the app list is showing in clamshell mode, we should hide the shelf.
+  // otherwise, we should show it again. This creates a 'blending' effect
+  // between the two
+  if (background_type == SHELF_BACKGROUND_APP_LIST) {
+    opaque_background_.SetVisible(false);
+    UpdateBackgroundBlur();
+    return;
+  }
+
+  if (!opaque_background_.visible()) {
+    opaque_background_.SetVisible(true);
+  }
 
   // Show rounded corners except in maximized and split modes.
   if (background_type == SHELF_BACKGROUND_MAXIMIZED ||

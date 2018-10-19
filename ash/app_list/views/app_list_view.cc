@@ -578,8 +578,8 @@ void AppListView::InitContents(int initial_apps_page) {
   SetBackgroundShieldColor();
   if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode()) {
     app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(
-            SK_ColorBLACK, AppListConfig::instance().blur_radius()));
+        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                    kAppListBackgroundRadius));
     app_list_background_shield_mask_->layer()->SetFillsBoundsOpaquely(false);
     app_list_background_shield_->layer()->SetMaskLayer(
         app_list_background_shield_mask_->layer());

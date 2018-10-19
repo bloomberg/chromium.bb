@@ -97,10 +97,8 @@ bool IsTabletModeEnabled() {
 
 // TODO(sammiequon): This should be the same as IsTabletModeEnabled once home
 // launcher flag is removed.
-bool IsHomeLauncherEnabled() {
-  return Shell::Get()
-      ->app_list_controller()
-      ->IsHomeLauncherEnabledInTabletMode();
+bool IsHomeLauncherEnabledInTabletMode() {
+  return app_list_features::IsHomeLauncherEnabled() && IsTabletModeEnabled();
 }
 
 }  // namespace
@@ -549,7 +547,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
 
   // If the app list is active and the home launcher is not shown, hide the
   // shelf background to prevent overlap.
-  if (is_app_list_visible_ && !IsHomeLauncherEnabled())
+  if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
     return SHELF_BACKGROUND_APP_LIST;
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
@@ -1001,7 +999,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != SHELF_AUTO_HIDE)
     return SHELF_AUTO_HIDE_HIDDEN;
 
-  if (shelf_widget_->IsShowingAppList() && !IsHomeLauncherEnabled())
+  if (shelf_widget_->IsShowingAppList() && !IsHomeLauncherEnabledInTabletMode())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&
@@ -1221,7 +1219,7 @@ void ShelfLayoutManager::StartGestureDrag(
     }
 
     // Disable the shelf dragging if the fullscreen app list is opened.
-    if (is_app_list_visible_ && !IsHomeLauncherEnabled())
+    if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
       return;
 
     gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
@@ -1391,7 +1389,7 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
   // In overview mode, app list for tablet mode is hidden temporarily and will
   // be shown automatically after overview mode ends. So prevent opening it
   // here.
-  if (IsHomeLauncherEnabled())
+  if (IsHomeLauncherEnabledInTabletMode())
     return false;
 
   return true;
