@@ -157,14 +157,6 @@ def GeneralTemplates(site_config, ge_build_config):
       unittests=False,
   )
 
-  # Notice all builders except for vmtest_boards should not run vmtest.
-  site_config.AddTemplate(
-      'no_vmtest_builder',
-      vm_tests=[],
-      vm_tests_override=None,
-      gce_tests=[],
-  )
-
   site_config.AddTemplate(
       'no_hwtest_builder',
       hw_tests=[],
@@ -297,7 +289,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'termina',
-      site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
@@ -317,7 +308,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'loonix',
-      site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
@@ -369,12 +359,6 @@ def GeneralTemplates(site_config, ge_build_config):
       # Send an email on build failures.
       health_threshold=1,
       health_alert_recipients=['gci-alerts+buildbots@google.com'],
-  )
-
-  site_config.AddTemplate(
-      'moblab',
-      site_config.templates.no_vmtest_builder,
-      image_test=False,
   )
 
   site_config.AddTemplate(
@@ -551,7 +535,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'chrome_perf',
       site_config.templates.chrome_pfq_informational,
       site_config.templates.no_unittest_builder,
-      site_config.templates.no_vmtest_builder,
       description='Chrome Performance test bot',
       hw_tests=[config_lib.HWTestConfig(
           'perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
@@ -619,7 +602,6 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'test_ap',
       site_config.templates.internal,
-      site_config.templates.no_vmtest_builder,
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.INCREMENTAL_TYPE,
       description='WiFi AP images used in testing',
@@ -629,7 +611,6 @@ def GeneralTemplates(site_config, ge_build_config):
   # Create tryjob build configs to help with stress testing.
   site_config.AddTemplate(
       'unittest_stress',
-      site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.TRYJOB_TYPE,
@@ -748,8 +729,6 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'factory',
       site_config.templates.release,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_vmtest_builder,
       display_label=config_lib.DISPLAY_LABEL_FACTORY,
       afdo_use=False,
       chrome_sdk=False,
@@ -769,7 +748,6 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'firmware_base',
-      site_config.templates.no_vmtest_builder,
       display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
       images=[],
       hwqual=False,
@@ -817,7 +795,6 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'payloads',
       site_config.templates.internal,
-      site_config.templates.no_vmtest_builder,
       site_config.templates.no_unittest_builder,
       site_config.templates.no_hwtest_builder,
       display_label=config_lib.DISPLAY_LABEL_TRYJOB,
@@ -2916,7 +2893,6 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
         '%s-%s' % (board, config_lib.CONFIG_TYPE_FACTORY),
         site_config.templates.factory,
         board_configs[board],
-        site_config.templates.no_vmtest_builder,
     )
 
 

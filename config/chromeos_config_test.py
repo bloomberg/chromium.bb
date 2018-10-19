@@ -666,6 +666,20 @@ def GeneralTemplates(site_config, ge_build_config):
       ),
   )
 
+  # Notice all builders except for vmtest_boards should not run vmtest.
+  site_config.AddTemplate(
+      'no_vmtest_builder',
+      vm_tests=[],
+      vm_tests_override=None,
+      gce_tests=[],
+  )
+
+  site_config.AddTemplate(
+      'moblab',
+      site_config.templates.no_vmtest_builder,
+      image_test=False,
+  )
+
   site_config.templates.full.apply(
       site_config.templates.default_hw_tests_override,
       image_test=True,
@@ -716,6 +730,7 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.templates.chrome_perf.apply(
       site_config.templates.default_hw_tests_override,
+      site_config.templates.no_vmtest_builder,
   )
   # END Chrome PFQ
 
@@ -728,6 +743,41 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.default_hw_tests_override,
   )
   # END Chromium PFQ
+
+  # BEGIN Factory
+  site_config.templates.factory.apply(
+      # site_config.templates.default_hw_tests_override,
+      site_config.templates.no_vmtest_builder,
+      site_config.templates.no_hwtest_builder,
+  )
+  # END Factory
+
+  # BEGIN Firmware
+  site_config.templates.firmware_base.apply(
+      site_config.templates.no_vmtest_builder,
+  )
+
+  site_config.templates.firmware.apply(
+      # site_config.templates.default_hw_tests_override,
+      site_config.templates.no_vmtest_builder,
+  )
+
+  site_config.templates.depthcharge_firmware.apply(
+      # site_config.templates.default_hw_tests_override,
+      site_config.templates.no_vmtest_builder,
+  )
+
+  site_config.templates.depthcharge_full_firmware.apply(
+      # site_config.templates.default_hw_tests_override,
+      site_config.templates.no_vmtest_builder,
+  )
+  # END Firmware
+
+  # BEGIN Loonix
+  site_config.templates.loonix.apply(
+      site_config.templates.no_vmtest_builder,
+  )
+  # END Loonix
 
   # BEGIN Release
   site_config.templates.release.apply(
@@ -754,11 +804,28 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.templates.release_afdo_use.apply(
       site_config.templates.default_hw_tests_override,
   )
+
+  site_config.templates.payloads.apply(
+      site_config.templates.no_vmtest_builder,
+  )
   # END Release
 
   site_config.templates.test_ap.apply(
+      site_config.templates.no_vmtest_builder,
       site_config.templates.default_hw_tests_override,
   )
+
+  # BEGIN Termina
+  site_config.templates.termina.apply(
+      site_config.templates.no_vmtest_builder,
+  )
+  #END Termina
+
+  # BEGIN Unittest Stress
+  site_config.templates.unittest_stress.apply(
+      site_config.templates.no_vmtest_builder,
+  )
+  # END Unittest Stress
 
   # BEGIN Ubsan
   site_config.templates.tot_ubsan_informational.apply(

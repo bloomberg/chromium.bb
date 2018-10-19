@@ -269,6 +269,8 @@ class UnifiedBuildConfigTestCase(object):
 
     chromeos_config.GeneralTemplates(
         self._site_config, self._fake_ge_build_config)
+    chromeos_test.GeneralTemplates(
+        self._site_config, self._fake_ge_build_config)
     chromeos_config.ReleaseBuilders(
         self._site_config, self._boards_dict, self._fake_ge_build_config)
     chromeos_config.CqBuilders(
