@@ -48,10 +48,14 @@ cr.define('accessibility', function() {
   }
 
   function toggleAccessibility(data, element, mode) {
-    chrome.send(
-        'toggleAccessibility',
-        [String(data.processId), String(data.routeId), mode]);
-    document.location.reload();
+    let id = getIdFromData(data);
+    let tree = $(id + ':tree');
+    // If the tree is visible, request a new tree with the updated mode.
+    let shouldRequestTree = !!tree && tree.style.display != 'none';
+    chrome.send('toggleAccessibility', [
+      String(data.processId), String(data.routeId), mode,
+      String(shouldRequestTree)
+    ]);
   }
 
   function requestTree(data, element) {

@@ -280,16 +280,20 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
     const base::ListValue* args) {
   std::string process_id_str;
   std::string route_id_str;
+  std::string should_request_tree_str;
   int process_id;
   int route_id;
   int mode;
-  CHECK_EQ(3U, args->GetSize());
+  bool should_request_tree;
+  CHECK_EQ(4U, args->GetSize());
   CHECK(args->GetString(0, &process_id_str));
   CHECK(args->GetString(1, &route_id_str));
   // TODO(695247): We should pass each ax flag seperately
   CHECK(args->GetInteger(2, &mode));
+  CHECK(args->GetString(3, &should_request_tree_str));
   CHECK(base::StringToInt(process_id_str, &process_id));
   CHECK(base::StringToInt(route_id_str, &route_id));
+  should_request_tree = (should_request_tree_str == "true");
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -316,6 +320,19 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
     current_mode.set_mode(ui::AXMode::kHTML, true);
 
   web_contents->SetAccessibilityMode(current_mode);
+
+  if (should_request_tree) {
+    base::ListValue request_args;
+    request_args.Append(std::make_unique<base::Value>(process_id_str));
+    request_args.Append(std::make_unique<base::Value>(route_id_str));
+    RequestWebContentsTree(&request_args);
+  } else {
+    // Call accessibility.showTree without a 'tree' field so the row's
+    // accessibility mode buttons are updated.
+    AllowJavascript();
+    std::unique_ptr<base::DictionaryValue> new_mode(BuildTargetDescriptor(rvh));
+    CallJavascriptFunction("accessibility.showTree", *(new_mode.get()));
+  }
 }
 
 void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
