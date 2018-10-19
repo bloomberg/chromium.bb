@@ -109,7 +109,8 @@ void DriveNotificationManager::OnIncomingInvalidation(
     auto invalidations = invalidation_map.ForObject(id);
     int64_t& invalidation_version = invalidated_change_ids_[unpacked_id] = -1;
     for (auto& invalidation : invalidations) {
-      if (invalidation.version() > invalidation_version) {
+      if (!invalidation.is_unknown_version() &&
+          invalidation.version() > invalidation_version) {
         invalidation_version = invalidation.version();
       }
     }
