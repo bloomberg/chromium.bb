@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -29,7 +28,6 @@ public class LocationBarPhone extends LocationBarLayout {
     private View mFirstVisibleFocusedView;
 
     private Runnable mKeyboardResizeModeTask;
-    private ObjectAnimator mOmniboxBackgroundAnimator;
 
     /**
      * Constructor used to inflate from XML.
@@ -80,10 +78,6 @@ public class LocationBarPhone extends LocationBarLayout {
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        if (mOmniboxBackgroundAnimator != null && mOmniboxBackgroundAnimator.isRunning()) {
-            mOmniboxBackgroundAnimator.cancel();
-            mOmniboxBackgroundAnimator = null;
-        }
         if (hasFocus) {
             // Remove the focus of this view once the URL field has taken focus as this view no
             // longer needs it.
