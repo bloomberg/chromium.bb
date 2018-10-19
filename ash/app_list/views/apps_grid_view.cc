@@ -1012,6 +1012,19 @@ void AppsGridView::ViewHierarchyChanged(
 }
 
 void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
+  // If a tap/long-press occurs within a valid tile, it is usually a mistake and
+  // should not close the launcher in clamshell mode. Otherwise, we should let
+  // those events pass to the ancestor views.
+  if (!contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
+      (event->type() == ui::ET_GESTURE_TAP ||
+       event->type() == ui::ET_GESTURE_LONG_PRESS)) {
+    GridIndex nearest_tile_index =
+        GetNearestTileIndexForPoint(event->location());
+    if (IsValidIndex(nearest_tile_index))
+      event->SetHandled();
+    return;
+  }
+
   // Bail on STATE_START or no apps page to make PaginationModel happy.
   if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
       pagination_model_.total_pages() <= 0) {
@@ -1994,22 +2007,6 @@ bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
 
   HandleScroll(offset, type);
   return true;
-}
-
-bool AppsGridView::IsEventNearAppIcon(const ui::LocatedEvent& event) {
-  // Convert the event location to AppsGridView coordinates.
-  std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
-  ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
-  event.target()->ConvertEventToTarget(this, cloned_located_event);
-  const gfx::Point point_in_apps_grid_view = cloned_located_event->location();
-
-  // GetNearestTileIndexForPoint will always return a slot, even if the point is
-  // outside of this.
-  if (!bounds().Contains(point_in_apps_grid_view))
-    return false;
-
-  return GetViewDisplayedAtSlotOnCurrentPage(
-      GetNearestTileIndexForPoint(point_in_apps_grid_view).slot);
 }
 
 AppListItemView* AppsGridView::GetCurrentPageFirstItemViewInFolder() {
