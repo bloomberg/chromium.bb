@@ -166,6 +166,9 @@ Polymer({
     /** @private */
     showRestart_: Boolean,
     // </if>
+
+    /** @private */
+    showSignoutDialog_: Boolean,
   },
 
   /** @override */
@@ -369,14 +372,27 @@ Polymer({
   /** @private */
   onSigninAllowedChange_: function() {
     if (this.syncStatus.signedIn && !this.$.signinAllowedToggle.checked) {
-      // Switch the toggle back on and route to people_page's disconnect dialog.
+      // Switch the toggle back on and show the signout dialog.
       this.$.signinAllowedToggle.checked = true;
-      settings.navigateTo(settings.routes.SIGN_OUT);
+      this.showSignoutDialog_ = true;
     } else {
       /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
           .sendPrefChange();
       this.showRestart_ = true;
     }
+  },
+
+  /** @private */
+  onSignoutDialogClosed_: function() {
+    if (/** @type {!SettingsSignoutDialogElement} */ (
+            this.$$('settings-signout-dialog'))
+            .wasConfirmed()) {
+      this.$.signinAllowedToggle.checked = false;
+      /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
+          .sendPrefChange();
+      this.showRestart_ = true;
+    }
+    this.showSignoutDialog_ = false;
   },
 
   /**
