@@ -114,7 +114,8 @@ void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
   cros_component_manager_ =
       std::make_unique<component_updater::CrOSComponentInstaller>(
           component_updater::MetadataTable::Create(
-              g_browser_process->local_state()));
+              g_browser_process->local_state()),
+          g_browser_process->component_updater());
 
   // Register all installed components for regular update.
   cros_component_manager_->RegisterInstalled();
