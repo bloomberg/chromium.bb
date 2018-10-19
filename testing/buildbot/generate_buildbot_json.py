@@ -435,11 +435,13 @@ class BBJSONGenerator(object):
 
   def add_common_test_properties(self, test, tester_config):
     if tester_config.get('use_multi_dimension_trigger_script'):
+      # Assumes update_and_cleanup_test has already been called, so the
+      # builder's mixins have been flattened into the test.
       test['trigger_script'] = {
         'script': '//testing/trigger_scripts/trigger_multiple_dimensions.py',
         'args': [
           '--multiple-trigger-configs',
-          json.dumps(tester_config['swarming']['dimension_sets'] +
+          json.dumps(test['swarming']['dimension_sets'] +
                      tester_config.get('alternate_swarming_dimensions', [])),
           '--multiple-dimension-script-verbose',
           'True'

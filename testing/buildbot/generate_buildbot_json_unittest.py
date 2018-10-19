@@ -40,6 +40,19 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
   def write_file(self, relative_path, contents):
     self.files[relative_path] = contents
 
+  # pragma pylint: disable=arguments-differ
+  def check_output_file_consistency(self, verbose=False, dump=True):
+    try:
+      super(FakeBBGen, self).check_output_file_consistency(verbose)
+    except generate_buildbot_json.BBGenErr:
+      if verbose and dump:
+          # Assume we want to see the difference in the waterfalls'
+          # generated output to make it easier to rebaseline the test.
+          for line in self.printed_lines:
+            print line
+      raise
+# pragma pylint: enable=arguments-differ
+
 
 FOO_GTESTS_WATERFALL = """\
 [
@@ -1366,7 +1379,8 @@ MULTI_DIMENSION_OUTPUT = """\
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\\"gpu\\": \\"none\\", \\"os\\": \\"1\\"}, \
+            "[{\\"gpu\\": \\"none\\", \\"integrity\\": \\"high\\", \
+\\"os\\": \\"1\\"}, \
 {\\"gpu\\": \\"none\\", \\"os\\": \\"2\\"}]",
             "--multiple-dimension-script-verbose",
             "True"
@@ -2145,7 +2159,7 @@ class UnitTest(unittest.TestCase):
     fbb.files['chromium.test.json'] = (
       '\n' + COMPOSITION_WATERFALL_FILTERED_OUTPUT)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
-      fbb.check_output_file_consistency(verbose=True)
+      fbb.check_output_file_consistency(verbose=True, dump=False)
     joined_lines = ' '.join(fbb.printed_lines)
     self.assertRegexpMatches(
         joined_lines, 'Waterfall chromium.test did not have the following'
