@@ -1016,8 +1016,7 @@ GLuint RasterImplementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
   // previously created fence syncs are flushed first.
   FlushHelper();
 
-  int32_t image_id =
-      gpu_control_->CreateImage(buffer, width, height, internalformat);
+  int32_t image_id = gpu_control_->CreateImage(buffer, width, height);
   if (image_id < 0) {
     SetGLError(GL_OUT_OF_MEMORY, "glCreateImageCHROMIUM", "image_id < 0");
     return 0;

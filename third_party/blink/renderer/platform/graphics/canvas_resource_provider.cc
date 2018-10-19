@@ -456,9 +456,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 gfx::Size(size), color_params.GetBufferFormat())) {
           continue;
         }
-        DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-            color_params.GLUnsizedInternalFormat(),
-            color_params.GetBufferFormat()));
+        DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
+                  gpu::InternalFormatForGpuMemoryBufferFormat(
+                      color_params.GetBufferFormat()));
         provider =
             std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
                 size, msaa_sample_count, color_params, context_provider_wrapper,

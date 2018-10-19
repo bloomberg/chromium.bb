@@ -723,7 +723,6 @@ void CommandBufferStub::OnCreateImage(
   const int32_t id = params.id;
   const gfx::Size& size = params.size;
   const gfx::BufferFormat& format = params.format;
-  const uint32_t internalformat = params.internal_format;
   const uint64_t image_release_count = params.image_release_count;
 
   gles2::ImageManager* image_manager = channel_->image_manager();
@@ -744,15 +743,8 @@ void CommandBufferStub::OnCreateImage(
     return;
   }
 
-  if (!gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(internalformat,
-                                                             format)) {
-    LOG(ERROR) << "Incompatible image format.";
-    return;
-  }
-
   scoped_refptr<gl::GLImage> image = channel()->CreateImageForGpuMemoryBuffer(
-      std::move(params.gpu_memory_buffer), size, format, internalformat,
-      surface_handle_);
+      std::move(params.gpu_memory_buffer), size, format, surface_handle_);
   if (!image.get())
     return;
 

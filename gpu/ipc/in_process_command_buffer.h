@@ -123,8 +123,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
-                      size_t height,
-                      unsigned internalformat) override;
+                      size_t height) override;
   void DestroyImage(int32_t id) override;
   void SignalQuery(uint32_t query_id, base::OnceClosure callback) override;
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override;
@@ -266,7 +265,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                               gfx::GpuMemoryBufferHandle handle,
                               const gfx::Size& size,
                               gfx::BufferFormat format,
-                              uint32_t internalformat,
                               uint64_t fence_sync);
   void DestroyImageOnGpuThread(int32_t id);
 
