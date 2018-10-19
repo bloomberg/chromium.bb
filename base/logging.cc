@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -832,17 +831,8 @@ LogMessage::~LogMessage() {
       tracker->RecordLogMessage(str_newline);
 
     // Ensure the first characters of the string are on the stack so they
-    // are contained in minidumps for diagnostic purposes. We place start
-    // and end marker values at either end, so we can scan captured stacks
-    // for the data easily.
-    struct {
-      uint32_t start_marker = 0xbedead01;
-      char data[1024];
-      uint32_t end_marker = 0x5050dead;
-    } str_stack;
-    base::strlcpy(str_stack.data, str_newline.data(),
-                  base::size(str_stack.data));
-    base::debug::Alias(&str_stack);
+    // are contained in minidumps for diagnostic purposes.
+    DEBUG_ALIAS_FOR_CSTR(str_stack, str_newline.c_str(), 1024);
 
     if (log_assert_handler_stack.IsCreated() &&
         !log_assert_handler_stack.Get().empty()) {
