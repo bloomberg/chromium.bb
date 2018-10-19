@@ -28,21 +28,8 @@ config("jingle_public_configs") {
   ]
 }
 
-group("jingle_deps") {
-  public_deps = [
-    "//third_party/expat",
-  ]
-  deps = [
-    "//base",
-    "//crypto:platform",
-    "//net",
-  ]
-}
-
 source_set("webrtc") {
   public_deps = [
-    ":jingle_deps",
-
     # TODO(kjellander): Start cleaning up this target as soon as
     # https://codereview.chromium.org/2022833002/ is landed. The target should
     # be removed entirely if possible.
@@ -63,9 +50,7 @@ source_set("webrtc") {
   # This configuration happens here:
   # https://cs.chromium.org/chromium/src/third_party/webrtc/webrtc.gni?l=44-51&rcl=95c56eebe0a2b31ad5752138d15b431124e17d36
   if (is_nacl) {
-    deps += [
-      "//native_client_sdk/src/libraries/nacl_io",
-    ]
+    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
   } else if (!is_chromecast) {
     # When Chromium doesn't build for NaCL or Chromecast, WebRTC doesn't
     # provide an implementation for field_trial and a custom one (that uses
@@ -156,9 +141,7 @@ source_set("task_queue_impl") {
   sources = [
     "rtc_base/task_queue.cc",
   ]
-  configs += [
-    "//third_party/webrtc:library_impl_config",
-  ]
+  configs += [ "//third_party/webrtc:library_impl_config" ]
   deps = [
     "//base",
     "//third_party/webrtc/rtc_base:refcount",
