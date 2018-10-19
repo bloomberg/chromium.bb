@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -89,9 +88,6 @@ public class LocationBarLayout extends FrameLayout
     protected AppCompatImageButton mMicButton;
     protected View mUrlBar;
     private final boolean mIsTablet;
-
-    /** A handle to the bottom sheet for chrome home. */
-    protected BottomSheet mBottomSheet;
 
     protected UrlBarCoordinator mUrlCoordinator;
     protected AutocompleteCoordinator mAutocompleteCoordinator;
@@ -193,11 +189,6 @@ public class LocationBarLayout extends FrameLayout
                     @Override
                     public WindowDelegate getWindowDelegate() {
                         return mWindowDelegate;
-                    }
-
-                    @Override
-                    public BottomSheet getBottomSheet() {
-                        return mBottomSheet;
                     }
 
                     @Override
@@ -562,11 +553,6 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void setBottomSheet(BottomSheet sheet) {
-        mBottomSheet = sheet;
-    }
-
-    @Override
     public void addUrlFocusChangeListener(UrlFocusChangeListener listener) {
         mUrlFocusChangeListeners.addObserver(listener);
     }
@@ -621,10 +607,7 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public int getUrlContainerMarginEnd() {
-        // When Chrome Home is enabled, the URL actions container slides out of view during the
-        // URL defocus animation. Adding margin during this animation creates a hole.
-        boolean addMarginForActionsContainer =
-                mBottomSheet == null || !mUrlFocusChangeInProgress || isUrlBarFocused();
+        boolean addMarginForActionsContainer = !mUrlFocusChangeInProgress || isUrlBarFocused();
 
         int urlContainerMarginEnd = 0;
         if (addMarginForActionsContainer) {
@@ -983,12 +966,7 @@ public class LocationBarLayout extends FrameLayout
                 loadUrlParams.setInputStartTimestamp(inputStart);
             }
 
-            // If the bottom sheet exists, route the navigation through it instead of the tab.
-            if (mBottomSheet != null) {
-                mBottomSheet.loadUrl(loadUrlParams, currentTab.isIncognito());
-            } else {
-                currentTab.loadUrl(loadUrlParams);
-            }
+            currentTab.loadUrl(loadUrlParams);
             RecordUserAction.record("MobileOmniboxUse");
         }
         LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);

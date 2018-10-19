@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
 
@@ -970,9 +969,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mMenuButtonWrapper == null) return;
         mMenuButtonWrapper.updateContentDescription();
     }
-
-    @Override
-    public void setBottomSheet(BottomSheet sheet) {}
 
     /**
      * Sets the current TabModelSelector so the toolbar can pass it into buttons that need access to

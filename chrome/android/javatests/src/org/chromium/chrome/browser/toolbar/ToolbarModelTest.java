@@ -118,7 +118,7 @@ public class ToolbarModelTest {
         private String mUrl;
 
         public TestToolbarModel() {
-            super(ContextUtils.getApplicationContext(), null /* bottomSheet */);
+            super(ContextUtils.getApplicationContext());
             initializeWithNative();
 
             Tab tab = new Tab(0, false, null) {
