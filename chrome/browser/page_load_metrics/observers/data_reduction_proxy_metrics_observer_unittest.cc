@@ -61,14 +61,14 @@ data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
 
 previews::PreviewsUserData* PreviewsDataForNavigationHandle(
     content::NavigationHandle* navigation_handle) {
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(
-          navigation_handle->GetNavigationData());
-  auto data = std::make_unique<previews::PreviewsUserData>(1);
-  auto* data_ptr = data.get();
-  chrome_navigation_data->set_previews_user_data(std::move(data));
-
-  return data_ptr;
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
+  previews::PreviewsUserData* previews_user_data =
+      ui_tab_helper->GetPreviewsUserData(navigation_handle);
+  if (previews_user_data)
+    return previews_user_data;
+  return ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
+      navigation_handle, 1u);
 }
 
 // Pingback client responsible for recording the timing information it receives
@@ -442,6 +442,11 @@ class DataReductionProxyMetricsObserverTest
               .append(internal::kBytesSavings),
           static_cast<int>((ocl_bytes - network_bytes) / 1024), 1);
     }
+  }
+
+  void SetUp() override {
+    page_load_metrics::PageLoadMetricsObserverTestHarness ::SetUp();
+    PreviewsUITabHelper::CreateForWebContents(web_contents());
   }
 
  protected:

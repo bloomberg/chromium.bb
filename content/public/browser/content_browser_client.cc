@@ -858,4 +858,17 @@ void ContentBrowserClient::OnNetworkServiceDataUseUpdate(
     int64_t recv_bytes,
     int64_t sent_bytes) {}
 
+content::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle) {
+  return content::PREVIEWS_OFF;
+}
+
+content::PreviewsState ContentBrowserClient::DetermineCommittedPreviews(
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle,
+    const net::HttpResponseHeaders* response_headers) {
+  return content::PREVIEWS_OFF;
+}
+
 }  // namespace content

@@ -47,10 +47,7 @@ typedef base::RepeatingCallback<bool(PreviewsType)> PreviewsIsEnabledCallback;
 class PreviewsDeciderImpl : public PreviewsDecider,
                             public blacklist::OptOutBlacklistDelegate {
  public:
-  PreviewsDeciderImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      base::Clock* clock);
+  explicit PreviewsDeciderImpl(base::Clock* clock);
   ~PreviewsDeciderImpl() override;
 
   // blacklist::OptOutBlacklistDelegate:
@@ -58,10 +55,10 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void OnUserBlacklistedStatusChange(bool blacklisted) override;
   void OnBlacklistCleared(base::Time time) override;
 
-  // Stores |previews_ui_service| as |previews_ui_service_| and posts a task to
-  // InitializeOnIOThread on the IO thread.
+  // Initializes the blacklist and and stores the passed in members.
+  // |previews_ui_service| owns |this|, and shares the same lifetime.
   virtual void Initialize(
-      base::WeakPtr<PreviewsUIService> previews_ui_service,
+      PreviewsUIService* previews_ui_service,
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
@@ -141,12 +138,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       net::EffectiveConnectionType effective_connection_type);
 
  protected:
-  // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with
-  // a weak pointer to |this|. Virtualized for testing.
-  virtual void InitializeOnIOThread(
-      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
-
   // Posts a task to deliver the resource patterns to the PreviewsUIService.
   void OnResourceLoadingHints(
       const GURL& document_gurl,
@@ -176,8 +167,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
-  // The UI thread portion of the inter-thread communication for previews.
-  base::WeakPtr<PreviewsUIService> previews_ui_service_;
+  // The UI service object owns |this| and exists as long as |this| does.
+  PreviewsUIService* previews_ui_service_;
 
   std::unique_ptr<PreviewsBlackList> previews_black_list_;
 
@@ -206,13 +197,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   base::Clock* clock_;
-
-  // The UI and IO thread task runners. |ui_task_runner_| is used to post
-  // tasks to |previews_ui_service_|, and |io_task_runner_| is used to post from
-  // Initialize to InitializeOnIOThread as well as verify that execution is
-  // happening on the IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Whether the preview is enabled. Valid after Initialize() is called.
   PreviewsIsEnabledCallback is_enabled_callback_;

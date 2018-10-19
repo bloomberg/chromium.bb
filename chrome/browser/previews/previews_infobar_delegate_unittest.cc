@@ -200,16 +200,15 @@ class PreviewsInfoBarDelegateUnitTest
     std::unique_ptr<TestPreviewsLogger> previews_logger =
         std::make_unique<TestPreviewsLogger>();
     previews_logger_ = previews_logger.get();
-    previews_decider_impl_ = std::make_unique<previews::PreviewsDeciderImpl>(
-        base::MessageLoopCurrent::Get()->task_runner(),
-        base::MessageLoopCurrent::Get()->task_runner(),
-        base::DefaultClock::GetInstance());
+    std::unique_ptr<previews::PreviewsDeciderImpl> decider =
+        std::make_unique<previews::PreviewsDeciderImpl>(
+            base::DefaultClock::GetInstance());
+    previews_decider_impl_ = decider.get();
     test_network_quality_tracker_ =
         std::make_unique<network::TestNetworkQualityTracker>();
     previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
-        previews_decider_impl_.get(),
-        base::MessageLoopCurrent::Get()->task_runner(),
-        nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
+        std::move(decider), nullptr /* previews_opt_out_store */,
+        nullptr /* previews_opt_guide */,
         base::BindRepeating(&IsPreviewsEnabled), std::move(previews_logger),
         blacklist::BlacklistData::AllowedTypesAndVersions(),
         test_network_quality_tracker_.get());
@@ -301,7 +300,7 @@ class PreviewsInfoBarDelegateUnitTest
   std::unique_ptr<base::HistogramTester> tester_;
 
   TestPreviewsLogger* previews_logger_;
-  std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl_;
+  previews::PreviewsDeciderImpl* previews_decider_impl_;
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
   std::unique_ptr<network::NetworkQualityTracker> test_network_quality_tracker_;
 };
