@@ -10634,10 +10634,11 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   ShutdownTest();
 }
 
+// TODO(crbug.com/897062): Investigate flakiness
 // This test verifies that the handles associated with an active touch selection
 // are still correctly positioned after a pinch-zoom operation.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
-                       SelectionThenPinchInOOPIF) {
+                       DISABLED_SelectionThenPinchInOOPIF) {
   // Load test URL with cross-process child.
   SetupTest();
 
