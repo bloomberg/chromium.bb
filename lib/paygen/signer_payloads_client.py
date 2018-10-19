@@ -31,29 +31,19 @@ SIGNER_PRIORITY = 45
 class SignerPayloadsClientGoogleStorage(object):
   """This class implements the Google Storage signer interface for payloads."""
 
-  def __init__(self, channel, board, version, bucket=None, unique=None,
-               ctx=None):
+  def __init__(self, build, unique=None, ctx=None):
     """This initializer identifies the build an payload that need signatures.
 
     Args:
-      channel: Channel of the build whose payload is being signed.
-      board: Board of the build whose payload is being signed.
-      version: Version of the build whose payload is being signed.
-      bucket: Bucket used to reach the signer. [defaults 'chromeos-releases']
+      build: An instance of gspaths.Build that defines the build.
       unique: Force known 'unique' id. Mostly for unittests.
       ctx: GS Context to use for GS operations.
     """
-    self.channel = channel
-    self.board = board
-    self.version = version
-    self.bucket = bucket if bucket else gspaths.ChromeosReleases.BUCKET
+    self._build = build
     self._ctx = ctx if ctx is not None else gs.GSContext()
 
     build_signing_uri = gspaths.ChromeosReleases.BuildPayloadsSigningUri(
-        channel,
-        board,
-        version,
-        bucket=bucket)
+        self._build)
 
     # Uniquify the directory using our pid/thread-id. This can't collide
     # with other hosts because the build is locked to our host in
@@ -237,15 +227,15 @@ versionrev = %(version)s
 """
 
     # foo-channel -> foo
-    channel = self.channel.replace('-channel', '')
+    channel = self._build.channel.replace('-channel', '')
 
     archive_name = os.path.basename(self.archive_uri)
     input_files = ' '.join(hash_names)
 
     return pattern % {
         'channel': channel,
-        'board': self.board,
-        'version': self.version,
+        'board': self._build.board,
+        'version': self._build.version,
         'archive_name': archive_name,
         'input_files': input_files,
         'keyset': keyset,
@@ -254,12 +244,12 @@ versionrev = %(version)s
   def _SignerRequestUri(self, instructions_uri):
     """Find the URI of the empty file to create to ask the signer to sign."""
 
-    exp = r'^gs://%s/(?P<postbucket>.*)$' % self.bucket
+    exp = r'^gs://%s/(?P<postbucket>.*)$' % self._build.bucket
     m = re.match(exp, instructions_uri)
     relative_uri = m.group('postbucket')
 
     return 'gs://%s/tobesigned/%d,%s' % (
-        self.bucket,
+        self._build.bucket,
         SIGNER_PRIORITY,
         relative_uri.replace('/', ','))
 

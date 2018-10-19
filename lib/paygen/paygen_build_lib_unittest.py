@@ -128,10 +128,10 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
                                     board='foo-board',
                                     version='1.0.0')
 
-    self.prev_image = gspaths.Image(key='mp', **self.prev_build)
-    self.prev_premp_image = gspaths.Image(key='premp', **self.prev_build)
+    self.prev_image = gspaths.Image(build=self.prev_build, key='mp')
+    self.prev_premp_image = gspaths.Image(build=self.prev_build, key='premp')
     self.prev_test_image = gspaths.UnsignedImageArchive(
-        image_type='test', **self.prev_build)
+        build=self.prev_build, image_type='test')
 
     self.target_build = gspaths.Build(bucket='crt',
                                       channel='foo-channel',
@@ -140,17 +140,14 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
 
     # Create an additional 'special' image like NPO that isn't NPO,
     # and keyed with a weird key. It should match none of the filters.
-    self.special_image = gspaths.Image(bucket='crt',
-                                       channel='foo-channel',
-                                       board='foo-board',
-                                       version='1.2.3',
+    self.special_image = gspaths.Image(build=self.target_build,
                                        key='foo-key',
                                        image_channel='special-channel')
 
-    self.basic_image = gspaths.Image(key='mp-v2', **self.target_build)
-    self.premp_image = gspaths.Image(key='premp', **self.target_build)
+    self.basic_image = gspaths.Image(build=self.target_build, key='mp-v2')
+    self.premp_image = gspaths.Image(build=self.target_build, key='premp')
     self.test_image = gspaths.UnsignedImageArchive(
-        image_type='test', **self.target_build)
+        build=self.target_build, image_type='test')
 
     self.mp_full_payload = gspaths.Payload(tgt_image=self.basic_image)
     self.test_full_payload = gspaths.Payload(tgt_image=self.test_image)
@@ -264,22 +261,22 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
         '.2.3_foo-board_foo-channel_delta_mp-v2.bin-abc123.signed')
 
     # Test changing channel, board, and keys
-    src_image = gspaths.Image(
-        channel='dev-channel',
-        board='x86-alex',
-        version='3588.0.0',
-        key='premp')
-    tgt_image = gspaths.Image(
-        channel='stable-channel',
-        board='x86-alex-he',
-        version='3590.0.0',
-        key='mp-v3')
+    src_image = gspaths.Image(build=gspaths.Build(channel='dev-channel',
+                                                  board='x86-alex',
+                                                  version='3588.0.0',
+                                                  bucket='crt'),
+                              key='premp')
+    tgt_image = gspaths.Image(build=gspaths.Build(channel='stable-channel',
+                                                  board='x86-alex-he',
+                                                  version='3590.0.0',
+                                                  bucket='crt'),
+                              key='mp-v3')
     payload = gspaths.Payload(src_image=src_image, tgt_image=tgt_image)
 
     result = paygen_build_lib._DefaultPayloadUri(payload, random_str='abc123')
     self.assertEqual(
         result,
-        'gs://chromeos-releases/stable-channel/x86-alex-he/3590.0.0/payloads/'
+        'gs://crt/stable-channel/x86-alex-he/3590.0.0/payloads/'
         'chromeos_3588.0.0-3590.0.0_x86-alex-he_stable-channel_delta_mp-v3.bin-'
         'abc123.signed')
 
@@ -333,14 +330,10 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     result = paygen._DiscoverSignedImages(self.target_build)
 
     # See if we got the results we expect.
-    base_image_params = {'channel': 'foo-channel',
-                         'board': 'foo-board',
-                         'version': '1.2.3',
-                         'bucket': 'crt'}
-    expected_basic = gspaths.Image(key='mp-v3', uri=uri_basic,
-                                   **base_image_params)
-    expected_premp = gspaths.Image(key='premp', uri=uri_premp,
-                                   **base_image_params)
+    expected_basic = gspaths.Image(build=self.target_build, key='mp-v3',
+                                   uri=uri_basic)
+    expected_premp = gspaths.Image(build=self.target_build, key='premp',
+                                   uri=uri_premp)
     expected_result = [expected_basic, expected_premp]
 
     self.assertEqual(result, expected_result)
@@ -359,10 +352,10 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     result = paygen._DiscoverTestImage(self.target_build)
 
     expected_test_archive = gspaths.UnsignedImageArchive(
-        channel='foo-channel',
-        board='foo-board',
-        version='1.2.3',
-        bucket='crt',
+        build=gspaths.Build(channel='foo-channel',
+                            board='foo-board',
+                            version='1.2.3',
+                            bucket='crt'),
         uri=uri_test_archive,
         milestone='R12',
         image_type='test')
@@ -459,8 +452,8 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
         self.signedResults.pop(i)
         break
 
-    image = gspaths.Image(key=key, image_version=build.version,
-                          image_type='recovery', **build)
+    image = gspaths.Image(build=build, key=key, image_version=build.version,
+                          image_type='recovery')
     images.append(image)
     self.signedResults.append((build, images))
     return image
@@ -471,7 +464,7 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
         self.testResults.pop(i)
         break
 
-    image = gspaths.UnsignedImageArchive(**build)
+    image = gspaths.UnsignedImageArchive(build=build)
     self.testResults.append((build, image))
     return image
 
@@ -1067,7 +1060,7 @@ target_release = '1.2.3'
 target_payload_uri = 'None'
 SUITE = 'paygen_au_foo'
 source_payload_uri = 'foo-channel_1.0.0_uri'
-source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.0.0'
+source_archive_uri = 'gs://crt/foo-channel/foo-board/1.0.0'
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1109,7 +1102,7 @@ target_release = '1.2.3'
 target_payload_uri = 'None'
 SUITE = 'paygen_au_foo'
 source_payload_uri = 'foo-channel_1.2.3_uri'
-source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.2.3'
+source_archive_uri = 'gs://crt/foo-channel/foo-board/1.2.3'
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.

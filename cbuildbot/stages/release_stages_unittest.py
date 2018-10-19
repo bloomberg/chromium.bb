@@ -430,7 +430,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     # Ensure arguments are properly converted and passed along.
     self.paygenBuildMock.assert_called_with(
         gspaths.Build(
-            version='foo-version', board='foo-board', channel='foo-channel'),
+            version='foo-version', board='foo-board', channel='foo-channel',
+            bucket=gspaths.ChromeosReleases.BUCKET),
         work_dir=mock.ANY,
         site_config=stage._run.site_config,
         dry_run=True,
@@ -484,7 +485,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         gspaths.Build(
             version='foo-version',
             board='foo-board-variant',
-            channel='foo-channel'),
+            channel='foo-channel',
+            bucket=gspaths.ChromeosReleases.BUCKET),
         dry_run=True,
         work_dir=mock.ANY,
         site_config=stage._run.site_config,

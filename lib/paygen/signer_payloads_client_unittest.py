@@ -19,6 +19,7 @@ from chromite.lib import gs
 from chromite.lib import gs_unittest
 
 from chromite.lib.paygen import gslock
+from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
 
 
@@ -54,10 +55,10 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
     """Test helper method to create a client with standard arguments."""
 
     client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
-        'foo-channel',
-        'foo-board',
-        'foo-version',
-        bucket='foo-bucket',
+        build=gspaths.Build(channel='foo-channel',
+                            board='foo-board',
+                            version='foo-version',
+                            bucket='foo-bucket'),
         unique='foo-unique',
         ctx=self.ctx)
     return client
@@ -343,9 +344,10 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
     # This is in the real production chromeos-releases, but the listed
     # build has never, and will never exist.
     self.client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
-        'test-channel',
-        'crostools-client',
-        'Rxx-Ryy')
+        gspaths.Build(channel='test-channel',
+                      board='crostools-client',
+                      version='Rxx-Ryy',
+                      bucket='chromeos-releases'))
 
   @cros_test_lib.NetworkTest()
   def testDownloadSignatures(self):

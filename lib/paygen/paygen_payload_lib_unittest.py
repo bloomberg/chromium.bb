@@ -33,42 +33,44 @@ class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase):
   """PaygenPayloadLib tests base class."""
 
   def setUp(self):
-    self.old_image = gspaths.Image(
+    self.old_build = gspaths.Build(
         channel='dev-channel',
         board='x86-alex',
         version='1620.0.0',
+        bucket='chromeos-releases-test')
+
+    self.old_image = gspaths.Image(
+        build=self.old_build,
         key='mp-v3',
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
     self.old_base_image = gspaths.Image(
-        channel='dev-channel',
-        board='x86-alex',
-        version='1620.0.0',
+        build=self.old_build,
         key='mp-v3',
         image_type='base',
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_base_dev-channel_mp-v3.bin'))
 
-    self.new_image = gspaths.Image(
+    self.new_build = gspaths.Build(
         channel='dev-channel',
         board='x86-alex',
         version='4171.0.0',
+        bucket='chromeos-releases-test')
+
+    self.new_image = gspaths.Image(
+        build=self.new_build,
         key='mp-v3',
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
     self.old_test_image = gspaths.UnsignedImageArchive(
-        channel='dev-channel',
-        board='x86-alex',
-        version='1620.0.0',
+        build=self.old_build,
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_recovery_dev-channel_test.bin'))
 
     self.new_test_image = gspaths.Image(
-        channel='dev-channel',
-        board='x86-alex',
-        version='4171.0.0',
+        build=self.new_build,
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_test.bin'))
 
@@ -175,16 +177,15 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     test_dict = {'foo': 'bar'}
 
     # Value present.
-    self.assertEqual(gen._BuildArg('--foo', test_dict, 'foo'),
-                     ['--foo=bar'])
+    self.assertEqual(gen._BuildArg('--foo', test_dict, 'foo'), '--foo=bar')
 
     # Value present, default has no impact.
     self.assertEqual(gen._BuildArg('--foo', test_dict, 'foo', default='baz'),
-                     ['--foo=bar'])
+                     '--foo=bar')
 
     # Value missing, default kicking in.
     self.assertEqual(gen._BuildArg('--foo2', test_dict, 'foo2', default='baz'),
-                     ['--foo2=baz'])
+                     '--foo2=baz')
 
   def _DoPrepareImageTest(self, image_type):
     """Test _PrepareImage."""
@@ -193,20 +194,12 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     gen = self._GetStdGenerator(work_dir=self.tempdir)
 
     if image_type == 'Image':
-      image_obj = gspaths.Image(
-          channel='dev-channel',
-          board='x86-alex',
-          version='4171.0.0',
-          key='mp-v3',
-          uri=download_uri)
+      image_obj = gspaths.Image(build=self.new_build, key='mp-v3',
+                                uri=download_uri)
       test_extract_file = None
     elif image_type == 'UnsignedImageArchive':
       image_obj = gspaths.UnsignedImageArchive(
-          channel='dev-channel',
-          board='x86-alex',
-          version='4171.0.0',
-          image_type='test',
-          uri=download_uri)
+          build=self.new_build, image_type='test', uri=download_uri)
       test_extract_file = paygen_payload_lib.PaygenPayload.TEST_IMAGE_NAME
     else:
       raise ValueError('invalid image type descriptor (%s)' % image_type)
@@ -281,9 +274,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_channel=dev-channel',
            '--new_board=x86-alex',
            '--new_version=1620.0.0',
-           '--new_key=mp-v3',
            '--new_build_channel=dev-channel',
-           '--new_build_version=1620.0.0']
+           '--new_build_version=1620.0.0',
+           '--new_key=mp-v3']
     extract_mock.assert_called_once_with()
     postinst_config_mock.assert_called_once_with(True)
     run_mock.assert_called_once_with(cmd)
@@ -310,16 +303,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_channel=dev-channel',
            '--new_board=x86-alex',
            '--new_version=4171.0.0',
-           '--new_key=mp-v3',
            '--new_build_channel=dev-channel',
            '--new_build_version=4171.0.0',
+           '--new_key=mp-v3',
            '--old_partitions=' + ':'.join(gen.src_partitions),
            '--old_channel=dev-channel',
            '--old_board=x86-alex',
            '--old_version=1620.0.0',
-           '--old_key=mp-v3',
            '--old_build_channel=dev-channel',
-           '--old_build_version=1620.0.0']
+           '--old_build_version=1620.0.0',
+           '--old_key=mp-v3']
     extract_mock.assert_called_once_with()
     postinst_config_mock.assert_called_once_with(True)
     run_mock.assert_called_once_with(cmd)
@@ -347,9 +340,9 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_channel=dev-channel',
            '--new_board=x86-alex',
            '--new_version=1620.0.0',
-           '--new_key=test',
            '--new_build_channel=dev-channel',
-           '--new_build_version=1620.0.0']
+           '--new_build_version=1620.0.0',
+           '--new_key=test']
     extract_mock.assert_called_once_with()
     postinst_config_mock.assert_called_once_with(True)
     run_mock.assert_called_once_with(cmd)
@@ -377,16 +370,16 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_channel=dev-channel',
            '--new_board=x86-alex',
            '--new_version=4171.0.0',
-           '--new_key=test',
            '--new_build_channel=dev-channel',
            '--new_build_version=4171.0.0',
+           '--new_key=test',
            '--old_partitions=' + ':'.join(gen.src_partitions),
            '--old_channel=dev-channel',
            '--old_board=x86-alex',
            '--old_version=1620.0.0',
-           '--old_key=test',
            '--old_build_channel=dev-channel',
-           '--old_build_version=1620.0.0']
+           '--old_build_version=1620.0.0',
+           '--old_key=test']
     extract_mock.assert_called_once_with()
     postinst_config_mock.assert_called_once_with(True)
     run_mock.assert_called_once_with(cmd)

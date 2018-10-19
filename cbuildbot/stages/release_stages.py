@@ -453,7 +453,8 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
       # Create the definition of the build to generate payloads for.
       build = gspaths.Build(channel=self.channel,
                             board=self.board,
-                            version=self.version)
+                            version=self.version,
+                            bucket=gspaths.ChromeosReleases.BUCKET)
 
       try:
         # Generate the payloads.

@@ -230,29 +230,23 @@ def _DefaultPayloadUri(payload, random_str=None):
   """
   src_version = None
   if payload.src_image:
-    src_version = payload.src_image['version']
+    src_version = payload.src_image.build.version
+
+  build = gspaths.Build(channel=payload.tgt_image.build.channel,
+                        board=payload.tgt_image.build.board,
+                        version=payload.tgt_image.build.version,
+                        bucket=payload.tgt_image.build.bucket)
 
   if gspaths.IsImage(payload.tgt_image):
     # Signed payload.
     return gspaths.ChromeosReleases.PayloadUri(
-        channel=payload.tgt_image.channel,
-        board=payload.tgt_image.board,
-        version=payload.tgt_image.version,
-        random_str=random_str,
-        key=payload.tgt_image.key,
+        build, random_str=random_str, key=payload.tgt_image.key,
         image_channel=payload.tgt_image.image_channel,
-        image_version=payload.tgt_image.image_version,
-        src_version=src_version,
-        bucket=payload.tgt_image.bucket)
+        image_version=payload.tgt_image.image_version, src_version=src_version)
   elif gspaths.IsUnsignedImageArchive(payload.tgt_image):
     # Unsigned test payload.
-    return gspaths.ChromeosReleases.PayloadUri(
-        channel=payload.tgt_image.channel,
-        board=payload.tgt_image.board,
-        version=payload.tgt_image.version,
-        random_str=random_str,
-        src_version=src_version,
-        bucket=payload.tgt_image.bucket)
+    return gspaths.ChromeosReleases.PayloadUri(build, random_str=random_str,
+                                               src_version=src_version)
   else:
     raise Error('Unknown image type %s' % type(payload.tgt_image))
 
@@ -333,8 +327,8 @@ class PayloadTest(utils.RestrictedAttrDict):
         ' for deltas. src_image: %s ' %
         (src_channel, src_version, payload.src_image))
 
-    src_channel = src_channel or payload.src_image.channel
-    src_version = src_version or payload.src_image.version
+    src_channel = src_channel or payload.src_image.build.channel
+    src_version = src_version or payload.src_image.build.version
 
     super(PayloadTest, self).__init__(payload=payload,
                                       src_channel=src_channel,
@@ -434,9 +428,7 @@ class PaygenBuild(object):
     Returns:
       Returns a google storage path to the build flag requested.
     """
-    return gspaths.ChromeosReleases.BuildPayloadsFlagUri(
-        self._build.channel, self._build.board, self._build.version, flag,
-        bucket=self._build.bucket)
+    return gspaths.ChromeosReleases.BuildPayloadsFlagUri(self._build, flag)
 
   def _MapToArchive(self, board, version):
     """Returns the chromeos-image-archive equivalents for the build.
@@ -539,8 +531,7 @@ class PaygenBuild(object):
     # this point, so we use the wildcard here and rely on the signers to upload
     # the expected artifacts.
     search_uri = gspaths.ChromeosReleases.ImageUri(
-        build.channel, build.board, build.version, key='*', image_type='*',
-        image_channel='*', image_version='*', bucket=build.bucket)
+        build, key='*', image_type='*', image_channel='*', image_version='*')
 
     image_uris = self._ctx.LS(search_uri)
     images = [gspaths.ChromeosReleases.ParseImageUri(uri) for uri in image_uris]
@@ -570,9 +561,8 @@ class PaygenBuild(object):
       BuildCorrupt: Raised if unexpected images are found.
       ImageMissing: Raised if expected images are missing.
     """
-    search_uri = gspaths.ChromeosReleases.UnsignedImageUri(
-        build.channel, build.board, build.version, milestone='*',
-        image_type='test', bucket=build.bucket)
+    search_uri = gspaths.ChromeosReleases.UnsignedImageUri(build, milestone='*',
+                                                           image_type='test')
 
     image_uris = self._ctx.LS(search_uri)
     images = [gspaths.ChromeosReleases.ParseUnsignedImageUri(uri)
@@ -766,10 +756,10 @@ class PaygenBuild(object):
       # Serve from cache, if possible.
       return self._version_to_full_test_payloads[(channel, version)]
 
-    payload_search_uri = gspaths.ChromeosReleases.PayloadUri(
-        channel, self._build.board, version, '*',
-        bucket=self._build.bucket)
+    build = gspaths.Build(channel=channel, board=self._build.board,
+                          version=version, bucket=self._build.bucket)
 
+    payload_search_uri = gspaths.ChromeosReleases.PayloadUri(build, '*')
     payload_candidate = self._ctx.LS(payload_search_uri)
 
     # We create related files for each payload that have the payload name
@@ -807,8 +797,9 @@ class PaygenBuild(object):
     src_payload_uri = src_payload_uri_list[0]
     logging.info('Source full test payload found at %s', src_payload_uri)
 
-    release_archive_uri = gspaths.ChromeosReleases.BuildUri(
-        src_channel, self._build.board, src_version)
+    build = gspaths.Build(channel=src_channel, board=self._build.board,
+                          version=src_version, bucket=self._build.bucket)
+    release_archive_uri = gspaths.ChromeosReleases.BuildUri(build)
 
     # TODO(dgarrett): Remove if block after finishing crbug.com/523122
     stateful_uri = os.path.join(release_archive_uri, 'stateful.tgz')
@@ -825,7 +816,7 @@ class PaygenBuild(object):
         suite_name,               # Name of the test (use the suite name).
         bool(payload.src_image),  # Whether this is a delta.
         src_version,
-        payload.tgt_image.version,
+        payload.tgt_image.build.version,
         src_payload_uri,
         payload.uri,
         suite_name=suite_name,
@@ -907,9 +898,7 @@ class PaygenBuild(object):
     # Clean up any signer client files that leaked on this or previous
     # runs.
     self._ctx.Remove(
-        gspaths.ChromeosReleases.BuildPayloadsSigningUri(
-            self._build.channel, self._build.board, self._build.version,
-            bucket=self._build.bucket),
+        gspaths.ChromeosReleases.BuildPayloadsSigningUri(self._build),
         recursive=True, ignore_missing=True)
 
   def _FindExistingPayloads(self, payload):
