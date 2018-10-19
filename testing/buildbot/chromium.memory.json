@@ -9493,15 +9493,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "traffic_annotation_auditor_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ui_base_unittests"
       },
       {

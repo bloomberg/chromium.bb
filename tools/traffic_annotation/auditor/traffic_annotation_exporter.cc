@@ -26,12 +26,6 @@ const char* kXmlComment =
     "\nRefer to README.md for content description and update process.\n"
     "-->\n\n";
 
-const base::FilePath kAnnotationsXmlPath =
-    base::FilePath(FILE_PATH_LITERAL("tools"))
-        .Append(FILE_PATH_LITERAL("traffic_annotation"))
-        .Append(FILE_PATH_LITERAL("summary"))
-        .Append(FILE_PATH_LITERAL("annotations.xml"));
-
 // Extracts annotation id from a line of XML. Expects to have the line in the
 // following format: <... id="..." .../>
 // TODO(rhalavati): Use real XML parsing.
@@ -62,6 +56,12 @@ void ExtractXMLItems(const std::string& serialized_xml,
 
 }  // namespace
 
+const base::FilePath TrafficAnnotationExporter::kAnnotationsXmlPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("summary"))
+        .Append(FILE_PATH_LITERAL("annotations.xml"));
+
 TrafficAnnotationExporter::ArchivedAnnotation::ArchivedAnnotation()
     : type(AnnotationInstance::Type::ANNOTATION_COMPLETE),
       unique_id_hash_code(-1),
@@ -77,12 +77,9 @@ TrafficAnnotationExporter::TrafficAnnotationExporter(
     const base::FilePath& source_path)
     : source_path_(source_path), modified_(false) {
   all_supported_platforms_.push_back("linux");
-  all_supported_platforms_.push_back("mac");
   all_supported_platforms_.push_back("windows");
 #if defined(OS_LINUX)
   current_platform_ = "linux";
-#elif defined(OS_MACOSX)
-  current_platform_ = "mac";
 #elif defined(OS_WIN)
   current_platform_ = "windows";
 #else

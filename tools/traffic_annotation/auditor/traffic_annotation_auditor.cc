@@ -761,6 +761,23 @@ void TrafficAnnotationAuditor::AddMissingAnnotations(
   }
 }
 
+void TrafficAnnotationAuditor::CheckArchivedAnnotationsHaveValidOsList() {
+  const auto& supported_platforms = exporter_.GetAllSupportedPlatforms();
+  for (const auto& pair : exporter_.GetArchivedAnnotations()) {
+    for (const auto& os : pair.second.os_list) {
+      if (!base::ContainsValue(supported_platforms, os)) {
+        AuditorResult error(
+            AuditorResult::Type::ERROR_INVALID_OS, std::string(),
+            TrafficAnnotationExporter::kAnnotationsXmlPath.MaybeAsASCII(),
+            AuditorResult::kNoCodeLineSpecified);
+        error.AddDetail(os);
+        error.AddDetail(pair.first);
+        errors_.push_back(std::move(error));
+      }
+    }
+  }
+}
+
 bool TrafficAnnotationAuditor::RunAllChecks(
     const std::vector<std::string>& path_filters,
     bool report_xml_updates) {
@@ -782,6 +799,8 @@ bool TrafficAnnotationAuditor::RunAllChecks(
   // content errors.
   if (errors_.empty())
     CheckAnnotationsContents();
+
+  CheckArchivedAnnotationsHaveValidOsList();
 
   CheckAllRequiredFunctionsAreAnnotated();
 

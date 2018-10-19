@@ -147,8 +147,6 @@ group("gn_all") {
       "//third_party/pdfium/samples:pdfium_test",
       "//third_party/webrtc/rtc_tools:frame_analyzer",
       "//tools/perf/clear_system_cache",
-      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
-      "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
       "//ui/accessibility:accessibility_unittests",
       "//ui/accessibility/extensions",
     ]
@@ -273,6 +271,13 @@ group("gn_all") {
     deps += [
       "//chrome/credential_provider",
       "//chrome/credential_provider/test:gcp_unittests",
+    ]
+  }
+
+  if (is_win || is_linux) {
+    deps += [
+      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
+      "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
     ]
   }
 
