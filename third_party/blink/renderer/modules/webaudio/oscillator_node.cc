@@ -36,7 +36,7 @@
 
 namespace blink {
 
-using namespace VectorMath;
+using namespace vector_math;
 
 OscillatorHandler::OscillatorHandler(AudioNode& node,
                                      float sample_rate,

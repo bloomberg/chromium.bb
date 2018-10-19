@@ -854,8 +854,8 @@ float AudioParamTimeline::ValuesForFrameRange(size_t start_frame,
                               number_of_values, sample_rate, control_rate);
 
   // Clamp the values now to the nominal range
-  VectorMath::Vclip(values, 1, &min_value, &max_value, values, 1,
-                    number_of_values);
+  vector_math::Vclip(values, 1, &min_value, &max_value, values, 1,
+                     number_of_values);
 
   return last_value;
 }

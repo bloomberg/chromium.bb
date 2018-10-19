@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace VectorMath;
+using namespace vector_math;
 
 const int kInputBufferSize = 8 * 16384;
 

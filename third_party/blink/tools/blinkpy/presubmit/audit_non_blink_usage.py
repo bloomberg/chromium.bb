@@ -223,6 +223,7 @@ _CONFIG = [
             'media_constraints_impl::.+',
             'scheduler::.+',
             'touch_action_util::.+',
+            'vector_math::.+',
             'xpath::.+',
 
             # Third-party libraries that don't depend on non-Blink Chrome code
