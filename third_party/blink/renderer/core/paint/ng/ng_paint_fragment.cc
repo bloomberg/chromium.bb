@@ -682,14 +682,12 @@ PositionWithAffinity NGPaintFragment::PositionForPointInText(
   if (text_fragment.IsAnonymousText())
     return PositionWithAffinity();
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
-  if (text_offset > text_fragment.StartOffset() &&
-      text_offset < text_fragment.EndOffset()) {
-    const Position position = NGOffsetMapping::GetFor(GetLayoutObject())
-                                  ->GetFirstPosition(text_offset);
-    return PositionWithAffinity(position, TextAffinity::kDownstream);
-  }
   const NGCaretPosition unadjusted_position{
       this, NGCaretPositionType::kAtTextOffset, text_offset};
+  if (text_offset > text_fragment.StartOffset() &&
+      text_offset < text_fragment.EndOffset()) {
+    return unadjusted_position.ToPositionInDOMTreeWithAffinity();
+  }
   return BidiAdjustment::AdjustForHitTest(unadjusted_position)
       .ToPositionInDOMTreeWithAffinity();
 }
