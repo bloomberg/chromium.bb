@@ -654,13 +654,20 @@ enum AuthenticationState {
 - (void)enterIdentityPickerState {
   // Add the account selector view controller.
   if (_unifiedConsentEnabled) {
-    _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
-    _unifiedConsentCoordinator.interactable = YES;
-    _unifiedConsentCoordinator.delegate = self;
-    if (_selectedIdentity)
-      _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;
-    [_unifiedConsentCoordinator start];
-    [self showEmbeddedViewController:_unifiedConsentCoordinator.viewController];
+    if (!_unifiedConsentCoordinator) {
+      // The user can refuse to sign-in into a managed account, so the state
+      // returns to "IdentityPicker". In that case, there is no need to create a
+      // new UnifiedConsentCoordinator. The current one should be used.
+      _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
+      _unifiedConsentCoordinator.interactable = YES;
+      _unifiedConsentCoordinator.delegate = self;
+      if (_selectedIdentity)
+        _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;
+      [_unifiedConsentCoordinator start];
+      [self
+          showEmbeddedViewController:_unifiedConsentCoordinator.viewController];
+    }
+    DCHECK_EQ(_embeddedView, _unifiedConsentCoordinator.viewController.view);
   } else {
     // Reset the selected identity.
     [self setSelectedIdentity:nil];
