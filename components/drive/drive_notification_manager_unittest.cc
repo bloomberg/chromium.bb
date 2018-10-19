@@ -159,13 +159,13 @@ TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {
   // Emitting an invalidation should not call our observer until the timer
   // expires.
   fake_invalidation_service_->EmitInvalidationForTest(
-      syncer::Invalidation::Init(kDefaultCorpusObjectId, 1, ""));
+      syncer::Invalidation::InitUnknownVersion(kDefaultCorpusObjectId));
   EXPECT_TRUE(drive_notification_observer_->GetNotificationIds().empty());
 
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
 
   // Default corpus is has the id "" when sent to observers.
-  std::map<std::string, int64_t> expected_ids = {{"", 1}};
+  std::map<std::string, int64_t> expected_ids = {{"", -1}};
   EXPECT_EQ(expected_ids, drive_notification_observer_->GetNotificationIds());
   drive_notification_observer_->ClearNotificationIds();
 
