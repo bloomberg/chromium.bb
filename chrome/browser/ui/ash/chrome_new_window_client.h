@@ -42,6 +42,7 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient,
 
   // arc::OpenUrlDelegate:
   void OpenUrlFromArc(const GURL& url) override;
+  void OpenWebAppFromArc(const GURL& url) override;
 
  private:
   class TabRestoreHelper;

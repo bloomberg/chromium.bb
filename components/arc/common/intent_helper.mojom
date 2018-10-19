@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 23
+// Next MinVersion: 24
 
 module arc.mojom;
 
@@ -136,7 +136,7 @@ struct TextSelectionAction {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 8
+// Next method ID: 9
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -165,6 +165,10 @@ interface IntentHelperHost {
 
   // Opens the specified Chrome page in the Chrome browser.
   [MinVersion=17] OnOpenChromePage@7([MinVersion=18] ChromePage page);
+
+  // Opens the specified URL as a web app if it is installed. Otherwise falls
+  // back to the behaviour of OnOpenUrl. |url| must have a HTTPS scheme.
+  [MinVersion=23] OnOpenWebApp@8(string url);
 };
 
 // Sends intents to ARC on behalf of Chrome.

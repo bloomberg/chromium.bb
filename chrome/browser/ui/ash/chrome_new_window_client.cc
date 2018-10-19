@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -35,14 +36,18 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/url_formatter/url_fixer.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/was_activated_option.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -273,6 +278,38 @@ void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
 
   content::WebContents* tab =
       OpenUrlImpl(url_to_open, false /* from_user_interaction */);
+  if (!tab)
+    return;
+
+  // Add a flag to remember this tab originated in the ARC context.
+  tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                   std::make_unique<arc::ArcWebContentsData>());
+}
+
+void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
+  DCHECK(url.is_valid() && url.SchemeIs(url::kHttpsScheme));
+
+  const auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user)
+    return;
+
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile)
+    return;
+
+  const extensions::Extension* extension =
+      extensions::util::GetInstalledPwaForUrl(
+          profile, url, extensions::LAUNCH_CONTAINER_WINDOW);
+  if (!extension) {
+    OpenUrlFromArc(url);
+    return;
+  }
+
+  AppLaunchParams params = CreateAppLaunchParamsUserContainer(
+      profile, extension, WindowOpenDisposition::NEW_WINDOW,
+      extensions::SOURCE_ARC);
+  params.override_url = url;
+  content::WebContents* tab = OpenApplication(params);
   if (!tab)
     return;
 
