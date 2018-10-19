@@ -336,12 +336,11 @@ TEST_F(HpackVarintRoundTripTest, ValidateFourExtensionBytes) {
   }
 }
 
-// Test *some* values that require too many extension bytes.
+// Test the value one larger than the largest that can be decoded.
 TEST_F(HpackVarintRoundTripTest, ValueTooLarge) {
-  const uint32_t expected_offset = HpackVarintDecoder::MaxExtensionBytes() + 1;
   for (prefix_length_ = 3; prefix_length_ <= 7; ++prefix_length_) {
-    uint64_t too_large = HiValueOfExtensionBytes(
-        HpackVarintDecoder::MaxExtensionBytes() + 3, prefix_length_);
+    const uint64_t too_large = (1 << 28) + (1 << prefix_length_) - 1;
+    const uint32_t expected_offset = 6;
     HpackBlockBuilder bb;
     bb.AppendHighBitsAndVarint(0, prefix_length_, too_large);
     buffer_ = bb.buffer();
