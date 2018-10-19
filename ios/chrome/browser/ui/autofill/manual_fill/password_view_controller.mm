@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -54,6 +55,17 @@ constexpr float PopoverMaxHeight = 250;
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _searchController = searchController;
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(handleKeyboardWillShow:)
+               name:UIKeyboardWillShowNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(handleKeyboardDidHide:)
+               name:UIKeyboardDidHideNotification
+             object:nil];
   }
   return self;
 }
@@ -110,6 +122,29 @@ constexpr float PopoverMaxHeight = 250;
 }
 
 #pragma mark - Private
+
+- (void)handleKeyboardDidHide:(NSNotification*)notification {
+  if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {
+    // Resets the table view content inssets to be equal to the safe area
+    // insets.
+    self.tableView.contentInset = SafeAreaInsetsForView(self.view);
+  }
+}
+
+- (void)handleKeyboardWillShow:(NSNotification*)notification {
+  if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {
+    // Sets the bottom inset to be equal to the height of the keyboard to
+    // override the behaviour in UITableViewController. Which adjust the scroll
+    // view insets to accommodate for the keyboard.
+    CGRect keyboardFrame =
+        [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGFloat keyboardHeight = keyboardFrame.size.height;
+    UIEdgeInsets safeInsets = SafeAreaInsetsForView(self.view);
+    self.tableView.contentInset =
+        UIEdgeInsetsMake(safeInsets.top, safeInsets.left,
+                         safeInsets.bottom - keyboardHeight, safeInsets.right);
+  }
+}
 
 // Presents |items| in the respective section. Handles creating or deleting the
 // section accordingly.

@@ -37,6 +37,7 @@
 namespace {
 
 const char kFormElementUsername[] = "username";
+const char kFormElementPassword[] = "password";
 
 const char kExampleUsername[] = "concrete username";
 const char kExamplePassword[] = "concrete password";
@@ -470,6 +471,34 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_notVisible()];
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_notVisible()];
+}
+
+// Test that after switching fields the content size of the table view didn't
+// grow.
+- (void)testPasswordControllerKeepsRightSize {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the "Manage Passwords..." is on screen.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the second element.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementPassword)];
+
+  // Try to scroll.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Verify the "Manage Passwords..." is on screen.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end
