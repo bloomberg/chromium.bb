@@ -259,11 +259,7 @@ class DownloadHistoryTest : public testing::Test {
 
   void CallOnDownloadCreated(size_t index) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!pre_on_create_handler_.is_null())
-      pre_on_create_handler_.Run(&item(index));
     manager_observer()->OnDownloadCreated(&manager(), &item(index));
-    if (!post_on_create_handler_.is_null())
-      post_on_create_handler_.Run(&item(index));
   }
 
   void CallOnDownloadCreatedInOrder() {
@@ -318,18 +314,6 @@ class DownloadHistoryTest : public testing::Test {
   void ExpectDownloadsRemoved(const IdSet& ids) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectDownloadsRemoved(ids);
-  }
-
-  void ExpectDownloadsRestoredFromHistory(bool expected_value) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    pre_on_create_handler_ =
-        base::Bind(&DownloadHistoryTest::CheckDownloadWasRestoredFromHistory,
-                   base::Unretained(this),
-                   expected_value);
-    post_on_create_handler_ =
-        base::Bind(&DownloadHistoryTest::CheckDownloadWasRestoredFromHistory,
-                   base::Unretained(this),
-                   expected_value);
   }
 
   void AddAllDownloads(
@@ -431,6 +415,11 @@ class DownloadHistoryTest : public testing::Test {
             Return(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
     EXPECT_CALL(item(index), IsSavePackageDownload())
         .WillRepeatedly(Return(false));
+    EXPECT_CALL(item(index), GetDownloadCreationType())
+        .WillRepeatedly(
+            Return(state == download::DownloadItem::IN_PROGRESS
+                       ? download::DownloadItem::TYPE_ACTIVE_DOWNLOAD
+                       : download::DownloadItem::TYPE_HISTORY_IMPORT));
     EXPECT_CALL(manager(), GetDownload(info->id))
         .WillRepeatedly(Return(&item(index)));
     EXPECT_CALL(item(index), IsTemporary()).WillRepeatedly(Return(false));
@@ -451,12 +440,6 @@ class DownloadHistoryTest : public testing::Test {
   }
 
  private:
-  void CheckDownloadWasRestoredFromHistory(bool expected_value,
-                                           download::MockDownloadItem* item) {
-    ASSERT_TRUE(download_history_.get());
-    EXPECT_EQ(expected_value, download_history_->WasRestoredFromHistory(item));
-  }
-
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
@@ -464,8 +447,6 @@ class DownloadHistoryTest : public testing::Test {
   std::unique_ptr<DownloadHistory> download_history_;
   content::DownloadManager::Observer* manager_observer_ = nullptr;
   size_t download_created_index_ = 0;
-  DownloadItemCallback pre_on_create_handler_;
-  DownloadItemCallback post_on_create_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryTest);
 };
@@ -547,54 +528,6 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_OnHistoryQueryComplete_Post) {
   download_history()->AddObserver(&observer);
   EXPECT_TRUE(observer.on_history_query_complete_called_);
   download_history()->RemoveObserver(&observer);
-}
-
-// Test that WasRestoredFromHistory accurately identifies downloads that were
-// created from history, even during an OnDownloadCreated() handler.
-TEST_F(DownloadHistoryTest, DownloadHistoryTest_WasRestoredFromHistory_True) {
-  // This sets DownloadHistoryTest to call DH::WasRestoredFromHistory() both
-  // before and after DH::OnDownloadCreated() is called. At each call, the
-  // expected return value is |true| since the download was restored from
-  // history.
-  ExpectDownloadsRestoredFromHistory(true);
-
-  // Construct a DownloadHistory with a single history download. This results in
-  // DownloadManager::CreateDownload() being called for the restored download.
-  // The above test expectation should verify that the value of
-  // WasRestoredFromHistory is correct for this download.
-  history::DownloadRow info;
-  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
-                "http://example.com/referrer.html",
-                download::DownloadItem::COMPLETE, &info);
-  std::unique_ptr<InfoVector> infos(new InfoVector());
-  infos->push_back(info);
-  CreateDownloadHistory(std::move(infos));
-
-  EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
-}
-
-// Test that WasRestoredFromHistory accurately identifies downloads that were
-// not created from history.
-TEST_F(DownloadHistoryTest, DownloadHistoryTest_WasRestoredFromHistory_False) {
-  // This sets DownloadHistoryTest to call DH::WasRestoredFromHistory() both
-  // before and after DH::OnDownloadCreated() is called. At each call, the
-  // expected return value is |true| since the download was restored from
-  // history.
-  ExpectDownloadsRestoredFromHistory(false);
-
-  // Create a DownloadHistory with no history downloads. No
-  // DownloadManager::CreateDownload() calls are expected.
-  CreateDownloadHistory(std::unique_ptr<InfoVector>(new InfoVector()));
-
-  // Notify DownloadHistory that a new download was created. The above test
-  // expecation should verify that WasRestoredFromHistory is correct for this
-  // download.
-  history::DownloadRow info;
-  InitBasicItem(FILE_PATH_LITERAL("/foo/bar.pdf"), "http://example.com/bar.pdf",
-                "http://example.com/referrer.html",
-                download::DownloadItem::COMPLETE, &info);
-  CallOnDownloadCreated(0);
-  ExpectDownloadCreated(info);
 }
 
 // Test creating an item, saving it to the database, changing it, saving it

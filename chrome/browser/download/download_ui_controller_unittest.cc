@@ -250,7 +250,7 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetMimeType()).WillRepeatedly(Return(std::string()));
   EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRefOfCopy(GURL()));
   EXPECT_CALL(*item, IsTemporary()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*item, GetDownloadType())
+  EXPECT_CALL(*item, GetDownloadCreationType())
       .WillRepeatedly(Return(download::DownloadItem::TYPE_ACTIVE_DOWNLOAD));
   content::DownloadItemUtils::AttachInfo(item.get(), browser_context(),
                                          nullptr);
@@ -335,7 +335,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   GURL url;
   std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
 
-  EXPECT_CALL(*item, GetDownloadType())
+  EXPECT_CALL(*item, GetDownloadCreationType())
       .WillRepeatedly(Return(download::DownloadItem::TYPE_HISTORY_IMPORT));
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(download::DownloadItem::INTERRUPTED));

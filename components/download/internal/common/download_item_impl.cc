@@ -116,7 +116,8 @@ bool IsCancellation(DownloadInterruptReason reason) {
          reason == DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
 }
 
-std::string GetDownloadTypeNames(DownloadItem::DownloadType type) {
+std::string GetDownloadCreationTypeNames(
+    DownloadItem::DownloadCreationType type) {
   switch (type) {
     case DownloadItem::TYPE_ACTIVE_DOWNLOAD:
       return "NEW_DOWNLOAD";
@@ -161,7 +162,7 @@ std::string GetDownloadDangerNames(DownloadDangerType type) {
 class DownloadItemActivatedData
     : public base::trace_event::ConvertableToTraceFormat {
  public:
-  DownloadItemActivatedData(DownloadItem::DownloadType download_type,
+  DownloadItemActivatedData(DownloadItem::DownloadCreationType download_type,
                             uint32_t download_id,
                             std::string original_url,
                             std::string final_url,
@@ -183,7 +184,8 @@ class DownloadItemActivatedData
   void AppendAsTraceFormat(std::string* out) const override {
     out->append("{");
     out->append(base::StringPrintf(
-        "\"type\":\"%s\",", GetDownloadTypeNames(download_type_).c_str()));
+        "\"type\":\"%s\",",
+        GetDownloadCreationTypeNames(download_type_).c_str()));
     out->append(base::StringPrintf("\"id\":\"%d\",", download_id_));
     out->append("\"original_url\":");
     base::EscapeJSONString(original_url_, true, out);
@@ -205,7 +207,7 @@ class DownloadItemActivatedData
   }
 
  private:
-  DownloadItem::DownloadType download_type_;
+  DownloadItem::DownloadCreationType download_type_;
   uint32_t download_id_;
   std::string original_url_;
   std::string final_url_;
@@ -973,7 +975,8 @@ bool DownloadItemImpl::IsParallelDownload() const {
   return is_parallelizable && download::IsParallelDownloadEnabled();
 }
 
-DownloadItem::DownloadType DownloadItemImpl::GetDownloadType() const {
+DownloadItem::DownloadCreationType DownloadItemImpl::GetDownloadCreationType()
+    const {
   return download_type_;
 }
 
@@ -1284,7 +1287,7 @@ void DownloadItemImpl::SetDelegate(DownloadItemImplDelegate* delegate) {
 // **** Download progression cascade
 
 void DownloadItemImpl::Init(bool active,
-                            DownloadItem::DownloadType download_type) {
+                            DownloadItem::DownloadCreationType download_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   download_type_ = download_type;
