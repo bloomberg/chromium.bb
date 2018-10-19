@@ -1553,6 +1553,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             return false;
         }
 
+        if (mMainTab != null && mMainTab.isPreview()) {
+            return false;
+        }
+
         String publisherUrlPackage = mConnection.getTrustedCdnPublisherUrlPackage();
         return publisherUrlPackage != null
                 && publisherUrlPackage.equals(mConnection.getClientPackageNameForSession(mSession));
