@@ -5750,6 +5750,7 @@
   "linux-code-coverage-generation": {
     "gtest_tests": [
       {
+        "shards": 2,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
