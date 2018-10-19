@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
 import("//build/config/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
@@ -60,4 +61,28 @@ source_set("search_engines") {
   if (enable_rlz) {
     deps += [ "//components/rlz" ]
   }
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "search_engine_js_unittest.mm",
+  ]
+  deps = [
+    ":search_engine_js",
+    "//base:base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/web:test_support",
+    "//ios/web",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
+  ]
+}
+
+js_compile_checked("search_engine_js") {
+  sources = [
+    "resources/search_engine.js",
+  ]
 }

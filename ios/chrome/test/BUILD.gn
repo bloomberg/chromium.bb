@@ -165,6 +165,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/prerender:unit_tests",
     "//ios/chrome/browser/reading_list:unit_tests",
     "//ios/chrome/browser/safe_mode:unit_tests",
+    "//ios/chrome/browser/search_engines:unit_tests",
     "//ios/chrome/browser/sessions:unit_tests",
     "//ios/chrome/browser/signin:unit_tests",
     "//ios/chrome/browser/snapshots:unit_tests",
