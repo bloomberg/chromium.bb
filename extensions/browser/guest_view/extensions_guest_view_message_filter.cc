@@ -104,6 +104,12 @@ ProcessIdToFilterMap* GetProcessIdToFilterMap() {
   return instance.get();
 }
 
+// Called on UI thread to remove the entry for a process.
+void RemoveProcessIdFromGlobalMap(int32_t process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetProcessIdToFilterMap()->erase(process_id);
+}
+
 }  // namespace
 
 const uint32_t ExtensionsGuestViewMessageFilter::kFilteredMessageClasses[] = {
@@ -274,7 +280,7 @@ ExtensionsGuestViewMessageFilter::MaybeCreateThrottle(
   }
   int32_t parent_process_id = handle->GetParentFrame()->GetProcess()->GetID();
   auto& map = *GetProcessIdToFilterMap();
-  if (!map.count(parent_process_id)) {
+  if (!base::ContainsKey(map, parent_process_id) || !map[parent_process_id]) {
     // This happens if the RenderProcessHost has not been initialized yet.
     return nullptr;
   }
@@ -304,7 +310,14 @@ ExtensionsGuestViewMessageFilter::ExtensionsGuestViewMessageFilter(
 
 ExtensionsGuestViewMessageFilter::~ExtensionsGuestViewMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetProcessIdToFilterMap()->erase(render_process_id_);
+  // This map is created and accessed on the UI thread. Remove the reference to
+  // |this| here so that it will not be accessed again; but leave erasing the
+  // key from the global map to UI thread to avoid races when accessing the
+  // underlying data structure (https:/crbug.com/869791).
+  (*GetProcessIdToFilterMap())[render_process_id_] = nullptr;
+  base::PostTaskWithTraits(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(RemoveProcessIdFromGlobalMap, render_process_id_));
 }
 
 void ExtensionsGuestViewMessageFilter::OverrideThreadForMessage(
