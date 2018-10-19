@@ -106,10 +106,6 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
   }
 }
 
-void LatencyTracker::DisableMetricSamplingForTesting() {
-  metric_sampling_ = false;
-}
-
 void LatencyTracker::ReportUkmScrollLatency(
     const InputMetricEvent& metric_event,
     base::TimeTicks start_timestamp,
@@ -120,11 +116,6 @@ void LatencyTracker::ReportUkmScrollLatency(
   CONFIRM_EVENT_TIMES_EXIST(start_timestamp,
                             time_to_scroll_update_swap_begin_timestamp)
   CONFIRM_EVENT_TIMES_EXIST(start_timestamp, time_to_handled_timestamp)
-
-  // Only report a subset of this metric as the volume is too high.
-  if (metric_sampling_ &&
-      !sampling_scheme_[static_cast<int>(metric_event)].ShouldReport())
-    return;
 
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (ukm_source_id == ukm::kInvalidSourceId || !ukm_recorder)
