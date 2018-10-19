@@ -76,9 +76,7 @@ class ImeExtensionChannel {
    * @param {function(string):string} handler.
    */
   onTextMessage(handler) {
-    if (typeof handler == 'function') {
-      this.textHandler_ = handler;
-    }
+    this.textHandler_ = handler;
     return this;
   }
 
@@ -88,9 +86,7 @@ class ImeExtensionChannel {
    * @param {function(!Uint8Array):!Uint8Array} handler.
    */
   onProtobufMessage(handler) {
-    if (typeof handler == 'function') {
-      this.protobufHandler_ = handler;
-    }
+    this.protobufHandler_ = handler;
     return this;
   }
 
@@ -114,7 +110,7 @@ class ImeExtensionChannel {
    *
    * @type {function(Uint8Array):Promise<Uint8Array>}
    * @private
-   * @param {string} message
+   * @param {!Uint8Array} message
    * @return {!Promise<!Uint8Array>}
    */
   processMessage(message) {
@@ -129,7 +125,7 @@ class ImeExtensionChannel {
    * @param {function():void} handler.
    */
   setConnectionErrorHandler(handler) {
-    if (typeof handler == 'function') {
+    if (handler) {
       this.binding_.setConnectionErrorHandler(handler);
     }
   }
@@ -185,14 +181,20 @@ class ImeService {
    * @param {function():void} callback.
    */
   setConnectionErrorHandler(callback) {
-    if (typeof callback == 'function' && this.isConnected()) {
+    if (callback && this.isConnected()) {
       this.manager_.ptr.setConnectionErrorHandler(callback);
     }
   }
 
-  /** @return {boolean} True if there is connected active IME engine. */
-  hasActiveEngine() {
-    return this.activeEngine_ && this.activeEngine_.ptr.isBound();
+  /**
+   * @return {?chromeos.ime.mojom.InputChannelPtr} A bound IME engine instance
+   * or null if no IME Engine is bound.
+   */
+  getActiveEngine() {
+    if (this.activeEngine_ && this.activeEngine_.ptr.isBound()) {
+      return this.activeEngine_;
+    }
+    return null;
   }
 
   /**
@@ -220,26 +222,25 @@ class ImeService {
         this.clientChannel_ = new ImeExtensionChannel();
       }
 
-      this.manager_.connectToImeEngine(
-          imeSpec,
-          mojo.makeRequest(this.activeEngine_),
-          this.clientChannel_.getChannelPtr(),
-          extra).then(
-              bound => {
-                if (bound && typeof onConnectionError == 'function') {
-                  this.activeEngine_.ptr.setConnectionErrorHandler(
-                      onConnectionError);
-                };
-                if (typeof onConnection == 'function') {
-                  onConnection(bound);
-                };
-              });
+      this.manager_
+          .connectToImeEngine(
+              imeSpec, mojo.makeRequest(this.activeEngine_),
+              this.clientChannel_.getChannelPtr(), extra)
+          .then((bound) => {
+            if (bound && onConnectionError) {
+              this.activeEngine_.ptr.setConnectionErrorHandler(
+                  onConnectionError);
+            };
+            if (onConnection) {
+              onConnection(bound);
+            };
+          });
     }
   }
 
   /** Deactivate the IME engine if it is connected. */
   deactivateIME() {
-    if (this.hasActiveEngine()) {
+    if (this.getActiveEngine()) {
       this.activeEngine_.ptr.reset();
     }
     this.activeEngine_ = null;
