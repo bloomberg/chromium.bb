@@ -124,7 +124,6 @@ FovRectangle ToUiFovRect(const gvr::Rectf& rect) {
 
 }  // namespace
 
-// TODO(acondor): Rename to GvrGraphicsDelegate.
 GvrGraphicsDelegate::GvrGraphicsDelegate(
     GlBrowserInterface* browser,
     TexturesInitializedCallback textures_initialized_callback,
