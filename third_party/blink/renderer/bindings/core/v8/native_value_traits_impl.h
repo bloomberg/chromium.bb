@@ -184,7 +184,7 @@ struct NativeValueTraits<IDLByteStringBase<Mode>>
     String x = string_resource;
     // 2. If the value of any element of x is greater than 255, then throw a
     //    TypeError.
-    if (!x.ContainsOnlyLatin1()) {
+    if (!x.ContainsOnlyLatin1OrEmpty()) {
       exception_state.ThrowTypeError("Value is not a valid ByteString.");
       return String();
     }

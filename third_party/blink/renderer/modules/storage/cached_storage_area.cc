@@ -621,7 +621,7 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
       return result;
     }
     case FormatOption::kLocalStorageDetectFormat: {
-      if (input.ContainsOnlyLatin1()) {
+      if (input.ContainsOnlyLatin1OrEmpty()) {
         Vector<uint8_t> result(input.length() + 1);
         result[0] = static_cast<uint8_t>(StorageFormat::Latin1);
         if (input.Is8Bit()) {

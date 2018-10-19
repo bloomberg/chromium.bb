@@ -124,7 +124,7 @@ bool IsValidHTTPHeaderValue(const String& name) {
   // FIXME: This should really match name against
   // field-value in section 4.2 of RFC 2616.
 
-  return name.ContainsOnlyLatin1() && !name.Contains('\r') &&
+  return name.ContainsOnlyLatin1OrEmpty() && !name.Contains('\r') &&
          !name.Contains('\n') && !name.Contains('\0');
 }
 

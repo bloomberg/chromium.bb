@@ -5762,7 +5762,7 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
   if (title_element_ && Encoding() != new_data.Encoding() &&
       !ElementTraversal::FirstWithin(*title_element_) &&
       Encoding() == Latin1Encoding() &&
-      title_element_->textContent().ContainsOnlyLatin1()) {
+      title_element_->textContent().ContainsOnlyLatin1OrEmpty()) {
     CString original_bytes = title_element_->textContent().Latin1();
     std::unique_ptr<TextCodec> codec = NewTextCodec(new_data.Encoding());
     String correctly_decoded_title =

@@ -505,7 +505,7 @@ class WTF_EXPORT String {
   bool ContainsOnlyASCII() const {
     return !impl_ || impl_->ContainsOnlyASCII();
   }
-  bool ContainsOnlyLatin1() const;
+  bool ContainsOnlyLatin1OrEmpty() const;
   bool ContainsOnlyWhitespaceOrEmpty() const {
     return !impl_ || impl_->ContainsOnlyWhitespaceOrEmpty();
   }
@@ -585,7 +585,7 @@ inline const UChar* String::GetCharacters<UChar>() const {
   return Characters16();
 }
 
-inline bool String::ContainsOnlyLatin1() const {
+inline bool String::ContainsOnlyLatin1OrEmpty() const {
   if (IsEmpty())
     return true;
 
