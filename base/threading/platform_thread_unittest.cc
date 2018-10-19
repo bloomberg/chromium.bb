@@ -297,6 +297,34 @@ TEST(PlatformThreadTest, SetCurrentThreadPriorityWithThreadModeBackground) {
 }
 #endif  // defined(OS_WIN)
 
+// Ideally PlatformThread::CanIncreaseThreadPriority() would be true on all
+// platforms for all priorities. This not being the case. This test documents
+// and hardcodes what we know. Please inform scheduler-dev@chromium.org if this
+// proprerty changes for a given platform.
+TEST(PlatformThreadTest, CanIncreaseThreadPriority) {
+#if defined(OS_LINUX)
+  // On Ubuntu, RLIMIT_NICE and RLIMIT_RTPRIO are 0 by default, so we won't be
+  // able to increase priority to any level.
+  constexpr bool kCanIncreasePriority = false;
+#elif defined(OS_FUCHSIA)
+  // Fuchsia doesn't support thread priorities.
+  constexpr bool kCanIncreasePriority = false;
+#else
+  constexpr bool kCanIncreasePriority = true;
+#endif
+
+  EXPECT_EQ(
+      PlatformThread::CanIncreaseThreadPriority(ThreadPriority::BACKGROUND),
+      kCanIncreasePriority);
+  EXPECT_EQ(PlatformThread::CanIncreaseThreadPriority(ThreadPriority::NORMAL),
+            kCanIncreasePriority);
+  EXPECT_EQ(PlatformThread::CanIncreaseThreadPriority(ThreadPriority::DISPLAY),
+            kCanIncreasePriority);
+  EXPECT_EQ(
+      PlatformThread::CanIncreaseThreadPriority(ThreadPriority::REALTIME_AUDIO),
+      kCanIncreasePriority);
+}
+
 // This tests internal PlatformThread APIs used under some POSIX platforms,
 // with the exception of Mac OS X, iOS and Fuchsia.
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS) && \
