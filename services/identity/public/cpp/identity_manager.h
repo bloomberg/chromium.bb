@@ -34,6 +34,10 @@ namespace file_manager {
 class MultiProfileFilesAppBrowserTest;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 // Necessary to declare these classes as friends.
 class ArcSupportHostTest;
 class MultiProfileDownloadNotificationTest;
@@ -220,6 +224,16 @@ class IdentityManager : public SigninManagerBase::Observer,
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const std::string& account_id,
       const std::string& oauth_consumer_name,
+      const OAuth2TokenService::ScopeSet& scopes,
+      AccessTokenFetcher::TokenCallback callback,
+      AccessTokenFetcher::Mode mode);
+
+  // Creates an AccessTokenFetcher given the passed-in information, allowing
+  // to specify a custom |url_loader_factory| as well.
+  std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
+      const std::string& account_id,
+      const std::string& oauth_consumer_name,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const OAuth2TokenService::ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode);

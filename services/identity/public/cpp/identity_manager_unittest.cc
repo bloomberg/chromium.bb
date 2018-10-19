@@ -18,7 +18,10 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {
@@ -1344,6 +1347,94 @@ TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
           identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
   EXPECT_TRUE(token_fetcher);
+}
+
+TEST_F(IdentityManagerTest,
+       CreateAccessTokenFetcherWithCustomURLLoaderFactory) {
+  base::RunLoop run_loop;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_requested_callback(run_loop.QuitClosure());
+
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+
+  std::set<std::string> scopes{"scope"};
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
+
+  // We first create and AccessTokenFetcher with a custom URLLoaderFactory,
+  // to check that such factory is actually used in the requests generated.
+  network::TestURLLoaderFactory test_url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_url_loader_factory(
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory));
+  std::unique_ptr<AccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          account_id, "dummy_consumer", test_shared_url_loader_factory, scopes,
+          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
+
+  run_loop.Run();
+
+  // The URLLoaderFactory present in the pending request should match
+  // the one we specified when creating the AccessTokenFetcher.
+  std::vector<FakeProfileOAuth2TokenService::PendingRequest> pending_requests =
+      token_service()->GetPendingRequests();
+  EXPECT_EQ(pending_requests.size(), 1U);
+  EXPECT_EQ(pending_requests[0].url_loader_factory,
+            test_shared_url_loader_factory);
+
+  // The account ID and consumer's name should match the data passed as well.
+  EXPECT_EQ(
+      account_id,
+      identity_manager_diagnostics_observer()->token_requestor_account_id());
+  EXPECT_EQ(
+      "dummy_consumer",
+      identity_manager_diagnostics_observer()->token_requestor_consumer_id());
+
+  // Cancel the pending request in preparation to check that creating an
+  // AccessTokenFetcher without a custom factory works as expected as well.
+  token_service()->IssueErrorForAllPendingRequestsForAccount(
+      account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  // Now add a second account and request an access token for it to test
+  // that the default URLLoaderFactory is used if none is specified.
+  base::RunLoop run_loop2;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_requested_callback(run_loop2.QuitClosure());
+
+  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
+  std::string account_id2 =
+      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  // No changes to the declared scopes and callback, we can reuse them.
+  std::unique_ptr<AccessTokenFetcher> token_fetcher2 =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          account_id2, "dummy_consumer 2", scopes, std::move(callback),
+          AccessTokenFetcher::Mode::kImmediate);
+
+  run_loop2.Run();
+
+  // There should be one pending request now as well, just like before.
+  std::vector<FakeProfileOAuth2TokenService::PendingRequest> pending_requests2 =
+      token_service()->GetPendingRequests();
+  EXPECT_EQ(pending_requests2.size(), 1U);
+
+  // The URLLoaderFactory present in the pending request should match
+  // the one created by default for the token service's delegate.
+  OAuth2TokenServiceDelegate* service_delegate = token_service()->GetDelegate();
+  EXPECT_EQ(pending_requests2[0].url_loader_factory,
+            service_delegate->GetURLLoaderFactory());
+
+  // The account ID and consumer's name should match the data passed again.
+  EXPECT_EQ(
+      account_id2,
+      identity_manager_diagnostics_observer()->token_requestor_account_id());
+  EXPECT_EQ(
+      "dummy_consumer 2",
+      identity_manager_diagnostics_observer()->token_requestor_consumer_id());
 }
 
 TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
