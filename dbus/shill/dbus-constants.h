@@ -601,6 +601,7 @@ const char kShortDNSTimeoutTechnologiesProperty[] =
 const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
 const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
+const char kWifiGlobalFTEnabledProperty[] = "WiFi.GlobalFTEnabled";
 
 // Service property names.
 const char kActivationTypeProperty[] = "Cellular.ActivationType";
