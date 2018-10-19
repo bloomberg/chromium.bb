@@ -1594,8 +1594,6 @@ component("net") {
       "third_party/quic/quartc/quartc_session.h",
       "third_party/quic/quartc/quartc_stream.cc",
       "third_party/quic/quartc/quartc_stream.h",
-      "third_party/spdy/core/fuzzing/hpack_fuzz_util.cc",
-      "third_party/spdy/core/fuzzing/hpack_fuzz_util.h",
       "third_party/spdy/core/hpack/hpack_constants.cc",
       "third_party/spdy/core/hpack/hpack_constants.h",
       "third_party/spdy/core/hpack/hpack_decoder_adapter.cc",
@@ -2846,11 +2844,12 @@ if (!is_ios && !is_android) {
   executable("hpack_example_generator") {
     testonly = true
     sources = [
-      "third_party/spdy/core/fuzzing/hpack_example_generator.cc",
+      "spdy/fuzzing/hpack_example_generator.cc",
     ]
 
     deps = [
       ":net",
+      ":spdy_test_tools",
       "//base",
       "//build/win:default_exe_manifest",
     ]
@@ -3057,6 +3056,18 @@ if (is_android || is_linux) {
       "//base",
     ]
   }
+}
+
+source_set("spdy_test_tools") {
+  testonly = true
+  sources = [
+    "spdy/fuzzing/hpack_fuzz_util.cc",
+    "spdy/fuzzing/hpack_fuzz_util.h",
+  ]
+  deps = [
+    ":net",
+    "//base",
+  ]
 }
 
 source_set("quic_test_tools") {
@@ -5070,6 +5081,7 @@ test("net_unittests") {
     "socket/websocket_transport_client_socket_pool_unittest.cc",
     "spdy/bidirectional_stream_spdy_impl_unittest.cc",
     "spdy/buffered_spdy_framer_unittest.cc",
+    "spdy/fuzzing/hpack_fuzz_util_test.cc",
     "spdy/header_coalescer_test.cc",
     "spdy/http2_priority_dependencies_unittest.cc",
     "spdy/http2_push_promise_index_test.cc",
@@ -5171,7 +5183,6 @@ test("net_unittests") {
     "third_party/spdy/core/array_output_buffer.cc",
     "third_party/spdy/core/array_output_buffer.h",
     "third_party/spdy/core/array_output_buffer_test.cc",
-    "third_party/spdy/core/fuzzing/hpack_fuzz_util_test.cc",
     "third_party/spdy/core/hpack/hpack_decoder_adapter_test.cc",
     "third_party/spdy/core/hpack/hpack_encoder_test.cc",
     "third_party/spdy/core/hpack/hpack_entry_test.cc",
@@ -5241,6 +5252,7 @@ test("net_unittests") {
     ":net",
     ":quic_test_tools",
     ":simple_quic_tools",
+    ":spdy_test_tools",
     ":test_support",
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -5513,7 +5525,7 @@ test("net_unittests") {
 
       # Need to read input data files.
       "socket/ssl_server_socket_unittest.cc",
-      "third_party/spdy/core/fuzzing/hpack_fuzz_util_test.cc",
+      "spdy/fuzzing/hpack_fuzz_util_test.cc",
 
       # Need TestServer.
       "cert_net/cert_net_fetcher_impl_unittest.cc",

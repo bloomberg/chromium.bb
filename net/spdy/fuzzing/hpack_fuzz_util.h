@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_THIRD_PARTY_SPDY_CORE_FUZZING_HPACK_FUZZ_UTIL_H_
-#define NET_THIRD_PARTY_SPDY_CORE_FUZZING_HPACK_FUZZ_UTIL_H_
+#ifndef NET_SPDY_FUZZING_HPACK_FUZZ_UTIL_H_
+#define NET_SPDY_FUZZING_HPACK_FUZZ_UTIL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,11 +19,11 @@
 
 namespace spdy {
 
-class SPDY_EXPORT_PRIVATE HpackFuzzUtil {
+class HpackFuzzUtil {
  public:
   // A GeneratorContext holds ordered header names & values which are
   // initially seeded and then expanded with dynamically generated data.
-  struct SPDY_EXPORT_PRIVATE GeneratorContext {
+  struct GeneratorContext {
     GeneratorContext();
     ~GeneratorContext();
     std::vector<SpdyString> names;
@@ -41,7 +41,7 @@ class SPDY_EXPORT_PRIVATE HpackFuzzUtil {
   static size_t SampleExponential(size_t mean, size_t sanity_bound);
 
   // Holds an input SpdyString, and manages an offset into that SpdyString.
-  struct SPDY_EXPORT_PRIVATE Input {
+  struct Input {
     Input();  // Initializes |offset| to zero.
     ~Input();
 
@@ -62,7 +62,7 @@ class SPDY_EXPORT_PRIVATE HpackFuzzUtil {
 
   // A FuzzerContext holds fuzzer input, as well as each of the decoder and
   // encoder stages which fuzzed header blocks are processed through.
-  struct SPDY_EXPORT_PRIVATE FuzzerContext {
+  struct FuzzerContext {
     FuzzerContext();
     ~FuzzerContext();
     std::unique_ptr<HpackDecoderAdapter> first_stage;
@@ -88,4 +88,4 @@ class SPDY_EXPORT_PRIVATE HpackFuzzUtil {
 
 }  // namespace spdy
 
-#endif  // NET_THIRD_PARTY_SPDY_CORE_FUZZING_HPACK_FUZZ_UTIL_H_
+#endif  // NET_SPDY_FUZZING_HPACK_FUZZ_UTIL_H_
