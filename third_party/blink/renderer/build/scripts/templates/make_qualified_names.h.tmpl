@@ -16,7 +16,7 @@ namespace blink {
 
 class {{namespace}}QualifiedName : public QualifiedName { };
 
-namespace {{namespace}}Names {
+namespace {{cpp_namespace}} {
 
 {% set symbol_export = '%s ' % export if export else '' %}
 // Namespace
@@ -44,7 +44,7 @@ std::unique_ptr<const QualifiedName*[]> GetAttrs();
 
 void init();
 
-}  // namespace {{namespace}}Names
+}  // namespace {{cpp_namespace}}
 }  // namespace blink
 
 #endif  // {{header_guard}}
