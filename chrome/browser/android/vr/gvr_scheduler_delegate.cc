@@ -140,7 +140,7 @@ void GvrSchedulerDelegate::SetWebXrMode(bool enabled) {
       // the Surface, and that will clear webvr_frame_processing_ once it's
       // done. Until then, webvr_frame_processing_ will stay true to block a
       // new session from starting processing.
-      // TODO(acondor): Move these DCHECKs into a unittest.
+      // TODO(crbug/869975): Move these DCHECKs into a unittest.
       DCHECK(webxr_.HaveProcessingFrame());
       DCHECK(webxr_.GetProcessingFrame()->state_locked);
       DCHECK(webxr_.GetProcessingFrame()->recycle_once_unlocked);
@@ -402,7 +402,6 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
 
 void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
                                      base::TimeTicks current_time) {
-  // TODO(acondor): Move this logic to BrowserRenderer::Draw.
   TRACE_EVENT1("gpu", "Vr.DrawFrame", "frame", frame_index);
   DCHECK(browser_renderer_);
   bool is_webxr_frame = frame_index >= 0;
