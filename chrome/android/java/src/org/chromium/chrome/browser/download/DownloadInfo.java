@@ -343,8 +343,16 @@ public final class DownloadInfo {
                 offlineItem.state = OfflineItemState.CANCELLED;
                 break;
             case DownloadState.INTERRUPTED:
-                offlineItem.state = downloadInfo.isResumable() ? OfflineItemState.INTERRUPTED
-                                                               : OfflineItemState.FAILED;
+                DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
+                if (DownloadUtils.isDownloadPaused(downloadItem)) {
+                    offlineItem.state = OfflineItemState.PAUSED;
+                } else if (DownloadUtils.isDownloadPending(downloadItem)) {
+                    offlineItem.state = OfflineItemState.PENDING;
+                } else if (downloadInfo.isResumable()) {
+                    offlineItem.state = OfflineItemState.INTERRUPTED;
+                } else {
+                    offlineItem.state = OfflineItemState.FAILED;
+                }
                 break;
             default:
                 assert false;
