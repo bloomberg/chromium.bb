@@ -561,11 +561,10 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, ClickingHidesVirtualKeyboard) {
   keyboard_controller()->NotifyKeyboardWindowLoaded();
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  ui::test::EventGenerator generator(
-      shelf_widget->GetNativeWindow()->GetRootWindow(),
-      shelf_widget->GetWindowBoundsInScreen().CenterPoint());
-  generator.ClickLeftButton();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(
+      GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
 
   // Times out if test fails.
   ASSERT_TRUE(keyboard::WaitUntilHidden());
@@ -576,11 +575,10 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, TappingHidesVirtualKeyboard) {
   keyboard_controller()->NotifyKeyboardWindowLoaded();
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  ui::test::EventGenerator generator(
-      shelf_widget->GetNativeWindow()->GetRootWindow(),
-      shelf_widget->GetWindowBoundsInScreen().CenterPoint());
-  generator.PressTouch();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(
+      GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
+  generator->PressTouch();
 
   // Times out if test fails.
   ASSERT_TRUE(keyboard::WaitUntilHidden());
@@ -591,15 +589,14 @@ TEST_F(ShelfWidgetVirtualKeyboardTest, DoesNotHideLockedVirtualKeyboard) {
   keyboard_controller()->NotifyKeyboardWindowLoaded();
   ASSERT_TRUE(keyboard_controller()->IsKeyboardVisible());
 
-  ShelfWidget* shelf_widget = GetShelfWidget();
-  ui::test::EventGenerator generator(
-      shelf_widget->GetNativeWindow()->GetRootWindow(),
-      shelf_widget->GetWindowBoundsInScreen().CenterPoint());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_location(
+      GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
 
-  generator.ClickLeftButton();
+  generator->ClickLeftButton();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());
 
-  generator.PressTouch();
+  generator->PressTouch();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());
 }
 
