@@ -977,6 +977,273 @@ class TestMain(NetTestCase):
         '  https://localhost:1/user/task/12300\n',
         '')
 
+  def test_trigger_raw_cmd_with_optional(self):
+    request = {
+      'name': u'None/foo=bar_foo1=bar1',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 200,
+      'task_slices': [
+       {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo', 'value': 'baz'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'opt', 'value': 'tional'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 120,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'foo1', 'value': 'baz1'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 21420,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'foo1', 'bar1',
+        '--optional-dimension', 'foo', 'baz', 60,
+        '--optional-dimension', 'opt', 'tional', 60,
+        '--optional-dimension', 'foo1', 'baz1', 180,
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/foo=bar_foo1=bar1\n'
+        'To collect results, use:\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
+
+  def test_trigger_raw_cmd_with_optional_unsorted(self):
+    request = {
+      'name': u'None/foo=bar_foo1=bar1',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 200,
+      'task_slices': [
+       {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'baq'},
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'foo1', 'value': 'baz1'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'foo1', 'value': 'baz1'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 21480,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'foo1', 'bar1',
+        '--optional-dimension', 'foo1', 'baz1', 120,
+        '--optional-dimension', 'foo', 'baq', 60,
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/foo=bar_foo1=bar1\n'
+        'To collect results, use:\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
+
+  def test_trigger_raw_cmd_with_optional_sameexp(self):
+    request = {
+      'name': u'None/foo=bar_foo1=bar1',
+      'parent_task_id': '',
+      'pool_task_template': 'AUTO',
+      'priority': 200,
+      'task_slices': [
+       {
+          'expiration_secs': 60,
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo', 'value': 'baz'},
+                  {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'foo2', 'value': 'baz2'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        {
+          'expiration_secs': 21540, # 21600 - 60
+          'properties': gen_properties(
+              command=['python', '-c', 'print(\'hi\')'],
+              dimensions=[
+                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'foo1', 'value': 'bar1'},
+              ],
+              execution_timeout_secs=3600,
+              extra_args=None,
+              inputs_ref=None,
+              io_timeout_secs=1200,
+              relative_cwd='deeep'),
+          'wait_for_capacity': False,
+        },
+        ],
+      'tags': [],
+      'user': None,
+    }
+    result = gen_request_response(request)
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request},
+            result,
+          ),
+        ])
+    ret = self.main_safe([
+        'trigger',
+        '--swarming', 'https://localhost:1',
+        '--dimension', 'foo', 'bar',
+        '--dimension', 'foo1', 'bar1',
+        '--optional-dimension', 'foo', 'baz', 60,
+        '--optional-dimension', 'foo2', 'baz2', 60,
+        '--raw-cmd',
+        '--relative-cwd', 'deeep',
+        '--',
+        'python',
+        '-c',
+        'print(\'hi\')',
+      ])
+    actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+    self._check_output(
+        'Triggered task: None/foo=bar_foo1=bar1\n'
+        'To collect results, use:\n'
+        '  tools/swarming_client/swarming.py collect '
+        '-S https://localhost:1 12300\n'
+        'Or visit:\n'
+        '  https://localhost:1/user/task/12300\n',
+        '')
+
+
+
   def test_trigger_raw_cmd_isolated(self):
     # Minimalist use.
     request = {
