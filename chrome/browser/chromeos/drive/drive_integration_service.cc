@@ -490,6 +490,10 @@ class DriveIntegrationService::DriveFsHolder
                            GetAccountId().GetAccountIdKey());
   }
 
+  DriveNotificationManager& GetDriveNotificationManager() override {
+    return *DriveNotificationManagerFactory::GetForBrowserContext(profile_);
+  }
+
   void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
     mount_observer_->OnMountFailed(remount_delay);
   }

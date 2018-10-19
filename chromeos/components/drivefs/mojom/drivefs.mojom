@@ -78,6 +78,17 @@ interface DriveFsDelegate {
 
   // Invoked when a supported error occurs.
   OnError(DriveError error);
+
+  // Invoked with the list of team drive IDs.
+  OnTeamDrivesListReady(array<string> team_drive_ids);
+
+  enum CreateOrDelete {
+    kCreated,
+    kDeleted,
+  };
+
+  // Invoked whenever a Team Drive root changes or gets deleted.
+  OnTeamDriveChanged(string team_drive_id, CreateOrDelete change_type);
 };
 
 struct DriveFsConfiguration {

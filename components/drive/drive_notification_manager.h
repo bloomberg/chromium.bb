@@ -68,6 +68,10 @@ class DriveNotificationManager : public KeyedService,
     return push_notification_registered_;
   }
 
+  const std::set<std::string>& team_drive_ids_for_test() const {
+    return team_drive_ids_;
+  }
+
  private:
   enum NotificationSource {
     NOTIFICATION_XMPP,
