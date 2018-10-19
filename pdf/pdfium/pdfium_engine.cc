@@ -625,6 +625,31 @@ std::string ConvertViewIntToViewString(unsigned long view_int) {
   }
 }
 
+// Simplify to \" for searching
+constexpr wchar_t kHebrewPunctuationGershayimCharacter = 0x05F4;
+constexpr wchar_t kLeftDoubleQuotationMarkCharacter = 0x201C;
+constexpr wchar_t kRightDoubleQuotationMarkCharacter = 0x201D;
+
+// Simplify \' for searching
+constexpr wchar_t kHebrewPunctuationGereshCharacter = 0x05F3;
+constexpr wchar_t kLeftSingleQuotationMarkCharacter = 0x2018;
+constexpr wchar_t kRightSingleQuotationMarkCharacter = 0x2019;
+
+wchar_t SimplifyForSearch(wchar_t c) {
+  switch (c) {
+    case kHebrewPunctuationGershayimCharacter:
+    case kLeftDoubleQuotationMarkCharacter:
+    case kRightDoubleQuotationMarkCharacter:
+      return L'\"';
+    case kHebrewPunctuationGereshCharacter:
+    case kLeftSingleQuotationMarkCharacter:
+    case kRightSingleQuotationMarkCharacter:;
+      return L'\'';
+    default:
+      return c;
+  }
+}
+
 }  // namespace
 
 bool InitializeSDK() {
@@ -1918,6 +1943,12 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                                   int current_page) {
   DCHECK(!term.empty());
 
+  // Various types of quotions marks need to be converted to the simple ASCII
+  // version for searching to get better matching.
+  base::string16 adjusted_term = term;
+  for (base::char16& c : adjusted_term)
+    c = SimplifyForSearch(c);
+
   const int original_text_length = pages_[current_page]->GetCharCount();
   int text_length = original_text_length;
   if (character_to_start_searching_from) {
@@ -1974,11 +2005,11 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
     if (IsIgnorableCharacter(c))
       removed_indices.push_back(adjusted_page_text.size());
     else
-      adjusted_page_text.push_back(c);
+      adjusted_page_text.push_back(SimplifyForSearch(c));
   }
 
   std::vector<PDFEngine::Client::SearchStringResult> results =
-      client_->SearchString(adjusted_page_text.c_str(), term.c_str(),
+      client_->SearchString(adjusted_page_text.c_str(), adjusted_term.c_str(),
                             case_sensitive);
   for (const auto& result : results) {
     // Need to convert from adjusted page text start to page text start, by
