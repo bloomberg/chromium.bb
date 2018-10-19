@@ -53,7 +53,6 @@ component("bindings_base") {
     "lib/message_internal.h",
     "lib/scoped_interface_endpoint_handle.cc",
     "lib/serialization.h",
-    "lib/serialization.h",
     "lib/serialization_context.cc",
     "lib/serialization_context.h",
     "lib/serialization_forward.h",
