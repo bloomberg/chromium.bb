@@ -1622,7 +1622,7 @@ class MainTest(unittest.TestCase):
         stderr = StringIO.StringIO()
         try:
             run_webkit_tests.run = interrupting_run
-            res = run_webkit_tests.main([], stderr)
+            res = run_webkit_tests.main(['--target', 'Release'], stderr)
             self.assertEqual(res, exit_codes.INTERRUPTED_EXIT_STATUS)
 
             run_webkit_tests.run = successful_run
@@ -1630,7 +1630,7 @@ class MainTest(unittest.TestCase):
             self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
 
             run_webkit_tests.run = exception_raising_run
-            res = run_webkit_tests.main([], stderr)
+            res = run_webkit_tests.main(['--target', 'Release'], stderr)
             self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
             run_webkit_tests.run = orig_run_fn

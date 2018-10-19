@@ -59,15 +59,19 @@ class PortFactory(object):
             return 'win'
         raise NotImplementedError('unknown platform: %s' % platform)
 
+    def _default_options(self):
+        return optparse.Values({'configuration': 'Release', 'target': 'Release'})
+
     def get(self, port_name=None, options=None, **kwargs):
         """Returns an object implementing the Port interface.
 
         If port_name is None, this routine attempts to guess at the most
         appropriate port on this platform.
         """
+        options = options or self._default_options()
         port_name = port_name or self._default_port()
 
-        _check_configuration_and_target(self._host.filesystem, options)
+        check_configuration_and_target(self._host.filesystem, options)
 
         if 'browser_test' in port_name:
             module_name, class_name = port_name.rsplit('.', 1)
@@ -130,28 +134,29 @@ def configuration_options():
 
 
 def _builder_options(builder_name):
+    configuration = 'Debug' if re.search(r'[d|D](ebu|b)g', builder_name) else 'Release'
     return optparse.Values({
         'builder_name': builder_name,
-        'configuration': 'Debug' if re.search(r'[d|D](ebu|b)g', builder_name) else 'Release',
-        'target': None,
+        'configuration': configuration,
+        'target': configuration,
     })
 
 
-def _check_configuration_and_target(host, options):
+def check_configuration_and_target(host, options):
     """Updates options.configuration based on options.target."""
     if not options or not getattr(options, 'target', None):
         return
 
-    gn_configuration = _read_configuration_from_gn(host, options)
+    gn_configuration = read_configuration_from_gn(host, options)
     if gn_configuration:
-        expected_configuration = getattr(options, 'configuration')
+        expected_configuration = getattr(options, 'configuration', None)
         if expected_configuration not in (None, gn_configuration):
             raise ValueError('Configuration does not match the GN build args. '
                              'Expected "%s" but got "%s".' % (gn_configuration, expected_configuration))
         options.configuration = gn_configuration
         return
 
-    if options.target in ('Debug', 'Debug_x64'):
+    if options.target in ('Default', 'Debug', 'Debug_x64'):
         options.configuration = 'Debug'
     elif options.target in ('Release', 'Release_x64'):
         options.configuration = 'Release'
@@ -162,10 +167,10 @@ def _check_configuration_and_target(host, options):
                          'If the directory is out/<dir>, then pass -t <dir>.')
 
 
-def _read_configuration_from_gn(fs, options):
+def read_configuration_from_gn(fs, options, target=None):
     """Returns the configuration to used based on args.gn, if possible."""
     build_directory = getattr(options, 'build_directory', 'out')
-    target = options.target
+    target = target or options.target
     finder = PathFinder(fs)
     path = fs.join(finder.chromium_base(), build_directory, target, 'args.gn')
     if not fs.exists(path):
