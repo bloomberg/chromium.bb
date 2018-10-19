@@ -471,6 +471,15 @@ void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
   }
 }
 
+void AppsGridView::OnTabletModeChanged(bool started) {
+  // Enable/Disable folder icons's background blur based on tablet mode.
+  for (int i = 0; i < view_model_.view_size(); ++i) {
+    auto* item_view = view_model_.view_at(i);
+    if (item_view->item()->is_folder())
+      item_view->SetBackgroundBlurEnabled(started);
+  }
+}
+
 void AppsGridView::SetModel(AppListModel* model) {
   if (model_)
     model_->RemoveObserver(this);
@@ -2023,6 +2032,10 @@ AppListItemView* AppsGridView::GetCurrentPageLastItemViewInFolder() {
   return view_model_.view_at(last_index);
 }
 
+bool AppsGridView::IsTabletMode() const {
+  return contents_view_->app_list_view()->is_tablet_mode();
+}
+
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   // When a drag and drop host is given, the item can be dragged out of the app
   // list window. In that case a proxy widget needs to be used.
@@ -2047,7 +2060,8 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
       drag_view_->GetIconBoundsInScreen().origin(), drag_view_->GetIconImage(),
       drag_view_, kDragAndDropProxyScale * GetTransform().Scale2d().x(),
-      is_new_style_launcher_enabled_ && drag_view_->item()->is_folder()
+      is_new_style_launcher_enabled_ && drag_view_->item()->is_folder() &&
+              IsTabletMode()
           ? AppListConfig::instance().blur_radius()
           : 0);
 
