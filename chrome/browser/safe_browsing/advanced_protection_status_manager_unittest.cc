@@ -244,17 +244,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, AlreadySignedInAndUnderAP) {
   aps_manager.UnsubscribeFromSigninEvents();
 }
 
-#if defined(OS_CHROMEOS)
-// https://crbug.com/892117
-#define MAYBE_AlreadySignedInAndUnderAPIncognito \
-  DISABLED_AlreadySignedInAndUnderAPIncognito
-#else
-#define MAYBE_AlreadySignedInAndUnderAPIncognito \
-  AlreadySignedInAndUnderAPIncognito
-#endif
-// Rediret to the actual download URL.
 TEST_F(AdvancedProtectionStatusManagerTest,
-       MAYBE_AlreadySignedInAndUnderAPIncognito) {
+       AlreadySignedInAndUnderAPIncognito) {
   testing_profile_->GetPrefs()->SetInt64(
       prefs::kAdvancedProtectionLastRefreshInUs,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -263,6 +254,9 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   // under advanced protection.
   std::string account_id =
       SignIn("gaia_id", "email", /* is_under_advanced_protection = */ true);
+  AdvancedProtectionStatusManagerFactory::GetForBrowserContext(
+      Profile::FromBrowserContext(testing_profile_.get()))
+      ->MaybeRefreshOnStartUp();
 
   // Incognito profile should share the advanced protection status with the
   // original profile.
@@ -272,16 +266,8 @@ TEST_F(AdvancedProtectionStatusManagerTest,
       testing_profile_.get()));
 }
 
-#if defined(OS_CHROMEOS)
-// https://crbug.com/892117
-#define MAYBE_AlreadySignedInAndNotUnderAPIncognito \
-  DISABLED_AlreadySignedInAndNotUnderAPIncognito
-#else
-#define MAYBE_AlreadySignedInAndNotUnderAPIncognito \
-  AlreadySignedInAndNotUnderAPIncognito
-#endif
 TEST_F(AdvancedProtectionStatusManagerTest,
-       MAYBE_AlreadySignedInAndNotUnderAPIncognito) {
+       AlreadySignedInAndNotUnderAPIncognito) {
   testing_profile_->GetPrefs()->SetInt64(
       prefs::kAdvancedProtectionLastRefreshInUs,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -290,6 +276,9 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   // NOT under advanced protection.
   std::string account_id =
       SignIn("gaia_id", "email", /* is_under_advanced_protection = */ false);
+  AdvancedProtectionStatusManagerFactory::GetForBrowserContext(
+      Profile::FromBrowserContext(testing_profile_.get()))
+      ->MaybeRefreshOnStartUp();
 
   // Incognito profile should share the advanced protection status with the
   // original profile.

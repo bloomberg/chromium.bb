@@ -21,9 +21,6 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
-// Controls the safe browsing protection for advanced protection program.
-extern const base::Feature kAdvancedProtectionStatusFeature;
-
 // Controls the billing interstitial UI.
 extern const base::Feature kBillingInterstitial;
 

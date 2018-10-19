@@ -22,9 +22,6 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAdvancedProtectionStatusFeature{
-    "AdvancedProtectionStatus", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the billing interstitial UI.
 const base::Feature kBillingInterstitial{"BillingInterstitial",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -68,7 +65,6 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
-    {&kAdvancedProtectionStatusFeature, true},
     {&kBillingInterstitial, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kForceEnableResetPasswordWebUI, true},

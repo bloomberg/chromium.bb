@@ -24,7 +24,9 @@
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -45,7 +47,9 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -156,6 +160,9 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     factories.emplace_back(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
+    factories.emplace_back(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
@@ -708,10 +715,14 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
     static_cast<FakeProfileOAuth2TokenService*>(
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_));
   ASSERT_TRUE(token_service);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
+  const std::string& account_id =
+      AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
+          kTestGaiaId, kAccountId);
+  FakeSigninManagerForTesting* signin_manager =
+      static_cast<FakeSigninManagerForTesting*>(
+          SigninManagerFactory::GetForProfile(profile_));
   ASSERT_TRUE(signin_manager);
-  const std::string& account_id = signin_manager->GetAuthenticatedAccountId();
+  signin_manager->SignIn(account_id);
   EXPECT_FALSE(token_service->RefreshTokenIsAvailable(account_id));
   token_service->UpdateCredentials(account_id, "refresh_token");
   EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
