@@ -42,7 +42,7 @@ class MockDelegate : public MessageCenterUiDelegate {
     popups_visible_ = true;
     return true;
   }
-  void HidePopups(bool animate) override {
+  void HidePopups() override {
     EXPECT_TRUE(popups_visible_);
     popups_visible_ = false;
   }
