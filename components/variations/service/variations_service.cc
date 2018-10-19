@@ -299,6 +299,7 @@ VariationsService::~VariationsService() {
 
 void VariationsService::PerformPreMainMessageLoopStartup() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(field_trial_creator_.IsOverrideResourceMapEmpty());
 
   InitResourceRequestedAllowedNotifier();
 
@@ -822,6 +823,10 @@ bool VariationsService::SetupFieldTrials(
       kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures,
       unforceable_field_trials, variation_ids, CreateLowEntropyProvider(),
       std::move(feature_list), platform_field_trials, &safe_seed_manager_);
+}
+
+void VariationsService::OverrideCachedUIStrings() {
+  field_trial_creator_.OverrideCachedUIStrings();
 }
 
 std::string VariationsService::GetStoredPermanentCountry() {
