@@ -1765,8 +1765,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
           touch_adjustment_result_.adjusted_point);
     } else {
       hit_rect_size = GetHitTestRectForAdjustment(
-          LayoutSize(adjusted_event.TapAreaInRootFrame()),
-          frame_->PageZoomFactor());
+          *frame_, LayoutSize(adjusted_event.TapAreaInRootFrame()));
       if (!hit_rect_size.IsEmpty())
         hit_type |= HitTestRequest::kListBased;
     }
