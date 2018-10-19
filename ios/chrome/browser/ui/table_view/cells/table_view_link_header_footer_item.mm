@@ -118,7 +118,7 @@ const int kTextColor = 0x8A8A8F;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  [self setText:nil];
+  self.textView.text = nil;
   self.delegate = nil;
   self.linkURL = GURL();
 }

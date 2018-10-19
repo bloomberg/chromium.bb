@@ -24,8 +24,6 @@ namespace {
 const CGFloat kFaviconWidth = 16;
 // The width and height of the favicon container view.
 const CGFloat kFaviconContainerWidth = 28;
-// The text color of the URL and metadata labels.
-const CGFloat kSecondaryLabelLightGrayTextColor = 0x8E8E93;
 // Default delimiter to use between the hostname and the supplemental URL text
 // if text is specified but not the delimiter.
 const char kDefaultSupplementalURLTextDelimiter[] = "•";

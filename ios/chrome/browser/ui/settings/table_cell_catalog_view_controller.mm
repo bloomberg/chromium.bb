@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -40,6 +41,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLWithBadgeImage,
   ItemTypeTextSettingsDetail,
   ItemTypeLinkFooter,
+  ItemTypeDetailText,
 };
 }
 
@@ -115,6 +117,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textActionButtonItem.text = @"Hello, you should do something.";
   textActionButtonItem.buttonText = @"Do something";
   [model addItem:textActionButtonItem
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailTextItem* detailTextItem =
+      [[TableViewDetailTextItem alloc] initWithType:ItemTypeDetailText];
+  detailTextItem.text = @"Item with two labels";
+  detailTextItem.detailText =
+      @"The second label is optional and is mostly displayed on one line";
+  [model addItem:detailTextItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailTextItem* noDetailTextItem =
+      [[TableViewDetailTextItem alloc] initWithType:ItemTypeDetailText];
+  noDetailTextItem.text = @"Detail item on one line.";
+  [model addItem:noDetailTextItem
       toSectionWithIdentifier:SectionIdentifierText];
 
   // SectionIdentifierSettings.

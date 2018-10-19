@@ -17,3 +17,4 @@ const CGFloat kUseDefaultFontSize = 0.0;
 const CGFloat kTableViewLabelVerticalTopSpacing = 13.0;
 
 const CGFloat kTableViewTextLabelColorLightGrey = 0x6D6D72;
+const CGFloat kSecondaryLabelLightGrayTextColor = 0x8E8E93;
