@@ -24,6 +24,8 @@ blink_core_sources("workers") {
     "experimental/task.h",
     "experimental/thread_pool.cc",
     "experimental/thread_pool.h",
+    "experimental/thread_pool_thread.cc",
+    "experimental/thread_pool_thread.h",
     "experimental/worker_task_queue.cc",
     "experimental/worker_task_queue.h",
     "global_scope_creation_params.cc",
