@@ -94,10 +94,6 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listb1,
     const scoped_refptr<H264Picture>& pic) {
   const bool is_encrypted = pic->decrypt_config();
-  if (is_encrypted && !cdm_proxy_context_) {
-    RecordFailure("The input is encrypted but there is no proxy context.");
-    return Status::kFail;
-  }
 
   std::unique_ptr<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION> content_key;
   // This decrypt context has to be outside the if block because pKeyInfo in
