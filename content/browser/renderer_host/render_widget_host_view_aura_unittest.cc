@@ -523,7 +523,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     view->delegated_frame_host_ = nullptr;
     view->delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
         view->frame_sink_id_, view->delegated_frame_host_client_.get(),
-        false /* should_register_frame_sink_id */);
+        false /* should_register_frame_sink_id */,
+        viz::ReportFirstSurfaceActivation::kNo);
   }
 
   FakeRenderWidgetHostViewAura* CreateView(bool is_guest_view_hack) {
@@ -3078,7 +3079,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
 
   // Submit another frame. The resources for the previous frame belong to the
   // old RendererCompositorFrameSink and should not be returned.
-  view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
+  view_->SubmitCompositorFrame(view_->surface_id().local_surface_id(),
                                MakeDelegatedFrame(1.f, view_size, view_rect),
                                base::nullopt);
   EXPECT_EQ(0u, sink_->message_count());
@@ -3364,7 +3365,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->SetSize(view_rect.size());
 
   // Swap a frame.
-  view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId,
+  view_->SubmitCompositorFrame(view_->GetLocalSurfaceId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
                                base::nullopt);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
@@ -3375,18 +3376,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->CreateNewRendererCompositorFrameSink();
 
   // Submit a frame from the new RendererCompositorFrameSink.
-  view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
-                               MakeDelegatedFrame(1.f, frame_size, view_rect),
-                               base::nullopt);
-  EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
-  EXPECT_EQ(view_rect, DamageRectForView(view_));
-  view_->RunOnCompositingDidCommit();
-
-  // Signal that a new RendererCompositorFrameSink was created.
-  view_->CreateNewRendererCompositorFrameSink();
-
-  // Submit a frame from the new RendererCompositorFrameSink.
-  view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
+  view_->SubmitCompositorFrame(view_->GetLocalSurfaceId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
                                base::nullopt);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
@@ -3397,7 +3387,9 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->CreateNewRendererCompositorFrameSink();
 
   // Swap another frame, with a different surface id.
-  view_->SubmitCompositorFrame(parent_local_surface_id_allocator_.GenerateId(),
+  view_->SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
+                                     base::nullopt);
+  view_->SubmitCompositorFrame(view_->GetLocalSurfaceId(),
                                MakeDelegatedFrame(1.f, frame_size, view_rect),
                                base::nullopt);
   EXPECT_EQ(kFrameIndexStart + 1, FrameIndexForView(view_));
@@ -3613,7 +3605,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   ASSERT_LE(2u, max_renderer_frames);
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
-  gfx::Size frame_size = view_rect.size();
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3641,10 +3632,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // occur because all frames are visible.
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
-    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
-                              views[i]->GetLocalSurfaceId());
-    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
-        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_HAS_FRAME(views[i]);
   }
 
@@ -3654,10 +3641,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 
   // If we lock [0] before hiding it, then [0] should not be evicted.
   views[0]->Show();
-  viz::SurfaceId surface_id(views[0]->GetFrameSinkId(),
-                            views[0]->GetLocalSurfaceId());
-  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
-      viz::SurfaceInfo(surface_id, 1.f, frame_size));
   EXPECT_HAS_FRAME(views[0]);
   views[0]->GetDelegatedFrameHost()->LockResources();
   views[0]->Hide();
@@ -5887,9 +5870,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
   // The renderer submits a frame to the old LocalSurfaceId. The timer should
   // still fire.
-  auto frame = viz::CompositorFrameBuilder().AddDefaultRenderPass().Build();
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
-      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
   {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -5914,8 +5894,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->Show();
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->Hide();
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
-      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
   view_->ClearCompositorFrame();
   view_->Show();
   viz::LocalSurfaceId id2 = view_->GetLocalSurfaceId();
@@ -5935,9 +5913,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
   view_->Show();
-  viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
-  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
-      viz::SurfaceId(view_->GetFrameSinkId(), id1), 1, gfx::Size(20, 20)));
   view_->Hide();
   view_->SetSize(gfx::Size(54, 32));
   view_->Show();
