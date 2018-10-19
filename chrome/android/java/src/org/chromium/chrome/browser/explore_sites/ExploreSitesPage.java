@@ -39,6 +39,7 @@ import java.util.List;
  */
 public class ExploreSitesPage extends BasicNativePage {
     private static final String CONTEXT_MENU_USER_ACTION_PREFIX = "ExploreSites";
+    private static final int INITIAL_SCROLL_POSITION = 3;
     static final PropertyModel.WritableIntPropertyKey STATUS_KEY =
             new PropertyModel.WritableIntPropertyKey();
     static final PropertyModel.WritableIntPropertyKey SCROLL_TO_CATEGORY_KEY =
@@ -143,6 +144,9 @@ public class ExploreSitesPage extends BasicNativePage {
         categoryListModel.set(categoryList);
         if (mNavFragment != null) {
             lookupCategoryAndScroll(mNavFragment);
+        } else {
+            mModel.set(SCROLL_TO_CATEGORY_KEY,
+                    Math.min(categoryListModel.size() - 1, INITIAL_SCROLL_POSITION));
         }
     }
 
