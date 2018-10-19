@@ -23,7 +23,7 @@ fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
   if (!view_manager_) {
     view_manager_ = base::fuchsia::ComponentContext::GetDefault()
                         ->ConnectToService<fuchsia::ui::viewsv1::ViewManager>();
-    view_manager_.set_error_handler([this]() {
+    view_manager_.set_error_handler([]() {
       LOG(ERROR) << "The ViewManager channel was unexpectedly terminated.";
     });
   }
@@ -34,7 +34,7 @@ fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
 fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
   if (!scenic_) {
     GetViewManager()->GetScenic(scenic_.NewRequest());
-    scenic_.set_error_handler([this]() {
+    scenic_.set_error_handler([]() {
       LOG(ERROR) << "The Scenic channel was unexpectedly terminated.";
     });
   }
