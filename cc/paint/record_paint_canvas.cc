@@ -270,7 +270,7 @@ void RecordPaintCanvas::drawSkottie(scoped_refptr<SkottieWrapper> skottie,
   list_->push<DrawSkottieOp>(std::move(skottie), dst, t);
 }
 
-void RecordPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
+void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                      SkScalar x,
                                      SkScalar y,
                                      const PaintFlags& flags) {

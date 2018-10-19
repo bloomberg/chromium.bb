@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
-#include "third_party/blink/renderer/platform/fonts/paint_text_blob.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -291,9 +290,8 @@ unsigned InterceptsFromBlobs(const ShapeResultBloberizer::BlobBuffer& blobs,
     SkScalar* offset_intercepts_buffer = nullptr;
     if (intercepts_buffer)
       offset_intercepts_buffer = &intercepts_buffer[num_intervals];
-    num_intervals +=
-        paint.getTextBlobIntercepts(blob_info.blob->ToSkTextBlob().get(),
-                                    bounds_array, offset_intercepts_buffer);
+    num_intervals += paint.getTextBlobIntercepts(
+        blob_info.blob.get(), bounds_array, offset_intercepts_buffer);
   }
   return num_intervals;
 }

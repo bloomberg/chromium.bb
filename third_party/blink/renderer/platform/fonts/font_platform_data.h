@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
-#include "third_party/blink/renderer/platform/fonts/paint_font.h"
 #include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -154,9 +153,9 @@ class PLATFORM_EXPORT FontPlatformData {
   const WebFontRenderStyle& GetFontRenderStyle() const { return style_; }
 #endif
 
-  void SetupPaintFont(PaintFont*,
-                      float device_scale_factor = 1,
-                      const Font* = nullptr) const;
+  void SetupSkPaint(SkPaint*,
+                    float device_scale_factor = 1,
+                    const Font* = nullptr) const;
 
 #if defined(OS_WIN)
   int PaintTextFlags() const { return paint_text_flags_; }

@@ -1160,7 +1160,7 @@ std::vector<std::vector<sk_sp<SkTypeface>>> test_typefaces = {
     }(),
 };
 
-std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
+std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
     [] {
       SkPaint font;
       font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -1172,8 +1172,7 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
           builder.allocRun(font, glyph_count, 1.2f, 2.3f, &test_rects[0]);
       // allocRun() allocates only the glyph buffer.
       std::fill(run.glyphs, run.glyphs + glyph_count, 0);
-      return base::MakeRefCounted<PaintTextBlob>(builder.make(),
-                                                 test_typefaces[0]);
+      return builder.make();
     }(),
     [] {
       SkPaint font;
@@ -1202,8 +1201,7 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
       // pos buffer.
       std::fill(run3.glyphs, run3.glyphs + glyph_count, 0);
       std::fill(run3.pos, run3.pos + glyph_count, 0);
-      return base::MakeRefCounted<PaintTextBlob>(builder.make(),
-                                                 test_typefaces[1]);
+      return builder.make();
     }(),
 };
 
@@ -2707,10 +2705,7 @@ TEST(PaintOpBufferTest, BoundingRect_DrawTextBlobOp) {
     auto* op = static_cast<DrawTextBlobOp*>(base_op);
 
     ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
-    EXPECT_EQ(rect, op->blob->ToSkTextBlob()
-                        ->bounds()
-                        .makeOffset(op->x, op->y)
-                        .makeSorted());
+    EXPECT_EQ(rect, op->blob->bounds().makeOffset(op->x, op->y).makeSorted());
   }
 }
 

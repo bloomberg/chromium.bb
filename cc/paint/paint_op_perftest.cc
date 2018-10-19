@@ -168,8 +168,7 @@ TEST_F(PaintOpPerfTest, TextOps) {
   SkRect rect = SkRect::MakeXYWH(1, 1, 1, 1);
   const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f, &rect);
   std::fill(run.glyphs, run.glyphs + glyph_count, 0);
-  std::vector<sk_sp<SkTypeface>> typefaces = {typeface};
-  auto blob = base::MakeRefCounted<PaintTextBlob>(builder.make(), typefaces);
+  auto blob = builder.make();
 
   PaintFlags flags;
   for (size_t i = 0; i < 100; ++i)

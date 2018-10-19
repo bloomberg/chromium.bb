@@ -533,9 +533,8 @@ class PaintOpHelper {
     return record ? "<paint record>" : "(nil)";
   }
 
-  static std::string TextBlobToString(
-      const scoped_refptr<PaintTextBlob>& blob) {
-    return blob ? "<paint text blob>" : "(nil)";
+  static std::string TextBlobToString(const sk_sp<SkTextBlob>& blob) {
+    return blob ? "<sk text blob>" : "(nil)";
   }
 
   static std::string PaintShaderToString(const PaintShader* shader) {

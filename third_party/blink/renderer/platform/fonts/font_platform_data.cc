@@ -281,12 +281,12 @@ unsigned FontPlatformData::GetHash() const {
 
 #if !defined(OS_MACOSX)
 bool FontPlatformData::FontContainsCharacter(UChar32 character) {
-  PaintFont font;
-  SetupPaintFont(&font);
-  font.SetTextEncoding(SkPaint::kUTF32_TextEncoding);
+  SkPaint paint;
+  SetupSkPaint(&paint);
+  paint.setTextEncoding(SkPaint::kUTF32_TextEncoding);
 
   uint16_t glyph;
-  font.ToSkPaint().textToGlyphs(&character, sizeof(character), &glyph);
+  paint.textToGlyphs(&character, sizeof(character), &glyph);
   return glyph;
 }
 #endif
@@ -314,18 +314,18 @@ WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
   return result;
 }
 
-void FontPlatformData::SetupPaintFont(PaintFont* font,
-                                      float device_scale_factor,
-                                      const Font*) const {
-  style_.ApplyToPaintFont(*font, device_scale_factor);
+void FontPlatformData::SetupSkPaint(SkPaint* font,
+                                    float device_scale_factor,
+                                    const Font*) const {
+  style_.ApplyToSkPaint(*font, device_scale_factor);
 
   const float ts = text_size_ >= 0 ? text_size_ : 12;
-  font->SetTextSize(SkFloatToScalar(ts));
-  font->SetTypeface(typeface_);
-  font->SetFakeBoldText(synthetic_bold_);
-  font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  font->setTextSize(SkFloatToScalar(ts));
+  font->setTypeface(typeface_);
+  font->setFakeBoldText(synthetic_bold_);
+  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
-  font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
 }
 #endif
 
