@@ -49,7 +49,6 @@ class NotificationTemplateBuilder {
   static std::unique_ptr<NotificationTemplateBuilder> Build(
       base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
       const NotificationLaunchId& launch_id,
-      const std::string& profile_id,
       const message_center::Notification& notification);
 
   // Set label for the context menu item in testing. The caller owns |label| and
@@ -66,8 +65,7 @@ class NotificationTemplateBuilder {
   enum class TextType { NORMAL, ATTRIBUTION };
 
   NotificationTemplateBuilder(
-      base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
-      const std::string& profile_id);
+      base::WeakPtr<NotificationImageRetainer> notification_image_retainer);
 
   // Formats the |origin| for display in the notification template.
   std::string FormatOrigin(const GURL& origin) const;
@@ -103,7 +101,6 @@ class NotificationTemplateBuilder {
 
   // A helper for constructing image xml.
   void WriteImageElement(const gfx::Image& image,
-                         const GURL& origin,
                          const std::string& placement,
                          const std::string& hint_crop);
 
@@ -123,7 +120,6 @@ class NotificationTemplateBuilder {
                   const NotificationLaunchId& launch_id);
   void WriteActionElement(const message_center::ButtonInfo& button,
                           int index,
-                          const GURL& origin,
                           NotificationLaunchId copied_launch_id);
 
   // Adds context menu actions to the notification sent by |origin|.
@@ -146,9 +142,6 @@ class NotificationTemplateBuilder {
 
   // The image retainer.
   base::WeakPtr<NotificationImageRetainer> image_retainer_;
-
-  // The id of the profile the notification is intended for.
-  std::string profile_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationTemplateBuilder);
 };
