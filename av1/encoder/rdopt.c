@@ -166,8 +166,6 @@ static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
   ((1 << ALTREF_FRAME) | (1 << ALTREF2_FRAME) | (1 << BWDREF_FRAME) | \
    (1 << GOLDEN_FRAME) | (1 << LAST2_FRAME) | 0x01)
 
-#define ANGLE_SKIP_THRESH 10
-
 static const double ADST_FLIP_SVM[8] = {
   /* vertical */
   -6.6623, -2.8062, -3.2531, 3.1671,
@@ -4235,18 +4233,14 @@ static const uint8_t mode_to_angle_bin[INTRA_MODES] = {
 static void angle_estimation(const uint8_t *src, int src_stride, int rows,
                              int cols, BLOCK_SIZE bsize,
                              uint8_t *directional_mode_skip_mask) {
-  memset(directional_mode_skip_mask, 0,
-         INTRA_MODES * sizeof(*directional_mode_skip_mask));
   // Check if angle_delta is used
   if (!av1_use_angle_delta(bsize)) return;
-  uint64_t hist[DIRECTIONAL_MODES];
-  memset(hist, 0, DIRECTIONAL_MODES * sizeof(hist[0]));
+  uint64_t hist[DIRECTIONAL_MODES] = { 0 };
   src += src_stride;
-  int r, c, dx, dy;
-  for (r = 1; r < rows; ++r) {
-    for (c = 1; c < cols; ++c) {
-      dx = src[c] - src[c - 1];
-      dy = src[c] - src[c - src_stride];
+  for (int r = 1; r < rows; ++r) {
+    for (int c = 1; c < cols; ++c) {
+      int dx = src[c] - src[c - 1];
+      int dy = src[c] - src[c - src_stride];
       int index;
       const int temp = dx * dx + dy * dy;
       if (dy == 0) {
@@ -4280,8 +4274,8 @@ static void angle_estimation(const uint8_t *src, int src_stride, int rows,
         score += hist[angle_bin + 1];
         ++weight;
       }
-      if (score * ANGLE_SKIP_THRESH < hist_sum * weight)
-        directional_mode_skip_mask[i] = 1;
+      const int thresh = 10;
+      if (score * thresh < hist_sum * weight) directional_mode_skip_mask[i] = 1;
     }
   }
 }
@@ -4289,19 +4283,15 @@ static void angle_estimation(const uint8_t *src, int src_stride, int rows,
 static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
                                     int rows, int cols, BLOCK_SIZE bsize,
                                     uint8_t *directional_mode_skip_mask) {
-  memset(directional_mode_skip_mask, 0,
-         INTRA_MODES * sizeof(*directional_mode_skip_mask));
   // Check if angle_delta is used
   if (!av1_use_angle_delta(bsize)) return;
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint64_t hist[DIRECTIONAL_MODES];
-  memset(hist, 0, DIRECTIONAL_MODES * sizeof(hist[0]));
+  uint64_t hist[DIRECTIONAL_MODES] = { 0 };
   src += src_stride;
-  int r, c, dx, dy;
-  for (r = 1; r < rows; ++r) {
-    for (c = 1; c < cols; ++c) {
-      dx = src[c] - src[c - 1];
-      dy = src[c] - src[c - src_stride];
+  for (int r = 1; r < rows; ++r) {
+    for (int c = 1; c < cols; ++c) {
+      int dx = src[c] - src[c - 1];
+      int dy = src[c] - src[c - src_stride];
       int index;
       const int temp = dx * dx + dy * dy;
       if (dy == 0) {
@@ -4335,8 +4325,8 @@ static void highbd_angle_estimation(const uint8_t *src8, int src_stride,
         score += hist[angle_bin + 1];
         ++weight;
       }
-      if (score * ANGLE_SKIP_THRESH < hist_sum * weight)
-        directional_mode_skip_mask[i] = 1;
+      const int thresh = 10;
+      if (score * thresh < hist_sum * weight) directional_mode_skip_mask[i] = 1;
     }
   }
 }
@@ -4389,9 +4379,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
   int is_directional_mode;
-  uint8_t directional_mode_skip_mask[INTRA_MODES];
-  const int src_stride = x->plane[0].src.stride;
-  const uint8_t *src = x->plane[0].src.buf;
+  uint8_t directional_mode_skip_mask[INTRA_MODES] = { 0 };
   int beat_best_rd = 0;
   const int *bmode_costs;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
@@ -4408,12 +4396,17 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   bmode_costs = x->y_mode_costs[above_ctx][left_ctx];
 
   mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    highbd_angle_estimation(src, src_stride, rows, cols, bsize,
-                            directional_mode_skip_mask);
-  else
-    angle_estimation(src, src_stride, rows, cols, bsize,
-                     directional_mode_skip_mask);
+  if (cpi->sf.intra_angle_estimation) {
+    const int src_stride = x->plane[0].src.stride;
+    const uint8_t *src = x->plane[0].src.buf;
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      highbd_angle_estimation(src, src_stride, rows, cols, bsize,
+                              directional_mode_skip_mask);
+    } else {
+      angle_estimation(src, src_stride, rows, cols, bsize,
+                       directional_mode_skip_mask);
+    }
+  }
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   pmi->palette_size[0] = 0;
 
@@ -10691,6 +10684,7 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   search_state->best_intra_rd = INT64_MAX;
 
   search_state->angle_stats_ready = 0;
+  av1_zero(search_state->directional_mode_skip_mask);
 
   search_state->best_pred_sse = UINT_MAX;
 
@@ -10960,15 +10954,16 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   if (is_directional_mode && av1_use_angle_delta(bsize)) {
     int rate_dummy;
     int64_t model_rd = INT64_MAX;
-    if (!search_state->angle_stats_ready) {
+    if (sf->intra_angle_estimation && !search_state->angle_stats_ready) {
       const int src_stride = x->plane[0].src.stride;
       const uint8_t *src = x->plane[0].src.buf;
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         highbd_angle_estimation(src, src_stride, rows, cols, bsize,
                                 search_state->directional_mode_skip_mask);
-      else
+      } else {
         angle_estimation(src, src_stride, rows, cols, bsize,
                          search_state->directional_mode_skip_mask);
+      }
       search_state->angle_stats_ready = 1;
     }
     if (search_state->directional_mode_skip_mask[mbmi->mode]) return INT64_MAX;
