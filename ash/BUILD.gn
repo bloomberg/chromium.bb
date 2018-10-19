@@ -525,6 +525,8 @@ component("ash") {
     "rotator/screen_rotation_animator_observer.h",
     "rotator/window_rotation.cc",
     "rotator/window_rotation.h",
+    "scoped_animation_disabler.cc",
+    "scoped_animation_disabler.h",
     "scoped_root_window_for_new_windows.cc",
     "scoped_root_window_for_new_windows.h",
     "screen_util.cc",

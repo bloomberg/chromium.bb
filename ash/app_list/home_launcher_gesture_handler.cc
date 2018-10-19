@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -22,7 +23,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -154,29 +154,6 @@ aura::Window* GetDividerWindow() {
       ->divider_widget()
       ->GetNativeWindow();
 }
-
-// Helper class to perform window state changes without animations. Used to hide
-// and minimize windows without having their animation interfere with the ones
-// this class is in charge of.
-class ScopedAnimationDisabler {
- public:
-  explicit ScopedAnimationDisabler(aura::Window* window) : window_(window) {
-    needs_disable_ =
-        !window_->GetProperty(aura::client::kAnimationsDisabledKey);
-    if (needs_disable_)
-      window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
-  }
-  ~ScopedAnimationDisabler() {
-    if (needs_disable_)
-      window_->SetProperty(aura::client::kAnimationsDisabledKey, false);
-  }
-
- private:
-  aura::Window* window_;
-  bool needs_disable_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAnimationDisabler);
-};
 
 }  // namespace
 

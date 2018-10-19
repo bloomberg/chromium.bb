@@ -8,6 +8,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -136,16 +137,17 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
       }
 
       window_visibility_map_.emplace(window, window->IsVisible());
-      if (window->IsVisible())
+      if (window->IsVisible()) {
+        ScopedAnimationDisabler disabler(window);
         window->Hide();
+      }
       window->AddObserver(this);
     }
 
     // Hide the home launcher if it's enabled during dragging.
-    AppListControllerImpl* app_list_controller =
-        Shell::Get()->app_list_controller();
-    if (app_list_controller->IsHomeLauncherEnabledInTabletMode())
-      app_list_controller->DismissAppList();
+    // TODO(xdai): Move the hide/show home launcher logic to a general place in
+    // TabletModeWindowDragDelegate.
+    Shell::Get()->app_list_controller()->OnWindowDragStarted();
 
     // Blurs the wallpaper background.
     RootWindowController::ForWindow(root_window)
@@ -178,17 +180,16 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     for (auto iter = window_visibility_map_.begin();
          iter != window_visibility_map_.end(); ++iter) {
       iter->first->RemoveObserver(this);
-      if (iter->second)
+      if (iter->second) {
+        ScopedAnimationDisabler disabler(iter->first);
         iter->first->Show();
+      }
     }
 
     DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
 
-    // Reshow the home launcher if it's enabled after dragging.
-    AppListControllerImpl* app_list_controller =
-        Shell::Get()->app_list_controller();
-    if (app_list_controller->IsHomeLauncherEnabledInTabletMode())
-      app_list_controller->ShowAppList();
+    // May reshow the home launcher after dragging.
+    Shell::Get()->app_list_controller()->OnWindowDragEnded();
 
     // Clears the background wallpaper blur.
     RootWindowController::ForWindow(dragged_window_->GetRootWindow())
