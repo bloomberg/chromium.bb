@@ -219,7 +219,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
-  if (base::FeatureList::IsEnabled(
+  if (!profile->IsGuestSession() &&
+      base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
       base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSettings) &&
