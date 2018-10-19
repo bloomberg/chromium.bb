@@ -140,12 +140,6 @@ void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
                    uint8_t *dst);
 
 /* Applies standard 3x3 Sobel matrix. */
-typedef struct y4m_input y4m_input;
-
-/*The function used to perform chroma conversion.*/
-typedef void (*y4m_convert_func)(y4m_input *_y4m, unsigned char *_dst,
-                                 unsigned char *_src);
-
 typedef struct {
   int16_t x;
   int16_t y;
