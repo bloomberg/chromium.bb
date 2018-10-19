@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef V8TestObject_h
-#define V8TestObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_OBJECT_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/boolean_or_element_sequence.h"
@@ -640,4 +640,4 @@ struct V8TypeOf<TestObject> {
 
 }  // namespace blink
 
-#endif  // V8TestObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_OBJECT_H_

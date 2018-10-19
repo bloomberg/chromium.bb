@@ -2,8 +2,8 @@
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
-#ifndef {{cpp_class}}_h
-#define {{cpp_class}}_h
+#ifndef {{header_guard}}
+#define {{header_guard}}
 
 {% for filename in header_includes %}
 #include "{{filename}}"
@@ -59,6 +59,6 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
 
 }  // namespace blink
 
-#endif  // {{cpp_class}}_h
+#endif  // {{header_guard}}
 
 {% endfilter %}{# format_blink_cpp_source_code #}

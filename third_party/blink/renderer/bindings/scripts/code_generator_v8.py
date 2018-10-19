@@ -59,7 +59,7 @@ import v8_interface
 import v8_types
 import v8_union
 from v8_utilities import build_basename, cpp_name
-from utilities import idl_filename_to_component, is_testing_target, shorten_union_name, to_snake_case
+from utilities import idl_filename_to_component, is_testing_target, shorten_union_name, to_header_guard, to_snake_case
 
 
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
@@ -217,7 +217,9 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(interface_name)
-        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
+        this_include_header_path = self.normalize_this_header_path(header_path)
+        template_context['this_include_header_path'] = this_include_header_path
+        template_context['header_guard'] = to_header_guard(this_include_header_path)
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
         header_text, cpp_text = self.render_templates(
@@ -244,7 +246,9 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
             template_context['exported'] = self.info_provider.specifier_for_export
         header_path, cpp_path = self.output_paths(dictionary_name)
-        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
+        this_include_header_path = self.normalize_this_header_path(header_path)
+        template_context['this_include_header_path'] = this_include_header_path
+        template_context['header_guard'] = to_header_guard(this_include_header_path)
         header_text, cpp_text = self.render_templates(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -283,7 +287,9 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(definition_name, interface_info)
-        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
+        this_include_header_path = self.normalize_this_header_path(header_path)
+        template_context['this_include_header_path'] = this_include_header_path
+        template_context['header_guard'] = to_header_guard(this_include_header_path)
         header_text, cpp_text = self.render_templates(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -321,7 +327,9 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         snake_base_name = to_snake_case(shorten_union_name(union_type))
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
-        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
+        this_include_header_path = self.normalize_this_header_path(header_path)
+        template_context['this_include_header_path'] = this_include_header_path
+        template_context['header_guard'] = to_header_guard(this_include_header_path)
         header_text, cpp_text = self.render_templates(
             [], header_template, cpp_template, template_context)
         return (
@@ -383,7 +391,9 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         snake_base_name = to_snake_case('V8%s' % callback_function.name)
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
-        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
+        this_include_header_path = self.normalize_this_header_path(header_path)
+        template_context['this_include_header_path'] = this_include_header_path
+        template_context['header_guard'] = to_header_guard(this_include_header_path)
         header_text, cpp_text = self.render_templates(
             [], header_template, cpp_template, template_context)
         return (
