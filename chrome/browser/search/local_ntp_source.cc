@@ -53,6 +53,7 @@
 #include "components/search_provider_logos/logo_common.h"
 #include "components/search_provider_logos/logo_service.h"
 #include "components/search_provider_logos/logo_tracker.h"
+#include "components/search_provider_logos/switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -861,6 +862,17 @@ void LocalNtpSource::StartDataRequest(
 
     base::ReplaceFirstSubstringAfterOffset(
         &html, 0, "{{CONTENT_SECURITY_POLICY}}", GetContentSecurityPolicy());
+
+    std::string force_doodle_param;
+    GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
+    if (net::GetValueForKeyInQuery(path_url, "force-doodle",
+                                   &force_doodle_param)) {
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+      command_line->AppendSwitchASCII(
+          search_provider_logos::switches::kGoogleDoodleUrl,
+          "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
+              force_doodle_param + ".json");
+    }
 
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
