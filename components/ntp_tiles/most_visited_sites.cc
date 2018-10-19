@@ -292,11 +292,13 @@ bool MostVisitedSites::AddCustomLink(const GURL& url,
 
 bool MostVisitedSites::UpdateCustomLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title) {
+                                        const base::string16& new_title,
+                                        bool is_user_action) {
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
-  bool success = custom_links_->UpdateLink(url, new_url, new_title);
+  bool success =
+      custom_links_->UpdateLink(url, new_url, new_title, is_user_action);
   if (success)
     BuildCurrentTiles();
   return success;

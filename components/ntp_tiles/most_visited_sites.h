@@ -178,10 +178,13 @@ class MostVisitedSites : public history::TopSitesObserver,
   bool AddCustomLink(const GURL& url, const base::string16& title);
   // Updates the URL and/or title of the custom link specified by |url|. If
   // |url| does not exist or |new_url| already exists in the custom link list,
-  // returns false and does nothing. Custom links must be enabled.
+  // returns false and does nothing. |is_user_action| is true if this was
+  // executed by the user (i.e. editing a custom link). Custom links must be
+  // enabled.
   bool UpdateCustomLink(const GURL& url,
                         const GURL& new_url,
-                        const base::string16& new_title);
+                        const base::string16& new_title,
+                        bool is_user_action);
   // Deletes the custom link with the specified |url|. If |url| does not exist
   // in the custom link list, returns false and does nothing. Custom links must
   // be enabled.
