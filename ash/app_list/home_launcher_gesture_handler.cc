@@ -42,7 +42,7 @@ constexpr base::TimeDelta kAnimationDurationMs =
 // The animation speed at which the window moves when a window is acitvated from
 // the shelf, or deacitvated via home launcher button minimize.
 constexpr base::TimeDelta kActivationChangedAnimationDurationMs =
-    base::TimeDelta::FromMilliseconds(600);
+    base::TimeDelta::FromMilliseconds(350);
 
 // The velocity the app list or shelf must be dragged in order to transition to
 // the next state regardless of where the gesture ends, measured in DIPs/event.
@@ -421,7 +421,8 @@ void HomeLauncherGestureHandler::UpdateSettings(
   settings->SetTransitionDuration(IsDragInProgress()
                                       ? kAnimationDurationMs
                                       : kActivationChangedAnimationDurationMs);
-  settings->SetTweenType(gfx::Tween::LINEAR);
+  settings->SetTweenType(IsDragInProgress() ? gfx::Tween::LINEAR
+                                            : gfx::Tween::FAST_OUT_SLOW_IN);
   settings->SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
