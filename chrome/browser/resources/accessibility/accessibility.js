@@ -250,6 +250,7 @@ cr.define('accessibility', function() {
       show.textContent = 'Show accessibility tree';
     }
     show.id = id + ':showTree';
+    show.setAttribute('aria-expanded', String(opt_refresh));
     show.addEventListener('click', requestTree.bind(this, data, show));
     return show;
   }
