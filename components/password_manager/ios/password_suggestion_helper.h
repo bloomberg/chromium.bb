@@ -64,6 +64,7 @@ retrieveSuggestionsWithFormName:(NSString*)formName
 // of other parameters.
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
                            fieldIdentifier:(NSString*)fieldIdentifier
+                                 fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                    frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame

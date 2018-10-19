@@ -330,6 +330,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formName
                          fieldIdentifier:fieldIdentifier
+                               fieldType:fieldType
                                     type:type
                                  frameID:frameID
                              isMainFrame:isMainFrame
@@ -408,8 +409,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   std::unique_ptr<password_manager::FillData> fillData =
       [self.suggestionHelper getFillDataForUsername:username];
 
-  if (!fillData)
+  if (!fillData) {
     completion();
+    return;
+  }
 
   [self.formHelper fillPasswordFormWithFillData:*fillData
                               completionHandler:^(BOOL success) {
