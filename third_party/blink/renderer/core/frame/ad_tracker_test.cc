@@ -94,6 +94,8 @@ class AdTrackerTest : public testing::Test {
                                    String(script_url));
   }
 
+  void DidExecuteScript() { ad_tracker_->DidExecuteScript(); }
+
   bool AnyExecutingScriptsTaggedAsAdResource() {
     return ad_tracker_->IsAdScriptInStack();
   }
@@ -158,6 +160,39 @@ TEST_F(AdTrackerTest, TopOfStackIncluded) {
   EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
 
   WillExecuteScript(ad_script_url);
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+}
+
+TEST_F(AdTrackerTest, AdStackFrameCounting) {
+  AppendToKnownAdScripts("https://example.com/ad.js");
+
+  WillExecuteScript("https://example.com/vanilla.js");
+  WillExecuteScript("https://example.com/vanilla.js");
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
+
+  WillExecuteScript("https://example.com/ad.js");
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+
+  DidExecuteScript();
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
+
+  WillExecuteScript("https://example.com/ad.js");
+  WillExecuteScript("https://example.com/ad.js");
+  WillExecuteScript("https://example.com/vanilla.js");
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+
+  DidExecuteScript();
+  DidExecuteScript();
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+
+  DidExecuteScript();
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
+
+  DidExecuteScript();
+  DidExecuteScript();
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
+
+  WillExecuteScript("https://example.com/ad.js");
   EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
 }
 

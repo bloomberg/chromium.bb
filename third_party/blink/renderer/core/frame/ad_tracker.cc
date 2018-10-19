@@ -67,9 +67,15 @@ void AdTracker::WillExecuteScript(ExecutionContext* execution_context,
                    ? false
                    : IsKnownAdScript(execution_context, script_url);
   stack_frame_is_ad_.push_back(is_ad);
+  if (is_ad)
+    num_ads_in_stack_ += 1;
 }
 
 void AdTracker::DidExecuteScript() {
+  if (stack_frame_is_ad_.back()) {
+    DCHECK_LT(0u, num_ads_in_stack_);
+    num_ads_in_stack_ -= 1;
+  }
   stack_frame_is_ad_.pop_back();
 }
 
@@ -127,6 +133,9 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
 }
 
 bool AdTracker::IsAdScriptInStack() {
+  if (num_ads_in_stack_ > 0)
+    return true;
+
   ExecutionContext* execution_context = GetCurrentExecutionContext();
   if (!execution_context)
     return false;
@@ -144,11 +153,6 @@ bool AdTracker::IsAdScriptInStack() {
   if (!top_script.IsEmpty() && IsKnownAdScript(execution_context, top_script))
     return true;
 
-  // Scan the pseudo-stack for ad scripts.
-  for (bool is_ad : stack_frame_is_ad_) {
-    if (is_ad)
-      return true;
-  }
   return false;
 }
 
