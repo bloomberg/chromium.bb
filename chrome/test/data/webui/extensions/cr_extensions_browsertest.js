@@ -539,7 +539,14 @@ TEST_F('CrExtensionsPackDialogTest', 'PackError', function() {
   this.runMochaTest(extension_pack_dialog_tests.TestNames.PackError);
 });
 
-TEST_F('CrExtensionsPackDialogTest', 'PackWarning', function() {
+// Temporarily disabling on Mac due to flakiness.
+// http://crbug.com/877109
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_PackWarning DISABLED_PackWarning');
+GEN('#else');
+GEN('#define MAYBE_PackWarning PackWarning');
+GEN('#endif');
+TEST_F('CrExtensionsPackDialogTest', 'MAYBE_PackWarning', function() {
   this.runMochaTest(extension_pack_dialog_tests.TestNames.PackWarning);
 });
 
