@@ -133,6 +133,18 @@ Polymer({
     autoSkipTimer_: undefined,
 
     /**
+     * This is called when locale is changed.
+     * @override
+     */
+    updateLocalizedContent: function() {
+      this.behaviors.forEach((behavior) => {
+        if (behavior.updateLocalizedContent)
+          behavior.updateLocalizedContent.call(this);
+      });
+      this.$.pinKeyboard.i18nUpdateLocale();
+    },
+
+    /**
      * Starts automatic skip timer.
      * @private
      */
