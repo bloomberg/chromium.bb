@@ -809,23 +809,23 @@ ParseResult ParseCddl(std::string& data) {
 void PrintCollapsed(int size, const char* text) {
   for (int i = 0; i < size; ++i, ++text) {
     if (*text == ' ' || *text == '\n') {
-      write(STDOUT_FILENO, " ", 1);
+      printf(" ");
       while (i < size && (*text == ' ' || *text == '\n')) {
         ++i;
         ++text;
       }
     }
     if (i < size) {
-      write(STDOUT_FILENO, text, 1);
+      printf("%c", *text);
     }
   }
-  write(STDOUT_FILENO, "\n", 1);
+  printf("\n");
 }
 
 void DumpAst(AstNode* node, int indent_level) {
   while (node) {
     for (int i = 0; i <= indent_level; ++i) {
-      write(STDOUT_FILENO, "--", 2);
+      printf("--");
     }
     switch (node->type) {
       case AstNode::Type::kRule:
