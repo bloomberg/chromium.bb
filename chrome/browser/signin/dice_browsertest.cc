@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
@@ -70,6 +71,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -303,9 +305,8 @@ std::unique_ptr<HttpResponse> HandleChromeSigninEmbeddedURL(
 }  // namespace FakeGaia
 
 class DiceBrowserTestBase : public InProcessBrowserTest,
-                            public OAuth2TokenService::Observer,
                             public AccountReconcilor::Observer,
-                            public SigninManagerBase::Observer {
+                            public identity::IdentityManager::Observer {
  protected:
   ~DiceBrowserTestBase() override {}
 
@@ -361,6 +362,11 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Returns the account tracker service.
   AccountTrackerService* GetAccountTrackerService() {
     return AccountTrackerServiceFactory::GetForProfile(browser()->profile());
+  }
+
+  // Returns the identity manager.
+  identity::IdentityManager* GetIdentityManager() {
+    return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
 
   // Returns the signin manager.
@@ -440,8 +446,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     InProcessBrowserTest::SetUpOnMainThread();
     https_server_.StartAcceptingConnections();
 
-    GetSigninManager()->AddObserver(this);
-    GetTokenService()->AddObserver(this);
+    GetIdentityManager()->AddObserver(this);
     // Wait for the token service to be ready.
     if (!GetTokenService()->AreAllCredentialsLoaded())
       WaitForClosure(&tokens_loaded_quit_closure_);
@@ -458,26 +463,9 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
 
   void TearDownOnMainThread() override {
-    GetSigninManager()->RemoveObserver(this);
-    GetTokenService()->RemoveObserver(this);
+    GetIdentityManager()->RemoveObserver(this);
     AccountReconcilorFactory::GetForProfile(browser()->profile())
         ->RemoveObserver(this);
-  }
-
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
-    if (account_id == GetMainAccountID()) {
-      refresh_token_available_ = true;
-      RunClosureIfValid(std::move(refresh_token_available_quit_closure_));
-    }
-  }
-
-  void OnRefreshTokenRevoked(const std::string& account_id) override {
-    ++token_revoked_notification_count_;
-  }
-
-  void OnRefreshTokensLoaded() override {
-    RunClosureIfValid(std::move(tokens_loaded_quit_closure_));
   }
 
   // Calls |closure| if it is not null and resets it after.
@@ -535,10 +523,25 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
   void OnStartReconcile() override { ++reconcilor_started_count_; }
 
-  // SigninManagerBase::Observer
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override {
-    RunClosureIfValid(std::move(google_signin_succeeded_quit_closure_));
+  // identity::IdentityManager::Observer
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
+    RunClosureIfValid(std::move(on_primary_account_set_quit_closure_));
+  }
+
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override {
+    if (is_valid && account_info.account_id == GetMainAccountID()) {
+      refresh_token_available_ = true;
+      RunClosureIfValid(std::move(refresh_token_available_quit_closure_));
+    }
+  }
+
+  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+    ++token_revoked_notification_count_;
+  }
+
+  void OnRefreshTokensLoaded() override {
+    RunClosureIfValid(std::move(tokens_loaded_quit_closure_));
   }
 
   // Returns true if the account reconcilor is currently blocked.
@@ -561,8 +564,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   // Waits until the user is authenticated.
   void WaitForSigninSucceeded() {
-    if (GetSigninManager()->GetAuthenticatedAccountId().empty())
-      WaitForClosure(&google_signin_succeeded_quit_closure_);
+    if (GetIdentityManager()->GetPrimaryAccountId().empty())
+      WaitForClosure(&on_primary_account_set_quit_closure_);
   }
 
   // Waits for the ENABLE_SYNC request to hit the server, and unblocks the
@@ -624,7 +627,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   base::OnceClosure chrome_signin_embedded_quit_closure_;
   base::OnceClosure unblock_count_quit_closure_;
   base::OnceClosure tokens_loaded_quit_closure_;
-  base::OnceClosure google_signin_succeeded_quit_closure_;
+  base::OnceClosure on_primary_account_set_quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceBrowserTestBase);
 };
