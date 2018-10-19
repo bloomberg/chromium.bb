@@ -48,8 +48,7 @@ AppInstaller.USER_CANCELLED_ERROR_STR_ = 'User cancelled install';
 AppInstaller.prototype.install = function(callback) {
   this.callback_ = callback;
   this.delegate_.installWebstoreItem(
-      this.itemId_,
-      this.onInstallCompleted_.bind(this));
+      this.itemId_, this.onInstallCompleted_.bind(this));
 };
 
 /**
@@ -74,8 +73,7 @@ AppInstaller.prototype.onInstallCompleted_ = function(error) {
 
   var installerResult = AppInstaller.Result.SUCCESS;
   if (error !== null) {
-    installerResult =
-        error == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
+    installerResult = error == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
         AppInstaller.Result.CANCELLED :
         AppInstaller.Result.ERROR;
   }

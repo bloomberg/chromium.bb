@@ -47,7 +47,7 @@
 }
 
 .cws-widget-webstore-button {
-  color: #00f;
+  color: rgb(0, 0, 255);
   cursor: pointer;
   display: flex;
   height: 16px;

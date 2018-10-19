@@ -99,14 +99,10 @@
 // <include src="metadata/metadata_provider.js">
 // <include src="metadata/metadata_request.js">
 //
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/app_installer.js">
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_webview_client.js">
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container.js">
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container_error_dialog.js">
+// <include src="../../cws_widget/app_installer.js">
+// <include src="../../cws_widget/cws_webview_client.js">
+// <include src="../../cws_widget/cws_widget_container.js">
+// <include src="../../cws_widget/cws_widget_container_error_dialog.js">
 //
 // <include src="actions_controller.js">
 // <include src="actions_model.js">

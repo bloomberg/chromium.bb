@@ -11,11 +11,6 @@
 (function() {
 'use strict';
 
-// <include src="../cws_widget/app_installer.js">
-// <include src="../cws_widget/cws_webview_client.js">
-// <include src="../cws_widget/cws_widget_container.js">
-// <include src="../cws_widget/cws_widget_container_error_dialog.js">
-
 /**
  * @type {?{
  *   filter: !Object<*>,

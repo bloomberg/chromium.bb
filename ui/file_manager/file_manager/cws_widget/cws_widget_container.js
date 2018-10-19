@@ -154,8 +154,8 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
    * @const {string}
    * @private
    */
-  this.widgetOrigin_ = params.overrideCwsContainerOriginForTest ||
-      CWS_WIDGET_ORIGIN;
+  this.widgetOrigin_ =
+      params.overrideCwsContainerOriginForTest || CWS_WIDGET_ORIGIN;
 
   /**
    * Map of options for the widget.
@@ -202,8 +202,8 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
   this.resolveStart_ = null;
 
   /**
-   * Promise for retriving {@code this.accessToken_}.
-   * @type {Promise.<string>}
+   * Promise for retrieving {@code this.accessToken_}.
+   * @type {Promise<string>}
    * @private
    */
   this.tokenGetter_ = this.createTokenGetter_();
@@ -280,16 +280,14 @@ CWSWidgetContainer.prototype.getInitiallyFocusedElement = function() {
  * @private
  */
 CWSWidgetContainer.prototype.authorizeRequest_ = function(e) {
-  e.requestHeaders.push({
-    name: 'Authorization',
-    value: 'Bearer ' + this.accessToken_
-  });
+  e.requestHeaders.push(
+      {name: 'Authorization', value: 'Bearer ' + this.accessToken_});
   return /** @type {!BlockingResponse}*/ ({requestHeaders: e.requestHeaders});
 };
 
 /**
  * Retrieves the authorize token.
- * @return {Promise.<string>} The promise with the retrived access token.
+ * @return {Promise<string>} The promise with the retrieved access token.
  * @private
  */
 CWSWidgetContainer.prototype.createTokenGetter_ = function() {
@@ -308,7 +306,7 @@ CWSWidgetContainer.prototype.createTokenGetter_ = function() {
             reject('Error retrieving Web Store access token.');
             return;
           }
-          resolve(accessToken)
+          resolve(accessToken);
         });
   }.bind(this));
 };
@@ -341,15 +339,17 @@ CWSWidgetContainer.prototype.ready = function() {
 
     this.state_ = CWSWidgetContainer.State.GETTING_ACCESS_TOKEN;
 
-    this.tokenGetter_.then(function(accessToken) {
-      this.state_ = CWSWidgetContainer.State.ACCESS_TOKEN_READY;
-      this.accessToken_ = accessToken;
-      resolve();
-    }.bind(this), function(error) {
-      this.spinnerLayerController_.setVisible(false);
-      this.state_ = CWSWidgetContainer.State.UNINITIALIZED;
-      reject('Failed to get Web Store access token: ' + error);
-    }.bind(this));
+    this.tokenGetter_.then(
+        function(accessToken) {
+          this.state_ = CWSWidgetContainer.State.ACCESS_TOKEN_READY;
+          this.accessToken_ = accessToken;
+          resolve();
+        }.bind(this),
+        function(error) {
+          this.spinnerLayerController_.setVisible(false);
+          this.state_ = CWSWidgetContainer.State.UNINITIALIZED;
+          reject('Failed to get Web Store access token: ' + error);
+        }.bind(this));
   }.bind(this));
 };
 
@@ -359,7 +359,7 @@ CWSWidgetContainer.prototype.ready = function() {
  *
  * @param {!Object<*>} options Map of options for the dialog.
  * @param {?string} webStoreUrl Url for more results. Null if not supported.
- * @return {!Promise.<CWSWidgetContainer.ResolveReason>} Resolved when app
+ * @return {!Promise<CWSWidgetContainer.ResolveReason>} Resolved when app
  *     installation is done, or the installation is cancelled.
  */
 CWSWidgetContainer.prototype.start = function(options, webStoreUrl) {
@@ -384,11 +384,11 @@ CWSWidgetContainer.prototype.start = function(options, webStoreUrl) {
     this.options_ = options;
 
     this.webstoreButton_.hidden = !webStoreUrl;
-    this.webstoreButton_.classList.toggle('cws-widget-webstore-button',
-                                          !!webStoreUrl);
+    this.webstoreButton_.classList.toggle(
+        'cws-widget-webstore-button', !!webStoreUrl);
 
     this.webview_ =
-        /** @type {!WebView} */(this.document_.createElement('webview'));
+        /** @type {!WebView} */ (this.document_.createElement('webview'));
     this.webview_.id = 'cws-widget';
     this.webview_.partition = 'persist:cwswidgets';
     this.webview_.style.width = WEBVIEW_WIDTH + 'px';
@@ -412,23 +412,18 @@ CWSWidgetContainer.prototype.start = function(options, webStoreUrl) {
     this.spinnerLayerController_.setVisible(true);
 
     this.webviewClient_ = new CWSContainerClient(
-        this.webview_,
-        WEBVIEW_WIDTH,
-        WEBVIEW_HEIGHT,
-        this.widgetUrl_,
-        this.widgetOrigin_,
-        this.options_,
-        this.delegate_);
-    this.webviewClient_.addEventListener(CWSContainerClient.Events.LOADED,
-                                         this.onWidgetLoaded_.bind(this));
-    this.webviewClient_.addEventListener(CWSContainerClient.Events.LOAD_FAILED,
-                                         this.onWidgetLoadFailed_.bind(this));
+        this.webview_, WEBVIEW_WIDTH, WEBVIEW_HEIGHT, this.widgetUrl_,
+        this.widgetOrigin_, this.options_, this.delegate_);
+    this.webviewClient_.addEventListener(
+        CWSContainerClient.Events.LOADED, this.onWidgetLoaded_.bind(this));
+    this.webviewClient_.addEventListener(
+        CWSContainerClient.Events.LOAD_FAILED,
+        this.onWidgetLoadFailed_.bind(this));
     this.webviewClient_.addEventListener(
         CWSContainerClient.Events.REQUEST_INSTALL,
         this.onInstallRequest_.bind(this));
     this.webviewClient_.addEventListener(
-        CWSContainerClient.Events.INSTALL_DONE,
-        this.onInstallDone_.bind(this));
+        CWSContainerClient.Events.INSTALL_DONE, this.onInstallDone_.bind(this));
     this.webviewClient_.load();
   }.bind(this));
 };
@@ -545,8 +540,8 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
     this.spinnerLayerController_.setVisible(false);
 
   this.state_ = success ?
-                CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION :
-                CWSWidgetContainer.State.INITIALIZED;  // Back to normal state.
+      CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION :
+      CWSWidgetContainer.State.INITIALIZED;  // Back to normal state.
   this.webviewClient_.onInstallCompleted(success, this.installingItemId_);
   this.installedItemId_ = this.installingItemId_;
   this.installingItemId_ = null;
@@ -566,10 +561,7 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
       this.metricsRecorder_.recordInstall(
           CWSWidgetContainer.MetricsRecorder.INSTALL.FAILED);
       this.errorDialog_.show(
-          this.delegate_.strings.INSTALLATION_FAILED_MESSAGE,
-          null,
-          null,
-          null);
+          this.delegate_.strings.INSTALLATION_FAILED_MESSAGE, null, null, null);
       break;
   }
 };
@@ -586,7 +578,7 @@ CWSWidgetContainer.prototype.reportDone_ = function() {
 };
 
 /**
- * Finalizes the widget container state and returns the final app instalation
+ * Finalizes the widget container state and returns the final app installation
  * result. The widget should not be used after calling this. If called before
  * promise returned by {@code this.start} is resolved, the reported result will
  * be as if the widget was cancelled.
@@ -668,7 +660,7 @@ CWSWidgetContainer.prototype.finalizeAndGetResult = function() {
  * Resets the widget.
  * @private
  */
-CWSWidgetContainer.prototype.reset_ = function () {
+CWSWidgetContainer.prototype.reset_ = function() {
   if (this.state_ !== CWSWidgetContainer.State.UNINITIALIZED)
     console.error('Widget reset before its state was finalized.');
 
@@ -761,8 +753,8 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setElementToFocusOnHide =
  * @param {Event} e The key down event.
  * @private
  */
-CWSWidgetContainer.SpinnerLayerController.prototype.handleKeyDown_ =
-    function(e) {
+CWSWidgetContainer.SpinnerLayerController.prototype.handleKeyDown_ = function(
+    e) {
   if (!this.visible_)
     return;
   if (e.keyCode === 9 /* Tab */)
@@ -793,8 +785,8 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setAltText = function(
  * Shows or hides the spinner layer and handles the layer's opacity transition.
  * @param {boolean} visible Whether the layer should become visible.
  */
-CWSWidgetContainer.SpinnerLayerController.prototype.setVisible =
-    function(visible) {
+CWSWidgetContainer.SpinnerLayerController.prototype.setVisible = function(
+    visible) {
   if (this.visible_ === visible)
     return;
 
@@ -808,9 +800,9 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setVisible =
 
   if (this.visible_) {
     this.spinnerLayer_.focus();
-   } else if (this.focusOnHide_) {
-        this.focusOnHide_.focus();
-   }
+  } else if (this.focusOnHide_) {
+    this.focusOnHide_.focus();
+  }
 
   if (!this.visible_)
     this.spinnerLayer_.classList.add('cws-widget-hiding-spinner');

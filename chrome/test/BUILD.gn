@@ -440,7 +440,6 @@ test("browser_tests") {
       "//chrome/browser/resources/chromeos/zip_archiver/",
       "//chrome/browser/resources/chromeos/zip_archiver/test/",
       "//chromeos/test/data/",
-      "//components/chrome_apps/webstore_widget/cws_widget/",
       "//ui/file_manager/base/",
       "//ui/file_manager/file_manager/",
       "//ui/file_manager/gallery/",

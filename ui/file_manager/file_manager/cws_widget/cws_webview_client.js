@@ -14,8 +14,8 @@
  * @constructor
  * @extends {cr.EventTarget}
  */
-function CWSContainerClient(webView, width, height, url, target, options,
-                            delegate) {
+function CWSContainerClient(
+    webView, width, height, url, target, options, delegate) {
   /** @private {!CWSWidgetContainerPlatformDelegate} */
   this.delegate_ = delegate;
   this.webView_ = webView;
@@ -168,11 +168,7 @@ CWSContainerClient.prototype.sendInstallDone_ = function(itemId) {
  * @private
  */
 CWSContainerClient.prototype.postInstallFailureMessage_ = function(itemId) {
-  var message = {
-    message: 'install_failure',
-    item_id: itemId,
-    v: 1
-  };
+  var message = {message: 'install_failure', item_id: itemId, v: 1};
 
   this.postMessage_(message);
 };
@@ -184,11 +180,7 @@ CWSContainerClient.prototype.postInstallFailureMessage_ = function(itemId) {
  * @private
  */
 CWSContainerClient.prototype.postInstallSuccessMessage_ = function(itemId) {
-  var message = {
-    message: 'install_success',
-    item_id: itemId,
-    v: 1
-  };
+  var message = {message: 'install_success', item_id: itemId, v: 1};
 
   this.postMessage_(message);
 };
@@ -210,29 +202,29 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
             return;
           }
           fulfill(items);
-    })
-  }.bind(this)).then(
-      (/**
-       * @param {!Array<string>} preinstalledExtensionIDs
-       */
-      function(preinstalledExtensionIDs) {
-        var message = {
-          message: 'initialize',
-          hl: this.delegate_.strings.UI_LOCALE,
-          width: this.width_,
-          height: this.height_,
-          preinstalled_items: preinstalledExtensionIDs,
-          v: 1
-        };
+        });
+  }.bind(this))
+      .then((/**
+              * @param {!Array<string>} preinstalledExtensionIDs
+              */
+             function(preinstalledExtensionIDs) {
+               var message = {
+                 message: 'initialize',
+                 hl: this.delegate_.strings.UI_LOCALE,
+                 width: this.width_,
+                 height: this.height_,
+                 preinstalled_items: preinstalledExtensionIDs,
+                 v: 1
+               };
 
-        if (this.options_) {
-          Object.keys(this.options_).forEach(function(key) {
-            message[key] = this.options_[key];
-          }.bind(this));
-        }
+               if (this.options_) {
+                 Object.keys(this.options_).forEach(function(key) {
+                   message[key] = this.options_[key];
+                 }.bind(this));
+               }
 
-        this.postMessage_(message);
-      }).bind(this));
+               this.postMessage_(message);
+             }).bind(this));
 };
 
 /**
@@ -270,8 +262,7 @@ CWSContainerClient.prototype.load = function() {
 CWSContainerClient.prototype.abort = function() {
   window.removeEventListener('message', this.onMessageBound_);
   this.webView_.removeEventListener('loadstop', this.onLoadStopBound_);
-  this.webView_.removeEventListener(
-      'loadabort', this.onLoadAbortBound_);
+  this.webView_.removeEventListener('loadabort', this.onLoadAbortBound_);
   this.webView_.stop();
 };
 
