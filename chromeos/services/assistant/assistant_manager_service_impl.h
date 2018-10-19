@@ -33,6 +33,7 @@
 namespace assistant_client {
 class AssistantManager;
 class AssistantManagerInternal;
+struct SpeakerIdEnrollmentUpdate;
 }  // namespace assistant_client
 
 namespace service_manager {
@@ -82,6 +83,12 @@ class AssistantManagerServiceImpl
   void SendUpdateSettingsUiRequest(
       const std::string& update,
       UpdateSettingsUiResponseCallback callback) override;
+  void StartSpeakerIdEnrollment(
+      bool skip_cloud_enrollment,
+      mojom::SpeakerIdEnrollmentClientPtr client) override;
+  void StopSpeakerIdEnrollment(
+      AssistantSettingsManager::StopSpeakerIdEnrollmentCallback callback)
+      override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
@@ -161,6 +168,9 @@ class AssistantManagerServiceImpl
   void HandleUpdateSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
       const std::string& result);
+  void HandleSpeakerIdEnrollmentUpdate(
+      const assistant_client::SpeakerIdEnrollmentUpdate& update);
+  void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
 
   void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
@@ -218,6 +228,8 @@ class AssistantManagerServiceImpl
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
+  mojom::SpeakerIdEnrollmentClientPtr speaker_id_enrollment_client_;
+
   Service* service_;  // unowned.
 
   base::Optional<std::string> arc_version_;
