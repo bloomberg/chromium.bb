@@ -34,10 +34,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Update popups based on current |state_|.
   void Update();
 
-  // Close all popups. Called from UiController when Notification Center is
-  // opened.
-  void MarkAllPopupsShown(bool animate);
-
   // Reset all popup positions. Called from PopupAlignmentDelegate when
   // alignment and work area might be changed.
   void ResetBounds();
@@ -159,6 +155,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   bool CloseTransparentPopups();
   void ClosePopupsOutsideWorkArea();
   void RemoveClosedPopupItems();
+
+  // Stops all the animation and closes all the popups immediately.
+  void CloseAllPopupsNow();
 
   // Collapse all existing popups. Return true if size of any popup is actually
   // changed.

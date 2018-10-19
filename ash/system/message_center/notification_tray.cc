@@ -399,14 +399,11 @@ int NotificationTray::tray_bubble_height_for_test() const {
 bool NotificationTray::ShowPopups() {
   if (IsMessageCenterVisible())
     return false;
-
-  popup_collection_->Update();
   return true;
 }
 
-void NotificationTray::HidePopups(bool animate) {
+void NotificationTray::HidePopups() {
   DCHECK(popup_collection_.get());
-  popup_collection_->MarkAllPopupsShown(animate);
 }
 
 // Private methods.

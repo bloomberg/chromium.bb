@@ -406,33 +406,26 @@ TEST_F(MessagePopupCollectionTest, UpdateContentsCausesPopupClose) {
   EXPECT_EQ(0u, GetPopupCounts());
 }
 
-TEST_F(MessagePopupCollectionTest, MarkAllPopupsShown) {
+TEST_F(MessagePopupCollectionTest, MessageCenterVisibility) {
+  // It only applies to a platform with MessageCenterView i.e. Chrome OS.
+  MessageCenter::Get()->SetHasMessageCenterView(true);
+
   for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i)
     AddNotification();
   AnimateUntilIdle();
 
   EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
-
-  popup_collection()->MarkAllPopupsShown(true /* animate */);
 
   EXPECT_EQ(3u, GetPopupCounts());
-  EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
+  EXPECT_EQ(3u, MessageCenter::Get()->GetPopupNotifications().size());
 
-  AnimateUntilIdle();
+  // The notification should be hidden when MessageCenterView is visible.
+  MessageCenter::Get()->SetVisibility(Visibility::VISIBILITY_MESSAGE_CENTER);
+  // It should not animate in order to show ARC++ notifications properly.
+  EXPECT_FALSE(IsAnimating());
 
-  EXPECT_EQ(0u, GetPopupCounts());
-  EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
-}
-
-TEST_F(MessagePopupCollectionTest, MarkAllPopupsShownWithoutAnimation) {
-  for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i)
-    AddNotification();
-  AnimateUntilIdle();
-
-  EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
-
-  popup_collection()->MarkAllPopupsShown(false /* animate */);
-
+  MessageCenter::Get()->SetVisibility(Visibility::VISIBILITY_TRANSIENT);
+  EXPECT_FALSE(IsAnimating());
   EXPECT_EQ(0u, GetPopupCounts());
   EXPECT_EQ(0u, MessageCenter::Get()->GetPopupNotifications().size());
 }
@@ -969,16 +962,9 @@ TEST_F(MessagePopupCollectionTest, HighPriorityNotificationShownAgain) {
   AnimateUntilIdle();
   EXPECT_EQ(1u, GetPopupCounts());
 
-  // The notification with system priority should not be dismissed by
-  // MarkAllPopupsShown.
-  popup_collection()->MarkAllPopupsShown(true /* animate */);
-  EXPECT_FALSE(IsAnimating());
-  EXPECT_EQ(1u, GetPopupCounts());
-
   // The notification should be hidden when MessageCenterView is visible.
   MessageCenter::Get()->SetVisibility(Visibility::VISIBILITY_MESSAGE_CENTER);
-  EXPECT_TRUE(IsAnimating());
-  AnimateUntilIdle();
+  EXPECT_FALSE(IsAnimating());
   EXPECT_EQ(0u, GetPopupCounts());
 
   // The notification should be shown again when MessageCenterView is hidden.

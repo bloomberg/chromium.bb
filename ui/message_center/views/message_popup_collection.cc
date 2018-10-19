@@ -47,6 +47,11 @@ void MessagePopupCollection::Update() {
 
   RemoveClosedPopupItems();
 
+  if (MessageCenter::Get()->IsMessageCenterVisible()) {
+    CloseAllPopupsNow();
+    return;
+  }
+
   if (animation_->is_animating()) {
     UpdateByAnimation();
     return;
@@ -70,31 +75,6 @@ void MessagePopupCollection::Update() {
   }
 
   DCHECK(state_ == State::IDLE || animation_->is_animating());
-}
-
-void MessagePopupCollection::MarkAllPopupsShown(bool animate) {
-  if (is_updating_)
-    return;
-  {
-    base::AutoReset<bool> reset(&is_updating_, true);
-
-    for (const auto& item : popup_items_)
-      MessageCenter::Get()->MarkSinglePopupAsShown(item.id, false);
-
-    ResetHotMode();
-    state_ = State::IDLE;
-    animation_->End();
-  }
-
-  if (animate) {
-    // Restart animation for FADE_OUT.
-    Update();
-  } else {
-    // Mark "animating" the popups which is marked as shown.
-    MarkRemovedPopup();
-    // Remove the animating-marked popups immwdiately without animation.
-    CloseAnimatingPopups();
-  }
 }
 
 void MessagePopupCollection::ResetBounds() {
@@ -431,12 +411,6 @@ bool MessagePopupCollection::AddPopup() {
 }
 
 void MessagePopupCollection::MarkRemovedPopup() {
-  if (MessageCenter::Get()->IsMessageCenterVisible()) {
-    for (auto& item : popup_items_)
-      item.is_animating = true;
-    return;
-  }
-
   std::set<std::string> existing_ids;
   for (Notification* notification :
        MessageCenter::Get()->GetPopupNotifications()) {
@@ -529,6 +503,16 @@ void MessagePopupCollection::RemoveClosedPopupItems() {
   base::EraseIf(popup_items_, [](const auto& item) { return !item.popup; });
 }
 
+void MessagePopupCollection::CloseAllPopupsNow() {
+  for (auto& item : popup_items_)
+    item.is_animating = true;
+  CloseAnimatingPopups();
+
+  ResetHotMode();
+  state_ = State::IDLE;
+  animation_->End();
+}
+
 bool MessagePopupCollection::CollapseAllPopups() {
   bool changed = false;
   for (auto& item : popup_items_) {
@@ -546,9 +530,6 @@ bool MessagePopupCollection::CollapseAllPopups() {
 }
 
 bool MessagePopupCollection::HasAddedPopup() const {
-  if (MessageCenter::Get()->IsMessageCenterVisible())
-    return false;
-
   std::set<std::string> existing_ids;
   for (const auto& item : popup_items_)
     existing_ids.insert(item.id);
@@ -567,9 +548,6 @@ bool MessagePopupCollection::HasRemovedPopup() const {
        MessageCenter::Get()->GetPopupNotifications()) {
     existing_ids.insert(notification->id());
   }
-
-  if (MessageCenter::Get()->IsMessageCenterVisible())
-    return !popup_items_.empty();
 
   for (const auto& item : popup_items_) {
     if (!existing_ids.count(item.id))
