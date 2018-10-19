@@ -10,7 +10,7 @@ import("//build/util/process_version.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
-component("http_lib") {
+source_set("http_lib") {
   sources = [
     "http_service_impl.cc",
     "http_service_impl.h",
