@@ -25,6 +25,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_definition.h"
+#include "components/update_client/protocol_handler.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/task_traits.h"
@@ -216,7 +217,8 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
       BuildUpdateCheckExtraRequestHeaders(config_->GetProdId(),
                                           config_->GetBrowserVersion(),
                                           ids_checked_, is_foreground),
-      ProtocolSerializer::Create()->Serialize(request),
+      config_->GetProtocolHandlerFactory()->CreateSerializer()->Serialize(
+          request),
       config_->EnabledCupSigning(),
       base::BindOnce(&UpdateCheckerImpl::OnRequestSenderComplete,
                      base::Unretained(this)));
@@ -234,7 +236,7 @@ void UpdateCheckerImpl::OnRequestSenderComplete(
     return;
   }
 
-  auto parser = ProtocolParser::Create();
+  auto parser = config_->GetProtocolHandlerFactory()->CreateParser();
   if (!parser->Parse(response)) {
     VLOG(1) << "Parse failed " << parser->errors();
     UpdateCheckFailed(ErrorCategory::kUpdateCheck,

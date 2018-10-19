@@ -19,6 +19,7 @@
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/protocol_definition.h"
+#include "components/update_client/protocol_handler.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/utils.h"
@@ -93,12 +94,13 @@ void PingSender::SendPing(const Component& component, Callback callback) {
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       urls, {},
-      ProtocolSerializer::Create()->Serialize(MakeProtocolRequest(
-          component.session_id(), config_->GetProdId(),
-          config_->GetBrowserVersion().GetString(), config_->GetLang(),
-          config_->GetChannel(), config_->GetOSLongName(),
-          config_->GetDownloadPreference(), config_->ExtraRequestParams(),
-          nullptr, std::move(apps))),
+      config_->GetProtocolHandlerFactory()->CreateSerializer()->Serialize(
+          MakeProtocolRequest(
+              component.session_id(), config_->GetProdId(),
+              config_->GetBrowserVersion().GetString(), config_->GetLang(),
+              config_->GetChannel(), config_->GetOSLongName(),
+              config_->GetDownloadPreference(), config_->ExtraRequestParams(),
+              nullptr, std::move(apps))),
       false, base::BindOnce(&PingSender::SendPingComplete, this));
 }
 
