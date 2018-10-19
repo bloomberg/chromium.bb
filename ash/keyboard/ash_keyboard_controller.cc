@@ -13,10 +13,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/keyboard_util.h"
 
 using keyboard::mojom::KeyboardConfig;
 using keyboard::mojom::KeyboardConfigPtr;
+using keyboard::mojom::KeyboardEnableFlag;
 
 namespace ash {
 
@@ -41,7 +41,7 @@ void AshKeyboardController::BindRequest(
 }
 
 void AshKeyboardController::EnableKeyboard() {
-  if (!keyboard::IsKeyboardEnabled())
+  if (!keyboard_controller_->IsKeyboardEnableRequested())
     return;
 
   if (keyboard_controller_->IsEnabled()) {
@@ -103,11 +103,34 @@ void AshKeyboardController::SetKeyboardConfig(
   keyboard_controller_->UpdateKeyboardConfig(*keyboard_config);
 }
 
+void AshKeyboardController::IsKeyboardEnabled(
+    IsKeyboardEnabledCallback callback) {
+  std::move(callback).Run(keyboard_controller_->IsEnabled());
+}
+
+void AshKeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
+  bool was_enabled = keyboard_controller_->IsEnabled();
+  keyboard_controller_->SetEnableFlag(flag);
+  UpdateEnableFlag(was_enabled);
+}
+
+void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
+  bool was_enabled = keyboard_controller_->IsEnabled();
+  keyboard_controller_->ClearEnableFlag(flag);
+  UpdateEnableFlag(was_enabled);
+}
+
+void AshKeyboardController::ReloadKeyboard() {
+  // Test IsKeyboardEnableRequested in case of an unlikely edge case where this
+  // is called while after the enable state changed to disabled (in which case
+  // we do not want to override the requested state).
+  if (keyboard_controller_->IsKeyboardEnableRequested())
+    EnableKeyboard();
+}
+
 void AshKeyboardController::OnSessionStateChanged(
     session_manager::SessionState state) {
-  // NOTE: keyboard::IsKeyboardEnabled() is false in mash, but may not be in
-  // unit tests. crbug.com/646565.
-  if (!keyboard::IsKeyboardEnabled())
+  if (!keyboard_controller_->IsKeyboardEnableRequested())
     return;
 
   switch (state) {
@@ -134,6 +157,15 @@ void AshKeyboardController::ActivateKeyboard() {
     return;
   Shell::Get()->GetPrimaryRootWindowController()->ActivateKeyboard(
       keyboard_controller_.get());
+}
+
+void AshKeyboardController::UpdateEnableFlag(bool was_enabled) {
+  bool is_enabled = keyboard_controller_->IsKeyboardEnableRequested();
+  if (is_enabled && !was_enabled) {
+    EnableKeyboard();
+  } else if (!is_enabled && was_enabled) {
+    DisableKeyboard();
+  }
 }
 
 void AshKeyboardController::OnKeyboardConfigChanged() {

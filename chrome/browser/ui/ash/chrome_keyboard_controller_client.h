@@ -12,6 +12,12 @@
 #include "base/observer_list_types.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
+class Profile;
+
+namespace service_manager {
+class Connector;
+}
+
 // This class implements mojom::KeyboardControllerObserver and makes calls
 // into the mojom::KeyboardController service.
 class ChromeKeyboardControllerClient
@@ -29,11 +35,15 @@ class ChromeKeyboardControllerClient
   };
 
   // This class uses a static getter and only supports a single instance.
-  ChromeKeyboardControllerClient();
+  explicit ChromeKeyboardControllerClient(
+      service_manager::Connector* connector);
   ~ChromeKeyboardControllerClient() override;
 
   // Static getter. The single instance must be instantiated first.
   static ChromeKeyboardControllerClient* Get();
+
+  // Used in tests to determine whether this has been instantiated.
+  static bool HasInstance();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -43,6 +53,19 @@ class ChromeKeyboardControllerClient
 
   // Sets the new keyboard configuration and updates the cached config.
   void SetKeyboardConfig(const keyboard::mojom::KeyboardConfig& config);
+
+  // Sets/clears the privided keyboard enable state.
+  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& state);
+  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& state);
+
+  // Reloads the virtual keyboard if enabled.
+  void ReloadKeyboard();
+
+  void FlushForTesting();
+
+  bool is_keyboard_enabled() { return is_keyboard_enabled_; }
+
+  void set_profile_for_test(Profile* profile) { profile_for_test_ = profile; }
 
  private:
   void OnGetInitialKeyboardConfig(keyboard::mojom::KeyboardConfigPtr config);
@@ -54,6 +77,9 @@ class ChromeKeyboardControllerClient
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
 
+  // Returns either the test profile or the active user profile.
+  Profile* GetProfile();
+
   ash::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
   mojo::AssociatedBinding<ash::mojom::KeyboardControllerObserver>
       keyboard_controller_observer_binding_{this};
@@ -61,7 +87,12 @@ class ChromeKeyboardControllerClient
   // Cached copy of the latest config provided by mojom::KeyboardController.
   keyboard::mojom::KeyboardConfigPtr cached_keyboard_config_;
 
+  // Tracks the enabled state of the keyboard.
+  bool is_keyboard_enabled_ = false;
+
   base::ObserverList<Observer> observers_;
+
+  Profile* profile_for_test_ = nullptr;
 
   base::WeakPtrFactory<ChromeKeyboardControllerClient> weak_ptr_factory_{this};
 

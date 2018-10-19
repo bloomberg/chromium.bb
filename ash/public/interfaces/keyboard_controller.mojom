@@ -6,11 +6,13 @@ module ash.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/keyboard/public/keyboard_config.mojom";
+import "ui/keyboard/public/keyboard_enable_flag.mojom";
 
 interface KeyboardControllerObserver {
-  // Called when the keyboard is enabled or disabled. If the keyboard is enabled
-  // while already enabled, this will be called twice, once when the keyboard is
-  // disabled and again when it is re-enabled.
+  // Called when the keyboard is enabled or disabled. If ReloadKeyboard() is
+  // called or other code enables the keyboard while already enabled, this will
+  // be called twice, once when the keyboard is disabled and again when it is
+  // re-enabled.
   OnKeyboardEnabledChanged(bool is_enabled);
 
   // Called when the virtual keyboard configuration changes.
@@ -30,6 +32,20 @@ interface KeyboardController {
 
   // Sets the current keyboard configuration.
   SetKeyboardConfig(keyboard.mojom.KeyboardConfig config);
+
+  // Returns whether the virtual keyboard has been enabled.
+  IsKeyboardEnabled() => (bool enabled);
+
+  // Sets the provided keyboard enable flag. If the computed enabled state
+  // changes, enables or disables the keyboard to match the new state.
+  SetEnableFlag(keyboard.mojom.KeyboardEnableFlag flag);
+
+  // Clears the privided keyboard enable flag. If the computed enabled state
+  // changes, enables or disables the keyboard to match the new state.
+  ClearEnableFlag(keyboard.mojom.KeyboardEnableFlag flag);
+
+  // Reloads the virtual keyboard if it is enabled.
+  ReloadKeyboard();
 
   // Adds a KeyboardControllerObserver.
   AddObserver(associated KeyboardControllerObserver observer);

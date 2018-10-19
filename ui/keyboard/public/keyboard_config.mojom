@@ -4,7 +4,7 @@
 
 module keyboard.mojom;
 
-// Determines how the keyboard overscroll enabled state is set,
+// Determines how the keyboard overscroll enabled state is set.
 enum KeyboardOverscrollBehavior {
   // Use the default behavior.
   kDefault,

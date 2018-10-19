@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -400,6 +401,68 @@ bool KeyboardController::UpdateKeyboardConfig(
   if (IsEnabled())
     NotifyKeyboardConfigChanged();
   return true;
+}
+
+void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
+  if (!base::ContainsKey(keyboard_enable_flags_, flag))
+    keyboard_enable_flags_.insert(flag);
+
+  // If there is a flag that is mutually exclusive with |flag|, clear it.
+  using mojom::KeyboardEnableFlag;
+  switch (flag) {
+    case KeyboardEnableFlag::kPolicyEnabled:
+      keyboard_enable_flags_.erase(KeyboardEnableFlag::kPolicyDisabled);
+      break;
+    case KeyboardEnableFlag::kPolicyDisabled:
+      keyboard_enable_flags_.erase(KeyboardEnableFlag::kPolicyEnabled);
+      break;
+    case KeyboardEnableFlag::kExtensionEnabled:
+      keyboard_enable_flags_.erase(KeyboardEnableFlag::kExtensionDisabled);
+      break;
+    case KeyboardEnableFlag::kExtensionDisabled:
+      keyboard_enable_flags_.erase(KeyboardEnableFlag::kExtensionEnabled);
+      break;
+    default:
+      break;
+  }
+}
+
+void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
+  keyboard_enable_flags_.erase(flag);
+}
+
+bool KeyboardController::IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const {
+  return base::ContainsKey(keyboard_enable_flags_, flag);
+}
+
+bool KeyboardController::IsKeyboardEnableRequested() const {
+  using mojom::KeyboardEnableFlag;
+  // Accessibility setting prioritized over policy/arc overrides.
+  if (IsEnableFlagSet(KeyboardEnableFlag::kAccessibilityEnabled))
+    return true;
+
+  // Keyboard can be enabled temporarily by the shelf.
+  if (IsEnableFlagSet(KeyboardEnableFlag::kShelfEnabled))
+    return true;
+
+  if (IsEnableFlagSet(KeyboardEnableFlag::kAndroidDisabled) ||
+      IsEnableFlagSet(KeyboardEnableFlag::kPolicyDisabled)) {
+    return false;
+  }
+  if (IsEnableFlagSet(KeyboardEnableFlag::kPolicyEnabled))
+    return true;
+
+  // Command line overrides extension and touch enabled flags.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVirtualKeyboard)) {
+    return true;
+  }
+
+  if (IsEnableFlagSet(KeyboardEnableFlag::kExtensionDisabled))
+    return false;
+
+  return IsEnableFlagSet(KeyboardEnableFlag::kExtensionEnabled) ||
+         IsEnableFlagSet(KeyboardEnableFlag::kTouchEnabled);
 }
 
 bool KeyboardController::IsKeyboardOverscrollEnabled() const {
