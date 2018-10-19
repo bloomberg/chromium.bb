@@ -177,7 +177,7 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
 
   if (!have_context) {
     texture_object_map.ForEach(
-        [api](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
+        [](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
           texture->MarkContextLost();
         });
     for (const auto& pair : texture_shared_image_map) {
