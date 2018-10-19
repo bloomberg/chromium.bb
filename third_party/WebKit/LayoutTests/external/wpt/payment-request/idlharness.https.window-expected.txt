@@ -41,7 +41,6 @@ PASS PaymentAddress interface: operation toJSON()
 PASS PaymentAddress interface: attribute city
 PASS PaymentAddress interface: attribute country
 PASS PaymentAddress interface: attribute dependentLocality
-PASS PaymentAddress interface: attribute languageCode
 PASS PaymentAddress interface: attribute organization
 PASS PaymentAddress interface: attribute phone
 PASS PaymentAddress interface: attribute postalCode
