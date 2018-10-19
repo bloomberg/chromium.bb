@@ -145,6 +145,14 @@ class PaintOpHelper {
             << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
+      case PaintOpType::DrawSkottie: {
+        const auto* op = static_cast<const DrawSkottieOp*>(base_op);
+        str << "DrawSkottieOp("
+            << "skottie=" << PaintOpHelper::SkottieToString(op->skottie)
+            << ", dst=" << PaintOpHelper::SkiaTypeToString(op->dst)
+            << ", t=" << op->t << ")";
+        break;
+      }
       case PaintOpType::DrawTextBlob: {
         const auto* op = static_cast<const DrawTextBlobOp*>(base_op);
         str << "DrawTextBlobOp(blob="
@@ -507,6 +515,18 @@ class PaintOpHelper {
 
   static std::string ImageToString(const PaintImage& image) {
     return "<paint image>";
+  }
+
+  static std::string SkottieToString(scoped_refptr<SkottieWrapper> skottie) {
+    std::ostringstream str;
+    str << "<skottie [";
+    str << "duration=" << skottie->duration() << " seconds";
+    str << ", width="
+        << PaintOpHelper::SkiaTypeToString(skottie->size().width());
+    str << ", height="
+        << PaintOpHelper::SkiaTypeToString(skottie->size().height());
+    str << "]";
+    return str.str();
   }
 
   static std::string RecordToString(const sk_sp<const PaintRecord>& record) {

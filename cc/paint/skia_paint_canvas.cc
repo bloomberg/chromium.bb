@@ -303,6 +303,12 @@ void SkiaPaintCanvas::drawImageRect(const PaintImage& image,
   FlushAfterDrawIfNeeded();
 }
 
+void SkiaPaintCanvas::drawSkottie(scoped_refptr<SkottieWrapper> skottie,
+                                  const SkRect& dst,
+                                  float t) {
+  skottie->Draw(canvas_, t, dst);
+}
+
 void SkiaPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                                    SkScalar x,
                                    SkScalar y,

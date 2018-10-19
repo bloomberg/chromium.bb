@@ -15,10 +15,13 @@ SkottieWrapper::SkottieWrapper(
   TRACE_EVENT0("cc", "SkottieWrapper Parse");
   SkMemoryStream sk_stream(data_stream->front(), data_stream->size());
   animation_ = skottie::Animation::Make(&sk_stream);
+  DCHECK(animation_);
 }
 
 SkottieWrapper::SkottieWrapper(std::unique_ptr<SkMemoryStream> stream)
-    : animation_(skottie::Animation::Make(stream.get())) {}
+    : animation_(skottie::Animation::Make(stream.get())) {
+  DCHECK(animation_);
+}
 
 SkottieWrapper::~SkottieWrapper() {}
 

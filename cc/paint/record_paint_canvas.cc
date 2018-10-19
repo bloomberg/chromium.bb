@@ -8,6 +8,7 @@
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
@@ -261,6 +262,12 @@ void RecordPaintCanvas::drawImageRect(const PaintImage& image,
                                       const PaintFlags* flags,
                                       SrcRectConstraint constraint) {
   list_->push<DrawImageRectOp>(image, src, dst, flags, constraint);
+}
+
+void RecordPaintCanvas::drawSkottie(scoped_refptr<SkottieWrapper> skottie,
+                                    const SkRect& dst,
+                                    float t) {
+  list_->push<DrawSkottieOp>(std::move(skottie), dst, t);
 }
 
 void RecordPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,

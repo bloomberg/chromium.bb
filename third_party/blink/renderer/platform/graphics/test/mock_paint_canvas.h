@@ -12,6 +12,10 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 
+namespace cc {
+class SkottieWrapper;
+}  // namespace cc
+
 namespace blink {
 
 class MockPaintCanvas : public cc::PaintCanvas {
@@ -76,6 +80,10 @@ class MockPaintCanvas : public cc::PaintCanvas {
                     const SkRect& dst,
                     const PaintFlags* flags,
                     SrcRectConstraint constraint));
+  MOCK_METHOD3(drawSkottie,
+               void(scoped_refptr<cc::SkottieWrapper> skottie,
+                    const SkRect& dst,
+                    float t));
   MOCK_METHOD4(drawBitmap,
                void(const SkBitmap& bitmap,
                     SkScalar left,

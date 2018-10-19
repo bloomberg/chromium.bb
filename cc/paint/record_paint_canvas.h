@@ -84,7 +84,9 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
                      const SkRect& dst,
                      const PaintFlags* flags,
                      SrcRectConstraint constraint) override;
-
+  void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
+                   const SkRect& dst,
+                   float t) override;
   void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                     SkScalar x,
                     SkScalar y,

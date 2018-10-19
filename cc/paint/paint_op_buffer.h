@@ -22,6 +22,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -82,6 +83,7 @@ enum class PaintOpType : uint8_t {
   DrawRecord,
   DrawRect,
   DrawRRect,
+  DrawSkottie,
   DrawTextBlob,
   Noop,
   Restore,
@@ -693,6 +695,29 @@ class CC_PAINT_EXPORT DrawRRectOp final : public PaintOpWithFlags {
 
  private:
   DrawRRectOp() : PaintOpWithFlags(kType) {}
+};
+
+class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
+ public:
+  static constexpr PaintOpType kType = PaintOpType::DrawSkottie;
+  static constexpr bool kIsDrawOp = true;
+  DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie, SkRect dst, float t);
+  ~DrawSkottieOp();
+  static void Raster(const DrawSkottieOp* op,
+                     SkCanvas* canvas,
+                     const PlaybackParams& params);
+  bool IsValid() const {
+    return !!skottie && !dst.isEmpty() && t >= 0 && t <= 1.f;
+  }
+  static bool AreEqual(const PaintOp* left, const PaintOp* right);
+  HAS_SERIALIZATION_FUNCTIONS();
+
+  scoped_refptr<SkottieWrapper> skottie;
+  SkRect dst;
+  float t;
+
+ private:
+  DrawSkottieOp();
 };
 
 class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
