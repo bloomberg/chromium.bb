@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -28,15 +30,17 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
-using content::BrowserContext;
-
-// Mock listener used by test below.
 class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
  public:
   MockSelectFileDialogListener()
@@ -50,7 +54,7 @@ class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
   base::FilePath path() const { return path_; }
   void* params() const { return params_; }
 
-  // ui::SelectFileDialog::Listener implementation.
+  // ui::SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override {
@@ -119,6 +123,17 @@ class SelectFileDialogExtensionBrowserTest
     extensions::ExtensionBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Ash tablet mode does not automatically enable the virtual keyboard, so
+    // force the virtual keyboard via the command line for tablet mode tests.
+    const char* test_name =
+        ::testing::UnitTest::GetInstance()->current_test_info()->name();
+    if (base::StringPiece(test_name).ends_with("_TabletMode"))
+      command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
+
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
+  }
+
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
     CHECK(profile());
@@ -152,6 +167,36 @@ class SelectFileDialogExtensionBrowserTest
     int js_error_count = 0;
     ASSERT_TRUE(value->GetAsInteger(&js_error_count));
     ASSERT_EQ(0, js_error_count);
+  }
+
+  void ClickElement(const std::string& selector) {
+    content::RenderFrameHost* frame_host =
+        dialog_->GetRenderViewHost()->GetMainFrame();
+
+    auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+    CHECK(web_contents);
+
+    int x;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        web_contents,
+        "var bounds = document.querySelector('" + selector +
+            "').getBoundingClientRect();"
+            "domAutomationController.send("
+            "    Math.floor(bounds.left + bounds.width / 2));",
+        &x));
+
+    int y;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+        web_contents,
+        "var bounds = document.querySelector('" + selector +
+            "').getBoundingClientRect();"
+            "domAutomationController.send("
+            "    Math.floor(bounds.top + bounds.height / 2));",
+        &y));
+
+    LOG(INFO) << "ClickElement " << selector << " (" << x << "," << y << ")";
+    constexpr auto kButton = blink::WebMouseEvent::Button::kLeft;
+    content::SimulateMouseClickAt(web_contents, 0, kButton, gfx::Point(x, y));
   }
 
   void OpenDialog(ui::SelectFileDialog::Type dialog_type,
@@ -360,6 +405,37 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_FALSE(listener_->canceled());
   ASSERT_EQ(test_file, listener_->path());
   ASSERT_EQ(this, listener_->params());
+}
+
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
+                       SelectFileVirtualKeyboard_TabletMode) {
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+
+  // Setup tablet mode.
+  test::SetAndWaitForTabletMode(true);
+
+  // Enable the virtual keyboard.
+  ash::mojom::ShellTestApiPtr shell_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
+  waiter.EnableVirtualKeyboard();
+
+  // Open the file dialog to save a file, providing a suggested file path.
+  // Ensure the "Save" button is enabled by waiting for notification from
+  // chrome.test.sendMessage().
+  const base::FilePath test_file =
+      downloads_dir_.AppendASCII("file_manager_save.html");
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
+                                     test_file, owning_window, "dialog-ready"));
+
+  // Click the dialog's filename input element.
+  ASSERT_NO_FATAL_FAILURE(ClickElement("#filename-input-textbox"));
+
+  // The virtual keyboard should be shown.
+  keyboard::WaitUntilShown();
+  ASSERT_TRUE(keyboard::IsKeyboardShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
