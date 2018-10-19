@@ -219,6 +219,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       input_context.auto_capitalize = (input_method_private::AutoCapitalizeType)
           ConvertInputContextAutoCapitalize(context);
       input_context.spell_check = ConvertInputContextSpellCheck(context);
+      input_context.has_been_password = ConvertHasBeenPassword(context);
       input_context.should_do_learning = context.should_do_learning;
       input_context.focus_reason = input_method_private::ParseFocusReason(
           ConvertInputContextFocusReason(context));
@@ -340,6 +341,11 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     if (!GetKeyboardConfig().spell_check)
       return false;
     return ImeObserver::ConvertInputContextSpellCheck(input_context);
+  }
+
+  bool ConvertHasBeenPassword(
+      ui::IMEEngineHandlerInterface::InputContext input_context) {
+    return input_context.flags & ui::TEXT_INPUT_FLAG_HAS_BEEN_PASSWORD;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ImeObserverChromeOS);
