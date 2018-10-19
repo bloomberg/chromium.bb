@@ -22,7 +22,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <array>
 #include <string>
+#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -597,7 +599,7 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
   EXPECT_EQ(2U, most_visited_urls_[3].redirects.size());
 }
 
-TEST_F(HistoryServiceTest, TopHosts) {
+TEST_F(HistoryServiceTest, TopHostsMultipleHosts) {
   ASSERT_TRUE(history_service_.get());
 
   const std::string top_host0_espn_host_name = "espn.com";
@@ -608,91 +610,163 @@ TEST_F(HistoryServiceTest, TopHosts) {
   const int top_host1_google_host_count = 3;
   const int top_host2_cnn_host_count = 2;
 
-  const GURL url0_espn0("http://www.espn.com/");
-  const GURL url1_google0("http://www.google.com/url1/google0");
-  const GURL url2_google1("http://www.google.com/url2/google1");
-  const GURL url3_google2("http://www.google.com/url3/google2");
-  const GURL url4_espn1("http://www.espn.com/");
-  const GURL url5_cnn0("http://www.cnn.com/url5/cnn0");
-  const GURL url6_espn2("http://www.espn.com/");
-  const GURL url7_cnn1("http://www.cnn.com/url7/cnn1");
-  const GURL url8_espn3("http://www.espn.com/");
+  std::array<GURL, 9> unfiltered_pages{GURL("http://www.espn.com/"),
+                                       GURL("http://www.google.com/google0/"),
+                                       GURL("http://www.google.com/google1/"),
+                                       GURL("http://www.google.com/google2/"),
+                                       GURL("http://www.espn.com/"),
+                                       GURL("http://www.cnn.com/cnn0/"),
+                                       GURL("http://www.espn.com/"),
+                                       GURL("http://www.cnn.com/cnn1/"),
+                                       GURL("http://www.espn.com/")};
 
-  const GURL url9_espn4_expired("http://www.espn.com/");
-  const GURL url10_google3_expired("http://www.espn.com/url10/google3");
+  std::array<GURL, 3> filtered_pages{GURL("http://www.espn.com/"),
+                                     GURL("http://www.google.com/google3/"),
+                                     GURL("http://www.cnn.com/cnn2/")};
 
-  const GURL url11_espn5_reload("http://www.espn.com/");
-  const GURL url12_google4_reload("http://www.espn.com/url12/google4");
+  // Expired time
+  const base::Time expired_time =
+      std::max(base::Time::Now() - base::TimeDelta::FromDays(31), base::Time());
 
   const ContextID context_id = reinterpret_cast<ContextID>(1);
 
-  // Add unexpired pages.
-  history_service_->AddPage(url0_espn0, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url1_google0, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url2_google1, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url3_google2, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url4_espn1, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url5_cnn0, base::Time::Now(), context_id, 0, GURL(),
-                            history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
-                            history::SOURCE_BROWSED, false);
-  history_service_->AddPage(url6_espn2, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url7_cnn1, base::Time::Now(), context_id, 0, GURL(),
-                            history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
-                            history::SOURCE_BROWSED, false);
-  history_service_->AddPage(url8_espn3, base::Time::Now(), context_id, 0,
-                            GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
+  base::HistogramTester histogram_tester;
+
+  // Add unfiltered pages.
+  for (const auto& unfiltered_page : unfiltered_pages) {
+    history_service_->AddPage(unfiltered_page, base::Time::Now(), context_id, 0,
+                              GURL(), history::RedirectList(),
+                              ui::PAGE_TRANSITION_TYPED,
+                              history::SOURCE_BROWSED, false);
+  }
 
   // Add expired pages.
-  base::Time thirty_one_days_ago =
-      std::max(base::Time::Now() - base::TimeDelta::FromDays(31), base::Time());
-  history_service_->AddPage(url9_espn4_expired, thirty_one_days_ago, context_id,
-                            0, GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url10_google3_expired, thirty_one_days_ago,
-                            context_id, 0, GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-                            false);
+  for (const auto& filtered_page : filtered_pages) {
+    history_service_->AddPage(filtered_page, expired_time, context_id, 0,
+                              GURL(), history::RedirectList(),
+                              ui::PAGE_TRANSITION_TYPED,
+                              history::SOURCE_BROWSED, false);
+  }
 
   // Add reload pages.
-  history_service_->AddPage(url11_espn5_reload, base::Time::Now(), context_id,
-                            0, GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_RELOAD, history::SOURCE_BROWSED,
-                            false);
-  history_service_->AddPage(url12_google4_reload, base::Time::Now(), context_id,
-                            0, GURL(), history::RedirectList(),
-                            ui::PAGE_TRANSITION_RELOAD, history::SOURCE_BROWSED,
-                            false);
+  for (const auto& filtered_page : filtered_pages) {
+    history_service_->AddPage(filtered_page, base::Time::Now(), context_id, 0,
+                              GURL(), history::RedirectList(),
+                              ui::PAGE_TRANSITION_RELOAD,
+                              history::SOURCE_BROWSED, false);
+  }
 
   GetTopHosts();
 
   ASSERT_EQ(3U, top_hosts_list_.size());
+
   EXPECT_EQ(top_host0_espn_host_name, top_hosts_list_[0].first);
   EXPECT_EQ(top_host1_google_host_name, top_hosts_list_[1].first);
   EXPECT_EQ(top_host2_cnn_host_name, top_hosts_list_[2].first);
+
   EXPECT_EQ(top_host0_espn_host_count, top_hosts_list_[0].second);
   EXPECT_EQ(top_host1_google_host_count, top_hosts_list_[1].second);
   EXPECT_EQ(top_host2_cnn_host_count, top_hosts_list_[2].second);
+
+  // Add unfiltered pages.
+  for (const auto& unfiltered_page : unfiltered_pages) {
+    history_service_->AddPage(unfiltered_page, base::Time::Now(), context_id, 0,
+                              GURL(), history::RedirectList(),
+                              ui::PAGE_TRANSITION_TYPED,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  // Add reload pages.
+  for (const auto& filtered_page : filtered_pages) {
+    history_service_->AddPage(filtered_page, base::Time::Now(), context_id, 0,
+                              GURL(), history::RedirectList(),
+                              ui::PAGE_TRANSITION_RELOAD,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  // Add random url page that does not appear in the top hosts.
+  const std::string random_host_name = "random.com";
+  const int random_host_count = 1;
+  const GURL random_url("http://www.random.com/");
+  history_service_->AddPage(random_url, base::Time::Now(), context_id, 0,
+                            GURL(), history::RedirectList(),
+                            ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
+                            false);
+
+  // Call GetTopHosts again. This guarantees that the histograms are updated.
+  GetTopHosts();
+
+  histogram_tester.ExpectBucketCount("History.TopHostsVisitsByRank",
+                                     1 /* espn.com */,
+                                     top_host0_espn_host_count);
+  histogram_tester.ExpectBucketCount("History.TopHostsVisitsByRank",
+                                     2 /* google.com */,
+                                     top_host1_google_host_count);
+  histogram_tester.ExpectBucketCount("History.TopHostsVisitsByRank",
+                                     3 /* cnn.com */, top_host2_cnn_host_count);
+  histogram_tester.ExpectBucketCount("History.TopHostsVisitsByRank",
+                                     51 /* random.com */, random_host_count);
+
+  ASSERT_EQ(4U, top_hosts_list_.size());
+
+  EXPECT_EQ(top_host0_espn_host_name, top_hosts_list_[0].first);
+  EXPECT_EQ(top_host1_google_host_name, top_hosts_list_[1].first);
+  EXPECT_EQ(top_host2_cnn_host_name, top_hosts_list_[2].first);
+  EXPECT_EQ(random_host_name, top_hosts_list_[3].first);
+
+  EXPECT_EQ(top_host0_espn_host_count * 2, top_hosts_list_[0].second);
+  EXPECT_EQ(top_host1_google_host_count * 2, top_hosts_list_[1].second);
+  EXPECT_EQ(top_host2_cnn_host_count * 2, top_hosts_list_[2].second);
+  EXPECT_EQ(random_host_count, top_hosts_list_[3].second);
+}
+
+TEST_F(HistoryServiceTest, TopHostsVisitCountingByPageTransitionIsConsistent) {
+  ASSERT_TRUE(history_service_.get());
+
+  const GURL test_url("http://www.google.com/");
+
+  const ContextID context_id = reinterpret_cast<ContextID>(1);
+
+  base::HistogramTester histogram_tester;
+
+  // Walk all core page transition types, adding valid types to the testing
+  // vector.
+  std::vector<ui::PageTransition> page_transitions;
+  for (int page_transition_value = static_cast<int>(ui::PAGE_TRANSITION_FIRST);
+       page_transition_value <= static_cast<int>(ui::PAGE_TRANSITION_LAST_CORE);
+       ++page_transition_value) {
+    if (!ui::PageTransitionIsValidType(page_transition_value)) {
+      continue;
+    }
+
+    page_transitions.push_back(
+        ui::PageTransitionFromInt(page_transition_value));
+  }
+
+  for (auto page_transition : page_transitions) {
+    history_service_->AddPage(test_url, base::Time::Now(), context_id, 0,
+                              GURL(), history::RedirectList(), page_transition,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  GetTopHosts();
+
+  ASSERT_EQ(1U, top_hosts_list_.size());
+  int visit_count = top_hosts_list_[0].second;
+
+  for (auto page_transition : page_transitions) {
+    history_service_->AddPage(test_url, base::Time::Now(), context_id, 0,
+                              GURL(), history::RedirectList(), page_transition,
+                              history::SOURCE_BROWSED, false);
+  }
+
+  // Call GetTopHosts again. This guarantees that the histograms are updated.
+  GetTopHosts();
+
+  // Verify that the page transitions counted as top hosts via GetTopHosts()
+  // match those counted as top hosts in "History.TopHostVisitsByRank".
+  histogram_tester.ExpectBucketCount("History.TopHostsVisitsByRank", 1,
+                                     visit_count);
 }
 
 namespace {
