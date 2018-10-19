@@ -254,7 +254,7 @@ QueueingTimeEstimator::RunningAverage::RunningAverage(int size) {
 }
 
 int QueueingTimeEstimator::RunningAverage::GetStepsPerWindow() const {
-  return circular_buffer_.size();
+  return static_cast<int>(circular_buffer_.size());
 }
 
 void QueueingTimeEstimator::RunningAverage::Add(base::TimeDelta bin_value) {
