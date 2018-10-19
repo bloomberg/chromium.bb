@@ -162,12 +162,16 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
 }  // namespace
 
 // static
-void TabletModeWindowState::UpdateWindowPosition(
-    wm::WindowState* window_state) {
+void TabletModeWindowState::UpdateWindowPosition(wm::WindowState* window_state,
+                                                 bool animate) {
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
   if (bounds_in_parent == window_state->window()->GetTargetBounds())
     return;
-  window_state->SetBoundsDirect(bounds_in_parent);
+
+  if (animate)
+    window_state->SetBoundsDirectAnimated(bounds_in_parent);
+  else
+    window_state->SetBoundsDirect(bounds_in_parent);
 }
 
 TabletModeWindowState::TabletModeWindowState(aura::Window* window,

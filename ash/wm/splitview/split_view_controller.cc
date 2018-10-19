@@ -169,6 +169,9 @@ class SplitViewController::TabDraggedWindowObserver
     // destroyed due to all of its tabs are attaching into another window.
     dragged_window_->RemoveObserver(this);
     dragged_window_ = nullptr;
+
+    // Update the source window's bounds if applicable.
+    UpdateSourceWindowBoundsAfterDragEnds(window);
   }
 
   void OnWindowPropertyChanged(aura::Window* window,
@@ -182,10 +185,24 @@ class SplitViewController::TabDraggedWindowObserver
       dragged_window_ = nullptr;
       split_view_controller_->EndWindowDragImpl(window, desired_snap_position_,
                                                 last_location_in_screen_);
+
+      // Update the source window's bounds if applicable.
+      UpdateSourceWindowBoundsAfterDragEnds(window);
     }
   }
 
  private:
+  // The source window might have been scaled down during dragging, we should
+  // update its bounds to ensure it has the right bounds after the drag ends.
+  void UpdateSourceWindowBoundsAfterDragEnds(aura::Window* window) {
+    aura::Window* source_window =
+        window->GetProperty(ash::kTabDraggingSourceWindowKey);
+    if (source_window) {
+      TabletModeWindowState::UpdateWindowPosition(
+          wm::GetWindowState(source_window), /*animate=*/true);
+    }
+  }
+
   SplitViewController* split_view_controller_;
   aura::Window* dragged_window_;
   SplitViewController::SnapPosition desired_snap_position_;
@@ -538,7 +555,7 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
       // dimensions. Note: if split view is no longer constrained to tablet mode
       // this will be need to updated.
       TabletModeWindowState::UpdateWindowPosition(
-          wm::GetWindowState(insert_overview_window));
+          wm::GetWindowState(insert_overview_window), /*animate=*/false);
       InsertWindowToOverview(insert_overview_window);
     }
   }
@@ -1500,6 +1517,12 @@ void SplitViewController::EndWindowDragImpl(
       // dragging.
       wm::ActivateWindow(window);
       DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+
+      // Update the dragged window's bounds. It's possible that the dragged
+      // window's bounds was changed during dragging. Update its bounds after
+      // the drag ends to ensure it has the right bounds.
+      TabletModeWindowState::UpdateWindowPosition(wm::GetWindowState(window),
+                                                  /*animate=*/true);
     }
   } else {
     // Note SnapWindow() might put the previous window that was snapped at the

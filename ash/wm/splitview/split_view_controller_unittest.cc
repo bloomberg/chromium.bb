@@ -3132,6 +3132,115 @@ TEST_F(SplitViewTabDraggingTest, FlingTest) {
       source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
 }
 
+// Tests that in various cases, after the tab drag ends, the dragged window and
+// the source window should have correct bounds.
+TEST_F(SplitViewTabDraggingTest, BoundsTest) {
+  UpdateDisplay("600x600");
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> window2(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> window3(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  const gfx::Rect bounds1 = window1->bounds();
+  const gfx::Rect bounds2 = window2->bounds();
+  EXPECT_EQ(bounds1, bounds2);
+
+  // 1. If splitview is not active and the dragged window is the source window.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window1.get(), window1.get());
+  // Drag for a small distance.
+  DragWindowWithOffset(resizer.get(), 10, 10);
+  EXPECT_NE(window1->bounds(), bounds1);
+  CompleteDrag(std::move(resizer));
+  // The window should be maximized again and the bounds should restore to its
+  // maximized window size.
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  EXPECT_EQ(window1->bounds(), bounds1);
+
+  // 2. If splitview is not active and the dragged window is not the source
+  // window.
+  resizer = StartDrag(window1.get(), window2.get());
+  // a). Drag for a small distance.
+  DragWindowWithOffset(resizer.get(), 10, 10);
+  EXPECT_NE(window1->bounds(), bounds1);
+  EXPECT_EQ(window2->bounds(), bounds2);
+  // Now drag for a longer distance so that the source window scales down.
+  DragWindowTo(resizer.get(), gfx::Point(300, 200));
+  EXPECT_NE(window2->bounds(), bounds2);
+  CompleteDrag(std::move(resizer));
+  // As in this case the dragged window should merge back to source window,
+  // which we can't test here. We only test the source window's bounds restore
+  // to its maximized window size.
+  EXPECT_TRUE(window2->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_EQ(window2->bounds(), bounds2);
+  window2->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+
+  // b) Drag the window far enough so that the dragged window doesn't merge back
+  // into the source window.
+  resizer = StartDrag(window1.get(), window2.get());
+  DragWindowTo(resizer.get(), gfx::Point(300, 400));
+  EXPECT_NE(window1->bounds(), bounds1);
+  EXPECT_NE(window2->bounds(), bounds2);
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      window2->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_EQ(window1->bounds(), bounds1);
+  EXPECT_EQ(window2->bounds(), bounds2);
+
+  // 3. If splitview is active and the dragged window is the source window.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  const gfx::Rect snapped_bounds1 = window1->bounds();
+  const gfx::Rect snapped_bounds2 = window2->bounds();
+  resizer = StartDrag(window1.get(), window1.get());
+  // Drag the window for a small distance and release.
+  DragWindowWithOffset(resizer.get(), 10, 10);
+  EXPECT_NE(window1->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+  CompleteDrag(std::move(resizer));
+  EXPECT_EQ(window1->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+
+  // 4. If splitview is active and the dragged window is not the source window.
+  resizer = StartDrag(window3.get(), window1.get());
+  // a). Drag the window for a small distance and release.
+  DragWindowWithOffset(resizer.get(), 10, 10);
+  EXPECT_EQ(window1->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+  // Drag the window for a long distance (but is still in merge-back distance
+  // range), the source window should not scale down.
+  DragWindowTo(resizer.get(), gfx::Point(100, 200));
+  EXPECT_EQ(window1->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+  CompleteDrag(std::move(resizer));
+  // In this case |window3| is supposed to merge back its source window
+  // |window1|, so we only test the source window's bounds here.
+  EXPECT_EQ(window1->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+  EXPECT_TRUE(window1->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  window1->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+
+  // b). Drag the window far enough so that the dragged window doesn't merge
+  // back into its source window.
+  resizer = StartDrag(window3.get(), window1.get());
+  DragWindowTo(resizer.get(), gfx::Point(100, 400));
+  EXPECT_EQ(window1->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+  CompleteDrag(std::move(resizer));
+  EXPECT_FALSE(
+      window1->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  // |window3| replaced |window1| as the left snapped window.
+  EXPECT_EQ(window3->bounds(), snapped_bounds1);
+  EXPECT_EQ(window2->bounds(), snapped_bounds2);
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)

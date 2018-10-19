@@ -197,8 +197,10 @@ void TabletModeWindowManager::OnWindowBoundsChanged(
   if (!IsContainerWindow(window))
     return;
   // Reposition all non maximizeable windows.
-  for (auto& pair : window_state_map_)
-    pair.second->UpdateWindowPosition(wm::GetWindowState(pair.first));
+  for (auto& pair : window_state_map_) {
+    pair.second->UpdateWindowPosition(wm::GetWindowState(pair.first),
+                                      /*animate=*/false);
+  }
 }
 
 void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,

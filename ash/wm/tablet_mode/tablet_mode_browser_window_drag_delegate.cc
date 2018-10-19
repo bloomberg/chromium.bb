@@ -268,16 +268,6 @@ void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
     wm::GetWindowState(dragged_window_)->OnCompleteDrag(location_in_screen);
   else
     wm::GetWindowState(dragged_window_)->OnRevertDrag(location_in_screen);
-
-  // The source window might have been scaled during dragging, update its bounds
-  // to ensure it has the right bounds after the drag ends.
-  aura::Window* source_window =
-      dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
-  if (source_window && !wm::GetWindowState(source_window)->IsSnapped()) {
-    TabletModeWindowState::UpdateWindowPosition(
-        wm::GetWindowState(source_window));
-  }
-  windows_hider_.reset();
 }
 
 void TabletModeBrowserWindowDragDelegate::EndedWindowDrag(
