@@ -10,6 +10,7 @@
 #include "chrome/browser/data_reduction_proxy_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -71,6 +72,8 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
   CHECK(state_ == STATE_NONE);
+  DCHECK(!data_reduction_proxy::params::
+             IsIncludedInOnDeviceSafeBrowsingFieldTrial());
 
   // Save the redirect urls for possible malware detail reporting later.
   redirect_urls_.push_back(redirect_info.new_url);
@@ -152,6 +155,8 @@ void DataReductionProxyResourceThrottle::OnBlockingPageComplete(bool proceed) {
 
 SBThreatType DataReductionProxyResourceThrottle::CheckUrl() {
   SBThreatType result = safe_browsing::SB_THREAT_TYPE_SAFE;
+  DCHECK(!data_reduction_proxy::params::
+             IsIncludedInOnDeviceSafeBrowsingFieldTrial());
 
   // TODO(sgurun) Check for spdy proxy origin.
   if (request_->response_headers() == NULL)
