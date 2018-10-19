@@ -280,9 +280,6 @@ void FrameSinkManagerImpl::RequestCopyOfOutput(
                                   std::move(request));
 }
 
-void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceId& surface_id) {
-}
-
 void FrameSinkManagerImpl::OnFirstSurfaceActivation(
     const SurfaceInfo& surface_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

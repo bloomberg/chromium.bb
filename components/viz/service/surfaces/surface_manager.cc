@@ -126,8 +126,6 @@ Surface* SurfaceManager::CreateSurface(
     // is received, is added to prevent this from happening.
     AddTemporaryReference(surface_info.id());
 
-    for (auto& observer : observer_list_)
-      observer.OnSurfaceCreated(surface_info.id());
     return surface_map_[surface_info.id()].get();
   }
 
@@ -141,8 +139,6 @@ Surface* SurfaceManager::CreateSurface(
   surfaces_to_destroy_.erase(surface_info.id());
   SurfaceDiscarded(surface);
   surface->Reset(surface_client);
-  for (auto& observer : observer_list_)
-    observer.OnSurfaceCreated(surface_info.id());
   return surface;
 }
 
