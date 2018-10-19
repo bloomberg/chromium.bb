@@ -44,7 +44,7 @@ TaskWorklet* TaskWorklet::From(LocalDOMWindow& window) {
   return task_worklet;
 }
 
-static const size_t kMaxThreadCount = 4;
+static const size_t kMaxTaskWorkletThreads = 4;
 
 TaskWorklet::TaskWorklet(Document* document) : Worklet(document) {}
 
@@ -86,7 +86,7 @@ ThreadPoolThread* TaskWorklet::GetLeastBusyThread() {
       lowest_task_count = current_task_count;
     }
   }
-  if (proxies_.size() == kMaxThreadCount)
+  if (proxies_.size() == kMaxTaskWorkletThreads)
     return least_busy_thread;
   auto* proxy = static_cast<TaskWorkletMessagingProxy*>(CreateGlobalScope());
   proxies_.push_back(proxy);
@@ -100,11 +100,11 @@ ThreadPoolThread* TaskWorklet::GetLeastBusyThread() {
 // global scope creation, presumably because we don't have a way to replay
 // module loads from WorkletModuleResponsesMap yet.
 bool TaskWorklet::NeedsToCreateGlobalScope() {
-  return GetNumberOfGlobalScopes() < kMaxThreadCount;
+  return GetNumberOfGlobalScopes() < kMaxTaskWorkletThreads;
 }
 
 WorkletGlobalScopeProxy* TaskWorklet::CreateGlobalScope() {
-  DCHECK_LT(GetNumberOfGlobalScopes(), kMaxThreadCount);
+  DCHECK_LT(GetNumberOfGlobalScopes(), kMaxTaskWorkletThreads);
   TaskWorkletMessagingProxy* proxy =
       new TaskWorkletMessagingProxy(GetExecutionContext());
   proxy->Initialize(WorkerClients::Create(), ModuleResponsesMap(),
