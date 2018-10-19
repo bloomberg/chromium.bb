@@ -15,9 +15,12 @@
 
 namespace {
 
+using ::testing::get;
+using ::testing::tuple;
+
 class EdgeDetectBrightnessTest :
     // Parameters are (brightness, width, height).
-    public ::testing::TestWithParam<::std::tuple<int, int, int>> {};
+    public ::testing::TestWithParam<tuple<int, int, int> > {};
 
 /** Get the (x, y) value from the input; if i or j is outside of the width
  * or height, the nearest pixel value is returned.
@@ -59,8 +62,9 @@ static int stride_8tap(int width) { return width + 7; }
 TEST_P(EdgeDetectBrightnessTest, BlurUniformBrightness) {
   // For varying levels of brightness, the algorithm should
   // produce the same output.
-  int brightness, width, height;
-  std::tie(brightness, width, height) = GetParam();
+  const int brightness = get<0>(GetParam());
+  const int width = get<1>(GetParam());
+  const int height = get<2>(GetParam());
   uint8_t *orig = (uint8_t *)malloc(width * height);
   for (int i = 0; i < width * height; ++i) {
     orig[i] = brightness;
@@ -78,8 +82,9 @@ TEST_P(EdgeDetectBrightnessTest, BlurUniformBrightness) {
 
 // No edges on a uniformly bright image.
 TEST_P(EdgeDetectBrightnessTest, DetectUniformBrightness) {
-  int brightness, width, height;
-  std::tie(brightness, width, height) = GetParam();
+  const int brightness = get<0>(GetParam());
+  const int width = get<1>(GetParam());
+  const int height = get<2>(GetParam());
   uint8_t *orig = (uint8_t *)malloc(width * height);
   for (int i = 0; i < width * height; ++i) {
     orig[i] = brightness;
@@ -101,12 +106,12 @@ INSTANTIATE_TEST_CASE_P(ImageBrightnessTests, EdgeDetectBrightnessTest,
 
 class EdgeDetectImageTest :
     // Parameters are (width, height).
-    public ::testing::TestWithParam<::std::tuple<int, int>> {};
+    public ::testing::TestWithParam<tuple<int, int> > {};
 
 // Generate images with black on one side and white on the other.
 TEST_P(EdgeDetectImageTest, BlackWhite) {
-  int width, height;
-  std::tie(width, height) = GetParam();
+  const int width = get<0>(GetParam());
+  const int height = get<1>(GetParam());
   uint8_t *orig = (uint8_t *)malloc(width * height);
   for (int j = 0; j < height; ++j) {
     for (int i = 0; i < width; ++i) {
