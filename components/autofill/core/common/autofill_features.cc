@@ -151,12 +151,6 @@ const base::Feature kAutofillRationalizeRepeatedServerPredictions{
     "AutofillRationalizeRepeatedServerPredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether Full Server credit cards should be reset when the sync
-// service is in an auth error state.
-const base::Feature kAutofillResetFullServerCardsOnAuthError{
-    "AutofillResetFullServerCardsOnAuthError",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute
 // a form if there are signals to suggest that this might a checkout page.
