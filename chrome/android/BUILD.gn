@@ -996,6 +996,18 @@ template("chrome_shared_library") {
     if (chromium_linker_supported && use_lld) {
       configs += [ "//build/config/android:lld_pack_relocations" ]
     }
+    if (chromium_linker_supported && target_cpu != "mipsel" &&
+        target_cpu != "mipsel64") {
+      # By default, the static linker will create ELF executables with both
+      # SysV and GNU hash tables. Now that the chromium linker supports the
+      # GNU format, which is considerably smaller, ensure that the SysV one
+      # is never compiled in the final library. Note that MIPS platforms do
+      # not support the GNU format though.
+      if (!defined(ldflags)) {
+        ldflags = []
+      }
+      ldflags += [ "-Wl,--hash-style=gnu" ]
+    }
 
     public_configs = extra_chrome_shared_library_configs
     deps += extra_chrome_shared_library_deps
