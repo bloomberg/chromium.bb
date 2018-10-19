@@ -1706,6 +1706,22 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
     SetIsInTabDragging(resizer->GetTarget(), /*is_dragging=*/false);
   }
 
+  // Fling to end the drag. |resizer| will be deleted after exiting this
+  // function.
+  void Fling(std::unique_ptr<WindowResizer> resizer, float velocity_y) {
+    ASSERT_TRUE(resizer.get());
+    aura::Window* target_window = resizer->GetTarget();
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+    ui::GestureEventDetails details =
+        ui::GestureEventDetails(ui::ET_SCROLL_FLING_START, 0.f, velocity_y);
+    ui::GestureEvent event = ui::GestureEvent(
+        target_window->bounds().origin().x(),
+        target_window->bounds().origin().y(), ui::EF_NONE, timestamp, details);
+    ui::Event::DispatcherApi(&event).set_target(target_window);
+    resizer->FlingOrSwipe(&event);
+    SetIsInTabDragging(resizer->GetTarget(), /*is_dragging=*/false);
+  }
+
   std::unique_ptr<WindowResizer> CreateResizerForTest(
       aura::Window* window,
       const gfx::Point& point_in_parent,
@@ -3061,6 +3077,29 @@ TEST_F(SplitViewTabDraggingTest, DragWindowIntoPreviewAreaAndDropTarget) {
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
+}
+
+// Tests that if a fling event happens on a tab, the tab might or might not
+// merge back into the source window depending on the fling event velocity.
+TEST_F(SplitViewTabDraggingTest, FlingTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> dragged_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> source_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(dragged_window.get(), source_window.get());
+  ASSERT_TRUE(resizer.get());
+  Fling(std::move(resizer), /*velocity_y=*/3000.f);
+  EXPECT_FALSE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+
+  resizer = StartDrag(dragged_window.get(), source_window.get());
+  ASSERT_TRUE(resizer.get());
+  Fling(std::move(resizer), /*velocity_y=*/1000.f);
+  EXPECT_TRUE(
+      source_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
 }
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {

@@ -29,6 +29,7 @@ class TabletModeBrowserWindowDragDelegate
   void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
                         const gfx::Point& location_in_screen) override;
   void EndedWindowDrag(const gfx::Point& location_in_screen) override;
+  void StartFling(const ui::GestureEvent* event) override;
   bool ShouldOpenOverviewWhenDragStarts() override;
 
   // Scales down the source window if the dragged window is dragged past the
@@ -58,6 +59,11 @@ class TabletModeBrowserWindowDragDelegate
   // maximized window size, the dragged window can be merged back into the
   // source window.
   std::unique_ptr<ui::ImplicitAnimationObserver> source_window_bounds_observer_;
+
+  // True if the dragged window is capable of merging back to source window
+  // after drag ends. If it's false, it means the drag ends because of a fling
+  // event and the fling velocity has exceeded kFlingToStayAsNewWindowThreshold.
+  bool can_merge_back_to_source_window_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeBrowserWindowDragDelegate);
 };

@@ -86,6 +86,8 @@ class TabletModeWindowDragDelegate {
       wm::WmToplevelWindowEventHandler::DragResult result,
       const gfx::Point& location_in_screen) = 0;
   virtual void EndedWindowDrag(const gfx::Point& location_in_screen) = 0;
+  // Calls when a fling event starts.
+  virtual void StartFling(const ui::GestureEvent* event) = 0;
 
   // Returns true if we should open overview behind the dragged window when drag
   // starts.
