@@ -65,6 +65,7 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-incremental-dbg': 'android_incremental_debug_bot',
+      'android-jumbo-rel': 'android_jumbo_release_bot_minimal_symbols',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
       'android-marshmallow-arm64-rel': 'android_release_bot_minimal_symbols_arm64',
     },
@@ -894,6 +895,10 @@
 
     'android_incremental_debug_bot': [
       'android', 'incremental', 'debug_bot',
+    ],
+
+    'android_jumbo_release_bot_minimal_symbols': [
+      'android', 'jumbo', 'release_bot', 'minimal_symbols',
     ],
 
     'android_ndk_next_release_bot_minimal_symbols': [
