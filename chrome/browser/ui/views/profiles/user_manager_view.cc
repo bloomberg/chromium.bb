@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -278,9 +277,6 @@ void UserManagerProfileDialog::ShowReauthDialogWithProfilePath(
     const std::string& email,
     const base::FilePath& profile_path,
     signin_metrics::Reason reason) {
-  CHECK(signin_util::IsForceSigninEnabled() ||
-        reason != signin_metrics::Reason::REASON_UNLOCK)
-      << "Legacy supervised users are no longer supported.";
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa()) {
     return UserManagerProfileDialog::ShowReauthDialogWithProfilePathCocoa(

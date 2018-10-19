@@ -142,7 +142,6 @@ class UserManagerUIAuthenticatedUserBrowserTest
 
 IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest, Reauth) {
   Init();
-  signin_util::SetForceSigninForTesting(true);
   entry_->SetLocalAuthCredentials("1mock_credentials");
 
   LaunchAuthenticatedUser("email@mock.com");
