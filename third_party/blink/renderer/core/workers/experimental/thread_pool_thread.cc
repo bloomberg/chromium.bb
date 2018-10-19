@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool_thread.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/experimental/task_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -49,8 +50,9 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
 }  // anonymous namespace
 
 ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
-                                   ThreadedObjectProxyBase& object_proxy)
-    : WorkerThread(object_proxy) {
+                                   ThreadedObjectProxyBase& object_proxy,
+                                   ThreadBackingPolicy backing_policy)
+    : WorkerThread(object_proxy), backing_policy_(backing_policy) {
   DCHECK(parent_execution_context);
   worker_backing_thread_ = WorkerBackingThread::Create(
       ThreadCreationParams(GetThreadType())
@@ -59,7 +61,9 @@ ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
 
 WorkerOrWorkletGlobalScope* ThreadPoolThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
+  if (backing_policy_ == kWorker)
+    return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
+  return new TaskWorkletGlobalScope(std::move(creation_params), this);
 }
 
 }  // namespace blink

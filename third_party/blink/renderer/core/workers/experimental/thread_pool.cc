@@ -46,8 +46,8 @@ class ThreadPoolMessagingProxy final : public ThreadedMessagingProxyBase {
                            WorkerBackingThreadStartupData::CreateDefault());
   }
   std::unique_ptr<WorkerThread> CreateWorkerThread() override {
-    return std::make_unique<ThreadPoolThread>(GetExecutionContext(),
-                                              *object_proxy_.get());
+    return std::make_unique<ThreadPoolThread>(
+        GetExecutionContext(), *object_proxy_.get(), ThreadPoolThread::kWorker);
   }
 
   ThreadPoolThread* GetWorkerThread() const {

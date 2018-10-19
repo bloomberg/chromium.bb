@@ -6,14 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_EXPERIMENTAL_TASK_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/workers/experimental/thread_pool.h"
+#include "third_party/blink/renderer/core/workers/experimental/thread_pool_thread.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 class SerializedScriptValue;
-class Task;
 
 // Runs |function| with |arguments| on a thread from the given ThreadPool.
 // Scans |arguments| for Task objects, and registers those as dependencies,
@@ -26,9 +25,14 @@ class Task;
 class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
  public:
   // Called on main thread
-  ThreadPoolTask(ThreadPool*,
+  ThreadPoolTask(ThreadPoolThreadProvider*,
                  v8::Isolate*,
                  const ScriptValue& function,
+                 const Vector<ScriptValue>& arguments,
+                 TaskType);
+  ThreadPoolTask(ThreadPoolThreadProvider*,
+                 v8::Isolate*,
+                 const String& function_name,
                  const Vector<ScriptValue>& arguments,
                  TaskType);
   ~ThreadPoolTask();
@@ -43,6 +47,13 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
 
  private:
   enum class State { kPending, kStarted, kCancelPending, kCompleted, kFailed };
+
+  ThreadPoolTask(ThreadPoolThreadProvider*,
+                 v8::Isolate*,
+                 const ScriptValue& function,
+                 const String& function_name,
+                 const Vector<ScriptValue>& arguments,
+                 TaskType);
 
   void StartTaskOnWorkerThread() LOCKS_EXCLUDED(mutex_);
   v8::Local<v8::Value> RunTaskOnWorkerThread(v8::Isolate*);
@@ -61,7 +72,7 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   // Called on main thread
   static ThreadPoolThread* SelectThread(
       const Vector<ThreadPoolTask*>& prerequisites,
-      ThreadPool*);
+      ThreadPoolThreadProvider*);
   ThreadPoolThread* GetScheduledThread() LOCKS_EXCLUDED(mutex_);
   void RegisterDependencies(const Vector<ThreadPoolTask*>& prerequisites,
                             const Vector<size_t>& prerequisite_indices)
@@ -80,6 +91,7 @@ class ThreadPoolTask final : public RefCounted<ThreadPoolTask> {
   // Created in constructor on the main thread, consumed and cleared on
   // worker_thread_. Those steps can't overlap, so no mutex_ required.
   scoped_refptr<SerializedScriptValue> function_;
+  const String function_name_;
 
   // Created and populated with non-prerequiste parameters on the main thread.
   // Each prerequisite writes its return value into arguments_ from its thread.
