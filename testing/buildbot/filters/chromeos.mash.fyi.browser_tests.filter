@@ -41,9 +41,6 @@
 -TopControlsSlideControllerTest.TestFocusEditableElements
 -TopControlsSlideControllerTest.DisplayRotation
 
-# Uses Shell/SplitViewController.
--NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
-
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
 # See https://crbug.com/838974

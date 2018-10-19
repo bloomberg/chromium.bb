@@ -91,7 +91,7 @@ bool IsV1AppBackButtonEnabled() {
 }
 
 // Returns true if |window| is currently snapped in split view mode.
-bool IsSnappedInSplitView(aura::Window* window,
+bool IsSnappedInSplitView(const aura::Window* window,
                           ash::mojom::SplitViewState state) {
   ash::mojom::WindowStateType type =
       window->GetProperty(ash::kWindowStateTypeKey);
@@ -741,7 +741,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   }
 
   return !IsInOverviewMode() ||
-         IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_);
+         IsSnappedInSplitView(GetFrameWindow(), split_view_state_);
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {

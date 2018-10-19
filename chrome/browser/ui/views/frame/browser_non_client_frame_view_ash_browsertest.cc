@@ -17,6 +17,8 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -71,8 +73,11 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -1356,6 +1361,8 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
       ws::mojom::kResizeBehaviorCanMaximize |
           ws::mojom::kResizeBehaviorCanResize);
 
+  const int restored_height = frame_view->frame_header_->GetHeaderHeight();
+
   // Setting the tablet mode must be done before calculating the expected height
   // since the height may change depending on the tablet mode when in the
   // dynamic refresh MD mode.
@@ -1364,21 +1371,39 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
   // Maximize the widget and store its frame header height.
   widget->Maximize();
   const int expected_height = frame_view->frame_header_->GetHeaderHeight();
+  EXPECT_NE(expected_height, restored_height);
   widget->Restore();
-
-  ash::Shell* shell = ash::Shell::Get();
-  ash::SplitViewController* split_view_controller =
-      shell->split_view_controller();
-  split_view_controller->BindRequest(
-      mojo::MakeRequest(&frame_view->split_view_controller_));
-  split_view_controller->AddObserver(
-      frame_view->CreateInterfacePtrForTesting());
-  frame_view->split_view_controller_.FlushForTesting();
+  // Restored in tablet mode has the same header height as maximized in tablet
+  // mode.
+  EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
 
   frame_view->GetFrameWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
-  split_view_controller->SnapWindow(widget->GetNativeWindow(),
-                                    ash::SplitViewController::LEFT);
-  frame_view->split_view_controller_.FlushForTesting();
+
+  if (features::IsUsingWindowService()) {
+    ash::mojom::ShellTestApiPtr shell_test_api;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+    base::RunLoop run_loop;
+    shell_test_api->SnapWindowInSplitView(content::mojom::kBrowserServiceName,
+                                          frame_view->GetServerWindowId(),
+                                          run_loop.QuitClosure());
+    run_loop.Run();
+  } else {
+    ash::Shell* shell = ash::Shell::Get();
+    ash::SplitViewController* split_view_controller =
+        shell->split_view_controller();
+    split_view_controller->BindRequest(
+        mojo::MakeRequest(&frame_view->split_view_controller_));
+    split_view_controller->AddObserver(
+        frame_view->CreateInterfacePtrForTesting());
+    frame_view->split_view_controller_.FlushForTesting();
+
+    split_view_controller->SnapWindow(widget->GetNativeWindow(),
+                                      ash::SplitViewController::LEFT);
+    frame_view->split_view_controller_.FlushForTesting();
+  }
+
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
   EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
 }

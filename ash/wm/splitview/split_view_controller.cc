@@ -639,6 +639,11 @@ void SplitViewController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void SplitViewController::FlushForTesting() {
+  mojo_observers_.FlushForTesting();
+  bindings_.FlushForTesting();
+}
+
 void SplitViewController::AddObserver(mojom::SplitViewObserverPtr observer) {
   mojom::SplitViewObserver* observer_ptr = observer.get();
   mojo_observers_.AddPtr(std::move(observer));
