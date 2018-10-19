@@ -26,6 +26,7 @@ namespace cc {
 
 class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
  public:
+  static constexpr int kRasterMetricFrequency = 100;
   GpuRasterBufferProvider(viz::ContextProvider* compositor_context_provider,
                           viz::RasterContextProvider* worker_context_provider,
                           bool use_gpu_memory_buffer_resources,
@@ -33,7 +34,8 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
                           viz::ResourceFormat tile_format,
                           const gfx::Size& max_tile_size,
                           bool unpremultiply_and_dither_low_bit_depth_tiles,
-                          bool enable_oop_rasterization);
+                          bool enable_oop_rasterization,
+                          int raster_metric_frequency = kRasterMetricFrequency);
   ~GpuRasterBufferProvider() override;
 
   // Overridden from RasterBufferProvider:
@@ -149,12 +151,16 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const gfx::Size max_tile_size_;
   const bool unpremultiply_and_dither_low_bit_depth_tiles_;
   const bool enable_oop_rasterization_;
+  const int raster_metric_frequency_;
 
   // Note that this lock should never be acquired while holding the raster
   // context lock.
   base::Lock pending_raster_queries_lock_;
   base::circular_deque<PendingRasterQuery> pending_raster_queries_
       GUARDED_BY(pending_raster_queries_lock_);
+
+  // Accessed with the worker context lock acquired.
+  int raster_tasks_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);
 };
