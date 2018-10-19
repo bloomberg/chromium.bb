@@ -240,7 +240,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
 
-        mToolbarModel = new ToolbarModel(activity, activity.getBottomSheet());
+        mToolbarModel = new ToolbarModel(activity);
         mControlContainer = controlContainer;
         assert mControlContainer != null;
         mUrlFocusChangedCallback = urlFocusChangedCallback;
@@ -271,9 +271,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         setMenuDelegatePhone(menuDelegate);
 
         toolbar.setPaintInvalidator(invalidator);
-        if (mActivity.getBottomSheet() != null) {
-            toolbar.setBottomSheet(mActivity.getBottomSheet());
-        }
         mActionModeController.setTabStripHeight(toolbar.getTabStripHeight());
         mLocationBar = mToolbar.getLocationBar();
         mLocationBar.setToolbarDataProvider(mToolbarModel);

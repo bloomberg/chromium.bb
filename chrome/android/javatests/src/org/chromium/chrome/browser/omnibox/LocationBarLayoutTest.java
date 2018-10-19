@@ -67,7 +67,7 @@ public class LocationBarLayoutTest {
         private Integer mSecurityLevel;
 
         public TestToolbarModel() {
-            super(ContextUtils.getApplicationContext(), null /* bottomSheet */);
+            super(ContextUtils.getApplicationContext());
             initializeWithNative();
         }
 

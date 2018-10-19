@@ -22,7 +22,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 
 import java.util.ArrayList;
 
@@ -63,10 +62,6 @@ public class OmniboxSuggestionsList extends ListView {
          */
         @Nullable
         View getAlignmentView();
-
-        /** Return the bottom sheet for the containing UI to be used in sizing. */
-        @Nullable
-        BottomSheet getBottomSheet();
 
         /** Return the delegate used to interact with the Window. */
         WindowDelegate getWindowDelegate();
@@ -265,11 +260,7 @@ public class OmniboxSuggestionsList extends ListView {
 
         mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
         int decorHeight = mEmbedder.getWindowDelegate().getDecorViewHeight();
-        int additionalHeightForBottomNavMenu = mEmbedder.getBottomSheet() != null
-                ? mEmbedder.getBottomSheet().getToolbarShadowHeight()
-                : 0;
-        int availableViewportHeight =
-                Math.min(mTempRect.height(), decorHeight) + additionalHeightForBottomNavMenu;
+        int availableViewportHeight = Math.min(mTempRect.height(), decorHeight);
         int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
         // The suggestions should consume all available space in Modern on phone.
         int desiredHeight = !mEmbedder.isTablet() ? availableListHeight

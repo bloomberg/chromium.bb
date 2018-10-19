@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -82,12 +81,6 @@ public interface LocationBar extends UrlBarDelegate {
      * Gets the {@link ToolbarDataProvider} to be used for accessing {@link Toolbar} state.
      */
     ToolbarDataProvider getToolbarDataProvider();
-
-    /**
-     * Set the bottom sheet for Chrome Home.
-     * @param sheet The bottom sheet for Chrome Home if it exists.
-     */
-    void setBottomSheet(BottomSheet sheet);
 
     /**
      * Initialize controls that will act as hooks to various functions.

@@ -16,8 +16,6 @@ import android.view.WindowManager;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
 /**
  * A location bar implementation specific for smaller/phone screens.
@@ -138,22 +136,16 @@ public class LocationBarPhone extends LocationBarLayout {
             }, KEYBOARD_HIDE_DELAY_MS);
             // Convert the keyboard back to resize mode (delay the change for an arbitrary amount
             // of time in hopes the keyboard will be completely hidden before making this change).
-            // If Chrome Home is enabled, it will handle its own mode changes.
-            if (mBottomSheet == null) {
-                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
-            }
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
             mUrlActionContainer.setVisibility(GONE);
         } else {
-            // If Chrome Home is enabled, it will handle its own mode changes.
-            if (mBottomSheet == null) {
-                setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
-            }
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
             getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
         }
         setUrlFocusChangeInProgress(false);
 
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
-        if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP() && mBottomSheet == null) {
+        if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP()) {
             updateFadingBackgroundView(true, true);
         }
     }
@@ -195,27 +187,5 @@ public class LocationBarPhone extends LocationBarLayout {
         } else {
             delegate.setWindowSoftInputMode(softInputMode);
         }
-    }
-
-    @Override
-    public void setBottomSheet(BottomSheet sheet) {
-        super.setBottomSheet(sheet);
-
-        sheet.addObserver(new EmptyBottomSheetObserver() {
-            @Override
-            public void onSheetStateChanged(@BottomSheet.SheetState int state) {
-                switch (state) {
-                    case BottomSheet.SheetState.FULL:
-                        setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
-                        break;
-                    case BottomSheet.SheetState.PEEK:
-                        setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, true);
-                        break;
-                    default:
-                        setSoftInputMode(
-                                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING, false);
-                }
-            }
-        });
     }
 }

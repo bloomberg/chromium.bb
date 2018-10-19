@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -47,7 +46,6 @@ import java.net.URISyntaxException;
  */
 public class ToolbarModel implements ToolbarDataProvider {
     private final Context mContext;
-    private final BottomSheet mBottomSheet;
 
     private Tab mTab;
     private boolean mIsIncognito;
@@ -59,11 +57,9 @@ public class ToolbarModel implements ToolbarDataProvider {
     /**
      * Default constructor for this class.
      * @param context The Context used for styling the toolbar visuals.
-     * @param bottomSheet The {@link BottomSheet} for the activity displaying this toolbar.
      */
-    public ToolbarModel(Context context, @Nullable BottomSheet bottomSheet) {
+    public ToolbarModel(Context context) {
         mContext = context;
-        mBottomSheet = bottomSheet;
         mPrimaryColor = ColorUtils.getDefaultThemeColor(context.getResources(), false);
     }
 
@@ -303,7 +299,7 @@ public class ToolbarModel implements ToolbarDataProvider {
 
     @Override
     public boolean isUsingBrandColor() {
-        return mIsUsingBrandColor && mBottomSheet == null;
+        return mIsUsingBrandColor;
     }
 
     @Override
