@@ -23,7 +23,8 @@ constexpr char kNonSearchAcceleratorsHash[] =
     "66028d49a13708e1c1d8c5791d37a8e4";
 
 struct Cmp {
-  bool operator()(const AcceleratorData& lhs, const AcceleratorData& rhs) {
+  bool operator()(const AcceleratorData& lhs,
+                  const AcceleratorData& rhs) const {
     // Do not check |action|.
     return std::tie(lhs.trigger_on_press, lhs.keycode, lhs.modifiers) <
            std::tie(rhs.trigger_on_press, rhs.keycode, rhs.modifiers);

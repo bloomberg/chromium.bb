@@ -1486,9 +1486,6 @@ config("default_warnings") {
           # TODO(thakis): https://crbug.com/617318
           "-Wno-nonportable-include-path",
 
-          # TODO(thakis): https://crbug.com/683349
-          "-Wno-user-defined-warnings",
-
           # TODO(hans): https://crbug.com/681136
           "-Wno-unused-lambda-capture",
         ]
