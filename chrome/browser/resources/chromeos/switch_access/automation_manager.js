@@ -406,12 +406,37 @@ class AutomationManager {
    * @private
    */
   youngestDescendant_(node) {
-    let leaf = SwitchAccessPredicate.leaf(this.scope_);
+    const leaf = SwitchAccessPredicate.leaf(this.scope_);
+    const visit = SwitchAccessPredicate.visit(this.scope_);
 
-    while (node.lastChild && !leaf(node))
-      node = node.lastChild;
+    const result = this.youngestDescendantHelper_(node, leaf, visit);
+    if (!result)
+      return this.scope_;
+    return result;
+  }
 
-    return node;
+  /**
+   * @param {!chrome.automation.AutomationNode} node
+   * @param {function(!chrome.automation.AutomationNode): boolean} leaf
+   * @param {function(!chrome.automation.AutomationNode): boolean} visit
+   * @return {chrome.automation.AutomationNode}
+   * @private
+   */
+  youngestDescendantHelper_(node, leaf, visit) {
+    if (!node)
+      return null;
+
+    if (leaf(node))
+      return visit(node) ? node : null;
+
+    const reverseChildren = node.children.reverse();
+    for (const child of reverseChildren) {
+      const youngest = this.youngestDescendantHelper_(child, leaf, visit);
+      if (youngest)
+        return youngest;
+    }
+
+    return visit(node) ? node : null;
   }
 
   // ----------------------Debugging Methods------------------------
