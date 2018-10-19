@@ -34,8 +34,8 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
       format_(format),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       surface_handle_(surface_handle) {
-  DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(internal_format,
-                                                               format_));
+  DCHECK_EQ(internal_format,
+            gpu::InternalFormatForGpuMemoryBufferFormat(format_));
 }
 
 BufferQueue::~BufferQueue() {

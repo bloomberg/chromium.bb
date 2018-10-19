@@ -994,8 +994,7 @@ const GpuFeatureInfo& InProcessCommandBuffer::GetGpuFeatureInfo() const {
 
 int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
                                             size_t width,
-                                            size_t height,
-                                            unsigned internalformat) {
+                                            size_t height) {
   DCHECK(gpu_memory_buffer_manager_);
   gfx::GpuMemoryBuffer* gpu_memory_buffer =
       reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
@@ -1005,8 +1004,6 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
   DCHECK(IsImageFromGpuMemoryBufferFormatSupported(
       gpu_memory_buffer->GetFormat(), capabilities_));
-  DCHECK(IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-      internalformat, gpu_memory_buffer->GetFormat()));
 
   // This handle is owned by the GPU thread and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
@@ -1027,8 +1024,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
       gpu_thread_weak_ptr_factory_.GetWeakPtr(), new_id, std::move(handle),
       gfx::Size(base::checked_cast<int>(width),
                 base::checked_cast<int>(height)),
-      gpu_memory_buffer->GetFormat(),
-      base::checked_cast<uint32_t>(internalformat), fence_sync));
+      gpu_memory_buffer->GetFormat(), fence_sync));
 
   if (fence_sync) {
     flushed_fence_sync_release_ = fence_sync;
@@ -1046,7 +1042,6 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    uint32_t internalformat,
     uint64_t fence_sync) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   gles2::ImageManager* image_manager = task_executor_->image_manager();
@@ -1055,6 +1050,8 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
     LOG(ERROR) << "Image already exists with same ID.";
     return;
   }
+
+  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
 
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {

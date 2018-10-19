@@ -31,6 +31,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
@@ -711,8 +712,8 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    uint32_t internalformat,
     SurfaceHandle surface_handle) {
+  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))

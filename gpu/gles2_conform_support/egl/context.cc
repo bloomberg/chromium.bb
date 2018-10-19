@@ -171,10 +171,7 @@ const gpu::Capabilities& Context::GetCapabilities() const {
   return capabilities_;
 }
 
-int32_t Context::CreateImage(ClientBuffer buffer,
-                             size_t width,
-                             size_t height,
-                             unsigned internalformat) {
+int32_t Context::CreateImage(ClientBuffer buffer, size_t width, size_t height) {
   NOTIMPLEMENTED();
   return -1;
 }

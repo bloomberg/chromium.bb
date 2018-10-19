@@ -264,8 +264,7 @@ class RecordReplayContext : public GpuControl {
 
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
-                      size_t height,
-                      unsigned internalformat) override {
+                      size_t height) override {
     NOTIMPLEMENTED();
     return -1;
   }
