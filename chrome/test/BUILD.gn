@@ -2497,6 +2497,7 @@ test("unit_tests") {
     "../browser/metrics/perf/perf_provider_chromeos_unittest.cc",
     "../browser/metrics/process_memory_metrics_emitter_unittest.cc",
     "../browser/metrics/subprocess_metrics_provider_unittest.cc",
+    "../browser/metrics/tab_footprint_aggregator_unittest.cc",
     "../browser/metrics/thread_watcher_android_unittest.cc",
     "../browser/metrics/thread_watcher_unittest.cc",
     "../browser/navigation_predictor/navigation_predictor_unittest.cc",
