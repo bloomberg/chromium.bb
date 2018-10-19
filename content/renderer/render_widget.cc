@@ -1597,14 +1597,6 @@ void RenderWidget::CloseWidgetSoon() {
 }
 
 void RenderWidget::Close() {
-  // If the browser has not sent OnDisableDeviceEmulation, we have an emulator
-  // hanging out still. Its destruction is normally part of an IPC and expects
-  // objects to be alive that would be alive while the IPC route is active such
-  // as the |layer_tree_view_|. So we ensure that it is the first thing to be
-  // destroyed here before deleting things from the RenderWidget or the
-  // |owner_delegate_|.
-  screen_metrics_emulator_.reset();
-
   CloseWebWidget();
   layer_tree_view_.reset();
   if (owner_delegate_)
@@ -1614,6 +1606,23 @@ void RenderWidget::Close() {
 }
 
 void RenderWidget::CloseWebWidget() {
+  // If the browser has not sent OnDisableDeviceEmulation, we have an emulator
+  // hanging out still. Destroying it must happen *after* the IPC route is
+  // removed so that another IPC does not arrive and re-create the emulator
+  // during closing.
+  //
+  // This destruction is normally part of an IPC and expects objects to be alive
+  // that would be alive while the IPC route is active such as the
+  // |layer_tree_view_|. So we ensure that it is the first thing to be
+  // destroyed here before deleting things from the RenderWidget or the
+  // |owner_delegate_|.
+  //
+  // TODO(danakj): The emulator could reset to non-emulated values in an
+  // explicit method call (instead of in the destructor) that occurs when
+  // emulation is disabled, but does not need to occur during RenderWidget
+  // closing. Then we would not have to destroy this so carefully.
+  screen_metrics_emulator_.reset();
+
   WillCloseLayerTreeView();
   if (webwidget_internal_) {
     webwidget_internal_->Close();
