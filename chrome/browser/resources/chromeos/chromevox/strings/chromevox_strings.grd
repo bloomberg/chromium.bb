@@ -2263,6 +2263,12 @@
       <message desc="Describes nodes or anything describing them as a landmark." name="IDS_CHROMEVOX_ROLE_LANDMARK">
         Landmark
       </message>
+      <message desc="Describes a button that can be pressed/toggled." name="IDS_CHROMEVOX_ROLE_TOGGLE_BUTTON">
+        Toggle Button
+      </message>
+      <message desc="Brailles a button that can be pressed/toggled." name="IDS_CHROMEVOX_ROLE_TOGGLE_BUTTON_BRL">
+        tgl btn
+      </message>
       <message desc="Spoken when user types invalid keys into the modifier selection field." name="IDS_CHROMEVOX_MODIFIER_ENTRY_ERROR">
         No modifier pressed; please press and hold one or more modifiers; lift your fingers once done and you will hear the keys set. Tab to exit.
       </message>

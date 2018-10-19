@@ -688,13 +688,15 @@ TEST_F('OutputE2ETest', 'ToggleButton', function() {
       <div role="button" aria-pressed="true">Subscribe</div>*/},
     function(root) {
       var el = root.firstChild;
-      var o = new Output().withSpeech(cursors.Range.fromNode(el));
-      assertEqualsJSON({string_: '|Subscribe|Button|Pressed|Press Search+Space to toggle.',
+      var o = new Output().withSpeechAndBraille(cursors.Range.fromNode(el));
+      assertEqualsJSON({string_:
+               '|Subscribe|Toggle Button|Pressed|Press Search+Space to toggle.',
             spans_: [
         {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
         {value: 'name', start: 1, end:10},
-        {value: 'role', start: 11, end: 17}
+        {value: 'role', start: 11, end: 24}
       ]}, o.speechOutputForTest);
+      assertEquals('Subscribe tgl btn =', o.brailleOutputForTest.string_);
   });
 });
 
