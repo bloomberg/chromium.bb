@@ -2491,7 +2491,6 @@ jumbo_split_static_library("browser") {
       "payments/android/payment_manifest_web_data_service_android.cc",
       "payments/android/payment_manifest_web_data_service_android.h",
       "payments/android/ssl_validity_checker_android.cc",
-      "payments/android/ssl_validity_checker_android.h",
       "permissions/grouped_permission_infobar_delegate_android.cc",
       "permissions/grouped_permission_infobar_delegate_android.h",
       "permissions/permission_dialog_delegate.cc",
