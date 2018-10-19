@@ -49,7 +49,7 @@ class ChromeDriverAdapter(common.BaseIsolatedScriptArgsAdapter):
 
 def main():
   adapter = ChromeDriverAdapter()
-  adapter.run_test()
+  return adapter.run_test()
 
 
 # This is not really a "script test" so does not need to manually add
