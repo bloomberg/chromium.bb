@@ -125,6 +125,24 @@ aomenc bear_480P.yuv -w 640 -h 480 --fps=30000/1001 --cpu-used=8 \
   --lag-in-frames=0 --test-decode=fatal --target-bitrate=50 \
   -o bear-av1-640x480.webm
 ```
+
+#### bear-av1-320x180-10bit.mp4
+Created using FFmpeg with the following command:
+```
+ffmpeg -i bear-av1-320x180-10bit.webm -vcodec copy -f mp4 \
+  -movflags frag_keyframe+empty_moov+default_base_moof+faststart \
+  bear-av1-320x180-10bit.mp4
+```
+
+#### bear-av1-320x180-10bit.webm
+Created using vpxdec and aomenc with the following commands:
+```
+vpxdec bear-320x180-hi10p-vp9.webm -o bear-320x180-10bit.y4m
+aomenc bear-320x180-10bit.y4m --lag-in-frames=0 --target-bitrate=50 \
+  --fps=30000/1001 --cpu-used=8 --bit-depth=10 --test-decode=fatal \
+  -o bear-av1-320x180-10bit.webm
+```
+
 ### Alpha Channel
 
 #### bear-vp8a.webm
