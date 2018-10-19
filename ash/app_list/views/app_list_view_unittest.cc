@@ -549,9 +549,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     std::vector<views::View*> suggestions;
     if (is_new_style_launcher_enabled_) {
       for (int i = 0; i < suggestions_container()->child_count(); ++i) {
-        suggestions.emplace_back(static_cast<SearchResultSuggestionChipView*>(
-                                     suggestions_container()->child_at(i))
-                                     ->suggestion_chip_view());
+        SearchResultSuggestionChipView* view =
+            static_cast<SearchResultSuggestionChipView*>(
+                suggestions_container()->child_at(i));
+        if (view->visible())
+          suggestions.emplace_back(view->suggestion_chip_view());
       }
       return suggestions;
     }
