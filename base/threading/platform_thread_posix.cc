@@ -248,6 +248,11 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 #if defined(OS_NACL)
   return false;
 #else
+  auto platform_specific_ability =
+      internal::CanIncreaseCurrentThreadPriorityForPlatform(priority);
+  if (platform_specific_ability)
+    return platform_specific_ability.value();
+
   return internal::CanLowerNiceTo(
       internal::ThreadPriorityToNiceValue(priority));
 #endif  // defined(OS_NACL)
@@ -282,11 +287,10 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
   return ThreadPriority::NORMAL;
 #else
   // Mirrors SetCurrentThreadPriority()'s implementation.
-  ThreadPriority platform_specific_priority;
-  if (internal::GetCurrentThreadPriorityForPlatform(
-          &platform_specific_priority)) {
-    return platform_specific_priority;
-  }
+  auto platform_specific_priority =
+      internal::GetCurrentThreadPriorityForPlatform();
+  if (platform_specific_priority)
+    return platform_specific_priority.value();
 
   // Need to clear errno before calling getpriority():
   // http://man7.org/linux/man-pages/man2/getpriority.2.html
