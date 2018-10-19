@@ -1669,69 +1669,100 @@ static void get_energy_distribution_finer(const int16_t *diff, int stride,
 
 // Similar to get_horver_correlation, but also takes into account first
 // row/column, when computing horizontal/vertical correlation.
-static void get_horver_correlation_full(const int16_t *diff, int stride, int w,
-                                        int h, float *hcorr, float *vcorr) {
-  const float num_hor = (float)(h * (w - 1));
-  const float num_ver = (float)((h - 1) * w);
-  int i, j;
-
+void av1_get_horver_correlation_full_c(const int16_t *diff, int stride,
+                                       int width, int height, float *hcorr,
+                                       float *vcorr) {
   // The following notation is used:
   // x - current pixel
   // y - left neighbor pixel
   // z - top neighbor pixel
-  int64_t xy_sum = 0, xz_sum = 0;
-  int64_t xhor_sum = 0, xver_sum = 0, y_sum = 0, z_sum = 0;
-  int64_t x2hor_sum = 0, x2ver_sum = 0, y2_sum = 0, z2_sum = 0;
+  int64_t x_sum = 0, x2_sum = 0, xy_sum = 0, xz_sum = 0;
+  int64_t x_firstrow = 0, x_finalrow = 0, x_firstcol = 0, x_finalcol = 0;
+  int64_t x2_firstrow = 0, x2_finalrow = 0, x2_firstcol = 0, x2_finalcol = 0;
 
-  int16_t x, y, z;
-  for (j = 1; j < w; ++j) {
-    x = diff[j];
-    y = diff[j - 1];
+  // First, process horizontal correlation on just the first row
+  x_sum += diff[0];
+  x2_sum += diff[0] * diff[0];
+  x_firstrow += diff[0];
+  x2_firstrow += diff[0] * diff[0];
+  for (int j = 1; j < width; ++j) {
+    const int16_t x = diff[j];
+    const int16_t y = diff[j - 1];
+    x_sum += x;
+    x_firstrow += x;
+    x2_sum += x * x;
+    x2_firstrow += x * x;
     xy_sum += x * y;
-    xhor_sum += x;
-    y_sum += y;
-    x2hor_sum += x * x;
-    y2_sum += y * y;
   }
-  for (i = 1; i < h; ++i) {
-    x = diff[i * stride];
-    z = diff[(i - 1) * stride];
+
+  // Process vertical correlation in the first column
+  x_firstcol += diff[0];
+  x2_firstcol += diff[0] * diff[0];
+  for (int i = 1; i < height; ++i) {
+    const int16_t x = diff[i * stride];
+    const int16_t z = diff[(i - 1) * stride];
+    x_sum += x;
+    x_firstcol += x;
+    x2_sum += x * x;
+    x2_firstcol += x * x;
     xz_sum += x * z;
-    xver_sum += x;
-    z_sum += z;
-    x2ver_sum += x * x;
-    z2_sum += z * z;
-    for (j = 1; j < w; ++j) {
-      x = diff[i * stride + j];
-      y = diff[i * stride + j - 1];
-      z = diff[(i - 1) * stride + j];
+  }
+
+  // Now process horiz and vert correlation through the rest unit
+  for (int i = 1; i < height; ++i) {
+    for (int j = 1; j < width; ++j) {
+      const int16_t x = diff[i * stride + j];
+      const int16_t y = diff[i * stride + j - 1];
+      const int16_t z = diff[(i - 1) * stride + j];
+      x_sum += x;
+      x2_sum += x * x;
       xy_sum += x * y;
       xz_sum += x * z;
-      xhor_sum += x;
-      xver_sum += x;
-      y_sum += y;
-      z_sum += z;
-      x2hor_sum += x * x;
-      x2ver_sum += x * x;
-      y2_sum += y * y;
-      z2_sum += z * z;
     }
   }
+
+  for (int j = 0; j < width; ++j) {
+    x_finalrow += diff[(height - 1) * stride + j];
+    x2_finalrow +=
+        diff[(height - 1) * stride + j] * diff[(height - 1) * stride + j];
+  }
+  for (int i = 0; i < height; ++i) {
+    x_finalcol += diff[i * stride + width - 1];
+    x2_finalcol += diff[i * stride + width - 1] * diff[i * stride + width - 1];
+  }
+
+  int64_t xhor_sum = x_sum - x_finalcol;
+  int64_t xver_sum = x_sum - x_finalrow;
+  int64_t y_sum = x_sum - x_firstcol;
+  int64_t z_sum = x_sum - x_firstrow;
+  int64_t x2hor_sum = x2_sum - x2_finalcol;
+  int64_t x2ver_sum = x2_sum - x2_finalrow;
+  int64_t y2_sum = x2_sum - x2_firstcol;
+  int64_t z2_sum = x2_sum - x2_firstrow;
+
+  const float num_hor = (float)(height * (width - 1));
+  const float num_ver = (float)((height - 1) * width);
+
   const float xhor_var_n = x2hor_sum - (xhor_sum * xhor_sum) / num_hor;
-  const float y_var_n = y2_sum - (y_sum * y_sum) / num_hor;
-  const float xy_var_n = xy_sum - (xhor_sum * y_sum) / num_hor;
   const float xver_var_n = x2ver_sum - (xver_sum * xver_sum) / num_ver;
+
+  const float y_var_n = y2_sum - (y_sum * y_sum) / num_hor;
   const float z_var_n = z2_sum - (z_sum * z_sum) / num_ver;
+
+  const float xy_var_n = xy_sum - (xhor_sum * y_sum) / num_hor;
   const float xz_var_n = xz_sum - (xver_sum * z_sum) / num_ver;
 
-  *hcorr = *vcorr = 1;
   if (xhor_var_n > 0 && y_var_n > 0) {
     *hcorr = xy_var_n / sqrtf(xhor_var_n * y_var_n);
     *hcorr = *hcorr < 0 ? 0 : *hcorr;
+  } else {
+    *hcorr = 1.0;
   }
   if (xver_var_n > 0 && z_var_n > 0) {
     *vcorr = xz_var_n / sqrtf(xver_var_n * z_var_n);
     *vcorr = *vcorr < 0 ? 0 : *vcorr;
+  } else {
+    *vcorr = 1.0;
   }
 }
 
@@ -1844,9 +1875,9 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   const int16_t *diff = p->src_diff + 4 * blk_row * diff_stride + 4 * blk_col;
   get_energy_distribution_finer(diff, diff_stride, bw, bh, hfeatures,
                                 vfeatures);
-  get_horver_correlation_full(diff, diff_stride, bw, bh,
-                              &hfeatures[hfeatures_num - 1],
-                              &vfeatures[vfeatures_num - 1]);
+  av1_get_horver_correlation_full(diff, diff_stride, bw, bh,
+                                  &hfeatures[hfeatures_num - 1],
+                                  &vfeatures[vfeatures_num - 1]);
   av1_nn_predict(hfeatures, nn_config_hor, hscores);
   av1_nn_predict(vfeatures, nn_config_ver, vscores);
 
