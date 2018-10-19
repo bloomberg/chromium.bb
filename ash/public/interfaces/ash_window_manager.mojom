@@ -4,6 +4,7 @@
 
 module ash.mojom;
 
+import "ash/public/interfaces/menu.mojom";
 import "ui/events/mojo/event_constants.mojom";
 
 // The previewed snap state for a window, corresponding to the use of a
@@ -48,4 +49,10 @@ interface AshWindowManager {
 
   // Plays the window bounce animation (scale the window up and down).
   BounceWindow(uint64 window_id);
+
+  // Sets the context menu items to be displayed on a window's frame, for
+  // windows where the frame is provided by Ash. |delegate| handles interaction
+  // with the menu.
+  SetWindowFrameMenuItems(uint64 window_id, array<MenuItem> menu_items,
+                          MenuDelegate delegate);
 };

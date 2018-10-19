@@ -12,10 +12,12 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/menu_utils.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/wm/window_state.h"  // mash-ok
 #include "base/logging.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -30,6 +32,8 @@
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -43,6 +47,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -53,11 +58,23 @@ ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
           std::make_unique<ExclusiveAccessManager>(this)) {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->AddObserver(this);
+
+  if (features::IsSingleProcessMash()) {
+    MultiUserWindowManager::GetInstance()->AddObserver(this);
+
+    ash_window_manager_ =
+        views::MusClient::Get()
+            ->window_tree_client()
+            ->BindWindowManagerInterface<ash::mojom::AshWindowManager>();
+  }
 }
 
 ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
+
+  if (features::IsSingleProcessMash())
+    MultiUserWindowManager::GetInstance()->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -190,6 +207,8 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
+  DCHECK(!features::IsUsingWindowService());
+
   menu_model_ = CreateMultiUserContextMenu(GetNativeWindow());
   if (!menu_model_.get())
     return;
@@ -501,6 +520,33 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWindowDestroying(
   if (observed_window_state_.IsObservingSources())
     observed_window_state_.Remove(ash::wm::GetWindowState(window));
   observed_window_.Remove(window);
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::OnOwnerEntryAdded(
+    aura::Window* window) {
+  OnOwnerEntryChanged(window);
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::OnOwnerEntryChanged(
+    aura::Window* window) {
+  if (window != GetWidget()->GetNativeWindow())
+    return;
+
+  std::unique_ptr<ui::MenuModel> menu_model =
+      CreateMultiUserContextMenu(GetNativeWindow());
+
+  ash::mojom::MenuDelegatePtr delegate;
+  binding_.Close();
+  binding_.Bind(mojo::MakeRequest(&delegate));
+  ash_window_manager_->SetWindowFrameMenuItems(
+      aura::WindowMus::Get(GetWidget()->GetNativeWindow()->GetRootWindow())
+          ->server_id(),
+      ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()),
+      std::move(delegate));
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::MenuItemActivated(int command_id) {
+  ExecuteVisitDesktopCommand(command_id, GetWidget()->GetNativeWindow());
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {

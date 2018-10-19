@@ -389,7 +389,7 @@ TEST_F(NonClientFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   auto* frame_view = static_cast<ash::NonClientFrameViewAsh*>(
       widget->non_client_view()->frame_view());
-  auto* header_view = static_cast<HeaderView*>(frame_view->GetHeaderView());
+  auto* header_view = frame_view->GetHeaderView();
   ASSERT_TRUE(widget->IsMaximized());
   EXPECT_TRUE(header_view->in_immersive_mode());
   static_cast<ImmersiveFullscreenControllerDelegate*>(header_view)
@@ -545,8 +545,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
       delegate->non_client_frame_view();
   non_client_frame_view->SetCaptionButtonModel(std::move(model));
 
-  HeaderView* header_view =
-      static_cast<HeaderView*>(non_client_frame_view->GetHeaderView());
+  HeaderView* header_view = non_client_frame_view->GetHeaderView();
   EXPECT_FALSE(header_view->GetBackButton());
   model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
@@ -626,8 +625,7 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
       delegate->non_client_frame_view();
   non_client_frame_view->SetCaptionButtonModel(std::move(model));
 
-  HeaderView* header_view =
-      static_cast<HeaderView*>(non_client_frame_view->GetHeaderView());
+  HeaderView* header_view = non_client_frame_view->GetHeaderView();
   FrameCaptionButtonContainerView::TestApi test_api(
       header_view->caption_button_container());
 
@@ -699,8 +697,7 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
 
   NonClientFrameViewAsh* non_client_frame_view =
       delegate->non_client_frame_view();
-  HeaderView* header_view =
-      static_cast<HeaderView*>(non_client_frame_view->GetHeaderView());
+  HeaderView* header_view = non_client_frame_view->GetHeaderView();
   widget->Maximize();
 
   std::unique_ptr<WideFrameView> wide_frame_view =
