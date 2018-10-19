@@ -3083,6 +3083,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'firmwarebranch',
       site_config.templates.firmware,
+      sign_types=['firmware', 'accessory_rwsig'],
       build_type=constants.GENERIC_TYPE,
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
