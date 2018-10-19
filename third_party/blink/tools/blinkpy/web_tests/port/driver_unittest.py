@@ -38,7 +38,8 @@ from blinkpy.web_tests.port.server_process_mock import MockServerProcess
 class DriverTest(unittest.TestCase):
 
     def make_port(self):
-        return Port(MockSystemHost(), 'test', optparse.Values({'configuration': 'Release'}))
+        return Port(MockSystemHost(), 'test',
+                    optparse.Values({'configuration': 'Release', 'target': 'Release'}))
 
     def _assert_wrapper(self, wrapper_string, expected_wrapper):
         wrapper = Driver(self.make_port(), None)._command_wrapper(wrapper_string)
