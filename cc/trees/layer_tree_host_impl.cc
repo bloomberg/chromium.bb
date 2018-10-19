@@ -478,16 +478,15 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // Defer invalidating images until UpdateDrawProperties is performed since
   // that updates whether an image should be animated based on its visibility
   // and the updated data for the image from the main frame.
-    PaintImageIdFlatSet images_to_invalidate =
-        tile_manager_.TakeImagesToInvalidateOnSyncTree();
-    if (ukm_manager_)
-      ukm_manager_->AddCheckerboardedImages(images_to_invalidate.size());
+  PaintImageIdFlatSet images_to_invalidate =
+      tile_manager_.TakeImagesToInvalidateOnSyncTree();
+  if (ukm_manager_)
+    ukm_manager_->AddCheckerboardedImages(images_to_invalidate.size());
 
-    const auto& animated_images =
-        image_animation_controller_.AnimateForSyncTree(
-            CurrentBeginFrameArgs().frame_time);
-    images_to_invalidate.insert(animated_images.begin(), animated_images.end());
-    sync_tree()->InvalidateRegionForImages(images_to_invalidate);
+  const auto& animated_images = image_animation_controller_.AnimateForSyncTree(
+      CurrentBeginFrameArgs().frame_time);
+  images_to_invalidate.insert(animated_images.begin(), animated_images.end());
+  sync_tree()->InvalidateRegionForImages(images_to_invalidate);
 
   // Note that it is important to push the state for checkerboarded and animated
   // images prior to PrepareTiles here when committing to the active tree. This
