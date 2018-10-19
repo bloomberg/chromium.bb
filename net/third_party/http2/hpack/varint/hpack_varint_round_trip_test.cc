@@ -4,7 +4,8 @@
 
 #include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 
-// Tests of HpackVarintDecoder.
+// Test HpackVarintDecoder against data encoded via HpackBlockBuilder,
+// which uses HpackVarintEncoder under the hood.
 
 #include <stddef.h>
 
@@ -34,7 +35,7 @@ uint64_t HiValueOfExtensionBytes(uint32_t extension_bytes,
          (extension_bytes == 0 ? 0 : (1LLU << (extension_bytes * 7)));
 }
 
-class HpackVarintDecoderTest : public RandomDecoderTest {
+class HpackVarintRoundTripTest : public RandomDecoderTest {
  protected:
   DecodeStatus StartDecoding(DecodeBuffer* b) override {
     CHECK_LT(0u, b->Remaining());
@@ -234,7 +235,7 @@ class HpackVarintDecoderTest : public RandomDecoderTest {
 
 // To help me and future debuggers of varint encodings, this LOGs out the
 // transition points where a new extension byte is added.
-TEST_F(HpackVarintDecoderTest, Encode) {
+TEST_F(HpackVarintRoundTripTest, Encode) {
   for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint32_t a = (1 << prefix_length) - 1;
     const uint32_t b = a + 128;
@@ -270,7 +271,7 @@ TEST_F(HpackVarintDecoderTest, Encode) {
   }
 }
 
-TEST_F(HpackVarintDecoderTest, FromSpec1337) {
+TEST_F(HpackVarintRoundTripTest, FromSpec1337) {
   DecodeBuffer b(Http2StringPiece("\x1f\x9a\x0a"));
   uint32_t prefix_length = 5;
   uint8_t p = b.DecodeUInt8();
@@ -287,7 +288,7 @@ TEST_F(HpackVarintDecoderTest, FromSpec1337) {
 }
 
 // Test all the values that fit into the prefix (one less than the mask).
-TEST_F(HpackVarintDecoderTest, ValidatePrefixOnly) {
+TEST_F(HpackVarintRoundTripTest, ValidatePrefixOnly) {
   for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     EncodeAndDecodeValuesInRange(0, prefix_mask, prefix_length, 1);
@@ -295,7 +296,7 @@ TEST_F(HpackVarintDecoderTest, ValidatePrefixOnly) {
 }
 
 // Test all values that require exactly 1 extension byte.
-TEST_F(HpackVarintDecoderTest, ValidateOneExtensionByte) {
+TEST_F(HpackVarintRoundTripTest, ValidateOneExtensionByte) {
   for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint32_t start = (1 << prefix_length) - 1;
     EncodeAndDecodeValuesInRange(start, 128, prefix_length, 2);
@@ -303,7 +304,7 @@ TEST_F(HpackVarintDecoderTest, ValidateOneExtensionByte) {
 }
 
 // Test *some* values that require exactly 2 extension bytes.
-TEST_F(HpackVarintDecoderTest, ValidateTwoExtensionBytes) {
+TEST_F(HpackVarintRoundTripTest, ValidateTwoExtensionBytes) {
   for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     const uint32_t start = prefix_mask + 128;
@@ -314,7 +315,7 @@ TEST_F(HpackVarintDecoderTest, ValidateTwoExtensionBytes) {
 }
 
 // Test *some* values that require 3 extension bytes.
-TEST_F(HpackVarintDecoderTest, ValidateThreeExtensionBytes) {
+TEST_F(HpackVarintRoundTripTest, ValidateThreeExtensionBytes) {
   for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     const uint32_t start = prefix_mask + 128 + (127 << 7);
@@ -325,7 +326,7 @@ TEST_F(HpackVarintDecoderTest, ValidateThreeExtensionBytes) {
 }
 
 // Test *some* values that require 4 extension bytes.
-TEST_F(HpackVarintDecoderTest, ValidateFourExtensionBytes) {
+TEST_F(HpackVarintRoundTripTest, ValidateFourExtensionBytes) {
   for (int prefix_length = 3; prefix_length <= 7; ++prefix_length) {
     const uint8_t prefix_mask = (1 << prefix_length) - 1;
     const uint32_t start = prefix_mask + 128 + (127 << 7) + (127 << 14);
@@ -336,7 +337,7 @@ TEST_F(HpackVarintDecoderTest, ValidateFourExtensionBytes) {
 }
 
 // Test *some* values that require too many extension bytes.
-TEST_F(HpackVarintDecoderTest, ValueTooLarge) {
+TEST_F(HpackVarintRoundTripTest, ValueTooLarge) {
   const uint32_t expected_offset = HpackVarintDecoder::MaxExtensionBytes() + 1;
   for (prefix_length_ = 3; prefix_length_ <= 7; ++prefix_length_) {
     uint64_t too_large = HiValueOfExtensionBytes(
