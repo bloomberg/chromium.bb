@@ -191,7 +191,7 @@ TabMemoryMetricsReporter::NextStateOfEmitMemoryDumpAfterPageLoaded(
 
 bool TabMemoryMetricsReporter::WebContentsDataComparator::operator()(
     const WebContentsData& a,
-    const WebContentsData& b) {
+    const WebContentsData& b) const {
   return a.next_emit_time < b.next_emit_time;
 }
 
