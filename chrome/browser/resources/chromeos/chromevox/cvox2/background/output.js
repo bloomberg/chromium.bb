@@ -281,7 +281,7 @@ Output.ROLE_INFO_ = {
   time: {msgId: 'tag_time', inherits: 'abstractContainer'},
   timer: {msgId: 'role_timer', inherits: 'abstractNameFromContents'},
   toolbar: {msgId: 'role_toolbar', ignoreAncestry: true},
-  toggleButton: {msgId: 'role_button', inherits: 'checkBox'},
+  toggleButton: {msgId: 'role_toggle_button', inherits: 'checkBox'},
   tree: {msgId: 'role_tree'},
   treeItem: {msgId: 'role_treeitem'},
   window: {ignoreAncestry: true}

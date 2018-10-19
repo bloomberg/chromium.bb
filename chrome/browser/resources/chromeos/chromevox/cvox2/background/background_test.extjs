@@ -782,17 +782,17 @@ TEST_F('BackgroundTest', 'ToggleButton', function() {
     var move = doCmd('nextObject');
     mockFeedback.call(move)
         .expectSpeech('boldface')
-        .expectSpeech('Button')
+        .expectSpeech('Toggle Button')
         .expectSpeech('Partially pressed')
 
         .call(move)
         .expectSpeech('ok')
-        .expectSpeech('Button')
+        .expectSpeech('Toggle Button')
         .expectSpeech('Pressed')
 
         .call(move)
         .expectSpeech('cancel')
-        .expectSpeech('Button')
+        .expectSpeech('Toggle Button')
         .expectSpeech('Not pressed')
 
         .call(move)
