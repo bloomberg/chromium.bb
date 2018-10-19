@@ -47,7 +47,6 @@ from blinkpy.web_tests import run_webkit_tests
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.port import test
-from blinkpy.web_tests.views.printing import Printer
 
 _MOCK_ROOT = os.path.join(
     path_finder.get_chromium_src_dir(), 'third_party', 'pymock')
@@ -82,8 +81,10 @@ def passing_run(extra_args=None, port_obj=None, tests_included=False, host=None,
     if shared_port:
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
 
-    printer = Printer(host, options, StringIO.StringIO())
-    run_details = run_webkit_tests.run(port_obj, options, parsed_args, printer)
+    logging_stream = StringIO.StringIO()
+    stdout = StringIO.StringIO()
+    run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                       logging_stream=logging_stream, stdout=stdout)
     return run_details.exit_code == 0
 
 
@@ -102,8 +103,9 @@ def run_and_capture(port_obj, options, parsed_args, shared_port=True):
     if shared_port:
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
     logging_stream = StringIO.StringIO()
-    printer = Printer(port_obj.host, options, logging_stream)
-    run_details = run_webkit_tests.run(port_obj, options, parsed_args, printer)
+    stdout = StringIO.StringIO()
+    run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                       logging_stream=logging_stream, stdout=stdout)
     return (run_details, logging_stream)
 
 
@@ -133,8 +135,10 @@ def get_test_results(args, host=None, port_obj=None):
     host = host or MockHost()
     port_obj = port_obj or host.port_factory.get(port_name=options.platform, options=options)
 
-    printer = Printer(host, options, StringIO.StringIO())
-    run_details = run_webkit_tests.run(port_obj, options, parsed_args, printer)
+    logging_stream = StringIO.StringIO()
+    stdout = StringIO.StringIO()
+    run_details = run_webkit_tests.run(port_obj, options, parsed_args,
+                                       logging_stream=logging_stream, stdout=stdout)
 
     all_results = []
     if run_details.initial_results:
@@ -173,10 +177,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             extra_args=['--json-failing-test-results', '/tmp/json_failing_test_results.json'],
             tests_included=True)
         logging_stream = StringIO.StringIO()
+        stdout = StringIO.StringIO()
         host = MockHost()
         port_obj = host.port_factory.get(options.platform, options)
-        printer = Printer(host, options, logging_stream)
-        details = run_webkit_tests.run(port_obj, options, args, printer)
+        details = run_webkit_tests.run(port_obj, options, args, logging_stream, stdout=stdout)
 
         # These numbers will need to be updated whenever we add new tests.
         self.assertEqual(details.initial_results.total, test.TOTAL_TESTS)
@@ -1066,25 +1070,28 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertFalse(any(path.endswith('-wdiff.html') for path in written_files))
 
     def test_unsupported_platform(self):
+        stdout = StringIO.StringIO()
         stderr = StringIO.StringIO()
-        res = run_webkit_tests.main(['--platform', 'foo'], stderr)
+        res = run_webkit_tests.main(['--platform', 'foo'], stdout, stderr)
 
         self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
+        self.assertEqual(stdout.getvalue(), '')
         self.assertTrue('unsupported platform' in stderr.getvalue())
 
     def test_verbose_in_child_processes(self):
         # When we actually run multiple processes, we may have to reconfigure logging in the
         # child process (e.g., on win32) and we need to make sure that works and we still
         # see the verbose log output. However, we can't use logging_run() because using
-        # output_capture to capture stderr latter results in a nonpicklable host.
+        # output_capture to capture stdout and stderr latter results in a nonpicklable host.
 
         options, parsed_args = parse_args(['--verbose', '--fully-parallel', '--jobs',
                                            '2', 'passes/text.html', 'passes/image.html'], tests_included=True)
         host = MockHost()
         port_obj = host.port_factory.get(port_name=options.platform, options=options)
         logging_stream = StringIO.StringIO()
-        printer = Printer(host, options, logging_stream)
-        run_webkit_tests.run(port_obj, options, parsed_args, printer)
+        stdout = StringIO.StringIO()
+        run_webkit_tests.run(port_obj, options, parsed_args,
+                             logging_stream=logging_stream, stdout=stdout)
         self.assertTrue('text.html passed' in logging_stream.getvalue())
         self.assertTrue('image.html passed' in logging_stream.getvalue())
 
@@ -1138,8 +1145,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         options, args = parse_args()
         port_obj = host.port_factory.get(options.platform, options)
-        printer = Printer(host, options, StringIO.StringIO())
-        run_webkit_tests.run(port_obj, options, args, printer)
+
+        run_webkit_tests.run(port_obj, options, args, StringIO.StringIO(), StringIO.StringIO())
         self.assertListEqual(options.image_first_tests, [image_first_folder1, image_first_folder2])
 
 
@@ -1603,7 +1610,8 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 class MainTest(unittest.TestCase):
 
     def test_exception_handling(self):
-        orig_run_fn = run_webkit_tests.run
+        # Replacing protected method _run_tests - pylint: disable=protected-access
+        orig_run_fn = run_webkit_tests._run_tests
 
         # pylint: disable=unused-argument
         def interrupting_run(port, options, args, printer):
@@ -1619,18 +1627,19 @@ class MainTest(unittest.TestCase):
         def exception_raising_run(port, options, args, printer):
             assert False
 
+        stdout = StringIO.StringIO()
         stderr = StringIO.StringIO()
         try:
-            run_webkit_tests.run = interrupting_run
-            res = run_webkit_tests.main([], stderr)
+            run_webkit_tests._run_tests = interrupting_run
+            res = run_webkit_tests.main([], stdout, stderr)
             self.assertEqual(res, exit_codes.INTERRUPTED_EXIT_STATUS)
 
-            run_webkit_tests.run = successful_run
-            res = run_webkit_tests.main(['--platform', 'test'], stderr)
+            run_webkit_tests._run_tests = successful_run
+            res = run_webkit_tests.main(['--platform', 'test'], stdout, stderr)
             self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
 
-            run_webkit_tests.run = exception_raising_run
-            res = run_webkit_tests.main([], stderr)
+            run_webkit_tests._run_tests = exception_raising_run
+            res = run_webkit_tests.main([], stdout, stderr)
             self.assertEqual(res, exit_codes.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
-            run_webkit_tests.run = orig_run_fn
+            run_webkit_tests._run_tests = orig_run_fn
