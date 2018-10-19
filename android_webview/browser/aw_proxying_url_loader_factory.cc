@@ -67,6 +67,9 @@ class InterceptedRequest : public network::mojom::URLLoader,
  private:
   void OnRequestError(const network::URLLoaderCompletionStatus& status);
 
+  // TODO(timvolodine): consider factoring this out of this class.
+  void OnReceivedErrorToCallback(int error_code);
+
   const int process_id_;
   const uint64_t request_id_;
   const int32_t routing_id_;
@@ -130,26 +133,44 @@ void InterceptedRequest::Restart() {
 }
 
 namespace {
+// TODO(timvolodine): consider factoring this out of this file.
+
+AwContentsClientBridge* GetAwContentsClientBridgeFromID(int process_id,
+                                                        int render_frame_id) {
+  content::WebContents* wc =
+      process_id
+          ? content::WebContents::FromRenderFrameHost(
+                content::RenderFrameHost::FromID(process_id, render_frame_id))
+          : content::WebContents::FromFrameTreeNodeId(render_frame_id);
+  return AwContentsClientBridge::FromWebContents(wc);
+}
 
 void OnReceivedHttpErrorOnUiThread(
     int process_id,
     int render_frame_id,
     const AwWebResourceRequest& request,
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> http_error_info) {
-  // TODO(timvolodine): consider factoring out this functionality as it will
-  // be needed for other callbacks as well.
-  content::WebContents* wc =
-      process_id
-          ? content::WebContents::FromRenderFrameHost(
-                content::RenderFrameHost::FromID(process_id, render_frame_id))
-          : content::WebContents::FromFrameTreeNodeId(render_frame_id);
-  auto* client = AwContentsClientBridge::FromWebContents(wc);
+  auto* client = GetAwContentsClientBridgeFromID(process_id, render_frame_id);
   if (!client) {
     DLOG(WARNING) << "client is null, onReceivedHttpError dropped for "
                   << request.url;
     return;
   }
   client->OnReceivedHttpError(request, std::move(http_error_info));
+}
+
+void OnReceivedErrorOnUiThread(int process_id,
+                               int render_frame_id,
+                               const AwWebResourceRequest& request,
+                               int error_code) {
+  auto* client = GetAwContentsClientBridgeFromID(process_id, render_frame_id);
+  if (!client) {
+    DLOG(WARNING) << "client is null, onReceivedError dropped for "
+                  << request.url;
+    return;
+  }
+  // TODO(timvolodine): properly handle safe_browsing_hit.
+  client->OnReceivedError(request, error_code, false /*safebrowsing_hit*/);
 }
 
 }  // namespace
@@ -219,6 +240,11 @@ void InterceptedRequest::OnStartLoadingResponseBody(
 
 void InterceptedRequest::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  if (status.error_code != net::OK) {
+    OnRequestError(status);
+    return;
+  }
+
   target_client_->OnComplete(status);
 
   // Deletes |this|.
@@ -265,9 +291,23 @@ void InterceptedRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
   target_client_->OnComplete(status);
 
+  OnReceivedErrorToCallback(status.error_code);
+
   // Deletes |this|.
   // TODO(timvolodine): consider handling this through a data structure.
   delete this;
+}
+
+void InterceptedRequest::OnReceivedErrorToCallback(int error_code) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &OnReceivedErrorOnUiThread, process_id_, request_.render_frame_id,
+          AwWebResourceRequest(
+              request_.url.spec(), request_.method,
+              request_.resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
+              request_.has_user_gesture, request_.headers),
+          error_code));
 }
 
 }  // namespace
