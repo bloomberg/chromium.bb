@@ -55,20 +55,6 @@ std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
 }
 
-keyboard::KeyboardState getKeyboardStateEnum(
-    keyboard_api::KeyboardState state) {
-  switch (state) {
-    case keyboard_api::KEYBOARD_STATE_ENABLED:
-      return keyboard::KEYBOARD_STATE_ENABLED;
-    case keyboard_api::KEYBOARD_STATE_DISABLED:
-      return keyboard::KEYBOARD_STATE_DISABLED;
-    case keyboard_api::KEYBOARD_STATE_AUTO:
-    case keyboard_api::KEYBOARD_STATE_NONE:
-      return keyboard::KEYBOARD_STATE_AUTO;
-  }
-  return keyboard::KEYBOARD_STATE_AUTO;
-}
-
 }  // namespace
 
 namespace extensions {
@@ -132,8 +118,7 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   // This reloads virtual keyboard even if it exists. This ensures virtual
   // keyboard gets the correct state of the hotrod keyboard through
   // chrome.virtualKeyboardPrivate.getKeyboardConfig.
-  if (keyboard::IsKeyboardEnabled())
-    ash::Shell::Get()->EnableKeyboard();
+  ChromeKeyboardControllerClient::Get()->ReloadKeyboard();
 }
 
 bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
@@ -235,17 +220,23 @@ bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
 }
 
 bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
-  keyboard::KeyboardState keyboard_state = getKeyboardStateEnum(
-      static_cast<keyboard_api::KeyboardState>(state_enum));
-  bool was_enabled = keyboard::IsKeyboardEnabled();
-  keyboard::SetRequestedKeyboardState(keyboard_state);
-  bool is_enabled = keyboard::IsKeyboardEnabled();
-  if (was_enabled == is_enabled)
-    return true;
-  if (is_enabled)
-    ash::Shell::Get()->EnableKeyboard();
-  else
-    ash::Shell::Get()->DisableKeyboard();
+  using keyboard::mojom::KeyboardEnableFlag;
+  auto* client = ChromeKeyboardControllerClient::Get();
+  keyboard_api::KeyboardState state =
+      static_cast<keyboard_api::KeyboardState>(state_enum);
+  switch (state) {
+    case keyboard_api::KEYBOARD_STATE_ENABLED:
+      client->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+      break;
+    case keyboard_api::KEYBOARD_STATE_DISABLED:
+      client->SetEnableFlag(KeyboardEnableFlag::kExtensionDisabled);
+      break;
+    case keyboard_api::KEYBOARD_STATE_AUTO:
+    case keyboard_api::KEYBOARD_STATE_NONE:
+      client->ClearEnableFlag(KeyboardEnableFlag::kExtensionDisabled);
+      client->ClearEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+      break;
+  }
   return true;
 }
 
@@ -385,8 +376,7 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
     // keyboard gets the correct state through
     // chrome.virtualKeyboardPrivate.getKeyboardConfig.
     // TODO(oka): Extension should reload on it's own by receiving event
-    if (keyboard::IsKeyboardEnabled())
-      ash::Shell::Get()->EnableKeyboard();
+    ChromeKeyboardControllerClient::Get()->ReloadKeyboard();
   }
   return update;
 }
