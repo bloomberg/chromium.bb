@@ -92,6 +92,15 @@ void AutomationManagerAura::HandleEvent(views::View* view,
                      weak_ptr_factory_.GetWeakPtr(), id, event_type));
 }
 
+void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
+#if defined(OS_CHROMEOS)
+  aura::Window* root_window = ash::wm::GetActiveWindow();
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(root_window);
+  if (widget)
+    HandleEvent(widget->GetRootView(), event_type);
+#endif
+}
+
 void AutomationManagerAura::SendEventOnObjectById(int32_t id,
                                                   ax::mojom::Event event_type) {
   views::AXAuraObjWrapper* obj = views::AXAuraObjCache::GetInstance()->Get(id);
