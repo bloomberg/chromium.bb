@@ -116,6 +116,7 @@ const char kMP3[] = "audio/mpeg";
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 const char kMP4AV1[] = "video/mp4; codecs=\"av01.0.04M.08\"";
 const char kWebMAV1[] = "video/webm; codecs=\"av01.0.04M.08\"";
+const int kAV110BitMp4FileDurationMs = 2735;
 const int kAV1640WebMFileDurationMs = 2736;
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -1534,6 +1535,28 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_WebM) {
   source.Shutdown();
   Stop();
 }
+
+TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_WebM) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
+
+  MockMediaSource source("bear-av1-320x180-10bit.webm", kWebMAV1, 19076);
+  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kVP9WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YUV420P10);
+  Stop();
+}
+
 #endif
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP9_WebM) {
@@ -1901,6 +1924,26 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
 
   ASSERT_TRUE(WaitUntilOnEnded());
   source.Shutdown();
+  Stop();
+}
+
+TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_MP4) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
+  MockMediaSource source("bear-av1-320x180-10bit.mp4", kMP4AV1, 19658);
+  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kAV110BitMp4FileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YUV420P10);
   Stop();
 }
 #endif
