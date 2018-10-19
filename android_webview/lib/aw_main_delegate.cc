@@ -25,6 +25,7 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/i18n/icu_util.h"
+#include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -51,6 +52,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -225,6 +227,10 @@ void AwMainDelegate::PreSandboxStartup() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  const std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
+  base::i18n::SetICUDefaultLocale(locale);
+
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   int crash_signal_fd = -1;
