@@ -32,6 +32,8 @@ static_library("update_client") {
     "ping_manager.h",
     "protocol_definition.cc",
     "protocol_definition.h",
+    "protocol_handler.cc",
+    "protocol_handler.h",
     "protocol_parser.cc",
     "protocol_parser.h",
     "protocol_parser_xml.cc",
