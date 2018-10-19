@@ -981,7 +981,7 @@ void HandleVolumeMute(mojom::VolumeController* volume_controller,
     base::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
 
   if (volume_controller)
-    volume_controller->VolumeMute();
+    volume_controller->VolumeMuteToggle();
 }
 
 void HandleVolumeUp(mojom::VolumeController* volume_controller,
