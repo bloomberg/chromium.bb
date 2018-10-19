@@ -1522,10 +1522,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // A callback allow waiting for responses to complete with an expected status
   // and given content.
   auto make_browser_request =
-      [this](network::mojom::URLLoaderFactory* url_loader_factory,
-             const GURL& url,
-             const base::Optional<std::string>& expected_response,
-             int expected_net_code) {
+      [](network::mojom::URLLoaderFactory* url_loader_factory, const GURL& url,
+         const base::Optional<std::string>& expected_response,
+         int expected_net_code) {
         auto request = std::make_unique<network::ResourceRequest>();
         request->url = url;
 
