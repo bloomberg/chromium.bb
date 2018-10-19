@@ -3494,8 +3494,10 @@ static void update_reference_frames(AV1_COMP *cpi) {
   if (cm->show_existing_frame) {
     // If we are not indicating to the decoder that this frame is
     // a show_existing_frame, which occurs in error_resilient mode,
-    // we still want to refresh the LAST_FRAME.
-    cpi->refresh_last_frame = !encode_show_existing_frame(cm);
+    // we still want to refresh the LAST_FRAME when the current frame
+    // was the source of an ext_arf.
+    cpi->refresh_last_frame =
+        !encode_show_existing_frame(cm) && cpi->rc.is_src_frame_ext_arf;
     cpi->refresh_golden_frame = 0;
     cpi->refresh_bwd_ref_frame = 0;
     cpi->refresh_alt2_ref_frame = 0;
