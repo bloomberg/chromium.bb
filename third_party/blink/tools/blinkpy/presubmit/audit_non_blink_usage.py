@@ -220,6 +220,7 @@ _CONFIG = [
             'encoding::.+',
             'event_handling_util::.+',
             'event_util::.+',
+            'media_constraints_impl::.+',
             'scheduler::.+',
             'touch_action_util::.+',
             'xpath::.+',

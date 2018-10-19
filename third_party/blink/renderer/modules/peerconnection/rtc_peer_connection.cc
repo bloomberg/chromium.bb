@@ -546,7 +546,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   MediaErrorState media_error_state;
-  WebMediaConstraints constraints = MediaConstraintsImpl::Create(
+  WebMediaConstraints constraints = media_constraints_impl::Create(
       context, media_constraints, media_error_state);
   if (media_error_state.HadException()) {
     media_error_state.RaiseException(exception_state);
@@ -717,7 +717,7 @@ ScriptPromise RTCPeerConnection::createOffer(
     peer_handler_->CreateOffer(request, WebRTCOfferOptions(offer_options));
   } else {
     MediaErrorState media_error_state;
-    WebMediaConstraints constraints = MediaConstraintsImpl::Create(
+    WebMediaConstraints constraints = media_constraints_impl::Create(
         context, rtc_offer_options, media_error_state);
     // Report constraints parsing errors via the callback, but ignore
     // unknown/unsupported constraints as they would be silently discarded by
@@ -784,7 +784,7 @@ ScriptPromise RTCPeerConnection::createAnswer(
     return ScriptPromise::CastUndefined(script_state);
 
   MediaErrorState media_error_state;
-  WebMediaConstraints constraints = MediaConstraintsImpl::Create(
+  WebMediaConstraints constraints = media_constraints_impl::Create(
       context, media_constraints, media_error_state);
   // Report constraints parsing errors via the callback, but ignore
   // unknown/unsupported constraints as they would be silently discarded by
@@ -1444,8 +1444,8 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
   if (!media_constraints.IsUndefinedOrNull()) {
     MediaErrorState media_error_state;
     WebMediaConstraints constraints =
-        MediaConstraintsImpl::Create(ExecutionContext::From(script_state),
-                                     media_constraints, media_error_state);
+        media_constraints_impl::Create(ExecutionContext::From(script_state),
+                                       media_constraints, media_error_state);
     if (media_error_state.HadException()) {
       media_error_state.RaiseException(exception_state);
       return;

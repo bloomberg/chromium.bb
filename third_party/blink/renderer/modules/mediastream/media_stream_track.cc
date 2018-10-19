@@ -392,8 +392,8 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
 }
 
 void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
-  MediaConstraintsImpl::ConvertConstraints(component_->Constraints(),
-                                           constraints);
+  media_constraints_impl::ConvertConstraints(component_->Constraints(),
+                                             constraints);
 
   if (!image_capture_)
     return;
@@ -543,8 +543,8 @@ ScriptPromise MediaStreamTrack::applyConstraints(
 
   MediaErrorState error_state;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  WebMediaConstraints web_constraints =
-      MediaConstraintsImpl::Create(execution_context, constraints, error_state);
+  WebMediaConstraints web_constraints = media_constraints_impl::Create(
+      execution_context, constraints, error_state);
   if (error_state.HadException()) {
     resolver->Reject(
         OverconstrainedError::Create(String(), "Cannot parse constraints"));
