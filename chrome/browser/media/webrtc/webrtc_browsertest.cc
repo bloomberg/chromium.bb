@@ -224,8 +224,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   DetectVideoAndHangUp();
 }
 
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise \
+  DISABLED_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise
+#else
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise \
+  RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
+                       MAYBE_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
