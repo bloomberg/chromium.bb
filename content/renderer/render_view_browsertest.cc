@@ -777,6 +777,42 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   CloseRenderView(new_view);
 }
 
+class AlwaysForkingRenderViewTest : public RenderViewImplTest {
+ public:
+  ContentRendererClient* CreateContentRendererClient() override {
+    return new TestContentRendererClient;
+  }
+
+ private:
+  class TestContentRendererClient : public ContentRendererClient {
+   public:
+    bool ShouldFork(blink::WebLocalFrame* frame,
+                    const GURL& url,
+                    const std::string& http_method,
+                    bool is_initial_navigation,
+                    bool is_server_redirect) override {
+      return true;
+    }
+  };
+};
+
+TEST_F(AlwaysForkingRenderViewTest, DecideNavigationPolicyDoesNotForkEmptyUrl) {
+  // Empty url should never fork.
+  blink::WebURLRequest request(GURL(""));
+  blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
+  policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
+  blink::WebNavigationPolicy policy =
+      frame()->DecidePolicyForNavigation(policy_info);
+  EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
+
+  // About blank should never fork as well.
+  blink::WebURLRequest about_request(GURL("about:blank"));
+  blink::WebLocalFrameClient::NavigationPolicyInfo about_info(about_request);
+  about_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
+  policy = frame()->DecidePolicyForNavigation(about_info);
+  EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
+}
+
 // This test verifies that when device emulation is enabled, RenderFrameProxy
 // continues to receive the original ScreenInfo and not the emualted
 // ScreenInfo.

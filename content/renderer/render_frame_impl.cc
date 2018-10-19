@@ -5995,6 +5995,20 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // This method is only called for renderer initiated navigations, which
   // may have originated from a link-click, script, drag-n-drop operation, etc.
 
+  // Note that we don't want to go to browser for a navigation to an empty url,
+  // which happens for window.open('') call. An example would be embedder
+  // deciding to fork the process for the empty url, or setting
+  // |browser_handles_all_top_level_requests| preference.
+  //
+  // Doing a browser-side navigation might later trigger unload handlers,
+  // e.g. when the dom window of the popup has already been touched
+  // synchronously in this process. We should avoid that.
+  //
+  // See the checks for empty url in the cases below.
+  // TODO(dgozman): if we rewrite empty url to about:blank earlier
+  // (we currently do that in DocumentLoader), all the empty checks can be
+  // removed, since they already account for an empty url.
+
   // Blink is asking whether to navigate to a new URL.
   // This is fine normally, except if we're showing UI from one security
   // context and they're trying to navigate to a different context.
@@ -6005,7 +6019,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       render_view_->was_created_by_renderer_;
   // The handlenavigation API is deprecated and will be removed once
   // crbug.com/325351 is resolved.
-  if (!IsURLHandledByNetworkStack(url) &&
+  if (!IsURLHandledByNetworkStack(url) && !url.is_empty() &&
       GetContentClient()->renderer()->HandleNavigation(
           this, true /* is_content_initiated */,
           render_view_was_created_by_renderer, frame_, info.url_request,
@@ -6074,7 +6088,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations (not iframes). But we sometimes navigate to
   // about:blank to clear a tab, and we want to still allow that.
-  if (!frame_->Parent() && !url.SchemeIs(url::kAboutScheme)) {
+  if (!frame_->Parent() && !url.SchemeIs(url::kAboutScheme) &&
+      !url.is_empty()) {
     // All navigations to or from WebUI URLs or within WebUI-enabled
     // RenderProcesses must be handled by the browser process so that the
     // correct bindings and data sources can be registered.
