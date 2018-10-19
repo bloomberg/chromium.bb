@@ -396,10 +396,16 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
         "test/rendering_helper.h",
         "test/video_decode_accelerator_unittest_helpers.cc",
         "test/video_decode_accelerator_unittest_helpers.h",
+        "test/video_frame_mapper.h",
+        "test/video_frame_mapper_factory.cc",
+        "test/video_frame_mapper_factory.h",
+        "test/video_frame_validator.cc",
+        "test/video_frame_validator.h",
         "video_decode_accelerator_unittest.cc",
       ]
       deps += [
         "//mojo/core/embedder",
+        "//third_party/libyuv",
         "//ui/display",
         "//ui/display/types",
         "//ui/platform_window",
@@ -421,6 +427,13 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
       deps += [
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
+      ]
+    }
+
+    if (is_chromeos) {
+      sources += [
+        "test/generic_dmabuf_video_frame_mapper.cc",
+        "test/generic_dmabuf_video_frame_mapper.h",
       ]
     }
 
