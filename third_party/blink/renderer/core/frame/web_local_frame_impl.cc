@@ -94,6 +94,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_double_size.h"
@@ -1842,12 +1844,14 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
           owner_element->getAttribute(
               owner_element->SubResourceAttributeName()),
           static_cast<WebSandboxFlags>(owner_element->GetSandboxFlags()),
-          owner_element->ContainerPolicy(), owner_properties));
+          owner_element->ContainerPolicy(), owner_properties,
+          owner_element->OwnerType()));
   if (!webframe_child)
     return nullptr;
 
   webframe_child->InitializeCoreFrame(*GetFrame()->GetPage(), owner_element,
                                       name);
+
   DCHECK(webframe_child->Parent());
   return webframe_child->GetFrame();
 }
@@ -2139,6 +2143,14 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
 
   GetFrame()->Loader().GetProvisionalDocumentLoader()->LoadFailed(error);
   return FallbackRendered;
+}
+
+void WebLocalFrameImpl::RenderFallbackContent() const {
+  // TODO(ekaramad): If the owner renders its own content, then the current
+  // ContentFrame() should detach (see https://crbug.com/850223).
+  auto* owner = frame_->DeprecatedLocalOwner();
+  DCHECK(IsHTMLObjectElement(owner));
+  owner->RenderFallbackContent(frame_);
 }
 
 // Called when a navigation is blocked because a Content Security Policy (CSP)
