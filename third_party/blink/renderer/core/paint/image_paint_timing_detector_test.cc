@@ -178,12 +178,14 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_IgnoreTheRemoved) {
   ImageRecord* record;
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
+  EXPECT_NE(LargestPaintStoredResult(), base::TimeTicks());
 
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("target"));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
+  EXPECT_EQ(LargestPaintStoredResult(), base::TimeTicks());
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
