@@ -1398,6 +1398,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="18" label="LAUNCH_SOURCE_CHROME_INTERNAL"/>
   <int value="19" label="LAUNCH_SOURCE_TEST"/>
   <int value="20" label="LAUNCH_SOURCE_INSTALLED_NOTIFICATION"/>
+  <int value="21" label="LAUNCH_SOURCE_CONTEXT_MENU"/>
+  <int value="22" label="LAUNCH_SOURCE_ARC"/>
 </enum>
 
 <enum name="AppleScriptCommandEvents">

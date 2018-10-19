@@ -161,7 +161,7 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
 void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Converts |url| to a fixed-up one and checks validity.
-  const GURL gurl(url_formatter::FixupURL(url, std::string()));
+  const GURL gurl(url_formatter::FixupURL(url, /*desired_tld=*/std::string()));
   if (!gurl.is_valid())
     return;
 
@@ -206,6 +206,18 @@ void ArcIntentHelperBridge::OpenVolumeControl() {
   auto* audio = ArcAudioBridge::GetForBrowserContext(context_);
   DCHECK(audio);
   audio->ShowVolumeControls();
+}
+
+void ArcIntentHelperBridge::OnOpenWebApp(const std::string& url) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Converts |url| to a fixed-up one and checks validity.
+  const GURL gurl(url_formatter::FixupURL(url, /*desired_tld=*/std::string()));
+  if (!gurl.is_valid())
+    return;
+
+  // Web app launches should only be invoked on HTTPS URLs.
+  if (gurl.SchemeIs(url::kHttpsScheme))
+    g_open_url_delegate->OpenWebAppFromArc(gurl);
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
