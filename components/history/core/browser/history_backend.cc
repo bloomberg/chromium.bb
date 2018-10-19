@@ -830,7 +830,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     bool should_increment_typed_count,
     base::Optional<base::string16> title) {
   if (!host_ranks_.empty() && visit_source == SOURCE_BROWSED &&
-      (transition & ui::PAGE_TRANSITION_CHAIN_END)) {
+      (transition & ui::PAGE_TRANSITION_CHAIN_END) && !hidden &&
+      !PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) {
     RecordTopHostsMetrics(url);
   }
 
