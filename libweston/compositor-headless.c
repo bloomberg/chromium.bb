@@ -36,6 +36,7 @@
 #include "compositor.h"
 #include "compositor-headless.h"
 #include "shared/helpers.h"
+#include "linux-explicit-synchronization.h"
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
 #include "windowed-output-api.h"
@@ -337,6 +338,11 @@ headless_backend_create(struct weston_compositor *compositor,
 	}
 
 	if (!b->use_pixman && noop_renderer_init(compositor) < 0)
+		goto err_input;
+
+	/* Support zwp_linux_explicit_synchronization_unstable_v1 to enable
+	 * testing. */
+	if (linux_explicit_synchronization_setup(compositor) < 0)
 		goto err_input;
 
 	ret = weston_plugin_api_register(compositor, WESTON_WINDOWED_OUTPUT_API_NAME,

@@ -127,6 +127,13 @@ tests_weston = [
 			input_timestamps_unstable_v1_protocol_c,
 		]
 	],
+	[
+		'linux-explicit-synchronization',
+		[
+			linux_explicit_synchronization_unstable_v1_client_protocol_h,
+			linux_explicit_synchronization_unstable_v1_protocol_c,
+		]
+	],
 	['internal-screenshot'],
 	[
 		'presentation',

@@ -1486,6 +1486,9 @@ struct weston_surface {
 
 	/* An list of per seat pointer constraints. */
 	struct wl_list pointer_constraints;
+
+	/* zwp_surface_synchronization_v1 resource for this surface */
+	struct wl_resource *synchronization_resource;
 };
 
 struct weston_subsurface {

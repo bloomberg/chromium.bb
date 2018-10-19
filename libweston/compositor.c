@@ -2035,6 +2035,11 @@ destroy_surface(struct wl_resource *resource)
 	if (surface->viewport_resource)
 		wl_resource_set_user_data(surface->viewport_resource, NULL);
 
+	if (surface->synchronization_resource) {
+		wl_resource_set_user_data(surface->synchronization_resource,
+					  NULL);
+	}
+
 	weston_surface_destroy(surface);
 }
 

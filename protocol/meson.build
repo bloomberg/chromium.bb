@@ -1,7 +1,10 @@
 dep_scanner = dependency('wayland-scanner', native: true)
 prog_scanner = find_program(dep_scanner.get_pkgconfig_variable('wayland_scanner'))
 
-dep_wp = dependency('wayland-protocols', version: '>= 1.14')
+# XXX: For minor version 2 of zwp_linux_explicit_synchronization_v1, we
+# actually need a development version after 1.17, but there is no way to
+# express such a requirement at the moment.
+dep_wp = dependency('wayland-protocols', version: '>= 1.17')
 dir_wp_base = dep_wp.get_pkgconfig_variable('pkgdatadir')
 
 install_data(
@@ -18,6 +21,7 @@ generated_protocols = [
 	[ 'ivi-hmi-controller', 'internal' ],
 	[ 'fullscreen-shell', 'v1' ],
 	[ 'linux-dmabuf', 'v1' ],
+	[ 'linux-explicit-synchronization', 'v1' ],
 	[ 'presentation-time', 'stable' ],
 	[ 'pointer-constraints', 'v1' ],
 	[ 'relative-pointer', 'v1' ],
