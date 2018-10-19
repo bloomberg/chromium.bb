@@ -322,7 +322,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
 
 - (void)safeAreaInsetsDidChange {
   [super safeAreaInsetsDidChange];
-  [self layoutOKButton];
+  [self layoutOKButtonAndContainerView];
 }
 
 - (void)layoutSubviews {
@@ -332,6 +332,10 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   [self layoutTOSLabel];
   [self layoutOptInLabel];
   [self layoutCheckBoxButton];
+  [self layoutOKButtonAndContainerView];
+}
+
+- (void)layoutOKButtonAndContainerView {
   // The OK Button must be laid out before the container view so that the
   // container view can take its position into account.
   [self layoutOKButton];
