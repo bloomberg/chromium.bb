@@ -58,8 +58,6 @@ class ElementInnerTextCollector final {
     String Finish();
     void FlushCollapsibleSpace();
 
-    bool HasCollapsibleSpace() const { return has_collapsible_space_; }
-
     void SetShouldCollapseWhitespace(bool value) {
       should_collapse_white_space_ = value;
     }
