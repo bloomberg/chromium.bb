@@ -22,6 +22,7 @@ Polymer({
 
     /**
      * The current sync status, supplied by SyncBrowserProxy.
+     * TODO(dpapad): make |syncStatus| private.
      * @type {?settings.SyncStatus}
      */
     syncStatus: Object,
@@ -431,6 +432,6 @@ Polymer({
    * @private
    */
   shouldShowFooter_: function() {
-    return this.diceEnabled_ && !!this.syncStatus.signedIn;
+    return this.diceEnabled_ && !!this.syncStatus && !!this.syncStatus.signedIn;
   },
 });
