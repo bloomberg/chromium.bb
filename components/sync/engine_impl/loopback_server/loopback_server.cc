@@ -138,6 +138,7 @@ LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
       store_birthday_(0),
       persistent_file_(persistent_file),
       observer_for_tests_(nullptr) {
+  DCHECK(!persistent_file_.empty());
   Init();
 }
 
