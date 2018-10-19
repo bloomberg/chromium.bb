@@ -80,7 +80,7 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
 
   def run_test(self):
     try:
-      super(TypUnittestAdapter, self).run_test()
+      return super(TypUnittestAdapter, self).run_test()
     finally:
       # Clean up the temp filter file at the end after the test has
       # finished the run if needed.
