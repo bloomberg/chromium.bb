@@ -10634,11 +10634,10 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   ShutdownTest();
 }
 
-// TODO(crbug.com/897062): Investigate flakiness
 // This test verifies that the handles associated with an active touch selection
 // are still correctly positioned after a pinch-zoom operation.
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
-                       DISABLED_SelectionThenPinchInOOPIF) {
+                       SelectionThenPinchInOOPIF) {
   // Load test URL with cross-process child.
   SetupTest();
 
@@ -10693,7 +10692,11 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   gesture_pinch_end_waiter.Wait();
 
   VerifyHandlePosition();
-  EXPECT_NEAR(target_page_scale, PageScaleFactor(), 0.01);
+  // TODO(wjmaclean): Investigate why SyntheticTouchscreenPinchGesture final
+  // scales are so imprecise.
+  // https://crbug.com/897173
+  const float kScaleFactorTolerance = 0.05f;
+  EXPECT_NEAR(target_page_scale, PageScaleFactor(), kScaleFactorTolerance);
 
   // Cleanup before shutting down.
   ShutdownTest();
