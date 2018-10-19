@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 
 namespace safe_browsing {

@@ -172,7 +172,6 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #endif
 
@@ -360,8 +359,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   resource_coordinator::LocalSiteCharacteristicsDataStoreFactory::GetInstance();
 #endif
 #if defined(FULL_SAFE_BROWSING)
-  if (safe_browsing::AdvancedProtectionStatusManager::IsEnabled())
-    safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
+  safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
 #endif
 #if defined(OS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();

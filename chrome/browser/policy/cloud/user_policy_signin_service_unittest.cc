@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -440,8 +441,9 @@ TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  std::string account_id = AccountTrackerService::PickAccountIdForAccount(
-      profile_.get()->GetPrefs(), kTestGaiaId, kTestUser);
+  std::string account_id =
+      AccountTrackerServiceFactory::GetForProfile(profile_.get())
+          ->SeedAccountInfo(kTestGaiaId, kTestUser);
   GetTokenService()->UpdateCredentials(account_id, "oauth_login_refresh_token");
 
   // Not signed in yet, so client registration should be deferred.

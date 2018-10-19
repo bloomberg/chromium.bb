@@ -29,17 +29,19 @@ class ChildAccountServiceTest : public ::testing::Test {
   ChildAccountServiceTest() = default;
 
   void SetUp() override {
-    ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
-        &profile_, base::BindRepeating(&BuildTestSigninClient));
-    GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, base::BindRepeating(&BuildFakeGaiaCookieManagerService));
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
+                              BuildTestSigninClient);
+    builder.AddTestingFactory(GaiaCookieManagerServiceFactory::GetInstance(),
+                              BuildFakeGaiaCookieManagerService);
+    profile_ = builder.Build();
     gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
-        GaiaCookieManagerServiceFactory::GetForProfile(&profile_));
+        GaiaCookieManagerServiceFactory::GetForProfile(profile_.get()));
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   FakeGaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
 };
 
@@ -47,7 +49,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
   gaia_cookie_manager_service_->SetListAccountsResponseNoAccounts();
 
   ChildAccountService* child_account_service =
-      ChildAccountServiceFactory::GetForProfile(&profile_);
+      ChildAccountServiceFactory::GetForProfile(profile_.get());
 
   // Initial state should be PENDING.
   EXPECT_EQ(ChildAccountService::AuthState::PENDING,
