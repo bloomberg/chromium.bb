@@ -1769,12 +1769,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       self.sharedState.currentlyShowingSearchResults = NO;
       // Restore current list.
       [self.mediator computeBookmarkTableViewData];
+      [self.mediator computePromoTableViewData];
       [self.sharedState.tableView reloadData];
       [self showScrim];
     }
   } else {
     if (!self.sharedState.currentlyShowingSearchResults) {
       self.sharedState.currentlyShowingSearchResults = YES;
+      [self.mediator computePromoTableViewData];
       [self hideScrim];
     }
     // Replace current list with search result, but doesn't change
