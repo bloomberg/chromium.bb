@@ -65,7 +65,7 @@ std::unique_ptr<ScriptRegexp> EmailInputType::CreateEmailRegexp() {
 
 String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
                                                   const String& address) {
-  if (address.ContainsOnlyASCII())
+  if (address.ContainsOnlyASCIIOrEmpty())
     return address;
 
   wtf_size_t at_position = address.find('@');
@@ -104,7 +104,7 @@ String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
 
 String EmailInputType::ConvertEmailAddressToUnicode(
     const String& address) const {
-  if (!address.ContainsOnlyASCII())
+  if (!address.ContainsOnlyASCIIOrEmpty())
     return address;
 
   wtf_size_t at_position = address.find('@');

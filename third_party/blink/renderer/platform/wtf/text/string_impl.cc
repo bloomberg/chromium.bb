@@ -76,7 +76,7 @@ void StringImpl::DestroyIfNotStatic() const {
     delete this;
 }
 
-void StringImpl::UpdateContainsOnlyASCII() const {
+void StringImpl::UpdateContainsOnlyASCIIOrEmpty() const {
   contains_only_ascii_ = Is8Bit()
                              ? CharactersAreAllASCII(Characters8(), length())
                              : CharactersAreAllASCII(Characters16(), length());

@@ -36,7 +36,7 @@ String GetDataResourceAsASCIIString(const char* resource) {
 
   String data_string = builder.ToString();
   DCHECK(!data_string.IsEmpty());
-  DCHECK(data_string.ContainsOnlyASCII());
+  DCHECK(data_string.ContainsOnlyASCIIOrEmpty());
   return data_string;
 }
 

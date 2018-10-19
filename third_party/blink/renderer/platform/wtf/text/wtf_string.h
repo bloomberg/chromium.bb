@@ -502,8 +502,8 @@ class WTF_EXPORT String {
                                       length);
   }
 
-  bool ContainsOnlyASCII() const {
-    return !impl_ || impl_->ContainsOnlyASCII();
+  bool ContainsOnlyASCIIOrEmpty() const {
+    return !impl_ || impl_->ContainsOnlyASCIIOrEmpty();
   }
   bool ContainsOnlyLatin1OrEmpty() const;
   bool ContainsOnlyWhitespaceOrEmpty() const {

@@ -72,7 +72,7 @@ static bool IsValidSessionId(const String& session_id) {
       (session_id.length() > MaxSessionIdLength))
     return false;
 
-  if (!session_id.ContainsOnlyASCII())
+  if (!session_id.ContainsOnlyASCIIOrEmpty())
     return false;
 
   // Check that the sessionId only contains alphanumeric characters.
