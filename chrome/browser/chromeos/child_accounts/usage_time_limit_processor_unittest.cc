@@ -804,6 +804,80 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOldLockOverride) {
   AssertEqState(expected_state_three, state_three);
 }
 
+// Make sure that the default bedtime is correctly processed
+TEST_F(UsageTimeLimitProcessorTest, GetStateDefaultBedtime) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("PST"));
+
+  // Setup time window limit.
+  std::string last_updated = CreatePolicyTimestamp("1 Jan 2018 8:00 PST");
+  base::Value monday_time_limit =
+      CreateTimeWindow(base::Value("MONDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+  base::Value tuesday_time_limit =
+      CreateTimeWindow(base::Value("TUESDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+  base::Value wednesday_time_limit =
+      CreateTimeWindow(base::Value("WEDNESDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+  base::Value thursday_time_limit =
+      CreateTimeWindow(base::Value("THURSDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+  base::Value friday_time_limit =
+      CreateTimeWindow(base::Value("FRIDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+  base::Value saturday_time_limit =
+      CreateTimeWindow(base::Value("SATURDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+  base::Value sunday_time_limit =
+      CreateTimeWindow(base::Value("SUNDAY"), CreateTime(21, 0),
+                       CreateTime(7, 0), base::Value(last_updated));
+
+  base::Value window_limit_entries(base::Value::Type::LIST);
+  window_limit_entries.GetList().push_back(std::move(monday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(tuesday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(wednesday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(thursday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(friday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(saturday_time_limit));
+  window_limit_entries.GetList().push_back(std::move(sunday_time_limit));
+
+  base::Value time_window_limit(base::Value::Type::DICTIONARY);
+  time_window_limit.SetKey("entries", std::move(window_limit_entries));
+
+  base::Value time_usage_limit = base::Value(base::Value::Type::DICTIONARY);
+  time_usage_limit.SetKey("reset_at", CreateTime(6, 0));
+
+  // Setup policy.
+  std::unique_ptr<base::Value> time_limit =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  time_limit->SetKey("time_window_limit", std::move(time_window_limit));
+  time_limit->SetKey("time_usage_limit", std::move(time_usage_limit));
+
+  std::unique_ptr<base::DictionaryValue> time_limit_dictionary =
+      base::DictionaryValue::From(std::move(time_limit));
+
+  // Check that the device is locked, and that it should unlock on the next
+  // morning.
+  base::Time time_one = TimeFromString("Mon, 1 Jan 2018 22:00 PST");
+  State state_one =
+      GetState(time_limit_dictionary, base::TimeDelta::FromMinutes(40),
+               time_one, time_one, timezone.get(), base::nullopt);
+
+  State expected_state_one;
+  expected_state_one.is_locked = true;
+  expected_state_one.active_policy = ActivePolicies::kFixedLimit;
+  expected_state_one.is_time_usage_limit_enabled = false;
+  expected_state_one.remaining_usage = base::TimeDelta::FromMinutes(0);
+  expected_state_one.next_state_change_time =
+      TimeFromString("Tue, 2 Jan 2018 7:00 PST");
+  expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
+  expected_state_one.next_unlock_time =
+      TimeFromString("Tue, 2 Jan 2018 7:00 PST");
+  expected_state_one.last_state_changed = base::Time();
+
+  AssertEqState(expected_state_one, state_one);
+}
+
 // Test GetExpectedResetTime with an empty policy.
 TEST_F(UsageTimeLimitProcessorTest, GetExpectedResetTimeWithEmptyPolicy) {
   std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("GMT"));

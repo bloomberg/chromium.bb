@@ -318,16 +318,17 @@ base::TimeDelta UsageTimeLimitProcessor::GetConsecutiveTimeWindowLimitDuration(
       break;
 
     if (window_limit_entry->IsOvernight()) {
-      duration += base::TimeDelta(base::TimeDelta::FromHours(24) -
-                                  window_limit_entry->starts_at) +
-                  base::TimeDelta(window_limit_entry->ends_at);
+      duration +=
+          base::TimeDelta(base::TimeDelta::FromHours(24) - last_entry_end) +
+          base::TimeDelta(window_limit_entry->ends_at);
     } else {
-      duration += base::TimeDelta(window_limit_entry->ends_at -
-                                  window_limit_entry->starts_at);
+      duration += std::max(window_limit_entry->ends_at - last_entry_end,
+                           base::TimeDelta::FromMinutes(0));
       // This entry is not overnight, so the next one cannot be a consecutive
       // window.
       break;
     }
+    last_entry_end = window_limit_entry->ends_at;
   }
 
   return duration;
