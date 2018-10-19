@@ -257,7 +257,8 @@ const int kMaxBookmarksSearchResults = 50;
   // the permanent nodes.
   BOOL promoVisible = ((self.sharedState.tableViewDisplayedRootNode ==
                         self.sharedState.bookmarkModel->root_node()) &&
-                       self.bookmarkPromoController.shouldShowSigninPromo);
+                       self.bookmarkPromoController.shouldShowSigninPromo &&
+                       !self.sharedState.currentlyShowingSearchResults);
 
   if (promoVisible == self.sharedState.promoVisible) {
     return;
