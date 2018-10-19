@@ -11,17 +11,12 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_change_processor.h"
-
-namespace sync_pb {
-class EntitySpecifics;
-}  // namespace sync_pb
 
 namespace syncer {
 
@@ -36,35 +31,12 @@ class SyncableService;
 // considered an implementation detail.
 class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
  public:
-  // Used for passwords only.
-  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS, which
-  // will likely make this API unnecessary.
-  class ModelCryptographer
-      : public base::RefCountedThreadSafe<ModelCryptographer> {
-   public:
-    ModelCryptographer();
-
-    virtual base::Optional<ModelError> Decrypt(
-        sync_pb::EntitySpecifics* specifics) = 0;
-    virtual base::Optional<ModelError> Encrypt(
-        sync_pb::EntitySpecifics* specifics) = 0;
-
-   protected:
-    virtual ~ModelCryptographer();
-
-   private:
-    friend class base::RefCountedThreadSafe<ModelCryptographer>;
-
-    DISALLOW_COPY_AND_ASSIGN(ModelCryptographer);
-  };
-
   // Pointers must not be null and |syncable_service| must outlive this object.
   SyncableServiceBasedBridge(
       ModelType type,
       OnceModelTypeStoreFactory store_factory,
       std::unique_ptr<ModelTypeChangeProcessor> change_processor,
-      SyncableService* syncable_service,
-      scoped_refptr<ModelCryptographer> cryptographer = nullptr);
+      SyncableService* syncable_service);
   ~SyncableServiceBasedBridge() override;
 
   // ModelTypeSyncBridge implementation.
@@ -98,10 +70,9 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   void OnReadAllMetadataForInit(const base::Optional<ModelError>& error,
                                 std::unique_ptr<MetadataBatch> metadata_batch);
   void MaybeStartSyncableService();
-  base::Optional<ModelError> StoreAndConvertRemoteChanges(
+  SyncChangeList StoreAndConvertRemoteChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList input_entity_change_list,
-      SyncChangeList* output_sync_change_list);
+      EntityChangeList entity_change_list);
   void OnReadDataForProcessor(
       DataCallback callback,
       const base::Optional<ModelError>& error,
@@ -115,7 +86,6 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   const ModelType type_;
   SyncableService* const syncable_service_;
-  const scoped_refptr<ModelCryptographer> cryptographer_;
   OnceModelTypeStoreFactory store_factory_;
 
   std::unique_ptr<ModelTypeStore> store_;
