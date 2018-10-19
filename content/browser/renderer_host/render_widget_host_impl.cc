@@ -13,6 +13,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/i18n/rtl.h"
@@ -325,7 +326,68 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
 
 base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
     LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
+
+// KeyEventResultTracker is used to update the status of the KeyEvent. If the
+// event is sent to the renderer, the status is updated asynchronously.
+// KeyEventResultTracker is owned by the callback supplied to
+// InputRouter::SendKeyboardEvent() and passed to the callback function
+// (OnKeyboardEventAck()).
+class RenderWidgetHostImpl::KeyEventResultTracker {
+ public:
+  explicit KeyEventResultTracker(ui::KeyEvent* key_event)
+      : key_event_(key_event) {
+    DCHECK(key_event_);
+  }
+
+  ~KeyEventResultTracker() {
+    if (is_async_ && async_callback_)
+      std::move(async_callback_).Run(false);
+  }
+
+  base::WeakPtr<KeyEventResultTracker> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  bool is_async() const { return is_async_; }
+
+  // Called if the event is being sent to the renderer.
+  void PrepareForAsync() {
+    DCHECK(!is_async_);
+    is_async_ = true;
+    async_callback_ = key_event_->WillHandleAsync();
+    // Null out |key_event_| as KeyEvent is not owned by this, and generally
+    // owned higher up the stack. Because the processing is async, |key_event_|
+    // will be deleted *before* OnEventProcessingDone() or the destructor is
+    // called.
+    key_event_ = nullptr;
+  }
+
+  // Called when processing is complete. This may never be called, in which case
+  // the destructor is responsible for updating the callback from the event.
+  void OnEventProcessingDone(bool handled) {
+    if (is_async_ && async_callback_)
+      std::move(async_callback_).Run(handled);
+    else if (!is_async_ && handled)
+      key_event_->SetHandled();
+  }
+
+ private:
+  // The event. This is set to null if the event is sent to the renderer.
+  ui::KeyEvent* key_event_;
+
+  // Set to true if the event is sent to the renderer.
+  bool is_async_ = false;
+
+  // Callback from the event. This is obtained from |key_event_| if the event is
+  // handled async.
+  base::OnceCallback<void(bool)> async_callback_;
+
+  base::WeakPtrFactory<KeyEventResultTracker> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(KeyEventResultTracker);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostImpl
@@ -1351,13 +1413,15 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 void RenderWidgetHostImpl::ForwardKeyboardEventWithLatencyInfo(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency) {
-  ForwardKeyboardEventWithCommands(key_event, latency, nullptr, nullptr);
+  ForwardKeyboardEventWithCommands(key_event, latency, nullptr, nullptr,
+                                   nullptr);
 }
 
 void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency,
     const std::vector<EditCommand>* commands,
+    ui::KeyEvent* original_key_event,
     bool* update_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (owner_delegate_ &&
@@ -1443,13 +1507,29 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   // WidgetInputHandler::SetEditCommandsForNextKeyEvent should only be sent if
   // WidgetInputHandler::DispatchEvent is, but has to be sent first.
   // https://crbug.com/684298
-  if (commands && !commands->empty()) {
+  if (commands && !commands->empty())
     GetWidgetInputHandler()->SetEditCommandsForNextKeyEvent(*commands);
+
+  std::unique_ptr<KeyEventResultTracker> result_tracker;
+  base::WeakPtr<KeyEventResultTracker> result_tracker_weak_ptr;
+  // Some tests and/or platforms supply null.
+  if (original_key_event) {
+    result_tracker =
+        std::make_unique<KeyEventResultTracker>(original_key_event);
+    result_tracker_weak_ptr = result_tracker->GetWeakPtr();
   }
+  auto weak_ref = weak_factory_.GetWeakPtr();
   input_router_->SendKeyboardEvent(
       key_event_with_latency,
-      base::BindOnce(&RenderWidgetHostImpl::OnKeyboardEventAck,
-                     weak_factory_.GetWeakPtr()));
+      base::BindOnce(&RenderWidgetHostImpl::OnKeyboardEventAck, weak_ref,
+                     std::move(result_tracker)));
+
+  // Ownership of |result_tracker| is moved to the callback. If the callback was
+  // run synchronously, |result_tracker| has been destroyed. OTOH, if the event
+  // was sent to the renderer, then |result_tarcker| is still alive and needs
+  // to be told the result will be obtained later on.
+  if (result_tracker_weak_ptr)
+    result_tracker_weak_ptr->PrepareForAsync();
 }
 
 void RenderWidgetHostImpl::QueueSyntheticGesture(
@@ -2054,6 +2134,7 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
+    std::unique_ptr<KeyEventResultTracker> result_tracker,
     const NativeWebKeyboardEventWithLatencyInfo& event,
     InputEventAckSource ack_source,
     InputEventAckState ack_result) {
@@ -2061,18 +2142,19 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);
 
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
 
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
-  if (delegate_ && !processed && !is_hidden() && !event.event.skip_in_browser) {
-    delegate_->HandleKeyboardEvent(event.event);
+  if (delegate_ && !processed && !is_hidden() && !event.event.skip_in_browser)
+    processed = delegate_->HandleKeyboardEvent(event.event);
+  // WARNING: This RenderWidgetHostImpl can be deallocated at this point
+  // (i.e.  in the case of Ctrl+W, where the call to
+  // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
 
-    // WARNING: This RenderWidgetHostImpl can be deallocated at this point
-    // (i.e.  in the case of Ctrl+W, where the call to
-    // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
-  }
+  if (result_tracker)
+    result_tracker->OnEventProcessingDone(processed);
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
