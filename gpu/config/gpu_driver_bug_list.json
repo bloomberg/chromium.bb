@@ -2949,6 +2949,22 @@
       "features": [
         "disable_overlay_ca_layers"
       ]
+    },
+    {
+      "id": 280,
+      "description": "ReadPixels is broken with EXT_multisampled_render_to_texture on recent Adreno drivers.",
+      "cr_bugs": [890002],
+      "os": {
+        "type": "android"
+      },
+      "driver_version": {
+        "op": ">",
+        "value": "237.0"
+      },
+      "gl_renderer": "Adreno \\(TM\\) .*",
+      "features": [
+        "use_copyteximage2d_instead_of_readpixels_on_multisampled_textures"
+      ]
     }
   ]
 }

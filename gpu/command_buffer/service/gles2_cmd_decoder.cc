@@ -347,6 +347,28 @@ class ScopedResolvedFramebufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFramebufferBinder);
 };
 
+// Temporarily create and bind a single sample copy of the currently bound
+// framebuffer using CopyTexImage2D. This is useful as a workaround for drivers
+// that have broken implementations of ReadPixels on multisampled framebuffers.
+// See http://crbug.com/890002
+class ScopedFramebufferCopyBinder {
+ public:
+  explicit ScopedFramebufferCopyBinder(GLES2DecoderImpl* decoder,
+                                       GLint x = 0,
+                                       GLint y = 0,
+                                       GLint width = 0,
+                                       GLint height = 0);
+
+  ~ScopedFramebufferCopyBinder();
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  std::unique_ptr<ScopedFramebufferBinder> framebuffer_binder_;
+  GLuint temp_texture_;
+  GLuint temp_framebuffer_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedFramebufferCopyBinder);
+};
+
 // Temporarily changes a decoder's PIXEL_UNPACK_BUFFER to 0 and set pixel unpack
 // params to default, and restore them when this object goes out of scope.
 class ScopedPixelUnpackState {
@@ -764,6 +786,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
  private:
   friend class ScopedFramebufferBinder;
   friend class ScopedResolvedFramebufferBinder;
+  friend class ScopedFramebufferCopyBinder;
   friend class BackFramebuffer;
   friend class BackRenderbuffer;
   friend class BackTexture;
@@ -2824,6 +2847,49 @@ ScopedResolvedFramebufferBinder::~ScopedResolvedFramebufferBinder() {
     decoder_->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
     decoder_->RestoreDeviceWindowRectangles();
   }
+}
+
+ScopedFramebufferCopyBinder::ScopedFramebufferCopyBinder(
+    GLES2DecoderImpl* decoder,
+    GLint x,
+    GLint y,
+    GLint width,
+    GLint height)
+    : decoder_(decoder) {
+  const Framebuffer::Attachment* attachment =
+      decoder->framebuffer_state_.bound_read_framebuffer.get()
+          ->GetReadBufferAttachment();
+  DCHECK(attachment);
+  auto* api = decoder_->api();
+  api->glGenTexturesFn(1, &temp_texture_);
+
+  ScopedTextureBinder texture_binder(&decoder->state_, temp_texture_,
+                                     GL_TEXTURE_2D);
+  if (width == 0 || height == 0) {
+    // Copy the whole framebuffer if a rectangle isn't specified.
+    api->glCopyTexImage2DFn(GL_TEXTURE_2D, 0, attachment->internal_format(), 0,
+                            0, attachment->width(), attachment->height(), 0);
+  } else {
+    api->glCopyTexImage2DFn(GL_TEXTURE_2D, 0, attachment->internal_format(), x,
+                            y, width, height, 0);
+  }
+
+  api->glGenFramebuffersEXTFn(1, &temp_framebuffer_);
+  framebuffer_binder_ =
+      std::make_unique<ScopedFramebufferBinder>(decoder, temp_framebuffer_);
+  api->glFramebufferTexture2DEXTFn(GL_READ_FRAMEBUFFER_EXT,
+                                   GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                                   temp_texture_, 0);
+  api->glReadBufferFn(GL_COLOR_ATTACHMENT0);
+}
+
+ScopedFramebufferCopyBinder::~ScopedFramebufferCopyBinder() {
+  auto* api = decoder_->api();
+  framebuffer_binder_.reset();
+  api->glDeleteFramebuffersEXTFn(1, &temp_framebuffer_);
+  api->glDeleteTexturesFn(1, &temp_texture_);
+  api->glReadBufferFn(
+      decoder_->framebuffer_state_.bound_read_framebuffer.get()->read_buffer());
 }
 
 ScopedPixelUnpackState::ScopedPixelUnpackState(ContextState* state)
@@ -12185,6 +12251,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   if (!max_rect.Contains(rect)) {
     rect.Intersect(max_rect);
     if (!rect.IsEmpty()) {
+      std::unique_ptr<ScopedFramebufferCopyBinder> binder;
+      if (workarounds()
+              .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures &&
+          framebuffer_state_.bound_read_framebuffer.get()
+              ->GetReadBufferIsMultisampledTexture()) {
+        binder = std::make_unique<ScopedFramebufferCopyBinder>(this);
+      }
       if (y < 0) {
         pixels += static_cast<uint32_t>(-y) * padded_row_size;;
       }
@@ -12214,6 +12287,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   } else {
     if (async && features().use_async_readpixels &&
         !state_.bound_pixel_pack_buffer.get()) {
+      // This workaround isn't implemented in this code path yet. Hopefully it's
+      // unnecessary.
+      DCHECK(
+          !workarounds()
+               .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures ||
+          !framebuffer_state_.bound_read_framebuffer.get()
+               ->GetReadBufferIsMultisampledTexture());
       // To simply the state tracking, we don't go down the async path if
       // a PIXEL_PACK_BUFFER is bound (in which case the client can
       // implement something similar on their own - all necessary functions
@@ -12248,6 +12328,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     }
     if (pixels_shm_id == 0 &&
         workarounds().pack_parameters_workaround_with_pack_buffer) {
+      // If we ever have a device that needs both of these workarounds, we'll
+      // need to do some extra work to implement that correctly here.
+      DCHECK(
+          !workarounds()
+               .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures);
       if (state_.pack_row_length > 0 && state_.pack_row_length < width) {
         // Some drivers (for example, NVidia Linux) reset in this case.
         // Some drivers (for example, Mac AMD) incorrecly limit the last
@@ -12275,6 +12360,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       } else {
         api()->glReadPixelsFn(x, y, width, height, format, type, pixels);
       }
+    } else if (
+        workarounds()
+            .use_copyteximage2d_instead_of_readpixels_on_multisampled_textures &&
+        framebuffer_state_.bound_read_framebuffer.get()
+            ->GetReadBufferIsMultisampledTexture()) {
+      ScopedFramebufferCopyBinder binder(this, x, y, width, height);
+      api()->glReadPixelsFn(0, 0, width, height, format, type, pixels);
     } else {
       api()->glReadPixelsFn(x, y, width, height, format, type, pixels);
     }
