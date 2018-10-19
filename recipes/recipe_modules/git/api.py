@@ -13,8 +13,15 @@ class GitApi(recipe_api.RecipeApi):
   def __call__(self, *args, **kwargs):
     """Return a git command step."""
     name = kwargs.pop('name', 'git ' + args[0])
+
     infra_step = kwargs.pop('infra_step', True)
     git_cmd = ['git']
+
+    if kwargs.pop('add_retry', False) and not self.m.runtime.is_luci:
+      # On LUCI, the `git` binary is a go wrapper which already implements all
+      # the git-retry logic.
+      git_cmd += ['retry']
+
     options = kwargs.pop('git_config_options', {})
     for k, v in sorted(options.iteritems()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
@@ -192,11 +199,12 @@ class GitApi(recipe_api.RecipeApi):
     with self.m.context(cwd=dir_path):
       if use_git_cache:
         with self.m.context(env={'PATH': path}):
-          self('retry', 'cache', 'populate', '-c',
+          self('cache', 'populate', '-c',
                self.m.infra_paths.default_git_cache_dir, url,
 
                name='populate cache',
-               can_fail_build=can_fail_build)
+               can_fail_build=can_fail_build,
+               add_retry=True)
           dir_cmd = self(
               'cache', 'exists', '--quiet',
               '--cache-dir', self.m.infra_paths.default_git_cache_dir, url,
@@ -259,10 +267,11 @@ class GitApi(recipe_api.RecipeApi):
             step_test_data=lambda: self.m.raw_io.test_api.stream_output(
                 self.test_api.count_objects_output(1000)))
       with self.m.context(env=fetch_env):
-        self('retry', 'fetch', *fetch_args,
+        self('fetch', *fetch_args,
           name=fetch_step_name,
           stderr=fetch_stderr,
-          can_fail_build=can_fail_build)
+          can_fail_build=can_fail_build,
+          add_retry=True)
       if display_fetch_size:
         self.count_objects(
             name='count-objects after %s' % fetch_step_name,
