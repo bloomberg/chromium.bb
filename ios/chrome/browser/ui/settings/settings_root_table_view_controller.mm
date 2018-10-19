@@ -25,6 +25,7 @@
       [UIColor groupTableViewBackgroundColor];
   self.styler.tableViewSectionHeaderBlurEffect = nil;
   [super viewDidLoad];
+  self.styler.cellBackgroundColor = [UIColor whiteColor];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

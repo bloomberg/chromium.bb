@@ -24,6 +24,7 @@ const CGFloat kDefaultTableViewSeparatorColor = 0xC8C7CC;
 @synthesize tableViewSectionHeaderBlurEffect =
     _tableViewSectionHeaderBlurEffect;
 @synthesize tableViewBackgroundColor = _tableViewBackgroundColor;
+@synthesize cellBackgroundColor = _cellBackgroundColor;
 @synthesize cellTitleColor = _cellTitleColor;
 @synthesize headerFooterTitleColor = _headerFooterTitleColor;
 @synthesize cellHighlightColor = _cellHighlightColor;

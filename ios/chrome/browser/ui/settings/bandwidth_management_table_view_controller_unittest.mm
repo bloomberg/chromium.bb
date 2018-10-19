@@ -16,7 +16,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#import "ios/chrome/browser/ui/settings/dataplan_usage_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -80,7 +80,7 @@ TEST_F(BandwidthManagementTableViewControllerTest, TestModel) {
   // Preload webpages item.
   NSString* expected_title =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
-  NSString* expected_subtitle = [DataplanUsageCollectionViewController
+  NSString* expected_subtitle = [DataplanUsageTableViewController
       currentLabelForPreference:chrome_browser_state_->GetPrefs()
                        basePref:prefs::kNetworkPredictionEnabled
                        wifiPref:prefs::kNetworkPredictionWifiOnly];
