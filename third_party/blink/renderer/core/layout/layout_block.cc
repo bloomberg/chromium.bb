@@ -1140,7 +1140,7 @@ void LayoutBlock::DirtyForLayoutFromPercentageHeightDescendants(
 LayoutUnit LayoutBlock::TextIndentOffset() const {
   LayoutUnit cw;
   if (StyleRef().TextIndent().IsPercentOrCalc())
-    cw = ContainingBlock()->AvailableLogicalWidth();
+    cw = ContentLogicalWidth();
   return MinimumValueForLength(StyleRef().TextIndent(), cw);
 }
 

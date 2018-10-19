@@ -2829,10 +2829,11 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
-# text-indent percentage should be resolved against the block's own content-box inline-size
-crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-002.html [ Failure ]
-crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-003.html [ Failure ]
-crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-004.html [ Failure ]
+# Tests need to be updated to reflect newly-specified behavior:
+#   https://github.com/web-platform-tests/wpt/issues/13581
+crbug.com/884588 external/wpt/css/css-text/text-indent/text-indent-percentage-001.xht [ Failure ]
+crbug.com/884588 external/wpt/css/CSS2/text/text-indent-percent-001.xht [ Failure ]
+
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
