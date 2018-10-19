@@ -23,6 +23,7 @@
 #include "net/cert/symantec_certs.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
@@ -952,6 +953,13 @@ void URLLoader::NotifyCompleted(int error_code) {
   if (network_usage_accumulator_) {
     network_usage_accumulator_->OnBytesTransferred(
         factory_params_->process_id, render_frame_id_,
+        url_request_->GetTotalReceivedBytes(),
+        url_request_->GetTotalSentBytes());
+  }
+  if (network_service_client_ && (url_request_->GetTotalReceivedBytes() > 0 ||
+                                  url_request_->GetTotalSentBytes() > 0)) {
+    network_service_client_->OnDataUseUpdate(
+        url_request_->traffic_annotation().unique_id_hash_code,
         url_request_->GetTotalReceivedBytes(),
         url_request_->GetTotalSentBytes());
   }

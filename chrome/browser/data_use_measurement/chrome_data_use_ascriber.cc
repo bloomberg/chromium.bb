@@ -584,7 +584,7 @@ ChromeDataUseAscriber::CreateNetworkDelegate(
   return std::make_unique<data_use_measurement::DataUseNetworkDelegate>(
       std::move(wrapped_network_delegate), this,
       std::make_unique<ChromeDataUseMeasurement>(CreateURLRequestClassifier(),
-                                                 this));
+                                                 this, /*network_connection_tracker=*/nullptr));
 }
 
 std::unique_ptr<URLRequestClassifier>
