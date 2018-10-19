@@ -705,6 +705,7 @@ bool RasterImplementation::GetQueryObjectValueHelper(const char* function_name,
       valid_value = true;
       break;
     case GL_QUERY_RESULT_AVAILABLE_EXT:
+    case GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT:
       *params = query->CheckResultsAvailable(helper_, flush_if_pending);
       valid_value = true;
       break;
