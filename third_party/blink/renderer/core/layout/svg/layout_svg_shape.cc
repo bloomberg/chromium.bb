@@ -38,15 +38,18 @@
 #include "third_party/blink/renderer/core/paint/svg_shape_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
-#include "third_party/blink/renderer/core/svg/svg_path_element.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
-LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
+LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node,
+                               StrokeGeometryClass geometry_class)
     : LayoutSVGModelObject(node),
+      // Geometry classification - used to compute stroke bounds more
+      // efficiently.
+      geometry_class_(geometry_class),
       // Default is false, the cached rects are empty from the beginning.
       needs_boundaries_update_(false),
       // Default is true, so we grab a Path object once from SVGGeometryElement.
@@ -54,8 +57,6 @@ LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
       // Default is true, so we grab a AffineTransform object once from
       // SVGGeometryElement.
       needs_transform_update_(true),
-      // <line> elements have no joins and thus needn't care about miters.
-      affected_by_miter_(!IsSVGLineElement(node)),
       // Default to false, since |needs_transform_update_| is true this will be
       // updated the first time transforms are updated.
       transform_uses_reference_box_(false) {}
@@ -96,7 +97,7 @@ void LayoutSVGShape::UpdateShapeFromElement() {
     UpdateNonScalingStrokeData();
   }
 
-  stroke_bounding_box_ = CalculateStrokeBoundingBox(kComplex);
+  stroke_bounding_box_ = CalculateStrokeBoundingBox();
 }
 
 namespace {
@@ -110,10 +111,8 @@ bool HasSquareCapStyle(const SVGComputedStyle& svg_style) {
 
 }  // namespace
 
-FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
-    const FloatRect& shape_bbox,
-    StrokeGeometryClass geometry_class) const {
-  FloatRect stroke_box = shape_bbox;
+FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox() const {
+  FloatRect stroke_box = fill_bounding_box_;
 
   // Implementation of
   // https://drafts.fxtf.org/css-masking/#compute-stroke-bounding-box
@@ -124,9 +123,9 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
     return stroke_box;
 
   float delta = stroke_width / 2;
-  if (geometry_class != kSimple) {
+  if (geometry_class_ != kSimple) {
     const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
-    if (affected_by_miter_ && HasMiterJoinStyle(svg_style)) {
+    if (geometry_class_ != kNoMiters && HasMiterJoinStyle(svg_style)) {
       const float miter = svg_style.StrokeMiterLimit();
       if (miter < M_SQRT2 && HasSquareCapStyle(svg_style))
         delta *= M_SQRT2;
@@ -143,7 +142,7 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
 FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
   if (StyleRef().SvgStyle().HasStroke())
     return stroke_bounding_box_;
-  return ApproximateStrokeBoundingBox(fill_bounding_box_, kSimple);
+  return ApproximateStrokeBoundingBox();
 }
 
 bool LayoutSVGShape::ShapeDependentStrokeContains(const FloatPoint& point) {
@@ -399,13 +398,12 @@ bool LayoutSVGShape::NodeAtPointInternal(const HitTestRequest& request,
   return false;
 }
 
-FloatRect LayoutSVGShape::CalculateStrokeBoundingBox(
-    StrokeGeometryClass geometry_class) const {
+FloatRect LayoutSVGShape::CalculateStrokeBoundingBox() const {
   if (!StyleRef().SvgStyle().HasStroke() || IsShapeEmpty())
     return fill_bounding_box_;
   if (HasNonScalingStroke())
     return CalculateNonScalingStrokeBoundingBox();
-  return ApproximateStrokeBoundingBox(fill_bounding_box_, geometry_class);
+  return ApproximateStrokeBoundingBox();
 }
 
 FloatRect LayoutSVGShape::CalculateNonScalingStrokeBoundingBox() const {

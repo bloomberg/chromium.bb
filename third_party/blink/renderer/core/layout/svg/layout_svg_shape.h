@@ -58,7 +58,6 @@ struct LayoutSVGShapeRareData {
 
 class LayoutSVGShape : public LayoutSVGModelObject {
  public:
-  explicit LayoutSVGShape(SVGGeometryElement*);
   ~LayoutSVGShape() override;
 
   void SetNeedsShapeUpdate() { needs_shape_update_ = true; }
@@ -116,6 +115,20 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   const char* GetName() const override { return "LayoutSVGShape"; }
 
  protected:
+  // Description of the geometry of the shape for stroking.
+  enum StrokeGeometryClass : uint8_t {
+    kComplex,   // We don't know anything about the geometry => use the generic
+                // approximation.
+    kNoMiters,  // We know that the shape will not have any joins, so no miters
+                // will be generated. This means we can use an approximation
+                // that does not factor in miters (and thus get tighter
+                // approximated bounds.)
+    kSimple,    // We know that the geometry is convex and has no acute angles
+                // (rect, rounded rect, circle, ellipse) => use the simple
+                // approximation.
+  };
+  LayoutSVGShape(SVGGeometryElement*, StrokeGeometryClass);
+
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
@@ -124,30 +137,12 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   void ClearPath() { path_.reset(); }
   void CreatePath();
 
+  // Update (cached) shape data and the (object) bounding box.
   virtual void UpdateShapeFromElement();
-  // Calculates an inclusive bounding box of this shape as if this shape has
-  // a stroke. If this shape has a stroke, then m_strokeBoundingBox is returned;
-  // otherwise, estimates a bounding box (not necessarily tight) that would
-  // include this shape's stroke bounding box if it had a stroke.
-  virtual FloatRect HitTestStrokeBoundingBox() const;
+  FloatRect CalculateStrokeBoundingBox() const;
   virtual bool ShapeDependentStrokeContains(const FloatPoint&);
   virtual bool ShapeDependentFillContains(const FloatPoint&,
                                           const WindRule) const;
-
-  // Description of the geometry of the shape for stroking.
-  enum StrokeGeometryClass {
-    kComplex,  // We don't know anything about the geometry => use the generic
-               // approximation.
-    kSimple,   // We know that the geometry is convex and has no acute angles
-               // (rect, rounded rect, circle, ellipse) => use the simple
-               // approximation.
-  };
-  // Compute an approximation of the bounding box that this stroke geometry
-  // would generate when applied to a shape with the (tight-fitting) bounding
-  // box |shape_bbox|.
-  FloatRect ApproximateStrokeBoundingBox(const FloatRect& shape_bbox,
-                                         StrokeGeometryClass) const;
-  FloatRect CalculateStrokeBoundingBox(StrokeGeometryClass) const;
 
   FloatRect fill_bounding_box_;
   FloatRect stroke_bounding_box_;
@@ -174,6 +169,15 @@ class LayoutSVGShape : public LayoutSVGModelObject {
                    HitTestAction) override;
 
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
+
+  // Calculates an inclusive bounding box of this shape as if this shape has a
+  // stroke. If this shape has a stroke, then |stroke_bounding_box_| is
+  // returned; otherwise, estimates a bounding box (not necessarily tight) that
+  // would include this shape's stroke bounding box if it had a stroke.
+  FloatRect HitTestStrokeBoundingBox() const;
+  // Compute an approximation of the bounding box that this stroke geometry
+  // would generate when applied to the shape.
+  FloatRect ApproximateStrokeBoundingBox() const;
   FloatRect CalculateNonScalingStrokeBoundingBox() const;
   void UpdateNonScalingStrokeData();
   bool UpdateLocalTransform();
@@ -187,10 +191,10 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   std::unique_ptr<Path> path_;
   mutable std::unique_ptr<LayoutSVGShapeRareData> rare_data_;
 
+  StrokeGeometryClass geometry_class_;
   bool needs_boundaries_update_ : 1;
   bool needs_shape_update_ : 1;
   bool needs_transform_update_ : 1;
-  bool affected_by_miter_ : 1;
   bool transform_uses_reference_box_ : 1;
 };
 
