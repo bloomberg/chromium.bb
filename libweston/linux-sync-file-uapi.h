@@ -1,7 +1,7 @@
 /* Sync file Linux kernel UAPI */
 
-#ifndef WESTON_SYNC_FILE_H
-#define WESTON_SYNC_FILE_H
+#ifndef WESTON_LINUX_SYNC_FILE_UAPI_H
+#define WESTON_LINUX_SYNC_FILE_UAPI_H
 
 #include <linux/ioctl.h>
 #include <linux/types.h>
@@ -27,4 +27,4 @@ struct sync_file_info {
 #define SYNC_IOC_MAGIC '>'
 #define SYNC_IOC_FILE_INFO _IOWR(SYNC_IOC_MAGIC, 4, struct sync_file_info)
 
-#endif
+#endif /* WESTON_LINUX_SYNC_FILE_UAPI_H */

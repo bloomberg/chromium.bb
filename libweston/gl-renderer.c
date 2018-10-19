@@ -40,13 +40,8 @@
 #include <linux/input.h>
 #include <drm_fourcc.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
 
-#ifdef HAVE_LINUX_SYNC_FILE_H
-#include <linux/sync_file.h>
-#else
-#include "weston-sync-file.h"
-#endif
+#include "linux-sync-file.h"
 
 #include "timeline.h"
 
@@ -315,25 +310,6 @@ get_renderer(struct weston_compositor *ec)
 	return (struct gl_renderer *)ec->renderer;
 }
 
-static int
-linux_sync_file_read_timestamp(int fd, uint64_t *ts)
-{
-	struct sync_file_info file_info = { { 0 } };
-	struct sync_fence_info fence_info = { { 0 } };
-
-	assert(ts != NULL);
-
-	file_info.sync_fence_info = (uint64_t)(uintptr_t)&fence_info;
-	file_info.num_fences = 1;
-
-	if (ioctl(fd, SYNC_IOC_FILE_INFO, &file_info) < 0)
-		return -1;
-
-	*ts = fence_info.timestamp_ns;
-
-	return 0;
-}
-
 static void
 timeline_render_point_destroy(struct timeline_render_point *trp)
 {
@@ -351,13 +327,9 @@ timeline_render_point_handler(int fd, uint32_t mask, void *data)
 			      "renderer_gpu_begin" : "renderer_gpu_end";
 
 	if (mask & WL_EVENT_READABLE) {
-		uint64_t ts;
+		struct timespec tspec = { 0 };
 
-		if (linux_sync_file_read_timestamp(trp->fd, &ts) == 0) {
-			struct timespec tspec = { 0 };
-
-			timespec_add_nsec(&tspec, &tspec, ts);
-
+		if (linux_sync_file_read_timestamp(trp->fd, &tspec) == 0) {
 			TL_POINT(tp_name, TLP_GPU(&tspec),
 				 TLP_OUTPUT(trp->output), TLP_END);
 		}

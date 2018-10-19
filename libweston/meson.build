@@ -433,6 +433,7 @@ if get_option('renderer-gl')
 
 	srcs_renderer_gl = [
 		'gl-renderer.c',
+		'linux-sync-file.c',
 		'vertex-clipping.c',
 		'../shared/matrix.c',
 		linux_dmabuf_unstable_v1_protocol_c,
