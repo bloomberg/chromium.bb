@@ -87,7 +87,6 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   if (!shared_image_manager_->Register(std::move(backing))) {
     LOG(ERROR) << "CreateSharedImage: Could not register backing with "
                   "SharedImageManager.";
-    backing->Destroy();
     return false;
   }
 

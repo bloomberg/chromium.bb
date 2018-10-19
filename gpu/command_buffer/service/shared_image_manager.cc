@@ -40,8 +40,10 @@ SharedImageManager::~SharedImageManager() {
 
 bool SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing) {
   auto found = images_.find(backing->mailbox());
-  if (found != images_.end())
+  if (found != images_.end()) {
+    backing->Destroy();
     return false;
+  }
 
   images_.emplace(std::move(backing), 1 /* ref_count */);
   return true;
