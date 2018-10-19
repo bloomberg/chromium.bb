@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/svg_shape_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
@@ -347,12 +348,11 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  base::Optional<HitTestLocation> local_storage;
-  const HitTestLocation* local_location =
-      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), location_in_parent,
-          local_storage);
+  TransformedHitTestLocation local_location(location_in_parent,
+                                            LocalToSVGParentTransform());
   if (!local_location)
+    return false;
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
     return false;
 
   PointerEventsHitRules hit_rules(

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/svg_image_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
@@ -170,7 +171,7 @@ bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
                                  const HitTestLocation& location_in_container,
                                  const LayoutPoint& accumulated_offset,
                                  HitTestAction hit_test_action) {
-  DCHECK(accumulated_offset == LayoutPoint());
+  DCHECK_EQ(accumulated_offset, LayoutPoint());
   // We only draw in the forground phase, so we only hit-test then.
   if (hit_test_action != kHitTestForeground)
     return false;
@@ -182,12 +183,11 @@ bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
   if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
     return false;
 
-  base::Optional<HitTestLocation> local_storage;
-  const HitTestLocation* local_location =
-      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), location_in_container,
-          local_storage);
+  TransformedHitTestLocation local_location(location_in_container,
+                                            LocalToSVGParentTransform());
   if (!local_location)
+    return false;
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
     return false;
 
   if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {

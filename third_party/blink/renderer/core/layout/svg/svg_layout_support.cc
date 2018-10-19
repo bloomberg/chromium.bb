@@ -412,6 +412,11 @@ bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
 }
 
 bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
+                                          const HitTestLocation& location) {
+  return IntersectsClipPath(object, location.TransformedPoint());
+}
+
+bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
                                           const FloatPoint& point) {
   ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
   if (!clip_path_operation)
@@ -428,36 +433,6 @@ bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
     return true;
   return resources->Clipper()->HitTestClipContent(object.ObjectBoundingBox(),
                                                   point);
-}
-
-const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-    const LayoutObject& object,
-    const AffineTransform& local_transform,
-    const HitTestLocation& location_in_parent,
-    base::Optional<HitTestLocation>& local_storage) {
-  // Use a fast path for an identity transform which creates no new
-  // HitTestLocation objects or inverse AffineTransforms, and performs no
-  // matrix multiplies.
-  if (local_transform.IsIdentity()) {
-    if (IntersectsClipPath(object, location_in_parent.TransformedPoint()))
-      return &location_in_parent;
-    return nullptr;
-  }
-  if (!local_transform.IsInvertible())
-    return nullptr;
-  const AffineTransform inverse = local_transform.Inverse();
-  if (location_in_parent.IsRectBasedTest()) {
-    local_storage.emplace(
-        HitTestLocation(inverse.MapPoint(location_in_parent.TransformedPoint()),
-                        inverse.MapQuad(location_in_parent.TransformedRect())));
-  } else {
-    local_storage.emplace(HitTestLocation(
-        inverse.MapPoint(location_in_parent.TransformedPoint())));
-  }
-
-  if (IntersectsClipPath(object, local_storage->TransformedPoint()))
-    return &*local_storage;
-  return nullptr;
 }
 
 bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
