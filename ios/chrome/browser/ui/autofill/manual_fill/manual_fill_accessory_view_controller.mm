@@ -26,6 +26,16 @@ NSString* const AccessoryCreditCardAccessibilityIdentifier =
 
 }  // namespace manual_fill
 
+namespace {
+
+// The inset on the left before the icons start.
+constexpr CGFloat ManualFillIconsLeftInset = 10;
+
+// The inset on the right after the icons end.
+constexpr CGFloat ManualFillIconsRightInset = 24;
+
+}  // namespace
+
 static NSTimeInterval MFAnimationDuration = 0.20;
 
 @interface ManualFillAccessoryViewController ()
@@ -67,7 +77,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 
   if (!IsIPadIdiom()) {
     self.keyboardButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    UIImage* keyboardImage = [UIImage imageNamed:@"ic_keyboard"];
+    UIImage* keyboardImage = [UIImage imageNamed:@"mf_keyboard"];
     [self.keyboardButton setImage:keyboardImage forState:UIControlStateNormal];
     self.keyboardButton.tintColor = tintColor;
     self.keyboardButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -132,9 +142,10 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     // Horizontal constraints.
     [stackView.leadingAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
-                       constant:10],
-    [stackView.trailingAnchor
-        constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor],
+                       constant:ManualFillIconsLeftInset],
+    [safeAreaLayoutGuide.trailingAnchor
+        constraintEqualToAnchor:stackView.trailingAnchor
+                       constant:ManualFillIconsRightInset],
   ]];
   self.keyboardButton.hidden = YES;
   self.keyboardButton.alpha = 0.0;
