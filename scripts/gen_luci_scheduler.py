@@ -50,6 +50,10 @@ acl_sets {
     role: OWNER
     granted_to: "group:project-chromeos-admins"
   }
+  acls {
+    role: TRIGGERER
+    granted_to: "group:mdb/chromeos-build-access"
+  }
 }
 """
 
