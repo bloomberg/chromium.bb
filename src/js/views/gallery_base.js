@@ -193,8 +193,8 @@ camera.views.GalleryBase.prototype.lastSelectedPicture = function() {
  */
 camera.views.GalleryBase.prototype.selectedPictures = function() {
   var indexes = this.selectedIndexes.slice();
-  indexes.sort(function(a, b) { return a - b; });
-  return indexes.map(function(i) { return this.pictures[i]; }.bind(this));
+  indexes.sort((a, b) => a - b);
+  return indexes.map((i) => this.pictures[i]);
 };
 
 /**
