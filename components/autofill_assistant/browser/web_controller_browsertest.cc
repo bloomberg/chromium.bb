@@ -34,22 +34,30 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
         WebController::CreateForWebContents(shell()->web_contents());
   }
 
-  void IsElementExists(const std::vector<std::string>& selectors,
-                       bool expected_result) {
+  void AreElementsExist(const std::vector<std::vector<std::string>>& selectors,
+                        const std::vector<bool> results) {
     base::RunLoop run_loop;
-    web_controller_->ElementExists(
-        selectors,
-        base::BindOnce(&WebControllerBrowserTest::CheckElementExistCallback,
-                       base::Unretained(this), run_loop.QuitClosure(),
-                       expected_result));
+    ASSERT_EQ(selectors.size(), results.size());
+    size_t pending_number_of_checks = selectors.size();
+    for (size_t i = 0; i < selectors.size(); i++) {
+      web_controller_->ElementExists(
+          selectors[i],
+          base::BindOnce(&WebControllerBrowserTest::CheckElementExistCallback,
+                         base::Unretained(this), run_loop.QuitClosure(),
+                         &pending_number_of_checks, results[i]));
+    }
     run_loop.Run();
   }
 
   void CheckElementExistCallback(const base::Closure& done_callback,
+                                 size_t* pending_number_of_checks_output,
                                  bool expected_result,
                                  bool result) {
     ASSERT_EQ(expected_result, result);
-    done_callback.Run();
+    *pending_number_of_checks_output -= 1;
+    if (*pending_number_of_checks_output == 0) {
+      done_callback.Run();
+    }
   }
 
   void ClickElement(const std::vector<std::string>& selectors) {
@@ -190,23 +198,31 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     ASSERT_FALSE(result->object_id.empty());
   }
 
-  std::string GetFieldValue(const std::vector<std::string>& selectors) {
+  void GetFieldsValue(const std::vector<std::vector<std::string>>& selectors,
+                      const std::vector<std::string>& expected_values) {
     base::RunLoop run_loop;
-    std::string result;
-    web_controller_->GetFieldValue(
-        selectors, base::BindOnce(&WebControllerBrowserTest::OnGetFieldValue,
-                                  base::Unretained(this),
-                                  run_loop.QuitClosure(), &result));
+    ASSERT_EQ(selectors.size(), expected_values.size());
+    size_t pending_number_of_checks = selectors.size();
+    for (size_t i = 0; i < selectors.size(); i++) {
+      web_controller_->GetFieldValue(
+          selectors[i],
+          base::BindOnce(&WebControllerBrowserTest::OnGetFieldValue,
+                         base::Unretained(this), run_loop.QuitClosure(),
+                         &pending_number_of_checks, expected_values[i]));
+    }
     run_loop.Run();
-    return result;
   }
 
   void OnGetFieldValue(const base::Closure& done_callback,
-                       std::string* value_output,
+                       size_t* pending_number_of_checks_output,
+                       const std::string& expected_value,
                        bool exists,
                        const std::string& value) {
-    *value_output = value;
-    std::move(done_callback).Run();
+    ASSERT_EQ(expected_value, value);
+    *pending_number_of_checks_output -= 1;
+    if (*pending_number_of_checks_output == 0) {
+      std::move(done_callback).Run();
+    }
   }
 
   bool SetFieldValue(const std::vector<std::string>& selectors,
@@ -238,48 +254,67 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, IsElementExists) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#button");
-  IsElementExists(selectors, true);
-  selectors.emplace_back("#whatever");
-  IsElementExists(selectors, false);
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentElementsExist) {
+  std::vector<std::vector<std::string>> selectors;
+  std::vector<bool> results;
+
+  std::vector<std::string> a_selector;
+  a_selector.emplace_back("#button");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
+
+  a_selector.emplace_back("#whatever");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(false);
 
   // IFrame.
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#button");
-  IsElementExists(selectors, true);
-  selectors.emplace_back("#whatever");
-  IsElementExists(selectors, false);
+  a_selector.clear();
+  a_selector.emplace_back("#iframe");
+  a_selector.emplace_back("#button");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
 
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("[name=name]");
-  IsElementExists(selectors, true);
+  a_selector.emplace_back("#whatever");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(false);
+
+  a_selector.clear();
+  a_selector.emplace_back("#iframe");
+  a_selector.emplace_back("[name=name]");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
 
   // Shadow DOM.
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#shadowsection");
-  selectors.emplace_back("#shadowbutton");
-  IsElementExists(selectors, true);
-  selectors.emplace_back("#whatever");
-  IsElementExists(selectors, false);
+  a_selector.clear();
+  a_selector.emplace_back("#iframe");
+  a_selector.emplace_back("#shadowsection");
+  a_selector.emplace_back("#shadowbutton");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
+
+  a_selector.emplace_back("#whatever");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(false);
 
   // IFrame inside IFrame.
-  selectors.clear();
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#iframe");
-  selectors.emplace_back("#button");
-  IsElementExists(selectors, true);
-  selectors.emplace_back("#whatever");
-  IsElementExists(selectors, false);
+  a_selector.clear();
+  a_selector.emplace_back("#iframe");
+  a_selector.emplace_back("#iframe");
+  a_selector.emplace_back("#button");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(true);
+
+  a_selector.emplace_back("#whatever");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(false);
 
   // Hidden element.
-  selectors.clear();
-  selectors.emplace_back("#hidden");
-  IsElementExists(selectors, false);
+  a_selector.clear();
+  a_selector.emplace_back("#hidden");
+  selectors.emplace_back(a_selector);
+  results.emplace_back(false);
+
+  AreElementsExist(selectors, results);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
@@ -421,17 +456,61 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
-  std::vector<std::string> selectors;
-  selectors.emplace_back("#input");
-  EXPECT_EQ("helloworld", GetFieldValue(selectors));
+  std::vector<std::vector<std::string>> selectors;
+  std::vector<std::string> expected_values;
 
-  EXPECT_TRUE(SetFieldValue(selectors, "foo'"));
-  EXPECT_EQ("foo'", GetFieldValue(selectors));
+  std::vector<std::string> a_selector;
+  a_selector.emplace_back("#input1");
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("helloworld1");
+  GetFieldsValue(selectors, expected_values);
+
+  EXPECT_TRUE(SetFieldValue(a_selector, "foo"));
+  expected_values.clear();
+  expected_values.emplace_back("foo");
+  GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  selectors.emplace_back("#invalid_selector");
-  EXPECT_EQ("", GetFieldValue(selectors));
-  EXPECT_FALSE(SetFieldValue(selectors, "foobar"));
+  a_selector.clear();
+  a_selector.emplace_back("#invalid_selector");
+  selectors.emplace_back(a_selector);
+  expected_values.clear();
+  expected_values.emplace_back("");
+  GetFieldsValue(selectors, expected_values);
+
+  EXPECT_FALSE(SetFieldValue(a_selector, "foobar"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentGetFieldsValue) {
+  std::vector<std::vector<std::string>> selectors;
+  std::vector<std::string> expected_values;
+
+  std::vector<std::string> a_selector;
+  a_selector.emplace_back("#input1");
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("helloworld1");
+
+  a_selector.clear();
+  a_selector.emplace_back("#input2");
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("helloworld2");
+
+  a_selector.clear();
+  a_selector.emplace_back("#input3");
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("helloworld3");
+
+  a_selector.clear();
+  a_selector.emplace_back("#input4");
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("helloworld4");
+
+  a_selector.clear();
+  a_selector.emplace_back("#input5");
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("helloworld5");
+
+  GetFieldsValue(selectors, expected_values);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {

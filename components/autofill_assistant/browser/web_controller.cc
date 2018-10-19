@@ -84,6 +84,24 @@ const char* const kSetValueAttributeScript =
 const char* const kGetOuterHtmlScript =
     "function () { return this.outerHTML; }";
 
+// Javascript code to get document root element.
+const char* const kGetDocumentElement =
+    R"(
+    (function() {
+      return document.documentElement;
+    }())
+    )";
+
+// Javascript code to query all elements for a selector.
+const char* const kQuerySelectorAll =
+    R"(function (selector, strictMode) {
+      var found = this.querySelectorAll(selector);
+      if(found.length == 1)
+        return found[0];
+      if(found.length > 1 && !strictMode)
+        return found[0];
+      return undefined;
+    })";
 }  // namespace
 
 // static
@@ -142,7 +160,6 @@ void WebController::ClickObject(const std::string& object_id,
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
       runtime::CallArgument::Builder().SetObjectId(object_id).Build());
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -159,7 +176,6 @@ void WebController::OnScrollIntoView(
     base::OnceCallback<void(bool)> callback,
     std::string object_id,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
     DLOG(ERROR) << "Failed to scroll the element.";
     OnResult(false, std::move(callback));
@@ -257,36 +273,56 @@ void WebController::OnGetBoxModelForExist(
 void WebController::FindElement(const std::vector<std::string>& selectors,
                                 bool strict_mode,
                                 FindElementCallback callback) {
-  devtools_client_->GetDOM()->Enable();
-  devtools_client_->GetDOM()->GetDocument(base::BindOnce(
-      &WebController::OnGetDocument, weak_ptr_factory_.GetWeakPtr(), selectors,
-      strict_mode, std::move(callback)));
+  devtools_client_->GetRuntime()->Evaluate(
+      std::string(kGetDocumentElement),
+      base::BindOnce(&WebController::OnGetDocumentElement,
+                     weak_ptr_factory_.GetWeakPtr(), selectors, strict_mode,
+                     std::move(callback)));
 }
 
-void WebController::OnGetDocument(
+void WebController::OnGetDocumentElement(
     const std::vector<std::string>& selectors,
     bool strict_mode,
     FindElementCallback callback,
-    std::unique_ptr<dom::GetDocumentResult> result) {
+    std::unique_ptr<runtime::EvaluateResult> result) {
   std::unique_ptr<FindElementResult> element_result =
       std::make_unique<FindElementResult>();
   element_result->container_frame_host = web_contents_->GetMainFrame();
   element_result->container_frame_selector_index = 0;
   element_result->object_id = "";
-  RecursiveFindElement(result->GetRoot()->GetNodeId(), 0, selectors,
+  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
+    DLOG(ERROR) << "Failed to get document root element.";
+    std::move(callback).Run(std::move(element_result));
+    return;
+  }
+
+  RecursiveFindElement(result->GetResult()->GetObjectId(), 0, selectors,
                        strict_mode, std::move(element_result),
                        std::move(callback));
 }
 
 void WebController::RecursiveFindElement(
-    int node_id,
+    const std::string& object_id,
     size_t index,
     const std::vector<std::string>& selectors,
     bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback) {
-  devtools_client_->GetDOM()->QuerySelectorAll(
-      node_id, selectors[index],
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(runtime::CallArgument::Builder()
+                            .SetValue(base::Value::ToUniquePtrValue(
+                                base::Value(selectors[index])))
+                            .Build());
+  argument.emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(strict_mode)))
+          .Build());
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kQuerySelectorAll))
+          .Build(),
       base::BindOnce(&WebController::OnQuerySelectorAll,
                      weak_ptr_factory_.GetWeakPtr(), index, selectors,
                      strict_mode, std::move(element_result),
@@ -299,61 +335,32 @@ void WebController::OnQuerySelectorAll(
     bool strict_mode,
     std::unique_ptr<FindElementResult> element_result,
     FindElementCallback callback,
-    std::unique_ptr<dom::QuerySelectorAllResult> result) {
-  if (!result || !result->GetNodeIds() || result->GetNodeIds()->empty()) {
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  if (!result || !result->GetResult() || !result->GetResult()->HasObjectId()) {
+    DLOG(ERROR) << "Failed to query selector all.";
     std::move(callback).Run(std::move(element_result));
     return;
   }
 
-  if (strict_mode && result->GetNodeIds()->size() != 1) {
-    DLOG(ERROR) << "Have " << result->GetNodeIds()->size()
-                << " elements exist.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  // Resolve and return object id of the element.
+  // Return object id of the element.
   if (selectors.size() == index + 1) {
-    devtools_client_->GetDOM()->ResolveNode(
-        dom::ResolveNodeParams::Builder()
-            .SetNodeId(result->GetNodeIds()->front())
-            .Build(),
-        base::BindOnce(&WebController::OnResolveNode,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       std::move(element_result), std::move(callback)));
+    element_result->object_id = result->GetResult()->GetObjectId();
+    std::move(callback).Run(std::move(element_result));
     return;
   }
 
-  // TODO(crbug.com/806868): Given than now result->GetNodeIds().size() can be
-  // greater than 1, we should fan-out and try all different nodes here instead
-  // of only the first.
   devtools_client_->GetDOM()->DescribeNode(
       dom::DescribeNodeParams::Builder()
-          .SetNodeId(result->GetNodeIds()->front())
+          .SetObjectId(result->GetResult()->GetObjectId())
           .Build(),
       base::BindOnce(
           &WebController::OnDescribeNode, weak_ptr_factory_.GetWeakPtr(),
-          result->GetNodeIds()->front(), index, selectors, strict_mode,
+          result->GetResult()->GetObjectId(), index, selectors, strict_mode,
           std::move(element_result), std::move(callback)));
 }
 
-void WebController::OnResolveNode(
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<dom::ResolveNodeResult> result) {
-  if (!result || !result->GetObject() ||
-      result->GetObject()->GetObjectId().empty()) {
-    DLOG(ERROR) << "Failed to resolve object id from node id.";
-    std::move(callback).Run(std::move(element_result));
-    return;
-  }
-
-  element_result->object_id = result->GetObject()->GetObjectId();
-  std::move(callback).Run(std::move(element_result));
-}
-
 void WebController::OnDescribeNode(
-    int node_id,
+    const std::string& object_id,
     size_t index,
     const std::vector<std::string>& selectors,
     bool strict_mode,
@@ -410,21 +417,37 @@ void WebController::OnDescribeNode(
   }
 
   if (!backend_ids.empty()) {
-    devtools_client_->GetDOM()
-        ->GetExperimental()
-        ->PushNodesByBackendIdsToFrontend(
-            dom::PushNodesByBackendIdsToFrontendParams::Builder()
-                .SetBackendNodeIds(backend_ids)
-                .Build(),
-            base::BindOnce(&WebController::OnPushNodesByBackendIds,
-                           weak_ptr_factory_.GetWeakPtr(), index, selectors,
-                           strict_mode, std::move(element_result),
-                           std::move(callback)));
+    devtools_client_->GetDOM()->ResolveNode(
+        dom::ResolveNodeParams::Builder()
+            .SetBackendNodeId(backend_ids[0])
+            .Build(),
+        base::BindOnce(&WebController::OnResolveNode,
+                       weak_ptr_factory_.GetWeakPtr(), index, selectors,
+                       strict_mode, std::move(element_result),
+                       std::move(callback)));
     return;
   }
 
-  RecursiveFindElement(node_id, ++index, selectors, strict_mode,
+  RecursiveFindElement(object_id, ++index, selectors, strict_mode,
                        std::move(element_result), std::move(callback));
+}
+
+void WebController::OnResolveNode(
+    size_t index,
+    const std::vector<std::string>& selectors,
+    bool strict_mode,
+    std::unique_ptr<FindElementResult> element_result,
+    FindElementCallback callback,
+    std::unique_ptr<dom::ResolveNodeResult> result) {
+  if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
+    DLOG(ERROR) << "Failed to resolve object id from backend id.";
+    std::move(callback).Run(std::move(element_result));
+    return;
+  }
+
+  RecursiveFindElement(result->GetObject()->GetObjectId(), ++index, selectors,
+                       strict_mode, std::move(element_result),
+                       std::move(callback));
 }
 
 content::RenderFrameHost* WebController::FindCorrespondingRenderFrameHost(
@@ -442,22 +465,8 @@ content::RenderFrameHost* WebController::FindCorrespondingRenderFrameHost(
   return ret_frame;
 }
 
-void WebController::OnPushNodesByBackendIds(
-    size_t index,
-    const std::vector<std::string>& selectors,
-    bool strict_mode,
-    std::unique_ptr<FindElementResult> element_result,
-    FindElementCallback callback,
-    std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result) {
-  DCHECK(result->GetNodeIds()->size() == 1);
-  RecursiveFindElement(result->GetNodeIds()->front(), ++index, selectors,
-                       strict_mode, std::move(element_result),
-                       std::move(callback));
-}
-
 void WebController::OnResult(bool result,
                              base::OnceCallback<void(bool)> callback) {
-  devtools_client_->GetDOM()->Disable();
   std::move(callback).Run(result);
 }
 
@@ -465,7 +474,6 @@ void WebController::OnResult(
     bool exists,
     const std::string& value,
     base::OnceCallback<void(bool, const std::string&)> callback) {
-  devtools_client_->GetDOM()->Disable();
   std::move(callback).Run(exists, value);
 }
 
@@ -482,7 +490,6 @@ void WebController::OnFindElementForFocusElement(
   argument.emplace_back(runtime::CallArgument::Builder()
                             .SetObjectId(element_result->object_id)
                             .Build());
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_result->object_id)
@@ -497,7 +504,6 @@ void WebController::OnFindElementForFocusElement(
 void WebController::OnFocusElement(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
     DLOG(ERROR) << "Failed to focus on element.";
     OnResult(false, std::move(callback));
@@ -617,7 +623,6 @@ void WebController::OnFindElementForSelectOption(
       runtime::CallArgument::Builder()
           .SetValue(base::Value::ToUniquePtrValue(base::Value(selected_option)))
           .Build());
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -632,7 +637,6 @@ void WebController::OnFindElementForSelectOption(
 void WebController::OnSelectOption(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
     DLOG(ERROR) << "Failed to select option.";
     OnResult(false, std::move(callback));
@@ -666,7 +670,6 @@ void WebController::OnFindElementForHighlightElement(
   std::vector<std::unique_ptr<runtime::CallArgument>> argument;
   argument.emplace_back(
       runtime::CallArgument::Builder().SetObjectId(object_id).Build());
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -681,7 +684,6 @@ void WebController::OnFindElementForHighlightElement(
 void WebController::OnHighlightElement(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
     DLOG(ERROR) << "Failed to highlight element.";
     OnResult(false, std::move(callback));
@@ -721,7 +723,6 @@ void WebController::OnFindElementForGetFieldValue(
     return;
   }
 
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -735,7 +736,6 @@ void WebController::OnFindElementForGetFieldValue(
 void WebController::OnGetValueAttribute(
     base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
     OnResult(/* exists= */ true, "", std::move(callback));
     return;
@@ -772,7 +772,6 @@ void WebController::OnFindElementForSetFieldValue(
       runtime::CallArgument::Builder()
           .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
           .Build());
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -786,7 +785,6 @@ void WebController::OnFindElementForSetFieldValue(
 void WebController::OnSetValueAttribute(
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   OnResult(result && !result->HasExceptionDetails(), std::move(callback));
 }
 
@@ -809,7 +807,6 @@ void WebController::OnFindElementForGetOuterHtml(
     return;
   }
 
-  devtools_client_->GetRuntime()->Enable();
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(object_id)
@@ -823,7 +820,6 @@ void WebController::OnFindElementForGetOuterHtml(
 void WebController::OnGetOuterHtml(
     base::OnceCallback<void(bool, const std::string&)> callback,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
     OnResult(false, "", std::move(callback));
     return;

@@ -180,42 +180,39 @@ class WebController {
   void FindElement(const std::vector<std::string>& selectors,
                    bool strict_mode,
                    FindElementCallback callback);
-  void OnGetDocument(const std::vector<std::string>& selectors,
-                     bool strict_mode,
-                     FindElementCallback callback,
-                     std::unique_ptr<dom::GetDocumentResult> result);
-  void RecursiveFindElement(int node_id,
+  void OnGetDocumentElement(const std::vector<std::string>& selectors,
+                            bool strict_mode,
+                            FindElementCallback callback,
+                            std::unique_ptr<runtime::EvaluateResult> result);
+  void RecursiveFindElement(const std::string& object_id,
                             size_t index,
                             const std::vector<std::string>& selectors,
                             bool strict_mode,
                             std::unique_ptr<FindElementResult> element_result,
                             FindElementCallback callback);
-  void OnQuerySelectorAll(size_t index,
-                          const std::vector<std::string>& selectors,
-                          bool strict_mode,
-                          std::unique_ptr<FindElementResult> element_result,
-                          FindElementCallback callback,
-                          std::unique_ptr<dom::QuerySelectorAllResult> result);
-  void OnResolveNode(std::unique_ptr<FindElementResult> element_result,
-                     FindElementCallback callback,
-                     std::unique_ptr<dom::ResolveNodeResult> result);
-  void OnDescribeNode(int node_id,
+  void OnQuerySelectorAll(
+      size_t index,
+      const std::vector<std::string>& selectors,
+      bool strict_mode,
+      std::unique_ptr<FindElementResult> element_result,
+      FindElementCallback callback,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnDescribeNode(const std::string& object_id,
                       size_t index,
                       const std::vector<std::string>& selectors,
                       bool strict_mode,
                       std::unique_ptr<FindElementResult> element_result,
                       FindElementCallback callback,
                       std::unique_ptr<dom::DescribeNodeResult> result);
+  void OnResolveNode(size_t index,
+                     const std::vector<std::string>& selectors,
+                     bool strict_mode,
+                     std::unique_ptr<FindElementResult> element_result,
+                     FindElementCallback callback,
+                     std::unique_ptr<dom::ResolveNodeResult> result);
   content::RenderFrameHost* FindCorrespondingRenderFrameHost(
       std::string name,
       std::string document_url);
-  void OnPushNodesByBackendIds(
-      size_t index,
-      const std::vector<std::string>& selectors,
-      bool strict_mode,
-      std::unique_ptr<FindElementResult> element_result,
-      FindElementCallback callback,
-      std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
   void OnResult(bool exists,
                 const std::string& result,
