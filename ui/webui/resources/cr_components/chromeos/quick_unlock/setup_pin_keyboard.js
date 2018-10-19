@@ -58,10 +58,22 @@ Polymer({
     initialPin_: String,
 
     /**
-     * The actual problem message to display.
+     * The message ID of actual problem message to display.
      * @private
      */
-    problemMessage_: String,
+    problemMessageId_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The additional parameters to format for the problem message string.
+     * @private
+     */
+    problemMessageParameters_: {
+      type: String,
+      value: '',
+    },
 
     /**
      * The type of problem class to show (warning or error).
@@ -163,7 +175,8 @@ Polymer({
   },
 
   /**
-   * Handles writing the appropriate message to |problemMessage_|.
+   * Handles writing the appropriate message to |problemMessageId_| &&
+   * |problemMessageParameters_|.
    * @private
    * @param {string} messageId
    * @param {chrome.quickUnlockPrivate.CredentialRequirements} requirements
@@ -185,7 +198,8 @@ Polymer({
         assertNotReached();
         break;
     }
-    this.problemMessage_ = this.i18n(messageId, additionalInformation);
+    this.problemMessageId_ = messageId;
+    this.problemMessageParameters_ = additionalInformation;
   },
 
   /**
@@ -206,7 +220,7 @@ Polymer({
 
   /** @private */
   hideProblem_: function() {
-    this.problemMessage_ = '';
+    this.problemMessageId_ = '';
     this.problemClass_ = '';
   },
 
@@ -334,12 +348,25 @@ Polymer({
 
   /**
    * @private
-   * @param {string} problemMessage
+   * @param {string} problemMessageId
    * @param {string} problemClass
    * @return {boolean}
    */
-  hasError_: function(problemMessage, problemClass) {
-    return !!problemMessage && problemClass == ProblemType.ERROR;
+  hasError_: function(problemMessageId, problemClass) {
+    return !!problemMessageId && problemClass == ProblemType.ERROR;
+  },
+
+  /**
+   * Formar problem message
+   * @private
+   * @param {string} locale  i18n locale data
+   * @param {string} messageId
+   * @param {string} messageParameters
+   * @return {string}
+   */
+  formatProblemMessage_: function(locale, messageId, messageParameters) {
+    return messageId ? this.i18nDynamic(locale, messageId, messageParameters) :
+                       '';
   },
 });
 
