@@ -14,12 +14,13 @@ var Manager = (function() {
 
   function Manager(clientRenderer) {
     this.players_ = {};
+    this.audioInfo_ = {};
     this.audioComponents_ = [];
     this.clientRenderer_ = clientRenderer;
 
-    var copyAllPlayerButton = document.getElementById('copy-all-player-button');
-    var copyAllAudioButton = document.getElementById('copy-all-audio-button');
-    var hidePlayersButton = document.getElementById('hide-players-button');
+    var copyAllPlayerButton = $('copy-all-player-button');
+    var copyAllAudioButton = $('copy-all-audio-button');
+    var hidePlayersButton = $('hide-players-button');
 
     // In tests we may not have these buttons.
     if (copyAllPlayerButton) {
@@ -31,7 +32,8 @@ var Manager = (function() {
     if (copyAllAudioButton) {
       copyAllAudioButton.onclick = function() {
         this.clientRenderer_.showClipboard(
-          JSON.stringify(this.audioComponents_, null, 2));
+            JSON.stringify(this.audioInfo_, null, 2) + '\n\n' +
+            JSON.stringify(this.audioComponents_, null, 2));
       }.bind(this);
     }
     if (hidePlayersButton) {
@@ -46,6 +48,15 @@ var Manager = (function() {
      */
     updateAudioFocusSessions: function(sessions) {
       this.clientRenderer_.audioFocusSessionUpdated(sessions);
+    },
+
+    /**
+     * Updates the general audio information.
+     * @param audioInfo The map of information.
+     */
+    updateGeneralAudioInformation: function(audioInfo) {
+      this.audioInfo_ = audioInfo;
+      this.clientRenderer_.generalAudioInformationSet(this.audioInfo_);
     },
 
     /**
