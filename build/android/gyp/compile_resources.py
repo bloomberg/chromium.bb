@@ -27,6 +27,11 @@ from xml.etree import ElementTree
 from util import build_utils
 from util import resource_utils
 
+# Name of environment variable that can be used to force this script to
+# put temporary resource files into specific sub-directories, instead of
+# temporary ones.
+_ENV_DEBUG_VARIABLE = 'ANDROID_DEBUG_TEMP_RESOURCES_DIR'
+
 # Import jinja2 from third_party/jinja2
 sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
@@ -581,8 +586,8 @@ def _WriteFinalRTxtFile(options, aapt_r_txt_path):
   return r_txt_file
 
 
-def _OnStaleMd5(options):
-  with resource_utils.BuildContext() as build:
+def _OnStaleMd5(options, debug_temp_resources_dir):
+  with resource_utils.BuildContext(debug_temp_resources_dir) as build:
     dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                              build.deps_dir)
 
@@ -657,10 +662,17 @@ def main(args):
 
   input_strings.extend(_CreateLinkApkArgs(options))
 
+  debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
+  if debug_temp_resources_dir:
+    build_utils.DeleteDirectory(debug_temp_resources_dir)
+    build_utils.MakeDirectory(debug_temp_resources_dir)
+
+
   possible_input_paths = [
     options.aapt_path,
     options.aapt2_path,
     options.android_manifest,
+    debug_temp_resources_dir,
     options.shared_resources_whitelist,
   ]
   possible_input_paths += options.include_resources
@@ -672,7 +684,7 @@ def main(args):
     input_paths.append(options.webp_binary)
 
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options),
+      lambda: _OnStaleMd5(options, debug_temp_resources_dir),
       options,
       input_paths=input_paths,
       input_strings=input_strings,
