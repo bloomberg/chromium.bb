@@ -111,6 +111,17 @@ bool HitTestQuery::TransformLocationForTarget(
   if (hit_test_data_.empty())
     return false;
 
+  // Use GetTransformToTarget if |target_ancestors| only has the target.
+  if (target_ancestors.size() == 1u) {
+    gfx::Transform transform;
+    if (!GetTransformToTarget(target_ancestors.front(), &transform))
+      return false;
+
+    *transformed_location = location_in_root;
+    transform.TransformPoint(transformed_location);
+    return true;
+  }
+
   if (target_ancestors.size() == 0u ||
       target_ancestors[target_ancestors.size() - 1] !=
           hit_test_data_[0].frame_sink_id) {

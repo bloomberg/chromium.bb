@@ -40,6 +40,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -5239,7 +5240,25 @@ class SitePerProcessHitTestDataGenerationBrowserTest
     device_scale_factor_ = rwhv_root->GetDeviceScaleFactor();
     DCHECK_GT(device_scale_factor_, 0);
 
-    return observer.GetHitTestData();
+    auto hit_test_data = observer.GetHitTestData();
+    MaybeStripHitTestData(&hit_test_data);
+    return hit_test_data;
+  }
+
+  // Strip the ClientRoot frame sink id from |hit_test_data| when Window
+  // Service is used because tests are written without considering it and
+  // using a constant number index to access the data of the interested frame.
+  // Related to http://crbug.com/895029.
+  // Note the stripped data has wrong child count and should only be used to
+  // verify test expectations.
+  void MaybeStripHitTestData(
+      std::vector<viz::AggregatedHitTestRegion>* hit_test_data) {
+    if (!features::IsUsingWindowService())
+      return;
+
+    // There must be at least two frame sink ids: one root and one ClientRoot.
+    ASSERT_GE(hit_test_data->size(), 2u);
+    hit_test_data->erase(hit_test_data->begin() + 1);
   }
 
   float current_device_scale_factor() const { return device_scale_factor_; }
@@ -5587,6 +5606,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
   observer.WaitForHitTestData();
   hit_test_data = observer.GetHitTestData();
+  MaybeStripHitTestData(&hit_test_data);
 
   gfx::Rect expected_region2 = gfx::ScaleToEnclosingRect(
       gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
