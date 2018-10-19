@@ -320,6 +320,11 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   [self configureSubviews];
 }
 
+- (void)safeAreaInsetsDidChange {
+  [super safeAreaInsetsDidChange];
+  [self layoutOKButton];
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
   [self layoutTitleLabel];
@@ -494,10 +499,15 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   CGFloat OKButtonBottomPadding =
       kOKButtonBottomPadding[self.cr_widthSizeClass];
   CGSize OKButtonSize = self.OKButton.bounds.size;
-  self.OKButton.frame = AlignRectOriginAndSizeToPixels(CGRectMake(
-      (CGRectGetWidth(self.bounds) - OKButtonSize.width) / 2.0,
-      CGRectGetMaxY(self.bounds) - OKButtonSize.height - OKButtonBottomPadding,
-      OKButtonSize.width, OKButtonSize.height));
+  CGFloat bottomSafeArea = 0;
+  if (@available(iOS 11.0, *)) {
+    bottomSafeArea = self.safeAreaInsets.bottom;
+  }
+  self.OKButton.frame = AlignRectOriginAndSizeToPixels(
+      CGRectMake((CGRectGetWidth(self.bounds) - OKButtonSize.width) / 2.0,
+                 CGRectGetMaxY(self.bounds) - OKButtonSize.height -
+                     OKButtonBottomPadding - bottomSafeArea,
+                 OKButtonSize.width, OKButtonSize.height));
 }
 
 - (void)traitCollectionDidChange:
