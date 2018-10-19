@@ -254,6 +254,15 @@ target(link_target_type, "gles2_sources") {
     "wrapped_sk_image.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "ahardwarebuffer_utils.cc",
+      "ahardwarebuffer_utils.h",
+      "shared_image_backing_factory_ahardwarebuffer.cc",
+      "shared_image_backing_factory_ahardwarebuffer.h",
+    ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
     "//gpu:gpu_gles2_implementation",
