@@ -480,7 +480,7 @@
           '--remote-ssh-port=9222',
         ],
         # TODO(crbug.com/876494): Move this out of experimental.
-        'experiment_percentage': 50,
+        'experiment_percentage': 100,
         'swarming': {
           'hard_timeout': 1200,
           'idempotent': False,  # https://crbug.com/549140

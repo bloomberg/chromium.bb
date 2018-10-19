@@ -391,7 +391,7 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222"
         ],
-        "experiment_percentage": 50,
+        "experiment_percentage": 100,
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
         "swarming": {
