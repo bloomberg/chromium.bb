@@ -879,9 +879,9 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
     grid->FilterItems(new_contents);
 
-  // If the selection widget is not active, execute a Move() command so that it
-  // shows up on the first undimmed item.
-  if (grid_list_[selected_grid_index_]->is_selecting())
+  // If the selection widget is not active and the filter string is not empty,
+  // execute a Move() command so that it shows up on the first undimmed item.
+  if (grid_list_[selected_grid_index_]->is_selecting() || new_contents.empty())
     return;
   Move(WindowSelector::RIGHT, false);
 }
